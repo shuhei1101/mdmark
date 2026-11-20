@@ -28,14 +28,14 @@ functions:
       - name: config
         type: ResolvedConfig
         required: true
-        description: 既定を当てた設定
+        description: 既定を適用した設定
       - name: options
         type: '{ args: MapArgs; resolveIdLink?: ResolveIdLink }'
         required: true
         description: '`args` は `parseMapArgs` の結果、`resolveIdLink` は `attachMap` の `hooks.resolveIdLink`'
     returns:
       type: MapFlowHandle
-      description: 構成図と同じ操作の口
+      description: 構成図と同じ操作のインターフェース
     process: |-
       1. `parseArchitecture` と `architectureToFlowchart` で `Flowchart` と上書きを作り、`attachMapFlow` に `extension` と `options.resolveIdLink` と一緒に指定する
       2. `extension.kinds` に `MAP_ARCH_KINDS`、`extension.overrides` に `architectureToFlowchart` の上書きを指定する

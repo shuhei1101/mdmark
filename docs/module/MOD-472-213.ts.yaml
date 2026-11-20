@@ -11,10 +11,10 @@ data_models:
     properties:
       - name: line
         type: number
-        description: 警告の元になったマーカー（範囲なら開きのマーカー）の元の行番号（1 から）。マーカーを持たない警告は、警告のトークンの後ろで最初に `map` を持つトークンの開始の行（無ければ前で最後に `map` を持つトークンの終わりの行）
+        description: 警告の元になったマーカー（範囲なら開きのマーカー）の元の行番号（1 から）。マーカーを持たない警告は、警告のトークンの後ろで最初に `map` を持つトークンの開始の行（無ければ前で最後に `map` を持つトークンの終了の行）
       - name: kind
         type: '"diagram_invalid" | "syntax_warning" | "annotation_undefined" | "annotation_unused" | "annotation_duplicate" | MarkNote["kind"] | MapProblem["kind"]'
-        description: map の書き方の警告は項目ごとに 1 件で、項目の `kind`（`line` は範囲の開きのマーカーの行に項目の `line` を足した行）。図の部品の定義の警告は `diagram_invalid`、画面には出さない記法のマーカーの注記は `MarkNote` の `kind`（`unknown_mark_arg`・`legacy_mark`・`mark_option_unapplied`）、注記の定義の無い参照・参照されていない定義・同じ ID の 2 つ目の定義は `annotation_undefined`・`annotation_unused`・`annotation_duplicate`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を配置しない）
+        description: map の書き方の警告は項目ごとに 1 件で、項目の `kind`（`line` は範囲の開きのマーカーの行に項目の `line` を追加した行）。図の部品の定義の警告は `diagram_invalid`、画面には出さない記法のマーカーの注記は `MarkNote` の `kind`（`unknown_mark_arg`・`legacy_mark`・`mark_option_unapplied`）、注記の定義の無い参照・参照されていない定義・同じ ID の 2 つ目の定義は `annotation_undefined`・`annotation_unused`・`annotation_duplicate`、ほかは `syntax_warning`（`render` は知らないマーカーに警告を配置しない）
       - name: message
         type: string
         description: 警告の本文と項目を、HTML のタグを除いた文字にして空白 1 つでつないだもの（画面で読み込む文と同じ順）
@@ -67,7 +67,7 @@ functions:
     scope: internal
     summary: 'markdown-it のコアルール（最後に走る）。トークンの警告と注記を行番号つきで `env.warnings` に集める'
     description: |-
-      `meta.warning` を持つトークン（埋め込んだ HTML の範囲の `html_block` は `meta.warnings` の並び）ごとに、`meta.warning.line`（マーカーの行）を、無ければ後ろで最初に `map` を持つトークンの開始の行（それも無ければ前で最後に `map` を持つトークンの終わりの行）を 1 からの行番号にし、`env.warnings` に `CollectedWarning` を追加する。
+      `meta.warning` を持つトークン（埋め込んだ HTML の範囲の `html_block` は `meta.warnings` の並び）ごとに、`meta.warning.line`（マーカーの行）を、無ければ後ろで最初に `map` を持つトークンの開始の行（それも無ければ前で最後に `map` を持つトークンの終了の行）を 1 からの行番号にし、`env.warnings` に `CollectedWarning` を追加する。
       続けて `env.markNotes` の注記を `CollectedWarning` にし、同じ行は警告の後ろになるよう行の順に合わせる
     args:
       - name: state
@@ -113,7 +113,7 @@ functions:
       - name: options
         type: '{ notes: MarkNote[]; line: number }'
         required: true
-        description: '`notes` は追加する注記（空なら何もしない）、`line` はマーカーのトークン（範囲なら開きのマーカー）の `map[0]` に 1 を足した行'
+        description: '`notes` は追加する注記（空なら何もしない）、`line` はマーカーのトークン（範囲なら開きのマーカー）の `map[0]` に 1 を追加した行'
     side_effects: '`env.markNotes` に追加する'
     unit_tests:
       - name: test_record_mark_notes

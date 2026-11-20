@@ -16,14 +16,14 @@ notes:
     ├── syntax-warning.part.ts   # 記載の警告の renderSyntaxWarning
     ├── {部品}.part.stories.ts     # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
     ├── clipboard.interact.ts    # クリップボードへ書き込む（表・行の URL・コードブロック・ファイルツリーが使用する）
-    ├── part-states.interact.ts  # 読者が開閉した部品の開閉を描き直しをまたいで記録する
+    ├── part-states.interact.ts  # 読者が開閉した部品の開閉を再描画しをまたいで記録する
     ├── scroller.interact.ts     # 要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタン・差分のミニマップ・タブの位置の保持が使用する）
     ├── text.interact.ts         # 用語のツールチップと脚注・注記の参照を除いた要素の文字 visibleText と、表のセルの値 cellValue（表・セクション・右側の目次・ビューが使用する）
     ├── zoom.interact.ts         # 図とライトボックスが共有する拡大・縮小・移動
     ├── collapse.logic.ts        # 表・タブ・ステップの折り畳みの指定（collapse）の読み取り
     ├── colors.logic.ts          # 色の名前の COLOR_NAMES と isColorName
     ├── escape.logic.ts          # HTML の特別な文字をエスケープする escapeHtml
-    ├── icon-node.logic.ts       # lucide のアイコンの形状 MdmarkIconNode を svg の中身にする iconNodeBody・svg の文字にする iconSvgOf・許す要素と属性だけの svg.mdmark-icon にする iconNodeSvg
+    ├── icon-node.logic.ts       # lucide のアイコンの形状 MdmarkIconNode を svg の中身にする iconNodeBody・svg の文字にする iconSvgOf・許可する要素と属性だけの svg.mdmark-icon にする iconNodeSvg
     ├── own.logic.ts             # mdmark が出した要素のマーカーを付ける markOwn と SLOT_MARKER
     ├── placement.logic.ts       # ツールチップを持ち主の上と下のどちらに配置するかを決める
     └── row-hash.logic.ts        # URL の `#` から行の ID を読み込む rowIdFromHash（表・セクション・タブが使用する）

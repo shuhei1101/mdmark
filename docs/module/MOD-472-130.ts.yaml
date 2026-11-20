@@ -5,7 +5,7 @@ test_files:
   - tests/unit/src/map/flow-view.browser.test.ts
 data_models:
   - name: MapFlowHandle
-    title: 構成図の操作の口
+    title: 構成図の操作のインターフェース
     container: src/map/flow-view.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
@@ -13,13 +13,13 @@ data_models:
     properties:
       - name: focus
         type: '(target: { nodes: string[]; wires: string[] }) => void'
-        description: 案内を止めて、外から強調を当てる（シーケンス図の再生）
+        description: 案内を止めて、外から強調を適用する（シーケンス図の再生）
       - name: clearFocus
         type: () => void
-        description: 外から当てた強調を解く
+        description: 外から適用した強調を解く
       - name: destroy
         type: () => void
-        description: 操作と観察を外す
+        description: 操作と観察を解除する
       - name: follow
         type: '(nodes: string[]) => void'
         description: ノードを囲む矩形が収まる倍率と位置へ図を移す（シーケンス図の再生でメッセージへ移ったとき。`createFollow` の `reveal`）
@@ -53,16 +53,16 @@ data_models:
         description: '`playback` で進める単位（部品設計『案内の帯』の `unit`。既定 `message`）'
       - name: rewire
         type: '(layout: MapLayout, view: { collapsed: string[] }) => MapLayout["wires"]'
-        description: 自動配置の後に線の経路を引き直す（ER 図の関連の端の付け替え）
+        description: 自動配置の後に線の経路を再計算する（ER 図の関連の端の付け替え）
       - name: render
         type: '(args: MapFlowArgs) => MapPart'
         description: '`renderMapFlow` の代わりに図の中身を描く部品（`renderMapErDiagram`・`renderMapStateDiagram`）'
       - name: afterRender
         type: '(figure: HTMLElement, layout: MapLayout, view: { selected: Set<string>; step: number | undefined }) => void'
-        description: 強調を当てた後に呼ぶ（行が増える関連のマーカー・同じ状態への遷移を、選択と再生の手順に合わせて描き直す）
+        description: 強調を適用した後に呼ぶ（行が増える関連のマーカー・同じ状態への遷移を、選択と再生の手順に合わせて再描画する）
       - name: selectionOf
         type: '(selected: Set<string>) => { nodes: Set<string>; wires: Set<string> } | undefined'
-        description: 選んだノードから残すノードと線を決める。無しを返せば構成図の選び方
+        description: 選んだノードから残すノードと線を決める。無しを返却すれば構成図の選び方
       - name: collapsedTag
         type: '(groupId: string) => string'
         description: 閉じたグループの名前の後ろの文字（既定は「ノード {数} 件」）
@@ -92,7 +92,7 @@ functions:
     container: src/map/flow-view.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 1 つのノードと、そのノードの線と相手のノードを返す。クラス図・アーキテクチャ図・C4 図の `extension.selectionOf` が 1 つ選んだときに使う
+    summary: 1 つのノードと、そのノードの線と相手のノードを返却する。クラス図・アーキテクチャ図・C4 図の `extension.selectionOf` が 1 つ選んだときに使用する
     scope: public
     args:
       - name: edges
@@ -112,7 +112,7 @@ functions:
     container: src/map/flow-view.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 2 つのノードをつなぐ最短の経路に乗る全てのノードと線を返す（つながらなければ 2 つのノードだけ）。クラス図・アーキテクチャ図・C4 図の `extension.selectionOf` が 2 つ選んだときに使う
+    summary: 2 つのノードをつなぐ最短の経路に乗る全てのノードと線を返却する（つながらなければ 2 つのノードだけ）。クラス図・アーキテクチャ図・C4 図の `extension.selectionOf` が 2 つ選んだときに使用する
     scope: public
     args:
       - name: edges
@@ -132,7 +132,7 @@ functions:
     container: src/map/flow-view.ts
     usecase: 図のグループの中へ入る・開閉する
     role: 処理
-    summary: 構成図を読み取り、状態を読んで配置し、描いて測った大きさで配置し直し、操作を付ける
+    summary: 構成図を読み取り、状態を読み取って配置し、描いて測った大きさで再配置し、操作を付ける
     scope: public
     callees:
       - MOD-472-137#functions[parseFlowchart]
@@ -155,7 +155,7 @@ functions:
       - name: config
         type: ResolvedConfig
         required: true
-        description: 既定を当てた設定
+        description: 既定を適用した設定
       - name: options
         type: '{ args: MapArgs; onWalk?: () => void; extension?: MapFlowExtension; resolveIdLink?: ResolveIdLink }'
         required: true
@@ -174,12 +174,12 @@ functions:
         description: ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図の差し込み。無ければ `flowchart` の構成図
     returns:
       type: MapFlowHandle
-      description: 強調を外から当てる関数・表示する枠を外からスクロールする関数と片付ける関数
+      description: 強調を外から適用する関数・表示する枠を外からスクロールする関数と片付ける関数
     process: |-
-      1. `parseFlowchart`（`extension` があれば `extension.chart`）・`parseMapData` で読み、`extension.kinds`・`extension.lines` を設定の `map.kinds`・`map.lines` に重ね、印に `title` が無ければ `extension.title` を図の枠のタイトルにし、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読む
-      2. 名前の幅を測る関数を作る。範囲の要素の計算値の `font-family` と `LABEL_METRICS.nameSize`・太字（700）のフォントで、canvas の 2D の文脈の `measureText` で 1 行の幅を測り、同じ文字の列の幅は覚えて使い回す。この関数を `layoutMap` の `measureText` と `extension.overrides` の `measureText` に指定する。`document.fonts` があれば、`document.fonts.ready` の後に覚えた文字の列の幅を測り直し、幅が 1 つでも変わっていれば測った大きさを捨てて「配置する」をやり直す（書体を読み込み終える前は代わりの書体で測るため。描く前に読み込み終えていれば幅は変わらず、配置し直さない）。`destroy` の後に `ready` が解決したときは配置し直さない。上書きには、ノードの種類（`classes` のうち重ねた `map.kinds` にある最初の種類）の形状が `pill` のノードに `padLeft`（`LABEL_METRICS.padPill`）を加える。`extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで、次の「配置する」をする。`layoutMap` で配置し、`extension.rewire` があれば線を引き直し、`separateWires` で同じ区間の線を並べる。`crowded` が 0 より大きければ、`spread` を `crowded` にして配置・引き直し・並べるを 1 回だけやり直す（`crowded` は通り道に足りない幅なので、広げた通り道の中ほどに束が収まる）。この手順の開閉と手順 3 の「配置し直す」は、この「配置する」をやり直すことを指す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems`（`idLinks` は `resolve` と `resolveIdLink`）で確かめた `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。描き直して図の中身の大きさが変わったら（グループに入る・出る、開閉、測り直し、書体の読み込み後の配置し直し）、表示する枠の `zoomControlOf` の `resize` に大きさを指定し、倍率の文字を保つ。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて配置し直す
-      3. ノードと閉じたグループ（`.map-closed-group[data-group]`）の中身を測り、中身が入る高さ（絶対配置でなく、`display` が `none` でない子要素の、最初の子要素の上端から `margin-top` を引いた位置から、最後の子要素の下端に `margin-bottom` を加えた位置までの高さに、上下の余白と上下の枠線を加えた高さ）が、ノードの高さを 1px より大きく越えるノードを、越えた分を高さに加えた `size` にして配置し直す。中身を上寄せにするノードも上下の中央に配置するノードも、1 回の測り直しで中身が上下の余白の内側に入る。以降はノードの大きさを `ResizeObserver` で見て同じく配置し直す
-      4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順へ移るたびに `onWalk` を呼び、`onStep` で `resumeFollow` と手順の `nodes` の `follow` を呼んで図を移し、停止で案内を始めたときに中へ入っていたグループと倍率に戻す。手順の `nodes` のうち閉じたグループの中のノードはそのグループに、`edges` のうち描いていない線（閉じたグループへの線にまとめた線）は、両端を同じく付け替えた描いた線に置き換えて、強調とデータの印を当てる
+      1. `parseFlowchart`（`extension` があれば `extension.chart`）・`parseMapData` で読み取り、`extension.kinds`・`extension.lines` を設定の `map.kinds`・`map.lines` に重ね、印に `title` が無ければ `extension.title` を図の枠のタイトルにし、`readMapState`（印の `focus` と、補足の `layout` の `collapsed` が `true` の ID を指定する）で状態を読み取る
+      2. 名前の幅を測る関数を作る。範囲の要素の計算値の `font-family` と `LABEL_METRICS.nameSize`・太字（700）のフォントで、canvas の 2D の文脈の `measureText` で 1 行の幅を測り、同じ文字の列の幅は覚えて再利用する。この関数を `layoutMap` の `measureText` と `extension.overrides` の `measureText` に指定する。`document.fonts` があれば、`document.fonts.ready` の後に覚えた文字の列の幅を再計測し、幅が 1 つでも変わっていれば測った大きさを捨てて「配置する」を再実行する（書体を読み込み終える前は代わりの書体で測るため。描く前に読み込み終えていれば幅は変わらず、再配置さない）。`destroy` の後に `ready` が解決したときは再配置さない。上書きには、ノードの種類（`classes` のうち重ねた `map.kinds` にある最初の種類）の形状が `pill` のノードに `padLeft`（`LABEL_METRICS.padPill`）を加える。`extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで、次の「配置する」をする。`layoutMap` で配置し、`extension.rewire` があれば線を再計算し、`separateWires` で同じ区間の線を並べる。`crowded` が 0 より大きければ、`spread` を `crowded` にして配置・再計算し・並べるを 1 回だけ再実行する（`crowded` は通り道に足りない幅なので、広げた通り道の中ほどに束が収まる）。この手順の開閉と手順 3 の「配置し直す」は、この「配置する」を再実行することを指す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems`（`idLinks` は `resolve` と `resolveIdLink`）で確認した `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。再描画して図の中身の大きさが変わったら（グループに入る・出る、開閉、再計測し、書体の読み込み後の再配置し）、表示する枠の `zoomControlOf` の `resize` に大きさを指定し、倍率の文字を保つ。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて再配置する
+      3. ノードと閉じたグループ（`.map-closed-group[data-group]`）の中身を測り、中身が入る高さ（絶対配置でなく、`display` が `none` でない子要素の、最初の子要素の上端から `margin-top` を引いた位置から、最後の子要素の下端に `margin-bottom` を加えた位置までの高さに、上下の余白と上下の枠線を加えた高さ）が、ノードの高さを 1px より大きく越えるノードを、越えた分を高さに加えた `size` にして再配置する。中身を上寄せにするノードも上下の中央に配置するノードも、1 回の再計測で中身が上下の余白の内側に入る。以降はノードの大きさを `ResizeObserver` で見て同じく再配置する
+      4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順へ移るたびに `onWalk` を呼び、`onStep` で `resumeFollow` と手順の `nodes` の `follow` を呼んで図を移し、停止で案内を始めたときに中へ入っていたグループと倍率に戻す。手順の `nodes` のうち閉じたグループの中のノードはそのグループに、`edges` のうち描いていない線（閉じたグループへの線にまとめた線）は、両端を同じく付け替えた描いた線に置き換えて、強調とデータの印を適用する
       4. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ。動かす操作は `startDrag` に任せ（`pointerType` が `touch` の押下ではノード・グループ・線の区間を動かさず、指の移動を表示する枠のスクロールに任せる）、`pointerup` か `pointercancel` で保つ（`pointercancel` では `startDrag` が戻した状態を保つ）
     unit_tests:
       - name: test_attach_map_flow_when_drag_cancelled
@@ -187,7 +187,7 @@ functions:
         summary: 指の押下ではノードを動かさず、受け取りを残さない
         condition: ノードに `pointerType` が `touch` の `pointerdown` と、下へ 40px の `pointermove` を発火し、`pointercancel` を発火した後に、さらに下へ 40px の `pointermove` を発火する
         mock: '`writeMapState`'
-        expected: 'ノードの位置が押す前と同じで、`writeMapState` が `positions` を変えず、どの `pointermove` でも描き直されない'
+        expected: 'ノードの位置が押す前と同じで、`writeMapState` が `positions` を変えず、どの `pointermove` でも再描画されない'
       - name: test_attach_map_flow_when_node_link
         case: 正常
         summary: リンク先を持つノードを動かしたときは開かず、動かさずに押すと開く
@@ -199,7 +199,7 @@ functions:
         summary: リンク先を持たないノードは、ノードを覆う押せる要素でキー操作を受ける
         condition: '`notes` で `data` に説明を持つ `FLOW` を描き、`data` の `span.mdmark-diagram-node-hit` にフォーカスして Enter、Alt + ArrowRight の順に押す'
         mock: '`writeMapState`'
-        expected: 'Enter で `data` のノードが `data-selected` を持ち、押せる要素の `aria-label` の末尾が `（選択中）` になる。Alt + ArrowRight で `data` のノードが右へ 8px 動き、描き直した後もフォーカスが `data` の `span.mdmark-diagram-node-hit` にある。説明のマーカーにフォーカスしたときは押せる要素とは別の要素で、ツールチップが開く'
+        expected: 'Enter で `data` のノードが `data-selected` を持ち、押せる要素の `aria-label` の末尾が `（選択中）` になる。Alt + ArrowRight で `data` のノードが右へ 8px 動き、再描画した後もフォーカスが `data` の `span.mdmark-diagram-node-hit` にある。説明のマーカーにフォーカスしたときは押せる要素とは別の要素で、ツールチップが開く'
       - name: test_attach_map_flow_when_toggle
         case: 正常
         summary: グループを閉じる
@@ -238,8 +238,8 @@ functions:
         expected: '`centerRect` を 1 回目と 3 回目だけ呼ぶ'
       - name: test_attach_map_flow_when_crowded
         case: 正常
-        summary: 並べた線が矩形に入るときは間を広げて配置し直す
-        condition: '`separateWires` が 1 回目に `crowded: 16`、2 回目に `crowded: 0` を返す'
+        summary: 並べた線が矩形に入るときは間を広げて再配置する
+        condition: '`separateWires` が 1 回目に `crowded: 16`、2 回目に `crowded: 0` を返却する'
         mock: '`layoutMap`・`separateWires`'
         expected: '`layoutMap` を 2 回呼び、2 回目の `spread` が 16。描いた線が 2 回目の `separateWires` の `wires`'
       - name: test_attach_map_flow_when_closed_group_measured
@@ -286,10 +286,10 @@ functions:
         expected: どちらのノードも名前が 1 行（名前の文字の範囲の高さが 14px × 1.35 以下）で、ノードの幅が名前の文字の範囲の幅（名前の要素はノードの幅に伸びるため、文字の範囲で測る）に左右の余白（「文書の Markdown」は 10px・28px、「利用側のページ」は 16px・28px）と枠線 3px を加えた幅から 1px 以内
       - name: test_attach_map_flow_when_fonts_ready
         case: 正常
-        summary: 書体を読み込み終えた後に測り直す
-        condition: '`document.fonts.ready` を未解決の Promise に差し替えて範囲を描き、名前の幅を測る canvas の `measureText` が返す幅を広げてから `ready` を解決する。別の範囲は `destroy` してから `ready` を解決する'
+        summary: 書体を読み込み終えた後に再計測する
+        condition: '`document.fonts.ready` を未解決の Promise に差し替えて範囲を描き、名前の幅を測る canvas の `measureText` が返却する幅を広げてから `ready` を解決する。別の範囲は `destroy` してから `ready` を解決する'
         mock: '`document.fonts.ready`・`CanvasRenderingContext2D.prototype.measureText`'
-        expected: '`ready` の後に、ノードの幅が広げた幅で配置し直した幅になる。`destroy` した範囲は描き直されない'
+        expected: '`ready` の後に、ノードの幅が広げた幅で再配置した幅になる。`destroy` した範囲は再描画されない'
       - name: test_attach_map_flow_when_first_kind_not_pill
         case: 正常
         summary: 最初の種類が pill でないノードは pill の左の余白で見積もらない

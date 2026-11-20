@@ -26,8 +26,8 @@ functions:
       description: 下書き
     process: |-
       1. `commentText(root)` で本文の文字と、文字のセクションごとの位置を得る
-      2. 範囲の始まりと終わりを本文の文字の位置にし、間の文字の前後の空白を落として `quote` にする（落とした分だけ位置をずらす）
-      3. 始まりの前の `CONTEXT_CHARS` 文字の先頭の空白を落としたものを `prefix`、終わりの後の `CONTEXT_CHARS` 文字の末尾の空白（ブロックの間の改行を含む）を落としたものを `suffix`、`body` の前後の空白を落としたものを `body` にする
+      2. 範囲の開始と終了を本文の文字の位置にし、間の文字の前後の空白を落として `quote` にする（落とした分だけ位置をずらす）
+      3. 始まりの前の `CONTEXT_CHARS` 文字の先頭の空白を落としたものを `prefix`、終了位置の後の `CONTEXT_CHARS` 文字の末尾の空白（ブロックの間の改行を含む）を落としたものを `suffix`、`body` の前後の空白を落としたものを `body` にする
     unit_tests:
       - name: test_draft_from_range
         case: 正常
@@ -84,9 +84,9 @@ functions:
       type: '{ anchors: Array<{ start: number; end: number; comments: MdmarkComment[] }>; orphans: MdmarkComment[] }'
       description: 箇所の並び（始まりの順）と見つからないコメント
     process: |-
-      1. `prefix + quote + suffix` が一致する最初の位置があれば、`quote` の始まりと終わりを箇所にする
+      1. `prefix + quote + suffix` が一致する最初の位置があれば、`quote` の開始と終了を箇所にする
       2. 無ければ `quote` が 1 か所だけ一致すればそこを箇所にし、0 か所か 2 か所以上なら見つからないコメントにする
-      3. 始まりと終わりが同じ箇所はまとめ（保存の順を保つ）、ほかの箇所と重なる箇所は見つからないコメントにする
+      3. 開始と終了が同じ箇所はまとめ（保存の順を保つ）、ほかの箇所と重なる箇所は見つからないコメントにする
     unit_tests:
       - name: test_locate_comments
         case: 正常

@@ -42,7 +42,7 @@ fields:
 - key: raw
   title: 既定で元の Markdown を出す
   type: bool
-  description: 言語が `markdown`・`md` のコードブロックを、描いた直後に描いた結果ではなく元の Markdown の表示にするか。`true` で元の Markdown（記法の書き方をそのまま見せるとき）。ほかの言語では読み込まない。省くと `false`
+  description: 言語が `markdown`・`md` のコードブロックを、描いた直後に描いた結果ではなく元の Markdown の表示にするか。`true` で元の Markdown（記法の記載方法をそのまま見せるとき）。ほかの言語では読み込まない。省くと `false`
   example: 'true'
 refs:
 - ER-477-6#tables[code]

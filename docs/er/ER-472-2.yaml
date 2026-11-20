@@ -53,7 +53,7 @@ tables:
         source: DATA-472-2#fields[notes]
         type: object
         default: '`{}`'
-        description: 'ノード・線の ID ごとの説明と注記の参照（`{ "text": 説明の文, "annotations": [注記の ID] }`。どちらか一方だけでもよい）。線にポインターを当てたツールチップと、再生の帯の説明に出す。`annotations` の注記は、ツールチップの説明の下に区分を分けて出す'
+        description: 'ノード・線の ID ごとの説明と注記の参照（`{ "text": 説明の文, "annotations": [注記の ID] }`。どちらか一方だけでもよい）。線にポインターを乗せたツールチップと、再生の帯の説明に出す。`annotations` の注記は、ツールチップの説明の下に区分を分けて出す'
         example: '{"mount": {"text": "文書を描く公開関数", "annotations": ["cond"]}}'
         notes: キーは Mermaid のノード・線の ID（シーケンス図はメッセージの番号、ER 図はテーブル名・`{テーブル名}.{列名}`・関連の記載順の `r{番号}`・分類の ID（グループの説明）、状態遷移図は状態の ID・遷移の記載順の `t{番号}`、クラス図はクラス名・`{クラス名}.{メンバー名}`・`namespace` の ID・関係の記載順の `r{番号}`、アーキテクチャ図は service・group・junction の ID・線の記載順の `r{番号}`、C4 図（`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`）は要素・境界・配置先のノードの別名・関係の記載順の `r{番号}`、マインドマップは項目の ID（`{ID}[名前]` の `{ID}`）と、ID を持たない項目の表示する文字、ガントチャートはタスクの ID・ID を持たないタスクのタスク名・section の名前、タイムラインは期間と出来事の文字・section の名前、Git グラフは commit の `id:`・`id:` を持たない commit の `msg:` の文字・どちらも持たない commit の記載順の `c{番号}`・ブランチ名、ジャーニーはタスク名・section の名前、ブロック図はブロックと入れ子のブロックの ID）。無い ID は `map_unknown_ref`。マインドマップと軸と格子の配置の図で、ID を持たない 2 つ以上の項目が同じ文字を持つか 2 つ以上の section が同じ名前を持ち、キーがその文字・名前のときは `map_ambiguous_ref`（修正の方法は、その項目に ID を記載して ID で指すか、section の名前を分ける）。ER 図のテーブル名・状態遷移図の状態の ID が、同じ図の関連・遷移の `r{番号}`・`t{番号}` か ER 図の分類の ID と同じときは `map_invalid_value`。`annotations` の定義の無い注記の ID は `annotation_undefined`
       - name: plays_over
@@ -113,7 +113,7 @@ tables:
         type: string
         not_null: true
         description: 帯の説明の文（改行はそのまま）
-        example: map のマーカーを読み、範囲を 1 つの図にする
+        example: map のマーカーを読み取り、範囲を 1 つの図にする
       - name: nodes
         title: 強調するノード
         source: DATA-472-4#fields[nodes]
@@ -139,7 +139,7 @@ tables:
   - name: layout
     title: 配置の上書き
     source: DATA-472-5#
-    summary: ノード・グループ・線の ID ごとの配置と見た目の上書き（キーが ID）
+    summary: ノード・グループ・線の ID ごとの配置と外観の上書き（キーが ID）
     datastore: JSON
     access: 全件
     scale: ~100
@@ -148,30 +148,30 @@ tables:
         title: 揃える相手
         source: DATA-472-5#fields[align]
         type: string
-        description: 同じ段に置く相手の ID
+        description: 同じ段に配置する相手の ID
         example: marker
-        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、書き方の警告と点検の `map_invalid_value` にする（適用するのは `color` と `collapsed` だけ）
+        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、記載の警告と点検の `map_invalid_value` にする（適用するのは `color` と `collapsed` だけ）
       - name: order
         title: 並び順
         source: DATA-472-5#fields[order]
         type: integer
         description: 段の中の並び順（小さいほど先）
         example: '1'
-        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、書き方の警告と点検の `map_invalid_value` にする。並び順は Mermaid の行の順で変える
+        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、記載の警告と点検の `map_invalid_value` にする。並び順は Mermaid の行の順で変える
       - name: pos
         title: 座標
         source: DATA-472-5#fields[pos]
         type: object
         description: 親の中身の左上からの座標で固定する（`{ x, y }`）
         example: '{"x": 0, "y": 120}'
-        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、書き方の警告と点検の `map_invalid_value` にする
+        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、記載の警告と点検の `map_invalid_value` にする
       - name: width
         title: 幅
         source: DATA-472-5#fields[width]
         type: integer
         description: ノードの幅（px）
         example: '260'
-        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、書き方の警告と点検の `map_invalid_value` にする
+        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、記載の警告と点検の `map_invalid_value` にする
       - name: color
         title: 色
         source: DATA-472-5#fields[color]
@@ -200,7 +200,7 @@ tables:
         default: '`center`'
         description: ノード・グループの ID のときだけ。段が親の中身より短いときに、段の中で寄せる側（`start` は左か上、`end` は右か下）
         example: start
-        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、書き方の警告と点検の `map_invalid_value` にする
+        notes: マインドマップと軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図）の項目では適用せず、記載の警告と点検の `map_invalid_value` にする
       - name: ends
         title: 線の端の辺
         source: DATA-472-5#fields[ends]

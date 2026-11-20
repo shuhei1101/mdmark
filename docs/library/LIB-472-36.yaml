@@ -43,7 +43,7 @@ catalogs:
             description: 誤りの種類（`BAD_INDENT`・`DUPLICATE_KEY` など）
           - name: linePos
             type: '[{ line: number; col: number }, { line: number; col: number }]'
-            description: 誤りの場所の開始と終わりの行と列（1 始まり）
+            description: 誤りの場所の開始と終了の行と列（1 始まり）
           - name: message
             type: string
             description: 誤りの内容、行と列、該当行の抜き出し

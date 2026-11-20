@@ -1,7 +1,7 @@
 id: MOD-472-359
 visibility: internal
 title: ライブラリ本体 / 記法の共通 / style-tokens.logic.ts
-lead: 共通スタイルの色（見出し・注意書きの種類・用語の下線・罫線・コードブロックの背景・発言の背景・色の名前・面と本文）を、既定のテーマの明るい配色と暗い配色の 16 進で持つ。mod が描く色はここから取り、Web の CSS 変数と同じ値であることを単体テストで確かめる。
+lead: 共通スタイルの色（見出し・注意書きの種類・用語の下線・罫線・コードブロックの背景・発言の背景・色の名前・面と本文）を、既定のテーマの明るい配色と暗い配色の 16 進で持つ。mod が描く色はここから取り、Web の CSS 変数と同じ値であることを単体テストで確認する。
 test_files:
   - tests/unit/src/shared/style-tokens.logic.test.ts
 constants:

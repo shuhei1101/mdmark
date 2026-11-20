@@ -45,7 +45,7 @@ data_models:
     title: 起動の方法の決定
     container: src/plugin/setup/server.ts
     usecase: 常駐サーバーを起動する
-    summary: '`resolveLauncher` が返す、使用する起動の方法と移し替えをするか'
+    summary: '`resolveLauncher` が返却する、使用する起動の方法と移し替えをするか'
     properties:
       - name: launcher
         type: Launcher
@@ -91,32 +91,32 @@ functions:
     container: src/plugin/setup/server.ts
     usecase: 常駐サーバーを起動する
     role: 処理
-    summary: 引数・端末の設定・使える方法から、使用する起動の方法と移し替えをするかを決める
+    summary: 引数・端末の設定・使用できる方法から、使用する起動の方法と移し替えをするかを決める
     scope: public
     is_async: false
     args:
       - name: options
         type: '{ argument: Launcher | undefined; setting: LauncherSetting; systemdAvailable: boolean; tmuxAvailable: boolean; command: string; port: number }'
         required: true
-        description: '`--launcher` の値・`serve.launcher` の値・systemd --user と tmux が使えるか・端末で動かすコマンド・ポート'
+        description: '`--launcher` の値・`serve.launcher` の値・systemd --user と tmux が使用できるか・端末で動かすコマンド・ポート'
     returns:
       type: LauncherChoice
       description: 使用する起動の方法と移し替えをするか
     process: |-
       1. `argument` があればそれを使用し、`migrate` を偽にする
       2. 無ければ `setting` が `systemd`・`tmux` ならそれを、`auto` なら `systemdAvailable` で `systemd`、ほかは `tmux` を使用し、`migrate` を真にする
-      3. 決めた方法が使えなければ（`systemd` で `systemdAvailable` が偽、`tmux` で `tmuxAvailable` が偽）、使えない方法と、端末を開いたまま動かす `MDMARK_PORT={port} {command}` を添えて `SetupError`（`SETUP_EXIT.launcherMissing`）
+      3. 決めた方法が使用できなければ（`systemd` で `systemdAvailable` が偽、`tmux` で `tmuxAvailable` が偽）、使用できない方法と、端末を開いたまま動かす `MDMARK_PORT={port} {command}` を添えて `SetupError`（`SETUP_EXIT.launcherMissing`）
     unit_tests:
       - name: test_resolve_launcher
         case: 正常
-        summary: auto は systemd が使えれば systemd、引数は移し替えをしない
-        condition: 設定 `auto`・両方使える／設定 `auto`・systemd が使えない／引数 `tmux`・設定 `systemd`／設定 `tmux`
+        summary: auto は systemd が使用できれば systemd、引数は移し替えをしない
+        condition: 設定 `auto`・両方使える／設定 `auto`・systemd が使用できない／引数 `tmux`・設定 `systemd`／設定 `tmux`
         mock: なし
         expected: '`{ systemd, migrate: true }`・`{ tmux, migrate: true }`・`{ tmux, migrate: false }`・`{ tmux, migrate: true }`'
       - name: test_resolve_launcher_when_missing
         case: 異常
-        summary: 使える方法が無ければ 2
-        condition: 設定 `auto`・両方使えない、設定 `systemd`・systemd が使えない
+        summary: 使用できる方法が無ければ 2
+        condition: 設定 `auto`・両方使用できない、設定 `systemd`・systemd が使用できない
         mock: なし
         expected: どちらも終了コード 2 の `SetupError`、メッセージに `MDMARK_PORT=` とコマンド
     refs:
@@ -188,7 +188,7 @@ functions:
     unit_tests:
       - name: test_start_server_when_launcher_missing
         case: 異常
-        summary: systemd も tmux も使えなければ 2
+        summary: systemd も tmux も使用できなければ 2
         condition: '`is-system-running` に 127、`tmux -V` に 127 を返却する `run`'
         mock: 差し替えた `run`
         expected: 終了コード 2 の `SetupError`、メッセージに `MDMARK_PORT=` と `serve` のコマンド
@@ -213,11 +213,11 @@ functions:
       type: 'Promise<{ result: StartResult["result"]; changes: StartChange[] }>'
       description: 結果と行った変更
     process: |-
-      1. `migrate` が真で tmux のセッションがあれば `kill-session -t ={session}` し、`changes` に `tmux_session_closed` を足して、ポートが解放されるまで待つ（`PORT_RELEASE_TIMEOUT_SEC`）
-      2. `buildUnitFile` で中身を作り（`PATH` は `env.PATH` から `buildUnitPathEnv` で作る）、`resolveUnitPath` のファイルと比べる。`readUnitState` で状態を読む
+      1. `migrate` が真で tmux のセッションがあれば `kill-session -t ={session}` し、`changes` に `tmux_session_closed` を追加して、ポートが解放されるまで待つ（`PORT_RELEASE_TIMEOUT_SEC`）
+      2. `buildUnitFile` で中身を作り（`PATH` は `env.PATH` から `buildUnitPathEnv` で作る）、`resolveUnitPath` のファイルと比べる。`readUnitState` で状態を読み取る
       3. unit が `active` で、中身が同じで、ポートが待ち受けていれば、enabled でなければ `enable` して `already_running`
       4. unit が `active` でなく、ポートが待ち受けていれば、unit のファイルを記載せずに `MDMARK_PORT` の修正方法を添えて `SetupError`（1）
-      5. 中身が違えば unit のフォルダを作って記載し、`daemon-reload` して `changes` に `unit_written` を足す
+      5. 中身が違えば unit のフォルダを作って記載し、`daemon-reload` して `changes` に `unit_written` を追加する
       6. unit が `active` なら `restart` して `restarted`、ほかは `enable --now` して `started`
       7. `waitForListening` で待つ。終わったことの判定は `readUnitState` と `hasUnitExited`。終わったら `disable --now` して journal の末尾を添えて `SetupError`（1）、上限を超えたら `disable --now` して journal の末尾を添えて `SetupError`（3）
     side_effects: unit のファイルを記載する。unit を enable・起動・停止する。tmux のセッションを閉じる
@@ -233,31 +233,31 @@ functions:
       - name: test_start_with_systemd
         case: 正常
         summary: unit が無ければ記載して enable --now する
-        condition: '`show` に `ActiveState=inactive` を返し、`enable --now` の後は待ち受けるポートを開く `run`、空のフォルダの `XDG_CONFIG_HOME`'
+        condition: '`show` に `ActiveState=inactive` を返却し、`enable --now` の後は待ち受けるポートを開く `run`、空のフォルダの `XDG_CONFIG_HOME`'
         mock: 差し替えた `run`・すぐ解決する `sleep`
         expected: '`result` が `started`、`changes` が `["unit_written"]`、`run` の呼び出しに `daemon-reload` と `enable --now {unit}` がこの順にある'
       - name: test_start_with_systemd_when_path_differs
         case: 正常
-        summary: 呼んだ側の PATH の関係の無いフォルダが変わっても起動し直さない
-        condition: unit が active で待ち受けており、unit のファイルが前の呼び出しで記載したもの。`env.PATH` に関係の無いフォルダを足して呼ぶ
+        summary: 呼んだ側の PATH の関係の無いフォルダが変わっても再起動しない
+        condition: unit が active で待ち受けており、unit のファイルが前の呼び出しで記載したもの。`env.PATH` に関係の無いフォルダを追加して呼ぶ
         mock: 差し替えた `run`
         expected: '`result` が `already_running`、`writeFile` と `restart` を呼んでいない'
       - name: test_start_with_systemd_when_port_taken
         case: 異常
         summary: unit が active でなくポートが待ち受けていれば記載しない
-        condition: '`node:net` で先にポートを待ち受け、`show` に `ActiveState=inactive` を返す `run`'
+        condition: '`node:net` で先にポートを待ち受け、`show` に `ActiveState=inactive` を返却する `run`'
         mock: 差し替えた `run`
         expected: 終了コード 1 の `SetupError`、`writeFile` と `enable` を呼んでいない
       - name: test_start_with_systemd_when_exited
         case: 異常
         summary: NRestarts が増えたら待たずに 1
-        condition: '`enable --now` の後の `show` に `NRestarts=1` を返す `run`'
+        condition: '`enable --now` の後の `show` に `NRestarts=1` を返却する `run`'
         mock: 差し替えた `run`・すぐ解決する `sleep`
         expected: 終了コード 1 の `SetupError`、`disable --now` を呼んでいる
       - name: test_start_with_systemd_when_timed_out
         case: 異常
         summary: 上限を超えたら 3
-        condition: '`MDMARK_START_TIMEOUT_SEC=0`、`show` に `ActiveState=active`・`NRestarts=0` を返し続ける `run`'
+        condition: '`MDMARK_START_TIMEOUT_SEC=0`、`show` に `ActiveState=active`・`NRestarts=0` を返却し続ける `run`'
         mock: 差し替えた `run`・すぐ解決する `sleep`
         expected: 終了コード 3 の `SetupError`、`disable --now` を呼んでいる
     refs:
@@ -278,13 +278,13 @@ functions:
       - name: options
         type: '{ paths: SetupPaths; unit: string; session: string; command: string; migrate: boolean; systemdAvailable: boolean; env: NodeJS.ProcessEnv } & { run: RunCommand; sleep: (ms: number) => Promise<void> }'
         required: true
-        description: パス・unit の名前・セッション名・起動するコマンド・移し替えをするか・systemd --user が使えるか・環境変数と依存
+        description: パス・unit の名前・セッション名・起動するコマンド・移し替えをするか・systemd --user が使用できるか・環境変数と依存
     returns:
       type: 'Promise<{ result: StartResult["result"]; changes: StartChange[]; launcher: Launcher }>'
       description: 結果・行った変更・動かしている方法
     process: |-
-      1. `systemdAvailable` が真なら `readUnitState` で unit の状態を読む。`migrate` が真で unit が `active` か enabled なら `disable --now` し、`changes` に `unit_disabled` を足して、ポートが解放されるまで待つ（`PORT_RELEASE_TIMEOUT_SEC`）
-      2. `migrate` が偽で unit が `active` で、ポートが待ち受けていれば、`launcher` を `systemd` にして `already_running` を返す（端末の設定が無いまま書き込みを断られた端末で既定の unit が動いているとき）
+      1. `systemdAvailable` が真なら `readUnitState` で unit の状態を読み取る。`migrate` が真で unit が `active` か enabled なら `disable --now` し、`changes` に `unit_disabled` を追加して、ポートが解放されるまで待つ（`PORT_RELEASE_TIMEOUT_SEC`）
+      2. `migrate` が偽で unit が `active` で、ポートが待ち受けていれば、`launcher` を `systemd` にして `already_running` を返却する（端末の設定が無いまま書き込みを断られた端末で既定の unit が動いているとき）
       3. セッションがあり待ち受けていれば `already_running`。セッションがあり待ち受けていなければ `kill-session -t ={名前}` して `restarted` にする。起動する前にポートが待ち受けていれば、`MDMARK_PORT` の修正方法を添えて `SetupError`（1）で起動しない
       4. 状態の配置場所を作り、`buildTmuxArgs` の引数で `run("tmux", …)` する
       5. `waitForListening` で待つ。終わったことの判定は `has-session` が偽。終わったら `serve.log` の末尾 20 行を添えて `SetupError`（1）、上限を超えたら `kill-session` して `serve.log` の末尾を添えて `SetupError`（3）
@@ -304,13 +304,13 @@ functions:
       - name: test_start_with_tmux_when_migrating
         case: 正常
         summary: 設定で tmux に固定すると active な unit を disable --now する
-        condition: '`migrate` が真、`show` に `ActiveState=active`・`UnitFileState=enabled` を返し、`disable --now` の後はポートを閉じる `run`'
+        condition: '`migrate` が真、`show` に `ActiveState=active`・`UnitFileState=enabled` を返却し、`disable --now` の後はポートを閉じる `run`'
         mock: 差し替えた `run`・すぐ解決する `sleep`
         expected: '`changes` が `["unit_disabled"]`、`disable --now {unit}` の後に `new-session` を呼んでいる'
       - name: test_start_with_tmux_when_unit_running
         case: 正常
         summary: 引数の tmux で unit が動いていれば unit に触れずに already_running
-        condition: '`migrate` が偽、`show` に `ActiveState=active` を返し、ポートを待ち受けている'
+        condition: '`migrate` が偽、`show` に `ActiveState=active` を返却し、ポートを待ち受けている'
         mock: 差し替えた `run`
         expected: '`result` が `already_running`、`launcher` が `systemd`、`disable` と `new-session` を呼んでいない'
       - name: test_start_with_tmux_when_timed_out
@@ -341,25 +341,25 @@ functions:
     container: src/plugin/setup/server.ts
     usecase: 常駐サーバーを起動する
     role: 処理
-    summary: '`POLL_INTERVAL_MS` ごとに、終わったか・待ち受けたか・上限を超えたかを確かめる'
+    summary: '`POLL_INTERVAL_MS` ごとに、終わったか・待ち受けたか・上限を超えたかを確認する'
     scope: internal
     is_async: true
     args:
       - name: options
         type: '{ port: number; timeoutSec: number; hasExited: () => Promise<boolean>; sleep: (ms: number) => Promise<void> }'
         required: true
-        description: ポート・上限の秒数・終わったかを返す関数・待つ関数
+        description: ポート・上限の秒数・終わったかを返却する関数・待つ関数
     returns:
       type: 'Promise<"listening" | "exited" | "timed_out">'
       description: 待ち受けた・終わった・上限を超えた
-    process: 1. `hasExited` が真なら `exited`、`isPortListening` が真なら `listening`、上限を超えていれば `timed_out` を返し、ほかは `POLL_INTERVAL_MS` 待ってくり返す
+    process: 1. `hasExited` が真なら `exited`、`isPortListening` が真なら `listening`、上限を超えていれば `timed_out` を返却し、ほかは `POLL_INTERVAL_MS` 待ってくり返却する
     callees:
       - MOD-472-15#functions[isPortListening]
     unit_tests:
       - name: test_wait_for_listening
         case: 正常
-        summary: 終わったことを待ち受けより先に確かめる
-        condition: '`hasExited` が 2 回目に真を返し、ポートは待ち受けていない'
+        summary: 終わったことを待ち受けより先に確認する
+        condition: '`hasExited` が 2 回目に真を返却し、ポートは待ち受けていない'
         mock: すぐ解決する `sleep`
         expected: '`exited`'
     refs:

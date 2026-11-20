@@ -47,7 +47,7 @@ functions:
         expected: '`settings.exists` が偽、`server.session` が `mdmark-mcp`、`server.session_exists` と `server.listening` が偽'
       - name: test_read_terminal_status_when_systemd_available
         case: 正常
-        summary: systemd が使えれば unit の状態と launcher.resolved を返す
+        summary: systemd が使用できれば unit の状態と launcher.resolved を返却する
         condition: '`is-system-running` に `degraded`、`show` に `ActiveState=active`・`UnitFileState=enabled` を返却する `run`'
         mock: 差し替えた `run`
         expected: '`systemd.available`・`server.unit_active`・`server.unit_enabled` が真、`launcher.setting` が `auto`、`launcher.resolved` が `systemd`'

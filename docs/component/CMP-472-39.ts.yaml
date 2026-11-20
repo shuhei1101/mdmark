@@ -175,7 +175,7 @@ args:
   - name: height
     type: 数値
     required: false
-    default: 定義と `--mdmark-diagram-max-height` から決まる高さ
+    default: 定義と `--mdmark-diagram-max-height` から決定する高さ
     description: リサイズハンドルで変えた表示する枠の高さ（px）。指定したときは全体が収まる倍率を幅とこの高さで求める
   - name: wide
     type: 真偽値
@@ -226,7 +226,7 @@ css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)
-    description: 右上のパネルと全画面のモーダルの地の色
+    description: 右上のパネルと全画面のモーダルの背景色
   - name: --mdmark-diagram-max-height
     syntax: <length>
     default: 36rem
@@ -240,7 +240,7 @@ accessibility:
   - パネルは `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・開閉のボタンはアイコンだけで、スクリーンリーダー向けの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`表示の操作を開く`（開いたとき `表示の操作を閉じる`）にする。開閉のボタンは `aria-expanded` を持ち、畳んだときも開いたときもパネルの右上の同じ位置にある。ボタンは 24px 四方を下回らない
   - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の構造（等幅の数字）で出し、スクリーンリーダー向けの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
-  - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に置く枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
+  - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に配置する枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
 status: planned
 test_file: tests/integration/lib/diagram-frame.story.test.ts
 tags:

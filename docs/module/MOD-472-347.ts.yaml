@@ -20,7 +20,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 表示している列ごとに、見出しのセルと先頭から `MEASURE_ROWS` 行までの本文のセルを、セルの中で幅を取らない文字（ツールチップ・スクリーンリーダー用の文字）を除いて改行（`br`・`li`・`p`）で行に分け、最も長い行の幅と最も長い半角の単語の幅を測って返却する
-    description: '行の分け方は、セルを複製し、複製に `removeHiddenText` を呼んでから改行で分ける（描いたセルは書き換えない）。見出しの中身（`.mdmark-th`）の複製にも `removeHiddenText` を呼んでから配置する。行の文字は、セルの中に `position: absolute`・`visibility: hidden`・`white-space: nowrap` の `span` を一時的に配置して入れ、`getBoundingClientRect().width` で測る（セルの文字の大きさと書体で測るため）。1 回の呼び出しの中では、要素の配置と幅の取得を交互にしない。先に全ての測るセル（見出しのセルを含む）の行の分け方と、`getComputedStyle` の左右の余白と罫線の幅・見出しのセルの文字の大きさを取得し、次に全ての計測用の要素を配置し、全ての幅を取得し終えてから全ての計測用の要素を取り除く（レイアウトの計算を 1 回の呼び出しで 1 回にする）。見出しのセルは、中身（`.mdmark-th`。列名とボタン）を同じ見えない要素として折り返さずに配置して測り、その幅に見出しのセルの左右の余白と罫線の幅と端数の 2px を加えて切り上げた値を `head` として返却する（`longest` の下限にもする）。`hidden` のピン止めのボタン（表がはみ出していない間）は幅に含めない。測った幅にセルの左右の余白と罫線の幅と端数の 2px を足し、切り上げる。半角の単語は `[\x21-\x7e]+` の連なり。行の詳細の行・`一致する行がありません` の行・集計の行のように、列と 1 対 1 でない行は測らない。`hidden` の列は返却しない'
+    description: '行の分け方は、セルを複製し、複製に `removeHiddenText` を呼んでから改行で分ける（描いたセルは書き換えない）。見出しの中身（`.mdmark-th`）の複製にも `removeHiddenText` を呼んでから配置する。行の文字は、セルの中に `position: absolute`・`visibility: hidden`・`white-space: nowrap` の `span` を一時的に配置して入れ、`getBoundingClientRect().width` で測る（セルの文字の大きさと書体で測るため）。1 回の呼び出しの中では、要素の配置と幅の取得を交互にしない。先に全ての測るセル（見出しのセルを含む）の行の分け方と、`getComputedStyle` の左右の余白と罫線の幅・見出しのセルの文字の大きさを取得し、次に全ての計測用の要素を配置し、全ての幅を取得し終えてから全ての計測用の要素を取り除く（レイアウトの計算を 1 回の呼び出しで 1 回にする）。見出しのセルは、中身（`.mdmark-th`。列名とボタン）を同じ見えない要素として折り返さずに配置して測り、その幅に見出しのセルの左右の余白と罫線の幅と端数の 2px を加えて切り上げた値を `head` として返却する（`longest` の下限にもする）。`hidden` のピン止めのボタン（表がはみ出していない間）は幅に含めない。測った幅にセルの左右の余白と罫線の幅と端数の 2px を追加し、切り上げる。半角の単語は `[\x21-\x7e]+` の連なり。行の詳細の行・`一致する行がありません` の行・集計の行のように、列と 1 対 1 でない行は測らない。`hidden` の列は返却しない'
     args:
       - name: table
         type: HTMLTableElement
@@ -39,7 +39,7 @@ functions:
         summary: 改行で分けた行のうち最も長い行と、最も長い半角の単語を測る
         condition: '`font: 14px/1.5 monospace` の表で、列 0 が `<br>` で分けた `ab`・`abcdef`、列 1 が `x hello-world y`、列 2 が `hidden` の列'
         mock: なし
-        expected: 列 2 を返却せず、列 0 の `longest` が `abcdef` の幅に余白と罫線と 2px を足して切り上げた値、列 1 の `longestWord` が `hello-world` の幅を同じく足した値。測った後に表の中に一時的な `span` が残っていない
+        expected: 列 2 を返却せず、列 0 の `longest` が `abcdef` の幅に余白と罫線と 2px を追加して切り上げた値、列 1 の `longestWord` が `hello-world` の幅を同じく追加した値。測った後に表の中に一時的な `span` が残っていない
       - name: test_measure_columns_when_rows_limited
         case: 正常
         summary: 先頭から MEASURE_ROWS 行までだけを測る
@@ -57,7 +57,7 @@ functions:
         summary: ツールチップとスクリーンリーダー用の文字を測らない
         condition: '`font: 14px/1.5 monospace` の表で、列 0 の本文のセルが用語 `ab`（`.mdmark-term-tip` に `is-open` と 40 文字の意味）、列 1 の本文のセルが `cd` と脚注の参照（`.mdmark-visually-hidden` の `脚注 `・番号 `1`・40 文字の `.mdmark-fn-tip`）、列 0 の見出しの `.mdmark-th` が用語 `名前`（40 文字の `.mdmark-term-tip`）'
         mock: なし
-        expected: 列 0 の `longest` と `head` が、40 文字の意味の幅より狭く、`ab` と列名 `名前` の幅の広い方を元にした値。列 1 の `longest` が `cd1` の幅に余白と罫線と 2px を足して切り上げた値。表の中のツールチップとスクリーンリーダー用の文字の要素が残っている
+        expected: 列 0 の `longest` と `head` が、40 文字の意味の幅より狭く、`ab` と列名 `名前` の幅の広い方を元にした値。列 1 の `longest` が `cd1` の幅に余白と罫線と 2px を追加して切り上げた値。表の中のツールチップとスクリーンリーダー用の文字の要素が残っている
     status: planned
     callees:
       - MOD-472-229#functions[removeHiddenText]
@@ -68,10 +68,10 @@ functions:
     scope: internal
     summary: '測った幅から表の列の幅を決め、見出しのセルと表の CSS 変数に入れる'
     description: |-
-      `measureColumns` で測った幅を `columnBounds`・`distributeColumnWidths` に渡して列の幅を決め、見出しのセルの `--mdmark-auto-width`（外側の幅）と表の `--mdmark-auto-table-width` に入れ、表に `data-auto-width` を付ける。
-      入れた幅より広く描かれた列（見出しのボタンの幅など）は、描かれた幅を最小の幅にして 1 回だけ分け直す。
-      どの列も、`measureColumns` が返却した `head`（見出しのセルの中身（`.mdmark-th`。列名・並べ替えのアイコン・ピン止めと絞り込みのボタン）が収まる外側の幅）を、初めて測るときも後から表示した列を測るときもそのまま使用し、見出しを列ごとに測り直さない。この幅を `columnBounds` の `min` の下限にし、つまみの最小幅として見出しのセルのインラインの `--mdmark-column-head-width`（`head` の値。`{幅}px`）にも入れる（`--mdmark-column-min-width` は、描いたときの幅とつまみで入れた幅を持つため使用しない）。
-      囲みの `data-long`（長文の列）と `data-width`（`{位置}:{min}-{max}`。空の側は持たない）を読み、列ごとに `columnBounds` を呼ぶ。
+      `measureColumns` で測った幅を `columnBounds`・`distributeColumnWidths` に指定して列の幅を決め、見出しのセルの `--mdmark-auto-width`（外側の幅）と表の `--mdmark-auto-table-width` に入れ、表に `data-auto-width` を付ける。
+      入れた幅より広く描かれた列（見出しのボタンの幅など）は、描かれた幅を最小の幅にして 1 回だけ再配分する。
+      どの列も、`measureColumns` が返却した `head`（見出しのセルの中身（`.mdmark-th`。列名・並べ替えのアイコン・ピン止めと絞り込みのボタン）が収まる外側の幅）を、初めて測るときも後から表示した列を測るときもそのまま使用し、見出しを列ごとに再計測しない。この幅を `columnBounds` の `min` の下限にし、つまみの最小幅として見出しのセルのインラインの `--mdmark-column-head-width`（`head` の値。`{幅}px`）にも入れる（`--mdmark-column-min-width` は、描いたときの幅とつまみで入れた幅を持つため使用しない）。
+      囲みの `data-long`（長文の列）と `data-width`（`{位置}:{min}-{max}`。空の側は持たない）を読み取り、列ごとに `columnBounds` を呼ぶ。
       最下段の見出しのセルが `mdmark-wide` の列は `nowrap`。
       見出しのセルが `is-resized` の列（読者がつまみで幅を変えた列）は、その `offsetWidth` を `min`・`wanted` に入れて `fixed` にする。
       `distributeColumnWidths` の `available` は、表を包む要素（`div.mdmark-table-scroll`）の `clientWidth` から、表の左右の枠線と列の数の 1px を引いた幅。
@@ -80,11 +80,11 @@ functions:
       CSS は `data-auto-width` の表を `table-layout: fixed` にして、この 2 つの変数を `width` に使用する（印刷の媒体では使用しない）。
       読者がつまみで入れたインラインの `width` は変数より優先される。
 
-      見出しのセルの中のピン止めのボタンの `hidden` が変わったとき（表がはみ出してボタンを出したとき・収まって隠したとき）は、`MutationObserver` で受けて見出しの中身の幅だけを測り直し（全ての列の見出しの計測用の要素を配置してから幅をまとめて取得する）、`--mdmark-column-head-width` を入れ直して列の幅を決め直す（ボタンを出して広げた表ははみ出したまま、隠して狭めた表は収まったままで、出し入れを繰り返さない）。
-      表を包む要素を `ResizeObserver` で見、`contentRect.width` が前と変わったときだけ決め直す（高さだけの変化・並べ替え・絞り込み・列の表示の切り替えでは決め直さない）。
-      戻り値の `columnsChanged` は、列の表示を切り替えた後に呼び、測り直さず、表示している列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅の合計にする。
+      見出しのセルの中のピン止めのボタンの `hidden` が変わったとき（表がはみ出してボタンを出したとき・収まって隠したとき）は、`MutationObserver` で受けて見出しの中身の幅だけを再計測し（全ての列の見出しの計測用の要素を配置してから幅をまとめて取得する）、`--mdmark-column-head-width` を再設定して列の幅を再計算する（ボタンを出して広げた表ははみ出したまま、隠して狭めた表は収まったままで、出し入れを繰り返さない）。
+      表を包む要素を `ResizeObserver` で見、`contentRect.width` が前と変わったときだけ再計算する（高さだけの変化・並べ替え・絞り込み・列の表示の切り替えでは再計算しない）。
+      戻り値の `columnsChanged` は、列の表示を切り替えた後に呼び、再計測せず、表示している列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅の合計にする。
       後から表示した列は、前に決めた幅があればその幅、無ければその時点で測って `columnBounds` の `min`（`is-resized` の列は `offsetWidth`）を入れる。
-      戻り値の `refresh` は、列の幅のつまみで幅を入れた後と戻した後に呼び、測り直さず、ほかの列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅（`is-resized` の列はインラインの `width` に余白と罫線を足した外側の幅）の合計にする（つまみで戻した列は、前に自動で決めた幅に戻る）。
+      戻り値の `refresh` は、列の幅のつまみで幅を入れた後と戻した後に呼び、再計測せず、ほかの列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅（`is-resized` の列はインラインの `width` に余白と罫線を追加した外側の幅）の合計にする（つまみで戻した列は、前に自動で決めた幅に戻る）。
       まだ幅を決めていない表では、`refresh` は決め、`columnsChanged` は何もしない。
       描いたときに表が `display: none` の祖先（選ばれていないタブなど）の中にあり `clientWidth` が 0 のときは決めず、見えて幅が 0 でなくなったときに `ResizeObserver` で決める（閉じた `details`・`hidden="until-found"` の中は幅を測れるので、そのまま決める）
     args:
@@ -95,10 +95,10 @@ functions:
       - name: options
         type: '{ wrapper: HTMLElement; scroller: HTMLElement; headCells: HTMLTableCellElement[]; longColumnMin: number; onApply?: () => void }'
         required: true
-        description: '表の囲み（`div.mdmark-table`）、表を包む要素（`div.mdmark-table-scroll`）、列ごとの最下段の見出しのセル、長文の列の最小の幅（em）、幅を入れた後に呼ぶ関数（ピン止めの位置を決め直す）'
+        description: '表の囲み（`div.mdmark-table`）、表を包む要素（`div.mdmark-table-scroll`）、列ごとの最下段の見出しのセル、長文の列の最小の幅（em）、幅を入れた後に呼ぶ関数（ピン止めの位置を再計算する）'
     returns:
       type: '{ refresh: () => void; columnsChanged: () => void; detach: () => void }'
-      description: 測り直さずに決め直す関数と、列の表示を切り替えた後に表の幅を表示している列の幅の合計にする関数と、`ResizeObserver` と `MutationObserver` を止めて入れた変数と `data-auto-width` を取り除く関数
+      description: 再計測せずに再計算する関数と、列の表示を切り替えた後に表の幅を表示している列の幅の合計にする関数と、`ResizeObserver` と `MutationObserver` を止めて入れた変数と `data-auto-width` を取り除く関数
     side_effects: 見出しのセルと表の `style` の CSS 変数と表の `data-auto-width` を書き換え、表を包む要素に `ResizeObserver`、見出しのセルのピン止めのボタンの `hidden` に `MutationObserver` を付ける
     callees:
       - '#functions[measureColumns]'
@@ -113,25 +113,25 @@ functions:
         expected: '表が `data-auto-width` を持ち、`No`〜`手順` の見出しのセルの `--mdmark-auto-width` が測った最も長い行の幅、`説明` が残りの幅で、`--mdmark-auto-table-width` が包む要素の `clientWidth` から枠線と列の数の 1px を引いた幅以下'
       - name: test_attach_auto_column_widths_when_resized_container
         case: 正常
-        summary: 包む要素の幅が変わったときだけ決め直し、つまみで変えた列の幅を保つ
+        summary: 包む要素の幅が変わったときだけ再計算し、つまみで変えた列の幅を保つ
         condition: 同じ表を付けた後に 1 列目の見出しのセルに `is-resized` とインラインの `width` を入れて `refresh` を呼び、包む要素の高さだけを変え、続けて幅を 900px にする
         mock: なし
         expected: '`refresh` の後、1 列目の `--mdmark-auto-width` が無く、`--mdmark-auto-table-width` が 1 列目の `offsetWidth` を含む合計。高さだけの変化では `onApply` が呼ばれず、900px にした後に呼ばれ、`説明` の `--mdmark-auto-width` が `45em` の幅'
       - name: test_attach_auto_column_widths_when_hidden
         case: 正常
         summary: 幅が 0 の表は決めず、見えたときに決める
-        condition: '`hidden` の `div` の中の表を付け、`hidden` を外す'
+        condition: '`hidden` の `div` の中の表を付け、`hidden` を解除する'
         mock: なし
         expected: 付けた直後は表が `data-auto-width` を持たず、開いた後に持つ
       - name: test_attach_auto_column_widths_when_columns_toggled
         case: 正常
         summary: 列の表示を切り替えても、表示している列の幅を変えない
-        condition: 幅 1280px の要素に `test_attach_auto_column_widths` の表を付け、`手順` の列の見出しとセルを `hidden` にして `columnsChanged` を呼び、続けて `hidden` を外して `columnsChanged` を呼ぶ
+        condition: 幅 1280px の要素に `test_attach_auto_column_widths` の表を付け、`手順` の列の見出しとセルを `hidden` にして `columnsChanged` を呼び、続けて `hidden` を解除して `columnsChanged` を呼ぶ
         mock: なし
         expected: 隠した後、残った各列の見出しのセルの `offsetWidth` が隠す前と同じ（差が 1px 以内）で、`--mdmark-auto-table-width` が残った列の `--mdmark-auto-width` の合計。出した後、`手順` の列の `--mdmark-auto-width` が隠す前と同じで、各列の `offsetWidth` が隠す前と同じ（差が 1px 以内）
       - name: test_attach_auto_column_widths_when_detached
         case: 正常
-        summary: 取り除く関数で変数と印を外す
+        summary: 取り除く関数で変数と印を解除する
         condition: 付けた後に `detach` を呼び、包む要素の幅を変え、ピン止めのボタンの `hidden` を変える
         mock: なし
         expected: 表と見出しのセルに `--mdmark-auto-width`・`--mdmark-auto-table-width`・`--mdmark-column-head-width`・`data-auto-width` が無く、幅やピン止めのボタンの `hidden` を変えても入らない
@@ -140,13 +140,13 @@ functions:
         summary: 見出しの列名・並べ替え・ピン止めのボタンが収まる幅より列を狭くしない
         condition: 幅 320px の要素に `data-features="sort pin resize"` の、列名 `列 1`〜`列 10`・値が 2 文字の 10 列の表を付ける
         mock: なし
-        expected: 各列の見出しのセルの `offsetWidth` が、その `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない。`--mdmark-column-head-width` がその幅以上
+        expected: 各列の見出しのセルの `offsetWidth` が、その `.mdmark-th` の `scrollWidth` に左右の余白と罫線を追加した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない。`--mdmark-column-head-width` がその幅以上
       - name: test_attach_auto_column_widths_when_pin_hidden
         case: 正常
-        summary: ピン止めのボタンの `hidden` が外れたら測り直し、最小幅をボタンを含む幅にする
-        condition: 幅 1200px の要素に、幅に収まる `data-features="sort pin resize"` の 3 列の表（列名 `列 1`〜`列 3`、ピン止めのボタンが `hidden`）を付け、包む要素の幅を 120px にしてはみ出させ、ピン止めのボタンの `hidden` を外す
+        summary: ピン止めのボタンの `hidden` が解除されたら再計測し、最小幅をボタンを含む幅にする
+        condition: 幅 1200px の要素に、幅に収まる `data-features="sort pin resize"` の 3 列の表（列名 `列 1`〜`列 3`、ピン止めのボタンが `hidden`）を付け、包む要素の幅を 120px にしてはみ出させ、ピン止めのボタンの `hidden` を解除する
         mock: なし
-        expected: ボタンを出す前の `--mdmark-column-head-width` がボタンを含まない幅で、出した後に、各列の見出しのセルの `--mdmark-column-head-width` と `offsetWidth` が、ピン止めのボタンを含む `.mdmark-th` の `scrollWidth` に左右の余白と罫線を足した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない
+        expected: ボタンを出す前の `--mdmark-column-head-width` がボタンを含まない幅で、出した後に、各列の見出しのセルの `--mdmark-column-head-width` と `offsetWidth` が、ピン止めのボタンを含む `.mdmark-th` の `scrollWidth` に左右の余白と罫線を追加した幅以上で、ピン止めのボタンの右端がそのセルの右端を越えない
       - name: test_attach_auto_column_widths_when_batched
         case: 正常
         summary: 描いたときの 1 回の決定で、計測用の要素の配置と幅の取得を交互にしない

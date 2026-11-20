@@ -38,10 +38,10 @@ data_models:
         description: ガントチャートの `dateFormat`・`axisFormat`・`excludes weekends`・`todayMarker off` が無いかと、ブロック図の最上位の `columns`
       - name: ambiguous
         type: ReadonlySet<string>
-        description: ID を持たない 2 つ以上の項目が使う表示する文字と、2 つ以上の section が使う名前（補足とマーカーの引数の `focus` で指すと、どの項目にも適用しない）
+        description: ID を持たない 2 つ以上の項目が使用する表示する文字と、2 つ以上の section が使用する名前（補足とマーカーの引数の `focus` で指すと、どの項目にも適用しない）
       - name: problems
         type: MapProblem[]
-        description: 読めない行の `map_invalid`（行番号・行の文字・直し方）
+        description: 読み取れない行の `map_invalid`（行番号・行の文字・修正方法）
       - name: firstWord
         type: string
         description: Mermaid の 1 行目の最初の単語（`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta`）。`title` を持たない図の枠のタイトルを `mermaidKindName` で引くときに指定する
@@ -148,7 +148,7 @@ enums:
     container: src/map/axis-grid.ts
     usecase: Mermaidと補足で図を描く
     role: 型
-    summary: '`MapKindName` のうちこのモジュールが読む種類'
+    summary: '`MapKindName` のうちこのモジュールが読み取る種類'
     values:
       - value: gantt
         title: ガントチャート
@@ -219,12 +219,12 @@ enums:
         description: ブロック図の `space`（描かず列を進める）
 functions:
   - name: parseAxisGrid
-    title: 軸と格子の配置の図を読む
+    title: 軸と格子の配置の図を読み取る
     kind: 関数
     container: src/map/axis-grid.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 5 種類の Mermaid を、種類ごとの読み取りで共通の `AxisGrid` に読む
+    summary: 5 種類の Mermaid を、種類ごとの読み取りで共通の `AxisGrid` に読み取る
     scope: public
     args:
       - name: options
@@ -236,8 +236,8 @@ functions:
       description: 読み取り結果
     process: |-
       1. 1 行目・空の行・`%%` で始まる行を飛ばし、`title` の行を `title` にする
-      2. `kind` ごとに行を読む（ガントチャートは `dateFormat`・`axisFormat`・`excludes`・`todayMarker`・`section`・タスクの行、タイムラインは `section` と `{期間} : {出来事}` の行と `:` で始まる続きの行、Git グラフは `commit`・`branch`・`checkout`・`switch`・`merge`・`cherry-pick`、ジャーニーは `section` と `{タスク名}: {点数}: {人}` の行、ブロック図は `columns`・ブロック・`space`・`block:{ID}` と `end`・線）。読めない行は `map_invalid` の項目（行番号・行の文字・直し方）にして次の行へ進む
-      3. ガントチャートは、開始の `after {ID}` をそのタスクの終了日に、終了の `{数}d` を開始日からの日数（`excludes weekends` のときは土日を数えない）にして開始日と終了日を決め、`after` を `links` に入れる。無い ID を指す `after`・読めない日付のタスクは `map_invalid` にして読み飛ばす
+      2. `kind` ごとに行を読み取る（ガントチャートは `dateFormat`・`axisFormat`・`excludes`・`todayMarker`・`section`・タスクの行、タイムラインは `section` と `{期間} : {出来事}` の行と `:` で始まる続きの行、Git グラフは `commit`・`branch`・`checkout`・`switch`・`merge`・`cherry-pick`、ジャーニーは `section` と `{タスク名}: {点数}: {人}` の行、ブロック図は `columns`・ブロック・`space`・`block:{ID}` と `end`・線）。読み取れない行は `map_invalid` の項目（行番号・行の文字・修正方法）にして次の行へ進む
+      3. ガントチャートは、開始の `after {ID}` をそのタスクの終了日に、終了の `{数}d` を開始日からの日数（`excludes weekends` のときは土日を数えない）にして開始日と終了日を決め、`after` を `links` に入れる。無い ID を指す `after`・読み取れない日付のタスクは `map_invalid` にしてスキップする
       4. Git グラフは、commit を今のブランチの先頭につなぎ、親を `links`（`parent`）に、merge は取り込むブランチの先頭も `merge`、cherry-pick は元の commit を `cherryPick` に入れる。Mermaid が振る乱数の ID は作らない
       5. ブロック図は、入れ子の `block:{ID}` を `sections` に入れ、中の項目の `section` をその `stateKey` にする。線は `arrow` とラベルで `links` に入れる。閉じの無い `block` は `map_invalid` にし、最後の行で閉じたものとして扱う
       6. ID を持たない項目の `label` と section の名前を数え、2 つ以上のものを `ambiguous` に入れ、その項目の `stateKey` を `n{order}`、section の `stateKey` を `s{order}` にする
@@ -274,10 +274,10 @@ functions:
         expected: '`columns` が 3、「利用側のページ」の幅が 2、`space` が 1 つ、`sections` が `core`（`columns` 2・中の項目 2）、`links` にラベル「描く」の線を含む 3 本'
       - name: test_parse_axis_grid_when_unreadable
         case: 異常
-        summary: 読めない行
+        summary: 読み取れない行
         condition: モックの `GANTT_UNREADABLE`
         mock: なし
-        expected: '`map_invalid` が 1 件で、行番号とその行の文字を含む。ほかのタスクは読む'
+        expected: '`map_invalid` が 1 件で、行番号とその行の文字を含む。ほかのタスクは読み取る'
       - name: test_parse_axis_grid_when_first_word
         case: 正常
         summary: 1 行目の単語

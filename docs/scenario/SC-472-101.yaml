@@ -1,14 +1,14 @@
 id: SC-472-101
 visibility: internal
 title: 文書をMarkdownに書き出す
-lead: 文書の作成者が CLI で mdmark の文書を純粋な Markdown（GFM と Mermaid）に書き出し、`chart`・`param`・埋め込んだ HTML を SVG の画像にして、mdmark の無い表示（GitHub・VS Code の標準のプレビュー）で読める Markdown と画像のファイルを得る。
+lead: 文書の作成者が CLI で mdmark の文書を純粋な Markdown（GFM と Mermaid）に書き出し、`chart`・`param`・埋め込んだ HTML を SVG の画像にして、mdmark の無い表示（GitHub・VS Code の標準のプレビュー）で読み取れる Markdown と画像のファイルを得る。
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
     interest: マーカーを手で削除せずに、GitHub などに配置できる Markdown と画像が 1 回のコマンドでそろう
   - name: 読者
-    interest: mdmark の無い表示で、HTML のコメント・マーカー・定義の JSON が見えず、図を含めて内容が読める
-trigger: 文書の作成者が、mdmark の文書を mdmark の無い表示で読ませたくなる
+    interest: mdmark の無い表示で、HTML のコメント・マーカー・定義の JSON が見えず、図を含めて内容が読み取れる
+trigger: 文書の作成者が、mdmark の文書を mdmark の無い表示で表示させたくなる
 preconditions:
   - 文書の作成者の手元に Node 24 以降と、ビルドしたこのリポジトリの mdmark の CLI がある
 success_guarantee: 出力のフォルダに、HTML のコメントを含まない Markdown が 1 つと、`chart`・`param`・埋め込んだ HTML ごとの SVG のファイルがあり、Markdown が SVG を相対パスの画像のリンクで指す。SVG はほかのファイル・URL を参照しない。
@@ -51,7 +51,7 @@ scenarios:
       - 書き出した Markdown を mdmark を読み込まない Markdown の変換で HTML にして Chromium で開くと、全ての `img` の `naturalWidth` が 0 より大きく、外への要求が 0 件
     test: test_normal
     notes:
-      表示先での表示: GitHub と VS Code の標準のプレビューで画像が出て読めることは、PoC 検証で確認済み。E2E は外部のサービスへ配置せず、手元の表示で確認する
+      表示先での表示: GitHub と VS Code の標準のプレビューで画像が出て読み取れることは、PoC 検証で確認済み。E2E は外部のサービスへ配置せず、手元の表示で確認する
   - name: 正常シナリオ（書き出せない中身を持つ埋め込んだ HTML）
     setup:
       - name: 書き出せない中身を持つ文書

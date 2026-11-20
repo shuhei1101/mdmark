@@ -35,7 +35,7 @@ catalogs:
         purpose: ノードの影。シーケンス図の参加者のノードの SVG の filter の影は、この変数では削除されない
       - name: rowOdd・rowEven
         kind: 変数
-        purpose: ER 図の属性の行の地の色（`attributeBackgroundColorOdd`・`attributeBackgroundColorEven` ではなく、こちらが該当する）
+        purpose: ER 図の属性の行の背景色（`attributeBackgroundColorOdd`・`attributeBackgroundColorEven` ではなく、こちらが該当する）
 lead: テキストの記法から flowchart・シーケンス図・クラス図・状態遷移図・ER 図・ガントチャート・円グラフなどの SVG を描く図のライブラリ。ES モジュールの本体と、図の種類ごとの chunk に分けて配る。
 purl: pkg:npm/mermaid@12.3.0
 supplier: mermaid の保守者（Knut Sveidqvist ほか）
@@ -49,7 +49,7 @@ official_url: https://mermaid.js.org/
 docs_url: https://mermaid.js.org/intro/
 selection:
   candidates: 要望が「言語 `mermaid` のコードブロックを描く」ため、mermaid 本体の 1 つ
-  decision: 話し合いの決定（mermaid のコードブロックを描く）で採用が決まっている
+  decision: 話し合いの決定（mermaid のコードブロックを描く）で採用が決定している
   consequences: 配布物にまとめず、使用する文書のときだけ jsDelivr から読み込む。書き出しでは本体と chunk をまとめて埋める。テーマは `base` に CSS 変数から作った値を指定し、グラデーションと影を止める
 tags:
   - name: tool:mermaid

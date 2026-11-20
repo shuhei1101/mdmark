@@ -26,7 +26,7 @@ mdmark-style は、Claude Code の返答の表・見出し・注意書き・コ�
 ### 用語集を指定する
 
 用語のマーカーを付けるときだけ、`~/.config/mdmark-style/settings.yaml` の `global.glossary` に、用語を取る `mdmark.config.yaml` のパスを記載する。
-設定ファイルを別の場所に置くときは、`~/.claude/settings.json` の `env` に `MDMARK_STYLE_CONFIG` でパスを記載する。
+設定ファイルを別の場所に配置するときは、`~/.claude/settings.json` の `env` に `MDMARK_STYLE_CONFIG` でパスを記載する。
 
 ```yaml
 global:
@@ -39,7 +39,7 @@ global:
 ### 次のセッションを開く
 
 入れた後に開くセッションから描き換わる。
-設定ファイルと用語集は描くたびに読み直すため、書き換えた後は Claude Code を開き直さなくてよい。
+設定ファイルと用語集は描くたびに再読み込みするため、書き換えた後は Claude Code を再起動しなくてよい。
 
 ## 描き換えるもの
 
@@ -61,7 +61,7 @@ global:
 図（mermaid・map）と埋め込んだ HTML は、コードブロックとして描く。
 部品ごとのオン・オフは設定の `parts` で切り替える。
 
-セッションの開始で、モデルにマーカーの記載方法を 1 つの文で渡す（`inject_marker_guide`）。
+セッションの開始で、モデルにマーカーの記載方法を 1 つの文で指定する（`inject_marker_guide`）。
 
 ## 確認
 
@@ -75,7 +75,7 @@ claude plugin list
 
 #### 返答が描き換わる
 
-新しいセッションで、表と注意書きを含む返答を頼む。
+新規のセッションで、表と注意書きを含む返答を頼む。
 表が罫線で囲まれ、注意書きが種類の色の縦線で描かれ、`<!-- ... -->` のマーカーが画面に出ない。
 
 #### 描き換わらないとき

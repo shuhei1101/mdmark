@@ -32,7 +32,7 @@ constants:
   - name: mermaidByLoader
     title: 関数で読み込んだ mermaid
     container: src/part-modules.ts
-    summary: '`mermaid` の名前から、`loader` を呼んだ Promise を参照する。ページの中で 1 回だけ呼ぶ（失敗も記録し、呼び直さない）。`mount` ごとに記録する URL の mermaid と分けて持ち、`partModules` と同じく export して単体テストが `clear()` で空にする'
+    summary: '`mermaid` の名前から、`loader` を呼んだ Promise を参照する。ページの中で 1 回だけ呼ぶ（失敗も記録し、再度呼び出さない）。`mount` ごとに記録する URL の mermaid と分けて持ち、`partModules` と同じく export して単体テストが `clear()` で空にする'
     value: 'new Map<"mermaid", Promise<Record<string, unknown>>>()'
 functions:
   - name: loadPartModule
@@ -175,7 +175,7 @@ functions:
         expected: 1 回目は `undefined`、2 回目は関数の Promise を返却する
       - name: test_load_mermaid_by_loader_when_rejected
         case: 異常
-        summary: 拒否した関数は元のエラーで reject し、呼び直さない
+        summary: 拒否した関数は元のエラーで reject し、再度呼び出さない
         condition: 拒否する関数と、同期で投げる関数をそれぞれ指定して 2 回ずつ呼ぶ。それぞれの前に `mermaidByLoader`・`partModuleLoaders` を `clear()` する
         mock: 関数は呼ばれた回数を数え、`Error("missing")` で拒否するか投げる
         expected: どちらも例外を投げずに Promise を返却し、2 回とも `missing` のエラーで reject する。それぞれの関数は 1 回だけ呼ばれる

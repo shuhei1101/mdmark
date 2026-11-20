@@ -9,8 +9,8 @@ functions:
     container: src/knowledge/positions.ts
     kind: 関数
     scope: internal
-    summary: 本文の位置 `cursor` から、照合した文字を 1 文字ずつ本文へ当て、各文字の本文の位置と当て終えた位置を返却する
-    description: 本文の文字が同じなら 1 文字進め、エスケープ（`\*`）は 2 文字で 1 文字、実体参照（`&amp;`・`&#x30EF;`）は markdown-it の `utils.unescapeAll` で戻した文字の長さぶん同じ位置を指し、どれにも該当しない本文の文字（記法の記号・字下げ・引用のマーカー）は飛ばす。実体参照を戻すために新しい依存を追加しない
+    summary: 本文の位置 `cursor` から、照合した文字を 1 文字ずつ本文へ適用し、各文字の本文の位置と当て終えた位置を返却する
+    description: 本文の文字が同じなら 1 文字進め、エスケープ（`\*`）は 2 文字で 1 文字、実体参照（`&amp;`・`&#x30EF;`）は markdown-it の `utils.unescapeAll` で戻した文字の長さぶん同じ位置を指し、どれにも該当しない本文の文字（記法の記号・字下げ・引用のマーカー）は飛ばす。実体参照を戻すために新規の依存を追加しない
     args:
       - name: options
         type: '{ body: string; cursor: number; text: string }'
@@ -18,7 +18,7 @@ functions:
         description: 本文・当て始める本文の頭からの位置・適用する文字
     returns:
       type: '{ offsets: number[]; end: number }'
-      description: '`text` の各文字の本文の頭からの位置（末尾に終わりの位置を 1 つ追加する）と、当て終えた位置'
+      description: '`text` の各文字の本文の頭からの位置（末尾に終了の位置を 1 つ追加する）と、当て終えた位置'
     unit_tests:
       - name: test_align_text
         case: 正常
@@ -37,7 +37,7 @@ functions:
     container: src/knowledge/positions.ts
     kind: 関数
     scope: internal
-    summary: 行内のトークンの子を頭から本文へ当て、照合してよい `text` の子ごとに各文字の本文の位置を返却する
+    summary: 行内のトークンの子を頭から本文へ適用し、照合してよい `text` の子ごとに各文字の本文の位置を返却する
     description: 照合してよい子は `matchableChildren` と同じ。始めの位置はブロックのトークンの `map` の行の頭。子の種類ごとに本文の位置を進める（`text` は `alignText`、`code_inline` は記号と中身、`link_open` は `[`・自動リンクは `<`、`link_close` は `](…)` を入れ子の括弧ごと、参照形式の `][ref]`、自動リンクは `>`、`image` は `![…](…)` ごと、`softbreak`・`hardbreak` は次の行の頭、`html_inline` はその文字、強調などは `markup`）。同じ行から始まる行内のトークン（表のセル）は、前のセルを当て終えた位置から始める
     args:
       - name: options

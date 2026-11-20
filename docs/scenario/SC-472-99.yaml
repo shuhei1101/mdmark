@@ -10,7 +10,7 @@ stakeholders:
   - name: Claude Code を使用する人
     interest: 返答の表・注意書き・ステップ・ファイルツリー・バッジが、マーカーで選んだ描き方で描かれる
   - name: Claude Code
-    interest: 説明が 1 回の開始につき 1 回だけ入り、文脈を余分に使わない
+    interest: 説明が 1 回の開始につき 1 回だけ入り、文脈を余分に使用しない
 scenarios:
   - name: 正常シナリオ
     decisions:

@@ -36,7 +36,7 @@ functions:
     title: 動的 import が残るかを確認する
     container: src/cli/embed.ts
     usecase: 共通
-    summary: まとめたコードに動的 `import()` の呼び出し（`import(` の並び。間の空白を許す）が残るかを返却する
+    summary: まとめたコードに動的 `import()` の呼び出し（`import(` の並び。間の空白を許可する）が残るかを返却する
     description: 変数を指定する `import()` は esbuild が取り込めず、まとめた後もコードに残る
     kind: 関数
     scope: internal
@@ -57,10 +57,10 @@ functions:
         expected: 順に `true`・`true`・`false`
     status: planned
   - name: createViewerEntry
-    title: 起動の処理の入口を作る
+    title: 起動の処理のエントリーポイントを作る
     container: src/cli/embed.ts
     usecase: 共通
-    summary: 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返却する関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶ入口のモジュールのソースを返却する
+    summary: 起動の処理・部品・色分けを静的な `import`、外部ライブラリと拡張をリテラルの動的 `import()` を返却する関数で取り込み、`startViewer(document, 埋めたモジュール)` を呼ぶエントリーポイントのモジュールのソースを返却する
     description: 読み込み先は `JSON.stringify` した文字列リテラルで記載する。`syntax` の本体と言語は `default` の import、ビューの部品は名前空間の import にする
     kind: 関数
     scope: internal
@@ -71,7 +71,7 @@ functions:
         description: '`dist/viewer.js`・`dist/view.js`・`dist/map.js` の絶対パスと、まとめるモジュールの読み込み先。`hideTraces` は省略時 `false`'
     returns:
       type: string
-      description: 入口のモジュールの JavaScript のソース
+      description: 起点の文書のモジュールの JavaScript のソース
     process: |-
       1. `viewer` から `startViewer` を import する行を配置する
       2. `embeds.view` が `true` なら `view` を、`embeds.map` が `true` なら `map`（`dist/map.js`）を名前空間で import する行を配置し、`parts` に入れる
@@ -108,8 +108,8 @@ functions:
     title: 起動の処理と埋めるモジュールをまとめる
     container: src/cli/embed.ts
     usecase: 共通
-    summary: '`createViewerEntry` のソースを入口に、esbuild で分割せずに 1 つの ES モジュールのスクリプトにまとめ、`</script` の並びを `<\/script` に、`<!--` の並びを `<\x21--` に替えて返却する'
-    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読み込むプラグイン）で、入口は `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。
+    summary: '`createViewerEntry` のソースをエントリーポイントに、esbuild で分割せずに 1 つの ES モジュールのスクリプトにまとめ、`</script` の並びを `<\/script` に、`<!--` の並びを `<\x21--` に替えて返却する'
+    description: '`bundleModule` と同じ設定（`bundle: true`・`format: esm`・`minify: true`・対応ブラウザの `target`・`http:`・`https:` の import を `fetchText` で読み込むプラグイン）で、エントリーポイントは `stdin`（`resolveDir` は設定ファイルのあるフォルダ）。
 
       リテラルとパターンの動的 `import()` は同じスクリプトに取り込まれ、評価は呼び出しまで遅れる。
 
@@ -135,8 +135,8 @@ functions:
     unit_tests:
       - name: test_bundle_viewer
         case: 正常
-        summary: 入口と関数で取り込んだモジュールを 1 つにまとめ、動的 import を残さない
-        condition: 一時フォルダに `startViewer` を export する `viewer.js` と、`load` の中で `./part.js` を動的 `import()` で読み込む `ext.js`。入口は `viewer.js` を静的に、`ext.js` を `() => import(…)` で取り込む
+        summary: エントリーポイントと関数で取り込んだモジュールを 1 つにまとめ、動的 import を残さない
+        condition: 一時フォルダに `startViewer` を export する `viewer.js` と、`load` の中で `./part.js` を動的 `import()` で読み込む `ext.js`。エントリーポイントは `viewer.js` を静的に、`ext.js` を `() => import(…)` で取り込む
         mock: 一時フォルダ
         expected: 戻り値に `import(` と `from"` の並びが無く、`part.js` の中身を含む
       - name: test_bundle_viewer_when_script_close
@@ -154,7 +154,7 @@ functions:
       - name: test_bundle_viewer_when_traces_hidden
         case: 正常
         summary: 隠すときは名前を置き換え、範囲のスクリプトの表の鍵を元の文字に戻す
-        condition: '`hideTraces: { keys: ["window.__mdmarkOpened = true"] }`、入口が `__mdmarkHtmlScript` を持ち、`"@@html-script-key-0@@"` を鍵にした表を export する'
+        condition: '`hideTraces: { keys: ["window.__mdmarkOpened = true"] }`、エントリーポイントが `__mdmarkHtmlScript` を持ち、`"@@html-script-key-0@@"` を鍵にした表を export する'
         mock: 一時フォルダ
         expected: 戻り値に `__zqHtmlScript` があり `__mdmarkHtmlScript` が無く、評価して取り出した表の鍵が `window.__mdmarkOpened = true`
     callees:
@@ -330,7 +330,7 @@ functions:
     usecase: 文書をHTMLに書き出す
     kind: 関数
     scope: internal
-    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML に `div.mdmark-map` があれば `true` を返す。`prepareEmbeds` が `embeds.map` に入れる
+    summary: 文書ごとに `render` を設定と一緒に呼び、返った HTML に `div.mdmark-map` があれば `true` を返却する。`prepareEmbeds` が `embeds.map` に入れる
     args:
       - name: options
         type: '{ markdowns: string[]; config: MdmarkConfig }'
@@ -348,7 +348,7 @@ functions:
         expected: 前者は `true`、後者は `false`
       - name: test_uses_map_when_disabled
         case: 正常
-        summary: 機能を外した文書
+        summary: 機能を解除した文書
         condition: '`features: -map` と map の範囲'
         mock: なし
         expected: '`false`'

@@ -18,11 +18,11 @@ functions:
     usecase: バージョンを上げる
     kind: 関数
     scope: public
-    summary: '文書の本文の `<!-- map: {JSON のオブジェクト} -->` から `RETIRED_KEYS` のキーを削除した本文を返す'
+    summary: '文書の本文の `<!-- map: {JSON のオブジェクト} -->` から `RETIRED_KEYS` のキーを削除した本文を返却する'
     process: |-
-      1. 本文を行ごとに見て、コードブロック（` ``` `・`~~~` の囲み）の中と行内のコードの中を飛ばし、`<!-- map:` で始まり `-->` で終わる印を探す
-      2. 印の引数を `JSON.parse` で読み、オブジェクトで `RETIRED_KEYS` のキーを持つときだけ、そのキーを削除する。残ったキーがあれば、キーの並びと値を変えずに `:` と `,` の後ろに空白を 1 つ置いた 1 行の JSON で `<!-- map: {…} -->` に書き戻し、無ければ `<!-- map -->` にする
-      3. JSON として読めない印と、`RETIRED_KEYS` のキーを持たない印は書き換えない
+      1. 本文を行ごとに確認して、コードブロック（` ``` `・`~~~` の囲み）の中と行内のコードの中を飛ばし、`<!-- map:` で始まり `-->` で終わる印を探す
+      2. 印の引数を `JSON.parse` で読み取り、オブジェクトで `RETIRED_KEYS` のキーを持つときだけ、そのキーを削除する。残ったキーがあれば、キーの並びと値を変えずに `:` と `,` の後ろに空白を 1 つ配置した 1 行の JSON で `<!-- map: {…} -->` に書き込み、無ければ `<!-- map -->` にする
+      3. JSON として読み取れない印と、`RETIRED_KEYS` のキーを持たない印は書き換えない
     args:
       - name: markdown
         type: string
@@ -43,7 +43,7 @@ functions:
       - name: test_remove_retired_map_options_when_untouched
         case: 正常
         summary: 書き換えない印
-        condition: '`<!-- map: {"title": "全体", "focus": "read"} -->` と、JSON として読めない `<!-- map: {play: 1} -->` を持つ本文'
+        condition: '`<!-- map: {"title": "全体", "focus": "read"} -->` と、JSON として読み取れない `<!-- map: {play: 1} -->` を持つ本文'
         mock: なし
         expected: 本文が変わらず、`changed` が `false`
   - name: migrateRetiredMapOptions
@@ -53,11 +53,11 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: 制約『文書』の文書ごとに `removeRetiredMapOptions` を当て、変わった文書だけを書き込む移行の手順のスクリプトの処理
+    summary: 制約『文書』の文書ごとに `removeRetiredMapOptions` を適用し、変わった文書だけを書き込む移行の手順のスクリプトの処理
     description: |-
       `steps.yaml` の `call`（`files: [documents]`。`description` は ``文書の map の印から廃止した `play`・`interval` を削除する``。壊す手順ではない）が実行する。
 
-      スクリプトとして呼ばれると、`--config` の設定を `yaml` の `parse` で読み、この関数を呼ぶ。ほかのファイルを import せず、このファイルだけで動く。
+      スクリプトとして呼ばれると、`--config` の設定を `yaml` の `parse` で読み取り、この関数を呼ぶ。ほかのファイルを import せず、このファイルだけで動く。
 
       文書は `marker-json.mjs` と同じく、設定の `build` の対象と索引の文書を、重ねずに設定ファイルのフォルダからの相対パスの順に並べる。
 

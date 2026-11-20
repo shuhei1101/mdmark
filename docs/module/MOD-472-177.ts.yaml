@@ -14,7 +14,7 @@ constants:
   - name: WHEEL_LINE
     title: ホイールの 1 行の量
     container: src/shared/zoom.interact.ts
-    summary: '`deltaMode` が行（`1`）の `wheel` を px に直すときの 1 行の量'
+    summary: '`deltaMode` が行（`1`）の `wheel` を px に換算するときの 1 行の量'
     entries:
       - key: px
         value: '16'
@@ -39,7 +39,7 @@ functions:
 
       ピンチは、表示する枠の `touchstart`・`touchmove`（`passive: false`）で指が 2 本の間、始めの 2 本の指の距離と倍率を覚え、`touchmove` ごとに「始めの倍率 × 今の距離 ÷ 始めの距離」を下限・上限に収め、今の 2 本の指の中点の下の中身の点が中点の下に残る位置へ倍率と位置を変えて `preventDefault` する。指が 2 本の間はドラッグを止める。表示する枠の上の Safari の `gesturestart`・`gesturechange` は `preventDefault` する。
 
-      `wheelToScroller` が `true` のとき、表示する枠を縦にスクロールできる間（`data-at-fit` を持たず `scrollHeight` が `clientHeight` より大きい）は、`ctrlKey` を持たない `wheel`（`passive: false`）を `preventDefault` し、`wheelDelta` で px に直した縦の量を `scrollParentOf` の要素の `scrollBy` に、横の量を表示する枠の `scrollLeft` に加える。縦にスクロールできない間は `wheel` を受け取らない。
+      `wheelToScroller` が `true` のとき、表示する枠を縦にスクロールできる間（`data-at-fit` を持たず `scrollHeight` が `clientHeight` より大きい）は、`ctrlKey` を持たない `wheel`（`passive: false`）を `preventDefault` し、`wheelDelta` で px に換算した縦の量を `scrollParentOf` の要素の `scrollBy` に、横の量を表示する枠の `scrollLeft` に加える。縦にスクロールできない間は `wheel` を受け取らない。
 
       `.mdmark-diagram-node-link` の上からもドラッグを始める（文字を選ばせず、リンクの `dragstart` を `preventDefault` してブラウザのリンクのドラッグを始めない）。
       `DRAG_THRESHOLD` を超えて動いたときだけ動かしたことにする。
@@ -49,24 +49,24 @@ functions:
       `pointercancel` では受け取りを付けず、`detach` でも解除する。
 
       `fitHeight` は真偽値か、全体が収まる倍率を求めるたびに呼ぶ関数で受ける。
-      `refit()` は今の倍率と位置を保ったまま、全体が収まる倍率と、下限・上限・ボタンの状態をもう一度求める（倍率が新しい範囲の外なら範囲に収める）。
+      `refit()` は今の倍率と位置を保ったまま、全体が収まる倍率と、下限・上限・ボタンの状態をもう一度求める（倍率が変更後の範囲の外なら範囲に収める）。
       図（`attachDiagrams`）とライトボックス（`attachLightbox`）が使用する
 
       `focusRect(rect, { margin, duration })` は、倍率を掛ける前の中身の座標の矩形と周りの `margin` が表示する枠に収まる倍率（全体が収まる倍率以上・上限以下）と、矩形の中心が表示する枠の中央に来る位置へ、`duration` ミリ秒かけて `requestAnimationFrame` で倍率と位置を変える（`duration` が 0 なら 1 回で変える。文書のスクロールは変えない）。移している間に読者がホイール・ドラッグ・キー・ツールのボタン（`data-tool`）で操作したら、移すのを止める（ボタンを持つ要素の中の帯の区切りなど、ほかの押下では止めない）。
 
       `centerRect(rect, { duration })` は、倍率を変えずに、倍率を掛ける前の中身の座標の矩形の中心が表示する枠の中央に来る位置へ、`focusRect` と同じ動きと止め方で移す（中身の端より外へはスクロールしない）。今の倍率が全体が収まる倍率で、矩形の全体が表示する枠に見えているときは移さない。
 
-      `resize(size)` は、中身の大きさ（倍率を掛ける前）を `size` の値をその場で書き換えて差し替え、全体が収まる倍率を求め直す。全体が収まる倍率で表示していたなら `reset` と同じく新しい全体が収まる倍率と左上の位置にし、そうでなければ今の倍率の全体が収まる倍率に対する比（倍率の文字）を保つ倍率（下限・上限に収める）にして、表示する枠の中央にあった中身の座標を中央に保つ
+      `resize(size)` は、中身の大きさ（倍率を掛ける前）を `size` の値をその場で書き換えて差し替え、全体が収まる倍率を再計算する。全体が収まる倍率で表示していたなら `reset` と同じく変更後の全体が収まる倍率と左上の位置にし、そうでなければ今の倍率の全体が収まる倍率に対する比（倍率の文字）を保つ倍率（下限・上限に収める）にして、表示する枠の中央にあった中身の座標を中央に保つ
 
-      付けた表示する枠と戻り値を `zoomControlOf` で引けるように登録し、`detach` で登録を消す
+      付けた表示する枠と戻り値を `zoomControlOf` で引けるように登録し、`detach` で登録を削除する
     args:
       - name: options
         type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content"; fitMin?: number; touchPan?: "native" | "pointer"; wheelToScroller?: boolean }'
         required: true
-        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）・全体が収まる倍率の下限（既定は下限なし。`attachDiagrams` が図の `data-fit-min` を指定する）・指の移動の扱い（既定 `pointer`。`attachDiagrams` は `native`）・拡大中のホイールをスクロールする祖先へ渡すか（既定 `false`。`attachDiagrams` は `true`）
+        description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）・全体が収まる倍率の下限（既定は下限なし。`attachDiagrams` が図の `data-fit-min` を指定する）・指の移動の扱い（既定 `pointer`。`attachDiagrams` は `native`）・拡大中のホイールをスクロールする祖先へ指定するか（既定 `false`。`attachDiagrams` は `true`）
     returns:
       type: 'ZoomControl'
-      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・倍率を保って下限を求め直す関数・矩形が収まる倍率と位置へ移す関数・倍率を変えずに矩形を中央へ移す関数・倍率の文字を保って中身の大きさを差し替える関数・付けた操作を削除する関数
+      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・倍率を保って下限を再計算する関数・矩形が収まる倍率と位置へ移す関数・倍率を変えずに矩形を中央へ移す関数・倍率の文字を保って中身の大きさを差し替える関数・付けた操作を削除する関数
     callees:
       - 'MOD-472-173#functions[fitScale]'
     unit_tests:
@@ -180,7 +180,7 @@ functions:
         expected: '`touch` の後は `scrollLeft` が変わらず、`mouse` の後は 40 変わる'
       - name: test_attach_zoom_when_wheel
         case: 正常
-        summary: 拡大して縦にスクロールできる間だけ、ホイールをスクロールする祖先へ渡す
+        summary: 拡大して縦にスクロールできる間だけ、ホイールをスクロールする祖先へ指定する
         condition: '`wheelToScroller: true`、`overflow-y: auto` で中身があふれる要素の中の表示する枠。開いた直後と、拡大を 2 回押した後に、表示する枠へ `deltaY: 100` の `wheel` を発火し、最後に `ctrlKey` を持つ `wheel` を発火する'
         mock: なし
         expected: 開いた直後の `wheel` は `defaultPrevented` でない。拡大の後の `wheel` は `defaultPrevented` で、表示する枠の `scrollTop` が変わらず、祖先の要素の `scrollTop` が 100 増える。`ctrlKey` の `wheel` は `defaultPrevented` でない
@@ -216,7 +216,7 @@ functions:
         expected: 全体が収まる倍率が 1、倍率が 2、倍率の文字が `200%` のまま
       - name: test_attach_zoom_when_resize_at_fit
         case: 正常
-        summary: 全体が収まる倍率では新しい中身の全体が収まる倍率にする
+        summary: 全体が収まる倍率では変更後の中身の全体が収まる倍率にする
         condition: '`percentBase: "fit"` で同じ枠と中身を全体が収まる倍率のまま `resize({ width: 2400, height: 800 })`'
         mock: なし
         expected: 倍率が 0.25、倍率の文字が `100%`、`scrollLeft`・`scrollTop` が 0
@@ -237,7 +237,7 @@ functions:
       description: 付けた操作
     status: planned
   - name: wheelDelta
-    title: ホイールの量を px に直す
+    title: ホイールの量を px に換算する
     container: src/shared/zoom.interact.ts
     kind: 関数
     scope: internal
@@ -253,7 +253,7 @@ functions:
     unit_tests:
       - name: test_wheel_delta
         case: 正常
-        summary: 単位ごとに px に直す
+        summary: 単位ごとに px に換算する
         condition: '`deltaY: 3` で `deltaMode` が `0`・`1`・`2`、`page` が `{ width: 600, height: 800 }`'
         mock: なし
         expected: '`y` がそれぞれ `3`・`48`・`2400`'
@@ -271,7 +271,7 @@ functions:
         description: 表示する枠
     returns:
       type: Element
-      description: ホイールを渡す要素
+      description: ホイールを指定する要素
     unit_tests:
       - name: test_scroll_parent_of
         case: 正常

@@ -12,22 +12,22 @@ functions:
     scope: internal
     summary: 'コアルール。`map` の範囲を `div.mdmark-map` で囲み、補足を `pre.mdmark-map-data` にする'
     description: |-
-      `map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲ごとに mermaid のブロックと補足の HTML コメントを数え、範囲を `div.mdmark-map` の開きと閉じのトークンで囲み、補足を `pre.mdmark-map-data[hidden]` にし、`collectMapStructure` の項目があれば範囲の前に記載の警告（`kind: map`）を差し込む（Mermaid と補足の中身の警告は `dist/map.js` が足す）。
+      `map` がオンのとき、`<!-- map -->` 〜 `<!-- /map -->` の範囲ごとに mermaid のブロックと補足の HTML コメントを数え、範囲を `div.mdmark-map` の開きと閉じのトークンで囲み、補足を `pre.mdmark-map-data[hidden]` にし、`collectMapStructure` の項目があれば範囲の前に記載の警告（`kind: map`）を差し込む（Mermaid と補足の中身の警告は `dist/map.js` が追加する）。
 
       範囲に付ける属性と中身は次のとおり。
 
       | 属性・要素 | 値 |
       | --- | --- |
-      | `data-map-args` | 印の引数を `parseMapArgs` で読んだ `normalized`（知らないキーは警告にせず落とす） |
+      | `data-map-args` | 印の引数を `parseMapArgs` で読み取った `normalized`（知らないキーは警告にせず落とす） |
       | `pre.mdmark-map-data` の中身 | 補足のマーカーの引数の文字（`map-data:` の後ろから `-->` の前まで）を JSON のまま入れる |
       | `data-map-terms` | `glossary` がオンのとき、`buildDictionary` の辞書で範囲の Mermaid と補足の文字を `findWords` で照合し、意味を持つ用語（エイリアスを除く）を、文字に出たままの用語から意味への JSON にしたもの（該当が無ければ付けない） |
       | `data-map-annotations` | 補足の `notes.{ID}.annotations` が、`collectAnnotations` が番号を振った注記を参照する範囲で、参照する注記のうち定義のある ID から番号への JSON （補足が注記を参照する範囲は、定義のある ID が無くても `{}` で付ける。注記の機能がオフの文書と、補足が注記を参照しない範囲には付けない） |
 
       図の番号は文書の中の map の範囲の順に 1 から振る（描かない範囲も数える）。
-      範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から外れる）。
+      範囲の中の mermaid のブロックには `data-mdmark-mermaid` と色分けの属性を付けない（`attachMermaid` の対象から除外される）。
       描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。
       `map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする。
-      `mermaid` と `map` がオンの文書で、範囲の外の言語 `mermaid` のコードブロックは、`plainMapSourceOf` が値を返したとき、補足を持たない範囲と同じ `div.mdmark-map` で囲み、`data-map-plain` を付ける（図の番号は範囲と通し）。
+      `mermaid` と `map` がオンの文書で、範囲の外の言語 `mermaid` のコードブロックは、`plainMapSourceOf` が値を返却したとき、補足を持たない範囲と同じ `div.mdmark-map` で囲み、`data-map-plain` を付ける（図の番号は範囲と通し）。
       `data-map-args` は `{"title": …}` だけで、値は `plainMapSourceOf` の `title`、無ければ `mermaidKindName` の図の種類の名前にする。
       中のコードブロックのソースは `body` にし、`frontMatter` があれば `data-map-front-matter` に入れる。
       `data-map-terms` は範囲と同じく付け、`data-map-annotations` と記載の警告は付けない
@@ -53,9 +53,9 @@ functions:
       - name: test_build_map_ranges_when_problems
         case: 異常
         summary: 範囲の形の誤り
-        condition: 'JSON として読めない引数 `{title: 全体}` と、読めない Mermaid の行と知らない補足のキーを持つ範囲'
+        condition: 'JSON として読み取れない引数 `{title: 全体}` と、読み取れない Mermaid の行と知らない補足のキーを持つ範囲'
         mock: なし
-        expected: 範囲の前に記載の警告が 1 つで、引数を JSON で記載する直し方を含み、Mermaid の行と `layuot` は含まない。`div.mdmark-map` がある
+        expected: 範囲の前に記載の警告が 1 つで、引数を JSON で記載する修正方法を含み、Mermaid の行と `layuot` は含まない。`div.mdmark-map` がある
       - name: test_build_map_ranges_when_no_mermaid
         case: 異常
         summary: mermaid のブロックが無い
@@ -64,7 +64,7 @@ functions:
         expected: 記載の警告だけで `div.mdmark-map` が無い
       - name: test_build_map_ranges_when_disabled
         case: 正常
-        summary: 機能を外した
+        summary: 機能を解除した
         condition: '`features: -map` の文書'
         mock: なし
         expected: '`div.mdmark-map` が無く、mermaid のブロックが `data-mdmark-mermaid` を持つ'
@@ -100,7 +100,7 @@ functions:
         expected: '`div.mdmark-map` が無く、どちらも `data-mdmark-mermaid` を持つ'
       - name: test_build_map_ranges_when_plain_features_off
         case: 正常
-        summary: 機能を外すと範囲の外の map の図にしない
+        summary: 機能を解除すると範囲の外の map の図にしない
         condition: 'flowchart のコードブロックを、`features: -map` と `features: -mermaid` の文書で描く'
         mock: なし
         expected: '`-map` では `data-mdmark-mermaid` を持つコードブロック、`-mermaid` では `data-mdmark-mermaid` も `data-map-plain` も持たないコードブロック'

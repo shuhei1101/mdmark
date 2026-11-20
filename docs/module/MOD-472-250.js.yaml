@@ -17,7 +17,7 @@ constants:
       - key: アクセシビリティ
         value: '`eslint-plugin-jsx-a11y` の `recommended` と `tabindex-no-positive`・`no-noninteractive-tabindex`・`interactive-supports-focus`・`click-events-have-key-events`・`no-autofocus`'
       - key: import の向き
-        value: '`eslint-plugin-boundaries` の `boundaries/dependencies`（`default: "disallow"`）。要素は `app`（`app/`）・`features`（`features/`）・`shared`（`shared/`）・`testing`（`testing/`）のフォルダで、`app → features → shared` の向きと、`testing` から `features`・`shared`、ストーリー（`boundaries/files` の `*.stories.{ts,tsx}`）から `testing` への import だけを許す。入口の `main.tsx` はどの要素にも入れない'
+        value: '`eslint-plugin-boundaries` の `boundaries/dependencies`（`default: "disallow"`）。要素は `app`（`app/`）・`features`（`features/`）・`shared`（`shared/`）・`testing`（`testing/`）のフォルダで、`app → features → shared` の向きと、`testing` から `features`・`shared`、ストーリー（`boundaries/files` の `*.stories.{ts,tsx}`）から `testing` への import だけを許可する。エントリーポイントの `main.tsx` はどの要素にも入れない'
       - key: Tailwind
         value: '`eslint-plugin-better-tailwindcss` の `recommended-error`（`entryPoint` は `vscode/src/webview/shared/styles/panel.css`）から、整形の規則 `enforce-consistent-line-wrapping` を削除したものと、任意値の class（`[` を含む class）を禁じる `better-tailwindcss/no-restricted-classes`。登録の無い class の検査は、結合テストが探す `mdmark-` で始まる class を除く'
       - key: 複雑さ

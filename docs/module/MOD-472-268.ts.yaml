@@ -115,14 +115,14 @@ functions:
       マーカーが無い表は `default`。
 
       `columns` のキーと `tree` の `column` を見出しの文字（多段の見出しは最下段。同じ文字は最初の列）に照らす。
-      表に無い列名は当てずに警告にする（項目に表の列名の並び）。
+      表に無い列名は適用せずに警告にする（項目に表の列名の並び）。
 
       | 設定 | 扱い |
       | --- | --- |
       | `tree` | `tree` を持つ表は `features` から `sort` を除き、`tree` の無い表の `tree.*` は無い |
       | `header.rows`・`header.columns` | `header.rows` が表の行の数以上・`header.columns` が表の列の数以上なら既定にして警告にする |
-      | 先頭の列の `hidden` | 当てずに警告にする |
-      | `features.{機能}.enabled` が `false` の機能の列の設定 | 当てない（注記は `takeMarks` が記録する） |
+      | 先頭の列の `hidden` | 適用せずに警告にする |
+      | `features.{機能}.enabled` が `false` の機能の列の設定 | 適用しない（注記は `takeMarks` が記録する） |
       | `columns.{列名}.sort` | `true` は `features` に `sort` を加え、`sort` の機能を持つ表の `columns.{列名}.sort` を `sorts` に入れる |
       | `collapse` | `readCollapse` で読み込む |
     args:
@@ -209,7 +209,7 @@ functions:
     container: src/table/table.syntax.ts
     kind: 関数
     scope: internal
-    summary: コアルール。表を部品『表』にし、スクリーンリーダー向けの名前・列名・表のマーカーの指定を当てる
+    summary: コアルール。表を部品『表』にし、スクリーンリーダー向けの名前・列名・表のマーカーの指定を適用する
     description: |-
       表にスクリーンリーダー向けの名前と `tabindex`、セルに列名を付ける（今の処理）。
 
@@ -224,11 +224,11 @@ functions:
       | `data-unpin` | `unpinned` を半角の空白で区切る（`mount` が既定で留める列から除く） |
       | `data-check` | `check` |
       | `data-tree` | `tree` の表だけ。表の範囲のトークンを `decorateTreeTable` に指定する |
-      | `data-width` | `widths` の `min`・`max` を持つ列を `renderTable` の `widthRanges` に渡して写す |
-      | `data-long` | `columnLinesOf` の列ごとの行から `findLongColumns` で決めた長文の列。`mode` が `nowrap` の列も除かずに `renderTable` の `long` に渡す（折り返さないのは `mdmark-wide` で決まる） |
+      | `data-width` | `widths` の `min`・`max` を持つ列を `renderTable` の `widthRanges` に指定して写す |
+      | `data-long` | `columnLinesOf` の列ごとの行から `findLongColumns` で決めた長文の列。`mode` が `nowrap` の列も除かずに `renderTable` の `long` に指定する（折り返さないのは `mdmark-wide` で決定する） |
       | `data-merge-columns` | `mergeColumns` |
 
-      `filters` の `kind` を持たない列は `defaultFilterKind`（長文の列か）で決めてから `renderTable` の `filters` に渡す。
+      `filters` の `kind` を持たない列は `defaultFilterKind`（長文の列か）で決めてから `renderTable` の `filters` に指定する。
 
       `rowlink` の表は本文の各行に `rowIdOf` の `id`（`taken` は `env.headings` の ID と前の行の ID）を付けて先頭のセルに行へのリンクを配置し、警告を囲みの頭に差し込む。
       `total` の機能の表は `findUnreadableTotals` で `sum`・`avg` の列の数として読み込めないセルを探し、列と計算ごとに 1 つずつの警告を表の上に差し込む。
@@ -242,7 +242,7 @@ functions:
       本文の行の数・`rowlink`・`total` は、入れ子の数が自分の表と同じ行だけを対象にする。
       セルの列名は、見出しを表ごとに追加し、`table_close` で外の表の見出しに戻して付ける。
 
-      `table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を当て、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。
+      `table` がオンなら、表のマーカーの範囲の表と囲まない表に `readTableColors` の色を適用し、読み込めない色の指定を表の囲みの頭の警告の項目に入れる。
 
       | 対象のトークン | 付けるもの |
       | --- | --- |
@@ -294,7 +294,7 @@ functions:
         expected: 1 つ目が `data-kind="data" data-features="sort pin filter resize" data-filter="0:select"` と `<details class="mdmark-table-details">`、2 つ目が `data-kind="default" data-features="sort pin resize"`
       - name: test_decorate_tables_when_range_not_closed
         case: 正常
-        summary: 閉じのマーカーが無いときは文書の終わりまでの表に当て、警告を差し込む
+        summary: 閉じのマーカーが無いときは文書の終わりまでの表に適用し、警告を差し込む
         condition: '`<!-- table: {"kind": "data"} -->` の後に表が 2 つ'
         mock: なし
         expected: 2 つとも `data-kind="data"`、警告の本文に `<!-- /table -->`
@@ -336,7 +336,7 @@ functions:
         expected: 親の表が `data-kind="default"` の囲みに入り、`Done` の行が親の表の `</table>` の前にあり、セルの `data-label` が `名前`・`説明`
       - name: test_decorate_tables_when_row_detail_has_marked_table
         case: 正常
-        summary: 行の詳細の中の表には、その表を囲む表のマーカーだけを当て、外の表のマーカーの指定を適用しない
+        summary: 行の詳細の中の表には、その表を囲む表のマーカーだけを適用し、外の表のマーカーの指定を適用しない
         condition: '`<!-- table: {"kind": "data", "columns": {"名前": {"filter": {}}}} -->` 〜 `<!-- /table -->` の表（列 `名前`・`説明`、名前 `Todo`・`Done`）と、その直後の `<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` の中の `<!-- table: {"kind": "plain"} -->` 〜 `<!-- /table -->` の表（列 `引数`・`値`、1 行）と、もう 1 つの行の詳細の中のマーカーの無い表（2 行目に付ける）'
         mock: なし
         expected: 親の表が `data-kind="data"`・`data-filter="0:select"`、1 つ目の中の表が `data-kind="plain"`、2 つ目の中の表が `data-kind="default"` で `data-filter` を持たない。記載の警告が無く、表のマーカーのコメントが出力に残らない
@@ -366,7 +366,7 @@ functions:
         expected: 囲みが `data-pin="1"`・`data-check="3"` を持ち、説明の列の `th`・`td` が class `mdmark-wide`、必須の列の `th`・`td` が class `mdmark-align-center` を持つ。必須の 1 行目の `td` が `data-value="true"` と `mdmark-check` の要素、2 行目が `data-value="false"` と `いいえ` の `mdmark-visually-hidden` だけを持ち、3 行目は `data-value` を持たず文字 `未定` のまま
       - name: test_decorate_tables_when_long_columns
         case: 正常
-        summary: 長文の列と列の幅の範囲を囲みに写し、種類を省いた絞り込みを長文の列なら text にする
+        summary: 長文の列と列の幅の範囲を囲みにコピーし、種類を省いた絞り込みを長文の列なら text にする
         condition: インターフェース定義『文書をHTML文字列にする』の「正常系（長文の列と列の幅の範囲）」の文書
         mock: なし
         expected: 囲みが `data-long="1 3"`・`data-width="1:20-30 3:-12"`・`data-filter="0:select 1:text 3:select"` を持ち、記載の警告が無い
@@ -431,7 +431,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 表のマーカーの `columns.{列名}.highlight` と `rows.colors` を、表の見出しと本文の行のセルの文字で照らして `TableColors` を作る
-    description: '`highlight.color` を省いた列は `blue`。`rows.colors` は記載した順に照らし、複数の要素が該当する行は後ろの要素の色にする。`column` と `value` の要素は列のセルが `value` と一致する行、`at` の要素は見出し行を除いて 1 から数えた位置（行の範囲は `from`〜`to`）の行、両方を持つ要素は両方に該当する行に当てる。色の名前は `validateMarkOptions` が照らしてある。表に無い列名と表に無い行の位置は当てずに `warnings` に入れ、`column` と `value` の片方だけの要素と、`column`・`at` のどちらも無い要素は当てない（注記は `takeMarks` が記録する）'
+    description: '`highlight.color` を省いた列は `blue`。`rows.colors` は記載した順に照らし、複数の要素が該当する行は後ろの要素の色にする。`column` と `value` の要素は列のセルが `value` と一致する行、`at` の要素は見出し行を除いて 1 から数えた位置（行の範囲は `from`〜`to`）の行、両方を持つ要素は両方に該当する行に適用する。色の名前は `validateMarkOptions` が照らしてある。表に無い列名と表に無い行の位置は適用せずに `warnings` に入れ、`column` と `value` の片方だけの要素と、`column`・`at` のどちらも無い要素は適用しない（注記は `takeMarks` が記録する）'
     args:
       - name: options
         type: MarkOptions | undefined
@@ -463,7 +463,7 @@ functions:
         expected: '`highlight` が `[{0, red}, {2, blue}]`、`rows` が `[gray, gray, green]`'
       - name: test_read_table_colors_when_unreadable
         case: 異常
-        summary: 表に照らせない指定を警告にし、片方だけの要素を当てない
+        summary: 表に照らせない指定を警告にし、片方だけの要素を適用しない
         condition: '`{"columns": {"無い列": {"highlight": {}}}, "rows": {"colors": [{"column": "状態", "color": "green"}, {"at": 9, "color": "red"}]}}` と見出し `名前`・`状態`、本文 2 行'
         mock: なし
         expected: '`highlight` が空、`rows` が `[null, null]`、`warnings` の項目が `無い列`・`9` の 2 つ'
@@ -474,7 +474,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 表の本文の各行のセルの文字を集める
-    description: '`table_open` の位置から、その表の `tbody` の行ごとにセルの文字を集める。表の設定を読む処理と、ビューの項目（`views.ts`）が使用する'
+    description: '`table_open` の位置から、その表の `tbody` の行ごとにセルの文字を集める。表の設定を読み込む処理と、ビューの項目（`views.ts`）が使用する'
     args:
       - name: tokens
         type: Token[]

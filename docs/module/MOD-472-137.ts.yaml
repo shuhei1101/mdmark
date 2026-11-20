@@ -25,21 +25,21 @@ data_models:
         description: 線（`id`・`from`・`to`・`arrow`（`-->`・`-.->`・`==>`・`---`）・`both`・`label`）。`id` は `e1@-->` の ID、無ければ `{from}->{to}`（重なれば末尾に `#{番号}`）
       - name: links
         type: Record<string, string>
-        description: '`click {ID} "{リンク先}"` の行のノードの ID からリンク先（記載したまま。許すかは `mapLinkProblems` が確かめる）。同じノードの行が 2 つ以上あれば後の行'
+        description: '`click {ID} "{リンク先}"` の行のノードの ID からリンク先（記載したまま。許可するかは `mapLinkProblems` が確認する）。同じノードの行が 2 つ以上あれば後の行'
       - name: problems
         type: MapProblem[]
-        description: 読めない行と閉じの無い `subgraph`
+        description: 読み取れない行と閉じの無い `subgraph`
       - name: linkLines
         type: Record<string, number>
         description: '`click` の行のノードの ID から、ソースの行（0 から）'
 functions:
   - name: parseFlowchart
-    title: flowchartを読む
+    title: flowchartを読み取る
     kind: 関数
     container: src/map/flowchart.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`flowchart` の Mermaid を、ノード・グループ・線と読めない行の項目に読む'
+    summary: '`flowchart` の Mermaid を、ノード・グループ・線と読み取れない行の項目に読み取る'
     scope: public
     args:
       - name: source
@@ -50,10 +50,10 @@ functions:
       type: Flowchart
       description: 読み取り結果
     process: |-
-      1. 1 行目の `flowchart`・`graph` と向きを読む
-      2. 2 行目からを行ごとに、`subgraph`・`end`・`direction`・`classDef`・`class`・`style`・`linkStyle`・`click`・`%%` の行と、ノードと線の文に分けて読む（`classDef`・`style`・`linkStyle` は読んで捨てる。`click` は `click {ID} "{リンク先}"`（後ろの `"{ツールチップ}"`・`_blank` などは捨てる）を `links` に入れ、`href` を省いた形とコールバックの関数を指す形は読んで捨てる）
-      3. ノードと線の文は、ノード・矢印・ノードの並び（`&` と連なりを含む）を左から読み、ノードは最初に出たときのラベルと形状、`:::クラス` は `classes` に足す
-         - 読めない行は `map_invalid` の項目（行・行の文字・`->` なら `-->` にする直し方）にして次の行へ進む
+      1. 1 行目の `flowchart`・`graph` と向きを読み取る
+      2. 2 行目からを行ごとに、`subgraph`・`end`・`direction`・`classDef`・`class`・`style`・`linkStyle`・`click`・`%%` の行と、ノードと線の文に分けて読み取る（`classDef`・`style`・`linkStyle` は読み取って捨てる。`click` は `click {ID} "{リンク先}"`（後ろの `"{ツールチップ}"`・`_blank` などは捨てる）を `links` に入れ、`href` を省いた形とコールバックの関数を指す形は読み取って捨てる）
+      3. ノードと線の文は、ノード・矢印・ノードの並び（`&` と連なりを含む）を左から読み取り、ノードは最初に出たときのラベルと形状、`:::クラス` は `classes` に追加する
+         - 読み取れない行は `map_invalid` の項目（行・行の文字・`->` なら `-->` にする修正方法）にして次の行へ進む
       4. ノードのラベル（`<br>` を改行にした後）・線のラベル・`subgraph` のタイトルを、`decodeEntities` で文字の参照から戻す
       5. 閉じの無い `subgraph` を `map_invalid` の項目にし、最後の行で閉じたものとして扱う
     unit_tests:
@@ -71,7 +71,7 @@ functions:
         expected: '`shape` が `stadium`・`cylinder`・`rhombus`・`circle`・`hexagon`・`subroutine`'
       - name: test_parse_flowchart_when_click
         case: 正常
-        summary: click の行のリンク先を読み、関数を指す形を捨てる
+        summary: click の行のリンク先を読み取り、関数を指す形を捨てる
         condition: '`click a "https://example.com/spec" "説明" _blank`・`click b href "./other.md"`・`click c callback`'
         mock: なし
         expected: '`links` が `{ a: "https://example.com/spec", b: "./other.md" }` で、`problems` が空'
@@ -95,10 +95,10 @@ functions:
         expected: '`e1` と `A->B`・`A->B#2`'
       - name: test_parse_flowchart_when_unreadable_line
         case: 異常
-        summary: 読めない行
+        summary: 読み取れない行
         condition: 4 行目が `A -> B`
         mock: なし
-        expected: '`problems` に `map_invalid` が 1 件（`line` 3・`-->` にする直し方）、ほかの行は読む'
+        expected: '`problems` に `map_invalid` が 1 件（`line` 3・`-->` にする修正方法）、ほかの行は読み取る'
       - name: test_parse_flowchart_when_unclosed_subgraph
         case: 異常
         summary: 閉じの無い subgraph
@@ -129,16 +129,16 @@ functions:
         mock: なし
         expected: '`"a" [b] #1 & #x; #`'
   - name: mapLinkProblems
-    title: ノードのリンク先を確かめる
+    title: ノードのリンク先を確認する
     kind: 関数
     container: src/map/flowchart.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`links` のリンク先を確かめ、許可するリンク先と許可しないリンク先の項目を返却する'
+    summary: '`links` のリンク先を確認し、許可するリンク先と許可しないリンク先の項目を返却する'
     description: |-
-      `links` のリンク先を確かめ、許可するものの対応と、許可しないリンク先のノードの ID とリンク先の項目（`map_invalid_value`。書き方の警告に並べる）を返却する（`lines` を指定すれば項目に `click` の行を持たせ、`skip` のときは使用できるリンク先に `id:` も並べる）。
+      `links` のリンク先を確認し、許可するものの対応と、許可しないリンク先のノードの ID とリンク先の項目（`map_invalid_value`。書き方の警告に並べる）を返却する（`lines` を指定すれば項目に `click` の行を持たせ、`skip` のときは使用できるリンク先に `id:` も並べる）。
       `id:` で始まるリンク先は、`idLinks.mode` が `resolve` なら `resolveIdHref` で URL に変え（変えられなければ許可しないリンク先）、`skip` なら許可も項目もしない（点検）。
-      ほかは `isAllowedUrl` で確かめる
+      ほかは `isAllowedUrl` で確認する
     scope: public
     args:
       - name: options
@@ -147,7 +147,7 @@ functions:
         description: '`parseFlowchart` の `links` と、`id:` のリンク先の扱い（描くときは `resolve` と利用側の関数、点検は `skip`）'
     returns:
       type: '{ allowed: Record<string, string>; problems: MapProblem[] }'
-      description: 許したリンク先と、許さないリンク先の項目（記載の順）
+      description: 許可したリンク先と、許可しないリンク先の項目（記載の順）
     callees:
       - MOD-472-214#functions[isAllowedUrl]
       - MOD-472-214#functions[resolveIdHref]
@@ -156,14 +156,14 @@ functions:
     unit_tests:
       - name: test_map_link_problems
         case: 正常
-        summary: 許さないリンク先だけを項目にする
+        summary: 許可しないリンク先だけを項目にする
         condition: '`https://example.com/spec`・`./other.md`・`mailto:a@example.com`・`javascript:alert(1)`・`id:spec#items` のリンク先を持つ 5 つのノード'
         mock: なし
-        expected: '`allowed` が前の 3 つで、`problems` が `javascript:alert(1)` と `id:spec#items` の 2 件。本文が画面設計『文書』の map のノードの許さないリンク先の文言と、ノードの ID とリンク先を含む'
+        expected: '`allowed` が前の 3 つで、`problems` が `javascript:alert(1)` と `id:spec#items` の 2 件。本文が画面設計『文書』の map のノードの許可しないリンク先の文言と、ノードの ID とリンク先を含む'
       - name: test_map_link_problems_when_id_links
         case: 正常
         summary: 'id: のリンク先'
-        condition: '`id:SC-1`・`id:unknown` のリンク先を持つ 2 つのノードを、`id:SC-` だけを `https://docs.example.com/` に変える関数の `resolve` と、`skip` で確かめる'
+        condition: '`id:SC-1`・`id:unknown` のリンク先を持つ 2 つのノードを、`id:SC-` だけを `https://docs.example.com/` に変える関数の `resolve` と、`skip` で確認する'
         mock: なし
         expected: '`resolve` は `allowed` が `id:SC-1` のノードだけで URL が `https://docs.example.com/SC-1`、`problems` が `id:unknown` の 1 件。`skip` は `allowed` も `problems` も空'
 lead: 'Mermaid の flowchart の読み取りとノードのリンク先の確認を受け持ち、構成図の記法の読み取りを変えるときに参照する。'

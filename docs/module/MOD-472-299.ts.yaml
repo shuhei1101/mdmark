@@ -143,7 +143,7 @@ functions:
       - name: to
         type: number
         required: true
-        description: 終わりの行
+        description: 終了の行
     returns:
       type: '{ text: string } | { lineCount: number }'
       description: 選んだ行か、範囲を越えたときの行の数

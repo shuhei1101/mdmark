@@ -46,7 +46,7 @@ scenarios:
           正常シナリオのフォルダの文書に、今の実装が適用していない記載（`+total` の無い表の `total=`）と、拡張のマーカーの今の書き方の記載を加えたもの。
           設定の `extensions` に、そのマーカーの拡張のモジュールを記載する
       - name: 手で修正した文書
-        description: 移行の後に、文書の作成者が、移行の報告に挙がった `total=` の集計を表の JSON の `columns.{列名}.total` に記載し、拡張のマーカーを JSON のオブジェクトで記載し直したもの
+        description: 移行の後に、文書の作成者が、移行の報告に挙がった `total=` の集計を表の JSON の `columns.{列名}.total` に記載し、拡張のマーカーを JSON のオブジェクトで修正したもの
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-

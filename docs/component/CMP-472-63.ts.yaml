@@ -70,11 +70,11 @@ css_properties:
   - name: --secondary
     syntax: <color>
     default: var(--vscode-button-secondaryBackground)
-    description: 「設定ファイルを開く」のホバーの地の色
+    description: 「設定ファイルを開く」のホバーの背景色
   - name: --background
     syntax: <color>
     default: var(--vscode-editor-background)
-    description: 帯と「設定ファイルを開く」の地の色
+    description: 帯と「設定ファイルを開く」の背景色
   - name: --foreground
     syntax: <color>
     default: var(--vscode-editor-foreground)
@@ -87,7 +87,7 @@ accessibility:
   - 帯は `role="status"` を持ち、出たときにスクリーンリーダーがタイトルと本文を伝達する
   - タイトルは `h2`（文書の `h1` より下の階層）、本文は `p`。警告のアイコンは `aria-hidden="true"`
   - 「設定ファイルを開く」は `button`（`outline` の variant）で、Tab で届き Enter・Space で押せる。フォーカスの輪郭を `--ring` の 2px で出す
-  - 帯の地と文字は、エディタの本文の地（`--background`）と文字（`--foreground`）の色にし、警告の色は線とアイコンだけに使用する（対比はテーマが本文に持たせる対比のまま）
+  - 帯の背景と文字は、エディタの本文の背景（`--background`）と文字（`--foreground`）の色にし、警告の色は線とアイコンだけに使用する（対比はテーマが本文に持たせる対比のまま）
   - 帯は文書の先頭に配置し、固定せずスクロールに合わせて動かす。帯の幅が 30rem 以上ではボタンを文の右に、未満では文の下に配置する
 refs:
   - IF-472-21#constraints[設定ファイルを読み込めないとき]

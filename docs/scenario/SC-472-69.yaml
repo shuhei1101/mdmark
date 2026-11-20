@@ -7,7 +7,7 @@ scenarios:
       - name: 空の端末
         description: 端末の設定（`MDMARK_CONFIG` が指すパス）・状態の配置場所（`MDMARK_STATE_DIR`）・Claude Code の設定のフォルダ（`CLAUDE_CONFIG_DIR`）を、どれも空の一時フォルダにする
         notes: '`MDMARK_CONFIG` は既定の `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml` と違うパスにする'
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: '`systemctl --user is-system-running` が `running` か `degraded` を返却する端末で、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
         notes: 手元の常駐サーバーの unit（`mdmark-mcp`）とポート 8782 を回避するため、unit の名前はテスト専用の名前にし、テストの後に unit を止めて unit のファイルを削除する
       - name: Mock
@@ -31,7 +31,7 @@ scenarios:
         C-->>W: 書き込む内容
         W->>C: 書き込んでよい
         C->>F: 端末の設定を書き込み、settings.json の env に MDMARK_CONFIG を書き込む
-        C->>D: systemd --user が使えるので、unit を記載して enable --now する
+        C->>D: systemd --user が使用できるので、unit を記載して enable --now する
         D->>S: 起動
         C->>S: tools/list
         S-->>C: ツールの一覧
@@ -54,7 +54,7 @@ scenarios:
     setup:
       - name: セットアップ済みの端末
         description: 正常シナリオを終えた後の端末の設定・`settings.json`・状態の配置場所・unit と、待ち受けている常駐サーバー
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーには今の値のままを回答する
@@ -82,7 +82,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 端末の設定と `settings.json` と unit のファイルの中身が呼ぶ前と同じ
-      - unit を起動し直さず、常駐サーバーのプロセスが呼ぶ前と同じ
+      - unit を再起動せず、常駐サーバーのプロセスが呼ぶ前と同じ
       - '`tools/list` が返却するツールに `export_html`・`build_site`・`check` がある'
       - 最後の報告に、書き換えなかったことと unit の名前が出る
     test: test_normal_when_already_set_up
@@ -90,7 +90,7 @@ scenarios:
     setup:
       - name: 止めた常駐サーバー
         description: 正常シナリオを終えた後の端末から、`systemctl --user stop {unit の名前}` で unit を止め、`MDMARK_PORT` のポートで待ち受けるプロセスが無い状態
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーには今の値のままを回答する
@@ -124,9 +124,9 @@ scenarios:
     test: test_normal_when_server_stopped
   - name: 正常シナリオ（プラグインを更新した）
     setup:
-      - name: 古いプラグインで起動した常駐サーバー
+      - name: 更新前のプラグインで起動した常駐サーバー
         description: 正常シナリオを終えた後の端末で、unit のファイルの起動するコマンドが今のプラグインのビルドで埋めた mdmark のバージョンと違うバージョンの CLI を指し、その unit で常駐サーバーが待ち受けている
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーには今の値のままを回答する
@@ -144,25 +144,25 @@ scenarios:
           C-->>W: キーの今の値と既定
           W->>C: 今の値のまま
         end
-        C->>D: unit のファイルが今の内容と違うので、記載し直して daemon-reload し、起動し直す
+        C->>D: unit のファイルが今の内容と違うので、修正して daemon-reload し、再起動する
         D->>S: 今のプラグインの CLI で起動
         C->>S: tools/list
         S-->>C: ツールの一覧
-        C-->>W: unit を記載し直して起動し直したこと・unit の名前
+        C-->>W: unit を修正して再起動したこと・unit の名前
       ```
 
       <!-- /map -->
     expected:
       - unit のファイルの起動するコマンドが、今のプラグインのビルドで埋めた mdmark のバージョンの CLI を指す
       - '`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけあり、呼ぶ前のプロセスと違う'
-      - 最後の報告に、unit を記載し直して起動し直したことが出る
+      - 最後の報告に、unit を修正して再起動したことが出る
     test: test_normal_when_plugin_updated
   - name: 正常シナリオ（tmux のセッションから unit へ移す）
     setup:
       - name: tmux のセッションで動く常駐サーバー
         description: 端末の設定のセッション名の tmux のセッションで `mdmark serve` が `MDMARK_PORT` のポートを待ち受け、unit は無い
         notes: '`TMUX`・`TMUX_PANE` を除外した環境で `TMUX_TMPDIR` を空の一時フォルダにして、手元と別の tmux サーバーで動かす'
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーには今の値のままを回答する
@@ -195,7 +195,7 @@ scenarios:
       - unit の `is-active` が `active` を返却し、`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある
       - 最後の報告に、tmux のセッションを閉じて unit へ移したことが出る
     test: test_normal_when_moved_from_tmux
-  - name: 正常シナリオ（systemd --user が使えない）
+  - name: 正常シナリオ（systemd --user が使用できない）
     setup:
       - name: 空の端末
         description: 正常シナリオと同じ
@@ -223,7 +223,7 @@ scenarios:
         end
         W->>C: 書き込んでよい
         C->>F: 端末の設定と settings.json を書き込む
-        C->>T: systemd --user が使えないので、新しいセッションで mdmark serve を起動する
+        C->>T: systemd --user が使用できないので、新規のセッションで mdmark serve を起動する
         T->>S: 起動
         C->>S: tools/list
         S-->>C: ツールの一覧
@@ -242,7 +242,7 @@ scenarios:
       - name: セットアップ済みの端末
         description: 正常シナリオを終えた後の端末の設定・unit と、unit で待ち受けている常駐サーバー
       - name: 手元と別の tmux サーバーと空いたポート
-        description: '`systemd --user が使えない` と同じ'
+        description: '`systemd --user が使用できない` と同じ'
       - name: Mock
         description: 正常シナリオと同じ。起動の方法のキーには `tmux` を、ほかのキーには今の値のままを回答する
     flow: |-
@@ -262,7 +262,7 @@ scenarios:
         end
         W->>C: 書き込んでよい
         C->>D: unit を disable --now する
-        C->>T: 新しいセッションで mdmark serve を起動する
+        C->>T: 新規のセッションで mdmark serve を起動する
         T->>S: 起動
         C->>S: tools/list
         C-->>W: unit を止めて tmux のセッションへ移したこと・セッション名
@@ -281,7 +281,7 @@ scenarios:
       - name: テスト専用の移行の手順
         description: 一時フォルダに、端末の設定のバージョンと今のバージョンの間の移行の手順を 1 バージョンだけ配置し、その手順の配置場所を移行の手順の読み取り先にする
         notes: 今のバージョンには移行の手順が無いため、`mdmark upgrade` と同じ手順の当て方を確認するテストだけの手順を使用する
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。移行してよいかには認める回答を、各キーには今の値のままを回答する
@@ -313,10 +313,10 @@ scenarios:
     setup:
       - name: 空の端末
         description: 正常シナリオと同じ
-      - name: systemd --user が使える端末
+      - name: systemd --user が使用できる端末
         description: 正常シナリオと同じ
       - name: 手元と別の tmux サーバーと空いたポート
-        description: '`systemd --user が使えない` と同じ'
+        description: '`systemd --user が使用できない` と同じ'
       - name: Mock
         description: 正常シナリオと同じ。書き込んでよいかには断る回答を返却する
     flow: |-
@@ -334,7 +334,7 @@ scenarios:
         end
         C-->>W: 書き込む内容
         W->>C: 書き込まない
-        C->>T: 書き込みを断ったので unit を記載せず、新しいセッションで mdmark serve を起動する
+        C->>T: 書き込みを断ったので unit を記載せず、新規のセッションで mdmark serve を起動する
         C-->>W: 端末の設定と settings.json を書き込まなかったこと
       ```
 
@@ -380,7 +380,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: ポートを使用するほかのプロセス
         description: '`MDMARK_PORT` のポートを mdmark ではないプロセスが待ち受ける'
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ
@@ -408,14 +408,14 @@ lead: 文書の作成者が Claude Code で `global-setup` を呼び、端末の
 primary_actor: 文書の作成者
 stakeholders:
   - name: 文書の作成者
-    interest: 端末の設定のキーを 1 つずつ確認して回答するだけで端末がそろい、常駐サーバーが unit と tmux のセッションのどちらで動いているか・ログの確認方法・止め方が分かる。systemd --user が使える端末では、端末を起動し直しても常駐サーバーが自動で起動する
+    interest: 端末の設定のキーを 1 つずつ確認して回答するだけで端末がそろい、常駐サーバーが unit と tmux のセッションのどちらで動いているか・ログの確認方法・止め方が分かる。systemd --user が使用できる端末では、端末を再起動しても常駐サーバーが自動で起動する
   - name: Claude Code
     interest: 次のセッションから MCP サーバー `plugin:mdmark:mdmark` が常駐サーバーにつながる
-trigger: 新しい端末・再インストール・端末の移行・プラグインの更新の後か、セッションの開始で常駐サーバーが待ち受けていないと伝わったとき
+trigger: 新規の端末・再インストール・端末の移行・プラグインの更新の後か、セッションの開始で常駐サーバーが待ち受けていないと伝わったとき
 preconditions:
   - Claude Code に mdmark のプラグインを入れている
   - 文書の作成者の手元に Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある
-success_guarantee: 端末の設定が文書の作成者の回答した値で今のバージョンの記載方法になり、常駐サーバーが、systemd --user が使える端末では unit で、使えない端末か端末の設定で tmux に固定した端末では tmux のセッションの中で、1 つだけ待ち受け、`tools/list` がツールの一覧を返却する。
+success_guarantee: 端末の設定が文書の作成者の回答した値で今のバージョンの記載方法になり、常駐サーバーが、systemd --user が使用できる端末では unit で、使用できない端末か端末の設定で tmux に固定した端末では tmux のセッションの中で、1 つだけ待ち受け、`tools/list` がツールの一覧を返却する。
 minimal_guarantee: 文書の作成者が書き込むことを認めなかったときは、端末の設定と `settings.json` を書き換えない。端末の設定が無いまま書き込むことを認めなかったときは、unit のファイルも記載せずに tmux のセッションで起動する。ほかのプロセスが待ち受けているポートは、そのプロセスのまま変わらない。unit と tmux のセッションの両方で常駐サーバーを動かさない。
 test_file: tests/e2e/単一ユースケース/端末にmdmarkをセットアップする.spec.ts
 tags:

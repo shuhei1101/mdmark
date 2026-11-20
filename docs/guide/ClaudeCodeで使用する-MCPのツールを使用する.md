@@ -73,7 +73,7 @@ docs/guide.md を 1 枚の HTML に書き出して
 #### `export_markdown` を呼ばせる
 
 ```text
-docs/guide.mark.md を GitHub で読める Markdown に書き出して
+docs/guide.mark.md を GitHub で表示できる Markdown に書き出して
 ```
 
 `export_markdown` が `mdmark export-markdown` と同じ処理で、純粋な Markdown（GFM と Mermaid）と `chart`・`param`・埋め込んだ HTML の SVG を書き込み、Markdown と SVG のパスと警告を返却する。

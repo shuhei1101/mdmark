@@ -1,13 +1,13 @@
 id: DATA-472-5
 visibility: internal
 title: 'データ: 配置の上書き'
-lead: ノード・グループ・線の ID ごとの配置と見た目の上書き（キーが ID）。
+lead: ノード・グループ・線の ID ごとの配置と外観の上書き（キーが ID）。
 datastore: JSON
 fields:
 - key: align
   title: 揃える相手
   type: string
-  description: 同じ段に置く相手の ID
+  description: 同じ段に配置する相手の ID
   example: marker
 - key: order
   title: 並び順

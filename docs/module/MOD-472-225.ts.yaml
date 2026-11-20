@@ -27,7 +27,7 @@ functions:
       | `⋯` を押す | その行を開く |
       | `pointerover`・`pointerout` | `guideRangeOf` の範囲の行に `data-guide-active` を付与・解除する |
 
-      畳める行を持つ `pre` の `pointermove` で、ポインターの横の位置が開閉のボタンの列にあれば `pre` に `data-fold-hover` を付け、無ければ外し、`pointerleave` で外す。
+      畳める行を持つ `pre` の `pointermove` で、ポインターの横の位置が開閉のボタンの列にあれば `pre` に `data-fold-hover` を付け、無ければ解除し、`pointerleave` で解除する。
       開閉のボタンの列は、コードブロックの最初の開閉のボタンの `getBoundingClientRect()` の左端から右端まで。
       行の高さに関わらず、ボタンを持たない行の上でも列に乗れば付ける。
       開閉を切り替える関数を `codeFoldSetters` に登録する
@@ -86,7 +86,7 @@ functions:
       - name: test_attach_code_folds_when_states
         case: 正常
         summary: 記録した開閉で始め、押した開閉を記録する
-        condition: 2 行目と 6 行目が `data-folded` の 8 行のコードブロックに空の `states` を指定して付け、2 行目のボタンを押してから削除し、同じ HTML を描き直した要素に同じ `states` でもう一度付ける
+        condition: 2 行目と 6 行目が `data-folded` の 8 行のコードブロックに空の `states` を指定して付け、2 行目のボタンを押してから削除し、同じ HTML を再描画した要素に同じ `states` でもう一度付ける
         mock: なし
         expected: 2 回目に付けた後、2 行目のボタンが `aria-expanded="true"` で後ろの行が `hidden` を持たず、6 行目は `false` のまま。`setCodeFoldOpen` で開閉した行は `states` に書き込まれない
     status: planned

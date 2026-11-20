@@ -34,7 +34,7 @@ catalogs:
           - name: options.$data
             type: boolean
             default: 'false'
-            description: スキーマの中で `$data` の参照を許すか
+            description: スキーマの中で `$data` の参照を許可するか
             notes: 使用しない（8.17.1 の ReDoS の前提）
       - name: addSchema
         kind: メソッド

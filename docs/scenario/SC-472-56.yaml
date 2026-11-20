@@ -210,7 +210,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 終了コードが 0 で、指定した出力に HTML が 1 つある
-      - file:// で開くと、描く先の要素の地の色の計算値が theme-contrast の明るい配色の `--mdmark-color-bg` の値
+      - file:// で開くと、描く先の要素の背景色の計算値が theme-contrast の明るい配色の `--mdmark-color-bg` の値
       - 外への要求が 0 件
     test: test_normal_when_theme_selected
     refs:
@@ -248,13 +248,13 @@ scenarios:
       - '`files/spec.pdf` はコピーされず、HTML のリンクは記載したパスのまま'
       - 書き出した HTML を file:// で開いたとき、外へのネットワークの要求が 0 件
     test: test_normal_when_media_embedded
-  - name: '正常シナリオ（blob: と動的 import を許さない環境で開く）'
+  - name: '正常シナリオ（blob: と動的 import を許可しない環境で開く）'
     setup:
       - name: 埋めるモジュールを使用する文書
         description: '`extensions` の拡張のマーカー・ビューのマーカー・Chart.js のマーカー・言語 `ts` のコードブロック・`libraries` に無いファイルのモジュールを記載したマーカーを持つ文書 1 つと、`extensions` にマーカーを描く拡張のモジュールを記載した設定'
         notes: 拡張のモジュールは `load` の中で同じフォルダの別のファイルを動的 `import()` で読み込む
       - name: Mock
-        description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
+        description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許可しない）"
     flow: |-
       <!-- map -->
 
@@ -268,7 +268,7 @@ scenarios:
         C->>C: 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトにまとめる
         C->>F: まとめたスクリプトを script 要素に入れた HTML を書き込む
         C-->>W: 出力のパス・終了コード 0
-        R->>F: blob: と動的 import を許さない環境で開く
+        R->>F: blob: と動的 import を許可しない環境で開く
         F-->>R: 拡張のマーカー・ビュー・図・色分けしたコードブロック
       ```
 
@@ -319,7 +319,7 @@ scenarios:
         description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ配置した文書 1 つと、`features.html-scripts` を `true` にした設定'
         notes: '`ts` は型の注釈を持つ既定のエクスポートの関数で、ノードを押すと根の要素に class `is-open` を付与・解除する'
       - name: Mock
-        description: "書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから開き、外への要求を全て止める（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
+        description: "書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから開き、外への要求を全て止める（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許可しない）"
     flow: |-
       <!-- map -->
 
@@ -513,7 +513,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 終了コードが 0 で、指定した出力に HTML が 1 つある
-      - file:// で開くと、ブラウザの配色がライトでも、描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
+      - file:// で開くと、ブラウザの配色がライトでも、描く先の要素の背景色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
       - 外への要求が 0 件
     test: test_normal_when_page_marker
     refs:
@@ -521,9 +521,9 @@ scenarios:
   - name: 正常シナリオ（mdmark を使用していることを隠す）
     setup:
       - name: mdmark の名前を持つ文書
-        description: 'タイトルとファイル名に `mdmark` を含む文書（`mdmark-intro.md`）1 つ。本文に、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲の `css` で使う `var(--mdmark-*)`・class `mdmark-align-center` の段落・`<mdmark-chart>` を記載したコードの例・マーカーと同じ形でマーカーの名前ではないコメント `<!-- todo -->`・既定のテーマの mermaid の図・Lucide のインラインのアイコン・表のマーカー（`<!-- table: data -->` と閉じの `<!-- /table -->`）・タブ・索引の用語 `mdmark` を記載する'
+        description: 'タイトルとファイル名に `mdmark` を含む文書（`mdmark-intro.md`）1 つ。本文に、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲の `css` で使用する `var(--mdmark-*)`・class `mdmark-align-center` の段落・`<mdmark-chart>` を記載したコードの例・マーカーと同じ形でマーカーの名前ではないコメント `<!-- todo -->`・既定のテーマの mermaid の図・Lucide のインラインのアイコン・表のマーカー（`<!-- table: data -->` と閉じの `<!-- /table -->`）・タブ・索引の用語 `mdmark` を記載する'
       - name: 利用側の CSS と拡張
-        description: '`--mdmark-*` の上書きと `.mdmark` のセレクタを持つ `theme.css` と、`registerExtension` で印を足す拡張のモジュールを指す設定'
+        description: '`--mdmark-*` の上書きと `.mdmark` のセレクタを持つ `theme.css` と、`registerExtension` で印を追加する拡張のモジュールを指す設定'
       - name: Mock
         description: 正常シナリオと同じく、書き出しがネットワークを読み込まない
     flow: |-
@@ -593,7 +593,7 @@ trigger: 文書の作成者が、1 つの文書をサーバー無しで指定し
 preconditions:
   - 文書の作成者の手元に Node 24 以降がある
   - 文書の作成者の手元から、設定の `libraries` に記載した URL の先へ届く
-success_guarantee: 指定した出力に 1 枚の HTML ができ、file:// で開くと外への要求 0 件で、`mount` と同じ本文・記法の操作・用語のツールチップ・外部ライブラリの図・画像が描かれる。埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許さない環境でも同じに描かれる。他の文書へのリンクは記載したままの `href` で残る（文書間のリンクは全て 1 枚に含まれないため、警告には出さない）。隠さない書き出しを指定しなければ、HTML から mdmark を使用していることが読み取れない（mdmark の名前は別名へ置き換わり、HTML のコメント・バージョン・mdmark 自身のライセンスの表記は残らない。利用者が記載した値と第三者のライブラリのライセンスの表記は残る）。
+success_guarantee: 指定した出力に 1 枚の HTML ができ、file:// で開くと外への要求 0 件で、`mount` と同じ本文・記法の操作・用語のツールチップ・外部ライブラリの図・画像が描かれる。埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許可しない環境でも同じに描かれる。他の文書へのリンクは記載したままの `href` で残る（文書間のリンクは全て 1 枚に含まれないため、警告には出さない）。隠さない書き出しを指定しなければ、HTML から mdmark を使用していることが読み取れない（mdmark の名前は別名へ置き換わり、HTML のコメント・バージョン・mdmark 自身のライセンスの表記は残らない。利用者が記載した値と第三者のライブラリのライセンスの表記は残る）。
 minimal_guarantee: 読み込めない画像とモジュールは書き出しを止めず警告に出す。出力先へ書き込めないときは、原因と修正方法の 1 文を出して 0 以外で終わる。文書に記載したスクリプトは書き出した HTML でも実行しない。
 test_file: tests/e2e/単一ユースケース/文書をHTMLに書き出す.spec.ts
 tags:

@@ -31,7 +31,7 @@ functions:
       1. `pre` の後ろに `<div class="mdmark-code-preview">` を配置し、`mdmark-code-meta`（`attachCodeCopy` が付けた帯の右の塊）の先頭に `renderCodeRaw` のボタンを配置する
       2. `data-mdmark-raw` を持たなければ、`renderPreview` に描いた結果の要素とコピーのボタンが書き込む文字（`code` の文字から末尾の改行を 1 つ除いたもの）を指定して描き、ページで 1 つ持つ通し番号を 1 増やした値で `prefixPreviewIds` を呼んで `id` の頭を付けて、`pre` を `hidden` にする。`data-mdmark-raw` を持てば描かずに、描いた結果の要素を `hidden` にしてボタンを押した状態にする
       3. ボタンを押すと、描いた結果と `pre` の `hidden` を入れ替え、`aria-pressed` を元の Markdown を出しているかに合わせる。まだ描いていなければ、描いた結果を出す前に手順 2 と同じく描く
-      4. 描くときに例外が出たら、描いた結果の要素とボタンを取り除き、`pre` を出す（例外は投げ直さない）
+      4. 描くときに例外が出たら、描いた結果の要素とボタンを取り除き、`pre` を出す（例外は再送出しない）
 
       ほかのコードブロックの表示と文書のスクロールの位置は変えない
     args:
@@ -45,7 +45,7 @@ functions:
         description: 描いた結果の要素に Markdown を描き、片付ける関数を返却する関数（`mount` が外の文書の操作を付け終えた後に呼ぶときに指定する）
     returns:
       type: () => void
-      description: 描いた結果とボタンを取り除き、`renderPreview` が返した片付ける関数を呼び、`pre` の `hidden` を外す関数
+      description: 描いた結果とボタンを取り除き、`renderPreview` が返却した片付ける関数を呼び、`pre` の `hidden` を解除する関数
     side_effects: コードブロックに描いた結果の要素とボタンを配置する
     callees:
       - MOD-472-306#functions[renderCodeRaw]
@@ -73,7 +73,7 @@ functions:
         case: 正常
         summary: 削除すると描いた結果とボタンを取り除く
         condition: 描いた結果を出したコードブロックで、戻りの関数を呼ぶ
-        mock: '`renderPreview` を、片付ける関数の呼び出しを記録する関数を返す関数に差し替える'
+        mock: '`renderPreview` を、片付ける関数の呼び出しを記録する関数を返却する関数に差し替える'
         expected: 片付ける関数が 1 回呼ばれ、ボタンと描いた結果の要素が無く、`pre` が `hidden` を持たない
       - name: test_attach_code_previews_when_nested_raw
         case: 正常

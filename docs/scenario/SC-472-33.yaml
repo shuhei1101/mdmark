@@ -27,7 +27,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - OS の配色がライトでも、描く先の要素の地の色の計算値が既定のテーマ（dev-swiss）の暗い配色の `--mdmark-color-bg` の値
+      - OS の配色がライトでも、描く先の要素の背景色の計算値が既定のテーマ（dev-swiss）の暗い配色の `--mdmark-color-bg` の値
       - 本文にマーカーの文字が出ていない
       - 記載の警告が出ていない
     test: test_normal
@@ -56,7 +56,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - OS の配色と祖先の class がライトでも、描く先の要素の地の色の計算値が dev-swiss の暗い配色の `--mdmark-color-bg` の値
+      - OS の配色と祖先の class がライトでも、描く先の要素の背景色の計算値が dev-swiss の暗い配色の `--mdmark-color-bg` の値
     test: test_normal_when_config_default
     refs:
       - SC-472-25#scenarios[正常シナリオ（親の class でライトにする）]
@@ -85,7 +85,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+      - 描く先の要素の背景色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
       - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを配置しても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
     test: test_normal_when_marker_overrides_config
     refs:
@@ -116,7 +116,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 設定の明暗と OS の配色がライトでも、描く先の要素の地の色の計算値が、祖先の class の dev-swiss の暗い配色の `--mdmark-color-bg` の値
+      - 設定の明暗と OS の配色がライトでも、描く先の要素の背景色の計算値が、祖先の class の dev-swiss の暗い配色の `--mdmark-color-bg` の値
     test: test_normal_when_auto
   - name: 正常シナリオ（本文を差し替える）
     setup:
@@ -142,7 +142,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 描く先の要素の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値に戻っている
+      - 描く先の要素の背景色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値に戻っている
     test: test_normal_when_updated
   - name: 正常シナリオ（印刷する）
     setup:
@@ -165,7 +165,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 印刷のメディアで、描く先の要素の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
+      - 印刷のメディアで、描く先の要素の背景色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_printed
     refs:
       - SC-472-58#
@@ -195,7 +195,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 文書の先頭に、`scheme` の `sepia`・`theme` の `theme-unknown` を挙げ、記載できるキーと値を記載した記載の警告が 1 つあり、知らないキー `size` は挙げていない
-      - 描く先の要素の地の色の計算値が、設定の明暗と既定のテーマ（dev-swiss）の暗い配色の `--mdmark-color-bg` の値
+      - 描く先の要素の背景色の計算値が、設定の明暗と既定のテーマ（dev-swiss）の暗い配色の `--mdmark-color-bg` の値
       - 目次を出すボタンがあり `aria-expanded` が `false` で、右端にポインターを配置しても右側の目次が表示されていない（`side-toc.mode` の `fixed` と同じ）
     test: test_error_when_unknown_key_or_value
   - name: 異常シナリオ（文書の先頭に無いマーカー）
@@ -224,7 +224,7 @@ scenarios:
       <!-- /map -->
     expected:
       - マーカーの場所に、page のマーカーは文書の先頭に記載することを記載した記載の警告がある
-      - 描く先の要素の地の色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
+      - 描く先の要素の背景色の計算値が dev-swiss の明るい配色の `--mdmark-color-bg` の値
     test: test_error_when_not_at_top
 lead: '文書の作成者が文書の先頭の `<!-- page: {JSON のオブジェクト} -->` と `mdmark.config.yaml` で、配色の明暗・テーマ・右側の目次の出し方を指定し、mdmark がその文書をその設定で描く。'
 primary_actor: 文書の作成者
@@ -236,7 +236,7 @@ stakeholders:
 trigger: 利用側のページが、先頭に page のマーカーを持つ文書か、ページの設定のキーを記載した設定を指定して文書を描かせる
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
-success_guarantee: 文書のマーカー → 設定（近いフォルダ → 上のフォルダ → 端末の設定）→ 描く先の祖先の class → OS の設定の順に、先にあるものの値で配色の明暗・テーマ・右側の目次の出し方が決まる。GitHub など mdmark の無い所ではマーカーが見えない。
+success_guarantee: 文書のマーカー → 設定（近いフォルダ → 上のフォルダ → 端末の設定）→ 描く先の祖先の class → OS の設定の順に、先にあるものの値で配色の明暗・テーマ・右側の目次の出し方が決定する。GitHub など mdmark の無い所ではマーカーが見えない。
 minimal_guarantee: 記載できるキーの選べる値に無い値と、文書の先頭に無いマーカーは記載の警告にして使用せず、知らないキーは警告を出さずに無視し、残りのキーと設定の値で描く。印刷では、マーカーでダークにした文書も明るい配色で出す。
 test_file: tests/e2e/単一ユースケース/ページの設定を文書で指定する.spec.ts
 notes:

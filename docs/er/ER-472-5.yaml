@@ -10,7 +10,7 @@ tables:
     summary: 1 つのバージョンで適用する移行の手順の並び。最上位は `steps`（手順の並び、必須）だけを持ち、この表の行は `steps` の要素 1 つ
     scale: ~20
     growth: 設定・索引の構造か文書のマーカーを変えるバージョンごとに 1 ファイル
-    retention: 削除しない（古いバージョンの利用者が適用する）
+    retention: 削除しない（旧バージョンの利用者が適用する）
     access: 全件
     description: '`{バージョン}` は `v{MAJOR}.{MINOR}.{PATCH}`。出していないバージョンの手順は `migrations/next/steps.yaml` に配置し、release で `version.ini` を上げる commit で `migrations/v{バージョン}/` へ移す。バージョンのフォルダが無いバージョンは手順なしとして飛ばす。どの手順も、既に該当した後の状態に適用しても結果が変わらない。'
     columns:
@@ -54,11 +54,11 @@ tables:
         example: build.out
         notes: '`rename_key`・`replace_mark` で必須'
       - name: to
-        title: 新しいキー・マーカー
+        title: 変更後のキー・マーカー
         source: DATA-472-9#fields[to]
         type: string
         check: 空でない。`replace_mark` は `from` を含まない
-        description: '`rename_key` は新しいキーのパス、`replace_mark` は書き換えた後のマーカーの文字列'
+        description: '`rename_key` は変更後のキーのパス、`replace_mark` は書き換えた後のマーカーの文字列'
         example: build.output
         notes: '`rename_key`・`replace_mark` で必須'
       - name: key
@@ -88,9 +88,9 @@ tables:
         title: 解釈しの表
         source: DATA-472-9#fields[mapping]
         type: object
-        description: '`map_values` の元の値から新しい値への表。表に無い値は変えない'
+        description: '`map_values` の元の値から変更後の値への表。表に無い値は変えない'
         example: '{ "dist/docs.html": "dist/index.html" }'
-        notes: '`map_values` で必須。新しい値に元の値を配置しない（もう一度適用しても変わらないようにする）'
+        notes: '`map_values` で必須。変更後の値に元の値を配置しない（もう一度適用しても変わらないようにする）'
       - name: script
         title: スクリプト
         source: DATA-472-9#fields[script]
@@ -149,8 +149,8 @@ tables:
         type: string
         not_null: true
         check: 空でない
-        description: 手順が要らない理由。広げたキーと、古い設定・索引がそのまま新しい Schema に合うこと
-        example: 省いてよい `version` を追加しただけで、古い設定も合う
+        description: 手順が要らない理由。広げたキーと、更新前の設定・索引がそのまま更新後の Schema に合うこと
+        example: 省いてよい `version` を追加しただけで、更新前の設定も合う
 er:
   entities:
     - name: 移行の手順

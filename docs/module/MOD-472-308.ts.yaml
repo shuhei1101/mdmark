@@ -49,7 +49,7 @@ functions:
         condition: '`href` が `javascript:alert(1)` の項目'
         expected: '`href` を持たない `div.mdmark-card-grid-item` になる（`isAllowedUrl` で落とす）'
         mock: なし
-        summary: 許さないリンク先はリンクにしない
+        summary: 許可しないリンク先はリンクにしない
     refs:
       - CMP-472-10#
     status: planned

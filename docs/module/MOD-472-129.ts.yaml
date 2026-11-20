@@ -52,12 +52,12 @@ constants:
     value: '"map-"'
 functions:
   - name: readMapState
-    title: 状態を読む
+    title: 状態を読み取る
     kind: 関数
     container: src/map/state.ts
     usecase: 図のグループの中へ入る・開閉する
     role: 処理
-    summary: クエリ文字列（`url_state` が `true` のとき）→ sessionStorage → 印の `focus` の順に、最初に入るグループかブロックを決め、ほかの状態を sessionStorage から読み、知らない ID・番号を捨てる。sessionStorage に開閉の状態が無いときは、補足の `layout` の `collapsed` が `true` のグループを閉じる
+    summary: クエリ文字列（`url_state` が `true` のとき）→ sessionStorage → 印の `focus` の順に、最初に入るグループかブロックを決め、ほかの状態を sessionStorage から読み取り、知らない ID・番号を捨てる。sessionStorage に開閉の状態が無いときは、補足の `layout` の `collapsed` が `true` のグループを閉じる
     scope: public
     args:
       - name: options
@@ -70,7 +70,7 @@ functions:
     unit_tests:
       - name: test_read_map_state_when_query
         case: 正常
-        summary: クエリ文字列を先に読む
+        summary: クエリ文字列を先に読み取る
         condition: '`?map-1=read` と sessionStorage の `entered: place`'
         mock: なし
         expected: '`entered` が `read`'
@@ -122,7 +122,7 @@ functions:
     container: src/map/state.ts
     usecase: 図のグループの中へ入る・開閉する
     role: 処理
-    summary: sessionStorage に状態を書き、`url_state` が `true` なら中へ入ったグループ・ブロックを `history.replaceState` でクエリ文字列に書く（無ければキーを消す）
+    summary: sessionStorage に状態を記載し、`url_state` が `true` なら中へ入ったグループ・ブロックを `history.replaceState` でクエリ文字列に書き込む（無ければキーを削除する）
     scope: public
     side_effects: sessionStorage と `history` の今の項目の URL を書き換える
     args:
@@ -139,7 +139,7 @@ functions:
         summary: 中へ入る
         condition: '`entered: read`'
         mock: '`history`（`replaceState` の呼び出しを記録）'
-        expected: sessionStorage に書き、URL が `?map-1=read`、`history.length` が変わらない
+        expected: sessionStorage に記載し、URL が `?map-1=read`、`history.length` が変わらない
       - name: test_write_map_state_when_url_state_off
         case: 正常
         summary: url_state が false

@@ -95,7 +95,7 @@ functions:
         description: 文書の絶対パス・読み込んだ設定・`dist/` の場所
     returns:
       type: 'Promise<{ markdown: string; images: Array<{ name: string; svg: string }>; warnings: string[] }>'
-      description: Markdown と `images/` に置く SVG の名前と中身と警告
+      description: Markdown と `images/` に配置する SVG の名前と中身と警告
     callees:
       - MOD-472-361#functions[toPureMarkdown]
       - MOD-472-365#functions[figureToSvg]
@@ -120,7 +120,7 @@ functions:
     kind: 関数
     scope: public
     is_async: true
-    summary: 出力のフォルダがファイルを指すか作れないときは何も書き込まずに `CliError`。書けるときは `images/` を空にしてから SVG を、最後に Markdown を書き込む
+    summary: 出力のフォルダがファイルを指すか作れないときは何も書き込まずに `CliError`。記載できるときは `images/` を空にしてから SVG を、最後に Markdown を書き込む
     args:
       - name: options
         type: '{ dir: string; name: string; markdown: string; images: Array<{ name: string; svg: string }> }'
@@ -133,7 +133,7 @@ functions:
       - name: CliError
         condition: 出力のフォルダがファイルを指す・作れない・書き込めない
         message: '書き込めない: {出力のフォルダ} に書き込めません（{理由}）。--out で別のフォルダを指定してください。'
-    side_effects: 出力のフォルダを作り、`images/` の古いファイルを削除して SVG と Markdown を書き込む
+    side_effects: 出力のフォルダを作り、`images/` の旧ファイルを削除して SVG と Markdown を書き込む
     status: planned
     unit_tests:
       - name: test_write_markdown_files_replaces_images

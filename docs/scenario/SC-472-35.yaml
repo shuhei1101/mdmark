@@ -153,7 +153,7 @@ lead: 文書の作成者が `<!-- cards -->` 〜 `<!-- /cards -->` でリスト�
 primary_actor: 文書の作成者
 stakeholders:
   - name: 読者
-    interest: 入口や目次のページで、行き先の見出しと説明を見比べて選べる
+    interest: トップページや目次のページで、行き先の見出しと説明を見比べて選べる
 trigger: 利用側のページが、cards のマーカーで囲んだリストを持つ文書を描かせる
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる

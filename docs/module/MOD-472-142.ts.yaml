@@ -10,7 +10,7 @@ functions:
     container: src/map/sequence-rows.ts
     usecase: 図のグループの中へ入る・開閉する
     role: 処理
-    summary: 並び順・閉じたブロック・中だけを描くブロックから、表示する参加者と行（メッセージ・閉じたブロック・区切り・ノート・空き）を返す
+    summary: 並び順・閉じたブロック・中だけを描くブロックから、表示する参加者と行（メッセージ・閉じたブロック・区切り・ノート・空き）を返却する
     scope: public
     args:
       - name: sequence

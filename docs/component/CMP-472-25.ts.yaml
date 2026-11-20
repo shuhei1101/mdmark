@@ -225,7 +225,7 @@ uses:
   - component: CMP-472-61#
     how: 表形式。`kind` は `data`、`features` は `sort` と、`filters` があれば `filter`
 accessibility:
-  - 切り替えは `role="group"`・`aria-label="ビューの表示"` の中の `button` で、選んだボタンを `aria-pressed="true"` で示す。選んだボタンは濃い地で塗り、色だけに頼らない
+  - 切り替えは `role="group"`・`aria-label="ビューの表示"` の中の `button` で、選んだボタンを `aria-pressed="true"` で示す。選んだボタンは濃い背景で塗り、色だけに頼らない
   - ボードは `role="group"`・`aria-label="ボード"`・`tabindex="0"` で、キーボードで横にスクロールできる
   - ボードの列は値を `aria-label` に持つ `ul` で、項目を `li` にする。列の見出しのアイコンは `aria-hidden` で、スクリーンリーダーは値と項目の数だけにする
   - 項目の列名と値は `dl` の `dt`・`dd` で組む

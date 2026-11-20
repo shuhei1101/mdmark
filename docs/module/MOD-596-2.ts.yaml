@@ -22,7 +22,7 @@ data_models:
         description: 線（`id`・`from`・`fromSide`・`fromGroup`・`to`・`toSide`・`toGroup`・`head`）。`id` は記載順の `r{番号}`（1 から）。辺は `top`・`right`・`bottom`・`left`、`head` は `none`・`end`・`start`・`both`
       - name: problems
         type: MapProblem[]
-        description: 読めない行と、知らないアイコン・`in` が指す無い group
+        description: 読み取れない行と、知らないアイコン・`in` が指す無い group
 constants:
   - name: MAP_ARCH_KINDS
     title: アーキテクチャ図のノードの種類
@@ -35,12 +35,12 @@ constants:
       キーは `mdmark-arch-{アイコン}`・`mdmark-arch-service`
 functions:
   - name: parseArchitecture
-    title: architecture-betaを読む
+    title: architecture-betaを読み取る
     kind: 関数
     container: src/map/architecture.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`architecture-beta` の Mermaid を、group・service・junction・線と読めない行の項目に読む'
+    summary: '`architecture-beta` の Mermaid を、group・service・junction・線と読み取れない行の項目に読み取る'
     scope: public
     args:
       - name: source
@@ -51,8 +51,8 @@ functions:
       type: ArchitectureDiagram
       description: 読み取り結果
     process: |-
-      1. 行ごとに、`group {ID}[({アイコン})][{名前}] [in {ID}]`・`service {ID}[({アイコン})][{名前}] [in {ID}]`・`junction {ID} [in {ID}]`・線の行（`{ID}[{group}]:{辺} [<]--[>] {辺}:{ID}[{group}]`）・`%%`・空の行に分けて読む
-         - 読めない行と、5 つのほかのアイコン・無い group を指す `in` は `map_invalid` の項目にする
+      1. 行ごとに、`group {ID}[({アイコン})][{名前}] [in {ID}]`・`service {ID}[({アイコン})][{名前}] [in {ID}]`・`junction {ID} [in {ID}]`・線の行（`{ID}[{group}]:{辺} [<]--[>] {辺}:{ID}[{group}]`）・`%%`・空の行に分けて読み取る
+         - 読み取れない行と、5 つのほかのアイコン・無い group を指す `in` は `map_invalid` の項目にする
     unit_tests:
       - name: test_parse_architecture
         case: 正常
@@ -62,7 +62,7 @@ functions:
         expected: group 2（`app` の親が `cloud`）・service 6・junction 1・線 6（`r1`〜`r6`）で、`r1` の `head` が `end`、`r3` の辺が `bottom`・`top`、`r4` の `fromGroup` が `true`
       - name: test_parse_architecture_when_unreadable
         case: 異常
-        summary: 読めない行
+        summary: 読み取れない行
         condition: 線の行 `web:X --> L:cdn`
         mock: なし
         expected: '`map_invalid` が 1 件で行番号を含む'

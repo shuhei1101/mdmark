@@ -75,7 +75,7 @@ official_url: https://github.com/tmux/tmux
 docs_url: https://man7.org/linux/man-pages/man1/tmux.1.html
 limitations:
   - item: 環境変数の渡り方
-    content: tmux サーバーが既に動いていると、`new-session` を呼んだ側の環境変数は新しいセッションに渡らない。指定する値は `-e` で明示する
+    content: tmux サーバーが既に動いていると、`new-session` を呼んだ側の環境変数は新規のセッションに渡らない。指定する値は `-e` で明示する
   - item: コマンドを実行するシェル
     content: 1 つの文字列で指定したコマンドは `default-shell`（既定は tmux サーバーを起動したときの `$SHELL`、無ければログインシェル）の `-c` で実行される。dash・fish は `set -o pipefail` を受けずセッションがすぐ閉じるため、`sh -c '…'` を引数として指定して POSIX の記載方法だけを使用する
   - item: 下限のバージョン

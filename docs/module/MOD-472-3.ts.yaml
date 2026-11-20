@@ -29,9 +29,9 @@ functions:
     kind: 関数
     container: src/plugin/session-start.ts
     usecase: セッションの開始で常駐サーバーの状態を受け取る
-    role: 入口
+    role: エントリーポイント
     summary: ポートが待ち受けていなければ、`additionalContext` に 1 行を記載する
-    description: まとめた `plugin/scripts/session-start.js` を入口として実行したときだけ実行し、戻り値を終了コードにする（`import.meta.main`）。標準入力は読み込まない
+    description: まとめた `plugin/scripts/session-start.js` をエントリーポイントとして実行したときだけ実行し、戻り値を終了コードにする（`import.meta.main`）。標準入力は読み込まない
     scope: public
     is_async: true
     args:

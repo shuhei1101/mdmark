@@ -9,7 +9,7 @@ data_models:
     container: src/map/spec.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
-    summary: 読み取りと点検が返す 1 件
+    summary: 読み取りと点検が返却する 1 件
     properties:
       - name: kind
         type: '"map_invalid" | "map_unknown_ref" | "map_unknown_key" | "map_retired_key" | "map_invalid_value" | "map_unknown_icon" | "map_unknown_class" | "map_unknown_line" | "map_ambiguous_ref" | "annotation_undefined"'
@@ -19,7 +19,7 @@ data_models:
         description: 範囲の開きのマーカーからの行（0 から）。範囲の全体を指すときは無い
       - name: message
         type: string
-        description: 書き方の警告と点検の内容に出す 1 文（直し方を含む）
+        description: 書き方の警告と点検の内容に出す 1 文（修正方法を含む）
   - name: MapKind
     title: ノードの種類
     container: src/map/spec.ts
@@ -63,7 +63,7 @@ data_models:
     container: src/map/spec.ts
     usecase: Mermaidと補足で図を描く
     role: データモデル
-    summary: '`parseMapArgs` が読んだ印の引数（A-128 の構成）'
+    summary: '`parseMapArgs` が読み取った印の引数（A-128 の構成）'
     properties:
       - name: title
         type: string | undefined
@@ -79,23 +79,23 @@ constants:
     title: 印の引数のキー
     container: src/map/spec.ts
     usecase: Mermaidと補足で図を描く
-    summary: 印の JSON のオブジェクトで読むキー
+    summary: 印の JSON のオブジェクトで読み取るキー
     value: '["title", "focus", "collapse"]'
   - name: RETIRED_MAP_ARG_KEYS
     title: 廃止した印の引数のキー
     container: src/map/spec.ts
     usecase: Mermaidと補足で図を描く
-    summary: 読まずに `map_retired_key` の項目にする印のキー
+    summary: 読み取らずに `map_retired_key` の項目にする印のキー
     value: '["play", "interval"]'
 functions:
   - name: parseMapArgs
-    title: 印の引数を読む
+    title: 印の引数を読み取る
     kind: 関数
     container: src/map/spec.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
     scope: public
-    summary: 印の引数の文字を JSON のオブジェクトとして読み、`MAP_ARG_KEYS` のキーだけを `MapArgs` にし、廃止したキーと読めない・型の合わない値を項目にし、知らないキーを返す
+    summary: 印の引数の文字を JSON のオブジェクトとして読み取り、`MAP_ARG_KEYS` のキーだけを `MapArgs` にし、廃止したキーと読み取れない・型の合わない値を項目にし、知らないキーを返却する
     args:
       - name: source
         type: string
@@ -103,10 +103,10 @@ functions:
         description: '`<!-- map:` と `-->` の間の文字（無ければ空）'
     returns:
       type: '{ args: MapArgs; normalized: string; problems: MapProblem[]; unknownKeys: string[] }'
-      description: 読んだ引数・`data-map-args` に入れる空白なしの JSON・書き方の警告にする項目・点検だけが通知する知らないキー
+      description: 読み取った引数・`data-map-args` に入れる空白なしの JSON・書き方の警告にする項目・点検だけが通知する知らないキー
     process: |-
-      1. 空なら既定の `MapArgs` を返す
-      2. `JSON.parse` で読み、オブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する直し方）の項目にして既定を返す
+      1. 空なら既定の `MapArgs` を返却する
+      2. `JSON.parse` で読み取り、オブジェクトでなければ `map_invalid_value`（JSON のオブジェクトで記載する修正方法）の項目にして既定を返却する
       3. `RETIRED_MAP_ARG_KEYS` のキーを捨て、あれば記載したキーを `・` でつないだ `map_retired_key`（`mdmark upgrade` で削除できる旨）の項目を 1 つにする
       4. `MAP_ARG_KEYS` にも `RETIRED_MAP_ARG_KEYS` にも無いキーを `unknownKeys` に入れて捨てる
       5. 型の合わない値（`collapse` がオブジェクトでない など）を `map_invalid_value` の項目にして既定にする
@@ -116,7 +116,7 @@ functions:
         summary: 全てのキー
         condition: '`{"title": "全体", "focus": "read", "collapse": {"open": false}}`'
         mock: なし
-        expected: 全てのキーが読め、`problems`・`unknownKeys` が空
+        expected: 全てのキーが読み取れ、`problems`・`unknownKeys` が空
       - name: test_parse_map_args_when_empty
         case: 正常
         summary: 引数なし
@@ -131,7 +131,7 @@ functions:
         expected: '`unknownKeys` が `[mdoe]` で、`problems` が空、`normalized` に `mdoe` が無い'
       - name: test_parse_map_args_when_not_json
         case: 異常
-        summary: JSON として読めない
+        summary: JSON として読み取れない
         condition: '`{title: 全体}`'
         mock: なし
         expected: '`map_invalid_value` が 1 件で、既定の引数'
