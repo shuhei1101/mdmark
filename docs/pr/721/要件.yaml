@@ -11,3 +11,6 @@ scope_out:
   - item: map 以外の図（`src/cli/figure-svg.ts` の `textWidth`）の文字の幅の見積もり
     reason: CLI で図の HTML を SVG にする処理で、map のノードの大きさの見積もりとは別の処理。要望に含まれない
     plan: none
+  - item: Storybook のストーリーで、map のノードの名前の下が空く・見積もりより多く折り返すこと
+    reason: ストーリーは部品の描画のサーバーが Node で配置し、描くフォントを測れない。ユーザーが案 A を決定した（確認ログ）
+    plan: none
