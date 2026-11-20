@@ -1,0 +1,110 @@
+/* #740 のモックの map の図に追加する表示: 確信度のバッジ・計画した変更の色とバッジ・書き出すメニュー・一覧の表示 */
+
+/* 確信度と変更のバッジ: ノードの右上に枠線をまたいで重ねる。複数は右から並べる */
+.map740-badges {
+  position: absolute;
+  top: -9px;
+  right: 8px;
+  display: flex;
+  gap: 4px;
+  pointer-events: none;
+}
+.map740-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 18px;
+  padding: 0 6px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 9px;
+  background: var(--mdmark-color-surface);
+  color: var(--mdmark-color-muted);
+  font-size: 11px;
+  line-height: 1;
+  white-space: nowrap;
+}
+/* 確信度が低いほど枠線を破線にして、色に頼らず見分けられるようにする */
+.map740-badge[data-level="hypothesis"],
+.map740-badge[data-level="unsourced"] { border-style: dashed; }
+.map740-badge[data-level="confirmed"] { color: var(--mdmark-color-text); }
+
+/* 線のバッジ: ラベルの後ろ、またはラベルの無い線の経路の中点に置く */
+.map740-wire-badge {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+/* ラベルを持つ線のバッジは、ラベルの幅を変えずにラベルの下へ重ねる */
+.mdmark-diagram-label .map740-badge { position: absolute; top: 100%; left: 50%; transform: translate(-50%, 2px); }
+
+/* 計画した変更: 枠線の色とバッジの文字の色で示す */
+.mdmark-diagram-node.map740-added { border-color: var(--mdmark-color-diff-add-sign) !important; box-shadow: 0 0 0 1px var(--mdmark-color-diff-add-sign); }
+.mdmark-diagram-node.map740-changed { border-color: var(--mdmark-color-accent-orange-text) !important; box-shadow: 0 0 0 1px var(--mdmark-color-accent-orange-text); }
+.mdmark-diagram-node.map740-removed { border-color: var(--mdmark-color-diff-del-sign) !important; border-style: dashed !important; }
+.mdmark-diagram-node.map740-removed :is(.mdmark-diagram-node-name, .mdmark-diagram-node-name *) { text-decoration-line: line-through !important; text-decoration-color: var(--mdmark-color-diff-del-sign) !important; }
+.map740-badge[data-change="added"] { border-color: var(--mdmark-color-diff-add-sign); color: var(--mdmark-color-diff-add-sign); }
+.map740-badge[data-change="changed"] { border-color: var(--mdmark-color-accent-orange-text); color: var(--mdmark-color-accent-orange-text); }
+.map740-badge[data-change="removed"] { border-color: var(--mdmark-color-diff-del-sign); color: var(--mdmark-color-diff-del-sign); border-style: dashed; }
+path.map740-wire-added { stroke: var(--mdmark-color-diff-add-sign) !important; }
+path.map740-wire-removed { stroke: var(--mdmark-color-diff-del-sign) !important; stroke-dasharray: 6 4; }
+
+/* 書き出すメニュー: パネルのボタンの下に重ねる popover */
+.map740-export-menu {
+  margin: 0;
+  padding: 4px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 8px;
+  background: var(--mdmark-color-surface);
+  color: var(--mdmark-color-text);
+  box-shadow: 0 4px 16px rgb(0 0 0 / 12%);
+  inset: auto;
+}
+.map740-export-menu:popover-open { display: flex; flex-direction: column; gap: 2px; }
+.map740-export-menu button {
+  min-width: 120px;
+  min-height: 32px;
+  padding: 0 12px;
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+}
+.map740-export-menu button:hover,
+.map740-export-menu button:focus-visible { background: var(--mdmark-color-bg); }
+
+/* パネルの押した状態（一覧の表示のボタン） */
+.mdmark-diagram-tool[aria-pressed="true"] { background: var(--mdmark-color-bg); color: var(--mdmark-color-link); }
+
+/* 一覧の表示: 図の代わりに表示する枠の中に入れ子の一覧を出す */
+.map740-list {
+  box-sizing: border-box;
+  height: 100%;
+  margin: 0;
+  padding: 12px 16px;
+  overflow: auto;
+  list-style: none;
+  font-size: 14px;
+}
+.map740-list ul { margin: 0; padding-left: 20px; list-style: none; }
+.map740-list [role="treeitem"] { margin: 2px 0; }
+.map740-list [role="treeitem"] > .map740-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 2px 8px;
+  min-height: 28px;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+.map740-list [role="treeitem"]:focus { outline: none; }
+.map740-list [role="treeitem"]:focus-visible > .map740-row { outline: 2px solid var(--mdmark-color-link); outline-offset: 1px; }
+.map740-list [role="treeitem"][aria-expanded="false"] > ul { display: none; }
+.map740-list .map740-toggle { width: 1em; color: var(--mdmark-color-muted); }
+.map740-list .map740-name { font-weight: 600; }
+.map740-list .map740-kind,
+.map740-list .map740-note,
+.map740-list .map740-out { color: var(--mdmark-color-muted); font-size: 13px; }
+.map740-list .map740-out { flex-basis: 100%; padding-left: 1.5em; }

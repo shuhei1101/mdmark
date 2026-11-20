@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-export-list（図の書き出しと一覧の表示） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- 確信度・計画した変更・書き出し・一覧の表示の規則（#740 で追加するアセット） -->
+  <link rel="stylesheet" href="../../refs/740/assets/map-extra.css?v=2">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 24px; margin: 48px 0 8px; }
+    .map-catalog p.state-note { margin: 0 0 8px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-export-list
+  </nav>
+  <main class="map-catalog">
+    <h1>map-export-list</h1>
+
+    <h2>書き出すボタンとメニュー</h2>
+    <p class="state-note">パネルを開くと、全画面のボタンの隣に書き出すボタン（スクリーンリーダー向けの名前「図を書き出す」）がある。押すと SVG と PNG の項目のメニューを開き、選ぶとグループの開閉を今のまま、倍率と表示する位置に依らず等倍の図の全体を書き出す（PNG は 2 倍の画素数）。Esc と外側のクリックでメニューを閉じ、書き出すボタンへフォーカスを戻す。このモックでは実際にダウンロードする</p>
+    <div id="export"></div>
+
+    <h2>メニューを開いた状態</h2>
+    <div id="export-open"></div>
+
+    <h2>一覧の表示（構成図）</h2>
+    <p class="state-note">パネルの map のグループの先頭に一覧の表示のボタン（「一覧で表示」と <code>aria-pressed</code>）がある。押すと表示する枠の中を、グループを子を持つ項目・ノードを項目にした入れ子の一覧に替える。ノードの項目は名前・種類の名前・補足の説明・出る線（「→ 相手」と線のラベル）を持つ。↑↓ で項目を移り、→ で開き、← で閉じる。もう一度押すと、倍率・位置・開閉を保ったまま図の表示に戻す</p>
+    <div id="list-flow"></div>
+
+    <h2>一覧の表示（シーケンス図）</h2>
+    <p class="state-note">メッセージを記載順に「送信元 → 送信先: メッセージ」の項目で並べる</p>
+    <div id="list-seq"></div>
+
+    <h2>一覧の表示のボタンを持たない図（ガントチャート）</h2>
+    <p class="state-note">マインドマップと軸と格子の配置の図のパネルには、一覧の表示のボタンが無い。書き出すボタンは全ての map の図のパネルにある</p>
+    <div id="gantt"></div>
+
+    <h2>狭い幅</h2>
+    <div class="narrow" id="narrow"></div>
+  </main>
+  <script type="module">
+    import { addExport, addListToggle, renderDoc } from "../../refs/740/assets/map-extra.js";
+
+    const FLOW = (title) => `<!-- map: {"title": "${title}"} -->
+
+\`\`\`mermaid
+flowchart LR
+  user(["利用側のページ"]):::outside
+  subgraph lib [mdmark]
+    direction LR
+    mount["mount"]:::step
+    subgraph read [記法の読み取り]
+      direction TB
+      marker["マーカーの読み取り"]:::step
+      data["補足の検査"]:::step
+    end
+    cache[("キャッシュ")]:::store
+  end
+  user -->|設定と Markdown| mount
+  mount --> marker
+  marker --> data
+  data --> cache
+\`\`\`
+
+<!-- map-data: {"version": 1, "notes": {"data": {"text": "補足のキーと値を点検する"}}} -->
+
+<!-- /map -->`;
+
+    /** 構成図の一覧の項目（実装では読み取った図から作る） */
+    const FLOW_ITEMS = () => [
+      { name: "利用側のページ", kind: "外部", out: ["→ mount（設定と Markdown）"] },
+      {
+        name: "mdmark",
+        kind: "グループ",
+        children: [
+          { name: "mount", kind: "処理", out: ["→ マーカーの読み取り"] },
+          {
+            name: "記法の読み取り",
+            kind: "グループ",
+            children: [
+              { name: "マーカーの読み取り", kind: "処理", out: ["→ 補足の検査"] },
+              { name: "補足の検査", kind: "処理", note: "補足のキーと値を点検する", out: ["→ キャッシュ"] },
+            ],
+          },
+          { name: "キャッシュ", kind: "保存先" },
+        ],
+      },
+    ];
+
+    const [exportFrame] = await renderDoc(document.getElementById("export"), FLOW("全体の構成"));
+    addExport(exportFrame, 0);
+    addListToggle(exportFrame, FLOW_ITEMS);
+
+    const [openFrame] = await renderDoc(document.getElementById("export-open"), FLOW("全体の構成"));
+    const opened = addExport(openFrame, 1);
+    addListToggle(openFrame, FLOW_ITEMS);
+    openFrame.querySelector(".mdmark-diagram-tools")?.setAttribute("data-open", "");
+    // 場面を写すため、この図のメニューは外側のクリックで閉じない種類にして開いておく
+    if (opened) {
+      opened.menu.setAttribute("popover", "manual");
+      opened.menu.showPopover();
+    }
+
+    const [listFrame] = await renderDoc(document.getElementById("list-flow"), FLOW("全体の構成"));
+    addExport(listFrame, 2);
+    addListToggle(listFrame, FLOW_ITEMS)?.click();
+
+    const SEQ = `<!-- map: {"title": "描くまでの流れ"} -->
+
+\`\`\`mermaid
+sequenceDiagram
+  participant user as 利用側のページ
+  participant mount as mount
+  participant parse as 記法の読み取り
+  user->>mount: 設定と Markdown
+  mount->>parse: map の範囲
+  parse-->>mount: 読み取った図
+  mount-->>user: 描いた文書
+\`\`\`
+
+<!-- /map -->`;
+    const [seqFrame] = await renderDoc(document.getElementById("list-seq"), SEQ);
+    addExport(seqFrame, 3);
+    addListToggle(seqFrame, () => [
+      { name: "利用側のページ → mount: 設定と Markdown" },
+      { name: "mount → 記法の読み取り: map の範囲" },
+      { name: "記法の読み取り → mount: 読み取った図" },
+      { name: "mount → 利用側のページ: 描いた文書" },
+    ])?.click();
+
+    const GANTT = `<!-- map: {"title": "作業の予定"} -->
+
+\`\`\`mermaid
+gantt
+  dateFormat YYYY-MM-DD
+  section 設計
+    シナリオ :a1, 2026-11-20, 2d
+    データ設計 :a2, after a1, 2d
+  section 実装
+    書き出し :b1, after a2, 3d
+\`\`\`
+
+<!-- /map -->`;
+    const [ganttFrame] = await renderDoc(document.getElementById("gantt"), GANTT);
+    addExport(ganttFrame, 4);
+    ganttFrame.querySelector(".mdmark-diagram-tools")?.setAttribute("data-open", "");
+
+    const [narrowFrame] = await renderDoc(document.getElementById("narrow"), FLOW("全体の構成"));
+    addExport(narrowFrame, 5);
+    addListToggle(narrowFrame, FLOW_ITEMS)?.click();
+  </script>
+</body>
+</html>
