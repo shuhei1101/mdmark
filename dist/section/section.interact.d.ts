@@ -29,4 +29,6 @@ export declare function attachSections(options: {
     partStates?: PartStates;
     /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
     revealHash?: boolean;
+    /** URL の `#ID` を追うか。`false` なら付けたときも `hashchange` でも開かない（既定 `true`） */
+    followHash?: boolean;
 }): () => void;

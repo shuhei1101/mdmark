@@ -13,4 +13,6 @@ export declare function attachTables(root: HTMLElement, options?: {
     longColumnMin?: number | undefined;
     /** 階層の表に指定する部品の開閉の記録（省くと記録しない） */
     partStates?: PartStates | undefined;
+    /** URL の `#ID` を追うか。`false` なら `#ID` の指す行へ移らない（既定 `true`） */
+    followHash?: boolean | undefined;
 }): () => void;

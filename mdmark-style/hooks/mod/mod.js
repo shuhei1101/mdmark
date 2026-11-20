@@ -18533,6 +18533,9 @@ var code_schema_default = {
     },
     tree_warning: {
       type: "boolean"
+    },
+    raw: {
+      type: "boolean"
     }
   },
   additionalProperties: false
