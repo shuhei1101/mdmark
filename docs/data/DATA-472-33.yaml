@@ -1,0 +1,14 @@
+id: DATA-472-33
+visibility: internal
+title: 'データ: 確信度'
+lead: 構成図の部品の上に描く図の、ノード・グループ・線 1 つの確信度（キーが ID）。
+datastore: JSON
+fields:
+  - key: level
+    title: 確信度
+    type: enum
+    description: '`confirmed`（確認済み）/ `inferred`（推測）/ `hypothesis`（仮説）/ `unsourced`（出典なし）'
+    required: true
+    example: inferred
+refs:
+  - ER-472-2#tables[trust]
