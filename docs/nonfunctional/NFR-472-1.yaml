@@ -166,6 +166,18 @@ requirements:
       version: Node v24.14.0（tools/list まで 7〜117ms）
       date: '2026-10-31'
       result: 合格
+  - id: NFR-13
+    name: 表の列の幅を決める時間
+    english_name: table_column_width_time
+    category: 性能
+    external_constraint: 列の幅を決める処理はメインスレッドで動き、その間は利用側のページが操作を受け付けない
+    source_kind: 実行基盤の制限
+    value: '500'
+    unit: ミリ秒 以内（表 16 個・本文のセル 480 個の文書で、全ての表の列の幅を決め終えるまで）
+    rationale: '[Issue #725](https://github.com/shuhei1101/mdmark/issues/725) で、MindStella の画面で表 16 個・セル 459 個の資料へ切り替えると 15.0〜16.0 秒の長いタスクが出、その大半が列の幅の計測（計測用の要素の配置と幅の取得を交互に 1,158 回）だった（2026-11-20、ヘッドレスの Chromium）。利用者が求めた目安は資料の切り替えが 1 秒以内で、本文を描く処理と利用側の処理の分を残すため、列の幅にはその半分を割り当てる'
+    measurement: 結合テストで、表 16 個の文書を Playwright 同梱の Chromium で `mount` し、全ての表が `data-auto-width` を持つまでの時間を測る（インターフェース定義『文書を描く』の「正常系（表の多い文書の列の幅を決める）」）
+    overflow: 上限を超えても列の幅は決め終える。結合テストが失敗し、タグを打つ前に測り方を見直す
+    status: planned
 tags:
   - name: topic:要件
     main: true
