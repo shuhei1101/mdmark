@@ -1,0 +1,113 @@
+id: MOD-472-368
+visibility: internal
+title: ライブラリ本体 / コードブロック / code-preview.interact.ts
+lead: 言語 markdown のコードブロックの中身を描いた結果と、元の Markdown を切り替える Raw のボタンの操作を受け持ち、描いた結果の表示を変えるときに参照する。
+test_files:
+  - tests/unit/src/code-block/code-preview.interact.browser.test.ts
+constants:
+  - name: PREVIEW_ID_PREFIX
+    title: 描いた結果の ID の頭
+    container: src/code-block/code-preview.interact.ts
+    usecase: markdownのコードブロックを描いた結果と見比べる
+    summary: 描いた結果の中の `id` と、それを指す属性の値の頭に付ける文字。`{n}` に文書の頭からの通し番号を入れて `mdmark-preview-{n}-` にし、外の文書の `id` と重ねない
+    value: "'mdmark-preview-'"
+  - name: PREVIEW_CUT_FEATURES
+    title: 描いた結果で切る機能
+    container: src/code-block/code-preview.interact.ts
+    usecase: markdownのコードブロックを描いた結果と見比べる
+    summary: 描いた結果を描くときに、外の文書でオンでも `false` にする機能。文書の単位で付くか、外の文書の操作と重なる機能
+    value: "['side-toc', 'back-to-top', 'markdown-buttons', 'backlinks', 'comments', 'print']"
+functions:
+  - name: attachCodePreviews
+    title: markdown のコードブロックに描いた結果を付ける
+    container: src/code-block/code-preview.interact.ts
+    kind: 関数
+    scope: internal
+    usecase: markdownのコードブロックを描いた結果と見比べる
+    summary: '`data-mdmark-markdown` を持つコードブロックに描いた結果と Raw のボタンを付け、押すたびに描いた結果と元の Markdown を切り替える'
+    description: |-
+      付けた時点で `root` の中にある `.mdmark-code[data-mdmark-markdown]` を集め（描いた結果の中のコードブロックは、描いた結果の `mount` が付けるため除く）、文書の順に次の処理をする。
+
+      1. `pre` の後ろに `<div class="mdmark-code-preview">` を配置し、`mdmark-code-meta`（`attachCodeCopy` が付けた帯の右の塊）の先頭に `renderCodeRaw` のボタンを配置する
+      2. `data-mdmark-raw` を持たなければ、`renderPreview` に描いた結果の要素とコピーのボタンが書き込む文字（`code` の文字から末尾の改行を 1 つ除いたもの）を指定して描き、`prefixPreviewIds` で `id` の頭を付けて、`pre` を `hidden` にする。`data-mdmark-raw` を持てば描かずに、描いた結果の要素を `hidden` にしてボタンを押した状態にする
+      3. ボタンを押すと、描いた結果と `pre` の `hidden` を入れ替え、`aria-pressed` を元の Markdown を出しているかに合わせる。まだ描いていなければ、描いた結果を出す前に手順 2 と同じく描く
+      4. 描くときに例外が出たら、描いた結果の要素とボタンを取り除き、`pre` を出す（例外は投げ直さない）
+
+      ほかのコードブロックの表示と文書のスクロールの位置は変えない
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+      - name: renderPreview
+        type: '(el: HTMLElement, markdown: string) => () => void'
+        required: true
+        description: 描いた結果の要素に Markdown を描き、片付ける関数を返却する関数（`mount` が `attachInteractions` に指定する）
+    returns:
+      type: () => void
+      description: 描いた結果とボタンを取り除き、`renderPreview` が返した片付ける関数を呼び、`pre` の `hidden` を外す関数
+    side_effects: コードブロックに描いた結果の要素とボタンを配置する
+    callees:
+      - MOD-472-306#functions[renderCodeRaw]
+      - '#functions[prefixPreviewIds]'
+    unit_tests:
+      - name: test_attach_code_previews
+        case: 正常
+        summary: 既定で描いた結果を出し、押すと元の Markdown に切り替える
+        condition: '`data-mdmark-markdown` を持つコードブロック（中身 `# 見出し`）と、持たない `ts` のコードブロック。描いた結果の要素に `<h1 id="a">見出し</h1>` を入れる `renderPreview` を指定し、Raw のボタンを 2 回押す'
+        mock: '`renderPreview` を、呼ばれた Markdown を記録する関数に差し替える'
+        expected: '`renderPreview` が `# 見出し` で 1 回だけ呼ばれる。付けた直後は `pre` が `hidden` で、描いた結果の見出しの `id` が `mdmark-preview-1-a`、ボタンが `aria-pressed="false"`。1 回目の後は描いた結果が `hidden` で `aria-pressed="true"`、2 回目の後は元に戻る。`ts` のコードブロックにはボタンも描いた結果も無い'
+      - name: test_attach_code_previews_when_raw
+        case: 正常
+        summary: '`data-mdmark-raw` のコードブロックは初めて描いた結果へ切り替えたときに描く'
+        condition: '`data-mdmark-markdown`・`data-mdmark-raw` を持つコードブロック。付けた後に Raw のボタンを押す'
+        mock: '`renderPreview` を、呼ばれた回数を記録する関数に差し替える'
+        expected: 付けた直後は `renderPreview` が呼ばれず、`pre` が見えてボタンが `aria-pressed="true"`。押した後は 1 回呼ばれ、描いた結果が見える
+      - name: test_attach_code_previews_when_render_failed
+        case: 異常
+        summary: 描けなければ元の Markdown のままにする
+        condition: '`data-mdmark-markdown` を持つコードブロックに、例外を投げる `renderPreview` を指定する'
+        mock: '`renderPreview` を、`Error` を投げる関数に差し替える'
+        expected: 例外が出ず、`pre` が `hidden` を持たず、ボタンと描いた結果の要素が無い
+      - name: test_attach_code_previews_when_detached
+        case: 正常
+        summary: 削除すると描いた結果とボタンを取り除く
+        condition: 描いた結果を出したコードブロックで、戻りの関数を呼ぶ
+        mock: '`renderPreview` を、片付ける関数の呼び出しを記録する関数を返す関数に差し替える'
+        expected: 片付ける関数が 1 回呼ばれ、ボタンと描いた結果の要素が無く、`pre` が `hidden` を持たない
+    status: planned
+  - name: prefixPreviewIds
+    title: 描いた結果の ID に頭を付ける
+    container: src/code-block/code-preview.interact.ts
+    kind: 関数
+    scope: internal
+    usecase: markdownのコードブロックを描いた結果と見比べる
+    summary: 描いた結果の中の `id` と、それを指す `href="#…"`・`aria-controls`・`aria-labelledby`・`aria-describedby`・`for` の値に、`PREVIEW_ID_PREFIX` と通し番号の頭を付ける
+    description: '`id` を持つ要素の `id` に `{PREVIEW_ID_PREFIX}{n}-` を付け、同じ要素の中の `href` が `#` で始まるリンクと、ID を指す属性（空白で区切った複数の ID を含む）のうち、付けた `id` を指す値を同じく書き換える。描いた結果の外を指す値は書き換えない'
+    args:
+      - name: el
+        type: HTMLElement
+        required: true
+        description: 描いた結果の要素
+      - name: n
+        type: number
+        required: true
+        description: 文書の頭からの通し番号（1 から）
+    returns:
+      type: void
+      description: なし
+    side_effects: 描いた結果の中の属性を書き換える
+    unit_tests:
+      - name: test_prefix_preview_ids
+        case: 正常
+        summary: ID とそれを指す属性に頭を付ける
+        condition: '`<h2 id="x">`・`<a href="#x">`・`<button aria-controls="x y">`（`y` を持つ要素は無い）・`<a href="#outer">` を持つ要素と `n` が 2'
+        mock: なし
+        expected: '`id` が `mdmark-preview-2-x`、`href` が `#mdmark-preview-2-x`、`aria-controls` が `mdmark-preview-2-x y`、`#outer` はそのまま'
+    status: planned
+tags:
+  - name: action:操作
+  - name: topic:dom
+  - name: topic:イベント
+  - name: topic:部品
+  - name: action:描画
