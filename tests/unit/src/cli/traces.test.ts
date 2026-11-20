@@ -154,3 +154,30 @@ test("test_hide_rendered_html", async () => {
     '<zq-chart class="zq-x" data-zq-mermaid style="color:var(--zq-fg)"><a href="mdmark-intro.md">mdmark</a></zq-chart><img src="zq-asset:1">',
   );
 });
+
+// 文書の中の id を指す href="#…"・aria-*・for・headers も id と同じく置き換え、指す先の id と一致させる（正常系）
+test("test_hide_rendered_html_keeps_id_references", async () => {
+  // 準備
+  const { hideRenderedHtml } = await loadTraces();
+  const html = [
+    '<sup><a id="mdmark-fnref-1-0" href="#mdmark-fn-1" aria-describedby="mdmark-fn-tip-1-0 mdmark-note-1">[1]</a></sup>',
+    '<span role="tooltip" id="mdmark-fn-tip-1-0">脚注</span>',
+    '<label for="mdmark-input-1">a</label><td headers="mdmark-th-1">b</td>',
+    '<a href="mdmark-intro.md#mdmark">外のリンク</a>',
+    '<ol><li id="mdmark-fn-1">脚注の一覧</li></ol>',
+  ].join("");
+  // 実行
+  const hidden = hideRenderedHtml(html);
+  // 検証
+  const ids = new Set(
+    [...hidden.matchAll(/\sid="([^"]*)"/g)].map((match) => match[1]),
+  );
+  const href = /href="#([^"]*)"/.exec(hidden)?.[1];
+  const described = /aria-describedby="([^"]*)"/.exec(hidden)?.[1] ?? "";
+  expect(ids.has(href)).toBe(true);
+  expect(ids.has(described.split(" ")[0])).toBe(true);
+  expect(described).toBe("zq-fn-tip-1-0 zq-note-1");
+  expect(hidden).toContain('for="zq-input-1"');
+  expect(hidden).toContain('headers="zq-th-1"');
+  expect(hidden).toContain('href="mdmark-intro.md#mdmark"');
+});
