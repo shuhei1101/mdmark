@@ -6,6 +6,7 @@ import { env, type TextDocument, Uri, window, workspace } from "vscode";
 import { readFrontmatterValues } from "../../../src/cli/documents.ts";
 import { formatCheckIssue } from "../../../src/cli/issues.ts";
 import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
+import { readFrontmatterMetadata } from "../../../src/knowledge/references.ts";
 import type { PreviewConfig } from "../config.ts";
 import { applyColorTheme, isFile, loadConfig } from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
@@ -22,25 +23,20 @@ import { embedLocalLibraries, embedLocalSyntax } from "./embed.ts";
 import { buildExportHtml, resolveExportPath } from "./html.ts";
 import { writeFileAtomically } from "./write.ts";
 
-/** 書き出した後に何をするか */
-/** 書き出す HTML の `<title>`: 先頭のフロントマターの空でない文字列の `title`、無ければ Markdown のファイル名 */
+/** 書き出す HTML の `<title>`: 先頭のフロントマターの使用できる `title`、無ければ Markdown のファイル名 */
 function exportTitle(options: {
   markdownPath: string;
   markdown: string;
 }): string {
   const { markdownPath, markdown } = options;
-  const value = readFrontmatterValues({ [markdownPath]: markdown })[
-    markdownPath
-  ];
-  const title =
-    typeof value === "object" && value !== null && !Array.isArray(value)
-      ? (value as Record<string, unknown>).title
-      : undefined;
-  return typeof title === "string" && title !== ""
-    ? title
-    : basename(markdownPath);
+  return (
+    readFrontmatterMetadata(
+      readFrontmatterValues({ [markdownPath]: markdown })[markdownPath],
+    ).title ?? basename(markdownPath)
+  );
 }
 
+/** 書き出した後に何をするか */
 export type ExportMode = "export" | "browser" | "print";
 
 /** 書き出した通知のボタン */
