@@ -15,7 +15,7 @@ data_models:
         description: 索引のバージョン
       - name: docs
         type: MdmarkIndexDoc[]
-        description: 文書（`id`・`path`・`title` が必須、`description`・`aliases`・`tags`・`related` が任意。`tags` の要素は文字列か `MdmarkIndexDocTag`、`related` の要素は文字列か `MdmarkIndexRelated`）
+        description: 文書（`id`・`path` が必須、`title`・`description`・`aliases`・`tags`・`related` が任意。`tags` の要素は文字列か `MdmarkIndexDocTag`、`related` の要素は文字列か `MdmarkIndexRelated`）
       - name: terms
         type: MdmarkIndexTerm[] | undefined
         description: 用語（`id`・`term`・`meaning` が必須、`aliases`・`avoid` が任意）
@@ -90,6 +90,8 @@ constants:
       | --- | --- |
       | `doc_tags` | 空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクトの並び |
       | `doc_related` | 空でない文字列か、`to`（必須・空でない文字列）・`type`（必須・`MdmarkRelationType` の値）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクトの並び。件数の上限を配置しない |
+
+      `docs` の要素の `title` は任意。
 
       `normalizeIndex` がこれで検査する
     value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "doc_tags", required: false }, related: { type: "doc_related", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } } }'

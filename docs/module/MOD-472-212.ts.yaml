@@ -65,7 +65,7 @@ functions:
     kind: 関数
     scope: public
     summary: 描くごとに `nonce` を作って `env` に入れ、解析器で Markdown を HTML にし、`sanitize` をかけ、コアルールが決めた `env.features` と、`env.warnings` に集めた記載の警告と一緒に返却する
-    description: '`render` と `mount` が共通で使用する。解析の前に `splitFrontmatter` で文書の先頭のフロントマターを空白にした Markdown を解析器に指定し、フロントマターの中身と閉じる行の位置を `env.frontmatter` に入れる（表示はコアルールの `insertFrontmatter` が差し込む）。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使用するときに呼ぶ）、呼び出しごとの値は `env` で指定する。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から除外するため、同じ入力には同じ文字列を返却する'
+    description: '`render` と `mount` が共通で使用する。`references.docs` があれば `normalizeIndex` で検査した索引の `docs` をそれに替え（索引が無いときも `docs` だけの索引にする）、`title` の無い文書は拡張子を落としたファイル名で補ってから `env.index` に入れる。`docId` は替えた後の `docs` で確認する。解析の前に `splitFrontmatter` で文書の先頭のフロントマターを空白にした Markdown を解析器に指定し、フロントマターの中身と閉じる行の位置を `env.frontmatter` に入れる（表示はコアルールの `insertFrontmatter` が差し込む）。解析器はモジュールで 1 つだけ作り（`createParser` を初めて使用するときに呼ぶ）、呼び出しごとの値は `env` で指定する。`nonce` は `crypto.getRandomValues` の 16 バイトを 16 進にしたもので、`sanitize` が出力から除外するため、同じ入力には同じ文字列を返却する'
     args:
       - name: options
         type: '{ markdown: string; config: ResolvedConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode>; resolveIdLink?: ResolveIdLink }'
@@ -117,6 +117,18 @@ functions:
         condition: '`<!-- param -->` の範囲に `strength` の定義を配置した文書。設定の `labels` は `{ paramCopy: "コピー" }`'
         mock: なし
         expected: '`button.mdmark-param-copy` の文字が `コピー` で、`今の値をコピーする` が無い'
+      - name: test_render_document_when_references_docs
+        case: 正常
+        summary: 参照の表の `docs` で関連文書の一覧のタイトルを出し、フロントマターで加えた文書の `docId` を受ける
+        condition: '索引の `api` が `title` を持たず、`references.docs` の `api` が `title: "公開関数の一覧"`、`references.backlinks.arch` が `["api"]`、`docId` が `arch`'
+        mock: なし
+        expected: 関連文書の一覧に `公開関数の一覧` のリンクがある
+      - name: test_render_document_when_index_title_missing
+        case: 正常
+        summary: 参照の表が無く索引の文書に `title` が無いときはファイル名で出す
+        condition: '索引の `api`（`path: "api.md"`、`title` 無し）が `related` に `arch` を持ち、`references` を省き、`docId` が `arch`'
+        mock: なし
+        expected: 関連文書の一覧に `api` のリンクがある
   - name: collectWarnings
     title: 記載の警告を取り出す
     container: src/render/index.ts

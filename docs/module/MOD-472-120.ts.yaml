@@ -10,7 +10,7 @@ functions:
     usecase: 共通
     summary: '文書の画像・外部ライブラリ・拡張・テーマ・参照の表を集め、書き出しの中身と警告を返却する'
     description: |-
-      文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み込み、索引があれば参照の表を作って、書き出しの中身と警告を返却する。
+      文書の画像を埋め、マーカーのある外部ライブラリと設定の拡張と色分けのモジュールがまとめられることを確認して読み込み先を集め、`html-scripts` がオンの文書の範囲の `ts`・`js` を `compileHtmlScripts` で変えて `embeds.htmlScripts` に入れ、`theme` を読み込み、索引があれば `readFrontmatterValues` で解析したフロントマターも指定して参照の表を作り（文書のタイトルは参照の表の `docs` の `title`、索引が無いときは `documentTitle` にフロントマターの `title` を指定して決める）、書き出しの中身と警告を返却する。
       設定に `assets.root` があれば設定ファイルのフォルダから解決し、文書ごとに `copyMedia`（書き出しの中で共有する `copied` を指定する）の後に `inlineImages` を呼ぶ。
       `bundle` では `inlineImages` に共有の表を指定し、埋めた画像を `payload.assets` に入れる。
       設定の `features` で `images`・`media` をオフにした文書も同じく扱う。
@@ -170,6 +170,7 @@ functions:
       - 'MOD-472-124#functions[loadAliases]'
       - 'MOD-472-113#functions[copyMedia]'
       - 'MOD-472-112#functions[inlineImages]'
+      - MOD-472-117#functions[readFrontmatterValues]
     status: planned
   - name: runExport
     title: 文書を HTML に書き出す

@@ -16,6 +16,9 @@ data_models:
       - name: glossary
         type: MdmarkGlossaryEntry[]
         description: 各文書の用語集の表から入れた用語（`term`・`aliases`・`meaning`・`docId`・`avoid`）
+      - name: docs
+        type: MdmarkIndexDoc[] | undefined
+        description: 索引の文書をフロントマターの値で補い、索引に無い文書を加えた並び（どの文書も `title` を持つ）。`collectReferences` は常に入れる。利用側が組み立てた参照の表で無いときは、`renderDocument` は `opts.index` の `docs` を使用する
   - name: MdmarkGlossaryEntry
     title: 用語集の表の用語
     container: src/knowledge/references.ts
@@ -37,6 +40,24 @@ data_models:
       - name: avoid
         type: string[] | undefined
         description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。`collectReferences`・`readGlossaryRows` は常に入れる。利用側が組み立てた参照の表で無いときは、やめた言い方を持たない用語として扱う
+  - name: FrontmatterMetadata
+    title: フロントマターのメタデータ
+    container: src/knowledge/references.ts
+    role: DTO
+    summary: 1 つの文書のフロントマターから取り出した、使用できる値だけのメタデータ（内部の型）
+    properties:
+      - name: title
+        type: string | undefined
+        description: 空でない文字列の `title`
+      - name: description
+        type: string | undefined
+        description: 空でない文字列の `description`
+      - name: aliases
+        type: string[] | undefined
+        description: 空でない文字列の並びの `aliases`
+      - name: tags
+        type: (string | MdmarkIndexDocTag)[] | undefined
+        description: 索引の `docs[].tags` と同じ要素の並びの `tags`
 functions:
   - name: collectReferences
     title: 参照の表を作る
@@ -44,10 +65,10 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と全ての文書の本文から、文書ごとの被参照と各文書の用語集の表の用語を返却する
-    description: '`normalizeIndex` で合う文書だけを使用する。各文書の本文を解析器でトークンにし、文書の `features` のマーカーを重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` のマーカーの表を `readGlossaryTable` で読み込む（表の用語はやめた言い方の列を `avoid` に持つ）。コード・リンク・見出し・用語集の表の中は照合しない。`related` の要素の相手（`readRelated` の `to`）も参照に数える'
+    description: '`normalizeIndex` で合う文書だけを使用する。各文書の本文を解析器でトークンにし、文書の `features` のマーカーを重ねた機能で、`link_open` の `href` を `resolveLink` で解き、テキストのトークンを `findWords` で文書の別名と照合し、`glossary` のマーカーの表を `readGlossaryTable` で読み込む（表の用語はやめた言い方の列を `avoid` に持つ）。コード・リンク・見出し・用語集の表の中は照合しない。`related` の要素の相手（`readRelated` の `to`）も参照に数える。照合の前に `supplementIndexDocs` で索引の文書をフロントマターの値で補い、加えた文書も参照元・参照先にする。補った文書の並びを `docs` に入れる'
     args:
       - name: input
-        type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig }'
+        type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig; frontmatter?: Record<string, unknown> }'
         required: true
         description: 索引・文書のパスから本文を参照する表・設定
     returns:
@@ -58,6 +79,7 @@ functions:
       - 'MOD-472-262#functions[resolveLink]'
       - 'MOD-472-257#functions[findWords]'
       - 'MOD-472-259#functions[readGlossaryTable]'
+      - '#functions[supplementIndexDocs]'
     unit_tests:
       - name: test_collect_references
         case: 正常
@@ -89,6 +111,18 @@ functions:
         condition: '`api` の `related` が `[{ to: "arch", type: "requires", when: "前提を確認するとき" }]`、`guide` の `related` が `["arch"]` で、どちらの本文も `arch` をリンクも別名でも指さない'
         mock: なし
         expected: '`backlinks.arch` が `["api", "guide"]`'
+      - name: test_collect_references_when_frontmatter_metadata
+        case: 正常
+        summary: フロントマターで補った文書を `docs` に入れ、加えた文書も被参照に数える
+        condition: インターフェース定義『参照の表を作る』の「正常系（フロントマターのメタデータ）」の索引・文書・`frontmatter`
+        mock: なし
+        expected: 同じフローの期待値と等しい
+      - name: test_collect_references_when_no_frontmatter_input
+        case: 正常
+        summary: '`frontmatter` を省くと索引に無い文書を加えず、被参照は今と同じ'
+        condition: 上と同じ索引・文書で `frontmatter` を省く
+        mock: なし
+        expected: '`backlinks` に `note.md` のキーが無く、`docs` が索引の文書だけ'
     refs:
       - IF-472-31#
   - name: parseDocument
@@ -120,6 +154,123 @@ functions:
         mock: なし
         expected: トークンに `../設計/arch.md` の `link_open` が無く、用語集の表の用語の行が元の本文の行
     status: planned
+  - name: readFrontmatterMetadata
+    title: フロントマターのメタデータを取り出す
+    container: src/knowledge/references.ts
+    kind: 関数
+    scope: internal
+    summary: 呼ぶ側が解析したフロントマターの値から、`title`・`description`・`aliases`・`tags` のうち型の合うキーだけを取り出す
+    description: 値がマッピング（配列でないオブジェクト）でないときは空のメタデータを返却する。`tags` の要素の検査は `normalizeIndex` の `doc_tags` と同じ。型の合わないキーは入れず、例外を投げない
+    args:
+      - name: value
+        type: unknown
+        required: true
+        description: '`input.frontmatter` の 1 つの文書の値'
+    returns:
+      type: FrontmatterMetadata
+      description: 使用できる値だけのメタデータ
+    callees:
+      - MOD-472-254#functions[normalizeIndex]
+    refs:
+      - IF-472-31#constraints[フロントマターのメタデータ]
+    unit_tests:
+      - name: test_read_frontmatter_metadata
+        case: 正常
+        summary: 型の合うキーだけを取り出す
+        condition: '`{ title: "メモ", description: 1, aliases: "別名", tags: ["設計", { name: "topic:mcp", main: true }], id: "x" }`'
+        mock: なし
+        expected: '`{ title: "メモ", tags: ["設計", { name: "topic:mcp", main: true }] }`'
+      - name: test_read_frontmatter_metadata_when_not_mapping
+        case: 正常
+        summary: マッピングでない値は空にする
+        condition: '`["title"]`・`"title"`・`null`'
+        mock: なし
+        expected: どれも `{}`
+  - name: supplementIndexDocs
+    title: 索引の文書をフロントマターで補う
+    container: src/knowledge/references.ts
+    kind: 関数
+    scope: internal
+    summary: 索引の文書に無いキーをフロントマターの値で補い、索引に無く `title` を持つ文書を加えた文書の並びを返却する
+    description: '`collectReferences`・`checkIndex`・`collectMatches` が共通で呼ぶ。各文書の値を `readFrontmatterMetadata` で取り出し、索引の文書は索引に無いキーだけを補う。`documents` にあって索引に無いパスは、`title` を持ち、索引の `id` と重ならないときだけ `id` と `path` をそのパスにして加える。補った後も `title` が無い文書は `resolveDocTitle` で本文の最初の h1・ファイル名で補う。引数を書き換えない'
+    args:
+      - name: input
+        type: '{ index: MdmarkIndex; documents: Record<string, string>; frontmatter?: Record<string, unknown> }'
+        required: true
+        description: '`normalizeIndex` で検査した索引・文書の本文・解析済みのフロントマター'
+    returns:
+      type: '{ docs: MdmarkIndexDoc[]; added: Set<string>; metadata: Map<string, FrontmatterMetadata> }'
+      description: 補った文書の並び・加えた文書のパス・文書のパスから取り出したメタデータ
+    callees:
+      - '#functions[readFrontmatterMetadata]'
+      - '#functions[resolveDocTitle]'
+      - MOD-472-262#functions[normalizePath]
+    refs:
+      - IF-472-31#constraints[フロントマターのメタデータ]
+      - DATA-472-11#
+    unit_tests:
+      - name: test_supplement_index_docs
+        case: 正常
+        summary: 索引に無いキーだけを補い、両方にあるキーは索引の値にする
+        condition: '索引の `api` が `title: "API"`、フロントマターが `{ title: "公開関数", description: "引数の一覧" }`'
+        mock: なし
+        expected: '`api` が `title: "API"`・`description: "引数の一覧"`'
+      - name: test_supplement_index_docs_when_unindexed
+        case: 正常
+        summary: '`title` を持つ索引に無い文書だけを加える'
+        condition: '`documents` に索引に無い `note.md`（フロントマター `{ title: "メモ" }`）と `draft.md`（フロントマター無し）'
+        mock: なし
+        expected: '`docs` の最後が `{ id: "note.md", path: "note.md", title: "メモ" }`、`added` が `note.md` だけ'
+      - name: test_supplement_index_docs_when_id_conflicts
+        case: 正常
+        summary: 索引の `id` と重なる文書は加えない
+        condition: '索引に `id: "note.md"`・`path: "a.md"` があり、索引に無い `note.md` がフロントマターに `title` を持つ'
+        mock: なし
+        expected: '`added` が空'
+      - name: test_supplement_index_docs_when_no_title
+        case: 正常
+        summary: どこにも `title` が無い索引の文書は h1 かファイル名で補う
+        condition: '索引の `guide`（`path: "使い方/guide.md"`、`title` 無し）の本文が `# 使用方法`、`faq`（`title` 無し）の本文に h1 が無い'
+        mock: なし
+        expected: '`guide` の `title` が `使用方法`、`faq` の `title` が `faq`'
+  - name: resolveDocTitle
+    title: 文書のタイトルを決める
+    container: src/knowledge/references.ts
+    kind: 関数
+    scope: internal
+    summary: 索引の `title`、無ければフロントマターの `title`、無ければ本文の最初の h1 の文字、無ければ拡張子を落としたファイル名を返却する
+    description: h1 はフロントマターとコードブロックの中を除いた、行頭が `# ` の最初の行。CLI の `documentTitle` もこの関数を呼ぶ
+    args:
+      - name: doc
+        type: '{ path: string; markdown: string; indexTitle?: string; frontmatterTitle?: string }'
+        required: true
+        description: 文書のパス・本文・索引のタイトル・フロントマターのタイトル
+    returns:
+      type: string
+      description: 文書のタイトル
+    callees:
+      - MOD-472-217#functions[splitFrontmatter]
+    refs:
+      - DATA-472-11#fields[title]
+    unit_tests:
+      - name: test_resolve_doc_title
+        case: 正常
+        summary: 索引のタイトルを最優先する
+        condition: '`indexTitle: "API"`、`frontmatterTitle: "公開関数"`、本文の h1 は `一覧`'
+        mock: なし
+        expected: '`API`'
+      - name: test_resolve_doc_title_when_frontmatter
+        case: 正常
+        summary: 索引のタイトルが無ければフロントマターのタイトルを h1 より優先する
+        condition: '`frontmatterTitle: "配布の手順"`、本文の h1 は `はじめに`'
+        mock: なし
+        expected: '`配布の手順`'
+      - name: test_resolve_doc_title_when_no_heading
+        case: 正常
+        summary: h1 も無ければファイル名
+        condition: '`path: "使い方/guide.md"`、本文に h1 が無く、フロントマターの中に `# 見出し` の行がある'
+        mock: なし
+        expected: '`guide`'
 lead: '文書と用語の参照の表の作成を受け持ち、参照の表の作り方や中身を変えるときに参照する。'
 tags:
   - name: topic:被参照
