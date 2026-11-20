@@ -9,7 +9,7 @@ states:
     notes:
       定義: モックの `CLASS`・`CLASS_DATA`（`docs/mock/refs/596/assets/samples.js`）
   - name: MembersCollapsed
-    description: 「基本図形」のメンバーを閉じた。名前と「メンバー 3」の 1 行になる
+    description: 「基本図形」のメンバーを閉じた。名前と右向きの山形の開閉のボタンの 1 行（高さ 36px。メンバーの数の文字は出さない）になる
     args:
       - name: collapsed
         value: '["基本図形"]'
@@ -74,7 +74,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 閉じた namespace とメンバーを閉じたクラスの ID。閉じた namespace は名前の行の下の行に「クラス {数} 件」、閉じたクラスは名前と「メンバー {数}」の開閉のボタンの 1 行
+    description: 閉じた namespace とメンバーを閉じたクラスの ID。閉じた namespace は名前の行の下の行に「クラス {数} 件」、閉じたクラスは名前と右向きの山形の開閉のボタンの 1 行（メンバーの数はボタンのスクリーンリーダー向けの名前に持つ。クラス名の行は種類の行を持たない 1 行で、種類の文字と開閉のボタンを同じ行の右端に置く）
   - name: entered
     type: 文字列
     required: false
