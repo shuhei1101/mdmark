@@ -1,0 +1,19 @@
+confirmations:
+  - topic: 差分のブロックでのフロントマターの変更の示し方（#462）
+    decision: 機能 frontmatter がオンのときは既にある表示を差分のブロックの色で示し、オフのときは変更・削除したフロントマターだけを本文の先頭に差し込む（推奨案 C）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/735#discussion_r4638920758
+  - topic: フロントマターを書き換えた差分のブロックの読み上げの名前
+    decision: 本文のブロックと同じ「追加:」と読み上げる（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/735#discussion_r4638921270
+  - topic: モックの見た目（はみ出す表の既定はどの列も留めない・差分のブロックのフロントマター）
+    decision: モックの見た目で進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/735#discussion_r4638922072
