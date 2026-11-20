@@ -65,7 +65,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T04:09:30.271607+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:20:54.588221+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 公開ドキュメントに、ツールチップと表の重なりの記述が無く、利用者の操作・記法・設定も変わらないため
