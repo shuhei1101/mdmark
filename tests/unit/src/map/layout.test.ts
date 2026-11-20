@@ -486,10 +486,10 @@ test("test_layout_map_when_collapsed_height", async () => {
     { collapsed: ["store"] },
     { store: { size: { w: 120, h: 30 } } },
   );
-  // 検証（タイトルの行 36px + 数の行 17px + 余白 上下 6px）
+  // 検証（タイトルの行 36px + 数の行 17px + 余白 上下 6px + 二重の枠線 6px）
   const store = layout.groups.find((group) => group.id === "store");
   expect(store?.collapsed).toBe(true);
-  expect(store?.h ?? 0).toBeGreaterThanOrEqual(59);
+  expect(store?.h ?? 0).toBeGreaterThanOrEqual(65);
 });
 
 // 間を広げる（正常系）
