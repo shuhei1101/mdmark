@@ -2319,9 +2319,12 @@ test("test_normal_when_markdown_code_previewed", async () => {
     "nav.mdmark-backlinks",
   ])
     expect(inner.querySelector(selector)).toBeNull();
+  expect(el.querySelectorAll("aside.mdmark-side-toc")).toHaveLength(1);
   expect(
-    el.querySelectorAll("aside.mdmark-side-toc").length,
-  ).toBeLessThanOrEqual(1);
+    [...el.querySelectorAll(".mdmark-side-toc-list a")].some((link) =>
+      link.textContent?.includes("概要"),
+    ),
+  ).toBe(true);
   // 実行・検証: 押すとそのコードブロックだけ元の Markdown を出し、スクロールの位置は変わらない
   const page = [window.scrollX, window.scrollY];
   md.raw.click();
