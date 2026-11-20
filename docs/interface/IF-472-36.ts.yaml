@@ -302,7 +302,7 @@ request:
     location: argument
     description: 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。複数の文書を指定できる
     example: '{ "使い方/guide.md": "# 使用方法\n\nワークスペースを開く。" }'
-    notes: 索引に無いパスの文書は無視する。他の文書の用語集の表の用語も、この表にある本文から読み込む
+    notes: 索引に無いパスの文書は、`input.frontmatter` に使用できる `title` を持つときだけ索引の文書として加え、ほかは無視する。他の文書の用語集の表の用語も、この表にある本文から読み込む
   - name: input.config
     type: MdmarkConfig
     required: false

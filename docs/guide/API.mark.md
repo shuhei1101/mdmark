@@ -449,7 +449,7 @@ const { byDocument, avoided, targets } = collectMatches({
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `input.index` | 必須 | 利用側が索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.mark.md)。Schema に合わない文書・用語の項目は除いて照合する |
-| `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。複数の文書を指定できる。索引に無いパスの文書は無視する。ほかの文書の用語集の表の用語も、この表にある本文から読み込む |
+| `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。複数の文書を指定できる。索引に無いパスの文書は、`input.frontmatter` に使用できる `title` を持つときだけ索引の文書として加え、ほかは無視する。ほかの文書の用語集の表の用語も、この表にある本文から読み込む |
 | `input.config` | 任意 | `mount` の `opts.config` と同じ。読み込むのは `features` だけで、文書ごとの `<!-- features: … -->` を重ね、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める |
 | `input.aliases` | 任意 | `mount` の `opts.aliases` と同じ。使用できないエイリアス（`env` を含む）は `mount` と同じく除いて照合する。省くと、エイリアスを照合しない |
 | `input.frontmatter` | 任意 | `collectReferences` の `input.frontmatter` と同じ。補った文書のタイトル・短い説明・別名で照合して返却する |
