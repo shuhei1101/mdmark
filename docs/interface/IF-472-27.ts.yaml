@@ -71,6 +71,34 @@ flows:
       - 解決した時点で `導入の手順` にマーカーが付いている
       - '`無い文字` のコメントはマーカーを持たず、`el` の末尾の `箇所が見つからないコメント` の一覧に出る'
     test: test_normal_when_loaded
+  - name: 正常系（表のセルを選ぶ）
+    summary: 表のセルの文字を選んでコメントのボタンを出しても、セルと表の幅と高さが変わらない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み込み、見出しの行（`名前`・`説明`）と本文の行（`導入の手順`・`手順を整える`）の 2 列の表を持つ要素を配置したページ
+      - name: コメントの読み込みと保存の関数
+        description: '`load` は空の配列を返却する'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mountComments(el, { store, docId })
+        P->>M: 本文の行の 1 列目のセルの文字を選ぶ
+        M->>P: コメントのボタンを表の直後に配置して出す
+        P->>M: 選びを解く
+        M->>P: ボタンを隠す
+      ```
+
+      <!-- /map -->
+    expected:
+      - ボタンを出した後も、表と全てのセルの幅と高さが選ぶ前と同じ
+      - ボタンを隠した後も、表と全てのセルの幅と高さが選ぶ前と同じ
+    test: test_normal_when_table_cell_selected
   - name: 異常系（保存できない）
     summary: '`save` が reject すると、入力欄と本文を残して通知を出し、マーカーを付けない'
     setup:
