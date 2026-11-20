@@ -10358,7 +10358,7 @@ flows:
     expected:
       - '`resolveIdLink` が `id:SC-1#scenarios[正常シナリオ]`・`id:SC-2`・`id:unknown` を受け取る'
       - '`受付`・`台帳` のノードが class `has-link` と、`href` が `https://docs.example.com/SC-1#scenarios[正常シナリオ]`・`https://docs.example.com/SC-2` の `a.mdmark-diagram-node-link` を持ち、`受付` を押すと `https://docs.example.com/SC-1#scenarios[正常シナリオ]` が開く'
-      - '`不明`・`予約` のノードは `a` 要素と `has-link` を持たない。範囲の外の map の図のため、`不明` の `id:unknown` は書き方の警告にしない（制約『範囲の外の map の図を mermaid の図に戻す』）'
+      - '`不明`・`予約` のノードは `a` 要素と `has-link` を持たない。範囲の外の map の図のため、`不明` の `id:unknown` は書き方の警告にしない（制約『範囲の外の map の図の設定の行と見た目を指定する行』）'
     test: test_normal_when_class_node_id_link_resolved
     refs:
       - SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
