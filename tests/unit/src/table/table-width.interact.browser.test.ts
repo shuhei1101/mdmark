@@ -199,14 +199,12 @@ const recordMeasureCalls = (): MeasureCall[] => {
   vi.spyOn(CSSStyleDeclaration.prototype, "setProperty").mockImplementation(
     function (
       this: CSSStyleDeclaration,
-      property: string,
-      value: string | null,
-      priority?: string,
+      ...args: Parameters<CSSStyleDeclaration["setProperty"]>
     ) {
-      if (property === "--mdmark-column-head-width") {
+      if (args[0] === "--mdmark-column-head-width") {
         calls.push("head-width");
       }
-      setProperty.call(this, property, value, priority);
+      setProperty.apply(this, args);
     },
   );
   return calls;
