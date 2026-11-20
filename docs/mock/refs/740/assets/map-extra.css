@@ -1,6 +1,6 @@
-/* #740 のモックの map の図に追加する表示: 確信度のバッジ・計画した変更の色とバッジ・書き出すメニュー・一覧の表示 */
+/* #740 のモックの map の図に追加する表示: 計画した変更の色とバッジ・書き出すメニュー・一覧の表示 */
 
-/* 確信度と変更のバッジ: ノードの右上に枠線をまたいで重ねる。複数は右から並べる */
+/* 変更のバッジ: ノードの右上に枠線をまたいで重ねる */
 .map740-badges {
   position: absolute;
   top: -9px;
@@ -22,19 +22,6 @@
   line-height: 1;
   white-space: nowrap;
 }
-/* 確信度が低いほど枠線を破線にして、色に頼らず見分けられるようにする */
-.map740-badge[data-level="hypothesis"],
-.map740-badge[data-level="unsourced"] { border-style: dashed; }
-.map740-badge[data-level="confirmed"] { color: var(--mdmark-color-text); }
-
-/* 線のバッジ: ラベルの後ろ、またはラベルの無い線の経路の中点に置く */
-.map740-wire-badge {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  pointer-events: none;
-}
-/* ラベルを持つ線のバッジは、ラベルの幅を変えずにラベルの下へ重ねる */
-.mdmark-diagram-label .map740-badge { position: absolute; top: 100%; left: 50%; transform: translate(-50%, 2px); }
 
 /* 計画した変更: 枠線の色とバッジの文字の色で示す */
 .mdmark-diagram-node.map740-added { border-color: var(--mdmark-color-diff-add-sign) !important; box-shadow: 0 0 0 1px var(--mdmark-color-diff-add-sign); }
@@ -110,8 +97,6 @@ path.map740-wire-removed { stroke: var(--mdmark-color-diff-del-sign) !important;
 .map740-list .map740-out { color: var(--mdmark-color-muted); font-size: 13px; }
 .map740-list .map740-out { flex-basis: 100%; padding-left: 1.5em; }
 
-/* 一覧の項目の確信度と変更: 名前の後ろにバッジを並べ、削除の項目は名前に取り消し線を引く */
+/* 一覧の項目の変更: 名前の後ろにバッジを並べ、削除の項目は名前に取り消し線を引く */
 .map740-list .map740-badge { align-self: center; }
 .map740-list .map740-item-removed > .map740-row > .map740-name { text-decoration: line-through var(--mdmark-color-diff-del-sign) 2px; }
-/* 読み上げだけに出す文字 */
-.map740-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

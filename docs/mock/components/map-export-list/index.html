@@ -9,8 +9,8 @@
   <link rel="stylesheet" href="../../../../dist/index.css">
   <!-- 利用側のページの外観（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/287/assets/scene.css">
-  <!-- 確信度・計画した変更・書き出し・一覧の表示の規則（#740 で追加するアセット） -->
-  <link rel="stylesheet" href="../../refs/740/assets/map-extra.css?v=6">
+  <!-- 計画した変更・書き出し・一覧の表示の規則（#740 で追加するアセット） -->
+  <link rel="stylesheet" href="../../refs/740/assets/map-extra.css?v=7">
   <style>
     /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
     .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
@@ -47,9 +47,9 @@
     <p class="state-note">パネルの map のグループの先頭に一覧の表示のボタン（「一覧で表示」と <code>aria-pressed</code>）がある。押すと表示する枠の中を、グループを子を持つ項目・ノードを項目にした入れ子の一覧に替える。ノードの項目は名前・種類の名前・補足の説明・出る線（「→ 相手」と線のラベル）を持つ。↑↓ で項目を移り、→ で開き、← で閉じる。もう一度押すと、倍率・位置・開閉を保ったまま図の表示に戻す</p>
     <div id="list-flow"></div>
 
-    <h2>一覧の表示（確信度と計画した変更を持つ構成図）</h2>
-    <p class="state-note">確信度と変更を持つノードの項目は、名前の後ろに図と同じバッジ（変更・確信度の順）を並べ、スクリーンリーダーでは名前の後ろに「追加」「確信度 推測」のように読み上げる。削除のノードの項目は名前に取り消し線を引く</p>
-    <div id="list-trust"></div>
+    <h2>一覧の表示（計画した変更を持つ構成図）</h2>
+    <p class="state-note">計画した変更を持つノードの項目は、名前の後ろに図と同じ変更のバッジを並べ、スクリーンリーダーでは名前の後ろに「追加」「削除」のように読み上げる。削除のノードの項目は名前に取り消し線を引く</p>
+    <div id="list-changes"></div>
 
     <h2>一覧の表示（シーケンス図）</h2>
     <p class="state-note">メッセージを記載順に「送信元 → 送信先: メッセージ」の項目で並べる</p>
@@ -133,22 +133,21 @@ flowchart LR
     addExport(listFrame, 2);
     addListToggle(listFrame, FLOW_ITEMS)?.click();
 
-    const [trustFrame] = await renderDoc(document.getElementById("list-trust"), FLOW("確信度と計画した変更"));
-    addExport(trustFrame, 6);
-    addListToggle(trustFrame, () => [
-      { name: "利用側のページ", kind: "外部", level: "confirmed", out: ["→ mount（設定と Markdown）"] },
+    const [changesFrame] = await renderDoc(document.getElementById("list-changes"), FLOW("計画した変更"));
+    addExport(changesFrame, 6);
+    addListToggle(changesFrame, () => [
+      { name: "利用側のページ", kind: "外部", out: ["→ mount（設定と Markdown）"] },
       {
         name: "mdmark",
         kind: "グループ",
         children: [
-          { name: "mount", kind: "処理", change: "changed", level: "inferred", out: ["→ マーカーの読み取り"] },
+          { name: "mount", kind: "処理", change: "changed", out: ["→ マーカーの読み取り"] },
           {
             name: "記法の読み取り",
             kind: "グループ",
-            level: "inferred",
             children: [
-              { name: "マーカーの読み取り", kind: "処理", level: "hypothesis", out: ["→ 補足の検査"] },
-              { name: "補足の検査", kind: "処理", level: "unsourced", note: "補足のキーと値を点検する", out: ["→ キャッシュ"] },
+              { name: "マーカーの読み取り", kind: "処理", out: ["→ 補足の検査"] },
+              { name: "補足の検査", kind: "処理", note: "補足のキーと値を点検する", out: ["→ キャッシュ"] },
             ],
           },
           { name: "キャッシュ", kind: "保存先", change: "added" },

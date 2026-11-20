@@ -11,3 +11,15 @@ confirmations:
     approver: shuhei1101
     commit: b8b5a416
     thread: https://github.com/shuhei1101/mdmark/pull/740#discussion_r4639966763
+  - topic: 確信度（No 13）を追加するか（再確認）
+    decision: 案 B。確信度は追加せず、計画した変更・書き出し・一覧の表示だけを追加する（使用する場面が限られた固定の語彙を共通のライブラリの記法に持たせない）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 5b695a05
+    thread: https://github.com/shuhei1101/mdmark/pull/740#issuecomment-7034171813
+  - topic: map の補足に計画した変更のキー `changes` をこの構造で追加してよいか
+    decision: 推奨案 A。DATA-472-34・ER-472-2 の構造で追加する
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 5b695a05
+    thread: https://github.com/shuhei1101/mdmark/pull/740#discussion_r4640080211

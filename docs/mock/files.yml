@@ -1467,15 +1467,15 @@ files:
     tags: [topic:モック]
   - path: refs/740/assets/map-extra.js
     visibility: internal
-    description: '#740 のモックの map の図に追加する表示: 配布物の mount で描いた図の上に、確信度のバッジ・計画した変更の色とバッジ・線のツールチップ・記載の警告・書き出すメニュー（PoC の foreignObject の方式で SVG・PNG をダウンロード）・一覧の表示を重ねる処理。このモックの振る舞いを変えるときに参照する。'
+    description: '#740 のモックの map の図に追加する表示: 配布物の mount で描いた図の上に、計画した変更の色とバッジ・記載の警告・書き出すメニュー（PoC の foreignObject の方式で SVG・PNG をダウンロード）・一覧の表示を重ねる処理。このモックの振る舞いを変えるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: refs/740/assets/map-extra.css
     visibility: internal
-    description: '#740 のモックの map の図に追加する表示の規則: 確信度と変更のバッジ・計画した変更の枠線と線の色・書き出すメニュー・一覧の表示のツリー。このモックの外観を変えるときに参照する。'
+    description: '#740 のモックの map の図に追加する表示の規則: 変更のバッジ・計画した変更の枠線と線の色・書き出すメニュー・一覧の表示のツリー。このモックの外観を変えるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: refs/740/index.md
     visibility: internal
-    description: '#740（map の確信度のマーカー・計画した変更・図の書き出し・一覧の表示）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    description: '#740（map の計画した変更・図の書き出し・一覧の表示）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
   - path: refs/660/assets/band.js
     visibility: internal
@@ -1732,9 +1732,9 @@ files:
     visibility: internal
     description: '部品『plain-table』のモック: マーカーの無い表（既定の種類）の、今の機能（ピン止め・列の幅の変更）と案（並べ替えを加え、押したピンを色の付いた塗りにする）の 3 行の表とはみ出す表と、data・plain の種類。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:テーブル]
-  - path: components/map-trust-changes/index.html
+  - path: components/map-changes/index.html
     visibility: internal
-    description: '部品『map-trust-changes』のモック: map の図のノード・グループ・線の確信度のバッジ、確信度を持つ線のツールチップ、計画した変更（追加・変更・削除）の色とバッジ、記載の警告、ダーク、狭い幅。部品の外観や状態を決めるときに参照する。'
+    description: '部品『map-changes』のモック: map の図のノード・グループ・線の計画した変更（追加・変更・削除）の色とバッジ、記載の警告、ダーク、狭い幅。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: components/map-export-list/index.html
     visibility: internal

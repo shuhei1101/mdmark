@@ -50,7 +50,7 @@
 | [markdown-preview](./markdown-preview/index.html) | 言語 markdown・md のコードブロックの、既定の描いた結果と帯の Raw のボタンで出す元の Markdown（押す前・ホバー・フォーカス・押した後、言語・タイトル・マーカーで既定を元の Markdown にしたブロック・コピー・機能をオフにした文書・狭い幅の見え方） |
 | [map-axis-grid](./map-axis-grid/index.html) | map の軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の配置・section と入れ子のブロックの開閉と中へ入る・選択と強調・再生・補足の layout と書き方の警告・範囲の外のコードブロック・読めない行・狭い幅） |
 | [map-export-list](./map-export-list/index.html) | map の図のパネルの書き出すボタンと SVG・PNG のメニュー、一覧の表示のボタンと構成図・シーケンス図の入れ子の一覧、一覧の表示のボタンを持たない図、狭い幅 |
-| [map-trust-changes](./map-trust-changes/index.html) | map の図のノード・グループ・線の確信度のバッジ、確信度を持つ線のツールチップ、計画した変更（追加・変更・削除）の色とバッジ、記載の警告、ダーク、狭い幅 |
+| [map-changes](./map-changes/index.html) | map の図のノード・グループ・線の計画した変更（追加・変更・削除）の色とバッジ、記載の警告、ダーク、狭い幅 |
 | [map-band](./map-band/index.html) | map の案内・再生の帯（手順のバーだけの帯・区切りを押した手順の再生と再生し直し・バー以外を押して停止・なめらかな移動の実演・手順が多いとき・狭い幅） |
 | [map-mindmap](./map-mindmap/index.html) | map のマインドマップ（根を中央に配置した木の配置・項目の形状と枝の色・枝の開閉と中へ入る・項目の選択と強調・補足の layout と書き方の警告・案内・狭い幅） |
 | [map-kinds](./map-kinds/index.html) | map の図で使えるノードの種類・線の種類・グループ・データの点の一覧と、使う場面の例 |

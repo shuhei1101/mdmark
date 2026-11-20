@@ -1,10 +1,8 @@
 // #740 のモックの map の図に追加する表示を、配布物の mount で描いた本物の図の上に重ねる処理
-// 確信度のバッジ・計画した変更の色とバッジ・線のツールチップ・記載の警告・書き出すメニュー・一覧の表示
+// 計画した変更の色とバッジ・記載の警告・書き出すメニュー・一覧の表示
 
 import { mount } from "../../../../../dist/index.js";
 
-/** 確信度の値と画面に出す名前 */
-export const TRUST_LABELS = { confirmed: "確認済み", inferred: "推測", hypothesis: "仮説", unsourced: "出典なし" };
 /** 計画した変更の値と画面に出す名前 */
 export const CHANGE_LABELS = { added: "追加", changed: "変更", removed: "削除" };
 
@@ -43,76 +41,31 @@ function nodeOf(frame, id) {
   return frame.querySelector(`.mdmark-diagram-node[data-node="${CSS.escape(id)}"]`) ?? frame.querySelector(`[data-group="${CSS.escape(id)}"]`);
 }
 
-/** ノード・グループに確信度と変更のバッジを付け、変更の色の class を付ける */
-function decorateNode(frame, id, { level, change }) {
+/** ノード・グループに変更のバッジと変更の色の class を付ける */
+function decorateNode(frame, id, change) {
   const node = nodeOf(frame, id);
   if (!node) return;
-  const host = node;
-  if (getComputedStyle(host).position === "static") host.style.position = "relative";
-  let box = host.querySelector(":scope > .map740-badges");
-  if (!box) {
-    box = document.createElement("span");
-    box.className = "map740-badges";
-    host.append(box);
-  }
-  if (change) {
-    box.append(badge(CHANGE_LABELS[change], { change }));
-    node.classList.add(`map740-${change}`);
-  }
-  if (level) box.append(badge(TRUST_LABELS[level], { level }));
-  const names = [level && `確信度 ${TRUST_LABELS[level]}`, change && CHANGE_LABELS[change]].filter(Boolean).join("、");
+  if (getComputedStyle(node).position === "static") node.style.position = "relative";
+  const box = document.createElement("span");
+  box.className = "map740-badges";
+  box.append(badge(CHANGE_LABELS[change], { change }));
+  node.append(box);
+  node.classList.add(`map740-${change}`);
   const hit = node.querySelector(".mdmark-diagram-node-hit");
-  if (hit && names) hit.setAttribute("aria-label", `${hit.getAttribute("aria-label")}、${names}`);
+  if (hit) hit.setAttribute("aria-label", `${hit.getAttribute("aria-label")}、${CHANGE_LABELS[change]}`);
 }
 
-/** 線の経路の中点（図の stage の座標） */
-function wireMidpoint(frame, wire) {
-  const path = frame.querySelector(`path.map-wire-hit[data-wire="${CSS.escape(wire)}"]`);
-  if (!path) return null;
-  const length = path.getTotalLength();
-  return path.getPointAtLength(length / 2);
+/** 線に変更の色の class を付ける */
+function decorateWire(frame, wire, change) {
+  for (const path of frame.querySelectorAll(`.mdmark-diagram-wires path[data-wire="${CSS.escape(wire)}"]`)) path.classList.add(`map740-wire-${change}`);
 }
 
-/** 線に確信度のバッジを付ける。ラベルがあればラベルの後ろ、無ければ経路の中点 */
-function decorateWire(frame, wire, { level, change }) {
-  if (change) {
-    for (const path of frame.querySelectorAll(`.mdmark-diagram-wires path[data-wire="${CSS.escape(wire)}"]`)) path.classList.add(`map740-wire-${change}`);
+/** 補足の changes に該当する表示を、ノードと線に付ける */
+export function decorate(frame, { changes = {}, wires = [] }) {
+  for (const [id, { type }] of Object.entries(changes)) {
+    if (wires.includes(id)) decorateWire(frame, id, type);
+    else decorateNode(frame, id, type);
   }
-  if (!level) return;
-  const label = frame.querySelector(`.mdmark-diagram-label[data-wire="${CSS.escape(wire)}"]`);
-  if (label) {
-    label.append(badge(TRUST_LABELS[level], { level }));
-    return;
-  }
-  const point = wireMidpoint(frame, wire);
-  if (!point) return;
-  const holder = document.createElement("span");
-  holder.className = "map740-wire-badge";
-  holder.style.left = `${point.x}px`;
-  holder.style.top = `${point.y}px`;
-  holder.append(badge(TRUST_LABELS[level], { level }));
-  frame.querySelector(".mdmark-diagram-stage").append(holder);
-}
-
-/** 補足の trust・changes に当たる表示を、ノードと線に付ける */
-export function decorate(frame, { trust = {}, changes = {}, wires = [] }) {
-  const ids = new Set([...Object.keys(trust), ...Object.keys(changes)]);
-  for (const id of ids) {
-    const value = { level: trust[id]?.level, change: changes[id]?.type };
-    if (wires.includes(id)) decorateWire(frame, id, value);
-    else decorateNode(frame, id, value);
-  }
-}
-
-/** 線にポインターを重ねたときのツールチップを、線の中点に出したままにする（モックの場面用） */
-export function showWireTip(frame, wire, lines, offset = { x: 12, y: 12 }) {
-  const point = wireMidpoint(frame, wire);
-  if (!point) return;
-  const tip = document.createElement("span");
-  tip.className = "map740-static-tip";
-  tip.style.cssText = `position:absolute;left:${point.x + offset.x}px;top:${point.y + offset.y}px;max-width:240px;padding:6px 10px;border:1px solid var(--mdmark-color-border);border-radius:6px;background:var(--mdmark-color-surface);color:var(--mdmark-color-text);font-size:13px;line-height:1.5;box-shadow:0 2px 8px rgb(0 0 0 / 12%);z-index:5`;
-  tip.innerHTML = lines.map((line, i) => `<span style="display:block;${i === 0 ? "font-weight:600" : ""}">${line}</span>`).join("");
-  frame.querySelector(".mdmark-diagram-stage").append(tip);
 }
 
 /** 図の前に記載の警告を出す（本物の記載の警告と同じ HTML） */
@@ -269,7 +222,6 @@ function renderTree(items) {
       const hasChildren = Boolean(item.children?.length);
       const badges = [
         item.change ? `<span class="map740-badge" data-change="${item.change}">${CHANGE_LABELS[item.change]}</span>` : "",
-        item.level ? `<span class="map740-badge" data-level="${item.level}"><span class="map740-sr">確信度 </span>${TRUST_LABELS[item.level]}</span>` : "",
       ].join("");
       if (item.change === "removed") li.classList.add("map740-item-removed");
       row.innerHTML = `<span class="map740-toggle" aria-hidden="true">${hasChildren ? "▾" : ""}</span><span class="map740-name">${item.name}</span>${badges}${item.kind ? `<span class="map740-kind">${item.kind}</span>` : ""}${item.note ? `<span class="map740-note">${item.note}</span>` : ""}${(item.out ?? []).map((o) => `<span class="map740-out">${o}</span>`).join("")}`;
