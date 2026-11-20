@@ -1060,3 +1060,40 @@ test("test_route_wires_when_placement_patterns", async () => {
     expectNoCrossing(layout, label);
   }
 });
+
+/** 縦横の折れ線が点を通るか（区間の端を含む） */
+const passesPoint = (
+  points: Array<[number, number]>,
+  [px, py]: [number, number],
+): boolean =>
+  points.slice(1).some((point, k) => {
+    const previous = points[k] as [number, number];
+    const between = (v: number, a: number, b: number) =>
+      v >= Math.min(a, b) && v <= Math.max(a, b);
+    if (previous[0] === point[0])
+      return px === point[0] && between(py, previous[1], point[1]);
+    return py === point[1] && between(px, previous[0], point[0]);
+  });
+
+// 両端以外のノードの出入り口の点を通らない（正常系）
+test("test_route_wires_when_foreign_port", async () => {
+  // 準備・実行（M から B への最短の経路の 1 つが、D の左の辺の出入り口の点を通る配置）
+  const layout = await laid(
+    {},
+    {
+      M: { pos: { x: 0, y: 100 } },
+      D: { pos: { x: 168, y: 100 } },
+      B: { pos: { x: 400, y: 0 } },
+    },
+    { nodeFit: "height", source: "flowchart LR\n  M --> B\n  D\n" },
+  );
+  // 検証
+  const d = layout.nodes.find((node) => node.id === "D") as Rect;
+  const ports = (["top", "right", "bottom", "left"] as const).map((side) =>
+    portOf(d, side),
+  );
+  const points = layout.wires.find((wire) => wire.id === "M->B")?.points ?? [];
+  for (const port of ports) {
+    expect(passesPoint(points, port), `D の出入り口の点 (${port})`).toBe(false);
+  }
+});
