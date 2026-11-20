@@ -22,13 +22,14 @@ test("test_read_mermaid_styles", async () => {
   const { readMermaidStyles } = await loadMermaidStyle();
   // 実行
   const styles = readMermaidStyles({
-    lines: [...STYLED_LINES, "class A warn"],
+    lines: [...STYLED_LINES, "class A warn", "style B fill:rgb(255\\,0\\,0)"],
     classTarget: "class",
   });
   // 検証
   expect(styles.nodes.A).toEqual({ fill: "#f9f", stroke: "#c3c" });
   expect(styles.nodes.D).toEqual({ fill: "#ffe08a", stroke: "#b8860b" });
   expect(styles.nodes.E).toEqual({ fill: "#ffe08a", stroke: "#b8860b" });
+  expect(styles.nodes.B).toEqual({ fill: "rgb(255,0,0)" });
   expect(styles.wires[1]).toEqual({ stroke: "#d33" });
 });
 
