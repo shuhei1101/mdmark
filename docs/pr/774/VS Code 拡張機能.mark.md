@@ -20,7 +20,7 @@
 
 ### 結合テストの実行範囲
 
-層は TL-3（結合テスト（フロント））。`judge_integration_scope` は層に一覧と対応表が無く、全てのファイルが R7（要調査）だったため、変更したファイルを参照する結合テストを調べて決めた。
+層は TL-3（結合テスト（フロント））。`judge_integration_scope` は層に一覧と対応表が無く、全てのファイルが R7（要調査）だったため、判定フローチャートで判定し直した（テストのファイルは R2、PR ドキュメントは結合テストが読み込まない）。
 
 <!-- table: {"kind": "data"} -->
 
@@ -31,8 +31,8 @@
 | `docs/pr/774/タスク一覧.yaml` | R7 | なし（同上） | - |
 | `docs/pr/774/要件.mark.md` | R7 | なし（同上） | - |
 | `docs/pr/774/要件.yaml` | R7 | なし（同上） | - |
-| `vscode/tests/integration/export.test.ts` | R7 | `vscode/tests/integration/export.test.ts`（変更したテスト自身） | - |
-| `vscode/tests/integration/preview-open.test.ts` | R7 | `vscode/tests/integration/preview-open.test.ts`（変更したテスト自身） | - |
+| `vscode/tests/integration/export.test.ts` | R2 | `vscode/tests/integration/export.test.ts`（変更したテスト自身） | - |
+| `vscode/tests/integration/preview-open.test.ts` | R2 | `vscode/tests/integration/preview-open.test.ts`（変更したテスト自身） | - |
 
 <!-- /table -->
 
