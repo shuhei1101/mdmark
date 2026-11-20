@@ -19,7 +19,7 @@ scenarios:
         actor R as 読者
         W->>C: mdmark export 文書のパス（出力を指定）
         C->>C: 設定・索引・文書を読み込み、モジュールをまとめ、画像を読み込む
-        C->>F: 配布物・CSS・モジュール・画像・本文を埋めた HTML を書き込む
+        C->>F: 配布物・CSS・モジュール・画像・書き出すときに描いた本文の HTML・純粋な Markdown を埋めた HTML を書き込む
         C-->>W: 出力のパス・終了コード 0
         R->>F: HTML だけを空のフォルダへコピーして file:// で開く
         F-->>R: 文書・表のボタン・用語のツールチップ・図・画像
@@ -608,6 +608,40 @@ scenarios:
       - 書き出した HTML の `title` 要素が `配布の手順`
       - file:// で開くと、本文の先頭にフロントマターの中身が描かれていない
     test: test_normal_when_frontmatter_title
+  - name: 正常シナリオ（元の Markdown を埋め込まない）
+    setup:
+      - name: 目印を持つ文書
+        description: 正常シナリオの見本の文書に、HTML コメント `<!-- 原本だけの目印 -->`・include のマーカーで別の文書の見出し `取り込むセクション` の中を取り込む記載・`extensions` の拡張のマーカーを加えた文書 1 つと、`extensions` に拡張のモジュールを記載した設定
+        notes: 取り込まれる文書は、`取り込むセクション` の後ろの別の見出しに段落 `取り込まない文` を持つ
+      - name: Mock
+        description: 正常シナリオと同じく、外部ライブラリは手元のモジュール
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        actor R as 読者
+        W->>C: mdmark export 文書のパス
+        C->>C: 文書を描いて本文の HTML を作り、純粋な Markdown に変換する
+        C->>F: 本文の HTML と純粋な Markdown を埋め、元の Markdown を埋めない HTML を書き込む
+        C-->>W: 出力のパス・終了コード 0
+        R->>F: file:// で開く
+        F->>F: 埋めた本文の HTML を描く先に入れ、操作を付け、拡張のマーカーを描く
+        F-->>R: 文書・表のボタン・用語のツールチップ・拡張が描いた要素
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - 書き出した HTML のソースに、`原本だけの目印`・マーカーの文字（`<!-- table`・`<!-- include`・`<!-- glossary`）・取り込まれる文書の `取り込まない文` が 0 件
+      - file:// で開くと、同じ文書を `mount` に Markdown を指定して描いたときと同じ見出し・表・取り込んだ `取り込むセクション` の中が描かれる
+      - 表の並べ替え・用語のツールチップ・右側の目次の操作が有効になっている
+      - 拡張のマーカーの場所に拡張が描いた要素があり、通知ブロックが出ない
+      - 外への要求が 0 件
+    test: test_normal_when_markdown_not_embedded
 lead: 文書の作成者が `mdmark export` で Markdown を 1 つ、配布物・利用側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読者は file:// で開いて外を読み込まずに読み込む。
 primary_actor: 文書の作成者
 stakeholders:

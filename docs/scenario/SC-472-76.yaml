@@ -23,7 +23,7 @@ scenarios:
         C->>C: 設定・索引・include の文書を読み込む
         C->>M: collectReferences（索引・文書）
         M-->>C: 参照の表
-        C->>F: 配布物・CSS・モジュール・画像・文書・参照の表を埋めた HTML を書き込む
+        C->>F: 配布物・CSS・モジュール・画像・書き出すときに描いた文書ごとの本文の HTML と純粋な Markdown・参照の表を埋めた HTML を書き込む
         C-->>W: 出力のパス・入れた文書の数・終了コード 0
       ```
 
@@ -532,6 +532,37 @@ scenarios:
       - '`notes.md` を開くと、末尾の関連文書に起点の文書が出る'
       - 外への要求が 0 件
     test: test_normal_when_frontmatter_unindexed_document
+  - name: 正常シナリオ（元の Markdown を埋め込まない）
+    setup:
+      - name: 目印を持つ文書群
+        description: 正常シナリオの文書群の 3 つの文書に、それぞれ HTML コメント `<!-- 原本だけの目印 1 -->`〜`<!-- 原本だけの目印 3 -->` を加えたもの
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as build.out
+        actor R as 読者
+        W->>C: mdmark build
+        C->>C: 文書ごとに本文の HTML を描き、純粋な Markdown に変換する
+        C->>F: 文書ごとの本文の HTML と純粋な Markdown を埋め、元の Markdown を埋めない HTML を書き込む
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+        R->>F: file:// で開き、文書の一覧から別の文書へ移る
+        F-->>R: 埋めた本文の HTML に操作を付けた文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - 書き出した HTML のソースに、`原本だけの目印 1`〜`原本だけの目印 3` とマーカーの文字（`<!-- glossary`）が 0 件
+      - 文書の一覧から 3 つの文書へ移ると、それぞれの文書が描かれ、用語集の文書の表の用語が起点の文書の本文でもツールチップを出す
+      - Chart.js のマーカーの場所に `canvas` が描かれ、画像が描かれる
+      - 外への要求が 0 件
+    test: test_normal_when_markdown_not_embedded
 lead: 文書の作成者が設定の `build` で対象を決めて `mdmark build` を実行し、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる。
 primary_actor: 文書の作成者
 trigger: 文書の作成者が、複数の文書を行き来できる構造でサーバー無しで配りたくなる
