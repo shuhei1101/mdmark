@@ -20,11 +20,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T06:25:14.165821+00:00'
   - process: 複合ユースケース設計
-    status: skipped
+    status: done
     note:
-    reason: 追加する項目は 1 つの図の補足のキーと図の枠の操作で、単一ユースケースをまたぐ流れを変えない。SC-472-87 は単一ユースケース設計で追随する
     updated_by: planner
-    updated_at: '2026-11-20T06:25:23.404850+00:00'
+    updated_at: '2026-11-20T06:49:33.612312+00:00'
   - process: デザインスタイル選定
     status: skipped
     reason: 既存のデザインスタイルの中で map の図の表示を追加するだけで、スタイルを選び直さない
