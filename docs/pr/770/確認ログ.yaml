@@ -1,0 +1,7 @@
+confirmations:
+  - topic: データ『補足』に walkthroughs・layout・groups・changes の 4 つのキーを追加してよいか
+    decision: 推奨案 A。データ『補足』に 4 つのキーを追加し、ER 図『map の補足』のテーブルの列と子のテーブルのキーの列を関連が指す
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 026d3376
+    thread: https://github.com/shuhei1101/mdmark/pull/770#discussion_r4644130816
