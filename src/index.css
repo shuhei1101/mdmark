@@ -10416,30 +10416,74 @@
   .map-er-type {
     color: var(--mdmark-color-muted);
   }
-  .map-er-note,
-  .map-er-toggle {
-    min-width: 24px;
-    min-height: 24px;
-    padding: 0 6px;
-    border: 1px solid var(--mdmark-color-border);
-    border-radius: var(--mdmark-radius);
-    background: var(--mdmark-color-bg);
-    color: inherit;
-    font-size: 12px;
-    cursor: pointer;
+  /* 列の説明のボタン: 枠と面を持たない 14px の i のアイコンを、列の行の高さの中央に置く */
+  .map-er-note-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
   }
   .map-er-note {
-    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
     padding: 0;
+    border: 0;
+    border-radius: var(--mdmark-radius);
+    background: transparent;
+    color: var(--mdmark-color-muted);
     cursor: help;
   }
-  .map-er-toggle {
-    margin-left: auto;
+  .map-er-note svg {
+    width: 14px;
+    height: 14px;
   }
-  .mdmark-diagram-node-kind:has(.map-er-toggle) {
+  .map-er-note:hover {
+    color: var(--mdmark-color-text);
+    background: var(--mdmark-color-surface);
+  }
+  /* ER 図・クラス図の開閉のボタン: グループの開閉と同じ枠線の無い山形。閉じたら右向き */
+  :is(.map-er-toggle, .map-class-toggle) {
+    display: grid;
+    place-items: center;
+    min-width: 24px;
+    min-height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--mdmark-radius);
+    background: transparent;
+    color: var(--mdmark-color-muted);
+    cursor: pointer;
+  }
+  :is(.map-er-toggle, .map-class-toggle):hover {
+    color: var(--mdmark-color-text);
+    background: var(--mdmark-color-surface);
+  }
+  :is(.map-er-toggle, .map-class-toggle)[aria-expanded="false"] svg {
+    transform: rotate(-90deg);
+  }
+  /* テーブル名・クラス名の行を 1 行（36px）にする: 種類の行を名前の行の右端へ重ねる */
+  .mdmark-diagram-node-kind:has(:is(.map-er-toggle, .map-class-toggle)) {
+    position: absolute;
+    top: 6px;
+    right: 6px;
     display: flex;
     align-items: center;
     gap: 4px;
+    margin: 0;
+    padding: 0;
+  }
+  .mdmark-diagram-node:has(:is(.map-er-toggle, .map-class-toggle))
+    > .mdmark-diagram-node-name {
+    position: absolute;
+    top: 0;
+    left: 10px;
+    max-width: calc(100% - 44px);
+    height: 36px;
+    display: flex;
+    align-items: center;
+    margin: 0;
   }
   /* map の ER 図の多重度とラベル・状態遷移図の同じ状態への遷移の層 */
   :is(.map-er-marks, .map-state-loops) {
@@ -10571,8 +10615,7 @@
     color: var(--mdmark-color-muted);
     font-size: 11px;
   }
-  .map-class-note,
-  .map-class-toggle {
+  .map-class-note {
     min-width: 24px;
     min-height: 24px;
     padding: 0 6px;
@@ -10587,9 +10630,6 @@
     border-radius: 50%;
     padding: 0;
     cursor: help;
-  }
-  .map-class-toggle {
-    margin-left: auto;
   }
   .mdmark-diagram-node-kind:has(:is(.map-class-toggle, .map-class-annotation)) {
     display: flex;
@@ -10955,6 +10995,49 @@
   }
   .mdmark-diagram[data-diagram="map"] .map-group.map-movable .map-group-head {
     cursor: grab;
+  }
+  /* グループの左・右・下の縁の 8px の帯: 掴むとグループを動かす。右下の角はボタンに譲る */
+  .mdmark-diagram[data-diagram="map"] .map-group-bar:is(.is-left, .is-right, .is-bottom) {
+    height: auto;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-group-bar.is-left {
+    inset: 36px auto 24px 0;
+    width: 8px;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-group-bar.is-right {
+    inset: 36px 0 24px auto;
+    width: 8px;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-group-bar.is-bottom {
+    inset: auto 24px 0 8px;
+    height: 8px;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-group.is-dragging .map-group-bar {
+    cursor: grabbing;
+  }
+  /* グループの右下の角の大きさを変えるボタン: 24px 四方の押せる範囲に 16px の斜線 */
+  .mdmark-diagram[data-diagram="map"] .map-group-resize {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    display: grid;
+    place-items: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: 0;
+    border-radius: var(--mdmark-radius);
+    background: transparent;
+    color: var(--mdmark-color-muted);
+    cursor: nwse-resize;
+    touch-action: none;
+  }
+  .mdmark-diagram[data-diagram="map"] .map-group-resize:hover {
+    color: var(--mdmark-color-text);
+  }
+  .mdmark-diagram[data-diagram="map"] .map-group-resize:focus-visible {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: -2px;
   }
 
   /* データの印の層: 線とノードの上に重ね、押す・指す操作を下へ通す */

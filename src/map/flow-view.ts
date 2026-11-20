@@ -25,6 +25,7 @@ import {
   KEY_MOVE_PX,
   KEY_MOVE_PX_LARGE,
   moveByKey,
+  resizeByKey,
   nearestSegment,
   startDrag,
 } from "./drag.ts";
@@ -123,6 +124,8 @@ export type MapFlowExtension = {
   title?: string | undefined;
   /** 選べるノードか（undefined なら全てのノードを選べる） */
   selectable?: ((id: string) => boolean) | undefined;
+  /** 線ごとのデータの印の向き（undefined なら線の元から先。both の線は両向き） */
+  packetDirection?: ((wireId: string) => "forward" | "backward") | undefined;
 };
 
 /** 1 つのノードと、そのノードの線と相手のノード */
@@ -214,6 +217,8 @@ const overridesOf = (
     };
   for (const [id, size] of Object.entries(sizes))
     overrides[id] = { ...overrides[id], size };
+  for (const [id, minSize] of Object.entries(state.groupSizes))
+    overrides[id] = { ...overrides[id], minSize };
   return overrides;
 };
 
@@ -387,7 +392,8 @@ const layoutValues = (
 const resetDisabled = (state: MapState): boolean =>
   state.selected.length === 0 &&
   Object.keys(state.positions).length === 0 &&
-  Object.keys(state.wireShifts).length === 0;
+  Object.keys(state.wireShifts).length === 0 &&
+  Object.keys(state.groupSizes).length === 0;
 
 /** 選ぶ・強調するときに残すノードと線 */
 type Kept = { nodes: Set<string>; wires: Set<string> };
@@ -540,8 +546,10 @@ const dragStartOf = (
   | { node: string | null | undefined; wire: string | null | undefined }
   | undefined => {
   const target = event.target instanceof Element ? event.target : undefined;
+  if (!target) return undefined;
+  const corner = target.closest(".map-group-resize");
   if (
-    !target ||
+    !corner &&
     target.closest(
       "button, .mdmark-diagram-node-name, .map-er-columns, .map-class-members",
     )
@@ -550,7 +558,7 @@ const dragStartOf = (
   const node = target.closest("[data-node]")?.getAttribute("data-node");
   const wire = target.closest(".map-wire-hit")?.getAttribute("data-wire");
   const head = target.closest(".map-group-head, .map-group-bar");
-  if (!node && !wire && !head) return undefined;
+  if (!node && !wire && !head && !corner) return undefined;
   return { node, wire };
 };
 
@@ -927,7 +935,9 @@ export const attachMapFlow = (
       return [
         {
           wire: id,
-          direction: wire.both ? "both" : "forward",
+          direction: wire.both
+            ? "both"
+            : (extension?.packetDirection?.(id) ?? "forward"),
           color: packet?.color,
           shape: packet?.shape ?? "circle",
         },
@@ -1068,6 +1078,7 @@ export const attachMapFlow = (
         positions: {},
         wireShifts: {},
         attachments: {},
+        groupSizes: {},
       });
   };
   /** グループとノードの中身の開閉のボタンなら開閉し、`true` を返却する */
@@ -1186,6 +1197,27 @@ export const attachMapFlow = (
     change(next);
     figure.querySelector<HTMLElement>(keyTarget.selector)?.focus();
   };
+  /** グループの角で矢印キーを押して大きさを変える（Shift も押すと大きく） */
+  const resizeWithKey = (
+    group: string,
+    key: { arrow: [number, number]; large: boolean },
+  ) => {
+    const step = key.large ? KEY_MOVE_PX_LARGE : KEY_MOVE_PX;
+    const next = resizeByKey({
+      layout,
+      state,
+      group,
+      dw: key.arrow[0] * step,
+      dh: key.arrow[1] * step,
+    });
+    if (!next) return;
+    change(next);
+    figure
+      .querySelector<HTMLElement>(
+        `[data-group="${CSS.escape(group)}"] .map-group-resize`,
+      )
+      ?.focus();
+  };
   /** Enter・Space でノードを、Enter で線の両端を選ぶ（リンクの Enter はリンクを開く）。選んだら `true` を返却する */
   const selectWithKey = (keyTarget: KeyTarget, event: KeyboardEvent) => {
     const { key } = event;
@@ -1212,6 +1244,15 @@ export const attachMapFlow = (
     const element = event.target instanceof Element ? event.target : undefined;
     const keyTarget = keyTargetOf(element);
     const arrow = ARROWS[event.key];
+    const corner = element
+      ?.closest(".map-group-resize")
+      ?.closest("[data-group]")
+      ?.getAttribute("data-group");
+    if (corner && arrow) {
+      event.preventDefault();
+      resizeWithKey(corner, { arrow, large: event.shiftKey });
+      return;
+    }
     if (keyTarget && arrow && event.altKey) {
       event.preventDefault();
       moveWithKey(keyTarget, { arrow, large: event.shiftKey });

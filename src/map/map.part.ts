@@ -799,6 +799,14 @@ const renderOpenGroups = (args: MapFlowArgs, groupMark: GroupMark): string =>
     .map((group) => renderOpenGroup({ args, group, groupMark }))
     .join("");
 
+/** グループの右下の角の大きさを変えるボタンの斜線 */
+const GROUP_RESIZE_ICON =
+  '<svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M14 6 6 14M14 10l-4 4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>';
+
+/** 動かせるグループの左・右・下の縁の帯と、右下の角の大きさを変えるボタン */
+const groupFrame = (title: string): string =>
+  `${["is-left", "is-right", "is-bottom"].map((side) => `<div class="map-group-bar ${side}" aria-hidden="true"></div>`).join("")}<button class="map-group-resize" type="button" aria-label="${escapeHtml(`${title}の大きさを変える`)}" aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight" title="ドラッグでグループの大きさを変える">${GROUP_RESIZE_ICON}</button>`;
+
 /** 開いたグループ 1 つの面とタイトルの行 */
 const renderOpenGroup = (context: {
   args: MapFlowArgs;
@@ -813,7 +821,7 @@ const renderOpenGroup = (context: {
   const bar = movable
     ? `<div class="map-group-bar" tabindex="0" role="button" aria-label="${escapeHtml(`${group.title}を動かす`)}" aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight" title="ドラッグでグループを動かす"></div>`
     : "";
-  return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(args, group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group, current, plainOwnerId(args, group.id))}${groupMark(group.id, group.title)}</div></div>`;
+  return `<div class="${classes}" data-group="${escapeHtml(group.id)}" style="left:${group.x}px;top:${group.y}px;width:${group.w}px;height:${group.h}px${groupTint(args, group.id)}">${bar}<div class="map-group-head">${disclosure(group.id, group.title, true)}${groupTitle(group, current, plainOwnerId(args, group.id))}${groupMark(group.id, group.title)}</div>${movable ? groupFrame(group.title) : ""}</div>`;
 };
 
 /** 閉じたグループの名前の後ろの文字（無ければ「ノード {数} 件」） */
@@ -1608,8 +1616,8 @@ const renderSeqHead = (context: SeqContext, name: string): string => {
 /** 部品『mapのER図』のテーブルのノードの寸法（px）。列の行は、テーブル名の行の下から同じ高さで並ぶ */
 export const MAP_ER = {
   width: 240,
-  /** テーブル名の行（種類の行と名前）の高さ */
-  head: 56,
+  /** テーブル名の行（名前と開閉のボタンの 1 行）の高さ */
+  head: 36,
   row: 28,
   foot: 6,
   /** ノードの左右に空ける幅（関連の端と多重度の置き場所） */
@@ -1686,7 +1694,7 @@ const erNoteButton = (
     described: note !== undefined,
     annotated: (notes?.length ?? 0) > 0,
   }).replace(/^「(.*)」/, "$1");
-  return `<button class="map-er-note" type="button"${ownerId} aria-label="${escapeHtml(label)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, hint: note, owner, annotations: notes })}" data-tip-owner="${escapeHtml(owner)}">i</button>`;
+  return `<button class="map-er-note" type="button"${ownerId} aria-label="${escapeHtml(label)}" aria-describedby="${tips.add({ kind: "hint", label: column.name, hint: note, owner, annotations: notes })}" data-tip-owner="${escapeHtml(owner)}">${iconSvg("info")}</button>`;
 };
 
 /** ER 図の列の行 1 つ。説明か注記を持つ列は、説明のボタンとツールチップを持つ。`hints` がオフなら説明のボタンを作らず、注記の持ち主の `id` を列の行に付ける */
@@ -1713,7 +1721,7 @@ export const renderMapEr = (
   args: MapErTableArgs,
 ): { toggle: string; columns: string; tips: string } => {
   const label = `${args.name}の列を${args.collapsed ? "開く" : "閉じる"}`;
-  const toggle = `<button class="map-er-toggle" type="button" data-node-toggle="${escapeHtml(args.name)}" aria-expanded="${!args.collapsed}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${args.collapsed ? `列 ${args.columns.length}` : iconSvg("chevron-down")}</button>`;
+  const toggle = `<button class="map-er-toggle" type="button" data-node-toggle="${escapeHtml(args.name)}" aria-expanded="${!args.collapsed}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${iconSvg("chevron-down")}</button>`;
   if (args.collapsed) return { toggle, columns: "", tips: "" };
   const tips = createTips(args.id ?? `map-er-${args.name}`);
   const rows = args.columns
@@ -2353,8 +2361,8 @@ export const renderMapStateDiagram = (args: MapStateArgs): MapPart => {
 /** 部品『mapのクラス図』のクラスのノードの寸法（px）。メンバーの行は、名前の行の下から同じ高さで並ぶ */
 export const MAP_CLASS = {
   width: 220,
-  /** 名前の行（種類の行と名前）の高さ */
-  head: 56,
+  /** 名前の行（名前と種類と開閉のボタンの 1 行）の高さ */
+  head: 36,
   row: 22,
   /** 折り返したメンバーの 2 行目からの 1 行の高さ（メンバーの文字の line-height） */
   line: 16,
@@ -2540,7 +2548,7 @@ export const renderMapClassMembers = (
   const toggle =
     count === 0
       ? ""
-      : `<button class="map-class-toggle" type="button" data-node-toggle="${escapeHtml(node.id)}" aria-expanded="${!args.collapsed}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${args.collapsed ? `メンバー ${count}` : iconSvg("chevron-down")}</button>`;
+      : `<button class="map-class-toggle" type="button" data-node-toggle="${escapeHtml(node.id)}" aria-expanded="${!args.collapsed}" aria-label="${escapeHtml(label)}" title="${escapeHtml(label)}">${iconSvg("chevron-down")}</button>`;
   if (args.collapsed || count === 0) return { toggle, members: "", tips: "" };
   const tips = createTips(args.id ?? `map-class-${node.id}`);
   const attributes = node.members.filter((member) => !member.method);
