@@ -1431,10 +1431,14 @@ const markUsed = (
   }
 };
 
-/** 両端以外のノードの 4 辺の出入り口の点 */
+/** 両端以外のノードの 4 辺（`sides: horizontal` のノードは左右の辺）の出入り口の点 */
 const foreignPortsOf = (
   grid: Grid,
-  context: { leaves: InnerLeaf[]; ends: string[] },
+  context: {
+    leaves: InnerLeaf[];
+    ends: string[];
+    overrides: Record<string, MapOverride>;
+  },
 ): Set<number> => {
   const m = MAP_LAYOUT.clearance;
   const points = new Set<number>();
@@ -1442,12 +1446,19 @@ const foreignPortsOf = (
     if (context.ends.includes(leaf.id)) continue;
     const cx = leaf.x + leaf.w / 2;
     const cy = leaf.y + leaf.h / 2;
-    for (const [x, y] of [
-      [leaf.x + leaf.w + m, cy],
-      [cx, leaf.y + leaf.h + m],
-      [leaf.x - m, cy],
-      [cx, leaf.y - m],
-    ] as Array<[number, number]>) {
+    const horizontal = context.overrides[leaf.id]?.sides === "horizontal";
+    const sides: Array<[number, number]> = horizontal
+      ? [
+          [leaf.x + leaf.w + m, cy],
+          [leaf.x - m, cy],
+        ]
+      : [
+          [leaf.x + leaf.w + m, cy],
+          [cx, leaf.y + leaf.h + m],
+          [leaf.x - m, cy],
+          [cx, leaf.y - m],
+        ];
+    for (const [x, y] of sides) {
       const i = grid.xIndex.get(x);
       const j = grid.yIndex.get(y);
       if (i !== undefined && j !== undefined) points.add(j * grid.nx + i);
@@ -1473,6 +1484,7 @@ const routeEdge = (context: RouteContext, edge: ViewWire): PlacedWire => {
     foreignPorts: foreignPortsOf(grid, {
       leaves,
       ends: [edge.from, edge.to],
+      overrides,
     }),
   };
   const sides = overrides[edge.id]?.ends;
