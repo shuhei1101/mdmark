@@ -131,7 +131,7 @@ section("言語・タイトル・マーカー・機能による見え方", [
   ["言語 md", { language: "md" }],
   ["言語とファイル名（markdown:README.md）", { language: "markdown:README.md" }],
   ["タイトルを持つ（title=README.md）", { title: "README.md" }],
-  ["code のマーカーで既定を元の Markdown にした（例: <!-- code: raw -->）", { raw: true }],
+  ["code のマーカーで既定を元の Markdown にした（例: <!-- code: {\"raw\": true} -->）", { raw: true }],
   ["描いた結果を出したままコピーした（元の Markdown をコピーする）", { copied: true }],
   ["中身に記載の警告がある（描いた結果の中に、文書と同じ警告を出す）", { body: WARNING_SOURCE }],
   ["中身が空（描いた結果は余白だけの面）", { body: "" }],
