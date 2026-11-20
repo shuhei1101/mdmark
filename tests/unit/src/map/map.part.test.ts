@@ -2293,6 +2293,24 @@ test("test_render_map_class_ends_when_label_near_nodes", async () => {
   expect(near).toBe(true);
 });
 
+/** 縦横の折れ線のどれかの区間が、矩形の内側（辺を除く）を通るか（区間を 20 等分した点で確かめる） */
+const polylineEntersRect = (
+  points: Array<[number, number]>,
+  rect: { x: number; y: number; w: number; h: number },
+): boolean => {
+  const inside = (x: number, y: number) =>
+    x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
+  return points.slice(1).some((point, k) => {
+    const previous = points[k] as [number, number];
+    for (let step = 0; step <= 20; step += 1) {
+      const x = previous[0] + ((point[0] - previous[0]) * step) / 20;
+      const y = previous[1] + ((point[1] - previous[1]) * step) / 20;
+      if (inside(x, y)) return true;
+    }
+    return false;
+  });
+};
+
 // 経路の辺のまま付け替え、ほかのテーブルを横切らない（正常系）
 test("test_rewire_map_er_when_near_side", async () => {
   // 準備
@@ -2337,21 +2355,13 @@ test("test_rewire_map_er_when_near_side", async () => {
   expect(first?.[0]).toBe(order.x);
   expect(last?.[0]).toBe(detail.x + detail.w);
   // 検証（どの線の区間も両端以外のテーブルの矩形に入らない）
-  const inside = (x: number, y: number, r: (typeof placed.nodes)[number]) =>
-    x > r.x && x < r.x + r.w && y > r.y && y < r.y + r.h;
   for (const item of wires) {
-    for (const [k, point] of item.points.slice(1).entries()) {
-      const previous = item.points[k] as [number, number];
-      for (const node of placed.nodes) {
-        if (node.id === item.from || node.id === item.to) continue;
-        for (let step = 0; step <= 20; step += 1) {
-          const x = previous[0] + ((point[0] - previous[0]) * step) / 20;
-          const y = previous[1] + ((point[1] - previous[1]) * step) / 20;
-          expect(inside(x, y, node), `${item.id} が ${node.id} を横切る`).toBe(
-            false,
-          );
-        }
-      }
+    for (const node of placed.nodes) {
+      if (node.id === item.from || node.id === item.to) continue;
+      expect(
+        polylineEntersRect(item.points, node),
+        `${item.id} が ${node.id} を横切る`,
+      ).toBe(false);
     }
   }
 });
