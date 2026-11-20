@@ -10636,6 +10636,21 @@
     > * {
     display: none;
   }
+  /* map の状態遷移図の並行の分岐と合流（fork・join）: 細い棒にし、名前と種類の行を出さない */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node[data-shape="fork"] {
+    min-height: 0;
+    padding: 0;
+    border-radius: 2px;
+    background: var(--mdmark-color-text);
+    border-color: var(--mdmark-color-text);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="fork"]
+    > * {
+    display: none;
+  }
   .map-group-icon {
     display: inline-flex;
     align-items: center;

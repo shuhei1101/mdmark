@@ -186,7 +186,13 @@ export type MapMermaidStyles = {
 };
 
 /** 状態遷移図のノードの形状（`junction` はアーキテクチャ図の分岐点） */
-export type MapStateShape = "start" | "end" | "choice" | "note" | "junction";
+export type MapStateShape =
+  | "start"
+  | "end"
+  | "choice"
+  | "note"
+  | "junction"
+  | "fork";
 
 /** ノードの中へ入れる HTML（`head` は種類の行の末尾、`body` はノードの末尾） */
 export type MapNodePart = { head: string; body: string; tips: string };
@@ -198,6 +204,7 @@ const STATE_SHAPE_NAMES = {
   choice: "分岐",
   note: "ノート",
   junction: "分岐点",
+  fork: "並行の分岐と合流",
 } satisfies Record<MapStateShape, string>;
 
 /** html の index から始まる要素の、対応する閉じタグの位置（無ければ -1） */
@@ -2315,7 +2322,14 @@ export const renderMapState = (args: MapStateLoopArgs): string => {
 };
 
 /** 部品『mapの状態遷移図』のノードの寸法（px）。`loopSpace` は同じ状態への遷移を持つ状態の上に空ける高さ */
-export const MAP_STATE = { point: 32, choice: 40, loopSpace: 56 } as const;
+export const MAP_STATE = {
+  point: 32,
+  choice: 40,
+  loopSpace: 56,
+  /** 並行の分岐と合流（`<<fork>>`・`<<join>>`）の細い棒の幅と高さ */
+  forkWidth: 72,
+  forkHeight: 10,
+} as const;
 
 /** 部品『mapの状態遷移図』の同じ状態への遷移（`node` は状態の ID） */
 export type MapStateLoop = {
