@@ -185,7 +185,7 @@ flows:
     test: test_error_when_module_unavailable
 lead: 利用側のページが、自分で記載した要素とコメントの読み込みと保存の関数を指定し、要素の中の選んだ箇所にコメントを付けられるようにする。文書のコメントと同じ外観と操作になる。
 idempotent: false
-side_effects: '`opts.store.load` を 1 回呼び、読み込んだコメントの箇所をマーカーの要素で包む（`el` の文字は変えない）。`document` の `selectionchange` を受け取り、コメントのボタン・入力欄・吹き出しを `document.body` に配置する。保存で `opts.store.save`、`opts.store` が持つときは吹き出しの修正で `opts.store.update`・削除で `opts.store.remove` を呼ぶ'
+side_effects: '`opts.store.load` を 1 回呼び、読み込んだコメントの箇所をマーカーの要素で包む（`el` の文字は変えない）。`document` の `selectionchange` を受け取り、コメントのボタンを選んだ文字のブロックの直後（表のセルのときはセルを含む表の直後）に、入力欄・吹き出しを `document.body` に配置する。保存で `opts.store.save`、`opts.store` が持つときは吹き出しの修正で `opts.store.update`・削除で `opts.store.remove` を呼ぶ'
 callers:
   - SC-472-81#
 exclusivity: 同じ要素へ 2 回目の `mountComments` を呼ぶと、前の `mountComments` の `destroy` を先に行う。保存を待つ間に `destroy` を呼ぶと、保存の結果でマーカーを付けない
