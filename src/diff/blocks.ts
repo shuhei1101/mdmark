@@ -1,10 +1,10 @@
+import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import {
   computeDiff,
   type DiffEngine,
   type DiffResult,
   jsdiffEngine,
 } from "./compute.ts";
-import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import { renderDiffBlock } from "./diff-blocks.part.ts";
 import {
   checkRevisions,

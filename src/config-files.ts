@@ -494,17 +494,7 @@ function isValidTable(
     );
     return false;
   }
-  if (
-    value.pin_default !== undefined &&
-    typeof value.pin_default !== "boolean"
-  ) {
-    issues.push(
-      schemaIssue(
-        file,
-        "table.pin_default",
-        "`table.pin_default` は `true` か `false` で記載してください。",
-      ),
-    );
+  if (!isValidPinDefault(value.pin_default, file, issues)) {
     return false;
   }
   const min = value.long_column_min;
@@ -522,6 +512,25 @@ function isValidTable(
     return false;
   }
   return true;
+}
+
+/** 設定の `table.pin_default` を検める。あって真偽値でなければ、`schema` のずれを追加して `false` を返却する */
+function isValidPinDefault(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (value === undefined || typeof value === "boolean") {
+    return true;
+  }
+  issues.push(
+    schemaIssue(
+      file,
+      "table.pin_default",
+      "`table.pin_default` は `true` か `false` で記載してください。",
+    ),
+  );
+  return false;
 }
 
 /** 設定の `assets` を検める。キーと値の構造でなければ、`root` が文字列でなければ、`schema` のずれを追加して `false` を返却する */

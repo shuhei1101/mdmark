@@ -1802,7 +1802,6 @@ export function attachTables(
   const {
     onColumnsChange,
     pinMode = "each",
-    pinDefault = false,
     longColumnMin = DEFAULT_LONG_COLUMN_MIN_EM,
     partStates,
     followHash,
@@ -1828,7 +1827,7 @@ export function attachTables(
           ? columnsNotifier(onColumnsChange, tableIndex)
           : undefined,
         pinMode,
-        pinDefault,
+        pinDefault: options.pinDefault === true,
         longColumnMin,
         partStates,
         followHash: followHash !== false,
