@@ -619,9 +619,9 @@ function markIssues(
 }
 
 /** 設定の `aliases` の、`alias_type` が `term` で `enabled` が `false` でない行の `id` */
-function termRowIds(aliasRows: unknown[]): Set<string> {
+function termRowIds(aliasRows: unknown): Set<string> {
   const ids = new Set<string>();
-  for (const row of aliasRows) {
+  for (const row of Array.isArray(aliasRows) ? aliasRows : []) {
     if (
       typeof row === "object" &&
       row !== null &&
@@ -640,8 +640,8 @@ function termRowIds(aliasRows: unknown[]): Set<string> {
 export function checkGlossaryAliasRows(options: {
   /** 点検する文書 */
   documents: Array<{ path: string; markdown: string }>;
-  /** 設定の `aliases` の行 */
-  aliasRows: unknown[];
+  /** 設定の `aliases` の行（配列でなければ行が無いとみなす） */
+  aliasRows: unknown;
 }): CheckIssue[] {
   const ids = termRowIds(options.aliasRows);
   const issues: CheckIssue[] = [];
@@ -965,7 +965,7 @@ export async function collectCheckIssues(
   const maps = checkMaps(documents, resolveConfig({ config }));
   const glossaryRows = checkGlossaryAliasRows({
     documents,
-    aliasRows: Array.isArray(config.aliases) ? config.aliases : [],
+    aliasRows: config.aliases,
   });
   const plainMarkdown =
     checkMarks && config.check?.suggestMarkExtension !== false

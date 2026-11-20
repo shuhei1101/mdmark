@@ -53,17 +53,16 @@ const hideAttributeValue = (name: string, value: string): string => {
 
 /** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` だけを別名へ置き換え、HTML のコメントを削除する。テキストのノードと `href`・`src`・`alt`・`title` の値は置き換えない */
 export const hideRenderedHtml = (html: string): string =>
-  html
-    .replace(COMMENT_PATTERN, "")
-    .replace(
-      TAG_PATTERN,
-      (_tag, slash: string, name: string, rest: string) =>
-        `<${slash}${hideNames(name)}${rest.replace(
-          ATTRIBUTE_PATTERN,
-          (_attr, attr: string, equals = "", value = "") =>
-            `${hideNames(attr)}${equals}${value === "" ? "" : hideAttributeValue(attr.toLowerCase(), value)}`,
-        )}>`,
-    );
+  html.replace(COMMENT_PATTERN, "").replace(TAG_PATTERN, (...tag: string[]) => {
+    const [, slash = "", name = "", rest = ""] = tag;
+    const attributes = rest.replace(ATTRIBUTE_PATTERN, (...attribute) => {
+      const [, attr = "", equals = "", value = ""] = attribute as string[];
+      const hidden =
+        value === "" ? "" : hideAttributeValue(attr.toLowerCase(), value);
+      return `${hideNames(attr)}${equals ?? ""}${hidden}`;
+    });
+    return `<${slash}${hideNames(name)}${attributes}>`;
+  });
 
 /** 値を JSON にして名前を置き換え、元の構造に戻す */
 const hideValue = <T>(value: T): T =>

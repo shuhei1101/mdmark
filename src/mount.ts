@@ -28,7 +28,10 @@ import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { embeddedLibraries, loadLibraries } from "./libraries.ts";
-import { toPureMarkdown } from "./markdown/pure-markdown.ts";
+import {
+  type PureMarkdownResult,
+  toPureMarkdown,
+} from "./markdown/pure-markdown.ts";
 import { attachMermaid } from "./mermaid.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
 import { attachPrint } from "./print.ts";
@@ -426,24 +429,30 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     }
     lastTocMode = drawn.sideToc.mode;
   };
+  /** Markdown のコピーとエクスポートのボタンが使用する純粋な Markdown を作る関数。描いた結果から描いたときは `opts.pureMarkdown`（無ければボタンを配置しない） */
+  const pureMarkdownOf = (
+    markdown: string | undefined,
+  ): (() => Promise<PureMarkdownResult>) | undefined => {
+    const pure = opts.pureMarkdown;
+    if (markdown === undefined) {
+      return pure === undefined
+        ? undefined
+        : () => Promise.resolve({ markdown: pure, warnings: [] });
+    }
+    return () =>
+      toPureMarkdown(markdown, {
+        config: opts.config,
+        index: opts.index,
+        docId: opts.docId,
+        includes,
+      });
+  };
   /** 右側の目次を付け、以降の操作と部品を付ける本文の列を返却する。コメントの余白の列を本文の列の右に配置するため、右側の目次が包んでいなければ本文の列に包む */
   const layoutBody = (
     drawn: ResolvedConfig,
     markdown: string | undefined,
   ): { body: HTMLElement; aside: HTMLElement | undefined } => {
-    const pure = opts.pureMarkdown;
-    const pureMarkdown =
-      markdown !== undefined
-        ? () =>
-            toPureMarkdown(markdown, {
-              config: opts.config,
-              index: opts.index,
-              docId: opts.docId,
-              includes,
-            })
-        : pure !== undefined
-          ? () => Promise.resolve({ markdown: pure, warnings: [] })
-          : undefined;
+    const pureMarkdown = pureMarkdownOf(markdown);
     const sideToc =
       features["side-toc"] === true
         ? attachSideToc({
