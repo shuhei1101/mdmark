@@ -49,7 +49,7 @@ endpoints:
     path: /npm/{package}@{version}/{file}
     summary: npm のパッケージのバージョンを固定したファイルを配る（色分けのライブラリ）
     idempotent: true
-    description: '`mount` が色分けの対象のコードブロックを持つ文書を描いた後に、`@highlightjs/cdn-assets` の `es/core.min.js` と `es/languages/{言語}.min.js` を `import()` で読み込む。CLI の書き出しも同じ URL から読み込んで埋める。`/+esm` は使用しない（`es/*.min.js` は import を持たない）。応答は `application/javascript` と `access-control-allow-origin: *` を持つ'
+    description: '`mount` が色分けの対象のコードブロックを持つ文書を描いた後に、`@highlightjs/cdn-assets` の `es/core.min.js` と `es/languages/{言語}.min.js` を `import()` で読み込む。CLI の書き出しも同じ URL から読み込んで埋める。`/+esm` は使用しない。応答は `application/javascript` と `access-control-allow-origin: *` を持つ'
     request:
       - name: package
         type: string

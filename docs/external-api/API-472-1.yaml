@@ -5,7 +5,7 @@ version:
   api_version: 2022-11-28（header `X-GitHub-Api-Version` で指定する）
   checked_on: '2026-10-23'
 auth:
-  method: なし（公開リポジトリの読み取り。認証すると上限が上がるが、拡張機能はトークンを持たない）
+  method: なし（公開リポジトリの読み取り。拡張機能はトークンを持たない）
 endpoints:
   - name: GET /repos/{owner}/{repo}/tags
     method: GET
@@ -87,3 +87,6 @@ tags:
   - name: tool:github
     main: true
   - name: topic:タグ
+aliases:
+  - GitHub のタグ一覧
+  - GitHub の REST API
