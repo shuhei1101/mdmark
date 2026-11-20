@@ -1,6 +1,5 @@
 import { glob, readFile } from "node:fs/promises";
 import {
-  basename,
   dirname,
   extname,
   join,
@@ -10,7 +9,6 @@ import {
 } from "node:path";
 import { parse } from "yaml";
 import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
-import { normalizePath } from "../knowledge/paths.ts";
 import { resolveDocTitle } from "../knowledge/references.ts";
 import type { BuildConfig, LoadedConfig } from "./config.ts";
 import { CliError } from "./errors.ts";

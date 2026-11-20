@@ -125,6 +125,25 @@ function addGlossaryDocs(
   });
 }
 
+/** 参照の表を作る。索引の文書が無いときは `undefined` */
+function referencesOf(options: {
+  index: MdmarkIndex;
+  documents: Record<string, string>;
+  loaded: LoadedConfig;
+  withFrontmatter: boolean;
+}): MdmarkReferences | undefined {
+  const { index, documents, loaded, withFrontmatter } = options;
+  if (index.docs.length === 0) {
+    return undefined;
+  }
+  return collectReferences({
+    index,
+    documents,
+    config: { features: loaded.config.features ?? {} },
+    ...(withFrontmatter && { frontmatter: readFrontmatterValues(documents) }),
+  });
+}
+
 /** 索引と参照の表を用意する: 索引があれば読み込み、`bundle` では `build.glossary` の文書を追加して参照の表を作る */
 async function prepareReferences(
   options: EmbedOptions & { markdowns: Map<string, string> },
@@ -146,15 +165,13 @@ async function prepareReferences(
   const referenceDocs = [...(index?.docs ?? [])];
   const documents: Record<string, string> = { ...info?.documents };
   addGlossaryDocs(options, { referenceDocs, documents, indexPathOf });
-  const references =
-    referenceDocs.length === 0
-      ? undefined
-      : collectReferences({
-          index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
-          documents,
-          config: { features: loaded.config.features ?? {} },
-          ...(info ? { frontmatter: readFrontmatterValues(documents) } : {}),
-        });
+  const references = referencesOf({
+    index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
+    documents,
+    loaded,
+    // フロントマターは索引があるときだけ解析して補う
+    withFrontmatter: info !== undefined,
+  });
   // 文書の `id`・タイトルは、フロントマターで補った参照の表の文書から引く
   const byPath = (path: string) =>
     (references?.docs ?? index?.docs)?.find(
