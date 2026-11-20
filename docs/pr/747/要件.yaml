@@ -6,10 +6,9 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-17.yaml
-    impact: changed
-    detail: 言語が tree でない罫線のコードブロックに出していた記載の警告をやめ、ファイルツリーとして描く流れに変える
-    depends_on:
-      - docs/scenario/SC-472-20.yaml
+    impact: run_only
+    detail: コードブロックの帯をファイルツリーと共通にすると、コードブロックの帯のラベルとコピーのボタンの描かれ方を壊しうる
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-11.yaml
     impact: changed
@@ -17,10 +16,10 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-52.yaml
-    impact: following
-    detail: 罫線のフォルダ構成の記載の警告が無くなることに合わせ、点検のずれの一覧の例を追随させる
+    impact: changed
+    detail: 言語が tree でない罫線のコードブロックを点検しても、罫線を読み取れればずれが出ず、読み取れない行だけをファイルツリーの警告で受け取る
     depends_on:
-      - docs/scenario/SC-472-17.yaml
+      - docs/scenario/SC-472-20.yaml
 docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
