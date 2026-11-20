@@ -1691,6 +1691,7 @@ notes:
     - ※4 分け方: 表の見える幅から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分ける。最小の幅を下回る列は最小の幅で止め、止めた列を除いた残りの幅をほかの列へ分け直し、止める列が出なくなるまで繰り返す
     - ※5 `width.max` との関係: 最小の幅（`width.min`、無ければ長文の列と同じ値）が `width.max` より広いときは、最小の幅を `width.max` にする。`width.min` と `width.max` の両方を記載して `min` が `max` より大きいときも同じく `width.max` を優先し、記載の警告にしない
     - 幅の測り方: 最も長い行の幅は、セルの中に `white-space: nowrap` の見えない要素を置いて行の文字を入れ、`getBoundingClientRect().width` に、セルの左右の余白と枠線の幅と端数の 2px を足して切り上げる。列ごとに切り上げる分（1 列 1px）を表の見える幅から引いてから分ける
+    - 測る文字: 行はセルに見えている文字だけで作る。用語・脚注・注記のツールチップ（開いているかに関わらない）と画面に出さないスクリーンリーダー用の文字は、セルの中で幅を取らないため含めない
     - 行の数が多い表は、先頭から 200 行（`MEASURE_ROWS`）までを測る
     - モックは `docs/mock/pages/document/505/a-auto-width/` と `docs/mock/refs/505/assets/table-width.js`
   階層の表: '`tree` の表は `<div class="mdmark-table" data-tree>` で、本文の行が `<tr class="mdmark-tree-row" data-path data-parent data-depth aria-selected>`（補った行は `is-virtual`、子を持つ行は `has-children`）。
