@@ -1,13 +1,14 @@
 import { expect, test } from "vitest";
 import type { ResolvedConfig } from "../../../../src/config.ts";
 import type { MdmarkAlias } from "../../../../src/knowledge/aliases.ts";
+import type { MdmarkIndex } from "../../../../src/knowledge/index-shape.ts";
 import {
   REPLY_TIME_TEXT,
   STRENGTH_TEXT,
   WARNINGS_MARKDOWN,
   wrapDirective,
 } from "../../helpers/diagrams.ts";
-import { innerHtml, plainText } from "../../helpers/html.ts";
+import { innerHtml, outerHtml, plainText } from "../../helpers/html.ts";
 
 /** 描画の処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadRender = () => import("../../../../src/render/index.ts");
@@ -31,7 +32,7 @@ function resolvedConfig(
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },
-    table: { pin: "each", longColumnMin: 45 },
+    table: { pin: "each", pinDefault: false, longColumnMin: 45 },
     map: { node_fit: "height", url_state: true, kinds: {}, lines: {} },
   };
 }
@@ -237,4 +238,59 @@ test("test_render_document_when_frontmatter_enabled", async () => {
   expect(fencedHtml.slice(fencedHtml.indexOf("</details>"))).not.toContain(
     "code",
   );
+});
+
+// 参照の表の docs で関連文書の一覧のタイトルを出す（正常系）
+test("test_render_document_when_references_docs", async () => {
+  // 準備
+  const { renderDocument } = await loadRender();
+  const { resolveConfig } = await import("../../../../src/config.ts");
+  const index = {
+    schema: 2,
+    docs: [
+      { id: "arch", path: "arch.md", title: "アーキテクチャ" },
+      { id: "api", path: "api.md" },
+    ],
+  } as MdmarkIndex;
+  const references = {
+    backlinks: { arch: ["api"] },
+    glossary: [],
+    docs: [
+      { id: "arch", path: "arch.md", title: "アーキテクチャ" },
+      { id: "api", path: "api.md", title: "公開関数の一覧" },
+    ],
+  };
+  // 実行
+  const { html } = renderDocument({
+    markdown: "# アーキテクチャ\n\n本文\n",
+    config: resolveConfig({}),
+    index,
+    docId: "arch",
+    references,
+  });
+  // 検証
+  expect(outerHtml(html, "mdmark-backlinks")).toContain(">公開関数の一覧</a>");
+});
+
+// 参照の表が無く索引の文書に title が無いときはファイル名で出す（正常系）
+test("test_render_document_when_index_title_missing", async () => {
+  // 準備
+  const { renderDocument } = await loadRender();
+  const { resolveConfig } = await import("../../../../src/config.ts");
+  const index = {
+    schema: 2,
+    docs: [
+      { id: "arch", path: "arch.md", title: "アーキテクチャ" },
+      { id: "api", path: "api.md", related: ["arch"] },
+    ],
+  } as MdmarkIndex;
+  // 実行
+  const { html } = renderDocument({
+    markdown: "# アーキテクチャ\n\n本文\n",
+    config: resolveConfig({}),
+    index,
+    docId: "arch",
+  });
+  // 検証
+  expect(outerHtml(html, "mdmark-backlinks")).toContain(">api</a>");
 });

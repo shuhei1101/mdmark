@@ -139,3 +139,32 @@ test("test_document_title_when_no_heading", async () => {
   // 検証
   expect(title).toBe("guide");
 });
+
+// 索引のタイトルが無ければフロントマターのタイトルを h1 より優先する（正常系）
+test("test_document_title_when_frontmatter", async () => {
+  // 準備
+  const { documentTitle } = await loadDocuments();
+  // 実行
+  const title = documentTitle({
+    path: "配布.md",
+    markdown: "---\ntitle: 配布の手順\n---\n\n# はじめに\n",
+    frontmatterTitle: "配布の手順",
+  });
+  // 検証
+  expect(title).toBe("配布の手順");
+});
+
+// 解析できた文書だけを入れる（正常系）
+test("test_read_frontmatter_values", async () => {
+  // 準備
+  const { readFrontmatterValues } = await loadDocuments();
+  const markdowns = {
+    "a.md": "---\ntitle: メモ\n---\n",
+    "b.md": "# 見出し\n",
+    "c.md": "---\ntitle: [\n---\n",
+  };
+  // 実行
+  const values = readFrontmatterValues(markdowns);
+  // 検証
+  expect(values).toEqual({ "a.md": { title: "メモ" } });
+});

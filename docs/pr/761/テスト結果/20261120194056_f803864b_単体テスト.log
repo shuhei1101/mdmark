@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-edge-near-side-routing
+
+
+ Test Files  325 passed (325)
+      Tests  2678 passed (2678)
+   Start at  19:38:24
+   Duration  27.17s (worker 82%, tests 13%, import 5%, transform 1%)
+

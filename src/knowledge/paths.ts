@@ -12,6 +12,13 @@ export function normalizePath(path: string): string {
     .join("/");
 }
 
+/** パスのファイル名から最後の拡張子を除いたもの（`使い方/guide.md` → `guide`） */
+export function fileTitle(path: string): string {
+  const name = normalizePath(path).split("/").at(-1) ?? "";
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(0, dot) : name;
+}
+
 /** パスのフォルダの要素（ファイル名を除く） */
 function directoryOf(path: string): string[] {
   return normalizePath(path).split("/").filter(Boolean).slice(0, -1);

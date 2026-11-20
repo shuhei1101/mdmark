@@ -708,7 +708,7 @@ constraints:
   - item: 利用側の CSS
     constraint: 設定の `theme` の CSS を配布物の CSS の後に埋める。読み込めないときは埋めず警告に出す
   - item: 索引と参照の表
-    constraint: 設定に `index` があるとき、索引と、索引の `docs` の文書を読み込んで `collectReferences` で作った参照の表を埋め、索引に書き出す文書があればその `id` を `mount` の `docId` に指定する。読み込めない索引の文書は飛ばして警告に出す
+    constraint: 設定に `index` があるとき、索引と、索引の `docs` の文書を読み込み、それらと書き出す文書の先頭のフロントマターの中身を YAML として解析した値（`frontmatter`。解析できない文書は入れない）も指定して `collectReferences` で作った参照の表を埋め、索引に書き出す文書があればその `id` を `mount` の `docId` に指定する。読み込めない索引の文書は飛ばして警告に出す
     decided_by: IF-472-31#
   - item: 文書間のリンク
     constraint: 記載したままの `href` で残す。警告には出さない
@@ -802,6 +802,8 @@ constraints:
       本文のコードの例の `<mdmark-*>` も別名で表示される。
 
       `--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確認する（「無い」を確認する行も別名で確認する）。'
+  - item: ページのタイトル
+    constraint: '`<title>` は、参照の表の `docs` に書き出す文書があればその `title`、無ければ文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名'
 test_file: tests/integration/lib/export.test.ts
 tags:
   - name: topic:書き出し

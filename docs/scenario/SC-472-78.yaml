@@ -688,6 +688,62 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_map_node_id_link
+  - name: 正常シナリオ（フロントマターのメタデータ）
+    setup:
+      - name: フロントマターを持つフォルダ
+        description: 正常シナリオのフォルダの 1 つ目の文書の先頭に `title`・`description`・`aliases`・`tags` を記載したフロントマターを配置し、索引のその文書の行を `id`・`path` だけにしたもの
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M->>M: 索引に無いキーを文書の先頭のフロントマターの値で補う
+        M-->>C: 空のずれの一覧
+        C-->>W: ずれ 0 件・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 出力がずれ 0 件を示す
+      - 終了コードが 0
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_frontmatter_metadata
+  - name: 正常シナリオ（索引とフロントマターの値が違う）
+    setup:
+      - name: 値が違うフォルダ
+        description: 正常シナリオのフォルダの 1 つ目の文書の先頭に、索引のその文書の行の `title` と違う `title` を記載したフロントマターを配置したもの
+        notes: ずれの種類は `frontmatter_mismatch`（インターフェース定義『索引を点検する』）
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark の点検の処理
+        W->>C: mdmark check
+        C->>C: 設定・索引・文書を読み込み、設定の Schema と build の対象を確認する
+        C->>M: checkIndex（索引・文書）
+        M-->>C: 値の違いのずれの行を持つ一覧
+        C-->>W: ファイル・場所・種類・内容の一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
+    expected:
+      - 索引のその文書の `title` を指す、索引とフロントマターの値の違いの行が 1 つあり、内容に両方の値と、どちらかに合わせる修正方法が記載されている
+      - 終了コードが 0 以外
+      - 設定・索引・文書が変わっていない
+    test: test_normal_when_frontmatter_mismatch
 lead: 文書の作成者が `mdmark check` を実行し、設定ファイルと索引の構造・索引と文書のずれ・書き出す対象の有無・文書の本文にある知らないマーカー・図の部品の定義のずれ・廃止した `flow`・`sequence` の範囲を、ファイル・場所・種類・内容の一覧で受け取る。
 primary_actor: 文書の作成者
 trigger: 文書や索引を書き換えた後、書き出す前にずれを確認する
@@ -704,3 +760,4 @@ tags:
   - name: topic:設定
   - name: topic:索引
   - name: topic:cli
+  - name: topic:フロントマター

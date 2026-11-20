@@ -34,6 +34,7 @@ type InteractionContext = {
   diagramPlacement: TooltipPlacement;
   paramDefinitions: MdmarkParamDefinition[];
   pinMode: TablePinMode;
+  pinDefault: boolean;
   longColumnMin: number | undefined;
   onColumnsChange: ((event: MdmarkColumnsChange) => void) | undefined;
   sectionStates: SectionStates | undefined;
@@ -67,6 +68,7 @@ function attachLayouts(context: InteractionContext): Array<() => void> {
       attachTables(root, {
         onColumnsChange: context.onColumnsChange,
         pinMode: context.pinMode,
+        pinDefault: context.pinDefault,
         longColumnMin: context.longColumnMin,
         partStates,
         followHash: context.followHash,
@@ -164,6 +166,8 @@ export function attachInteractions(options: {
   paramDefinitions?: MdmarkParamDefinition[];
   /** 既定を適用した設定の、表のピン止めの動き（既定 `each`） */
   pinMode?: TablePinMode;
+  /** 既定を適用した設定の、描いた直後に既定の列を留めるか（既定 `false`） */
+  pinDefault?: boolean;
   /** 既定を適用した設定の、長文の列の最小の幅（em） */
   longColumnMin?: number;
   /** 列の表示を切り替えたときに通知する */
@@ -184,6 +188,7 @@ export function attachInteractions(options: {
     diagramPlacement: options.diagramPlacement ?? "bottom",
     paramDefinitions: options.paramDefinitions ?? [],
     pinMode: options.pinMode ?? "each",
+    pinDefault: options.pinDefault ?? false,
     longColumnMin: options.longColumnMin,
     onColumnsChange: options.onColumnsChange,
     sectionStates: options.sectionStates,

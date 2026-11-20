@@ -1,0 +1,6 @@
+confirmations:
+  - topic: ER 図の「近い側の辺」の読み替え
+    decision: ER 図は左右の辺のうち相手のテーブルに近い方につなぐ。上下に並ぶテーブルは両端とも右の辺のまま（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/761#discussion_r4640706537

@@ -673,6 +673,30 @@ test("test_validate_config_when_table_pin_invalid", async () => {
   expect(valid.config.table?.pin).toBe("through");
 });
 
+// 真偽値でない table.pin_default を schema のずれにし、設定から落とす（異常系）
+test("test_validate_config_when_table_pin_default_invalid", async () => {
+  // 準備
+  const { validateConfig } = await loadModule();
+  // 実行
+  const invalid = validateConfig(
+    { table: { pin_default: "yes" } },
+    "mdmark.config.yaml",
+  );
+  const valid = validateConfig(
+    { table: { pin_default: true } },
+    "mdmark.config.yaml",
+  );
+  // 検証
+  expect(invalid.issues).toHaveLength(1);
+  expect(invalid.issues[0]).toMatchObject({
+    where: "table.pin_default",
+    kind: "schema",
+  });
+  expect(invalid.config.table).toBeUndefined();
+  expect(valid.issues).toEqual([]);
+  expect(valid.config.table?.pin_default).toBe(true);
+});
+
 // 0 より大きい数でない table.long_column_min を schema のずれにし、設定から落とす（正常系）
 test("test_validate_config_when_table_long_column_min_invalid", async () => {
   // 準備

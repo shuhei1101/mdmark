@@ -199,14 +199,15 @@ function columnHeadsOf(table: HTMLTableElement): HTMLTableCellElement[] {
   );
 }
 
-/** 描いた直後に留める列（元の列の位置）。`data-pin` の列、無ければ行見出しの列（行見出しも無ければ先頭の列）を `initialPinnedColumns` で決める。`pin` の無い表は空 */
+/** 描いた直後に留める列（元の列の位置）。`data-pin` の列、無ければ `pinDefault` のときだけ行見出しの列（行見出しも無ければ先頭の列）を `initialPinnedColumns` で決める。`pin` の無い表は空 */
 function initialPinned(options: {
   wrapper: HTMLElement;
   features: string[];
   originalRows: HTMLTableRowElement[];
   mode: TablePinMode;
+  pinDefault: boolean;
 }): number[] {
-  const { wrapper, features, originalRows, mode } = options;
+  const { wrapper, features, originalRows, mode, pinDefault } = options;
   if (!features.includes("pin")) {
     return [];
   }
@@ -218,6 +219,7 @@ function initialPinned(options: {
     pin,
     rowHeadCount,
     mode,
+    pinDefault,
     unpin: readColumnList(wrapper.dataset.unpin),
   });
 }
@@ -573,6 +575,7 @@ function barPinnedCount(options: {
   features: string[];
   originalRows: HTMLTableRowElement[];
   mode: TablePinMode;
+  pinDefault: boolean;
 }): number {
   if (options.mode !== "through" || options.wrapper.dataset.pin === undefined) {
     return 0;
@@ -614,13 +617,20 @@ function attachTable(
   options: {
     notifyColumns: ((hidden: string[]) => void) | undefined;
     pinMode: TablePinMode;
+    pinDefault: boolean;
     longColumnMin: number;
     partStates: PartStates | undefined;
     followHash: boolean;
   },
 ): () => void {
-  const { notifyColumns, pinMode, longColumnMin, partStates, followHash } =
-    options;
+  const {
+    notifyColumns,
+    pinMode,
+    pinDefault,
+    longColumnMin,
+    partStates,
+    followHash,
+  } = options;
   tableCounter += 1;
   const id = `mdmark-table-${tableCounter}`;
   // 横にスクロールさせる、表を包む要素（包まれていない表はその表）
@@ -755,7 +765,13 @@ function attachTable(
     order,
     groups,
     groupLabels: groupLabelsOf(headColumns, groups),
-    pinned: barPinnedCount({ wrapper, features, originalRows, mode: pinMode }),
+    pinned: barPinnedCount({
+      wrapper,
+      features,
+      originalRows,
+      mode: pinMode,
+      pinDefault,
+    }),
   });
   cleanups.push(insertTableBar({ wrapper, scroller, parts: barParts }));
   const menu = ownElement<HTMLElement>(wrapper, ".mdmark-table-settings");
@@ -1037,6 +1053,7 @@ function attachTable(
     features,
     originalRows,
     mode: pinMode,
+    pinDefault,
   });
   /** 表が横にはみ出しているか */
   const isOverflowing = (): boolean =>
@@ -1772,6 +1789,8 @@ export function attachTables(
     onColumnsChange?: ((event: MdmarkColumnsChange) => void) | undefined;
     /** ピン止めの動き（既定 `each`） */
     pinMode?: TablePinMode | undefined;
+    /** `data-pin` が無いときに描いた直後に既定の列を留めるか（既定 `false`） */
+    pinDefault?: boolean | undefined;
     /** 長文の列の最小の幅（em。既定 `DEFAULT_LONG_COLUMN_MIN_EM`） */
     longColumnMin?: number | undefined;
     /** 階層の表に指定する部品の開閉の記録（省くと記録しない） */
@@ -1808,6 +1827,7 @@ export function attachTables(
           ? columnsNotifier(onColumnsChange, tableIndex)
           : undefined,
         pinMode,
+        pinDefault: options.pinDefault === true,
         longColumnMin,
         partStates,
         followHash: followHash !== false,

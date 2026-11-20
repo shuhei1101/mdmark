@@ -284,6 +284,32 @@ scenarios:
     test: test_error_when_aliases_missing
     refs:
       - SC-472-10#scenarios[異常シナリオ（aliases の YAML が無い）]
+  - name: 正常シナリオ（フロントマターのタイトル）
+    setup:
+      - name: 見本のワークスペース
+        description: 正常シナリオと同じワークスペースで、開いている Markdown の先頭に `title`（`配布の手順`）を記載したフロントマターを持つもの
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant ED as エディタ（VS Code）
+        participant EX as 拡張機能
+        W->>ED: mdmark: HTML に書き出す
+        ED->>EX: mdmark.exportHtml
+        EX->>EX: 文書の先頭のフロントマターの title をページのタイトルにして HTML を組む
+        EX->>EX: Markdown と同じフォルダに書き出す
+        EX-->>W: 書き出したパスと「ブラウザで開く」の通知
+      ```
+
+      <!-- /map -->
+    expected:
+      - 書き出した HTML の `title` 要素が `配布の手順`
+      - Markdown と同じフォルダに、Markdown と同じ名前の `.html` が 1 つ記載される
+    test: test_normal_when_frontmatter_title
 lead: 文書の作成者が、開いている Markdown をコマンドパレットから HTML に書き出し、既定のブラウザで開く。
 primary_actor: 文書の作成者
 stakeholders:
@@ -301,3 +327,4 @@ tags:
     main: true
   - name: tool:html
   - name: tool:vscode
+  - name: topic:フロントマター

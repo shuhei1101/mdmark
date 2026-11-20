@@ -22,9 +22,10 @@ export type MdmarkConfig = {
     "side-toc"?: {
         mode?: string;
     };
-    /** 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string` */
+    /** 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string`。`pin_default` は描いた直後に既定の列を留めるか。読み込めない値も受けて `resolveConfig` が `false` にするため、型は `unknown` */
     table?: {
         pin?: string;
+        pin_default?: unknown;
         long_column_min?: unknown;
     };
     /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
@@ -100,9 +101,10 @@ export type ResolvedConfig = {
     sideToc: {
         mode: SideTocMode;
     };
-    /** `pin` は設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`。`longColumnMin` は設定の `table.long_column_min` が 0 より大きい有限の数ならその値、それ以外は `DEFAULT_LONG_COLUMN_MIN_EM` */
+    /** `pin` は設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`。`pinDefault` は設定の `table.pin_default` が `true` のときだけ `true`、それ以外は `false`。`longColumnMin` は設定の `table.long_column_min` が 0 より大きい有限の数ならその値、それ以外は `DEFAULT_LONG_COLUMN_MIN_EM` */
     table: {
         pin: TablePinMode;
+        pinDefault: boolean;
         longColumnMin: number;
     };
     /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */

@@ -269,7 +269,7 @@ colorTheme: theme-slate
 | `html-scripts.url` | 範囲のスクリプトの変換のライブラリ。`http:`・`https:` の URL はそのまま、相対 URL はその値を記載した設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.html-scripts.url` に指定する。書き出す HTML には、文書に `ts`・`js` の範囲があるとき相対 URL のモジュールを埋める |
 | `colorTheme` | 配色のテーマ。`mdmark.colorTheme` が空のときだけ、記載した値をそのまま `mount` の `opts.config.colorTheme` に指定する。空でないときは `mdmark.colorTheme` の値に置き換える |
 | `side-toc` | 右側の目次の出し方。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config["side-toc"]` に指定する |
-| `table` | 表の設定。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.table` に指定する（`pin` は[表のピン止めの動き](./設定.mark.md#表のピン止めの動き)） |
+| `table` | 表の設定。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.table` に指定する（`pin` は[表のピン止めの動き](./設定.mark.md#表のピン止めの動き)、`pin_default` は[はみ出す表の既定のピン止め](./設定.mark.md#はみ出す表の既定のピン止め)） |
 | `labels` | 部品の文言。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.labels` に指定する |
 | `tooltips` | ツールチップを出す場所。値がマップのときだけ、記載した値をそのまま `mount` の `opts.config.tooltips` に指定する |
 | `syntax.url` | 色分けのライブラリの読み込み先。`http:`・`https:` の URL はそのまま、相対 URL はその値を記載した設定ファイルのフォルダを基準に解決して、`mount` の `opts.config.syntax.url` に指定する。書き出す HTML には、文書が使用する言語があるとき本体とその言語のモジュールを埋める |

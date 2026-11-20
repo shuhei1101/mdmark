@@ -9,6 +9,8 @@ export declare function attachTables(root: HTMLElement, options?: {
     onColumnsChange?: ((event: MdmarkColumnsChange) => void) | undefined;
     /** ピン止めの動き（既定 `each`） */
     pinMode?: TablePinMode | undefined;
+    /** `data-pin` が無いときに描いた直後に既定の列を留めるか（既定 `false`） */
+    pinDefault?: boolean | undefined;
     /** 長文の列の最小の幅（em。既定 `DEFAULT_LONG_COLUMN_MIN_EM`） */
     longColumnMin?: number | undefined;
     /** 階層の表に指定する部品の開閉の記録（省くと記録しない） */

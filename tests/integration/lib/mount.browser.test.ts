@@ -1438,13 +1438,14 @@ test("test_normal_when_table_pinned", async () => {
   expect(widePins[0]?.getAttribute("aria-label")).toBe(
     "「列の名前1」の列をピン止め",
   );
-  // 検証: 描いた直後は 1 列目だけを留める
-  expect(widePins[0]?.getAttribute("aria-pressed")).toBe("true");
-  expect(positions().slice(0, 2)).toEqual(["sticky", "static"]);
-  // 実行・検証: 3 列目のピン止めを押すと、1・3 列目だけを留める
+  // 検証: 描いた直後はどの列も留めない
   const pressed = () =>
     [...widePins].map((pin) => pin.getAttribute("aria-pressed"));
+  expect(pressed()).toEqual(Array(10).fill("false"));
+  expect(positions()).not.toContain("sticky");
+  // 実行・検証: 1 列目と 3 列目のピン止めを押すと、1・3 列目だけを留める
   const third = widePins[2] as HTMLButtonElement;
+  (widePins[0] as HTMLButtonElement).click();
   third.click();
   expect(pressed().slice(0, 3)).toEqual(["true", "false", "true"]);
   expect(positions().slice(0, 3)).toEqual(["sticky", "static", "sticky"]);
@@ -1761,11 +1762,12 @@ async function checkStickyRows(mode: "timeline" | "script"): Promise<void> {
         ).toBeLessThanOrEqual(1);
       }
     });
-    // 実行・検証: 2 列目までを留めて、表を横にスクロールする
+    // 実行・検証: 1 列目と 2 列目を留めて、表を横にスクロールする
     const pins = table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
     await vi.waitFor(() => {
       expect(pins[1]?.hasAttribute("hidden")).toBe(false);
     });
+    pins[0]?.click();
     pins[1]?.click();
     find<HTMLElement>(wrapper, ".mdmark-table-scroll").scrollLeft = 200;
     await nextFrames();
@@ -9971,6 +9973,69 @@ test("test_normal_when_base_replaced", async () => {
   expect(el.innerHTML).toBe(plain.innerHTML);
 });
 
+/** 先頭に `title: A` のフロントマターと段落 1 つを持つ比較元 */
+const FRONTMATTER_R1 = "---\ntitle: A\n---\n\n段落 P です。\n";
+/** r1 の title を B に書き換えた本文 */
+const FRONTMATTER_R2 = "---\ntitle: B\n---\n\n段落 P です。\n";
+/** r2 からフロントマターを削除した本文 */
+const FRONTMATTER_R3 = "段落 P です。\n";
+
+/** 本文の最初の要素（描く先の直下の本文の列の最初の子） */
+function firstBodyElement(el: HTMLElement): Element {
+  const block = el.querySelector(".mdmark-diff-block, p, details");
+  const body = block?.parentElement;
+  if (!body?.firstElementChild) {
+    throw new Error("本文の要素が無い");
+  }
+  return body.firstElementChild;
+}
+
+// 比較元と本文の先頭のフロントマターが違うとき、機能 frontmatter がオフなら変更・削除したフロントマターを本文の先頭に差し込み、オンなら既にある表示を差分のブロックで包む（正常系）
+test("test_normal_when_base_markdown_frontmatter_changed", async () => {
+  // 準備
+  const el = createElement();
+  // 実行: オフで r1 と r2 を比べる
+  const handle = await mountTracked(el, {
+    markdown: FRONTMATTER_R2,
+    baseMarkdown: FRONTMATTER_R1,
+  });
+  // 検証: 書き換えたフロントマターを開いた折りたたみで、追加の色で本文の先頭に差し込む
+  const added = firstBodyElement(el);
+  expect(added.matches('div.mdmark-diff-block[data-kind="add"]')).toBe(true);
+  expect(find(added, "details.mdmark-frontmatter").hasAttribute("open")).toBe(
+    true,
+  );
+  expect(added.textContent).toContain("title: B");
+  expect(marksOf(added).name).toBe("追加:");
+  expect(paragraphWith(el, "段落 P").closest(".mdmark-diff-block")).toBeNull();
+  // 実行: オフで r2 と r3 を比べる
+  handle.update(FRONTMATTER_R3, { baseMarkdown: FRONTMATTER_R2 });
+  // 検証: 削除したフロントマターを、削除の色で本文の先頭に差し込む
+  const deleted = firstBodyElement(el);
+  expect(deleted.matches('div.mdmark-diff-block[data-kind="del"]')).toBe(true);
+  expect(deleted.textContent).toContain("title: B");
+  expect(marksOf(deleted).name).toBe("削除:");
+  // 実行: オンで r1 と r2 を比べる
+  const shown = createElement();
+  const shownHandle = await mountTracked(shown, {
+    markdown: FRONTMATTER_R2,
+    baseMarkdown: FRONTMATTER_R1,
+    config: { features: { frontmatter: true } },
+  });
+  // 検証: 既にあるフロントマターの折りたたみを 1 つだけ、追加の色で包む
+  const shownDetails = shown.querySelectorAll("details.mdmark-frontmatter");
+  expect(shownDetails).toHaveLength(1);
+  expect(
+    shownDetails[0]?.closest('div.mdmark-diff-block[data-kind="add"]'),
+  ).not.toBeNull();
+  // 実行: オンで比較元と本文のフロントマターを同じにする
+  shownHandle.update(FRONTMATTER_R2, { baseMarkdown: FRONTMATTER_R2 });
+  // 検証: 差分のブロックが無く、フロントマターの折りたたみは差分のブロックに包まれない
+  expect(shown.querySelector(".mdmark-diff-block")).toBeNull();
+  const sameDetails = find(shown, "details.mdmark-frontmatter");
+  expect(sameDetails.closest(".mdmark-diff-block")).toBeNull();
+});
+
 // 取り出し元と比較元を両方渡すと、本文の強調は比較元で行い、取り出し元は差分を開く UI にだけ使用する（正常系）
 test("test_normal_when_base_with_diff_source", async () => {
   // 準備
@@ -10793,7 +10858,10 @@ test("test_normal_when_row_header_pinned", async () => {
     "",
   ].join("\n");
   // 実行
-  await mountTracked(el, { markdown });
+  await mountTracked(el, {
+    markdown,
+    config: { table: { pin_default: true } },
+  });
   // 検証: 1・2 列目のピン止めが押した状態で、1・2 列目のセルを留める
   const pins = el.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
   await vi.waitFor(() => {
@@ -13299,7 +13367,8 @@ test("test_normal_when_pinned_under_merged_header", async () => {
   await vi.waitFor(() => {
     expect(pinOf(2).hasAttribute("hidden")).toBe(false);
   });
-  // 実行: 2 行目の既定のピン止めを押し、右端までスクロールする
+  // 実行: 2 行目の名前と既定のピン止めを押し、右端までスクロールする
+  pinOf(0).click();
   pinOf(2).click();
   const scroller = find<HTMLElement>(table, ".mdmark-table-scroll");
   scroller.scrollLeft = scroller.scrollWidth;
@@ -13326,10 +13395,87 @@ test("test_normal_when_pinned_under_merged_header", async () => {
   expect(getComputedStyle(groupHead as HTMLElement).position).not.toBe(
     "sticky",
   );
-  // 検証: 既定のボタンだけが押され、型・必須は押していない
+  // 検証: 名前と既定のボタンが押され、型・必須は押していない
+  expect(pinOf(0).getAttribute("aria-pressed")).toBe("true");
   expect(pinOf(2).getAttribute("aria-pressed")).toBe("true");
   expect(pinOf(1).getAttribute("aria-pressed")).toBe("false");
   expect(pinOf(3).getAttribute("aria-pressed")).toBe("false");
+});
+
+// opts.config.table.pin_default を指定しないとき、data-pin の無いはみ出す表は描いた直後にどの列も留めず、data-pin のある表はその列だけを留める（正常系）
+test("test_normal_when_table_not_pinned_by_default", async () => {
+  // 準備
+  const el = createElement();
+  setElementWidth(el, 320);
+  const headers = Array.from({ length: 10 }, (_, i) => `列の名前${i + 1}`);
+  const rows = (count: number, columns: string[]) =>
+    Array.from(
+      { length: count },
+      (_, row) =>
+        `| ${columns.map((_c, i) => `値${row + 1}-${i + 1}`).join(" | ")} |`,
+    );
+  const pinnedColumns = [
+    "No",
+    "物理名",
+    "説明",
+    "型",
+    "必須",
+    "既定",
+    "単位",
+    "備考",
+  ];
+  const markdown = [
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows(5, headers),
+    "",
+    '<!-- table: {"kind": "data", "header": {"columns": 2}} -->',
+    "",
+    `| ${headers.join(" | ")} |`,
+    `| ${headers.map(() => "---").join(" | ")} |`,
+    ...rows(5, headers),
+    "",
+    "<!-- /table -->",
+    "",
+    '<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}}} -->',
+    "",
+    `| ${pinnedColumns.join(" | ")} |`,
+    `| ${pinnedColumns.map(() => "---").join(" | ")} |`,
+    ...rows(3, pinnedColumns),
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+  // 実行
+  await mountTracked(el, { markdown });
+  // 検証
+  const tables = [...el.querySelectorAll<HTMLElement>(".mdmark-table")];
+  expect(tables).toHaveLength(3);
+  const pinsOf = (table: HTMLElement) => [
+    ...table.querySelectorAll<HTMLButtonElement>("button.mdmark-pin"),
+  ];
+  await vi.waitFor(() => {
+    for (const table of tables) {
+      expect(itemAt(pinsOf(table), 1).hidden).toBe(false);
+    }
+  });
+  const positionsOf = (table: HTMLElement) =>
+    [...find<HTMLTableRowElement>(table, "tbody tr").cells].map(
+      (cell) => getComputedStyle(cell).position,
+    );
+  for (const table of tables.slice(0, 2)) {
+    expect(
+      pinsOf(table).map((pin) => pin.getAttribute("aria-pressed")),
+    ).toEqual(Array(10).fill("false"));
+    expect(positionsOf(table)).not.toContain("sticky");
+  }
+  const third = itemAt(tables, 2);
+  expect(pinsOf(third).map((pin) => pin.getAttribute("aria-pressed"))).toEqual([
+    "false",
+    "true",
+    ...Array(6).fill("false"),
+  ]);
+  expect(positionsOf(third).slice(0, 2)).toEqual(["static", "sticky"]);
 });
 
 /** 階層の表の行（キー・型・必須・既定・説明） */
@@ -15888,7 +16034,8 @@ test("test_normal_when_pinned_column_resized", async () => {
   await vi.waitFor(() => expect(itemAt(pins, 2).hidden).toBe(false));
   const { heads, handles } = resizeParts(table);
   const firstRow = find<HTMLTableRowElement>(table, "tbody tr");
-  // 実行: 3 列目と 9 列目を留め、1 列目のつまみを右へ 60px ドラッグして、右端までスクロールする
+  // 実行: 1 列目・3 列目・9 列目を留め、1 列目のつまみを右へ 60px ドラッグして、右端までスクロールする
+  itemAt(pins, 0).click();
   itemAt(pins, 2).click();
   itemAt(pins, 8).click();
   dragResizeHandle(itemAt(handles, 0), 60);
@@ -15969,7 +16116,8 @@ test("test_normal_when_pinned_columns_exceed_visible_width", async () => {
     );
   expect(sum([0, 2])).toBeLessThanOrEqual(scroller.clientWidth);
   expect(sum([0, 2, 8])).toBeGreaterThan(scroller.clientWidth);
-  // 実行: 3 列目と 9 列目のピン止めを押し、右端までスクロールする
+  // 実行: 1 列目・3 列目・9 列目のピン止めを押し、右端までスクロールする
+  itemAt(pins, 0).click();
   itemAt(pins, 2).click();
   itemAt(pins, 8).click();
   scroller.scrollLeft = scroller.scrollWidth;
@@ -16129,12 +16277,12 @@ test("test_normal_when_unmarked_table_sorted", async () => {
   ).toBe(true);
   expect(table.querySelector(".mdmark-filter")).toBeNull();
   expect(table.querySelector(".mdmark-table-bar")).toBeNull();
-  // 検証: 押していないピンは見えないが、タブの順に残り、押した 1 列目のピンは見える
+  // 検証: どの列も留めず、押していないピンは見えないが、タブの順に残る
   const third = itemAt(pins, 2);
-  expect(itemAt(pins, 0).getAttribute("aria-pressed")).toBe("true");
-  expect(pinShown(itemAt(pins, 0))).toBe(true);
-  expect(third.getAttribute("aria-pressed")).toBe("false");
-  expect(pinShown(third)).toBe(false);
+  for (const pin of pins) {
+    expect(pin.getAttribute("aria-pressed")).toBe("false");
+    expect(pinShown(pin)).toBe(false);
+  }
   expect(getComputedStyle(third).visibility).toBe("visible");
   expect(getComputedStyle(third).display).not.toBe("none");
   // 検証: 見出しのセルは中身が収まる幅以上で、ピンがセルの右端を越えない
@@ -16322,7 +16470,111 @@ const MAP_FLOW_PARALLEL = `${MAP_FLOW_THICK}  subgraph from [送り元]
   a1 --> b3
   a2 --> b1
   a3 --> b2
+  subgraph fan [分かれる]
+    direction TB
+    f0["分岐"]:::step
+    f1["左"]:::step
+    f2["右"]:::step
+  end
+  f0 --> f1
+  f0 --> f2
 `;
+
+/** 構成図の舞台の上のノードの矩形（線のパスと同じ座標） */
+function mapStageRect(figure: Element, id: string) {
+  const node = find<HTMLElement>(
+    figure,
+    `.mdmark-diagram-stage > [data-node="${id}"]`,
+  );
+  return {
+    x: node.offsetLeft,
+    y: node.offsetTop,
+    w: node.offsetWidth,
+    h: node.offsetHeight,
+  };
+}
+
+/** 上のノードから下の段のノードへ出る線が、上のノードの下の辺から出て、下の段のノードの上の辺に入る */
+function expectMapWiresFacingDown(
+  figure: Element,
+  from: string,
+  targets: string[],
+): void {
+  const source = mapStageRect(figure, from);
+  for (const target of targets) {
+    const rect = mapStageRect(figure, target);
+    const points = mapWirePoints(figure, `${from}->${target}`);
+    expect(points[0]?.[1], target).toBeCloseTo(source.y + source.h, 0);
+    expect(points.at(-1)?.[1], target).toBeCloseTo(rect.y, 0);
+  }
+}
+
+/** ER 図の見本で、「注文」→「明細」の線が左右の辺のうち相手に近い方の辺につながり、どの線も両端以外のテーブルを横切らない */
+function expectMapErWiresNearAndClear(figure: Element): void {
+  const orderRect = mapStageRect(figure, "注文");
+  const detailRect = mapStageRect(figure, "明細");
+  const r2 = mapWirePoints(figure, "r2");
+  const nearX = (self: typeof orderRect, other: typeof orderRect) =>
+    other.x + other.w / 2 < self.x + self.w / 2 ? self.x : self.x + self.w;
+  expect(r2[0]?.[0]).toBeCloseTo(nearX(orderRect, detailRect), 0);
+  expect(r2.at(-1)?.[0]).toBeCloseTo(nearX(detailRect, orderRect), 0);
+  const rects = ["支払い", "明細", "注文", "商品", "顧客"].map((id) => ({
+    id,
+    ...mapStageRect(figure, id),
+  }));
+  const touches = (rect: (typeof rects)[number], [x, y]: [number, number]) =>
+    x >= rect.x - 0.5 &&
+    x <= rect.x + rect.w + 0.5 &&
+    y >= rect.y - 0.5 &&
+    y <= rect.y + rect.h + 0.5;
+  for (const wire of figure.querySelectorAll<SVGPathElement>(
+    ".map-wire-hits > .map-wire-hit[data-wire]",
+  )) {
+    const points = mapWirePoints(figure, wire.dataset.wire ?? "");
+    const ends = [points[0], points.at(-1)] as Array<[number, number]>;
+    for (const rect of rects.filter(
+      (item) => !ends.some((end) => touches(item, end)),
+    )) {
+      expect(
+        mapPolylineEntersRect(points, rect),
+        `${wire.dataset.wire} が ${rect.id} を横切る`,
+      ).toBe(false);
+    }
+  }
+}
+
+/** 線の押せる帯のパスの点 */
+function mapWirePoints(figure: Element, id: string): Array<[number, number]> {
+  const d =
+    find<SVGPathElement>(
+      figure,
+      `.map-wire-hit[data-wire="${id}"]`,
+    ).getAttribute("d") ?? "";
+  return [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map(
+    (match) => [Number(match[1]), Number(match[2])] as [number, number],
+  );
+}
+
+/** 縦横の折れ線のどれかの区間が、矩形の内側（辺を除く）を通るか */
+function mapPolylineEntersRect(
+  points: Array<[number, number]>,
+  rect: { x: number; y: number; w: number; h: number },
+): boolean {
+  const inside = (x: number, y: number) =>
+    x > rect.x + 0.5 &&
+    x < rect.x + rect.w - 0.5 &&
+    y > rect.y + 0.5 &&
+    y < rect.y + rect.h - 0.5;
+  return points.slice(1).some((point, k) => {
+    const previous = points[k] as [number, number];
+    for (let step = 0; step <= 20; step += 1) {
+      const x = previous[0] + ((point[0] - previous[0]) * step) / 20;
+      const y = previous[1] + ((point[1] - previous[1]) * step) / 20;
+      if (inside(x, y)) return true;
+    }
+    return false;
+  });
+}
 
 /** 矩形 */
 type MapRect = { left: number; top: number; right: number; bottom: number };
@@ -16601,7 +16853,7 @@ test("test_normal_when_map_flowchart_drawn", async () => {
       ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
     ),
   ];
-  expect(nodes.length).toBe(16);
+  expect(nodes.length).toBe(19);
   for (const [i, a] of nodes.entries()) {
     for (const b of nodes.slice(i + 1)) {
       expect(
@@ -16625,6 +16877,8 @@ test("test_normal_when_map_flowchart_drawn", async () => {
       id,
     ).not.toBeNull();
   expect(mapWireOverlaps(figure)).toEqual([]);
+  // 検証: 中のグループで下の段の 2 つのノードへ出る線は、上のノードの下の辺から出て、下の段のノードの上の辺に入る
+  expectMapWiresFacingDown(figure, "f0", ["f1", "f2"]);
   // 検証: 種類の行と形・色
   const store = find<HTMLElement>(figure, '[data-node="index"]');
   expect(store.dataset.shape).toBe("rect");
@@ -18347,6 +18601,8 @@ test("test_normal_when_map_er_drawn", async () => {
   const figure = figures()[0] as HTMLElement;
   // 検証: 分類の外の「顧客」「商品」から中へ出る線を含め、同じ向きの区間が同じ直線の上で重ならない
   expect(mapWireOverlaps(figure)).toEqual([]);
+  // 検証: 「注文」→「明細」の線は左右の辺のうち相手に近い方の辺につながり、どの線も両端以外のテーブルを横切らない
+  expectMapErWiresNearAndClear(figure);
   // 検証: タイトル
   expect(find(figure, ".mdmark-diagram-title").textContent).toBe("記録の構造");
   // 検証: テーブルの列の行と、ノード・グループの重なり

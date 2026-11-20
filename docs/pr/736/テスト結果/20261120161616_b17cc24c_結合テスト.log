@@ -1,0 +1,2622 @@
+$ run_url=$(gh workflow run test.yml --ref "$(git branch --show-current)" -f layer=integration -f paths="tests/integration/lib/collect-references.test.ts tests/integration/lib/check-index.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/render.test.ts tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/init.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/export-html.test.ts tests/integration/ClaudeCodeプラグイン/build-site.test.ts" | grep -o 'https://[^ ]*/actions/runs/[0-9]*') && run_id=${run_url##*/} && (...) && (rc=0; gh run watch "$run_id" --exit-status > /dev/null || rc=1; gh run view "$run_id" --log; exit $rc)
+# 実行 https://github.com/shuhei1101/mdmark/actions/runs/44692486659（commit b17cc24c）。11 ファイル・235 テスト全 pass
+
+test	Set up job	﻿2026-11-20T07:06:16.9852420Z Current runner version: '2.338.2'
+test	Set up job	2026-11-20T07:06:16.9891348Z ##[group]Runner Image Provisioner
+test	Set up job	2026-11-20T07:06:16.9892980Z Hosted Compute Agent
+test	Set up job	2026-11-20T07:06:16.9894213Z Version: 20261111.635
+test	Set up job	2026-11-20T07:06:16.9895388Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+test	Set up job	2026-11-20T07:06:16.9896754Z Build Date: 2026-11-11T01:49:01Z
+test	Set up job	2026-11-20T07:06:16.9897980Z Worker ID: {5df3d732-8501-4986-9bd6-4d03bf0137b4}
+test	Set up job	2026-11-20T07:06:16.9899212Z Region: eastus2
+test	Set up job	2026-11-20T07:06:16.9900318Z Cloud: Azure
+test	Set up job	2026-11-20T07:06:16.9901372Z ##[endgroup]
+test	Set up job	2026-11-20T07:06:16.9904181Z ##[group]Operating System
+test	Set up job	2026-11-20T07:06:16.9905395Z Ubuntu
+test	Set up job	2026-11-20T07:06:16.9906390Z 26.04.1
+test	Set up job	2026-11-20T07:06:16.9907291Z LTS
+test	Set up job	2026-11-20T07:06:16.9908253Z ##[endgroup]
+test	Set up job	2026-11-20T07:06:16.9910088Z ##[group]Runner Image
+test	Set up job	2026-11-20T07:06:16.9911138Z Image: ubuntu-26.04
+test	Set up job	2026-11-20T07:06:16.9912470Z Version: 20261116.202.1
+test	Set up job	2026-11-20T07:06:16.9914431Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+test	Set up job	2026-11-20T07:06:16.9917689Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+test	Set up job	2026-11-20T07:06:16.9919508Z ##[endgroup]
+test	Set up job	2026-11-20T07:06:16.9921434Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2026-11-20T07:06:16.9924779Z Contents: read
+test	Set up job	2026-11-20T07:06:16.9925788Z Metadata: read
+test	Set up job	2026-11-20T07:06:16.9926712Z ##[endgroup]
+test	Set up job	2026-11-20T07:06:16.9929955Z Secret source: Actions
+test	Set up job	2026-11-20T07:06:16.9931763Z Cache mode: write
+test	Set up job	2026-11-20T07:06:16.9933477Z Prepare workflow directory
+test	Set up job	2026-11-20T07:06:17.0747047Z Prepare all required actions
+test	Set up job	2026-11-20T07:06:17.0825233Z Getting action download info
+test	Set up job	2026-11-20T07:06:17.2946072Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+test	Set up job	2026-11-20T07:06:17.3935372Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+test	Set up job	2026-11-20T07:06:17.4611323Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+test	Set up job	2026-11-20T07:06:17.6448622Z Complete job name: test
+test	ブランチを取得する	﻿2026-11-20T07:06:17.7329896Z ##[group]Run actions/checkout@v4
+test	ブランチを取得する	2026-11-20T07:06:17.7330811Z with:
+test	ブランチを取得する	2026-11-20T07:06:17.7331255Z   repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-20T07:06:17.7335046Z   token: ***
+test	ブランチを取得する	2026-11-20T07:06:17.7335487Z   ssh-strict: true
+test	ブランチを取得する	2026-11-20T07:06:17.7335925Z   ssh-user: git
+test	ブランチを取得する	2026-11-20T07:06:17.7336375Z   persist-credentials: true
+test	ブランチを取得する	2026-11-20T07:06:17.7336863Z   clean: true
+test	ブランチを取得する	2026-11-20T07:06:17.7337306Z   sparse-checkout-cone-mode: true
+test	ブランチを取得する	2026-11-20T07:06:17.7337829Z   fetch-depth: 1
+test	ブランチを取得する	2026-11-20T07:06:17.7338268Z   fetch-tags: false
+test	ブランチを取得する	2026-11-20T07:06:17.7338729Z   show-progress: true
+test	ブランチを取得する	2026-11-20T07:06:17.7339184Z   lfs: false
+test	ブランチを取得する	2026-11-20T07:06:17.7339602Z   submodules: false
+test	ブランチを取得する	2026-11-20T07:06:17.7340052Z   set-safe-directory: true
+test	ブランチを取得する	2026-11-20T07:06:17.7340556Z   allow-unsafe-pr-checkout: false
+test	ブランチを取得する	2026-11-20T07:06:17.7341307Z env:
+test	ブランチを取得する	2026-11-20T07:06:17.7341731Z   LAYER: integration
+test	ブランチを取得する	2026-11-20T07:06:17.7344874Z   PATHS: tests/integration/lib/collect-references.test.ts tests/integration/lib/check-index.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/render.test.ts tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/init.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/export-html.test.ts tests/integration/ClaudeCodeプラグイン/build-site.test.ts
+test	ブランチを取得する	2026-11-20T07:06:17.7348004Z ##[endgroup]
+test	ブランチを取得する	2026-11-20T07:06:18.0327212Z Syncing repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-20T07:06:18.0330248Z ##[group]Getting Git version info
+test	ブランチを取得する	2026-11-20T07:06:18.0331087Z Working directory is '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-20T07:06:18.0332535Z [command]/usr/bin/git version
+test	ブランチを取得する	2026-11-20T07:06:18.0358201Z git version 2.56.1
+test	ブランチを取得する	2026-11-20T07:06:18.0381224Z ##[endgroup]
+test	ブランチを取得する	2026-11-20T07:06:18.0397657Z Temporarily overriding HOME='/home/runner/work/_temp/6013940d-cfc5-46c2-b993-f133a2841335' before making global git config changes
+test	ブランチを取得する	2026-11-20T07:06:18.0401953Z Adding repository directory to the temporary git global config as a safe directory
+test	ブランチを取得する	2026-11-20T07:06:18.0405135Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-20T07:06:18.0480252Z Deleting the contents of '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-20T07:06:18.0485109Z ##[group]Initializing the repository
+test	ブランチを取得する	2026-11-20T07:06:18.0490339Z [command]/usr/bin/git init /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-20T07:06:18.0606394Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	ブランチを取得する	2026-11-20T07:06:18.0607780Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test	ブランチを取得する	2026-11-20T07:06:18.0609351Z hint: to use in all of your new repositories, which will suppress this warning,
+test	ブランチを取得する	2026-11-20T07:06:18.0610426Z hint: call:
+test	ブランチを取得する	2026-11-20T07:06:18.0610923Z hint:
+test	ブランチを取得する	2026-11-20T07:06:18.0611631Z hint: 	git config --global init.defaultBranch <name>
+test	ブランチを取得する	2026-11-20T07:06:18.0612834Z hint:
+test	ブランチを取得する	2026-11-20T07:06:18.0613593Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	ブランチを取得する	2026-11-20T07:06:18.0615050Z hint: 'development'. The just-created branch can be renamed via this command:
+test	ブランチを取得する	2026-11-20T07:06:18.0616037Z hint:
+test	ブランチを取得する	2026-11-20T07:06:18.0616551Z hint: 	git branch -m <name>
+test	ブランチを取得する	2026-11-20T07:06:18.0617254Z hint:
+test	ブランチを取得する	2026-11-20T07:06:18.0618599Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	ブランチを取得する	2026-11-20T07:06:18.0620818Z Initialized empty Git repository in /home/runner/work/mdmark/mdmark/.git/
+test	ブランチを取得する	2026-11-20T07:06:18.0630926Z [command]/usr/bin/git remote add origin https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-20T07:06:18.0693983Z ##[endgroup]
+test	ブランチを取得する	2026-11-20T07:06:18.0695866Z ##[group]Disabling automatic garbage collection
+test	ブランチを取得する	2026-11-20T07:06:18.0697335Z [command]/usr/bin/git config --local gc.auto 0
+test	ブランチを取得する	2026-11-20T07:06:18.0759577Z ##[endgroup]
+test	ブランチを取得する	2026-11-20T07:06:18.0761350Z ##[group]Setting up auth
+test	ブランチを取得する	2026-11-20T07:06:18.0767547Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	ブランチを取得する	2026-11-20T07:06:18.0804791Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	ブランチを取得する	2026-11-20T07:06:18.1254998Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	ブランチを取得する	2026-11-20T07:06:18.1288313Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	ブランチを取得する	2026-11-20T07:06:18.1559209Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	ブランチを取得する	2026-11-20T07:06:18.1593695Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	ブランチを取得する	2026-11-20T07:06:18.1864569Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	ブランチを取得する	2026-11-20T07:06:18.1903300Z ##[endgroup]
+test	ブランチを取得する	2026-11-20T07:06:18.1904276Z ##[group]Fetching the repository
+test	ブランチを取得する	2026-11-20T07:06:18.1917218Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +b17cc24c9f3283ee6754b8aa2c2a40f2120b53b8:refs/remotes/origin/feat/index/frontmatter-document-metadata
+test	ブランチを取得する	2026-11-20T07:06:19.9718660Z From https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-20T07:06:19.9721337Z  * [new ref]         b17cc24c9f3283ee6754b8aa2c2a40f2120b53b8 -> origin/feat/index/frontmatter-document-metadata
+test	ブランチを取得する	2026-11-20T07:06:19.9725625Z ##[endgroup]
+test	ブランチを取得する	2026-11-20T07:06:19.9726953Z ##[group]Determining the checkout info
+test	ブランチを取得する	2026-11-20T07:06:19.9728347Z ##[endgroup]
+test	ブランチを取得する	2026-11-20T07:06:19.9731685Z [command]/usr/bin/git sparse-checkout disable
+test	ブランチを取得する	2026-11-20T07:06:19.9789360Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	ブランチを取得する	2026-11-20T07:06:19.9821692Z ##[group]Checking out the ref
+test	ブランチを取得する	2026-11-20T07:06:19.9826252Z [command]/usr/bin/git checkout --progress --force -B feat/index/frontmatter-document-metadata refs/remotes/origin/feat/index/frontmatter-document-metadata
+test	ブランチを取得する	2026-11-20T07:06:20.4500797Z Switched to a new branch 'feat/index/frontmatter-document-metadata'
+test	ブランチを取得する	2026-11-20T07:06:20.4539004Z branch 'feat/index/frontmatter-document-metadata' set up to track 'origin/feat/index/frontmatter-document-metadata'.
+test	ブランチを取得する	2026-11-20T07:06:20.4546949Z ##[endgroup]
+test	ブランチを取得する	2026-11-20T07:06:20.4600830Z [command]/usr/bin/git log -1 --format=%H
+test	ブランチを取得する	2026-11-20T07:06:20.4629275Z b17cc24c9f3283ee6754b8aa2c2a40f2120b53b8
+test	Node をインストールする	﻿2026-11-20T07:06:20.5040907Z ##[group]Run actions/setup-node@v4
+test	Node をインストールする	2026-11-20T07:06:20.5041309Z with:
+test	Node をインストールする	2026-11-20T07:06:20.5041510Z   node-version: 24
+test	Node をインストールする	2026-11-20T07:06:20.5041723Z   always-auth: false
+test	Node をインストールする	2026-11-20T07:06:20.5041937Z   check-latest: false
+test	Node をインストールする	2026-11-20T07:06:20.5044412Z   token: ***
+test	Node をインストールする	2026-11-20T07:06:20.5044619Z env:
+test	Node をインストールする	2026-11-20T07:06:20.5044803Z   LAYER: integration
+test	Node をインストールする	2026-11-20T07:06:20.5046673Z   PATHS: tests/integration/lib/collect-references.test.ts tests/integration/lib/check-index.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/render.test.ts tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/init.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/export-html.test.ts tests/integration/ClaudeCodeプラグイン/build-site.test.ts
+test	Node をインストールする	2026-11-20T07:06:20.5048927Z ##[endgroup]
+test	Node をインストールする	2026-11-20T07:06:20.6621194Z (node:2418) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Node をインストールする	2026-11-20T07:06:20.6622871Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Node をインストールする	2026-11-20T07:06:20.6623996Z Found in cache @ /opt/hostedtoolcache/node/24.22.3/x64
+test	Node をインストールする	2026-11-20T07:06:20.6624758Z ##[group]Environment details
+test	Node をインストールする	2026-11-20T07:06:21.1097578Z node: v24.22.3
+test	Node をインストールする	2026-11-20T07:06:21.1098154Z npm: 11.19.1
+test	Node をインストールする	2026-11-20T07:06:21.1098610Z yarn: 1.22.22
+test	Node をインストールする	2026-11-20T07:06:21.1099356Z ##[endgroup]
+test	依存をインストールする	﻿2026-11-20T07:06:21.1258556Z ##[group]Run npm ci
+test	依存をインストールする	2026-11-20T07:06:21.1258905Z npm ci
+test	依存をインストールする	2026-11-20T07:06:21.1259146Z npm --prefix vscode ci
+test	依存をインストールする	2026-11-20T07:06:21.1303986Z shell: /usr/bin/bash -e {0}
+test	依存をインストールする	2026-11-20T07:06:21.1304281Z env:
+test	依存をインストールする	2026-11-20T07:06:21.1304477Z   LAYER: integration
+test	依存をインストールする	2026-11-20T07:06:21.1306326Z   PATHS: tests/integration/lib/collect-references.test.ts tests/integration/lib/check-index.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/render.test.ts tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/init.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/export-html.test.ts tests/integration/ClaudeCodeプラグイン/build-site.test.ts
+test	依存をインストールする	2026-11-20T07:06:21.1308217Z ##[endgroup]
+test	依存をインストールする	2026-11-20T07:06:36.5772288Z 
+test	依存をインストールする	2026-11-20T07:06:36.5781493Z added 550 packages, and audited 557 packages in 15s
+test	依存をインストールする	2026-11-20T07:06:36.5781922Z 
+test	依存をインストールする	2026-11-20T07:06:36.5782450Z 109 packages are looking for funding
+test	依存をインストールする	2026-11-20T07:06:36.5782956Z   run `npm fund` for details
+test	依存をインストールする	2026-11-20T07:06:36.6170572Z 
+test	依存をインストールする	2026-11-20T07:06:36.6171306Z 11 moderate severity vulnerabilities
+test	依存をインストールする	2026-11-20T07:06:36.6171734Z 
+test	依存をインストールする	2026-11-20T07:06:36.6173667Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-20T07:06:36.6174153Z   npm audit fix
+test	依存をインストールする	2026-11-20T07:06:36.6174302Z 
+test	依存をインストールする	2026-11-20T07:06:36.6174555Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-20T07:06:36.6174919Z   npm audit fix --force
+test	依存をインストールする	2026-11-20T07:06:36.6175079Z 
+test	依存をインストールする	2026-11-20T07:06:36.6175213Z Run `npm audit` for details.
+test	依存をインストールする	2026-11-20T07:06:36.6180546Z npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-20T07:06:36.6181274Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-20T07:06:36.6181706Z npm warn install-scripts
+test	依存をインストールする	2026-11-20T07:06:36.6182604Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-20T07:06:43.9276216Z 
+test	依存をインストールする	2026-11-20T07:06:43.9279398Z added 307 packages, and audited 314 packages in 7s
+test	依存をインストールする	2026-11-20T07:06:43.9279831Z 
+test	依存をインストールする	2026-11-20T07:06:43.9280106Z 93 packages are looking for funding
+test	依存をインストールする	2026-11-20T07:06:43.9280577Z   run `npm fund` for details
+test	依存をインストールする	2026-11-20T07:06:43.9446445Z 
+test	依存をインストールする	2026-11-20T07:06:43.9447007Z 6 vulnerabilities (4 moderate, 2 high)
+test	依存をインストールする	2026-11-20T07:06:43.9447372Z 
+test	依存をインストールする	2026-11-20T07:06:43.9447771Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-20T07:06:43.9448378Z   npm audit fix
+test	依存をインストールする	2026-11-20T07:06:43.9448633Z 
+test	依存をインストールする	2026-11-20T07:06:43.9460607Z npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-20T07:06:43.9462533Z npm warn install-scripts   @vscode/vsce-sign@2.1.1 (postinstall: node ./src/postinstall.js)
+test	依存をインストールする	2026-11-20T07:06:43.9464100Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-20T07:06:43.9465075Z npm warn install-scripts
+test	依存をインストールする	2026-11-20T07:06:43.9466415Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-20T07:06:43.9473410Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-20T07:06:43.9474112Z   npm audit fix --force
+test	依存をインストールする	2026-11-20T07:06:43.9474394Z 
+test	依存をインストールする	2026-11-20T07:06:43.9474681Z Run `npm audit` for details.
+test	Chromium をインストールする	﻿2026-11-20T07:06:43.9997434Z ##[group]Run npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-20T07:06:43.9997942Z npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-20T07:06:44.0034105Z shell: /usr/bin/bash -e {0}
+test	Chromium をインストールする	2026-11-20T07:06:44.0034371Z env:
+test	Chromium をインストールする	2026-11-20T07:06:44.0034560Z   LAYER: integration
+test	Chromium をインストールする	2026-11-20T07:06:44.0036439Z   PATHS: tests/integration/lib/collect-references.test.ts tests/integration/lib/check-index.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/render.test.ts tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/init.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/export-html.test.ts tests/integration/ClaudeCodeプラグイン/build-site.test.ts
+test	Chromium をインストールする	2026-11-20T07:06:44.0038327Z ##[endgroup]
+test	Chromium をインストールする	2026-11-20T07:06:44.8214020Z Installing dependencies...
+test	Chromium をインストールする	2026-11-20T07:06:44.8303575Z Switching to root user to install dependencies...
+test	Chromium をインストールする	2026-11-20T07:06:45.0095008Z Get:1 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease [3964 B]
+test	Chromium をインストールする	2026-11-20T07:06:45.0643920Z Get:2 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-20T07:06:45.0820685Z Hit:3 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+test	Chromium をインストールする	2026-11-20T07:06:45.0843231Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease [137 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.1034315Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease [137 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.1141562Z Get:6 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease [137 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.1516050Z Get:7 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main amd64 Packages [165 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.1639169Z Get:8 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main arm64 Packages [151 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2098143Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main amd64v3 Packages [902 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2145089Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main Translation-en [200 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2174243Z Get:11 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe amd64v3 Packages [394 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2226795Z Get:12 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe Translation-en [124 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2228348Z Get:13 http://azure.archive.ubuntu.com/ubuntu resolute-updates/restricted amd64v3 Packages [629 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2236569Z Get:14 http://azure.archive.ubuntu.com/ubuntu resolute-updates/restricted Translation-en [130 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2362402Z Get:15 http://azure.archive.ubuntu.com/ubuntu resolute-security/main amd64v3 Packages [722 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2396548Z Get:16 http://azure.archive.ubuntu.com/ubuntu resolute-security/main Translation-en [158 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2409702Z Get:17 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe amd64v3 Packages [222 kB]
+test	Chromium をインストールする	2026-11-20T07:06:45.2424810Z Get:18 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe Translation-en [72.7 kB]
+test	Chromium をインストールする	2026-11-20T07:06:54.1945469Z Fetched 4284 kB in 1s (8145 kB/s)
+test	Chromium をインストールする	2026-11-20T07:06:54.8965839Z Reading package lists...
+test	Chromium をインストールする	2026-11-20T07:06:54.9246401Z Reading package lists...
+test	Chromium をインストールする	2026-11-20T07:06:55.0898479Z Building dependency tree...
+test	Chromium をインストールする	2026-11-20T07:06:55.0906409Z Reading state information...
+test	Chromium をインストールする	2026-11-20T07:06:55.1231236Z libasound2t64 is already the newest version (1.2.15.3-1ubuntu1.1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1232004Z libasound2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1232963Z libatk-bridge2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1233691Z libatk-bridge2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1234507Z libatk1.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1235170Z libatk1.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1235875Z libatspi2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1236520Z libatspi2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1237090Z libcairo2 is already the newest version (1.18.4-3).
+test	Chromium をインストールする	2026-11-20T07:06:55.1238191Z libcairo2 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1238809Z libcups2t64 is already the newest version (2.4.16-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-20T07:06:55.1239440Z libcups2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1240055Z libdbus-1-3 is already the newest version (1.16.2-2ubuntu4).
+test	Chromium をインストールする	2026-11-20T07:06:55.1240640Z libdbus-1-3 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1241177Z libdrm2 is already the newest version (2.4.131-1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1241742Z libdrm2 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1242492Z libgbm1 is already the newest version (26.0.8-1ubuntu0.3).
+test	Chromium をインストールする	2026-11-20T07:06:55.1243053Z libgbm1 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1243690Z libglib2.0-0t64 is already the newest version (2.88.0-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1244322Z libglib2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1245026Z libnspr4 is already the newest version (2:4.38.2-1ubuntu1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1245610Z libnspr4 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1246205Z libnss3 is already the newest version (2:3.120-1ubuntu2.2).
+test	Chromium をインストールする	2026-11-20T07:06:55.1246815Z libnss3 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1247376Z libpango-1.0-0 is already the newest version (1.57.0-1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1247952Z libpango-1.0-0 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1248584Z libx11-6 is already the newest version (2:1.8.13-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1249153Z libx11-6 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1249709Z libxcb1 is already the newest version (1.17.0-2ubuntu1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1250261Z libxcb1 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1250871Z libxcomposite1 is already the newest version (1:0.4.6-1build1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1251511Z libxcomposite1 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1252255Z libxdamage1 is already the newest version (1:1.1.7-1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1252819Z libxdamage1 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1253409Z libxext6 is already the newest version (2:1.3.4-1build3).
+test	Chromium をインストールする	2026-11-20T07:06:55.1253969Z libxext6 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1254551Z libxfixes3 is already the newest version (1:6.0.0-2build2).
+test	Chromium をインストールする	2026-11-20T07:06:55.1255139Z libxfixes3 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1255714Z libxkbcommon0 is already the newest version (1.13.1-1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1256277Z libxkbcommon0 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1256887Z libxrandr2 is already the newest version (2:1.5.4-1build1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1257460Z libxrandr2 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1258039Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-20T07:06:55.1258803Z fonts-noto-color-emoji is already the newest version (2.051-1build1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1259819Z libfontconfig1 is already the newest version (2.17.1-3ubuntu1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1260443Z libfontconfig1 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1261117Z libfreetype6 is already the newest version (2.14.2+dfsg-1ubuntu0.2).
+test	Chromium をインストールする	2026-11-20T07:06:55.1261763Z libfreetype6 set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1262567Z fonts-liberation is already the newest version (1:2.1.5-3build1).
+test	Chromium をインストールする	2026-11-20T07:06:55.1263242Z fonts-liberation set to manually installed.
+test	Chromium をインストールする	2026-11-20T07:06:55.1801863Z Solving dependencies...
+test	Chromium をインストールする	2026-11-20T07:06:55.2633481Z The following additional packages will be installed:
+test	Chromium をインストールする	2026-11-20T07:06:55.2634204Z   xfonts-encodings xfonts-utils
+test	Chromium をインストールする	2026-11-20T07:06:55.2639112Z Recommended packages:
+test	Chromium をインストールする	2026-11-20T07:06:55.2639617Z   fonts-ipafont-mincho fonts-tlwg-loma
+test	Chromium をインストールする	2026-11-20T07:06:55.3025095Z The following NEW packages will be installed:
+test	Chromium をインストールする	2026-11-20T07:06:55.3026325Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+test	Chromium をインストールする	2026-11-20T07:06:55.3032043Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+test	Chromium をインストールする	2026-11-20T07:06:55.3032935Z   xfonts-utils
+test	Chromium をインストールする	2026-11-20T07:06:55.3254981Z 0 upgraded, 9 newly installed, 0 to remove and 50 not upgraded.
+test	Chromium をインストールする	2026-11-20T07:06:55.3255524Z Need to get 21.9 MB of archives.
+test	Chromium をインストールする	2026-11-20T07:06:55.3256347Z After this operation, 80.2 MB of additional disk space will be used.
+test	Chromium をインストールする	2026-11-20T07:06:55.3256916Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-20T07:06:55.3449172Z Get:2 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-ipafont-gothic all 00303-23ubuntu1 [3703 kB]
+test	Chromium をインストールする	2026-11-20T07:06:55.3666352Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 fonts-freefont-ttf all 20211204+svn4273-4build1 [5656 kB]
+test	Chromium をインストールする	2026-11-20T07:06:55.4014151Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-tlwg-loma-otf all 1:0.7.3-1build1 [106 kB]
+test	Chromium をインストールする	2026-11-20T07:06:55.4041512Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-unifont all 1:16.0.04-1build1 [3169 kB]
+test	Chromium をインストールする	2026-11-20T07:06:55.4222785Z Get:6 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-wqy-zenhei all 0.9.45-8build1 [7863 kB]
+test	Chromium をインストールする	2026-11-20T07:06:55.4646122Z Get:7 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-encodings all 1:1.0.5-0ubuntu3 [576 kB]
+test	Chromium をインストールする	2026-11-20T07:06:55.4685007Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-utils amd64 1:7.7+7build1 [97.3 kB]
+test	Chromium をインストールする	2026-11-20T07:06:55.4716537Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-cyrillic all 1:1.0.5+nmu1build1 [384 kB]
+test	Chromium をインストールする	2026-11-20T07:06:55.4751756Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-scalable all 1:1.0.3-1.3build1 [304 kB]
+test	Chromium をインストールする	2026-11-20T07:06:56.6170072Z Fetched 21.9 MB in 0s (133 MB/s)
+test	Chromium をインストールする	2026-11-20T07:06:56.6849147Z Selecting previously unselected package fonts-ipafont-gothic.
+test	Chromium をインストールする	2026-11-20T07:06:56.7954675Z (Reading database ... 
+test	Chromium をインストールする	2026-11-20T07:06:56.7955526Z (Reading database ... 5%
+test	Chromium をインストールする	2026-11-20T07:06:56.7956328Z (Reading database ... 10%
+test	Chromium をインストールする	2026-11-20T07:06:56.7956664Z (Reading database ... 15%
+test	Chromium をインストールする	2026-11-20T07:06:56.7956951Z (Reading database ... 20%
+test	Chromium をインストールする	2026-11-20T07:06:56.7957224Z (Reading database ... 25%
+test	Chromium をインストールする	2026-11-20T07:06:56.7957493Z (Reading database ... 30%
+test	Chromium をインストールする	2026-11-20T07:06:56.7957780Z (Reading database ... 35%
+test	Chromium をインストールする	2026-11-20T07:06:56.7958042Z (Reading database ... 40%
+test	Chromium をインストールする	2026-11-20T07:06:56.7958304Z (Reading database ... 45%
+test	Chromium をインストールする	2026-11-20T07:06:56.7958573Z (Reading database ... 50%
+test	Chromium をインストールする	2026-11-20T07:06:57.2060007Z (Reading database ... 55%
+test	Chromium をインストールする	2026-11-20T07:06:57.3277251Z (Reading database ... 60%
+test	Chromium をインストールする	2026-11-20T07:06:57.4271657Z (Reading database ... 65%
+test	Chromium をインストールする	2026-11-20T07:06:57.5329085Z (Reading database ... 70%
+test	Chromium をインストールする	2026-11-20T07:06:57.7826480Z (Reading database ... 75%
+test	Chromium をインストールする	2026-11-20T07:06:58.9998923Z (Reading database ... 80%
+test	Chromium をインストールする	2026-11-20T07:07:00.7386035Z (Reading database ... 85%
+test	Chromium をインストールする	2026-11-20T07:07:03.1348151Z (Reading database ... 90%
+test	Chromium をインストールする	2026-11-20T07:07:04.1380630Z (Reading database ... 95%
+test	Chromium をインストールする	2026-11-20T07:07:04.1381055Z (Reading database ... 100%
+test	Chromium をインストールする	2026-11-20T07:07:04.1381872Z (Reading database ... 214296 files and directories currently installed.)
+test	Chromium をインストールする	2026-11-20T07:07:04.1423565Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-23ubuntu1_all.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.1524706Z Unpacking fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.2793279Z Selecting previously unselected package fonts-freefont-ttf.
+test	Chromium をインストールする	2026-11-20T07:07:04.2930820Z Preparing to unpack .../1-fonts-freefont-ttf_20211204+svn4273-4build1_all.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.2937546Z Unpacking fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.3927285Z Selecting previously unselected package fonts-tlwg-loma-otf.
+test	Chromium をインストールする	2026-11-20T07:07:04.4067483Z Preparing to unpack .../2-fonts-tlwg-loma-otf_1%3a0.7.3-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.4075974Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.4317699Z Selecting previously unselected package fonts-unifont.
+test	Chromium をインストールする	2026-11-20T07:07:04.4455097Z Preparing to unpack .../3-fonts-unifont_1%3a16.0.04-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.4463453Z Unpacking fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.5555708Z Selecting previously unselected package fonts-wqy-zenhei.
+test	Chromium をインストールする	2026-11-20T07:07:04.5694972Z Preparing to unpack .../4-fonts-wqy-zenhei_0.9.45-8build1_all.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.6032660Z Unpacking fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.7048903Z Selecting previously unselected package xfonts-encodings.
+test	Chromium をインストールする	2026-11-20T07:07:04.7186388Z Preparing to unpack .../5-xfonts-encodings_1%3a1.0.5-0ubuntu3_all.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.7193175Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.7477141Z Selecting previously unselected package xfonts-utils.
+test	Chromium をインストールする	2026-11-20T07:07:04.7616232Z Preparing to unpack .../6-xfonts-utils_1%3a7.7+7build1_amd64v3.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.7624047Z Unpacking xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.8497330Z Selecting previously unselected package xfonts-cyrillic.
+test	Chromium をインストールする	2026-11-20T07:07:04.8639438Z Preparing to unpack .../7-xfonts-cyrillic_1%3a1.0.5+nmu1build1_all.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.8661103Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.9026945Z Selecting previously unselected package xfonts-scalable.
+test	Chromium をインストールする	2026-11-20T07:07:04.9177383Z Preparing to unpack .../8-xfonts-scalable_1%3a1.0.3-1.3build1_all.deb ...
+test	Chromium をインストールする	2026-11-20T07:07:04.9186786Z Unpacking xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.9699545Z Setting up fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.9851614Z Setting up fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.9874235Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.9894476Z Setting up xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.9913532Z Setting up fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-20T07:07:04.9979151Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+test	Chromium をインストールする	2026-11-20T07:07:04.9999124Z Setting up fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:05.0014847Z Setting up xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:05.0076712Z Setting up xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:05.1861825Z Setting up xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:05.2283340Z Processing triggers for man-db (2.13.1-1build1) ...
+test	Chromium をインストールする	2026-11-20T07:07:05.2467793Z Not building database; man-db/auto-update is not 'true'.
+test	Chromium をインストールする	2026-11-20T07:07:05.2482980Z Processing triggers for fontconfig (2.17.1-3ubuntu1) ...
+test	Chromium をインストールする	2026-11-20T07:07:07.5161078Z 
+test	Chromium をインストールする	2026-11-20T07:07:07.5161793Z Running kernel seems to be up-to-date.
+test	Chromium をインストールする	2026-11-20T07:07:07.5162502Z 
+test	Chromium をインストールする	2026-11-20T07:07:07.5162657Z Restarting services...
+test	Chromium をインストールする	2026-11-20T07:07:07.5256380Z 
+test	Chromium をインストールする	2026-11-20T07:07:07.5256795Z Service restarts being deferred:
+test	Chromium をインストールする	2026-11-20T07:07:07.5260983Z  systemctl restart hosted-compute-agent.service
+test	Chromium をインストールする	2026-11-20T07:07:07.5261403Z 
+test	Chromium をインストールする	2026-11-20T07:07:07.5261905Z No containers need to be restarted.
+test	Chromium をインストールする	2026-11-20T07:07:07.5262902Z 
+test	Chromium をインストールする	2026-11-20T07:07:07.5263126Z No user sessions are running outdated binaries.
+test	Chromium をインストールする	2026-11-20T07:07:07.5263543Z 
+test	Chromium をインストールする	2026-11-20T07:07:07.5264051Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+test	Chromium をインストールする	2026-11-20T07:07:08.4069856Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+test	Chromium をインストールする	2026-11-20T07:07:08.8039918Z |                                                                                |   0% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:08.9598804Z |■■■■■■■■                                                                        |  10% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.0469847Z |■■■■■■■■■■■■■■■■                                                                |  20% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.1414544Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.2106271Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.2901981Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.3674652Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.4310048Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.5366289Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.6031816Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:09.6784817Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 191.1 MiB
+test	Chromium をインストールする	2026-11-20T07:07:12.6946753Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+test	Chromium をインストールする	2026-11-20T07:07:12.6951135Z Downloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip
+test	Chromium をインストールする	2026-11-20T07:07:13.0769005Z |                                                                                |   0% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.0871294Z |■■■■■■■■                                                                        |  10% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1000831Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1027853Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1053117Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1074922Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1100726Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1123833Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1145622Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1162354Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1172880Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.1768650Z FFmpeg (playwright ffmpeg v1013) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1013
+test	Chromium をインストールする	2026-11-20T07:07:13.1772475Z Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+test	Chromium をインストールする	2026-11-20T07:07:13.5730978Z |                                                                                |   0% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.6727898Z |■■■■■■■■                                                                        |  10% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.7359141Z |■■■■■■■■■■■■■■■■                                                                |  20% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.7911508Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.8609505Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.8987468Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.9336342Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:13.9851521Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:14.0233279Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:14.0704958Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:14.1258030Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+test	Chromium をインストールする	2026-11-20T07:07:16.3106623Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+test	結合テストの道具を用意する	﻿2026-11-20T07:07:16.3457090Z ##[group]Run sudo apt-get update
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3457446Z sudo apt-get update
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3457727Z sudo apt-get install -y tmux xvfb
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3458040Z sudo loginctl enable-linger "$USER"
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3458329Z uid=$(id -u)
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3458604Z # ランナーの実測（待たずにソケットがあった。1 秒の刻みで 1 回未満）の 10 倍
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3458906Z n=0
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3459136Z until [ -S "/run/user/$uid/bus" ]; do
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3459424Z   n=$((n+1))
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3459645Z   if [ "$n" -ge 10 ]; then
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3460160Z     echo "systemd のユーザーのマネージャーが 10 秒で起動しません" >&2
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3460463Z     exit 1
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3460675Z   fi
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3460878Z   sleep 1
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3461076Z done
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3461347Z echo "XDG_RUNTIME_DIR=/run/user/$uid" >> "$GITHUB_ENV"
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3461875Z echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus" >> "$GITHUB_ENV"
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3495221Z shell: /usr/bin/bash -e {0}
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3495484Z env:
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3495677Z   LAYER: integration
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3497515Z   PATHS: tests/integration/lib/collect-references.test.ts tests/integration/lib/check-index.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/render.test.ts tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/init.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/export-html.test.ts tests/integration/ClaudeCodeプラグイン/build-site.test.ts
+test	結合テストの道具を用意する	2026-11-20T07:07:16.3499422Z ##[endgroup]
+test	結合テストの道具を用意する	2026-11-20T07:07:16.4148799Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	結合テストの道具を用意する	2026-11-20T07:07:16.4417964Z Hit:2 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+test	結合テストの道具を用意する	2026-11-20T07:07:16.4419408Z Hit:6 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease
+test	結合テストの道具を用意する	2026-11-20T07:07:16.4436200Z Hit:3 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease
+test	結合テストの道具を用意する	2026-11-20T07:07:16.4444265Z Hit:4 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease
+test	結合テストの道具を用意する	2026-11-20T07:07:16.4452433Z Hit:5 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease
+test	結合テストの道具を用意する	2026-11-20T07:07:17.3248676Z Reading package lists...
+test	結合テストの道具を用意する	2026-11-20T07:07:17.3584698Z Reading package lists...
+test	結合テストの道具を用意する	2026-11-20T07:07:17.5138359Z Building dependency tree...
+test	結合テストの道具を用意する	2026-11-20T07:07:17.5146542Z Reading state information...
+test	結合テストの道具を用意する	2026-11-20T07:07:17.5466995Z tmux is already the newest version (3.6a-2ubuntu0.2).
+test	結合テストの道具を用意する	2026-11-20T07:07:17.5467699Z tmux set to manually installed.
+test	結合テストの道具を用意する	2026-11-20T07:07:17.5468281Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+test	結合テストの道具を用意する	2026-11-20T07:07:17.6039635Z Solving dependencies...
+test	結合テストの道具を用意する	2026-11-20T07:07:17.7187112Z 0 upgraded, 0 newly installed, 0 to remove and 50 not upgraded.
+test	結合テストを回す	﻿2026-11-20T07:07:17.7406821Z ##[group]Run if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-20T07:07:17.7407174Z if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-20T07:07:17.7407489Z   npm run test:integration 2>&1 | tee test.log
+test	結合テストを回す	2026-11-20T07:07:17.7407804Z else
+test	結合テストを回す	2026-11-20T07:07:17.7408035Z   # PATHS は空白で区切った並びのため、引用符で囲まずに分ける
+test	結合テストを回す	2026-11-20T07:07:17.7408329Z   # shellcheck disable=SC2086
+test	結合テストを回す	2026-11-20T07:07:17.7408701Z   npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log
+test	結合テストを回す	2026-11-20T07:07:17.7409077Z fi
+test	結合テストを回す	2026-11-20T07:07:17.7442727Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test	結合テストを回す	2026-11-20T07:07:17.7443070Z env:
+test	結合テストを回す	2026-11-20T07:07:17.7443280Z   LAYER: integration
+test	結合テストを回す	2026-11-20T07:07:17.7445103Z   PATHS: tests/integration/lib/collect-references.test.ts tests/integration/lib/check-index.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/render.test.ts tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/init.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/export-html.test.ts tests/integration/ClaudeCodeプラグイン/build-site.test.ts
+test	結合テストを回す	2026-11-20T07:07:17.7446987Z   XDG_RUNTIME_DIR: /run/user/1001
+test	結合テストを回す	2026-11-20T07:07:17.7447298Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+test	結合テストを回す	2026-11-20T07:07:17.7447620Z   XDG_CONFIG_HOME: 
+test	結合テストを回す	2026-11-20T07:07:17.7447833Z ##[endgroup]
+test	結合テストを回す	2026-11-20T07:07:18.7641410Z 
+test	結合テストを回す	2026-11-20T07:07:18.7642557Z  RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+test	結合テストを回す	2026-11-20T07:07:18.7642960Z 
+test	結合テストを回す	2026-11-20T07:07:29.3774524Z  ✓  integration-node  tests/integration/lib/render.test.ts (104 tests) 2813ms
+test	結合テストを回す	2026-11-20T07:07:29.3776834Z    ✓ test_normal 610ms
+test	結合テストを回す	2026-11-20T07:07:29.3778054Z    ✓ test_normal_when_no_intl_segmenter 552ms
+test	結合テストを回す	2026-11-20T07:07:58.0948261Z  ✓  integration-node  tests/integration/lib/check-config.test.ts (39 tests) 31092ms
+test	結合テストを回す	2026-11-20T07:07:58.0949918Z    ✓ test_normal 668ms
+test	結合テストを回す	2026-11-20T07:07:58.0953265Z    ✓ test_normal_when_drift 648ms
+test	結合テストを回す	2026-11-20T07:07:58.0954331Z    ✓ test_normal_when_no_documents 661ms
+test	結合テストを回す	2026-11-20T07:07:58.0955389Z    ✓ test_error_when_config_missing 312ms
+test	結合テストを回す	2026-11-20T07:07:58.0956460Z    ✓ test_error_when_config_unreadable 301ms
+test	結合テストを回す	2026-11-20T07:07:58.0957550Z    ✓ test_normal_when_unknown_mark 687ms
+test	結合テストを回す	2026-11-20T07:07:58.0958607Z    ✓ test_normal_when_plain_md_has_marks 756ms
+test	結合テストを回す	2026-11-20T07:07:58.0959757Z    ✓ test_normal_when_extension_hint_disabled 708ms
+test	結合テストを回す	2026-11-20T07:07:58.0961054Z    ✓ test_normal_when_known_extension_and_ignored_mark 701ms
+test	結合テストを回す	2026-11-20T07:07:58.0962442Z    ✓ test_normal_when_extension_unloadable 674ms
+test	結合テストを回す	2026-11-20T07:07:58.0963527Z    ✓ test_normal_when_base_given 1169ms
+test	結合テストを回す	2026-11-20T07:07:58.0964540Z    ✓ test_error_when_base_unknown 723ms
+test	結合テストを回す	2026-11-20T07:07:58.0965541Z    ✓ test_normal_when_alias_drift 771ms
+test	結合テストを回す	2026-11-20T07:07:58.0966817Z    ✓ test_normal_when_unknown_color_theme 1388ms
+test	結合テストを回す	2026-11-20T07:07:58.0968099Z    ✓ test_normal_when_unknown_color_scheme 1392ms
+test	結合テストを回す	2026-11-20T07:07:58.0969314Z    ✓ test_normal_when_files_missing 390ms
+test	結合テストを回す	2026-11-20T07:07:58.0970474Z    ✓ test_normal_when_diagram_drift 739ms
+test	結合テストを回す	2026-11-20T07:07:58.0972247Z    ✓ test_normal_when_retired_diagram 903ms
+test	結合テストを回す	2026-11-20T07:07:58.0973292Z    ✓ test_normal_when_text 946ms
+test	結合テストを回す	2026-11-20T07:07:58.0974288Z    ✓ test_normal_when_text_warnings 851ms
+test	結合テストを回す	2026-11-20T07:07:58.0975391Z    ✓ test_normal_when_text_unknown_mark_args 716ms
+test	結合テストを回す	2026-11-20T07:07:58.0976453Z    ✓ test_normal_when_yaml_key 1046ms
+test	結合テストを回す	2026-11-20T07:07:58.0977500Z    ✓ test_normal_when_text_extension_mark 716ms
+test	結合テストを回す	2026-11-20T07:07:58.0978580Z    ✓ test_error_when_key_missing 688ms
+test	結合テストを回す	2026-11-20T07:07:58.0979672Z    ✓ test_normal_when_include_targets_missing 398ms
+test	結合テストを回す	2026-11-20T07:07:58.0980894Z    ✓ test_normal_when_include_circular_or_outside 499ms
+test	結合テストを回す	2026-11-20T07:07:58.0982975Z    ✓ test_normal_when_diagram_placement_invalid 2344ms
+test	結合テストを回す	2026-11-20T07:07:58.0984227Z    ✓ test_normal_when_map_data_drift 734ms
+test	結合テストを回す	2026-11-20T07:07:58.0985360Z    ✓ test_normal_when_map_er_state_data_drift 728ms
+test	結合テストを回す	2026-11-20T07:07:58.0986576Z    ✓ test_normal_when_map_class_arch_c4_data_drift 712ms
+test	結合テストを回す	2026-11-20T07:07:58.0987742Z    ✓ test_normal_when_text_map_warnings 931ms
+test	結合テストを回す	2026-11-20T07:07:58.0988836Z    ✓ test_normal_when_map_config_drift 873ms
+test	結合テストを回す	2026-11-20T07:07:58.0992624Z    ✓ test_normal_when_legacy_mark 763ms
+test	結合テストを回す	2026-11-20T07:07:58.0993771Z    ✓ test_normal_when_mark_options_drift 884ms
+test	結合テストを回す	2026-11-20T07:07:58.0994861Z    ✓ test_normal_when_text_legacy_mark 890ms
+test	結合テストを回す	2026-11-20T07:07:58.0996011Z    ✓ test_normal_when_text_mark_args_not_json 752ms
+test	結合テストを回す	2026-11-20T07:07:58.0997289Z    ✓ test_normal_when_map_mindmap_data_drift 665ms
+test	結合テストを回す	2026-11-20T07:07:58.0998866Z    ✓ test_normal_when_map_axis_grid_data_drift 705ms
+test	結合テストを回す	2026-11-20T07:07:58.1000092Z    ✓ test_normal_when_map_node_id_link_checked 658ms
+test	結合テストを回す	2026-11-20T07:08:04.2709701Z  ✓  integration-node  tests/integration/lib/bundle.test.ts (22 tests) 34365ms
+test	結合テストを回す	2026-11-20T07:08:04.2710645Z    ✓ test_normal 974ms
+test	結合テストを回す	2026-11-20T07:08:04.2733977Z    ✓ test_normal_when_link_outside_bundle 803ms
+test	結合テストを回す	2026-11-20T07:08:04.2735420Z    ✓ test_error_when_build_missing 314ms
+test	結合テストを回す	2026-11-20T07:08:04.2736589Z    ✓ test_error_when_no_documents 325ms
+test	結合テストを回す	2026-11-20T07:08:04.2737776Z    ✓ test_error_when_output_unwritable 546ms
+test	結合テストを回す	2026-11-20T07:08:04.2738886Z    ✓ test_normal_when_aliases 919ms
+test	結合テストを回す	2026-11-20T07:08:04.2739964Z    ✓ test_normal_when_color_theme 811ms
+test	結合テストを回す	2026-11-20T07:08:04.2741187Z    ✓ test_normal_when_page_settings_per_document 817ms
+test	結合テストを回す	2026-11-20T07:08:04.2742592Z    ✓ test_normal_when_media_embedded 940ms
+test	結合テストを回す	2026-11-20T07:08:04.2743811Z    ✓ test_error_when_media_copy_unwritable 320ms
+test	結合テストを回す	2026-11-20T07:08:04.2745163Z    ✓ test_normal_when_blob_and_dynamic_import_blocked 948ms
+test	結合テストを回す	2026-11-20T07:08:04.2746476Z    ✓ test_normal_when_includes_and_icons 749ms
+test	結合テストを回す	2026-11-20T07:08:04.2747576Z    ✓ test_normal_when_range_scripts 831ms
+test	結合テストを回す	2026-11-20T07:08:04.2751539Z    ✓ test_normal_when_mermaid_embedded 4250ms
+test	結合テストを回す	2026-11-20T07:08:04.2752909Z    ✓ test_normal_when_back_forward_restore_scroll 1256ms
+test	結合テストを回す	2026-11-20T07:08:04.2754062Z    ✓ test_normal_when_reload_restore_scroll 1003ms
+test	結合テストを回す	2026-11-20T07:08:04.2755267Z    ✓ test_normal_when_back_restore_folds_and_tabs 1191ms
+test	結合テストを回す	2026-11-20T07:08:04.2756443Z    ✓ test_normal_when_session_storage_unavailable 1134ms
+test	結合テストを回す	2026-11-20T07:08:04.2770304Z    ✓ test_normal_when_switch_clears_map_query 1432ms
+test	結合テストを回す	2026-11-20T07:08:04.2771363Z    ✓ test_normal_when_map_config 969ms
+test	結合テストを回す	2026-11-20T07:08:04.2772602Z    ✓ test_normal_when_traces_hidden 8354ms
+test	結合テストを回す	2026-11-20T07:08:04.2773610Z    ✓ test_normal_when_traces_kept 5374ms
+test	結合テストを回す	2026-11-20T07:08:04.7099185Z  ✓  integration-node  tests/integration/lib/collect-matches.test.ts (9 tests) 278ms
+test	結合テストを回す	2026-11-20T07:08:05.1555483Z  ✓  integration-node  tests/integration/lib/check-index.test.ts (12 tests) 301ms
+test	結合テストを回す	2026-11-20T07:08:12.0526014Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/check.test.ts (8 tests) 6249ms
+test	結合テストを回す	2026-11-20T07:08:12.0529924Z    ✓ test_normal 562ms
+test	結合テストを回す	2026-11-20T07:08:12.0531150Z    ✓ test_normal_when_drift 846ms
+test	結合テストを回す	2026-11-20T07:08:12.0532884Z    ✓ test_error_when_config_missing 404ms
+test	結合テストを回す	2026-11-20T07:08:12.0534295Z    ✓ test_normal_when_base_given 1218ms
+test	結合テストを回す	2026-11-20T07:08:12.0535859Z    ✓ test_normal_when_plain_md_has_marks 812ms
+test	結合テストを回す	2026-11-20T07:08:12.0537455Z    ✓ test_error_when_project_dir_missing 393ms
+test	結合テストを回す	2026-11-20T07:08:12.0538764Z    ✓ test_normal_when_text_and_key 1152ms
+test	結合テストを回す	2026-11-20T07:08:12.0540253Z    ✓ test_normal_when_include_targets_missing 859ms
+test	結合テストを回す	2026-11-20T07:08:12.4582342Z  ✓  integration-node  tests/integration/lib/collect-references.test.ts (7 tests) 253ms
+test	結合テストを回す	2026-11-20T07:08:26.2804402Z  ✓  integration-node  tests/integration/lib/init.test.ts (5 tests) 12532ms
+test	結合テストを回す	2026-11-20T07:08:26.2822998Z    ✓ test_normal 390ms
+test	結合テストを回す	2026-11-20T07:08:26.2844600Z    ✓ test_normal_when_javascript 768ms
+test	結合テストを回す	2026-11-20T07:08:26.2846134Z    ✓ test_normal_when_file_exists 326ms
+test	結合テストを回す	2026-11-20T07:08:26.2847508Z    ✓ test_error_when_unwritable 302ms
+test	結合テストを回す	2026-11-20T07:08:26.2848835Z    ✓ test_normal_when_cli_built_from_develop 10744ms
+test	結合テストを回す	2026-11-20T07:08:32.1435104Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/export-html.test.ts (4 tests) 5117ms
+test	結合テストを回す	2026-11-20T07:08:32.1453121Z    ✓ test_normal 1450ms
+test	結合テストを回す	2026-11-20T07:08:32.1513171Z    ✓ test_normal_when_traces_kept 2604ms
+test	結合テストを回す	2026-11-20T07:08:32.1543045Z    ✓ test_error_when_file_missing 442ms
+test	結合テストを回す	2026-11-20T07:08:32.1544525Z    ✓ test_error_when_project_dir_missing 618ms
+test	結合テストを回す	2026-11-20T07:08:34.2844110Z  ✓  integration-node  tests/integration/lib/export.test.ts (21 tests) 35622ms
+test	結合テストを回す	2026-11-20T07:08:34.2853455Z    ✓ test_normal 1156ms
+test	結合テストを回す	2026-11-20T07:08:34.2855001Z    ✓ test_normal_when_unreadable_assets 963ms
+test	結合テストを回す	2026-11-20T07:08:34.2856199Z    ✓ test_error_when_config_invalid 351ms
+test	結合テストを回す	2026-11-20T07:08:34.2857297Z    ✓ test_error_when_document_missing 375ms
+test	結合テストを回す	2026-11-20T07:08:34.2858461Z    ✓ test_error_when_output_unwritable 617ms
+test	結合テストを回す	2026-11-20T07:08:34.2859965Z    ✓ test_normal_when_tooltip_placement 1477ms
+test	結合テストを回す	2026-11-20T07:08:34.2861157Z    ✓ test_normal_when_syntax_highlighted 965ms
+test	結合テストを回す	2026-11-20T07:08:34.2862840Z    ✓ test_normal_when_aliases 817ms
+test	結合テストを回す	2026-11-20T07:08:34.2864034Z    ✓ test_normal_when_color_theme 762ms
+test	結合テストを回す	2026-11-20T07:08:34.2865193Z    ✓ test_normal_when_param_copy_label 842ms
+test	結合テストを回す	2026-11-20T07:08:34.2866338Z    ✓ test_normal_when_media_embedded 1700ms
+test	結合テストを回す	2026-11-20T07:08:34.2867581Z    ✓ test_error_when_media_copy_unwritable 310ms
+test	結合テストを回す	2026-11-20T07:08:34.2868893Z    ✓ test_normal_when_blob_and_dynamic_import_blocked 946ms
+test	結合テストを回す	2026-11-20T07:08:34.2870177Z    ✓ test_normal_when_includes_and_icons 909ms
+test	結合テストを回す	2026-11-20T07:08:34.2871338Z    ✓ test_normal_when_range_scripts 759ms
+test	結合テストを回す	2026-11-20T07:08:34.2872506Z    ✓ test_normal_when_cascaded 774ms
+test	結合テストを回す	2026-11-20T07:08:34.2873571Z    ✓ test_error_when_settings_unreadable 312ms
+test	結合テストを回す	2026-11-20T07:08:34.2874666Z    ✓ test_normal_when_mermaid_embedded 4415ms
+test	結合テストを回す	2026-11-20T07:08:34.2875720Z    ✓ test_normal_when_map_config 1176ms
+test	結合テストを回す	2026-11-20T07:08:34.2876764Z    ✓ test_normal_when_traces_hidden 9335ms
+test	結合テストを回す	2026-11-20T07:08:34.2877824Z    ✓ test_normal_when_traces_kept 6559ms
+test	結合テストを回す	2026-11-20T07:08:37.1510418Z  ✓  integration-node  tests/integration/ClaudeCodeプラグイン/build-site.test.ts (4 tests) 4150ms
+test	結合テストを回す	2026-11-20T07:08:37.1511342Z    ✓ test_normal 1714ms
+test	結合テストを回す	2026-11-20T07:08:37.1511914Z    ✓ test_normal_when_traces_kept 1489ms
+test	結合テストを回す	2026-11-20T07:08:37.1512752Z    ✓ test_error_when_build_missing 612ms
+test	結合テストを回す	2026-11-20T07:08:37.1513358Z    ✓ test_error_when_project_dir_missing 333ms
+test	結合テストを回す	2026-11-20T07:08:37.1557183Z 
+test	結合テストを回す	2026-11-20T07:08:37.1560166Z  Test Files  11 passed (11)
+test	結合テストを回す	2026-11-20T07:08:37.1562901Z       Tests  235 passed (235)
+test	結合テストを回す	2026-11-20T07:08:37.1563802Z    Start at  07:07:18
+test	結合テストを回す	2026-11-20T07:08:37.1568599Z    Duration  78.35s (tests 97%, import 3%)
+test	結合テストを回す	2026-11-20T07:08:37.1582826Z 
+test	ログを成果物に上げる	﻿2026-11-20T07:08:37.2833279Z ##[group]Run actions/upload-artifact@v4
+test	ログを成果物に上げる	2026-11-20T07:08:37.2833607Z with:
+test	ログを成果物に上げる	2026-11-20T07:08:37.2833811Z   name: test-log
+test	ログを成果物に上げる	2026-11-20T07:08:37.2834021Z   path: test.log
+test	ログを成果物に上げる	2026-11-20T07:08:37.2834233Z   if-no-files-found: ignore
+test	ログを成果物に上げる	2026-11-20T07:08:37.2834504Z   compression-level: 6
+test	ログを成果物に上げる	2026-11-20T07:08:37.2834727Z   overwrite: false
+test	ログを成果物に上げる	2026-11-20T07:08:37.2834942Z   include-hidden-files: false
+test	ログを成果物に上げる	2026-11-20T07:08:37.2835183Z env:
+test	ログを成果物に上げる	2026-11-20T07:08:37.2835368Z   LAYER: integration
+test	ログを成果物に上げる	2026-11-20T07:08:37.2837158Z   PATHS: tests/integration/lib/collect-references.test.ts tests/integration/lib/check-index.test.ts tests/integration/lib/collect-matches.test.ts tests/integration/lib/render.test.ts tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts tests/integration/lib/check-config.test.ts tests/integration/lib/init.test.ts tests/integration/ClaudeCodeプラグイン/check.test.ts tests/integration/ClaudeCodeプラグイン/export-html.test.ts tests/integration/ClaudeCodeプラグイン/build-site.test.ts
+test	ログを成果物に上げる	2026-11-20T07:08:37.2839032Z   XDG_RUNTIME_DIR: /run/user/1001
+test	ログを成果物に上げる	2026-11-20T07:08:37.2839382Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+test	ログを成果物に上げる	2026-11-20T07:08:37.2839697Z ##[endgroup]
+test	ログを成果物に上げる	2026-11-20T07:08:37.4686757Z (node:6481) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	ログを成果物に上げる	2026-11-20T07:08:37.4688017Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	ログを成果物に上げる	2026-11-20T07:08:37.4734180Z With the provided path, there will be 1 file uploaded
+test	ログを成果物に上げる	2026-11-20T07:08:37.4739480Z Artifact name is valid!
+test	ログを成果物に上げる	2026-11-20T07:08:37.4740515Z Root directory input is valid!
+test	ログを成果物に上げる	2026-11-20T07:08:37.6809954Z Beginning upload of artifact content to blob storage
+test	ログを成果物に上げる	2026-11-20T07:08:37.7055543Z (node:6481) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+test	ログを成果物に上げる	2026-11-20T07:08:37.7546358Z Uploaded bytes 1805
+test	ログを成果物に上げる	2026-11-20T07:08:37.7746532Z Finished uploading artifact content to blob storage!
+test	ログを成果物に上げる	2026-11-20T07:08:37.7747862Z SHA256 digest of uploaded artifact zip is faf3613746701a40863797f489d33a303fe039606968d8e06ed6644eb851c1cd
+test	ログを成果物に上げる	2026-11-20T07:08:37.7749134Z Finalizing artifact upload
+test	ログを成果物に上げる	2026-11-20T07:08:38.1448731Z Artifact test-log.zip successfully finalized. Artifact ID 14608868978
+test	ログを成果物に上げる	2026-11-20T07:08:38.1450327Z Artifact test-log has been successfully uploaded! Final size is 1805 bytes. Artifact ID is 14608868978
+test	ログを成果物に上げる	2026-11-20T07:08:38.1457569Z Artifact download URL: https://github.com/shuhei1101/mdmark/actions/runs/44692486659/artifacts/14608868978
+test	Post Node をインストールする	﻿2026-11-20T07:08:38.1707934Z Post job cleanup.
+test	Post Node をインストールする	2026-11-20T07:08:38.2964256Z (node:6493) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Post Node をインストールする	2026-11-20T07:08:38.2965339Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Post ブランチを取得する	﻿2026-11-20T07:08:38.3198841Z Post job cleanup.
+test	Post ブランチを取得する	2026-11-20T07:08:38.4052015Z [command]/usr/bin/git version
+test	Post ブランチを取得する	2026-11-20T07:08:38.4092543Z git version 2.56.1
+test	Post ブランチを取得する	2026-11-20T07:08:38.4131463Z Temporarily overriding HOME='/home/runner/work/_temp/de1fb83f-bec0-405c-a493-b1d71af9d10f' before making global git config changes
+test	Post ブランチを取得する	2026-11-20T07:08:38.4133296Z Adding repository directory to the temporary git global config as a safe directory
+test	Post ブランチを取得する	2026-11-20T07:08:38.4137456Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	Post ブランチを取得する	2026-11-20T07:08:38.4177959Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Post ブランチを取得する	2026-11-20T07:08:38.4213490Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Post ブランチを取得する	2026-11-20T07:08:38.4499412Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Post ブランチを取得する	2026-11-20T07:08:38.4524356Z http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-20T07:08:38.4536251Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-20T07:08:38.4568673Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Post ブランチを取得する	2026-11-20T07:08:38.4872366Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Post ブランチを取得する	2026-11-20T07:08:38.4925347Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Complete job	﻿2026-11-20T07:08:38.5385648Z Cleaning up orphan processes
+test	Complete job	2026-11-20T07:08:38.5800541Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+exit=0 run=44692486659
+
+$ xvfb-run -a npm --prefix vscode run test:integration   # 1 回目（手元、Node v24.14.0）
+# 1 回目は preview-rerender.test の test_normal_when_aliases_yaml_saved が 1 件 fail（再描画の回数が 2 の期待に 3）。この PR が変えていない、ファイルの監視による再描画の回数の確認で、2 回目は全 pass したため、時間に左右される fail と判断した
+
+> mdmark-vscode@0.2.0 test:integration
+> node scripts/build.ts --tests && node tests/integration/run.ts
+
+- Resolving version...
+✔ Validated version: 1.141.0
+- Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+- Downloading (343.79 MB)
+✔ Downloaded VS Code (286f582d285a0bc8cb4c5cf3217fc5811544b39a) into /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0
+[main 2026-11-20T07:06:33.766Z] [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[main 2026-11-20T07:06:33.824Z] StorageMainService: creating application shared storage
+[main 2026-11-20T07:06:33.913Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-11-20T07:06:33.913Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[15451:1120/160633.930895:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[main 2026-11-20T07:06:33.948Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-11-20T07:06:33.949Z] update#setState disabled
+[main 2026-11-20T07:06:33.949Z] update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[main 2026-11-20T07:06:34.803Z] AgentHostProcessManager: agent host started
+[AgentHost:renderer] MessagePort acquired, creating client...
+[main 2026-11-20T07:06:35.246Z] [AgentHost:stderr] (node:15681) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=a0add8c5-5926-405d-af25-dd8ee08f526b requestId=1
+Started local extension host with pid 15759.
+[RemoteAgentHostProtocol] Initialized: address=local clientId=a0add8c5-5926-405d-af25-dd8ee08f526b durationMs=464
+[AgentHost:renderer] Protocol connection established; clientId=a0add8c5-5926-405d-af25-dd8ee08f526b
+Started initializing default profile extensions in extensions installation folder. file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/extensions
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Completed initializing default profile extensions in extensions installation folder. file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/extensions
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+Loading development extension at /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Settings Sync: Account status changed from uninitialized to unavailable
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+(node:15759) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+Unknown channel: agentHostClientProxy
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+    ✔ test_error_when_version_undecidable (8549ms)
+    ✔ test_error_when_version_undecidable_on_export (3034ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+    ✔ test_normal (861ms)
+    ✔ test_normal_when_output_dir (483ms)
+    ✔ test_error_when_output_unwritable (127ms)
+    ✔ test_normal_when_relative_mermaid (3380ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (776ms)
+    ✔ test_normal_when_relative_libraries (1329ms)
+    ✔ test_normal_when_config_color_scheme (572ms)
+    ✔ test_normal_when_param_copy_label (512ms)
+  ブラウザで開く
+    ✔ test_normal (511ms)
+    ✔ test_error_when_output_unwritable (105ms)
+    ✔ test_normal_when_color_theme_selected (408ms)
+  PDF に印刷
+    ✔ test_normal (3591ms)
+    ✔ test_normal_when_wait_limit_reached (1092ms)
+[15380:1120/160706.135318:ERROR:components/viz/service/display/display.cc:273] Frame latency is negative: -0.079 ms
+    ✔ test_normal_when_color_theme_selected (1367ms)
+    ✔ test_error_when_output_unwritable (330ms)
+  設定ファイルを開く
+    ✔ test_normal (300ms)
+    ✔ test_normal_when_template_created (216ms)
+    ✔ test_error_when_template_declined (85ms)
+  設定を開く
+    ✔ test_normal (1095ms)
+    ✔ test_normal_when_command_palette (46ms)
+  差分ビューの変更をプレビューで確認する
+    ✔ test_normal_when_opened_from_diff_view (1103ms)
+    ✔ test_normal_when_commit_diff (803ms)
+    ✔ test_error_when_version_without_diff (879ms)
+    ✔ test_normal_when_diff_modified_side_edited (1580ms)
+    ✔ test_normal_when_diff_preview (1949ms)
+  プレビューのリンクを開く
+    ✔ test_normal_when_external_link (480ms)
+    ✔ test_normal_when_markdown_link
+    ✔ test_normal_when_anchor_link (833ms)
+    ✔ test_normal_when_side_toc_link (1024ms)
+    ✔ test_error_when_link_target_missing (1198ms)
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_map_node_link (1391ms)
+  プレビューを開く
+    ✔ test_normal (4144ms)
+    ✔ test_normal_when_mermaid (1230ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (1005ms)
+    ✔ test_normal_when_range_scripts (1014ms)
+    ✔ test_normal_when_aliases (418ms)
+    ✔ test_error_when_aliases_missing (246ms)
+    ✔ test_normal_when_includes (384ms)
+    ✔ test_normal_when_same_column (427ms)
+    ✔ test_normal_when_already_open (394ms)
+    ✔ test_normal_when_version_pinned (4897ms)
+    ✔ test_normal_when_develop (5129ms)
+    ✔ test_normal_when_tags_unreachable (2408ms)
+    ✔ test_normal_when_theme_fixed (471ms)
+    ✔ test_normal_when_color_scheme (818ms)
+    ✔ test_normal_when_relative_image (455ms)
+    ✔ test_error_when_image_outside_workspace (859ms)
+    ✔ test_error_when_distribution_unreachable (351ms)
+    ✔ test_normal_when_loading_shown (12326ms)
+    ✔ test_error_when_version_missing (330ms)
+    ✔ test_error_when_not_markdown (527ms)
+Webview.loadLocalResource - Error using fileReader. requestUri=file:///tmp/mdmark-vscode-A14GNX/docs/media/intro.mp3, resourceToLoad=file:///tmp/mdmark-vscode-A14GNX/docs/media/intro.mp3
+    ✔ test_normal_when_relative_media (1893ms)
+    ✔ test_error_when_unsupported_media (509ms)
+  プレビューをリロードする
+    ✔ test_normal (459ms)
+    ✔ test_normal_when_from_command (791ms)
+    ✔ test_error_when_no_preview (543ms)
+  プレビューを再描画する
+    ✔ test_normal (1547ms)
+    ✔ test_normal_when_live_update_off (1150ms)
+    ✔ test_normal_when_config_saved (731ms)
+    ✔ test_normal_when_param_copy_label_configured (645ms)
+    ✔ test_normal_when_map_configured
+    ✔ test_normal_when_aliases_yaml_saved (719ms)
+    ✔ test_normal_when_include_target_saved (1403ms)
+    ✔ test_normal_when_config_missing (530ms)
+    ✔ test_normal_when_revealed (3419ms)
+    ✔ test_normal_when_diff_revealed (1949ms)
+    ✔ test_normal_when_relative_library (439ms)
+    ✔ test_error_when_config_unreadable (1183ms)
+    ✔ test_normal_when_config_fixed (479ms)
+    ✔ test_normal_when_library_origin_added (659ms)
+    ✔ test_normal_when_color_theme_changed (709ms)
+  拡張機能の配布物を作る
+    ✔ test_normal (3969ms)
+    ✔ test_error_when_version_mismatch (314ms)
+  エディタとプレビューのスクロールを合わせる
+    ✔ test_normal (1575ms)
+    ✔ test_normal_when_from_preview (1169ms)
+    ✔ test_normal_when_sync_off (3071ms)
+    ✔ test_normal_when_in_closed_section (2528ms)
+    ✔ test_error_when_editor_hidden (1036ms)
+  84 passing (2m)
+[main 2026-11-20T07:08:39.676Z] Extension host with pid 15759 exited with code: 0, signal: unknown.
+Exit code:   0
+- Resolving version...
+✔ Validated version: 1.147.0
+- Found at https://update.code.visualstudio.com/1.147.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.147.0/linux-x64/stable?released=true
+- Downloading (395.24 MB)
+✔ Downloaded VS Code (286f582d285a0bc8cb4c5cf3217fc5811544b39a) into /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0
+[main 2026-11-20T07:08:48.749Z] [node-compile-cache] main: packaged cache enabled (status: enabled, configured: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/node-compile-cache/main, active: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/node-compile-cache/main/v24.22.1-x64-d4bb394e)
+[main 2026-11-20T07:08:48.886Z] StorageMainService: creating application shared storage
+[main 2026-11-20T07:08:49.299Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-11-20T07:08:49.300Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[main 2026-11-20T07:08:49.337Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-11-20T07:08:49.340Z] update#setState disabled
+[main 2026-11-20T07:08:49.340Z] update#ctor - updates are disabled by the environment
+[30965:1120/160849.350851:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+Via 'product.json#extensionEnabledApiProposals' extension 'ms-vscode.remote-repositories' wants API proposal 'timeline' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Via 'product.json#extensionEnabledApiProposals' extension 'github.vscode-pull-request-github' wants API proposal 'agentsWindowActivation' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Via 'product.json#extensionEnabledApiProposals' extension 'github.remotehub' wants API proposal 'timeline' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[main 2026-11-20T07:08:51.026Z] AgentHostProcessManager: agent host started
+[AgentHost:renderer] MessagePort acquired, creating client...
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=eaeddf07-88ad-451b-a06d-37cc4c3c6ebb requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=eaeddf07-88ad-451b-a06d-37cc4c3c6ebb durationMs=1000
+[AgentHost:renderer] Protocol connection established; clientId=eaeddf07-88ad-451b-a06d-37cc4c3c6ebb
+Started local extension host with pid 33510.
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Loading development extension at /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+speech
+structuralDiff
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+languageModelRateLimit
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+languageModelRateLimit
+chatInputNotification
+speech
+DELTA: structuralDiff
+Proceeding with EXTRA proposals (structuralDiff) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[main 2026-11-20T07:08:53.695Z] [AgentHost:stderr] (node:32526) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+Settings Sync: Account status changed from uninitialized to unavailable
+
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+(node:33510) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+    ✔ test_error_when_version_undecidable (8861ms)
+    ✔ test_error_when_version_undecidable_on_export (3035ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+    ✔ test_normal (703ms)
+    ✔ test_normal_when_output_dir
+    ✔ test_error_when_output_unwritable (138ms)
+    ✔ test_normal_when_relative_mermaid (5962ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (653ms)
+    ✔ test_normal_when_relative_libraries (1630ms)
+    ✔ test_normal_when_config_color_scheme (505ms)
+    ✔ test_normal_when_param_copy_label (553ms)
+  ブラウザで開く
+    ✔ test_normal (621ms)
+    ✔ test_error_when_output_unwritable (113ms)
+    ✔ test_normal_when_color_theme_selected (400ms)
+  PDF に印刷
+    ✔ test_normal (3593ms)
+    ✔ test_normal_when_wait_limit_reached (937ms)
+    ✔ test_normal_when_color_theme_selected (589ms)
+    ✔ test_error_when_output_unwritable (253ms)
+  設定ファイルを開く
+    ✔ test_normal (227ms)
+    ✔ test_normal_when_template_created (70ms)
+    ✔ test_error_when_template_declined (43ms)
+  設定を開く
+    ✔ test_normal (788ms)
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで確認する
+    ✔ test_normal_when_opened_from_diff_view (628ms)
+    ✔ test_normal_when_commit_diff (567ms)
+    ✔ test_error_when_version_without_diff (442ms)
+    ✔ test_normal_when_diff_modified_side_edited (1415ms)
+    ✔ test_normal_when_diff_preview (1679ms)
+  プレビューのリンクを開く
+    ✔ test_normal_when_external_link (403ms)
+    ✔ test_normal_when_markdown_link (360ms)
+    ✔ test_normal_when_anchor_link (699ms)
+    ✔ test_normal_when_side_toc_link (1008ms)
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_error_when_link_target_missing
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_map_node_link (1259ms)
+  プレビューを開く
+    ✔ test_normal (4047ms)
+    ✔ test_normal_when_mermaid (931ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (883ms)
+    ✔ test_normal_when_range_scripts (1026ms)
+    ✔ test_normal_when_aliases (393ms)
+    ✔ test_error_when_aliases_missing (300ms)
+    ✔ test_normal_when_includes (458ms)
+    ✔ test_normal_when_same_column (384ms)
+    ✔ test_normal_when_already_open (387ms)
+    ✔ test_normal_when_version_pinned (5108ms)
+    ✔ test_normal_when_develop (5293ms)
+    ✔ test_normal_when_tags_unreachable (5111ms)
+    ✔ test_normal_when_theme_fixed (512ms)
+    ✔ test_normal_when_color_scheme (675ms)
+    ✔ test_normal_when_relative_image (531ms)
+    ✔ test_error_when_image_outside_workspace (1129ms)
+    ✔ test_error_when_distribution_unreachable (302ms)
+    ✔ test_normal_when_loading_shown (12318ms)
+    ✔ test_error_when_version_missing (276ms)
+    ✔ test_error_when_not_markdown (528ms)
+    ✔ test_normal_when_relative_media (1356ms)
+    ✔ test_error_when_unsupported_media (435ms)
+  プレビューをリロードする
+    ✔ test_normal (2886ms)
+    ✔ test_normal_when_from_command (553ms)
+    ✔ test_error_when_no_preview (523ms)
+  プレビューを再描画する
+    ✔ test_normal (1369ms)
+    ✔ test_normal_when_live_update_off (1092ms)
+    ✔ test_normal_when_config_saved (617ms)
+    ✔ test_normal_when_param_copy_label_configured (553ms)
+    ✔ test_normal_when_map_configured
+    1) test_normal_when_aliases_yaml_saved
+    ✔ test_normal_when_include_target_saved (1211ms)
+    ✔ test_normal_when_config_missing (399ms)
+    ✔ test_normal_when_revealed (3385ms)
+    ✔ test_normal_when_diff_revealed (1641ms)
+    ✔ test_normal_when_relative_library (420ms)
+    ✔ test_error_when_config_unreadable (1112ms)
+    ✔ test_normal_when_config_fixed (415ms)
+    ✔ test_normal_when_library_origin_added (627ms)
+    ✔ test_normal_when_color_theme_changed (620ms)
+  拡張機能の配布物を作る
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (5919ms)
+    ✔ test_error_when_version_mismatch (450ms)
+  エディタとプレビューのスクロールを合わせる
+    ✔ test_normal (1837ms)
+    ✔ test_normal_when_from_preview (1816ms)
+    ✔ test_normal_when_sync_off (3514ms)
+    ✔ test_normal_when_in_closed_section (2825ms)
+    ✔ test_error_when_editor_hidden
+  83 passing (2m)
+  1 failing
+  1) プレビューを再描画する
+       test_normal_when_aliases_yaml_saved:
+
+      AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+3 !== 2
+
+      + expected - actual
+
+      -3
+      +2
+      
+  	at Context.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/out/test/preview-rerender.test.mjs:679:13)
+
+Error: 1 tests failed
+	at Module.run (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/out/test/index.mjs:18:11)
+[main 2026-11-20T07:10:55.884Z] Extension host with pid 33510 exited with code: 0, signal: unknown.
+Exit code:   1
+TestRunFailedError: Test run failed with code 1
+    at ChildProcess.onProcessClosed (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/node_modules/@vscode/test-electron/out/runTest.js:125:24)
+    at ChildProcess.emit (node:events:508:28)
+    at ChildProcess._handle.onexit (node:internal/child_process:294:12) {
+  code: 1,
+  signal: undefined
+}
+exit=1
+
+$ xvfb-run -a npm --prefix vscode run test:integration   # 2 回目（手元）
+# VS Code 1.141.0 と stable の両方で 84 テスト全 pass（HTML に書き出す の export.test を含む）
+
+> mdmark-vscode@0.2.0 test:integration
+> node scripts/build.ts --tests && node tests/integration/run.ts
+
+- Resolving version...
+✔ Validated version: 1.141.0
+✔ Found existing install in /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0
+[main 2026-11-20T07:11:22.136Z] [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[main 2026-11-20T07:11:22.185Z] StorageMainService: creating application shared storage
+[main 2026-11-20T07:11:22.273Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-11-20T07:11:22.273Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[49310:1120/161122.293658:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[main 2026-11-20T07:11:22.310Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-11-20T07:11:22.310Z] update#setState disabled
+[main 2026-11-20T07:11:22.310Z] update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[main 2026-11-20T07:11:23.244Z] AgentHostProcessManager: agent host started
+[AgentHost:renderer] MessagePort acquired, creating client...
+[main 2026-11-20T07:11:23.705Z] [AgentHost:stderr] (node:50310) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+Started local extension host with pid 50374.
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=cd9ceb7b-695d-42dd-ad2e-1612fd209f6a requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=cd9ceb7b-695d-42dd-ad2e-1612fd209f6a durationMs=520
+[AgentHost:renderer] Protocol connection established; clientId=cd9ceb7b-695d-42dd-ad2e-1612fd209f6a
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+Loading development extension at /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+Settings Sync: Account status changed from uninitialized to unavailable
+Unknown channel: agentHostClientProxy
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+(node:50374) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+Unknown channel: agentHostClientProxy
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+    ✔ test_error_when_version_undecidable (8589ms)
+    ✔ test_error_when_version_undecidable_on_export (3043ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+    ✔ test_normal (1635ms)
+    ✔ test_normal_when_output_dir (724ms)
+    ✔ test_error_when_output_unwritable (365ms)
+    ✔ test_normal_when_relative_mermaid (11728ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (288ms)
+    ✔ test_normal_when_relative_libraries (2838ms)
+    ✔ test_normal_when_config_color_scheme (1184ms)
+    ✔ test_normal_when_param_copy_label (958ms)
+  ブラウザで開く
+    ✔ test_normal (1213ms)
+    ✔ test_error_when_output_unwritable (248ms)
+    ✔ test_normal_when_color_theme_selected (1077ms)
+  PDF に印刷
+    ✔ test_normal (3924ms)
+    ✔ test_normal_when_wait_limit_reached (970ms)
+    ✔ test_normal_when_color_theme_selected (544ms)
+    ✔ test_error_when_output_unwritable (256ms)
+  設定ファイルを開く
+    ✔ test_normal (235ms)
+    ✔ test_normal_when_template_created (66ms)
+    ✔ test_error_when_template_declined (45ms)
+  設定を開く
+    ✔ test_normal (824ms)
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで確認する
+    ✔ test_normal_when_opened_from_diff_view (545ms)
+    ✔ test_normal_when_commit_diff (465ms)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: Unexpected SIGPIPE
+	at process.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/out/bootstrap-fork.js:4:1710)
+	at process.emit (node:events:514:28)
+    ✔ test_error_when_version_without_diff (394ms)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_diff_modified_side_edited (1363ms)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_diff_preview (1654ms)
+  プレビューのリンクを開く
+    ✔ test_normal_when_external_link (509ms)
+    ✔ test_normal_when_markdown_link (297ms)
+    ✔ test_normal_when_anchor_link (755ms)
+    ✔ test_normal_when_side_toc_link (860ms)
+    ✔ test_error_when_link_target_missing (1038ms)
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_map_node_link (1240ms)
+  プレビューを開く
+    ✔ test_normal (1039ms)
+    ✔ test_normal_when_mermaid (844ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (668ms)
+    ✔ test_normal_when_range_scripts (983ms)
+    ✔ test_normal_when_aliases (439ms)
+    ✔ test_error_when_aliases_missing (311ms)
+    ✔ test_normal_when_includes (390ms)
+    ✔ test_normal_when_same_column (388ms)
+    ✔ test_normal_when_already_open (337ms)
+    ✔ test_normal_when_version_pinned (5004ms)
+    ✔ test_normal_when_develop (4957ms)
+    ✔ test_normal_when_tags_unreachable (5233ms)
+    ✔ test_normal_when_theme_fixed (512ms)
+    ✔ test_normal_when_color_scheme (771ms)
+    ✔ test_normal_when_relative_image (415ms)
+    ✔ test_error_when_image_outside_workspace (845ms)
+    ✔ test_error_when_distribution_unreachable (309ms)
+    ✔ test_normal_when_loading_shown (9578ms)
+    ✔ test_error_when_version_missing (331ms)
+    ✔ test_error_when_not_markdown (533ms)
+Webview.loadLocalResource - Error using fileReader. requestUri=file:///tmp/mdmark-vscode-5Ik4wj/docs/media/intro.mp3, resourceToLoad=file:///tmp/mdmark-vscode-5Ik4wj/docs/media/intro.mp3
+    ✔ test_normal_when_relative_media (1532ms)
+    ✔ test_error_when_unsupported_media (482ms)
+  プレビューをリロードする
+    ✔ test_normal (2144ms)
+    ✔ test_normal_when_from_command (646ms)
+    ✔ test_error_when_no_preview (540ms)
+  プレビューを再描画する
+    ✔ test_normal (1564ms)
+    ✔ test_normal_when_live_update_off (1156ms)
+    ✔ test_normal_when_config_saved (703ms)
+    ✔ test_normal_when_param_copy_label_configured (717ms)
+    ✔ test_normal_when_map_configured (657ms)
+    ✔ test_normal_when_aliases_yaml_saved (541ms)
+    ✔ test_normal_when_include_target_saved (1226ms)
+    ✔ test_normal_when_config_missing (413ms)
+    ✔ test_normal_when_revealed (3479ms)
+    ✔ test_normal_when_diff_revealed
+    ✔ test_normal_when_relative_library (517ms)
+    ✔ test_error_when_config_unreadable (1179ms)
+    ✔ test_normal_when_config_fixed (531ms)
+    ✔ test_normal_when_library_origin_added (638ms)
+    ✔ test_normal_when_color_theme_changed (726ms)
+  拡張機能の配布物を作る
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3929ms)
+    ✔ test_error_when_version_mismatch (313ms)
+  エディタとプレビューのスクロールを合わせる
+    ✔ test_normal (1566ms)
+    ✔ test_normal_when_from_preview (1248ms)
+    ✔ test_normal_when_sync_off (2963ms)
+    ✔ test_normal_when_in_closed_section (2244ms)
+    ✔ test_error_when_editor_hidden (1034ms)
+  84 passing (2m)
+[main 2026-11-20T07:13:31.892Z] Extension host with pid 50374 exited with code: 0, signal: unknown.
+Exit code:   0
+- Resolving version...
+✔ Validated version: 1.147.0
+✔ Found existing install in /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0
+[main 2026-11-20T07:13:32.444Z] [node-compile-cache] main: packaged cache enabled (status: enabled, configured: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/node-compile-cache/main, active: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/node-compile-cache/main/v24.22.1-x64-d4bb394e)
+[main 2026-11-20T07:13:32.510Z] StorageMainService: creating application shared storage
+[main 2026-11-20T07:13:32.585Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-11-20T07:13:32.585Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[68461:1120/161332.601806:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[main 2026-11-20T07:13:32.604Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-11-20T07:13:32.604Z] update#setState disabled
+[main 2026-11-20T07:13:32.604Z] update#ctor - updates are disabled by the environment
+Via 'product.json#extensionEnabledApiProposals' extension 'ms-vscode.remote-repositories' wants API proposal 'timeline' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Via 'product.json#extensionEnabledApiProposals' extension 'github.vscode-pull-request-github' wants API proposal 'agentsWindowActivation' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Via 'product.json#extensionEnabledApiProposals' extension 'github.remotehub' wants API proposal 'timeline' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[main 2026-11-20T07:13:33.659Z] AgentHostProcessManager: agent host started
+[AgentHost:renderer] MessagePort acquired, creating client...
+Started local extension host with pid 68808.
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=4a54c584-67a8-4796-9bbc-bbac728ad4d7 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=4a54c584-67a8-4796-9bbc-bbac728ad4d7 durationMs=799
+[AgentHost:renderer] Protocol connection established; clientId=4a54c584-67a8-4796-9bbc-bbac728ad4d7
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+Loading development extension at /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+speech
+structuralDiff
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+languageModelRateLimit
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+languageModelRateLimit
+chatInputNotification
+speech
+DELTA: structuralDiff
+Proceeding with EXTRA proposals (structuralDiff) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+Settings Sync: Account status changed from uninitialized to unavailable
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+(node:68808) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[main 2026-11-20T07:13:36.461Z] [AgentHost:stderr] (node:68712) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+    ✔ test_error_when_version_undecidable (5917ms)
+    ✔ test_error_when_version_undecidable_on_export (3051ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+    ✔ test_normal (430ms)
+    ✔ test_normal_when_output_dir (423ms)
+    ✔ test_error_when_output_unwritable (105ms)
+    ✔ test_normal_when_relative_mermaid (5506ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (706ms)
+    ✔ test_normal_when_relative_libraries (1480ms)
+    ✔ test_normal_when_config_color_scheme (529ms)
+    ✔ test_normal_when_param_copy_label (506ms)
+  ブラウザで開く
+    ✔ test_normal (584ms)
+    ✔ test_error_when_output_unwritable (124ms)
+    ✔ test_normal_when_color_theme_selected (440ms)
+  PDF に印刷
+    ✔ test_normal (3610ms)
+    ✔ test_normal_when_wait_limit_reached (1004ms)
+    ✔ test_normal_when_color_theme_selected (558ms)
+    ✔ test_error_when_output_unwritable (209ms)
+  設定ファイルを開く
+    ✔ test_normal (239ms)
+    ✔ test_normal_when_template_created (74ms)
+    ✔ test_error_when_template_declined (38ms)
+  設定を開く
+    ✔ test_normal (793ms)
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで確認する
+    ✔ test_normal_when_opened_from_diff_view (602ms)
+    ✔ test_normal_when_commit_diff (543ms)
+    ✔ test_error_when_version_without_diff
+    ✔ test_normal_when_diff_modified_side_edited (1428ms)
+    ✔ test_normal_when_diff_preview (1635ms)
+  プレビューのリンクを開く
+    ✔ test_normal_when_external_link (364ms)
+    ✔ test_normal_when_markdown_link (282ms)
+    ✔ test_normal_when_anchor_link (685ms)
+    ✔ test_normal_when_side_toc_link (837ms)
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_error_when_link_target_missing (1092ms)
+    ✔ test_normal_when_map_node_link (1276ms)
+  プレビューを開く
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3690ms)
+    ✔ test_normal_when_mermaid (968ms)
+    ✔ test_normal_when_tooltips_and_relative_syntax (705ms)
+    ✔ test_normal_when_range_scripts (917ms)
+    ✔ test_normal_when_aliases (387ms)
+    ✔ test_error_when_aliases_missing (301ms)
+    ✔ test_normal_when_includes (445ms)
+    ✔ test_normal_when_same_column (385ms)
+    ✔ test_normal_when_already_open (385ms)
+    ✔ test_normal_when_version_pinned (5003ms)
+    ✔ test_normal_when_develop (4939ms)
+    ✔ test_normal_when_tags_unreachable (2146ms)
+    ✔ test_normal_when_theme_fixed (460ms)
+    ✔ test_normal_when_color_scheme (640ms)
+    ✔ test_normal_when_relative_image (442ms)
+    ✔ test_error_when_image_outside_workspace (886ms)
+    ✔ test_error_when_distribution_unreachable (374ms)
+    ✔ test_normal_when_loading_shown (12308ms)
+    ✔ test_error_when_version_missing (402ms)
+    ✔ test_error_when_not_markdown (537ms)
+    ✔ test_normal_when_relative_media (1412ms)
+    ✔ test_error_when_unsupported_media (460ms)
+  プレビューをリロードする
+    ✔ test_normal (2447ms)
+    ✔ test_normal_when_from_command (472ms)
+    ✔ test_error_when_no_preview (526ms)
+  プレビューを再描画する
+    ✔ test_normal (1516ms)
+    ✔ test_normal_when_live_update_off (346ms)
+    ✔ test_normal_when_config_saved (609ms)
+    ✔ test_normal_when_param_copy_label_configured (562ms)
+rejected promise not handled within 1 second: Error: Webview is disposed
+stack trace: Error: Webview is disposed
+	at RW.assertNotDisposed (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:300:120018)
+	at get visible (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:300:119624)
+	at get visible (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/dist/extension.cjs:75540:30)
+	at PreviewPanel.renderNow (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/dist/extension.cjs:75847:15)
+	at PreviewPanel.applyConfigChange (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/dist/extension.cjs:75810:10)
+Webview is disposed: Error: Webview is disposed
+	at RW.assertNotDisposed (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:300:120018)
+	at get visible (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/out/vs/workbench/api/node/extensionHostProcess.js:300:119624)
+	at get visible (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/dist/extension.cjs:75540:30)
+	at PreviewPanel.renderNow (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/dist/extension.cjs:75847:15)
+	at PreviewPanel.applyConfigChange (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-index-frontmatter-document-metadata/vscode/dist/extension.cjs:75810:10)
+    ✔ test_normal_when_map_configured (654ms)
+    ✔ test_normal_when_aliases_yaml_saved (541ms)
+    ✔ test_normal_when_include_target_saved (1212ms)
+    ✔ test_normal_when_config_missing (591ms)
+    ✔ test_normal_when_revealed (3638ms)
+    ✔ test_normal_when_diff_revealed (2780ms)
+    ✔ test_normal_when_relative_library (563ms)
+    ✔ test_error_when_config_unreadable (1278ms)
+    ✔ test_normal_when_config_fixed (612ms)
+    ✔ test_normal_when_library_origin_added (695ms)
+    ✔ test_normal_when_color_theme_changed (719ms)
+  拡張機能の配布物を作る
+    ✔ test_normal (4272ms)
+    ✔ test_error_when_version_mismatch (303ms)
+  エディタとプレビューのスクロールを合わせる
+    ✔ test_normal (1557ms)
+    ✔ test_normal_when_from_preview (1137ms)
+    ✔ test_normal_when_sync_off (3069ms)
+    ✔ test_normal_when_in_closed_section (1467ms)
+    ✔ test_error_when_editor_hidden (1137ms)
+  84 passing (2m)
+[main 2026-11-20T07:15:29.003Z] Extension host with pid 68808 exited with code: 0, signal: unknown.
+[main 2026-11-20T07:15:29.998Z] AgentHostStarter: cannot create window connection: Agent Host process manager is shutting down.
+Exit code:   0
+exit=0

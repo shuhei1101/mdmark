@@ -14,10 +14,11 @@ import { glossaryRule } from "./glossary.syntax.ts";
 import {
   type MdmarkIndex,
   type MdmarkIndexDoc,
+  type MdmarkIndexDocTag,
   normalizeIndex,
   readRelated,
 } from "./index-shape.ts";
-import { normalizePath, resolveLink } from "./paths.ts";
+import { fileTitle, normalizePath, resolveLink } from "./paths.ts";
 
 /** 用語集の表の 1 行から入れた用語 */
 export type MdmarkGlossaryEntry = {
@@ -39,7 +40,148 @@ export type MdmarkReferences = {
   backlinks: Record<string, string[]>;
   /** 各文書の用語集の表から入れた用語 */
   glossary: MdmarkGlossaryEntry[];
+  /** 索引の文書をフロントマターの値で補い、索引に無い文書を加えた並び（どの文書も `title` を持つ）。`collectReferences` は常に入れる。利用側が組み立てた参照の表で無いときは、`opts.index` の `docs` を使用する */
+  docs?: MdmarkIndexDoc[] | undefined;
 };
+
+/** 1 つの文書のフロントマターから取り出した、使用できる値だけのメタデータ */
+export type FrontmatterMetadata = {
+  /** 空でない文字列の `title` */
+  title?: string;
+  /** 空でない文字列の `description` */
+  description?: string;
+  /** 空でない文字列の並びの `aliases` */
+  aliases?: string[];
+  /** 索引の `docs[].tags` と同じ要素の並びの `tags` */
+  tags?: (string | MdmarkIndexDocTag)[];
+};
+
+/** フロントマターで補うキー（補う順） */
+const FRONTMATTER_KEYS = ["title", "description", "aliases", "tags"] as const;
+
+/** 空でない文字列か */
+function isFilledString(value: unknown): value is string {
+  return typeof value === "string" && value !== "";
+}
+
+/** 呼ぶ側が解析したフロントマターの値から、`title`・`description`・`aliases`・`tags` のうち型の合うキーだけを取り出す */
+export function readFrontmatterMetadata(value: unknown): FrontmatterMetadata {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return {};
+  }
+  const record = value as Record<string, unknown>;
+  const metadata: FrontmatterMetadata = {};
+  if (isFilledString(record.title)) {
+    metadata.title = record.title;
+  }
+  if (isFilledString(record.description)) {
+    metadata.description = record.description;
+  }
+  const { aliases, tags } = record;
+  if (Array.isArray(aliases) && aliases.every(isFilledString)) {
+    metadata.aliases = aliases;
+  }
+  // タグの要素は、索引の `docs[].tags` と同じ検査で確かめる
+  if (
+    Array.isArray(tags) &&
+    normalizeIndex({ schema: 2, docs: [{ id: "_", path: "_", tags }] }).problems
+      .length === 0
+  ) {
+    metadata.tags = tags as (string | MdmarkIndexDocTag)[];
+  }
+  return metadata;
+}
+
+/** 本文の最初の h1 の文字（フロントマターとコードブロックの中は読み込まない）。無ければ `undefined` */
+function firstHeading(markdown: string): string | undefined {
+  let fence: string | undefined;
+  for (const line of splitFrontmatter(markdown).body.split("\n")) {
+    const fenceMatch = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
+    if (fenceMatch?.[1]) {
+      const marker = fenceMatch[1].charAt(0);
+      fence =
+        fence === undefined ? marker : fence === marker ? undefined : fence;
+      continue;
+    }
+    if (fence !== undefined) {
+      continue;
+    }
+    const heading = /^ {0,3}#\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+    if (heading?.[1]) {
+      return heading[1];
+    }
+  }
+  return undefined;
+}
+
+/** 文書のタイトルを決める: 索引の `title`、無ければフロントマターの `title`、無ければ本文の最初の h1 の文字、無ければ拡張子を落としたファイル名 */
+export function resolveDocTitle(doc: {
+  path: string;
+  markdown: string;
+  indexTitle?: string | undefined;
+  frontmatterTitle?: string | undefined;
+}): string {
+  return (
+    doc.indexTitle ??
+    doc.frontmatterTitle ??
+    firstHeading(doc.markdown) ??
+    fileTitle(doc.path)
+  );
+}
+
+/** 索引の文書に無いキーをフロントマターの値で補い、索引に無く `title` を持つ文書を加えた文書の並びを返却する。引数を書き換えない */
+export function supplementIndexDocs(input: {
+  /** `normalizeIndex` で検査した索引 */
+  index: MdmarkIndex;
+  /** 文書のパスから本文を参照する表 */
+  documents: Record<string, string>;
+  /** 文書のパスから、解析したフロントマターの値を参照する表 */
+  frontmatter?: Record<string, unknown> | undefined;
+}): {
+  docs: MdmarkIndexDoc[];
+  added: Set<string>;
+  metadata: Map<string, FrontmatterMetadata>;
+} {
+  const bodies = new Map(
+    Object.entries(input.documents).map(([path, body]) => [
+      normalizePath(path),
+      body,
+    ]),
+  );
+  const metadata = new Map(
+    Object.entries(input.frontmatter ?? {}).map(([path, value]) => [
+      normalizePath(path),
+      readFrontmatterMetadata(value),
+    ]),
+  );
+  const docs = input.index.docs.map((doc) => {
+    const path = normalizePath(doc.path);
+    const found = metadata.get(path) ?? {};
+    const filled: MdmarkIndexDoc = { ...doc };
+    for (const key of FRONTMATTER_KEYS) {
+      if (filled[key] === undefined && found[key] !== undefined) {
+        Object.assign(filled, { [key]: found[key] });
+      }
+    }
+    filled.title ??= resolveDocTitle({
+      path: doc.path,
+      markdown: bodies.get(path) ?? "",
+    });
+    return filled;
+  });
+  const indexedPaths = new Set(docs.map((doc) => normalizePath(doc.path)));
+  const ids = new Set(docs.map((doc) => doc.id));
+  const added = new Set<string>();
+  for (const path of bodies.keys()) {
+    const found = metadata.get(path);
+    if (found?.title === undefined || indexedPaths.has(path) || ids.has(path)) {
+      continue;
+    }
+    docs.push({ id: path, path, ...found, title: found.title });
+    added.add(path);
+  }
+  return { docs, added, metadata };
+}
 
 /** 文書の本文を読み込んだ結果 */
 export type ParsedDocument = {
@@ -180,8 +322,16 @@ export function collectReferences(input: {
   documents: Record<string, string>;
   /** 設定 */
   config?: MdmarkConfig;
+  /** 文書のパスから、解析したフロントマターの値を参照する表 */
+  frontmatter?: Record<string, unknown> | undefined;
 }): MdmarkReferences {
-  const { index } = normalizeIndex(input.index);
+  const normalized = normalizeIndex(input.index).index;
+  const { docs } = supplementIndexDocs({
+    index: normalized,
+    documents: input.documents,
+    frontmatter: input.frontmatter,
+  });
+  const index: MdmarkIndex = { ...normalized, docs };
   const defaults = resolveConfig({ config: input.config }).features;
   const bodies = new Map(
     Object.entries(input.documents).map(([path, body]) => [
@@ -230,5 +380,5 @@ export function collectReferences(input: {
   const glossary = scanned.flatMap((item) =>
     (item.parsed?.glossary ?? []).map((row) => row.entry),
   );
-  return { backlinks, glossary };
+  return { backlinks, glossary, docs };
 }

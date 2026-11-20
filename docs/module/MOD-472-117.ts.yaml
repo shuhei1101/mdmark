@@ -84,14 +84,14 @@ functions:
     title: 文書のタイトルを決める
     container: src/cli/documents.ts
     usecase: 共通
-    summary: 索引に文書があればその `title`、無ければ本文の最初の h1 の文字、無ければ拡張子を落としたファイル名を返却する
+    summary: '`resolveDocTitle` に委ね、索引の `title`、無ければフロントマターの `title`、無ければ本文の最初の h1 の文字、無ければ拡張子を落としたファイル名を返却する'
     kind: 関数
     scope: public
     args:
       - name: doc
-        type: '{ path: string; markdown: string; indexTitle?: string }'
+        type: '{ path: string; markdown: string; indexTitle?: string; frontmatterTitle?: string }'
         required: true
-        description: 文書のパス・本文・索引のタイトル
+        description: 文書のパス・本文・索引のタイトル・フロントマターのタイトル
     returns:
       type: string
       description: 文書のタイトル
@@ -114,7 +114,41 @@ functions:
         condition: '`path: "使い方/guide.md"`、本文に h1 が無い'
         mock: なし
         expected: '`guide`'
+      - name: test_document_title_when_frontmatter
+        case: 正常
+        summary: 索引のタイトルが無ければフロントマターのタイトルを h1 より優先する
+        condition: '`frontmatterTitle: "配布の手順"`、本文の h1 は `はじめに`'
+        mock: なし
+        expected: '`配布の手順`'
     status: planned
+    callees:
+      - MOD-472-255#functions[resolveDocTitle]
+  - name: readFrontmatterValues
+    title: 文書のフロントマターを解析する
+    container: src/cli/documents.ts
+    kind: 関数
+    scope: public
+    summary: 文書のパスから本文を参照する表を受け、各文書の先頭のフロントマターの中身を `yaml` で解析した値の表を返却する
+    description: 範囲は `splitFrontmatter` の `content`。フロントマターを持たない文書と、`parse` が例外を投げる文書は表に入れない。`collectReferences`・`checkIndex` の `frontmatter` に指定する値を作る（CLI の `export`・`build`・`check` と VS Code 拡張機能の書き出しが呼ぶ）
+    args:
+      - name: markdowns
+        type: Record<string, string>
+        required: true
+        description: 文書のパスから本文を参照する表
+    returns:
+      type: Record<string, unknown>
+      description: 文書のパスから解析した値を参照する表
+    callees:
+      - MOD-472-217#functions[splitFrontmatter]
+    refs:
+      - IF-472-31#request[input.frontmatter]
+    unit_tests:
+      - name: test_read_frontmatter_values
+        case: 正常
+        summary: 解析できた文書だけを入れる
+        condition: '`a.md` が `---\ntitle: メモ\n---`、`b.md` がフロントマター無し、`c.md` が `---\ntitle: [\n---`'
+        mock: なし
+        expected: '`{ "a.md": { title: "メモ" } }`'
 lead: 'まとめる文書・索引の文書の読み取りと文書のタイトルの決定を受け持ち、1 枚にまとめる対象の決め方を変えるときに参照する。'
 tags:
   - name: topic:cli

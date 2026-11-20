@@ -263,6 +263,7 @@ documents:
     alias_type: term
   - id: docs
     title: 公開ドキュメント
+    alias_type: doc
     paths: [docs/guide/files.yml]
     exclude: [README.md, index.yaml, はじめに.md, 使用方法.md, リファレンス.md]
     records: files
@@ -375,68 +376,68 @@ nav:
       items:
         - group: コアコンセプト
           items:
-            - page: docs/docs/guide/コアコンセプト-文書を描く仕組み.md
-            - page: docs/docs/guide/コアコンセプト-共通の定義と固有の定義.md
-            - page: docs/docs/guide/コアコンセプト-索引と被参照.md
-            - page: docs/docs/guide/コアコンセプト-1枚にまとめる仕組み.md
-            - page: docs/docs/guide/コアコンセプト-設定を重ねて読み込む仕組み.mark.md
-            - page: docs/docs/guide/コアコンセプト-バージョンを上げる仕組み.md
-            - page: docs/docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
-            - page: docs/docs/guide/コアコンセプト-差分を表示する仕組み.md
-            - page: docs/docs/guide/コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
-        - page: docs/docs/guide/変更履歴.mark.md
+            - page: docs/guide-concept-rendering
+            - page: docs/guide-concept-common-and-local
+            - page: docs/guide-concept-index-and-backlinks
+            - page: docs/guide-concept-bundle
+            - page: docs/guide-concept-layered-config
+            - page: docs/guide-concept-upgrade
+            - page: docs/guide-concept-map
+            - page: docs/guide-concept-diff
+            - page: docs/guide-concept-claude-code
+        - page: docs/guide-changelog
     - title: 使い方
       items:
         - group: 導入
           items:
-            - page: docs/docs/guide/導入-配布物を読み込む.md
-            - page: docs/docs/guide/導入-文書を描く.md
-            - page: docs/docs/guide/導入-バージョンを上げる.md
-            - page: docs/docs/guide/導入-差分を表示する.md
+            - page: docs/guide-install-load-dist
+            - page: docs/guide-install-mount
+            - page: docs/guide-install-upgrade
+            - page: docs/guide-install-diff
         - group: 記載する
           items:
-            - page: docs/docs/guide/記載する-文書の記載方法.md
-            - page: docs/docs/guide/記載する-表に機能を付ける.md
-            - page: docs/docs/guide/記載する-本文を部品で組む.mark.md
-            - page: docs/docs/guide/記載する-索引と用語集を記載する.mark.md
-            - page: docs/docs/guide/記載する-色で強調する.md
-            - page: docs/docs/guide/記載する-画像と動画を配置する.md
-            - page: docs/docs/guide/記載する-図と表に番号を付ける.md
-            - page: docs/docs/guide/記載する-ビューとコメントを使用する.mark.md
+            - page: docs/guide-write-writing
+            - page: docs/guide-write-tables
+            - page: docs/guide-write-components
+            - page: docs/guide-write-glossary
+            - page: docs/guide-write-colors
+            - page: docs/guide-write-media
+            - page: docs/guide-write-figure-numbers
+            - page: docs/guide-write-view-and-comments
         - group: 図を描く
           items:
-            - page: docs/docs/guide/図を描く-図を描く.md
-            - page: docs/docs/guide/図を描く-操作できる部品を作る.md
-            - page: docs/docs/guide/図を描く-Mermaidと補足で図を描く.md
-            - page: docs/docs/guide/図を描く-mermaidの図を描く.md
-            - page: docs/docs/guide/図を描く-コードブロックのHTMLを描く.md
-            - page: docs/docs/guide/図を描く-描いた図を確認する.mark.md
-            - page: docs/docs/guide/図を描く-固有の部品とCSSを適用する.md
-            - page: docs/docs/guide/図を描く-見本.mark.md
+            - page: docs/guide-diagram-draw
+            - page: docs/guide-diagram-interactive-parts
+            - page: docs/guide-diagram-map
+            - page: docs/guide-diagram-mermaid
+            - page: docs/guide-diagram-code-html
+            - page: docs/guide-diagram-verify
+            - page: docs/guide-diagram-local-parts
+            - page: docs/guide-diagram-samples
         - group: カスタマイズ
           items:
-            - page: docs/docs/guide/カスタマイズ-テーマを上書きする.md
-            - page: docs/docs/guide/カスタマイズ-機能をオン・オフする.md
-            - page: docs/docs/guide/カスタマイズ-拡張を登録する.md
-            - page: docs/docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
-            - page: docs/docs/guide/カスタマイズ-印刷する.mark.md
+            - page: docs/guide-customize-theme
+            - page: docs/guide-customize-features
+            - page: docs/guide-customize-extensions
+            - page: docs/guide-customize-parts-js
+            - page: docs/guide-customize-print
         - group: 書き出す
           items:
-            - page: docs/docs/guide/書き出す-雛形を配置する.md
-            - page: docs/docs/guide/書き出す-文書を書き出す.mark.md
-            - page: docs/docs/guide/書き出す-文書を1枚にまとめる.md
-            - page: docs/docs/guide/書き出す-点検する.mark.md
+            - page: docs/guide-export-init
+            - page: docs/guide-export-export
+            - page: docs/guide-export-build
+            - page: docs/guide-export-check
         - group: VS Code で確認する
           items:
-            - page: docs/docs/guide/VSCodeで確認する-プレビューを開く.md
-            - page: docs/docs/guide/VSCodeで確認する-差分をプレビューで確認する.md
-            - page: docs/docs/guide/VSCodeで確認する-HTMLとPDFにする.md
+            - page: docs/guide-vscode-preview
+            - page: docs/guide-vscode-diff
+            - page: docs/guide-vscode-html-pdf
         - group: Claude Code で使用する
           items:
-            - page: docs/docs/guide/ClaudeCodeで使用する-プラグインを入れる.mark.md
-            - page: docs/docs/guide/ClaudeCodeで使用する-セットアップする.mark.md
-            - page: docs/docs/guide/ClaudeCodeで使用する-MCPサーバーを起動する.mark.md
-            - page: docs/docs/guide/ClaudeCodeで使用する-MCPのツールを使用する.md
+            - page: docs/guide-claude-code-plugin
+            - page: docs/guide-claude-code-setup
+            - page: docs/guide-claude-code-server
+            - page: docs/guide-claude-code-mcp-tools
     - title: 設計書
       items:
         - group: 全体
@@ -643,22 +644,22 @@ nav:
       items:
         - group: 書き方
           items:
-            - page: docs/docs/guide/記法.mark.md
-            - page: docs/docs/guide/構成図の決まり.mark.md
-            - page: docs/docs/guide/フローチャートの決まり.md
-            - page: docs/docs/guide/HTMLの記載方法.mark.md
+            - page: docs/guide-reference-syntax
+            - page: docs/guide-reference-architecture-diagram
+            - page: docs/guide-reference-flowchart
+            - page: docs/guide-reference-html
               title: HTML の記載方法
         - group: 設定と索引
           items:
-            - page: docs/docs/guide/設定.mark.md
-            - page: docs/docs/guide/索引.mark.md
+            - page: docs/guide-reference-config
+            - page: docs/guide-reference-index
         - group: 呼び出し方
           items:
-            - page: docs/docs/guide/API.mark.md
-            - page: docs/docs/guide/CLI.mark.md
-            - page: docs/docs/guide/MCP.mark.md
-            - page: docs/docs/guide/VSCode拡張機能.mark.md
+            - page: docs/guide-reference-api
+            - page: docs/guide-reference-cli
+            - page: docs/guide-reference-mcp
+            - page: docs/guide-reference-vscode
               title: VS Code 拡張機能
     - title: 用語集
       items:
-        - page: docs/docs/guide/用語集.mark.md
+        - page: docs/guide-reference-glossary

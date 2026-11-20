@@ -17540,6 +17540,7 @@ function resolveTable(table2) {
   const valid = typeof requestedMin === "number" && Number.isFinite(requestedMin) && requestedMin > 0;
   return {
     pin: table2?.pin === "through" ? "through" : "each",
+    pinDefault: table2?.pin_default === true,
     longColumnMin: valid ? requestedMin : DEFAULT_LONG_COLUMN_MIN_EM
   };
 }
@@ -21940,6 +21941,11 @@ function matchableChildren(inline2) {
 function normalizePath(path) {
   return path.split("/").filter((segment) => segment !== "" && segment !== ".").join("/");
 }
+function fileTitle(path) {
+  const name = normalizePath(path).split("/").at(-1) ?? "";
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(0, dot) : name;
+}
 
 // src/render/sanitize.ts
 var import_sanitize_html = __toESM(require_sanitize_html(), 1);
@@ -22301,7 +22307,7 @@ var INDEX_SHAPE = {
   doc: {
     id: { type: "string", required: true },
     path: { type: "string", required: true },
-    title: { type: "string", required: true },
+    title: { type: "string", required: false },
     description: { type: "string", required: false },
     aliases: { type: "string[]", required: false },
     tags: { type: "doc_tags", required: false },
@@ -23091,6 +23097,94 @@ function glossaryRule(state) {
 }
 
 // src/knowledge/references.ts
+var FRONTMATTER_KEYS = ["title", "description", "aliases", "tags"];
+function isFilledString(value) {
+  return typeof value === "string" && value !== "";
+}
+function readFrontmatterMetadata(value) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return {};
+  }
+  const record = value;
+  const metadata = {};
+  if (isFilledString(record.title)) {
+    metadata.title = record.title;
+  }
+  if (isFilledString(record.description)) {
+    metadata.description = record.description;
+  }
+  const { aliases, tags } = record;
+  if (Array.isArray(aliases) && aliases.every(isFilledString)) {
+    metadata.aliases = aliases;
+  }
+  if (Array.isArray(tags) && normalizeIndex({ schema: 2, docs: [{ id: "_", path: "_", tags }] }).problems.length === 0) {
+    metadata.tags = tags;
+  }
+  return metadata;
+}
+function firstHeading(markdown) {
+  let fence2;
+  for (const line of splitFrontmatter(markdown).body.split("\n")) {
+    const fenceMatch = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
+    if (fenceMatch?.[1]) {
+      const marker = fenceMatch[1].charAt(0);
+      fence2 = fence2 === void 0 ? marker : fence2 === marker ? void 0 : fence2;
+      continue;
+    }
+    if (fence2 !== void 0) {
+      continue;
+    }
+    const heading2 = /^ {0,3}#\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+    if (heading2?.[1]) {
+      return heading2[1];
+    }
+  }
+  return void 0;
+}
+function resolveDocTitle(doc) {
+  return doc.indexTitle ?? doc.frontmatterTitle ?? firstHeading(doc.markdown) ?? fileTitle(doc.path);
+}
+function supplementIndexDocs(input) {
+  const bodies = new Map(
+    Object.entries(input.documents).map(([path, body]) => [
+      normalizePath(path),
+      body
+    ])
+  );
+  const metadata = new Map(
+    Object.entries(input.frontmatter ?? {}).map(([path, value]) => [
+      normalizePath(path),
+      readFrontmatterMetadata(value)
+    ])
+  );
+  const docs = input.index.docs.map((doc) => {
+    const path = normalizePath(doc.path);
+    const found = metadata.get(path) ?? {};
+    const filled = { ...doc };
+    for (const key of FRONTMATTER_KEYS) {
+      if (filled[key] === void 0 && found[key] !== void 0) {
+        Object.assign(filled, { [key]: found[key] });
+      }
+    }
+    filled.title ??= resolveDocTitle({
+      path: doc.path,
+      markdown: bodies.get(path) ?? ""
+    });
+    return filled;
+  });
+  const indexedPaths = new Set(docs.map((doc) => normalizePath(doc.path)));
+  const ids = new Set(docs.map((doc) => doc.id));
+  const added = /* @__PURE__ */ new Set();
+  for (const path of bodies.keys()) {
+    const found = metadata.get(path);
+    if (found?.title === void 0 || indexedPaths.has(path) || ids.has(path)) {
+      continue;
+    }
+    docs.push({ id: path, path, ...found, title: found.title });
+    added.add(path);
+  }
+  return { docs, added, metadata };
+}
 var parser;
 function parseDocument3(options) {
   if (!parser) {
@@ -23588,7 +23682,7 @@ function referencedOf(options) {
       (target) => ({
         kind: "doc",
         id: target.id,
-        title: target.title,
+        title: target.title ?? fileTitle(target.path),
         ...target.description === void 0 ? {} : { description: target.description }
       })
     )
@@ -23630,7 +23724,15 @@ function avoidedMatchesOf(options) {
   });
 }
 function collectMatches(input) {
-  const { index } = normalizeIndex(input.index);
+  const normalized = normalizeIndex(input.index).index;
+  const index = {
+    ...normalized,
+    docs: supplementIndexDocs({
+      index: normalized,
+      documents: input.documents,
+      frontmatter: input.frontmatter
+    }).docs
+  };
   const defaults = resolveConfig({ config: input.config }).features;
   const bodies = new Map(
     Object.entries(input.documents).map(([path, body]) => [
