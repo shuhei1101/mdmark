@@ -252,6 +252,15 @@ documents:
       ref: design-schemas/v8.4.0
     metadata:
       visibility: visibility
+  - id: terms
+    title: 用語集
+    paths: [docs/guide/用語集.yaml]
+    schema:
+      source: knowledge
+      path: schemas/terms.schema.yaml
+      ref: design-schemas/v8.4.0
+    records: terms
+    alias_type: term
   - id: docs
     title: 公開ドキュメント
     paths: [docs/guide/files.yml]

@@ -1,11 +1,13 @@
 docs:
   - page: project-index.yaml
     new: false
-    change: '設計書の種類の行に alias_type: doc を付け、名前と aliases を照合の語にする（済）。用語集を alias_type: term の行で配信する行を追加する（要件の未確定が決まってから）'
-    status: todo
+    change: '設計書の種類の行に alias_type: doc を付け、名前と aliases を照合の語にする。用語集を records: terms・alias_type: term の行で配信する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
-    change: 判定フローチャート『用語の登録』で登録すると決めた用語を追加する。用語の YAML との関係は要件の未確定のとおりドキュメント修正で決める
+    change: 判定フローチャート『用語の登録』で登録すると決めた用語を、用語集.yaml と同じ内容で表に追加する
     status: todo
   - page: docs/architecture/index.yaml
     new: false
@@ -16,9 +18,9 @@ docs:
   - page: docs/component/index.yaml
     new: false
     change: docs/component/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
   - page: docs/config/index.yaml
     new: false
     change: docs/config/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -52,9 +54,9 @@ docs:
   - page: docs/interface/index.yaml
     new: false
     change: docs/interface/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
   - page: docs/layout/index.yaml
     new: false
     change: docs/layout/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -70,9 +72,9 @@ docs:
   - page: docs/module/index.yaml
     new: false
     change: docs/module/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
   - page: docs/nonfunctional/index.yaml
     new: false
     change: docs/nonfunctional/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -82,9 +84,9 @@ docs:
   - page: docs/scenario/index.yaml
     new: false
     change: docs/scenario/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
   - page: docs/screen/index.yaml
     new: false
     change: docs/screen/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -100,10 +102,16 @@ docs:
   - page: docs/guide/index.yaml
     new: false
     change: docs/guide/ のガイドの文を削り『文章の書き方』で点検する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
   - page: docs/pr/610/README.md
     new: false
     change: docs/pr/ の PR ドキュメント全てで文を削り『文章の書き方』で点検する（hidden-content-04 は適用しない）。行はフォルダの代表として置く
+    status: todo
+  - page: docs/guide/用語集.yaml
+    new: true
+    change: 用語集.mark.md の表の用語・別名・意味を terms[] に移して原本にする。判定フローチャート『用語の登録』で登録すると決めた用語を追加する
     status: todo
 scope_out:
   - item: ガイド（docs/guide/ の Markdown）のエイリアスの登録（files.yml の行に aliases を持たせる schemas/files.schema.yaml の変更）
