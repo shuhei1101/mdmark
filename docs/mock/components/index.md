@@ -45,6 +45,7 @@
 | [map-er-toggle-direction](./map-er-toggle-direction/index.html) | map の ER 図・クラス図の開閉のボタン（枠線の無い山形・閉じたときに数を出さない）と、ER 図の関連の線のデータの印の 1 対多の向き（行が増える関連のマーカーとの同時の表示・狭い幅） |
 | [map-node-text](./map-node-text/index.html) | map の図のノードの名前・種類の行・線のラベルの文字の大きさと太さ（今の見た目・案 A の太字にしない 13px と 11px・案 B の中くらいの太さ、構成図と C4 図・狭い幅） |
 | [map-wire-ports](./map-wire-ports/index.html) | map の図で同じノードの同じ辺に出入りする線の端の並べ方（今の見た目・案 A の 16px 間隔・案 B の 8px 間隔、分岐から 3 本と上下の辺に 4 本と 2 本・狭い幅） |
+| [map-wire-hit](./map-wire-hit/index.html) | map の図の線の押せる範囲を区間ごとの帯に分けた確認用の図（フォーカスを持つ帯と帯の幅を URL で切り替えて axe の target-size にかける） |
 | [map-mindmap-item](./map-mindmap-item/index.html) | map のマインドマップの項目の枠線・文字・選び方（今の見た目・案 A の名前の上でも選ぶ・案 B の選べる場所を今のまま、短い名前と 30 文字の名前・ポインターを重ねたときと選んだときの面・狭い幅） |
 | [map-group-resize](./map-group-resize/index.html) | map の図のグループの右下の角のハンドル（常に出す案・ポインターを重ねたときだけ出す案・構成図のグループと ER 図の分類の箱・狭い幅） |
 | [map-class-arch-c4](./map-class-arch-c4/index.html) | map のクラス図・アーキテクチャ図・C4 図（メンバーの行と関係の端の形・メンバーと namespace の開閉・service のアイコンと group と junction・要素の種類の行と境界・狭い幅） |

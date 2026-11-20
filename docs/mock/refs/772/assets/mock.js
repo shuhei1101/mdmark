@@ -108,3 +108,43 @@ export function selectOnName(host) {
     name.closest(".map-mindmap-item")?.querySelector(".mdmark-diagram-node-hit")?.click();
   });
 }
+
+/**
+ * 線の押せる範囲を区間ごとの帯に分ける（#764 の作りの確認用）。
+ * `focusOn` は、フォーカスと名前を持たせる帯（`first`: 最初の区間・`longest`: 最も長い区間）、`width` は帯の幅（px）
+ */
+export function splitWireHits(host, { focusOn, width }) {
+  const ns = "http://www.w3.org/2000/svg";
+  for (const path of host.querySelectorAll("path.map-wire-hit[data-wire]")) {
+    // 飛び越えの弧（A）は帯に持たせず、M と L の点だけで折れ線にする
+    const points = [...(path.getAttribute("d") ?? "").matchAll(/[ML]\s*(-?[\d.]+)[ ,]\s*(-?[\d.]+)/g)].map((m) => [Number(m[1]), Number(m[2])]);
+    if (points.length < 2) continue;
+    const group = document.createElementNS(ns, "g");
+    group.setAttribute("class", "map-wire-hit");
+    group.dataset.wire = path.dataset.wire;
+    const segments = points.slice(1).map((point, index) => [points[index], point]);
+    const lengths = segments.map(([a, b]) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]));
+    const focusIndex = focusOn === "longest" ? lengths.indexOf(Math.max(...lengths)) : 0;
+    segments.forEach(([a, b], index) => {
+      const rect = document.createElementNS(ns, "rect");
+      const half = width / 2;
+      rect.setAttribute("x", String(Math.min(a[0], b[0]) - half));
+      rect.setAttribute("y", String(Math.min(a[1], b[1]) - half));
+      rect.setAttribute("width", String(Math.abs(a[0] - b[0]) + width));
+      rect.setAttribute("height", String(Math.abs(a[1] - b[1]) + width));
+      rect.setAttribute("class", "map-wire-hit-segment");
+      rect.setAttribute("fill", "transparent");
+      rect.style.pointerEvents = "all";
+      if (index === focusIndex) {
+        for (const name of ["tabindex", "role", "aria-label", "aria-describedby", "data-tip-owner"]) {
+          const value = path.getAttribute(name);
+          if (value !== null) rect.setAttribute(name, value);
+        }
+      } else {
+        rect.setAttribute("aria-hidden", "true");
+      }
+      group.append(rect);
+    });
+    path.replaceWith(group);
+  }
+}
