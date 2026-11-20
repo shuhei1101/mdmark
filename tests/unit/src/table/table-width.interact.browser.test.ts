@@ -636,10 +636,11 @@ test("test_attach_auto_column_widths_when_batched", async () => {
   // 準備
   addStyles();
   const { attachAutoColumnWidths } = await loadTableWidth();
-  const { root } = createRoot(CONTENT_TABLE);
-  setRootWidth(root, 1280);
+  const { root } = createRoot(plainTable(10));
+  setRootWidth(root, 320);
   const { wrapper, table, scroller, headCells } = tableParts(root);
   insertHeadTools(headCells);
+  showPins(root);
   const calls = recordMeasureCalls();
   // 実行
   const handle = attachAutoColumnWidths(table, {
