@@ -10,9 +10,9 @@ docs:
   - page: docs/architecture/index.yaml
     new: false
     change: docs/architecture/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
   - page: docs/component/index.yaml
     new: false
     change: docs/component/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -34,9 +34,9 @@ docs:
   - page: docs/dev-command/index.yaml
     new: false
     change: docs/dev-command/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
   - page: docs/er/index.yaml
     new: false
     change: docs/er/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -46,9 +46,9 @@ docs:
   - page: docs/external-api/index.yaml
     new: false
     change: docs/external-api/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
   - page: docs/interface/index.yaml
     new: false
     change: docs/interface/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -58,9 +58,9 @@ docs:
   - page: docs/layout/index.yaml
     new: false
     change: docs/layout/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
   - page: docs/library/index.yaml
     new: false
     change: docs/library/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -76,9 +76,9 @@ docs:
   - page: docs/nonfunctional/index.yaml
     new: false
     change: docs/nonfunctional/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
   - page: docs/scenario/index.yaml
     new: false
     change: docs/scenario/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -94,9 +94,9 @@ docs:
   - page: docs/test-procedure/index.yaml
     new: false
     change: docs/test-procedure/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-20T04:59:10.660237+00:00'
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
   - page: docs/guide/index.yaml
     new: false
     change: docs/guide/ のガイドの文を削り『文章の書き方』で点検する

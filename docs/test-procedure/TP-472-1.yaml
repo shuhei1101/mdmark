@@ -10,7 +10,7 @@ layers:
     run_all: 未確定
   - id: TL-3
     name: 結合テスト（フロント）
-    description: Vitest の `integration-node`（ビルドの入口を子プロセスで実行する・ビルドした配布物を Node で読み込む・Claude Code プラグインの MCP サーバーとフックを実行する）と `integration-browser`（ビルドした配布物を Chromium で読み込む）と `integration-storybook`（部品の描画のインターフェースと Storybook を空きポートで起動し、ストーリーを Playwright で開く。起動に約 40 秒。続けて Chromium を 1 つ起動し、最初のストーリーを開いて Vite が依存をまとめ終えるまで待ち、約 1 分かかる。各ファイルはその Chromium に接続してストーリーを開き、開いたページをテストごとに閉じる）と `integration-browser-touch`（タッチの点がある Chromium のコンテキストで、`mount.browser.test.ts` の名前が `_by_touch` で終わるテストだけを実行する）で実行する。同時に実行するファイルの数は、`integration-node`・`integration-storybook` の合計と `integration-browser`・`integration-browser-touch` のそれぞれで CPU 数の半分（全てのプロジェクトに同じ `maxWorkers`）までにする。VS Code 拡張機能の結合テストは Vitest でなく、補足「VS Code 拡張機能」のコマンドで別に実行する
+    description: Vitest の `integration-node`（ビルドの起点を子プロセスで実行する・ビルドした配布物を Node で読み込む・Claude Code プラグインの MCP サーバーとフックを実行する）と `integration-browser`（ビルドした配布物を Chromium で読み込む）と `integration-storybook`（部品の描画のインターフェースと Storybook を空きポートで起動し、ストーリーを Playwright で開く。起動に約 40 秒。続けて Chromium を 1 つ起動し、最初のストーリーを開いて Vite が依存をまとめ終えるまで待ち、約 1 分かかる。各ファイルはその Chromium に接続してストーリーを開き、開いたページをテストごとに閉じる）と `integration-browser-touch`（タッチの点がある Chromium のコンテキストで、`mount.browser.test.ts` の名前が `_by_touch` で終わるテストだけを実行する）で実行する。同時に実行するファイルの数は、`integration-node`・`integration-storybook` の合計と `integration-browser`・`integration-browser-touch` のそれぞれで CPU 数の半分（全てのプロジェクトに同じ `maxWorkers`）までにする。VS Code 拡張機能の結合テストは Vitest でなく、補足「VS Code 拡張機能」のコマンドで別に実行する
     prerequisites:
       - '`npm ci` で依存を入れ、`npx playwright install chromium` で Chromium を入れてある'
       - Claude Code プラグインの結合テスト（`tests/integration/ClaudeCodeプラグイン/`）は、ビルドした `dist/cli.js` の MCP サーバーと `plugin/` のフックを実行する。Claude Code を起動しない
@@ -31,13 +31,13 @@ layers:
       VS Code 拡張機能: |-
         `@vscode/test-electron` が VS Code 1.141.0 と stable を起動し、拡張機能ホストの中で mocha が `vscode/tests/integration/*.test.ts`（ビルドした `vscode/out/test/*.test.mjs`）を実行する。Webview の DOM は拡張機能がテストのときだけ返却する `inspectPreview` で確認する。`vscode` を import しない処理は単体テスト（フロント）の `unit` プロジェクトが `tests/unit/vscode/` で実行する。
 
-        前提: `npm ci` と `npm --prefix vscode ci` で依存を入れ、Node は 24 を使用する（`PATH` の先頭の `node` が古いと、拡張機能の配布物を作るテストが落ちる）。代役の配信が配る配布物は、テストの入口がこのブランチのソースを一時フォルダにビルドして用意する。ヘッドレスの Linux では `xvfb-run` を入れてある。
+        前提: `npm ci` と `npm --prefix vscode ci` で依存を入れ、Node は 24 を使用する（`PATH` の先頭の `node` が古いと、拡張機能の配布物を作るテストが落ちる）。代役の配信が配る配布物は、テストの起点がこのブランチのソースを一時フォルダにビルドして用意する。ヘッドレスの Linux では `xvfb-run` を入れてある。
 
         ```bash
         xvfb-run -a npm --prefix vscode run test:integration
         ```
 
-        初回と stable が上がったときは VS Code を `vscode/.vscode-test/` に取得する。jsDelivr と GitHub へは接続せず、`MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える（`MDMARK_VSCODE_DIST_BASE` は `http://127.0.0.1:{ポート}/mdmark` の構造で、配布物は `/mdmark@{バージョン}/dist/{ファイル}` で参照する）。VS Code のバージョンごとに新しい `--user-data-dir` で起動し、前回のバージョンが空の状態から始める。ユーザーデータの `User/settings.json` に `workbench.colorTheme` を `Dark 2026`（VS Code の既定のダークのテーマ）で配置し、パネルの axe の検査を起動ごとに同じテーマで確認する
+        初回と stable が上がったときは VS Code を `vscode/.vscode-test/` に取得する。jsDelivr と GitHub へは接続せず、`MDMARK_VSCODE_DIST_BASE`・`MDMARK_VSCODE_TAGS_URL` で手元の代役に差し替える（`MDMARK_VSCODE_DIST_BASE` は `http://127.0.0.1:{ポート}/mdmark` の構造で、配布物は `/mdmark@{バージョン}/dist/{ファイル}` で参照する）。VS Code のバージョンごとに新規の `--user-data-dir` で起動し、前回のバージョンが空の状態から始める。ユーザーデータの `User/settings.json` に `workbench.colorTheme` を `Dark 2026`（VS Code の既定のダークのテーマ）で配置し、パネルの axe の検査を起動ごとに同じテーマで確認する
       Claude Code の mod の結合テスト: |-
         `tests/integration/ClaudeCodeプラグイン/mdmark-style/` の mod のプラグイン mdmark-style の結合テストは Vitest でなく、`claude plugin test` で別に実行する。`scripts/test-mdmark-style.ts` が、ビルドした `mdmark-style/` を一時フォルダにコピーしてテストを並べ、`claude plugin validate` と `claude plugin test` を実行する（`claude-code/testing` の `$.ui.mount`・`$.classic` でエンジンが読み込んだ mod を通して描く。Claude Code のセッションは起動しない）。
 

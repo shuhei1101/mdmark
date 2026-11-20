@@ -132,10 +132,10 @@ subsystems:
     status: planned
   - name: mdmark-style
     scope: mdmark-style
-    role: Claude Code の返答と利用者の発言を、描く前に mdmark の共通スタイルの部品の木（表・注意書き・見出し・コードブロック・開閉の範囲・用語のマーカー）に描き換え、SessionStart でマーカーの記載方法をモデルに渡す。記法の解釈と用語の照合はライブラリ本体の関数をまとめて使用し、MCP は持たない
+    role: Claude Code の返答と利用者の発言を、描く前に mdmark の共通スタイルの部品の木（表・注意書き・見出し・コードブロック・開閉の範囲・用語のマーカー）に描き換え、SessionStart でマーカーの記載方法をモデルへ送信する。記法の解釈と用語の照合はライブラリ本体の関数をまとめて使用し、MCP は持たない
     runtime: TypeScript 7（Claude Code の mod。Node・DOM は無く、`$` で画面・ファイル・設定を扱う）
     runs_on: 文書の作成者の手元の Claude Code が、プラグインのキャッシュの `mdmark-style/hooks/mod/mod.js` を mod として読み込む。ターミナル版・デスクトップ版・VS Code の拡張機能で同じ mod が動く
-    reason: フックと MCP の Claude Code プラグインと分け、利用者が画面の描き換えだけを入れたり外したりできるようにする（規約『Claude プラグインルール』の機能ごとの単独）
+    reason: フックと MCP の Claude Code プラグインと分け、利用者が画面の描き換えだけを導入・削除できるようにする（規約『Claude プラグインルール』の機能ごとの単独）
     refs:
       - IF-472-45#
       - IF-472-46#
@@ -182,7 +182,7 @@ external_systems:
       - IF-472-44#
     status: planned
   - name: Visual Studio Marketplace
-    purpose: '`vscode-v*` のタグのワークフローが、Release に添えた .vsix を拡張機能 `ShuheiNishikawa.mdmark-vscode` の新しいバージョンとして公開し、文書の作成者の VS Code へ更新を届ける'
+    purpose: '`vscode-v*` のタグのワークフローが、Release に添えた .vsix を拡張機能 `ShuheiNishikawa.mdmark-vscode` の新規のバージョンとして公開し、文書の作成者の VS Code へ更新を届ける'
     direction: 送信のみ
     protocol: '`vsce publish --oidc`（GitHub Actions の OIDC トークンを、publisher `ShuheiNishikawa` に登録した trusted publishing のポリシーで公開用のトークンに交換する）'
     detail: LIB-472-34#
