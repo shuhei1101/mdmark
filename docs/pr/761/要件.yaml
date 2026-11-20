@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
     impact: changed
-    detail: 図の線が相手のノードに近い辺につながり、ほかのノードの上を通らないことを期待結果に加える
+    detail: 図の線が相手のノードに近い辺につながり、ほかのノードの上を通らないことを期待結果に加える。ER 図は、関連の線の両端が左右の辺のうち相手のテーブルに近い方の辺につながることを期待結果に加える
     depends_on: []
 docs:
   - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
