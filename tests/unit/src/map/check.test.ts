@@ -1,3 +1,4 @@
+import { readdirSync, readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 import {
   BLOCK,
@@ -317,73 +318,6 @@ test("test_collect_map_problems_when_class_architecture_c4", async () => {
   expect(messages).toContain("layout.ghost");
 });
 
-// map が読める図は戻さない（正常系）
-test("test_needs_mermaid_fallback", async () => {
-  // 準備
-  const { needsMermaidFallback } = await loadCheck();
-  // 実行
-  const flow = needsMermaidFallback({
-    kind: "flowchart",
-    mermaid: "flowchart LR\n  A[受付] --> B[回答]",
-  });
-  const classes = needsMermaidFallback({
-    kind: "classDiagram",
-    mermaid: "classDiagram\n  class 図面\n  図面 --> 図形",
-  });
-  // 検証
-  expect(flow).toBe(false);
-  expect(classes).toBe(false);
-});
-
-// 読めない行と閉じの無い subgraph で戻す（正常系）
-test("test_needs_mermaid_fallback_when_unreadable", async () => {
-  // 準備
-  const { needsMermaidFallback } = await loadCheck();
-  // 実行
-  const unreadable = needsMermaidFallback({
-    kind: "flowchart",
-    mermaid: "flowchart LR\n  A --o B",
-  });
-  const unclosed = needsMermaidFallback({
-    kind: "flowchart",
-    mermaid: "flowchart LR\n  subgraph G [まとめ]\n    A --> B",
-  });
-  // 検証
-  expect(unreadable).toBe(true);
-  expect(unclosed).toBe(true);
-});
-
-// 見た目の指定で戻す（正常系）
-test("test_needs_mermaid_fallback_when_style", async () => {
-  // 準備
-  const { needsMermaidFallback } = await loadCheck();
-  // 実行
-  const results = [
-    needsMermaidFallback({
-      kind: "flowchart",
-      mermaid: "flowchart LR\n  A --> B\n  style A fill:#f9f",
-    }),
-    needsMermaidFallback({
-      kind: "flowchart",
-      mermaid: "flowchart LR\n  A:::warn --> B",
-    }),
-    needsMermaidFallback({
-      kind: "flowchart",
-      mermaid: "flowchart LR\n  A[受付]:::warn --> B",
-    }),
-    needsMermaidFallback({
-      kind: "classDiagram",
-      mermaid: 'classDiagram\n  class 図面\n  cssClass "図面" warn',
-    }),
-    needsMermaidFallback({
-      kind: "stateDiagram",
-      mermaid: "stateDiagram-v2\n  [*] --> 待機\n  class 待機 idle",
-    }),
-  ];
-  // 検証
-  expect(results).toEqual([true, true, true, true, true]);
-});
-
 // マインドマップの補足とマーカーの引数のずれ（異常系）
 test("test_collect_map_problems_when_mindmap", async () => {
   // 準備
@@ -444,24 +378,6 @@ test("test_collect_map_problems_when_mindmap_second_root", async () => {
   // 検証
   expect(problems.map((problem) => problem.kind)).toEqual(["map_invalid"]);
   expect(problems[0]?.line).toBeGreaterThan(3);
-});
-
-// マインドマップの見た目の指定（正常系）
-test("test_needs_mermaid_fallback_when_mindmap", async () => {
-  // 準備
-  const { needsMermaidFallback } = await loadCheck();
-  const { MINDMAP, MINDMAP_PLAIN } = await import("../../helpers/map.ts");
-  // 実行
-  const results = [
-    needsMermaidFallback({ kind: "mindmap", mermaid: MINDMAP }),
-    needsMermaidFallback({
-      kind: "mindmap",
-      mermaid: "mindmap\n  root\n    A\n      ::icon(fa fa-book)\n",
-    }),
-    needsMermaidFallback({ kind: "mindmap", mermaid: MINDMAP_PLAIN }),
-  ];
-  // 検証
-  expect(results).toEqual([true, true, false]);
 });
 
 // 軸と格子の配置の図の補足のずれ（異常系）
@@ -622,4 +538,91 @@ test("test_collect_map_problems_when_changes_unsupported_kind", async () => {
     "C4 図",
   ])
     expect(problems[0]?.message).toContain(kind);
+});
+
+// 読み取れない行だけを返却し、クラスとリンク先は返却しない（異常系）
+test("test_collect_plain_map_problems", async () => {
+  // 準備
+  const { collectPlainMapProblems } = await loadCheck();
+  const mermaid = [
+    "flowchart LR",
+    "  A[受付]:::warn --> B[回答]",
+    '  click B "javascript:alert(1)"',
+    "  A -> ->",
+  ].join("\n");
+  // 実行
+  const problems = collectPlainMapProblems({
+    kind: "flowchart",
+    mermaid,
+    line: 10,
+  });
+  // 検証
+  expect(problems.map((problem) => problem.kind)).toEqual(["map_invalid"]);
+  expect(problems[0]?.line).toBe(13);
+});
+
+// 外観の指定と設定の行は項目にしない（正常系）
+test("test_collect_plain_map_problems_when_style", async () => {
+  // 準備
+  const { collectPlainMapProblems } = await loadCheck();
+  const flow = [
+    "flowchart LR",
+    "  %%{init: {}}%%",
+    "  A --> B",
+    "  style A fill:#f9f",
+    "  classDef warn fill:#ffe08a",
+    "  class A warn",
+    "  linkStyle 0 stroke:#d33",
+  ].join("\n");
+  const mindmap = [
+    "mindmap",
+    "  root((mdmark))",
+    "    記法",
+    "      ::icon(fa fa-book)",
+    "    図:::urgent",
+  ].join("\n");
+  // 実行
+  const results = [
+    collectPlainMapProblems({ kind: "flowchart", mermaid: flow, line: 0 }),
+    collectPlainMapProblems({ kind: "mindmap", mermaid: mindmap, line: 0 }),
+  ];
+  // 検証
+  expect(results).toEqual([[], []]);
+});
+
+/** mermaid の公式の記法の例の見本のフォルダ */
+const SAMPLES_DIR = new URL(
+  "../../../fixtures/mermaid-syntax/",
+  import.meta.url,
+);
+
+/** 見本の Markdown から mermaid のコードブロックの中身を取り出す */
+const samplesOf = (markdown: string): string[] =>
+  [...markdown.matchAll(/```mermaid\n([\s\S]*?)\n```/g)].map(
+    (match) => match[1] ?? "",
+  );
+
+// mermaid の公式の記法の例の見本は記載の警告が 0 件（正常系）
+test("test_collect_plain_map_problems_when_mermaid_samples", async () => {
+  // 準備
+  const { collectPlainMapProblems } = await loadCheck();
+  const { plainMapSourceOf } = await import("../../../../src/map/structure.ts");
+  const files = readdirSync(SAMPLES_DIR).filter((name) => name.endsWith(".md"));
+  // 実行
+  const failures = files.flatMap((name) =>
+    samplesOf(readFileSync(new URL(name, SAMPLES_DIR), "utf8")).flatMap(
+      (source, index) => {
+        const plain = plainMapSourceOf(source);
+        if (plain === undefined) return [`${name}#${index + 1}: map の図にならない`];
+        return collectPlainMapProblems({
+          kind: plain.kind,
+          mermaid: plain.body,
+          line: 0,
+        }).map((problem) => `${name}#${index + 1}: ${problem.message}`);
+      },
+    ),
+  );
+  // 検証
+  expect(files).toHaveLength(17);
+  expect(failures).toEqual([]);
 });

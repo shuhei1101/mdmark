@@ -1097,3 +1097,26 @@ test("test_route_wires_when_foreign_port", async () => {
     expect(passesPoint(points, port), `D の出入り口の点 (${port})`).toBe(false);
   }
 });
+
+// 長さを指定した線と見えない線で段を決める（正常系）
+test("test_layout_map_when_length_and_invisible", async () => {
+  // 準備
+  const { layoutMap, estimateTextWidth } = await loadLayout();
+  const { parseFlowchart } = await loadFlowchart();
+  const chart = parseFlowchart(
+    ["flowchart TB", "  A --> B", "  A ----> C", "  B ~~~ D"].join("\n"),
+  );
+  // 実行
+  const layout = layoutMap(
+    chart,
+    { collapsed: [], entered: undefined },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
+  );
+  const top = (id: string) =>
+    layout.nodes.find((node) => node.id === id)?.y ?? Number.NaN;
+  // 検証
+  const step = top("B") - top("A");
+  expect(top("C") - top("B")).toBeGreaterThanOrEqual(step);
+  expect(top("D")).toBeGreaterThan(top("B"));
+  expect(layout.wires.map((wire) => wire.id)).not.toContain("B->D");
+});

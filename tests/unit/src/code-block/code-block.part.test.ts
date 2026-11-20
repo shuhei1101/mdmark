@@ -543,3 +543,31 @@ test("test_render_code_raw", async () => {
     expect(findTag(html, "<svg")).toContain('aria-hidden="true"');
   }
 });
+
+// 言語のラベルとコピーのボタンを並べ、言語が空ならラベルを出さない（正常系）
+test("test_render_code_bar", async () => {
+  // 準備
+  const { renderCodeBar } = await loadCodeBlock();
+  // 実行
+  const text = renderCodeBar({
+    language: "text",
+    fileName: "",
+    title: "",
+    copyState: "idle",
+    raw: undefined,
+  });
+  const none = renderCodeBar({
+    language: "",
+    fileName: "",
+    title: "",
+    copyState: "idle",
+    raw: undefined,
+  });
+  // 検証
+  expect(text).toContain('class="mdmark-code-lang-name"');
+  expect(text).toContain(">text<");
+  expect(text).toContain("mdmark-code-copy");
+  expect(none).not.toContain("mdmark-code-lang");
+  expect(none).toContain("mdmark-code-copy");
+});
+

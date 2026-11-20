@@ -147,23 +147,22 @@ const fence = (source: string): string => `\`\`\`mermaid\n${source}\n\`\`\`\n`;
 // 範囲の外の純粋な Mermaid を map の図にする（正常系）
 test("test_build_map_ranges_when_plain", () => {
   // 準備
-  const markdown = `${fence("flowchart LR\n  A --> B")}\n${fence('pie\n  title 予定\n  "設計" : 3')}\n${mapRange({ mermaid: FLOW })}`;
+  const markdown = `${fence("flowchart LR\n  A --> B")}\n${fence("gantt\n  dateFormat YYYY-MM-DD\n  設計 :a1, 2026-01-01, 3d")}\n${mapRange({ mermaid: FLOW })}`;
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
   const opens = matches(html, /<div class="mdmark-map"[^>]*>/g);
-  expect(opens).toHaveLength(2);
+  expect(opens).toHaveLength(3);
   expect(opens[0]).toContain("data-map-plain");
   expect(opens[0]).toContain('data-map="1"');
   expect(opens[0]).toContain(
     'data-map-args="{&quot;title&quot;:&quot;フローチャート&quot;}"',
   );
-  expect(opens[1]).not.toContain("data-map-plain");
+  expect(opens[1]).toContain("data-map-plain");
   expect(opens[1]).toContain('data-map="2"');
-  expect(matches(html, /data-mdmark-mermaid/g)).toHaveLength(1);
-  expect(html.indexOf("data-mdmark-mermaid")).toBeLessThan(
-    html.indexOf(opens[1] as string),
-  );
+  expect(opens[2]).not.toContain("data-map-plain");
+  expect(opens[2]).toContain('data-map="3"');
+  expect(html).not.toContain("data-mdmark-mermaid");
 });
 
 // front matter を除いてタイトルにする（正常系）
@@ -190,12 +189,22 @@ test("test_build_map_ranges_when_plain_front_matter", () => {
 // 設定を持つコードブロックは mermaid のまま（正常系）
 test("test_build_map_ranges_when_plain_config", () => {
   // 準備
-  const markdown = `${fence("---\nconfig:\n  theme: forest\n---\nflowchart LR\n  A --> B")}\n${fence('%%{init: {"theme": "forest"}}%%\nsequenceDiagram\n  A->>B: 送る')}`;
+  const markdown = [
+    fence("---\nconfig:\n  theme: forest\n---\nflowchart LR\n  A --> B"),
+    fence('%%{init: {"theme": "forest"}}%%\nsequenceDiagram\n  A->>B: 送る'),
+    fence(
+      "---\nconfig:\n  gitGraph:\n    mainBranchName: MetroLine1\n---\ngitGraph\n  commit",
+    ),
+  ].join("\n");
   // 実行
   const { html } = renderDoc(markdown);
   // 検証
-  expect(html).not.toContain('class="mdmark-map"');
-  expect(matches(html, /data-mdmark-mermaid/g)).toHaveLength(2);
+  const opens = matches(html, /<div class="mdmark-map"[^>]*>/g);
+  expect(opens).toHaveLength(3);
+  for (const open of opens) expect(open).toContain("data-map-plain");
+  expect(html).not.toContain("data-mdmark-mermaid");
+  expect(html).not.toContain("%%{init");
+  expect(opens[2]).toContain('data-map-main-branch="MetroLine1"');
 });
 
 // 機能を外すと範囲の外の map の図にしない（正常系）

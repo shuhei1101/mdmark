@@ -113,3 +113,24 @@ test("test_mindmap_item_of", async () => {
   expect(results[2]).toEqual({ kind: "ambiguous" });
   expect(results[3]).toEqual({ kind: "missing" });
 });
+
+// 改行を持つ Markdown の文字を 1 つの項目にする（正常系）
+test("test_parse_mindmap_when_markdown_string", async () => {
+  // 準備
+  const { parseMindmap } = await loadMindmap();
+  const source = [
+    "mindmap",
+    '  id1["`**Root** with',
+    "a second line",
+    'Unicode works too: 🤓`"]',
+    '    id2["`The dog in **the** hog`"]',
+  ].join("\n");
+  // 実行
+  const mindmap = parseMindmap(source);
+  // 検証
+  expect(mindmap.problems).toEqual([]);
+  expect(mindmap.root?.label).toBe(
+    "Root with\na second line\nUnicode works too: 🤓",
+  );
+  expect(mindmap.items).toHaveLength(2);
+});

@@ -370,3 +370,45 @@ test("test_class_part_inputs_when_measured_name", async () => {
   expect(inputs.overrides.MarkdownDocumentRenderer?.size?.w).toBe(281);
   expect(inputs.overrides.note_1?.size).toEqual({ w: 161, h: leafHeight(1) });
 });
+
+// mermaid の公式の記法の例のクラス図の行を読み取る（正常系）
+test("test_parse_class_diagram_when_mermaid_syntax", async () => {
+  // 準備
+  const { parseClassDiagram } = await loadClass();
+  const source = [
+    "classDiagram",
+    '  note "From Duck till Zebra"',
+    '  class Animal["Animal with a label"]',
+    "  class `Car Class`",
+    "  Animal <|--|> Zebra",
+    "  bar ()-- foo",
+    "  namespace Company.Engineering {",
+    "    namespace Backend {",
+    "      class A",
+    "    }",
+    "  }",
+    "  class Shape <<interface>>",
+    "  class Animal:::pink {",
+    "    -int sizeInFeet",
+    "  }",
+    "  class Car",
+    "  classDef pink fill:#f9f",
+    '  cssClass "Car" pink',
+  ].join("\n");
+  // 実行
+  const diagram = parseClassDiagram(source);
+  const item = (id: string) => diagram.classes.find((one) => one.id === id);
+  // 検証
+  expect(diagram.problems).toEqual([]);
+  expect(item("Animal")?.label).toBe("Animal with a label");
+  expect(item("Car Class")).toBeDefined();
+  const both = diagram.relations.find(
+    (relation) => relation.from === "Animal" && relation.to === "Zebra",
+  );
+  expect(both).toMatchObject({ fromEnd: "triangle", toEnd: "triangle" });
+  expect(item("bar")?.interface).toBe(true);
+  expect(item("A")?.namespace).toBe("Backend");
+  expect(item("Shape")?.annotation).toBe("interface");
+  expect(diagram.styles.nodes.Animal?.fill).toBe("#f9f");
+  expect(diagram.styles.nodes.Car?.fill).toBe("#f9f");
+});

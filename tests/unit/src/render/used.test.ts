@@ -184,17 +184,20 @@ test("test_uses_mermaid_when_plain", async () => {
   );
   const styled = [
     "```mermaid",
+    '%%{init: {"theme": "forest"}}%%',
     "flowchart LR",
     "  A --> B",
     "  style A fill:#f9f",
     "```",
     "",
   ].join("\n");
+  const pie = ["```mermaid", "pie", '  "A" : 1', "```", ""].join("\n");
   // 実行
   const results = [
     usesMermaid({ markdowns: [plain], config: {} }),
     usesMermaid({ markdowns: [styled], config: {} }),
+    usesMermaid({ markdowns: [pie], config: {} }),
   ];
   // 検証
-  expect(results).toEqual([false, true]);
+  expect(results).toEqual([false, false, true]);
 });

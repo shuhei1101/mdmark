@@ -148,14 +148,48 @@ test("test_plain_map_source_of_when_config", async () => {
   const { plainMapSourceOf } = await loadStructure();
   // 実行
   const withConfig = plainMapSourceOf(
-    "---\nconfig:\n  theme: forest\n---\nflowchart LR\n  A --> B",
+    "---\nconfig:\n  theme: forest\n  gitGraph:\n    mainBranchName: MetroLine1\n---\ngitGraph\n  commit",
   );
   const withInit = plainMapSourceOf(
     '%%{init: {"theme": "forest"}}%%\nflowchart LR\n  A --> B',
   );
   // 検証
-  expect(withConfig).toBeUndefined();
-  expect(withInit).toBeUndefined();
+  expect(withConfig?.kind).toBe("gitGraph");
+  expect(withConfig?.mainBranchName).toBe("MetroLine1");
+  expect(withInit?.kind).toBe("flowchart");
+  expect(withInit?.body.startsWith("flowchart")).toBe(true);
+  expect(withInit?.body).not.toContain("%%{");
+  expect(withInit?.mainBranchName).toBeUndefined();
+});
+
+// 最初の単語が block のブロック図（正常系）
+test("test_plain_map_source_of_when_block", async () => {
+  // 準備
+  const { plainMapSourceOf } = await loadStructure();
+  // 実行
+  const block = plainMapSourceOf("block\n  columns 3\n  a b c");
+  const beta = plainMapSourceOf("block-beta\n  a b");
+  // 検証
+  expect(block?.kind).toBe("block");
+  expect(beta?.kind).toBe("block");
+});
+
+// front matter と %%{init} の mainBranchName を読み取る（正常系）
+test("test_mermaid_main_branch_of", async () => {
+  // 準備
+  const { mermaidMainBranchOf } = await loadStructure();
+  const front =
+    "---\nconfig:\n  gitGraph:\n    mainBranchName: MetroLine1\n---\n";
+  const init = '%%{init: {"gitGraph": {"mainBranchName": "trunk"}}}%%\n';
+  // 実行
+  const names = [
+    `${front}gitGraph\n  commit`,
+    `${init}gitGraph\n  commit`,
+    `${front}${init}gitGraph\n  commit`,
+    "gitGraph\n  commit",
+  ].map((source) => mermaidMainBranchOf(source));
+  // 検証
+  expect(names).toEqual(["MetroLine1", "trunk", "trunk", undefined]);
 });
 
 // map が描けない種類（正常系）

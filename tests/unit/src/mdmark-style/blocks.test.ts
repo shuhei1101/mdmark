@@ -451,3 +451,31 @@ test("test_split_blocks_when_tree_note_escaped", async () => {
     "└── ",
   ]);
 });
+
+// 罫線の行を 2 行以上持つ言語が tree でないコードブロックをファイルツリーにする（正常系）
+test("test_split_blocks_when_plain_tree", async () => {
+  // 準備
+  const { splitBlocks } = await loadBlocks();
+  const tree = ["mdmark/", "├── src/", "│   └── index.ts", "└── README.md"];
+  const text = [
+    "```text",
+    ...tree,
+    "```",
+    "",
+    '<!-- code: {"tree_warning": false} -->',
+    "",
+    "```text",
+    ...tree,
+    "```",
+    "",
+    "```text",
+    "└── index.js",
+    "```",
+  ].join("\n");
+  // 実行
+  const blocks = splitBlocks({ text, parts: ALL_PARTS });
+  // 検証
+  expect(blocks.map((block) => block.kind)).toEqual(["tree", "code", "code"]);
+  expect(blocks[1]?.code?.lang).toBe("text");
+  expect(blocks[2]?.code?.lang).toBe("text");
+});

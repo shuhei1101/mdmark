@@ -200,3 +200,113 @@ test("test_read_tree_options_when_none", async () => {
   expect(options.open).toBeUndefined();
   expect(options.wrap).toBe(false);
 });
+
+// 今の罫線と ASCII の罫線と縦線の後ろの罫線を数える（正常系）
+test("test_count_tree_lines", async () => {
+  // 準備
+  const { countTreeLines } = await loadTree();
+  const source = [
+    "mdmark/",
+    "├── src/",
+    "│   └── index.ts",
+    "└── README.md",
+    "|-- a",
+    "`-- b",
+    "|   |-- c",
+    "│   └── b",
+  ].join("\n");
+  // 実行
+  const count = countTreeLines(source);
+  // 検証
+  expect(count).toBe(7);
+});
+
+// 行の途中の罫線と、罫線の後ろに空白の無い行は数えない（正常系）
+test("test_count_tree_lines_when_not_tree", async () => {
+  // 準備
+  const { countTreeLines } = await loadTree();
+  const source = ["a ├── b", "├──b", "-- コメント", "const a = b || c;"].join(
+    "\n",
+  );
+  // 実行
+  const count = countTreeLines(source);
+  // 検証
+  expect(count).toBe(0);
+});
+
+/** 罫線のフォルダ構成の行（3 行が罫線） */
+const PLAIN_TREE = ["mdmark/", "├── src/", "│   └── index.ts", "└── README.md"];
+
+/** 1 行目と同じ罫線の index.ts の行を、上の行より 2 階層深くした行 */
+const PLAIN_TOO_DEEP = ["mdmark/", "├── src/", "│   │   └── index.ts", "└── README.md"];
+
+/** 言語と中身からコードブロックの行を作る */
+const fence = (language: string, lines: string[]) => [
+  "```" + language,
+  ...lines,
+  "```",
+  "",
+];
+
+// 罫線の行が 2 行以上の言語 text と言語なしのコードブロックをファイルツリーにする（正常系）
+test("test_build_plain_file_trees", () => {
+  // 準備
+  const markdown = [
+    ...fence("text", PLAIN_TREE),
+    ...fence("", ["src/", "|-- index.ts", "`-- parts/"]),
+    ...fence("text", ["└── index.js"]),
+    jsonMark("code", { tree_warning: false }),
+    "",
+    ...fence("text", PLAIN_TREE),
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(matches(html, /<div class="mdmark-tree"/g)).toHaveLength(2);
+  expect(html).toContain('data-tree-language="text"');
+  expect(html).toContain('data-tree-language=""');
+  expect(html).toContain("└── index.js");
+  expect(matches(html, /<pre/g)).toHaveLength(2);
+  expect(html).not.toContain("mdmark-syntax-warning");
+});
+
+// 罫線を読み込めない行を持つ言語 text のコードブロック（異常系）
+test("test_build_plain_file_trees_when_unreadable", () => {
+  // 準備
+  const markdown = fence("text", PLAIN_TOO_DEEP).join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(matches(html, /mdmark-syntax-warning"/g)).toHaveLength(1);
+  expect(html).toContain("3 行目");
+  expect(html).not.toContain('<div class="mdmark-tree"');
+  expect(html.indexOf("<pre")).toBeGreaterThan(
+    html.indexOf("mdmark-syntax-warning"),
+  );
+});
+
+// mermaid・csv・map の範囲・code がオフの文書はファイルツリーにしない（正常系）
+test("test_build_plain_file_trees_when_excluded", () => {
+  // 準備
+  const excluded = [
+    ...fence("mermaid", PLAIN_TREE),
+    ...fence("csv", PLAIN_TREE),
+    "<!-- map -->",
+    "",
+    ...fence("mermaid", ["flowchart LR", ...PLAIN_TREE.map((line) => `%% ${line}`), "  A --> B"]),
+    "<!-- /map -->",
+    "",
+  ].join("\n");
+  const codeOff = [
+    jsonMark("features", { code: false }),
+    "",
+    ...fence("text", PLAIN_TREE),
+  ].join("\n");
+  // 実行
+  const results = [renderDoc(excluded).html, renderDoc(codeOff).html];
+  // 検証
+  for (const html of results) {
+    expect(html).not.toContain('<div class="mdmark-tree"');
+    expect(html).not.toContain("罫線のフォルダ構成");
+  }
+});

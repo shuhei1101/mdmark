@@ -61,3 +61,23 @@ test("test_architecture_to_flowchart", async () => {
   expect(chart.edges.find((item) => item.id === "r1")?.from).toBe("web");
   expect(overrides.hub?.size).toEqual({ w: 16, h: 16 });
 });
+
+// mermaid の公式の記法の例の align と接頭辞のアイコンを読み取る（正常系）
+test("test_parse_architecture_when_mermaid_syntax", async () => {
+  // 準備
+  const { parseArchitecture } = await loadArch();
+  const source = [
+    "architecture-beta",
+    "  group api(logos:aws-lambda)[API]",
+    "  service db(logos:aws-aurora)[Database] in api",
+    "  service s1(server)[S1]",
+    "  align row db s1",
+  ].join("\n");
+  // 実行
+  const diagram = parseArchitecture(source);
+  const db = diagram.services.find((service) => service.id === "db");
+  // 検証
+  expect(diagram.problems).toEqual([]);
+  expect(db).toMatchObject({ parent: "api", icon: undefined });
+  expect(diagram.aligns).toContainEqual({ axis: "row", ids: ["db", "s1"] });
+});

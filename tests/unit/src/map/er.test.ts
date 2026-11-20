@@ -136,3 +136,51 @@ test("test_er_to_flowchart", async () => {
     "r5",
   ]);
 });
+
+// mermaid の公式の記法の例の ER 図の行を読み取る（正常系）
+test("test_parse_er_diagram_when_mermaid_syntax", async () => {
+  // 準備
+  const { parseErDiagram } = await loadEr();
+  const source = [
+    "erDiagram",
+    "  direction LR",
+    '  "This ❤ Unicode"',
+    "  CAR 1 to zero or more NAMED-DRIVER : allows",
+    '  a["Customer Account"] {',
+    "    string email",
+    "  }",
+    "  subgraph id1 [title 1]",
+    "    subgraph inner",
+    "      PERSON",
+    "    end",
+    "  end",
+    "  id1x||--||id2 : label",
+    "  PERSON:::foo ||--|| CAR : owns",
+    "  classDef foo stroke:#f00",
+    "  style id2 fill:#f9f",
+  ].join("\n");
+  // 実行
+  const diagram = parseErDiagram(source);
+  // 検証
+  expect(diagram.problems).toEqual([]);
+  expect(diagram.tables.map((table) => table.name)).toContain(
+    "This ❤ Unicode",
+  );
+  const allows = diagram.relations.find(
+    (relation) => relation.label === "allows",
+  );
+  expect(allows).toMatchObject({
+    from: "CAR",
+    to: "NAMED-DRIVER",
+    fromCardinality: "1",
+    toCardinality: "0..n",
+  });
+  expect(diagram.tables.find((table) => table.name === "a")?.label).toBe(
+    "Customer Account",
+  );
+  expect(diagram.groups.find((group) => group.id === "id1")?.title).toBe(
+    "title 1",
+  );
+  expect(diagram.styles.nodes.PERSON?.stroke).toBe("#f00");
+  expect(diagram.styles.nodes.id2?.fill).toBe("#f9f");
+});
