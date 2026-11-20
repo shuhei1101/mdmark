@@ -16,6 +16,7 @@
 | [文書を純粋なMarkdownにする](./IF-472-48.ts.yaml) | 画面を持たずに mdmark の文書を純粋な Markdown にする（toPureMarkdown） |
 | [文書をMarkdownに書き出す](./IF-472-49.ts.yaml) | 文書の作成者が、文書を純粋な Markdown と SVG のファイルに書き出す（mdmark export-markdown） |
 | [文書をMarkdownに書き出す](./IF-472-50.ts.yaml) | mdmark export-markdown と同じ処理で、文書を純粋な Markdown と SVG に書き出してパスを返却する（MCP の export_markdown） |
+| [書き出す文書を描く](./IF-472-51.ts.yaml) | 書き出しが、文書を mount の opts.rendered に指定する描いた結果と純粋な Markdown にする（renderForMount） |
 | [拡張を登録する](./IF-472-32.ts.yaml) | 利用側が、自分のマーカーとそのマーカーを描くモジュールの読み込み方を登録する（registerExtension） |
 | [部品のモジュールを指定する](./IF-655-1.ts.yaml) | 利用側のページが、map・ビュー・コメントの部品のモジュールを返却する関数を指定する（setPartModuleLoader） |
 | [参照の表を作る](./IF-472-31.ts.yaml) | 索引と全ての文書の本文から、被参照と用語集の表の用語をまとめた参照の表を作る（collectReferences） |

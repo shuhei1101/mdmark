@@ -10,7 +10,7 @@ import type {
 /** 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさ（px）・行の高さの倍率・余白（px）。`padRight` は map のノードが右上の i と開閉の山形の分だけ右に空ける幅、`padPill` は種類の形状が `pill` のノードの左の余白、`border` はノードの枠線の幅。CSS を修正したときは合わせて修正する */
 export const LABEL_METRICS = {
   kindSize: 11,
-  nameSize: 14,
+  nameSize: 13,
   subSize: 12,
   lineHeight: 1.4,
   padY: 6,
@@ -41,10 +41,12 @@ export const MAP_LAYOUT = {
   minGap: 16,
   /** 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる） */
   usedCost: 60,
-  /** 同じ区間を通る線を並べるときの線の間 */
-  wireGap: 8,
+  /** 同じ区間を通る線を並べるときの線の間と、同じ辺に並べる線の端の間 */
+  wireGap: 16,
   /** 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ） */
   closedCount: 17,
+  /** 閉じたグループの二重の枠線の上下の幅の和（CSS の `.map-closed-group` の `border: 3px double`） */
+  closedBorder: 6,
 };
 
 /** 見せ方（中へ入る・閉じる） */
@@ -400,11 +402,14 @@ const fadedIdsOf = (
   return fadedIds;
 };
 
-/** 閉じたグループの高さ（タイトルの行の下に数の行が収まる高さ以上） */
+/** 閉じたグループの高さ（タイトルの行の下に数の行が、二重の枠線の内側に収まる高さ以上） */
 const closedGroupHeight = (estimated: number): number =>
   Math.max(
     estimated,
-    MAP_LAYOUT.groupTitle + MAP_LAYOUT.closedCount + LABEL_METRICS.padY,
+    MAP_LAYOUT.groupTitle +
+      MAP_LAYOUT.closedCount +
+      LABEL_METRICS.padY +
+      MAP_LAYOUT.closedBorder,
   );
 
 /** 描く木の葉（ノードか閉じたグループ） */
@@ -1856,7 +1861,7 @@ const segmentOf = (
   };
 };
 
-/** 区間が、ほかの線と同じ点から出る・入る線の端の区間か */
+/** 区間が、ほかの線と同じ点から出る・入る線の端の区間か（`spreadWireEnds` で並べた端は同じ点を持たないため、並べられなかった端だけが当たる） */
 const isSharedEnd = (
   points: Array<[number, number]>,
   context: { index: number; shared: Map<string, number> },
@@ -2051,4 +2056,138 @@ export const separateWires = (
     ),
     crowded,
   };
+};
+
+type WireEnd = {
+  wire: number;
+  head: boolean;
+  /** 辺に沿う向き（0 は横の辺で x、1 は縦の辺で y） */
+  axis: 0 | 1;
+  /** 線の向こう側の点の、辺に沿った座標 */
+  order: number;
+};
+
+/** 端の点を辺に持つノードの、辺に沿った始点と長さ（見つからなければ undefined） */
+const sideSpanOf = (
+  nodes: MapLayout["nodes"],
+  end: [number, number],
+  axis: 0 | 1,
+): { start: number; length: number } | undefined => {
+  const cross = axis === 0 ? 1 : 0;
+  const node = nodes.find((rect) => {
+    const start = axis === 0 ? rect.x : rect.y;
+    const length = axis === 0 ? rect.w : rect.h;
+    const edgeStart = cross === 1 ? rect.y : rect.x;
+    const edgeSize = cross === 1 ? rect.h : rect.w;
+    const onEdge =
+      end[cross] === edgeStart || end[cross] === edgeStart + edgeSize;
+    return onEdge && end[axis] >= start && end[axis] <= start + length;
+  });
+  if (!node) return undefined;
+  return axis === 0
+    ? { start: node.x, length: node.w }
+    : { start: node.y, length: node.h };
+};
+
+/** 端（と、2 点だけの線は中ほどで折った端の側）を、辺に沿って target へ動かす */
+const moveEnd = (
+  points: Array<[number, number]>,
+  end: { head: boolean; axis: 0 | 1; target: number },
+): Array<[number, number]> => {
+  const { head, axis, target } = end;
+  const ordered = head ? points : [...points].reverse();
+  const [first, second] = ordered as [[number, number], [number, number]];
+  if (ordered.length === 2) {
+    const cross = axis === 0 ? 1 : 0;
+    const middle = (first[cross] + second[cross]) / 2;
+    const bendNear: [number, number] = [first[0], first[1]];
+    bendNear[axis] = target;
+    bendNear[cross] = middle;
+    const bendFar: [number, number] = [second[0], second[1]];
+    bendFar[cross] = middle;
+    const moved: [number, number] = [first[0], first[1]];
+    moved[axis] = target;
+    const result: Array<[number, number]> = [moved, bendNear, bendFar, second];
+    return head ? result : result.reverse();
+  }
+  const result = ordered.map((point): [number, number] => [point[0], point[1]]);
+  (result[0] as [number, number])[axis] = target;
+  (result[1] as [number, number])[axis] = target;
+  return head ? result : result.reverse();
+};
+
+/** 線の端の向こう側の点（3 つ目の点、無ければもう片方の端） */
+const farPointOf = (
+  points: Array<[number, number]>,
+  head: boolean,
+): [number, number] => {
+  if (points.length >= 3)
+    return (head ? points[2] : points.at(-3)) as [number, number];
+  return (head ? points.at(-1) : points[0]) as [number, number];
+};
+
+/** 線の両端を、端の点と辺の向きごとに集める */
+const wireEndGroups = (wires: PlacedWire[]): WireEnd[][] => {
+  const groups = new Map<string, WireEnd[]>();
+  wires.forEach(({ points }, wire) => {
+    if (points.length < 2) return;
+    for (const head of [true, false]) {
+      const end = (head ? points[0] : points.at(-1)) as [number, number];
+      const next = (head ? points[1] : points.at(-2)) as [number, number];
+      if (end[0] === next[0] && end[1] === next[1]) continue;
+      // 端の区間が縦なら横の辺（x に沿って並べる）、横なら縦の辺
+      const axis: 0 | 1 = end[0] === next[0] ? 0 : 1;
+      const order = farPointOf(points, head)[axis];
+      const key = `${Math.round(end[0])},${Math.round(end[1])}:${axis}`;
+      groups.set(key, [
+        ...(groups.get(key) ?? []),
+        { wire, head, axis, order },
+      ]);
+    }
+  });
+  return [...groups.values()];
+};
+
+/** 並べた端の位置。`wireGap` の間隔が辺に収まらないときは、辺の長さを端の数で等分した位置 */
+const endTargetOf = (context: {
+  origin: number;
+  span: { start: number; length: number } | undefined;
+  index: number;
+  count: number;
+}): number => {
+  const { origin, span, index, count } = context;
+  const gap = MAP_LAYOUT.wireGap;
+  if (span !== undefined && gap * count > span.length)
+    return span.start + (span.length * (index + 0.5)) / count;
+  return origin + (index - (count - 1) / 2) * gap;
+};
+
+/** 同じノードの同じ辺の同じ点に出入りする 2 本以上の線の端を、向こう側の点の並びの順に wireGap 間隔で辺に沿って並べる（辺に収まらないときは辺の長さを等分する） */
+export const spreadWireEnds = (layout: MapLayout): MapLayout["wires"] => {
+  const wires = layout.wires.map((wire) => ({
+    ...wire,
+    points: wire.points.map((point): [number, number] => [point[0], point[1]]),
+  }));
+  for (const ends of wireEndGroups(wires)) {
+    if (ends.length < 2) continue;
+    const sorted = [...ends].sort((a, b) => a.order - b.order);
+    const first = sorted[0] as WireEnd;
+    const points = (wires[first.wire] as PlacedWire).points;
+    const origin = (first.head ? points[0] : points.at(-1)) as [number, number];
+    const span = sideSpanOf(layout.nodes, origin, first.axis);
+    sorted.forEach((end, index) => {
+      const wire = wires[end.wire] as PlacedWire;
+      wire.points = moveEnd(wire.points, {
+        head: end.head,
+        axis: end.axis,
+        target: endTargetOf({
+          origin: origin[first.axis],
+          span,
+          index,
+          count: sorted.length,
+        }),
+      });
+    });
+  }
+  return wires;
 };

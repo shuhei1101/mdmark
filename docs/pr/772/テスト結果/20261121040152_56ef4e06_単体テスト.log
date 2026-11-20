@@ -1,0 +1,432 @@
+$ npx vitest run --project "unit*" tests/unit/src/map/layout.test.ts tests/unit/src/map/map.part.test.ts tests/unit/src/map/mindmap-layout.test.ts tests/unit/src/map/mindmap-view.browser.test.ts tests/unit/src/mount.browser.test.ts tests/unit/vscode/src/export/html.test.ts tests/unit/vscode/src/export/dist.test.ts
+# Red（実装の前）。fail は全て実装が無いことによる（spreadWireEnds・renderForMount・dist.ts の未実装、wireGap 8px、押せる範囲が path 1 本、plain の曲線が下線の高さ、名前の文字で選ばない、buildExportHtml が markdown を埋める）
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-map-diagram-and-export-improvements
+
+ ❯ |unit| tests/unit/vscode/src/export/html.test.ts (9 tests | 2 failed) 678ms
+   × test_build_export_html 4ms
+   × test_build_export_html_when_rendered 1ms
+ ❯ |unit| tests/unit/src/map/mindmap-layout.test.ts (5 tests | 1 failed) 233ms
+   × test_layout_mindmap_when_curves 9ms
+ ❯ |unit| tests/unit/src/map/layout.test.ts (42 tests | 6 failed) 319ms
+   × test_separate_wires 6ms
+   × test_separate_wires_when_grid_line 1ms
+   × test_separate_wires_when_crowded 1ms
+   × test_spread_wire_ends 1ms
+   × test_spread_wire_ends_when_short_side 0ms
+   × test_spread_wire_ends_when_single 0ms
+ ❯ |unit| tests/unit/src/map/map.part.test.ts (68 tests | 9 failed) 883ms
+   × test_render_map_flow_when_keyboard 11ms
+   × test_render_map_flow_when_wire_hit_segments 11ms
+   × test_render_map_sequence_when_wire_hit_segments 54ms
+   × test_render_map_sequence_when_self_message 1ms
+   × test_render_map_sequence_when_notes 1ms
+   × test_render_map_class_diagram 19ms
+   × test_render_map_class_diagram_when_hints_off 2ms
+   × test_render_map_class_diagram_when_linked 2ms
+   × test_render_map_c4_diagram 15ms
+ ❯ |unit| tests/unit/vscode/src/export/dist.test.ts (4 tests | 4 failed) 2307ms
+   × test_load_dist_renderer 606ms
+   × test_load_dist_renderer_when_unavailable 17ms
+   × test_load_dist_renderer_when_unsupported 3ms
+   × test_extension_bundle_keeps_dynamic_import 1680ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/mindmap-view.browser.test.ts (9 tests | 1 failed) 415ms
+   × test_attach_map_mindmap_when_selected 117ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (56 tests | 2 failed) 2246ms
+   × test_render_for_mount 89ms
+   × test_render_for_mount_when_not_string 48ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_render_for_mount
+TypeError: renderForMount is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_render_for_mount.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:1805:44
+    1803|   ].join("\n");
+    1804|   // 実行
+    1805|   const { rendered, pureMarkdown } = await renderForMount(markdown);
+       |                                            ^
+    1806|   // 検証
+    1807|   expect(Object.keys(rendered).sort()).toEqual([
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=e9e58cb6:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_render_for_mount_when_not_string
+TypeError: renderForMount is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_render_for_mount_when_not_string.png
+
+ ❯ tests/unit/src/mount.browser.test.ts:1828:5
+    1826|   // 実行・検証
+    1827|   await expect(
+    1828|     renderForMount(null as unknown as string),
+       |     ^
+    1829|   ).rejects.toBeInstanceOf(TypeError);
+    1830| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=e9e58cb6:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/mindmap-view.browser.test.ts > test_attach_map_mindmap_when_selected
+AssertionError: expected [ '体制' ] to deeply equal []
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mindmap-view.browser.test.ts/test_attach_map_mindmap_when_selected.png
+
+- Expected
++ Received
+
+- []
++ [
++   "体制",
++ ]
+
+ ❯ tests/unit/src/map/mindmap-view.browser.test.ts:142:28
+    140|     itemOf(root, key)?.querySelector<HTMLElement>(".mdmark-diagram-nod…
+    141|   nameOf("体制")?.click();
+    142|   expect(saved().selected).toEqual([]);
+       |                            ^
+    143|   // 実行・検証: 名前の文字で選ぶ
+    144|   nameOf("目的")?.click();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=e9e58cb6:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_separate_wires
+AssertionError: expected [ 132, 140, 148 ] to deeply equal [ 124, 140, 156 ]
+
+- Expected
++ Received
+
+  [
+-   124,
++   132,
+    140,
+-   156,
++   148,
+  ]
+
+ ❯ tests/unit/src/map/layout.test.ts:681:36
+    679|   const result = separateWires(layout);
+    680|   // 検証
+    681|   expect(corridorXs(result.wires)).toEqual([124, 140, 156]);
+       |                                    ^
+    682|   expect(totalOverlap(result.wires)).toBe(0);
+    683|   for (const wire of result.wires) expect(orthogonal(wire.points)).toB…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_separate_wires_when_grid_line
+AssertionError: expected [ 132, 140, 148 ] to deeply equal [ 124, 140, 156 ]
+
+- Expected
++ Received
+
+  [
+-   124,
++   132,
+    140,
+-   156,
++   148,
+  ]
+
+ ❯ tests/unit/src/map/layout.test.ts:697:36
+    695|   const result = separateWires(layout);
+    696|   // 検証
+    697|   expect(corridorXs(result.wires)).toEqual([124, 140, 156]);
+       |                                    ^
+    698|   for (const wire of result.wires) {
+    699|     for (const [k, point] of wire.points.slice(1).entries()) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_separate_wires_when_crowded
+AssertionError: expected +0 to be 16 // Object.is equality
+
+- Expected
++ Received
+
+- 16
++ 0
+
+ ❯ tests/unit/src/map/layout.test.ts:719:19
+    717|   const after = separateWires(widened).crowded;
+    718|   // 検証
+    719|   expect(crowded).toBe(16);
+       |                   ^
+    720|   expect(after).toBe(0);
+    721| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_spread_wire_ends
+TypeError: spreadWireEnds is not a function
+ ❯ tests/unit/src/map/layout.test.ts:905:18
+    903|   const layout = layoutOf([{ id: "N", x: 0, y: 100, w: 120, h: 40 }], …
+    904|   // 実行
+    905|   const result = spreadWireEnds(layout);
+       |                  ^
+    906|   // 検証
+    907|   const endOf = (id: string) =>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_spread_wire_ends_when_short_side
+TypeError: spreadWireEnds is not a function
+ ❯ tests/unit/src/map/layout.test.ts:938:18
+    936|   const layout = layoutOf([{ id: "N", x: 0, y: 0, w: 48, h: 40 }], wir…
+    937|   // 実行
+    938|   const result = spreadWireEnds(layout);
+       |                  ^
+    939|   // 検証
+    940|   const starts = result.map((wire) => (wire.points[0] as Point)[0]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_spread_wire_ends_when_single
+TypeError: spreadWireEnds is not a function
+ ❯ tests/unit/src/map/layout.test.ts:958:18
+    956|   const layout = layoutOf([{ id: "N", x: 0, y: 100, w: 120, h: 40 }], …
+    957|   // 実行
+    958|   const result = spreadWireEnds(layout);
+       |                  ^
+    959|   // 検証
+    960|   expect(result.map((wire) => wire.points)).toEqual(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_keyboard
+AssertionError: expected 0 to be greater than 0
+ ❯ tests/unit/src/map/map.part.test.ts:78:25
+     76|   }
+     77|   const groups = matches(html, /<g class="map-wire-hit"[\s\S]*?<\/g>/g…
+     78|   expect(groups.length).toBeGreaterThan(0);
+       |                         ^
+     79|   for (const group of groups) {
+     80|     const bands = matches(group, /<rect class="map-wire-hit-segment"[^…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_wire_hit_segments
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/map/map.part.test.ts:134:18
+    132|     /<g class="map-wire-hit" data-wire="[^"]+"[\s\S]*?<\/g>/g,
+    133|   );
+    134|   expect(groups).toHaveLength(1);
+       |                  ^
+    135|   const bands = matches(
+    136|     groups[0] ?? "",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_sequence_when_wire_hit_segments
+AssertionError: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ tests/unit/src/map/map.part.test.ts:199:17
+    197|     "";
+    198|   const bands = matches(group, /<rect class="map-wire-hit-segment"[^>]…
+    199|   expect(bands).toHaveLength(3);
+       |                 ^
+    200|   for (const band of bands) {
+    201|     expect(band).not.toContain("tabindex");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_sequence_when_self_message
+AssertionError: expected '<svg class="mdmark-diagram-wires" wid…' to match /…/g>)[\s\S])*data-tip-owner="message:1"
+
+- Expected:
+/<g class="map-wire-hit" data-message="1"[^>]*>(?:(?!<\/g>)[\s\S])*data-tip-owner="message:1"/
+
++ Received:
+"<svg class=\"mdmark-diagram-wires\" width=\"443\" height=\"296\" aria-hidden=\"true\"><defs><marker id=\"map-seq-head-filled\" class=\"mdmark-diagram-arrowhead\" data-head=\"filled\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M0,0 L9,4.5 L0,9 z\" style=\"fill:var(--mdmark-color-diagram-line)\"></path></marker><marker id=\"map-seq-head-cross\" class=\"mdmark-diagram-arrowhead\" data-head=\"cross\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M1,1 L8,8 M8,1 L1,8\" fill=\"none\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\"></path></marker><marker id=\"map-seq-head-async\" class=\"mdmark-diagram-arrowhead\" data-head=\"async\" viewBox=\"0 0 9 9\" refX=\"8.5\" refY=\"4.5\" markerWidth=\"9\" markerHeight=\"9\" markerUnits=\"userSpaceOnUse\" orient=\"auto-start-reverse\"><path d=\"M1,1 L8,4.5 L1,8\" fill=\"none\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\"></path></marker></defs><g class=\"map-seq-under\"></g><line class=\"map-lifeline-hit\" data-lifeline=\"node\" x1=\"92\" y1=\"72\" x2=\"92\" y2=\"284\"></line><line class=\"map-lifeline-hit\" data-lifeline=\"am\" x1=\"272\" y1=\"72\" x2=\"272\" y2=\"284\"></line><line class=\"mdmark-diagram-lifeline\" data-lifeline=\"node\" x1=\"92\" y1=\"72\" x2=\"92\" y2=\"284\"></line><line class=\"mdmark-diagram-lifeline\" data-lifeline=\"am\" x1=\"272\" y1=\"72\" x2=\"272\" y2=\"284\"></line><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-message=\"0\" d=\"M92 116H271\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-seq-head-filled)\"></path><path class=\"map-wire-hit\" data-message=\"0\" d=\"M92 116H271\"></path><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-message=\"1\" d=\"M92 160H132V176H96\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-seq-head-filled)\"></path><path class=\"map-wire-hit\" data-message=\"1\" data-tip-owner=\"message:1\" d=\"M92 160H132V176H96\"></path><path class=\"mdmark-diagram-wire\" data-line=\"map\" data-message=\"2\" d=\"M92 220H271\" stroke-width=\"1.5\" style=\"stroke:var(--mdmark-color-diagram-line)\" marker-end=\"url(#map-seq-head-filled)\"></path><path class=\"map-wire-hit\" data-message=\"2\" d=\"M92 220H271\"></path><g class=\"map-seq-above\"></g><g class=\"map-packets\" aria-hidden=\"true\"></g></svg><span class=\"mdmark-diagram-label\" data-message=\"0\" style=\"left:182px;top:102px\">request_job</span><span class=\"mdmark-diagram-label\" data-message=\"1\" style=\"left:112px;top:144px\">完了ファイルを待つ</span><span class=\"mdmark-diagram-label\" data-message=\"2\" style=\"left:182px;top:206px\">get（ジョブ）</span><div class=\"mdmark-diagram-seq-heads\" style=\"width:443px;height:80px\"><div class=\"mdmark-diagram-node map-participant map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"node\" data-participant=\"node\" style=\"left:17px;top:16px;width:150px\"><span class=\"mdmark-diagram-node-hit\" role=\"button\" tabindex=\"0\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowRight\" aria-label=\"動画作成ノード\"></span><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">動画作成ノード</span></div><div class=\"mdmark-diagram-node map-participant map-kinded\" data-kind=\"map\" data-shape=\"rounded\" data-node=\"am\" data-participant=\"am\" style=\"left:197px;top:16px;width:150px\"><span class=\"mdmark-diagram-node-hit\" role=\"button\" tabindex=\"0\" aria-keyshortcuts=\"Enter Space Alt+ArrowLeft Alt+ArrowRight\" aria-label=\"aituber の MCP\"></span><span class=\"mdmark-diagram-node-kind is-empty\"></span><span class=\"mdmark-diagram-node-name\">aituber の MCP</span></div></div>"
+
+ ❯ tests/unit/src/map/map.part.test.ts:685:16
+    683|   ).toBeLessThanOrEqual(1);
+    684|   // 説明を持つ自分へのメッセージの線の押せる帯は、ツールチップの持ち主になる
+    685|   expect(html).toMatch(
+       |                ^
+    686|     /<g class="map-wire-hit" data-message="1"[^>]*>(?:(?!<\/g>)[\s\S])…
+    687|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_sequence_when_notes
+AssertionError: expected [] to have a length of 1 but got +0
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ tests/unit/src/map/map.part.test.ts:741:18
+    739|     (hit) => hit.includes("data-tip-owner"),
+    740|   );
+    741|   expect(owners).toHaveLength(1);
+       |                  ^
+    742|   expect(owners[0]).toContain('data-message="1"');
+    743|   const owner = owners[0]?.match(/data-tip-owner="([^"]+)"/)?.[1] ?? "…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_class_diagram
+TypeError: spreadWireEnds is not a function
+ ❯ classArgs tests/unit/src/map/map.part.test.ts:1602:33
+    1600|   );
+    1601|   return {
+    1602|     layout: { ...layout, wires: spreadWireEnds(layout) },
+       |                                 ^
+    1603|     kinds: {},
+    1604|     lines: {},
+ ❯ tests/unit/src/map/map.part.test.ts:1622:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_class_diagram_when_hints_off
+TypeError: spreadWireEnds is not a function
+ ❯ classArgs tests/unit/src/map/map.part.test.ts:1602:33
+    1600|   );
+    1601|   return {
+    1602|     layout: { ...layout, wires: spreadWireEnds(layout) },
+       |                                 ^
+    1603|     kinds: {},
+    1604|     lines: {},
+ ❯ tests/unit/src/map/map.part.test.ts:1648:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_class_diagram_when_linked
+TypeError: spreadWireEnds is not a function
+ ❯ classArgs tests/unit/src/map/map.part.test.ts:1602:33
+    1600|   );
+    1601|   return {
+    1602|     layout: { ...layout, wires: spreadWireEnds(layout) },
+       |                                 ^
+    1603|     kinds: {},
+    1604|     lines: {},
+ ❯ tests/unit/src/map/map.part.test.ts:1661:22
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_c4_diagram
+TypeError: spreadWireEnds is not a function
+ ❯ tests/unit/src/map/map.part.test.ts:1914:33
+    1912|       .map((item) => item.id),
+    1913|     reversed,
+    1914|     layout: { ...layout, wires: spreadWireEnds(layout) },
+       |                                 ^
+    1915|     kinds: MAP_C4_KINDS,
+    1916|     lines: {},
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯
+
+ FAIL  |unit| tests/unit/src/map/mindmap-layout.test.ts > test_layout_mindmap_when_curves
+AssertionError: expected 100 to be close to 80, received difference is 20, but expected 0.005
+ ❯ tests/unit/src/map/mindmap-layout.test.ts:123:25
+    121|   );
+    122|   expect(second.end[0]).toBeCloseTo(grow.x);
+    123|   expect(second.end[1]).toBeCloseTo(middle(grow));
+       |                         ^
+    124| });
+    125|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/dist.test.ts > test_load_dist_renderer
+Error: Cannot find module '/vscode/src/export/dist.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-map-diagram-and-export-improvements/tests/unit/vscode/src/export/dist.test.ts
+ ❯ tests/unit/vscode/src/export/dist.test.ts:50:32
+     48| test("test_load_dist_renderer", async () => {
+     49|   // 準備
+     50|   const { loadDistRenderer } = await loadDist();
+       |                                ^
+     51|   const storageDir = await storageOf();
+     52|   const fetchText = vi.fn(async (_url: string) => SUPPORTED);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/dist.test.ts > test_load_dist_renderer_when_unavailable
+Error: Cannot find module '/vscode/src/export/dist.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-map-diagram-and-export-improvements/tests/unit/vscode/src/export/dist.test.ts
+ ❯ tests/unit/vscode/src/export/dist.test.ts:78:32
+     76| test("test_load_dist_renderer_when_unavailable", async () => {
+     77|   // 準備
+     78|   const { loadDistRenderer } = await loadDist();
+       |                                ^
+     79|   const storageDir = await storageOf();
+     80|   const fetchText = vi.fn(async (_url: string) => {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/25]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/dist.test.ts > test_load_dist_renderer_when_unsupported
+Error: Cannot find module '/vscode/src/export/dist.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-map-map-diagram-and-export-improvements/tests/unit/vscode/src/export/dist.test.ts
+ ❯ tests/unit/vscode/src/export/dist.test.ts:100:32
+     98| test("test_load_dist_renderer_when_unsupported", async () => {
+     99|   // 準備
+    100|   const { loadDistRenderer } = await loadDist();
+       |                                ^
+    101|   const storageDir = await storageOf();
+    102|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/25]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/dist.test.ts > test_extension_bundle_keeps_dynamic_import
+AssertionError: expected -1 to be greater than -1
+ ❯ tests/unit/vscode/src/export/dist.test.ts:152:19
+    150|       /(?:async function|var|const|let) loadDistRenderer\b/,
+    151|     );
+    152|     expect(start).toBeGreaterThan(-1);
+       |                   ^
+    153|     const rest = bundle.slice(start + 1);
+    154|     const end = rest.search(/\n(?:async function|function|var|const|le…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/25]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/html.test.ts > test_build_export_html
+TypeError: Cannot read properties of undefined (reading 'html')
+ ❯ tests/unit/vscode/src/export/html.test.ts:87:38
+     85|   expect(json).not.toBeNull();
+     86|   expect(json?.[1]).not.toContain("<");
+     87|   expect(JSON.parse(json?.[1] ?? "").rendered.html).toBe(
+       |                                      ^
+     88|     "<h1>タイトル</h1></script>",
+     89|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/25]⎯
+
+ FAIL  |unit| tests/unit/vscode/src/export/html.test.ts > test_build_export_html_when_rendered
+TypeError: Cannot read properties of undefined (reading 'html')
+ ❯ tests/unit/vscode/src/export/html.test.ts:240:24
+    238|   expect(json).not.toContain("<");
+    239|   const data = JSON.parse(json);
+    240|   expect(data.rendered.html).toBe("<p>a</script><b>b</b></p>");
+       |                        ^
+    241|   expect(data.pureMarkdown).toBe("a");
+    242|   expect(data).not.toHaveProperty("markdown");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/25]⎯
+
+
+ Test Files  7 failed (7)
+      Tests  25 failed | 168 passed (193)
+   Start at  04:01:18
+   Duration  5.44s (tests 46%, transform 24%, worker 24%, import 6%)
+

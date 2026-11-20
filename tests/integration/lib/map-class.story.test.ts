@@ -211,6 +211,12 @@ test("test_accessibility", async () => {
       .locator('[data-node="基本図形"] button.map-class-note')
       .getAttribute("aria-label"),
   ).resolves.toBe("描くの説明");
+  // メンバーの説明のボタンの上のポインターは、ほかのボタンと同じ pointer（help にしない）
+  await expect(
+    page
+      .locator('[data-node="基本図形"] button.map-class-note')
+      .evaluate((button) => getComputedStyle(button).cursor),
+  ).resolves.toBe("pointer");
   await expect(
     page.locator(".map-class-ends").getAttribute("aria-hidden"),
   ).resolves.toBe("true");

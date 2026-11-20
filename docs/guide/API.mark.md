@@ -15,6 +15,7 @@
 | [文書を描く](#文書を描く) | `mount(el, opts)` | 要素の中に Markdown を HTML として描く |
 | [差分の出し方を読み込む](#差分の出し方を読み込む) | `diffModes` | `mount` の `opts.diffMode` に指定できる差分の出し方の一覧を持つ |
 | [文書を HTML 文字列にする](#文書を-html-文字列にする) | `render(markdown, opts)` | 画面を持たずに Markdown を HTML 文字列にする |
+| [書き出す文書を描く](#書き出す文書を描く) | `renderForMount(markdown, opts)` | 画面を持たずに文書を、`mount` の `opts.rendered` と `opts.pureMarkdown` に指定する描いた結果と純粋な Markdown にする |
 | [文書を純粋な Markdown にする](#文書を純粋な-markdown-にする) | `toPureMarkdown(markdown, opts)` | 画面を持たずに mdmark の文書を、mdmark の無い表示で読み取れる純粋な Markdown（GFM と Mermaid）にする |
 | [参照の表を作る](#参照の表を作る) | `collectReferences(input)` | 索引と全ての文書の本文から、文書ごとの被参照と、用語集の表の用語をまとめた参照の表を返却する |
 | [本文の参照を取り出す](#本文の参照を取り出す) | `collectMatches(input)` | 索引と文書の本文から、本文に出た用語・文書の別名の一致を、参照先と本文の位置つきで返却する |
@@ -318,6 +319,53 @@ VS Code のエディタの行番号（0 始まり）とそのまま比べられ�
 外部ライブラリは読み込まず、対応表にあるマーカーと登録した拡張のマーカーは読み込み中のブロックに置き換えて返却する。
 記法のマーカーに読み込めない指定がある箇所には、[記載の警告](./記法.mark.md#記載の警告) を配置する。
 索引が Schema に合わないときも、合わない文書・用語の項目を除いて文字列を返却する。
+
+## 書き出す文書を描く
+
+画面を持たずに文書を、`mount` の `opts.rendered` に指定する描いた結果と、`opts.pureMarkdown` に指定する純粋な Markdown にする。
+DOM を使用しないため、Node の処理でも同じ値を返却する。
+`mdmark export`・`mdmark build` と VS Code 拡張機能の HTML への書き出しが使用し、書き出した HTML は元の Markdown を描かずに起動する。
+
+### リクエスト
+
+```js
+import { mount, renderForMount } from "https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ}/dist/index.js";
+
+const { rendered, pureMarkdown } = await renderForMount(source, { config });
+mount(document.querySelector("main"), { rendered, pureMarkdown, config });
+```
+
+<!-- table: {"kind": "data"} -->
+
+| 引数 | 必須 / 任意 | 説明 |
+| --- | --- | --- |
+| `markdown` | 必須 | 描く Markdown |
+| `opts.config` | 任意 | `render` の `opts.config` と同じ。開いたときに `mount` の `opts.config` に指定する設定と同じものを指定する |
+| `opts.index` | 任意 | `render` の `opts.index` と同じ |
+| `opts.docId` | 任意 | `render` の `opts.docId` と同じ |
+| `opts.references` | 任意 | `render` の `opts.references` と同じ |
+| `opts.aliases` | 任意 | `render` の `opts.aliases` と同じ |
+| `opts.includes` | 任意 | `render` の `opts.includes` と同じ。描いた結果と純粋な Markdown の両方に取り込む |
+| `opts.icons` | 任意 | `render` の `opts.icons` と同じ |
+| `opts.path` | 任意 | `mount` の `opts.path` と同じ |
+
+<!-- /table -->
+
+### レスポンス
+
+| フィールド | 型 | 説明 |
+| --- | --- | --- |
+| `rendered` | `MdmarkRendered` | `mount` の `opts.rendered` に指定する描いた結果。本文の HTML（`html`）・機能のオン・オフ（`features`）・ページの設定（`page`）・`param` と拡張の定義（`paramDefinitions`・`extensionDefinitions`）を持つ |
+| `pureMarkdown` | 文字列 | `toPureMarkdown` の `markdown` と同じ純粋な Markdown |
+
+同じ `markdown`・`opts` には同じ値を返却する。
+外部ライブラリと拡張のマーカーは描かずに場所だけを残し、開いたときに `mount` が描く。
+
+### エラー
+
+| 例外 | 発生条件 |
+| --- | --- |
+| `TypeError` | `markdown` が文字列でない。返却した `Promise` を reject する |
 
 ## 文書を純粋な Markdown にする
 

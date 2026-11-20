@@ -542,6 +542,50 @@ functions:
     refs:
       - IF-472-35#exceptions[TypeError（比較元）]
     status: planned
+  - name: renderForMount
+    title: 書き出す文書を描く
+    container: src/mount.ts
+    kind: 関数
+    scope: public
+    is_async: true
+    summary: 公開関数。`mount` が `opts.markdown` を描くのと同じ処理で描き、`opts.rendered` に指定する描いた結果と純粋な Markdown を返却する
+    args:
+      - name: markdown
+        type: string
+        required: true
+        description: 描く Markdown（文字列でないときは `TypeError` で reject する）
+      - name: opts
+        type: '{ config?: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode>; path?: string }'
+        required: false
+        default: '{}'
+        description: 開いたときに `mount` に指定するのと同じ設定・索引・描く文書の `id`・参照の表・エイリアス・取り込む文書の表・アイコンの形状の表・文書のパス
+    returns:
+      type: 'Promise<{ rendered: MdmarkRendered; pureMarkdown: string }>'
+      description: '`renderDocument` の戻り値のうち `html`・`features`・`page`・`paramDefinitions`・`extensionDefinitions` だけを持つ描いた結果と、`toPureMarkdown` の `markdown`'
+    process: |-
+      1. `resolveConfig` で既定を適用した設定で `renderDocument` を呼ぶ（`index`・`docId`・`references`・`aliases`・`includes`・`icons`・`path` はそのまま指定する）
+      2. `toPureMarkdown` を同じ `config`・`index`・`docId`・`includes` で呼ぶ
+      3. 手順 1 の戻り値の 5 つの項目と、手順 2 の `markdown` を返却する
+    callees:
+      - MOD-472-304#functions[resolveConfig]
+      - MOD-472-212#functions[renderDocument]
+      - MOD-472-361#functions[toPureMarkdown]
+    refs:
+      - IF-472-51#
+    unit_tests:
+      - name: test_render_for_mount
+        case: 正常
+        summary: 描いた結果の 5 つの項目と純粋な Markdown を返却し、元の Markdown のマーカーを残さない
+        condition: '`<!-- 原本だけの目印 -->`・`<!-- features: {"print": false} -->`・表のマーカー・`param` の範囲を持つ Markdown'
+        mock: なし
+        expected: '`rendered` のキーが `html`・`features`・`page`・`paramDefinitions`・`extensionDefinitions` だけで、`features.print` が `false`、`paramDefinitions` が 1 件。`rendered.html` と `pureMarkdown` に `原本だけの目印`・`<!-- table` が無い'
+      - name: test_render_for_mount_when_not_string
+        case: 異常
+        summary: 文字列でない Markdown は TypeError
+        condition: '`markdown` に `null`'
+        mock: なし
+        expected: 返却した Promise が `TypeError` で reject される
+    status: planned
 lead: '文書を要素に描く公開関数と描いた要素の記録を受け持ち、mount の描く流れを変えるときに参照する。'
 tags:
   - name: action:描画

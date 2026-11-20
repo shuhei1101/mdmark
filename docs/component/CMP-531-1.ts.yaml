@@ -139,6 +139,7 @@ accessibility:
   - 列の名前の文字は選んでコピーできる
   - 列の開閉のボタンと列の説明のボタンは、押せる大きさを 24px 四方にする
   - 行が増える旨のマーカーは色だけでなく「×n」の文字で示す
+  - 列の説明のボタン（`.map-er-note`）の上のポインターの形状は、ほかのボタンと同じ `pointer` にし、`help` にしない
 refs:
   - IF-472-35#constraints[map の ER 図]
 status: planned

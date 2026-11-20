@@ -12,6 +12,18 @@ const BUILD_OPTIONS = {
   extensions: [] as string[],
 };
 
+/** 描いた結果と純粋な Markdown（`buildExportHtml` の `rendered`・`pureMarkdown`） */
+const payloadOf = (html: string, pureMarkdown = "# タイトル") => ({
+  rendered: {
+    html,
+    features: {},
+    page: {},
+    paramDefinitions: [],
+    extensionDefinitions: [],
+  },
+  pureMarkdown,
+});
+
 // 空・相対パス・絶対パスのそれぞれで書き出す先を決める（正常系）
 test("test_resolve_export_path", async () => {
   // 準備
@@ -61,7 +73,7 @@ test("test_build_export_html", async () => {
   // 実行
   const html = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# タイトル\n</script>",
+    ...payloadOf("<h1>タイトル</h1></script>"),
     print: false,
   });
   // 検証
@@ -72,7 +84,9 @@ test("test_build_export_html", async () => {
   );
   expect(json).not.toBeNull();
   expect(json?.[1]).not.toContain("<");
-  expect(JSON.parse(json?.[1] ?? "").markdown).toBe("# タイトル\n</script>");
+  expect(JSON.parse(json?.[1] ?? "").rendered.html).toBe(
+    "<h1>タイトル</h1></script>",
+  );
   const module = html.match(
     /<script\b[^>]*type="module"[^>]*>([\s\S]*?)<\/script>/,
   );
@@ -88,7 +102,7 @@ test("test_build_export_html_when_print", async () => {
   // 実行
   const html = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# タイトル",
+    ...payloadOf("<h1>タイトル</h1>"),
     print: true,
   });
   // 検証
@@ -105,14 +119,14 @@ test("test_build_export_html_when_theme_and_extensions", async () => {
   // 実行
   const html = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# タイトル",
+    ...payloadOf("<h1>タイトル</h1>"),
     print: false,
     themeCss: ".a{color:red}</style>",
     extensions: ["export default {name:'x'}"],
   });
   const plain = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# タイトル",
+    ...payloadOf("<h1>タイトル</h1>"),
     print: false,
   });
   // 検証
@@ -144,13 +158,13 @@ test("test_build_export_html_when_import_map", async () => {
   // 実行
   const html = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# タイトル",
+    ...payloadOf("<h1>タイトル</h1>"),
     print: false,
     importMap,
   });
   const plain = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "# タイトル",
+    ...payloadOf("<h1>タイトル</h1>"),
     print: false,
     importMap: {},
   });
@@ -181,13 +195,13 @@ test("test_build_export_html_when_aliases", async () => {
   // 実行
   const html = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "レンダリング",
+    ...payloadOf("<p>レンダリング</p>", "レンダリング"),
     print: false,
     aliases,
   });
   const plain = buildExportHtml({
     ...BUILD_OPTIONS,
-    markdown: "レンダリング",
+    ...payloadOf("<p>レンダリング</p>", "レンダリング"),
     print: false,
   });
   // 検証
@@ -204,4 +218,32 @@ test("test_build_export_html_when_aliases", async () => {
   expect(readModule(html)).toContain("aliases: data.aliases");
   expect(readJson(plain)).not.toHaveProperty("aliases");
   expect(readModule(plain)).not.toContain("aliases");
+});
+
+// 描いた結果と純粋な Markdown を埋める（正常系）
+test("test_build_export_html_when_rendered", async () => {
+  // 準備
+  const { buildExportHtml } = await loadHtml();
+  // 実行
+  const html = buildExportHtml({
+    ...BUILD_OPTIONS,
+    ...payloadOf("<p>a</script><b>b</b></p>", "a"),
+    print: false,
+  });
+  // 検証
+  const json =
+    html.match(
+      /<script\b[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/,
+    )?.[1] ?? "";
+  expect(json).not.toContain("<");
+  const data = JSON.parse(json);
+  expect(data.rendered.html).toBe("<p>a</script><b>b</b></p>");
+  expect(data.pureMarkdown).toBe("a");
+  expect(data).not.toHaveProperty("markdown");
+  const module =
+    html.match(/<script\b[^>]*type="module"[^>]*>([\s\S]*?)<\/script>/)?.[1] ??
+    "";
+  expect(module).toContain("rendered: data.rendered");
+  expect(module).toContain("pureMarkdown: data.pureMarkdown");
+  expect(module).not.toMatch(/markdown: data\.markdown/);
 });

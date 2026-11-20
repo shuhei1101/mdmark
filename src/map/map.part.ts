@@ -905,7 +905,50 @@ const renderClosedGroups = (args: MapFlowArgs, groupMark: GroupMark): string =>
     )
     .join("");
 
-/** 線を押す・指す場所: 見える線より太い透明の線（区間の移動にも使う） */
+/** 線の押せる範囲の帯の幅（px） */
+const WIRE_HIT_WIDTH = 14;
+
+/** `M`・`L`・`H`・`V`（絶対座標）だけの path の `d` を点の並びにする */
+const pathPoints = (d: string): Point[] => {
+  const points: Point[] = [];
+  for (const [, command, values] of d.matchAll(/([MLHV])([^MLHV]*)/g)) {
+    const numbers = (values ?? "")
+      .trim()
+      .split(/[\s,]+/)
+      .filter(Boolean)
+      .map(Number);
+    const last = points.at(-1) ?? [0, 0];
+    if (command === "H") points.push([numbers[0] ?? last[0], last[1]]);
+    else if (command === "V") points.push([last[0], numbers[0] ?? last[1]]);
+    else points.push([numbers[0] ?? 0, numbers[1] ?? 0]);
+  }
+  return points;
+};
+
+/** 線の押せる範囲の区間ごとの帯。`focus` の属性は最も長い区間（長さが同じときは先の区間）の帯に持たせ、ほかの帯は読み上げから除外する */
+const wireHitBands = (points: Point[], focus: string): string => {
+  const segments = points
+    .slice(1)
+    .map((point, index): [Point, Point] => [points[index] as Point, point]);
+  const lengths = segments.map(
+    ([a, b]) => Math.abs(a[0] - b[0]) + Math.abs(a[1] - b[1]),
+  );
+  const focusIndex = lengths.indexOf(Math.max(...lengths));
+  const half = WIRE_HIT_WIDTH / 2;
+  return segments
+    .map(([a, b], index) => {
+      const x = Math.min(a[0], b[0]) - half;
+      const y = Math.min(a[1], b[1]) - half;
+      const width = Math.abs(a[0] - b[0]) + WIRE_HIT_WIDTH;
+      const height = Math.abs(a[1] - b[1]) + WIRE_HIT_WIDTH;
+      const axis = a[0] === b[0] ? "y" : "x";
+      const attributes = index === focusIndex ? focus : ' aria-hidden="true"';
+      return `<rect class="map-wire-hit-segment" data-segment="${index}" data-axis="${axis}" x="${x}" y="${y}" width="${width}" height="${height}"${attributes}></rect>`;
+    })
+    .join("");
+};
+
+/** 線を押す・指す場所: 線ごとの `g` に、区間ごとの透明の帯を並べる（区間の移動にも使う） */
 const renderWireHits = (context: {
   layout: MapLayout;
   annotations: DiagramAnnotations | undefined;
@@ -916,7 +959,7 @@ const renderWireHits = (context: {
   const hits = layout.wires
     .map(
       (wire) =>
-        `<path class="map-wire-hit" data-wire="${escapeHtml(wire.id)}"${ownerIdAttribute(annotations, wire.id)}${tipped.has(wire.id) ? ` data-tip-owner="${escapeHtml(wire.id)}"` : ""} tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}" d="${wire.points.map(([x, y], index) => `${index === 0 ? "M" : "L"}${x} ${y}`).join("")}"></path>`,
+        `<g class="map-wire-hit" data-wire="${escapeHtml(wire.id)}">${wireHitBands(wire.points as Point[], `${ownerIdAttribute(annotations, wire.id)}${tipped.has(wire.id) ? ` data-tip-owner="${escapeHtml(wire.id)}"` : ""} tabindex="0" role="button" aria-label="${escapeHtml(wireName(wire))}"`)}</g>`,
     )
     .join("");
   return `<svg class="map-wire-hits" width="${layout.width}" height="${layout.height}">${hits}</svg>`;
@@ -1458,7 +1501,8 @@ type SeqMessagePart = {
 };
 
 /** 自分へのメッセージの折り返しの寸法（px）。ラベルの札（高さ 20px）は折り返しの上の辺から `labelGap` だけ上に離す */
-const SEQ_SELF = { width: 40, rise: 8, labelGap: 6, labelHalf: 10 } as const;
+/** 自分へのメッセージの折り返しの幅と高さ、札の下端と線の間、札の高さの半分（線のラベルの文字 11px × 行の高さ 1.5 と上下の枠線 1px の半分） */
+const SEQ_SELF = { width: 40, rise: 8, labelGap: 6, labelHalf: 9.25 } as const;
 
 /** メッセージの線の形（自分へのメッセージは右へ折り返す） */
 type SeqGeometry = {
@@ -1581,7 +1625,7 @@ const renderSeqMessage = (
   const noteOwner = seqNoteOwner(context, { message, item, noteTips });
   const { d } = geometry;
   return {
-    wire: `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${seqArrowHeads(context.id, style)}></path>${seqCentral(item, geometry, dim)}<path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
+    wire: `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${seqArrowHeads(context.id, style)}></path>${seqCentral(item, geometry, dim)}<g class="map-wire-hit" data-message="${message}">${wireHitBands(pathPoints(d), noteOwner)}</g>`,
     label: seqMessageLabel(context, { message, item, geometry, dim }),
     // 選んだ参加者のメッセージと再生している今のメッセージの線に、データの印を送り手から受け手へ流す
     packet:
@@ -2459,8 +2503,6 @@ export const MAP_CLASS = {
   memberInset: 66,
   /** 関係のラベルの前後に空ける幅 */
   labelGap: 8,
-  /** 同じ点から出る・入る線の端をずらす間隔 */
-  endGap: 16,
   /** 端の形の長さと、幅の半分 */
   endLength: 14,
   endHalf: 6,
@@ -2870,68 +2912,7 @@ export const renderMapClassEnds = (args: {
   return `<svg class="map-class-ends" width="${args.layout.width}" height="${args.layout.height}" aria-hidden="true">${parts.join("")}</svg>`;
 };
 
-/** 線の端 1 つ（線の番号と、始点か終点か） */
-type WireEndRef = { index: number; at: "from" | "to" };
-
-/** 端の点を、端から次の点までの区間と一緒に `offset` だけずらす（区間が縦なら横へ、横なら縦へ） */
-const shiftWireEnd = (
-  points: Point[],
-  at: "from" | "to",
-  offset: number,
-): Point[] => {
-  const out = points.map((point) => [...point] as Point);
-  if (at === "to") out.reverse();
-  const [tip, next] = out as [Point, Point];
-  const vertical = Math.abs(tip[0] - next[0]) < 0.5;
-  if (out.length === 2) {
-    // 2 点だけの線は、中ほどで折って端の側だけをずらす
-    const middle: Point = [(tip[0] + next[0]) / 2, (tip[1] + next[1]) / 2];
-    out.splice(1, 0, [...middle] as Point, [...middle] as Point);
-  }
-  const axis = vertical ? 0 : 1;
-  (out[0] as Point)[axis] += offset;
-  (out[1] as Point)[axis] += offset;
-  if (at === "to") out.reverse();
-  return out;
-};
-
-/** 同じ点から出る・入る線の端を、辺に沿って `MAP_CLASS.endGap` ずつ、ずらした幅の中ほどが元の点になるようにずらす */
-export const spreadMapEnds = (layout: MapLayout): MapLayout["wires"] => {
-  const wires = layout.wires.map((wire) => ({
-    ...wire,
-    points: wire.points.map((point) => [...point] as Point),
-  }));
-  const groups = new Map<string, WireEndRef[]>();
-  wires.forEach((wire, index) => {
-    if (wire.points.length < 2) return;
-    for (const at of ["from", "to"] as const) {
-      const [x, y] = wireEndOf(wire.points as Point[], at).tip;
-      const key = `${Math.round(x)},${Math.round(y)}`;
-      groups.set(key, [...(groups.get(key) ?? []), { index, at }]);
-    }
-  });
-  for (const ends of groups.values()) {
-    if (ends.length < 2) continue;
-    // 線の向こう側の点の位置の順に並べ、線どうしが交わらないようにする
-    const farOf = (end: WireEndRef): number => {
-      const points = (wires[end.index]?.points ?? []) as Point[];
-      const { tip, dir } = wireEndOf(points, end.at);
-      const ordered = end.at === "from" ? points : [...points].reverse();
-      const far = (ordered[2] ?? ordered[1] ?? tip) as Point;
-      return Math.abs(dir[0]) < 0.5 ? far[0] : far[1];
-    };
-    ends.sort((a, b) => farOf(a) - farOf(b));
-    ends.forEach((end, order) => {
-      const wire = wires[end.index];
-      if (!wire) return;
-      const offset = (order - (ends.length - 1) / 2) * MAP_CLASS.endGap;
-      wire.points = shiftWireEnd(wire.points as Point[], end.at, offset);
-    });
-  }
-  return wires;
-};
-
-/** 部品『mapのクラス図』の引数。`layout` の線は spreadMapEnds でずらした線 */
+/** 部品『mapのクラス図』の引数。`layout` の線は `attachMapFlow` が `spreadWireEnds` で端を並べた線 */
 export type MapClassArgs = MapFlowArgs & {
   classes: MapClassNode[];
   ends: MapClassEnd[];

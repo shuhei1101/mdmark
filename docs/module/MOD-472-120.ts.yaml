@@ -347,8 +347,8 @@ functions:
     container: src/cli/export.ts
     kind: 関数
     scope: internal
-    summary: 画像・動画・音声を置き換えた文書の Markdown を、開いたときに `mount` に指定する値と同じ値で `renderDocument` と `toPureMarkdown` にかけ、書き出しの中身の文書 1 つの `rendered`・`pureMarkdown` を作る
-    description: '`rendered` は `renderDocument` の戻り値のうち `html`・`features`・`page`・`paramDefinitions`・`extensionDefinitions` だけを持つ。`export`・`build` の両方が文書ごとに呼ぶ'
+    summary: 画像・動画・音声を置き換えた文書の Markdown を、開いたときに `mount` に指定する値と同じ値で公開関数 `renderForMount` にかけ、書き出しの中身の文書 1 つの `rendered`・`pureMarkdown` を作る
+    description: 'VS Code 拡張機能の書き出しと同じ公開関数で描き、埋める中身を統一する。`export`・`build` の両方が文書ごとに呼ぶ'
     args:
       - name: options
         type: '{ markdown: string; config: MdmarkConfig; index?: MdmarkIndex; docId?: string; references?: MdmarkReferences; aliases?: MdmarkAlias[]; includes?: Record<string, string>; icons?: Record<string, MdmarkIconNode>; path: string }'
@@ -358,8 +358,7 @@ functions:
       type: 'Promise<{ rendered: MdmarkRendered; pureMarkdown: string }>'
       description: 埋める描いた結果と純粋な Markdown
     callees:
-      - MOD-472-212#functions[renderDocument]
-      - MOD-472-361#functions[toPureMarkdown]
+      - MOD-472-203#functions[renderForMount]
     unit_tests:
       - name: test_render_payload_doc
         case: 正常

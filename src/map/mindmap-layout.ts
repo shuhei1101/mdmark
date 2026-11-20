@@ -214,15 +214,14 @@ const placeSide = (
 const curveOf = (pair: {
   parent: MindmapPlacement;
   child: MindmapPlacement;
-  plain: boolean;
 }): string => {
-  const { parent, child, plain } = pair;
+  const { parent, child } = pair;
   const right = child.side === "right";
   const grip = parent.hasChildren ? MINDMAP_LAYOUT.gripWidth : 0;
   const sx = right ? parent.x + parent.width + grip : parent.x - grip;
   const sy = parent.y + parent.height / 2;
   const ex = right ? child.x : child.x + child.width;
-  const ey = plain ? child.y + child.height : child.y + child.height / 2;
+  const ey = child.y + child.height / 2;
   const mx = (sx + ex) / 2;
   return `M ${sx} ${sy} C ${mx} ${sy}, ${mx} ${ey}, ${ex} ${ey}`;
 };
@@ -245,7 +244,7 @@ const curvesOf = (
       {
         from: parent.stateKey,
         to: child.stateKey,
-        d: curveOf({ parent, child, plain: item.shape === "plain" }),
+        d: curveOf({ parent, child }),
         color: child.color,
       },
     ];

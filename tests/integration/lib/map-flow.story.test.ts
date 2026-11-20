@@ -9,6 +9,7 @@ import {
   overlaps,
   pageOverflows,
   resolveColorIn,
+  targetSizeViolations,
   textContrastsOf,
 } from "../story.ts";
 
@@ -519,16 +520,51 @@ test("test_accessibility", async () => {
     nameSelect: "text",
     kindSelect: "none",
   });
-  const hit = page.locator('.map-wire-hit[data-wire="user->mount"]');
+  // 線の押せる範囲は区間ごとの帯で、最も長い区間の帯だけがフォーカスと名前を持つ
+  const hit = page.locator('.map-wire-hit[data-wire="user->mount"] [tabindex]');
+  await expect(hit.count()).resolves.toBe(1);
   await expect(hit.getAttribute("tabindex")).resolves.toBe("0");
   await expect(hit.getAttribute("aria-label")).resolves.toBe(
     "利用側のページからmountへの線「設定と Markdown」",
   );
   await expect(
     page
-      .locator('.map-wire-hit[data-wire="mount->marker"]')
+      .locator('.map-wire-hit[data-wire="mount->marker"] [aria-label]')
       .getAttribute("aria-label"),
   ).resolves.toBe("mountからmap のマーカーの読み取りへの線");
+  // 最も長い区間の帯のほかは読み上げから除外し、ポインターの形状は区間の向きで決まる
+  const bandStates = await page
+    .locator('.map-wire-hit[data-wire="user->mount"] .map-wire-hit-segment')
+    .evaluateAll((bands) =>
+      bands.map((band) => ({
+        focusable: band.getAttribute("tabindex") === "0",
+        hidden: band.getAttribute("aria-hidden") === "true",
+        axis: band.getAttribute("data-axis"),
+        cursor: getComputedStyle(band).cursor,
+      })),
+    );
+  for (const band of bandStates) {
+    expect(band.focusable).toBe(!band.hidden);
+    expect(band.cursor).toBe(band.axis === "y" ? "ew-resize" : "ns-resize");
+  }
+  // フォーカスした線は、全ての区間の帯に色が付く
+  await hit.focus();
+  const fills = await page
+    .locator('.map-wire-hit[data-wire="user->mount"] .map-wire-hit-segment')
+    .evaluateAll((bands) => bands.map((band) => getComputedStyle(band).fill));
+  for (const fill of fills) expect(fill).not.toBe("rgba(0, 0, 0, 0)");
+  // ノードの名前は 13px、種類の行と線のラベルは 11px で、どれも太さ 400
+  const fontOf = (selector: string) =>
+    page
+      .locator(selector)
+      .first()
+      .evaluate((element) => {
+        const style = getComputedStyle(element);
+        return `${style.fontSize} ${style.fontWeight}`;
+      });
+  await expect(fontOf(".mdmark-diagram-node-name")).resolves.toBe("13px 400");
+  await expect(fontOf(".mdmark-diagram-node-kind")).resolves.toBe("11px 400");
+  await expect(fontOf(".mdmark-diagram-label")).resolves.toBe("11px 400");
   const border = await page
     .locator('.map-group[data-group="lib"]')
     .evaluate((element) => getComputedStyle(element).borderTopColor);
@@ -813,4 +849,57 @@ test("test_wire_ends_and_shapes", async () => {
   for (const id of ["L", "M", "N", "O", "P"])
     expect(shapes[id]?.inside).toBe(true);
   await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 1 つのノードの下の辺から 4 本、上の辺に 2 本の線が出入りし、端は辺の中点に集まらず相手の並びの順に 16px 間隔で並ぶ（SharedSide）
+test("test_shared_side", async () => {
+  // 準備・実行
+  const page = await openMap("shared-side");
+  // 検証
+  const ends = await page
+    .locator("path.mdmark-diagram-wire[data-wire]")
+    .evaluateAll((paths) =>
+      paths.map((path) => {
+        const points = [
+          ...(path.getAttribute("d") ?? "").matchAll(
+            /[ML](-?[\d.]+)[ ,](-?[\d.]+)/g,
+          ),
+        ].map((match) => [Number(match[1]), Number(match[2])]);
+        return {
+          id: path.getAttribute("data-wire") ?? "",
+          start: points[0] as number[],
+          end: points.at(-1) as number[],
+        };
+      }),
+    );
+  // 同じノードの同じ辺の端（hub の同じ x か同じ y に並ぶ端）をまとめ、2 本以上の辺ごとに確かめる
+  const hubEnds = ends.flatMap((wire) => [
+    ...(wire.id.startsWith("hub->") ? [wire.start] : []),
+    ...(wire.id.endsWith("->hub") ? [wire.end] : []),
+  ]) as Array<[number, number]>;
+  expect(hubEnds).toHaveLength(6);
+  const sides = new Map<string, number[]>();
+  for (const [x, y] of hubEnds) {
+    sides.set(`y${y}`, [...(sides.get(`y${y}`) ?? []), x]);
+    sides.set(`x${x}`, [...(sides.get(`x${x}`) ?? []), y]);
+  }
+  const shared = [...sides.values()].filter((along) => along.length >= 2);
+  // 相手に向いた辺が同じ線（遠い相手は左右の辺へ出る）は、端が辺の中点 1 か所に集まらない
+  expect(shared.length).toBeGreaterThan(0);
+  for (const along of shared) {
+    const sorted = [...along].sort((a, b) => a - b);
+    expect(new Set(sorted).size).toBe(sorted.length);
+    for (const [index, value] of sorted.slice(1).entries())
+      expect(value - (sorted[index] as number)).toBeGreaterThanOrEqual(15.5);
+  }
+  await expect(mapWireOverlaps(page)).resolves.toEqual([]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 同じ辺から出る線の押せる範囲は区間ごとの帯で、線から離れたノードを含まず、axe の target-size の違反が無い（SharedSide）
+test("test_wire_hit_target_size", async () => {
+  // 準備・実行
+  const page = await openMap("shared-side");
+  // 検証
+  await expect(targetSizeViolations(page)).resolves.toEqual([]);
 });

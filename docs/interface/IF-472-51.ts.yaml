@@ -1,0 +1,141 @@
+id: IF-472-51
+visibility: internal
+title: 書き出す文書を描く
+lead: 利用側（CLI と VS Code 拡張機能の書き出し）が、画面を持たずに文書を `mount` の `opts.rendered` に指定する描いた結果と純粋な Markdown にする。
+entry:
+  kind: operation
+  value: '`renderForMount(markdown, opts)`（配布物 `dist/index.js` の公開関数）'
+idempotent: true
+side_effects: なし（ファイル・画面・外部へ書き込まず、外部ライブラリと拡張のモジュールも読み込まない）
+callers:
+  - IF-472-15#constraints[書き出す中身]
+  - IF-472-33#
+request:
+  - name: markdown
+    type: string
+    required: true
+    location: argument
+    description: 描く Markdown
+  - name: opts.config
+    type: MdmarkConfig
+    required: false
+    location: argument
+    default: なし（既定の設定で描く）
+    description: '`render` の `opts.config` と同じ。開いたときに `mount` の `opts.config` に指定する設定と同じものを指定する'
+  - name: opts.index
+    type: MdmarkIndex
+    required: false
+    location: argument
+    default: なし
+    description: '`render` の `opts.index` と同じ'
+  - name: opts.docId
+    type: string
+    required: false
+    location: argument
+    default: なし
+    description: '`render` の `opts.docId` と同じ'
+  - name: opts.references
+    type: MdmarkReferences
+    required: false
+    location: argument
+    default: なし
+    description: '`render` の `opts.references` と同じ'
+  - name: opts.aliases
+    type: MdmarkAlias[]
+    required: false
+    location: argument
+    default: なし
+    description: '`render` の `opts.aliases` と同じ'
+  - name: opts.includes
+    type: Record<string, string>
+    required: false
+    location: argument
+    default: なし（取り込みのマーカーを取り除く）
+    description: '`render` の `opts.includes` と同じ。描いた結果と純粋な Markdown の両方に取り込む'
+  - name: opts.icons
+    type: Record<string, MdmarkIconNode>
+    required: false
+    location: argument
+    default: なし
+    description: '`render` の `opts.icons` と同じ'
+  - name: opts.path
+    type: string
+    required: false
+    location: argument
+    default: なし
+    description: '`mount` の `opts.path` と同じ'
+response:
+  - name: rendered
+    type: MdmarkRendered
+    description: '`mount` の `opts.rendered` にそのまま指定する描いた結果。`html`（本文の HTML）・`features`（文書のマーカーを重ねた機能のオン・オフ）・`page`（ページの設定）・`paramDefinitions`・`extensionDefinitions` を持つ'
+  - name: pureMarkdown
+    type: string
+    description: '`toPureMarkdown` の `markdown` と同じ純粋な Markdown。`mount` の `opts.pureMarkdown` に指定する'
+response_notes: |-
+  > [!NOTE]
+  > 同じ `markdown`・`opts` では同じ値を返却する。
+exceptions:
+  - name: なし（正常終了）
+    condition: 描けた
+  - name: TypeError
+    condition: '`markdown` が文字列でない'
+constraints:
+  - item: 描いた結果の項目
+    constraint: '`mount` が `opts.markdown` を描くときと同じ処理（既定を適用した設定で `renderDocument`）で描き、`mount` の `opts.rendered` が使用する 5 つの項目だけを返却する。CLI の書き出しの中身（`ExportPayload` の文書ごとの `rendered`・`pureMarkdown`）と同じ値にする'
+  - item: 動く環境
+    constraint: ブラウザと Node の両方で動き、DOM を使用しない
+  - item: 対応の判定
+    constraint: 利用側は、配布物がこの関数を公開しているかで、`opts.rendered` で起動できるバージョンかを判定する（`version()` の文字列は比べない）
+flows:
+  - name: 正常系
+    summary: 描いた結果と純粋な Markdown を返却し、元の Markdown のマーカーをどちらにも残さない
+    setup:
+      - name: 文書
+        description: '`<!-- 原本だけの目印 -->`・`<!-- features: {"print": false} -->`・表のマーカー・`param` の範囲を持つ Markdown'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 呼ぶ側
+        participant IF as renderForMount
+        C->>IF: markdown・opts
+        IF-->>C: rendered・pureMarkdown
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`rendered.html` と `pureMarkdown` に `原本だけの目印`・`<!-- table` が無い'
+      - '`rendered.features.print` が `false`、`rendered.paramDefinitions` が 1 件'
+      - 返却した `rendered`・`pureMarkdown` を `mount` に指定した要素の本文が、同じ Markdown を `mount` の `opts.markdown` で描いた要素の本文と同じ
+    test: test_normal
+  - name: 異常系（文字列でない文書・TypeError）
+    summary: '`markdown` が文字列でなければ描かずに TypeError を送出する'
+    setup:
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 呼ぶ側
+        participant IF as renderForMount
+        C->>IF: markdown（null）
+        IF-->>C: TypeError
+      ```
+
+      <!-- /map -->
+    expected:
+      - 返却した Promise が `TypeError` で reject される
+    test: test_error_when_markdown_not_string
+refs:
+  - IF-472-34#
+  - IF-472-48#
+test_file: tests/integration/lib/render-for-mount.browser.test.ts
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: action:描画

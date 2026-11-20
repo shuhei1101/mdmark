@@ -90,7 +90,7 @@ constants:
     title: ノードの文字の大きさと余白
     container: src/map/layout.ts
     summary: 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさと余白。名前を折り返す行の数とノードの大きさの見積もりに使用する。右の余白 `padRight` は、map のノードが右上の i と開閉の山形の分だけ右に空ける幅（`src/index.css` の map のノードの `padding-right`）。`padPill` は種類の形状が `pill` のノードの左の余白（`src/index.css` の `pill` のノードの `padding-inline`。右は後に記載した `padding-right` が優先される）。`border` はノードの枠線の幅（`.mdmark-diagram-node` の `border`）。CSS を修正したときは合わせて修正する
-    value: 種類 11px・名前 14px・補足 12px・行の高さ 1.4 倍・余白 上下 6px 左右 10px・右の余白 28px・pill の左の余白 16px・枠線 1.5px
+    value: 種類 11px・名前 13px・補足 12px・文字の太さ 400・行の高さ 1.4 倍・余白 上下 6px 左右 10px・右の余白 28px・pill の左の余白 16px・枠線 1.5px
   - name: MAP_LAYOUT
     title: 配置の寸法
     container: src/map/layout.ts
@@ -141,11 +141,14 @@ constants:
         value: '60'
         description: 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる）
       - key: wireGap
-        value: '8'
+        value: '16'
         description: 同じ区間を通る線を並べるときの線の間
       - key: closedCount
         value: '17'
         description: 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ）
+      - key: closedBorder
+        value: '6'
+        description: '閉じたグループの二重の枠線の上下の幅の和（CSS の `.map-closed-group` の `border: 3px double`）'
 functions:
   - name: layoutMap
     title: 入れ子を配置する
@@ -191,7 +194,7 @@ functions:
       description: 配置の結果
     process: |-
       1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ。上書きの `size` を持たない葉は、上書きの `width` を持てばその幅、持たなければ `measureText` で測った名前の幅（`textWidth`）に左の余白（上書きの `padLeft`、無ければ `LABEL_METRICS.padX`）・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅（小数は切り上げる）を `MAP_LAYOUT.minWidth` から上限（`nodeFit` が `height` なら `maxWidth`、`width` なら `maxWidthWide`）までに収めた幅にし、その幅から左右の余白と枠線を引いた幅で、名前を `measureText` で測って行に分けた（`splitLines`）行の数の `leafHeight` を高さにする。上書きの `size` を持つ葉は、その大きさにし、同じ幅で名前を行に分ける（表示する木を作る）
-      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを解除した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を適用して大きさを決める。段の中の間と段の間には `spread` を追加する。線の `length` が 2 以上の線は、先のノードを元のノードから `length` 段離して段を決める。`invisible` の線は段と並びを決めるのに使用し、線の経路を引かず `wires` に含めない。アーキテクチャ図の `align` は、並べた ID を同じ段（`row`）か同じ列（`column`）にそろえる上書きにする。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
+      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを解除した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を適用して大きさを決める。段の中の間と段の間には `spread` を追加する。線の `length` が 2 以上の線は、先のノードを元のノードから `length` 段離して段を決める。`invisible` の線は段と並びを決めるのに使用し、線の経路を引かず `wires` に含めない。アーキテクチャ図の `align` は、並べた ID を同じ段（`row`）か同じ列（`column`）にそろえる上書きにする。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px + `closedBorder` の大きいほうにする（グループの中を配置する）
       3. 外側から座標を追加して図の座標にし、線の経路を引く。線の端が開いたグループの ID（Mermaid の `subgraph` を指す線）なら、そのグループの枠につなぐ（線の経路を引く）
     unit_tests:
       - name: test_layout_map_when_length_and_invisible
@@ -263,9 +266,9 @@ functions:
       - name: test_layout_map_when_collapsed_height
         case: 正常
         summary: 閉じたグループの高さ
-        condition: '`collapsed: [store]` と、`store` に測った大きさ `size: { w: 120, h: 30 }`（見積もりの高さが 59px に満たない）'
+        condition: '`collapsed: [store]` と、`store` に測った大きさ `size: { w: 120, h: 30 }`（見積もりの高さが 65px に満たない）'
         mock: なし
-        expected: 閉じた `store` の `h` が `groupTitle` + `closedCount` + 余白 上下 6px（59）以上
+        expected: 閉じた `store` の `h` が `groupTitle` + `closedCount` + 余白 上下 6px + `closedBorder`（65）以上
       - name: test_layout_map_when_spread
         case: 正常
         summary: 間を広げる
@@ -275,19 +278,19 @@ functions:
       - name: test_layout_map_when_name_fits_with_right_padding
         case: 正常
         summary: 右の余白を加えた幅で 1 行に収まる名前
-        condition: 名前が「データベース」（全角 6 文字・見積もりの幅 84px）のノード 1 つ
+        condition: 名前が「データベース層」（全角 7 文字・見積もりの幅 91px）のノード 1 つ
         mock: なし
-        expected: そのノードの `w` が 125（84 + 10 + 28 + 1.5 × 2）、`h` が `leafHeight(1)`、`lines` が 1 行
+        expected: そのノードの `w` が 132（91 + 10 + 28 + 1.5 × 2）、`h` が `leafHeight(1)`、`lines` が 1 行
       - name: test_layout_map_when_name_wraps_with_right_padding
         case: 正常
         summary: 右の余白を除いた幅で折り返す名前
-        condition: '名前が全角 14 文字（見積もりの幅 196px）のノード 1 つと `nodeFit: height`'
+        condition: '名前が全角 14 文字（見積もりの幅 182px）のノード 1 つと `nodeFit: height`'
         mock: なし
         expected: そのノードの `w` が 220、`lines` が 2 行（220 - 41 = 179px で折り返す）、`h` が `leafHeight(2)`
       - name: test_layout_map_when_width_with_right_padding
         case: 正常
         summary: 幅を指定したノードの折り返し
-        condition: '名前が全角 12 文字（見積もりの幅 168px）のノードに上書きの `width: 200`'
+        condition: '名前が全角 13 文字（見積もりの幅 169px）のノードに上書きの `width: 200`'
         mock: なし
         expected: そのノードの `w` が 200、`lines` が 2 行（200 - 41 = 159px で折り返す）、`h` が `leafHeight(2)`
       - name: test_layout_map_when_measured_text_width
@@ -305,9 +308,9 @@ functions:
       - name: test_layout_map_when_pill_padding
         case: 正常
         summary: pill の左の余白
-        condition: '名前が「利用側のページ」（全角 7 文字・見積もりの幅 98px）のノードに `padLeft: 16` の上書き、`measureText` は `estimateTextWidth`'
+        condition: '名前が「利用側のページ」（全角 7 文字・見積もりの幅 91px）のノードに `padLeft: 16` の上書き、`measureText` は `estimateTextWidth`'
         mock: なし
-        expected: そのノードの `w` が 145（98 + 16 + 28 + 1.5 × 2）、`lines` が 1 行
+        expected: そのノードの `w` が 138（91 + 16 + 28 + 1.5 × 2）、`lines` が 1 行
       - name: test_layout_map_when_wire_to_group
         case: 正常
         summary: subgraph を指す線をグループの枠につなぐ
@@ -424,7 +427,7 @@ functions:
       type: '{ wires: PlacedWire[]; crowded: number }'
       description: 並べた線と、並べた線が端点とその祖先以外の矩形に入る区間があるときに `layoutMap` の `spread` に指定する幅（入らなければ 0）
     process: |-
-      1. 全ての線の縦と横の区間を、向きと直線の座標ごとに集め、範囲が重なる区間の束を作る（同じ点から出る・入る線の端の区間は束に入れない）
+      1. 全ての線の縦と横の区間を、向きと直線の座標ごとに集め、範囲が重なる区間の束を作る（`spreadWireEnds` でずらした線の端の区間は束に入れない）
       2. 束ごとに、束の範囲で両側にある矩形（端点とその祖先を除く。`clearance` を含める）の間を通り道にし、中の n 本を記載順に、束の中ほどが通り道の中ほどになるように `wireGap` ずつ並べる（片側に矩形が無ければ、矩形のある側から遠ざかる向きへ並べ、両側に無ければ束の中ほどを元の直線にする）。ずらした区間の前後の区間の端も同じ量だけ動かす。線の端点は ER 図の列の行の高さ・同じ点から出る線の端の 16px ずらしなど、図の種類ごとの決まりで配置されているため動かさず、端点を含む区間は、端点から区間の向きへ `clearance` の長さだけ進んだ点で折り、そこから先をずらす（区間の長さが `clearance` 以下のときは、区間の中ほどで折る）
       3. 通り道の幅が束の幅（`wireGap` × (n − 1)）に足りない束があれば、足りない幅の最大を `crowded` にする（`spread` でこの幅だけ間を広げると、通り道の中ほどに束が収まる）。幅が足りない束も、通り道の中ほどに並べたまま返却する
     unit_tests:
@@ -433,7 +436,7 @@ functions:
         summary: 同じ区間の 3 本を並べる
         condition: 左のノードの右の辺から 40px の縦の直線の上で範囲が重なる区間を持つ 3 本の線と、左のノードの右の辺から 80px に左の辺を持つ右のノード（元の直線が、`clearance` を含めた通り道 12〜68px の中ほど）
         mock: なし
-        expected: 3 本のその区間の x 座標が、左のノードの右の辺から 32・40・48px で、どの 2 本も同じ向きの区間が同じ直線の上で重ならず、線は縦横の折れ線のまま。`crowded` が 0
+        expected: 3 本のその区間の x 座標が、左のノードの右の辺から 24・40・56px で、どの 2 本も同じ向きの区間が同じ直線の上で重ならず、線は縦横の折れ線のまま。`crowded` が 0
       - name: test_separate_wires_when_shared_end
         case: 正常
         summary: 同じ点から出る線の端
@@ -443,13 +446,13 @@ functions:
       - name: test_separate_wires_when_grid_line
         case: 正常
         summary: 辺から 12px の格子の線を通る束
-        condition: 左のノードの右の辺から 12px（`clearance`）の縦の直線の上で範囲が重なる 5 本の線と、右のノードの左の辺が左のノードの右の辺から 80px
+        condition: 左のノードの右の辺から 12px（`clearance`）の縦の直線の上で範囲が重なる 3 本の線と、右のノードの左の辺が左のノードの右の辺から 80px
         mock: なし
-        expected: 5 本のその区間の x 座標が、左のノードの右の辺から 24・32・40・48・56px（通り道 12〜68px の中ほど 40px が束の中ほど）で、どの区間も両側の矩形に入らず、`crowded` が 0
+        expected: 3 本のその区間の x 座標が、左のノードの右の辺から 24・40・56px（通り道 12〜68px の中ほど 40px が束の中ほど）で、どの区間も両側の矩形に入らず、`crowded` が 0
       - name: test_separate_wires_when_crowded
         case: 正常
         summary: 通り道の幅が足りない
-        condition: test_separate_wires_when_grid_line の 5 本と、右のノードの左の辺が左のノードの右の辺から 40px
+        condition: test_separate_wires_when_grid_line の 3 本と、右のノードの左の辺が左のノードの右の辺から 40px
         mock: なし
         expected: '`crowded` が 16（束の幅 32px に対して通り道 12〜28px の幅が 16px）で、`layoutMap` に `spread: 16` を指定して再配置した後の線を並べると `crowded` が 0'
       - name: test_separate_wires_when_end_segment
@@ -537,7 +540,7 @@ functions:
         summary: 行の数の高さ
         condition: 行の数 1 と 2
         mock: なし
-        expected: 1 行が 63、2 行が 83（`ceil((11 + 2 × 14) × 1.4) + 6 × 2 + 16`）
+        expected: 1 行が 62、2 行が 80（`ceil((11 + 2 × 13) × 1.4) + 6 × 2 + 16`）
   - name: estimateTextWidth
     title: 名前の幅を見積もる
     kind: 関数
@@ -560,7 +563,48 @@ functions:
         summary: 全角と半角の見積もり
         condition: 「文書の Markdown」
         mock: なし
-        expected: 117.6（全角 3 文字 × 14 + 半角 9 文字 × 8.4）
+        expected: 109.2（全角 3 文字 × 13 + 半角 9 文字 × 7.8）
+  - name: spreadWireEnds
+    title: 同じ辺の線の端を並べる
+    kind: 関数
+    container: src/map/layout.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 同じノードの同じ辺の同じ点に出入りする 2 本以上の線の端を、相手の端の並びの順に、元の点を中心として `MAP_LAYOUT.wireGap`（16px）間隔で辺に沿って並べ（辺に収まらないときは辺の長さを線の数で等分）、端から次の点までの区間を辺と直角に保つ（全ての図の種類）
+    scope: public
+    args:
+      - name: layout
+        type: MapLayout
+        required: true
+        description: 配置の結果（図の種類ごとの `rewire` を当てた後の線。ER 図は列の行へ付け替えた端、アーキテクチャ図は辺の指定の端）
+    returns:
+      type: MapLayout["wires"]
+      description: 端を並べた線
+    process: |-
+      1. 全ての線の両端を、端の点（丸めた座標）ごとに集める
+      2. 2 つ以上の端を持つ点ごとに、端から次の点への向きで辺を決め、その点を辺に持つノード（`layout.nodes`）の辺の長さを求める
+      3. 端を、線の向こう側の点（3 つ目の点、無ければもう片方の端）の辺に沿った座標の順に並べる（線どうしが端の近くで交わらない）
+      4. 間隔を `wireGap` とし、`wireGap × 端の数` が辺の長さを超えるときは、辺の長さを端の数で等分した位置（辺の始点から `辺の長さ × (順番 + 0.5) / 端の数`）にする
+      5. 端と端から次の点を同じ量だけ辺に沿って動かす。2 点だけの線は中ほどで折って端の側だけを動かす
+    unit_tests:
+      - name: test_spread_wire_ends
+        case: 正常
+        summary: 同じ点に入る 3 本
+        condition: 幅 120px のノードの上の辺の中ほどに先の端を持ち、向こう側の点が左から順に並ぶ線 3 本
+        mock: なし
+        expected: 3 本の先の端の x が 16px ずつ違い、中ほどの端が元の点で、左の端が向こう側の点が最も左の線。端から次の点までの区間が縦
+      - name: test_spread_wire_ends_when_short_side
+        case: 正常
+        summary: 辺に収まらない
+        condition: 幅 48px のノードの下の辺の中ほどから出る線 4 本（16px 間隔では 64px 要る）
+        mock: なし
+        expected: 4 本の元の端の x が、ノードの左端から 6・18・30・42px（48px を 4 等分した位置）で、どの端も辺の外に出ない
+      - name: test_spread_wire_ends_when_single
+        case: 正常
+        summary: 1 本だけの端
+        condition: 辺の中ほどから 1 本だけ出る線
+        mock: なし
+        expected: 線の点の並びが引数のまま
 lead: '入れ子のグループの自動配置と線の経路を受け持ち、構成図の配置を変えるときに参照する。'
 tags:
   - name: topic:map

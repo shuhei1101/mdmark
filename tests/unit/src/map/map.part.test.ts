@@ -74,12 +74,142 @@ test("test_render_map_flow_when_keyboard", async () => {
     expect(hit).toContain('tabindex="0"');
     expect(hit).toContain('role="button"');
   }
-  const hits = matches(html, /<path class="map-wire-hit"[^>]*>/g);
-  expect(hits.length).toBeGreaterThan(0);
-  for (const hit of hits) expect(hit).toContain('tabindex="0"');
+  const groups = matches(html, /<g class="map-wire-hit"[\s\S]*?<\/g>/g);
+  expect(groups.length).toBeGreaterThan(0);
+  for (const group of groups) {
+    const bands = matches(group, /<rect class="map-wire-hit-segment"[^>]*>/g);
+    const lengths = bands.map((band) => {
+      const w = Number(band.match(/ width="([\d.]+)"/)?.[1]);
+      const h = Number(band.match(/ height="([\d.]+)"/)?.[1]);
+      return Math.max(w, h);
+    });
+    const focused = bands.filter((band) => band.includes('tabindex="0"'));
+    expect(focused).toHaveLength(1);
+    expect(focused[0]).toContain('role="button"');
+    // 最も長い区間（長さが同じときは先の区間）の帯
+    expect(bands.indexOf(focused[0] as string)).toBe(
+      lengths.indexOf(Math.max(...lengths)),
+    );
+  }
   expect(html).not.toMatch(/data-group="read"[^>]*><div class="map-group-bar"/);
   expect(renderMapFlow(await flowArgs()).html).toMatch(
     /data-group="read"[^>]*><div class="map-group-bar"/,
+  );
+});
+
+/** 帯の矩形の値（x・y・width・height） */
+const bandBox = (band: string) =>
+  ["x", "y", "width", "height"].map((name) =>
+    Number(band.match(new RegExp(` ${name}="(-?[\\d.]+)"`))?.[1]),
+  );
+
+// 線の押せる範囲を区間ごとの帯にする（正常系）
+test("test_render_map_flow_when_wire_hit_segments", async () => {
+  // 準備（区間の長さが 40・100・20 の線 1 本）
+  const { renderMapFlow } = await loadParts();
+  const args = await flowArgs();
+  const first = args.layout.wires[0] as (typeof args.layout.wires)[number];
+  const layout = {
+    ...args.layout,
+    wires: [
+      {
+        ...first,
+        merged: undefined,
+        points: [
+          [0, 0],
+          [0, 40],
+          [100, 40],
+          [100, 60],
+        ] as Array<[number, number]>,
+      },
+    ],
+  };
+  // 実行
+  const { html } = renderMapFlow({ ...args, layout });
+  // 検証
+  const groups = matches(
+    html,
+    /<g class="map-wire-hit" data-wire="[^"]+"[\s\S]*?<\/g>/g,
+  );
+  expect(groups).toHaveLength(1);
+  const bands = matches(
+    groups[0] ?? "",
+    /<rect class="map-wire-hit-segment"[^>]*>/g,
+  );
+  expect(bands).toHaveLength(3);
+  expect(bands.map(bandBox)).toEqual([
+    [-7, -7, 14, 54],
+    [-7, 33, 114, 14],
+    [93, 33, 14, 34],
+  ]);
+  expect(bands.map((band) => band.match(/data-segment="(\d+)"/)?.[1])).toEqual([
+    "0",
+    "1",
+    "2",
+  ]);
+  expect(bands.map((band) => band.match(/data-axis="([xy])"/)?.[1])).toEqual([
+    "y",
+    "x",
+    "y",
+  ]);
+  const [one, two, three] = bands as [string, string, string];
+  expect(two).toContain('tabindex="0"');
+  expect(two).toContain('role="button"');
+  expect(two).toMatch(/aria-label="[^"]+"/);
+  for (const other of [one, three]) {
+    expect(other).toContain('aria-hidden="true"');
+    expect(other).not.toContain("tabindex");
+    expect(other).not.toContain("role=");
+  }
+});
+
+// メッセージの線を区間ごとの帯にする（正常系）
+test("test_render_map_sequence_when_wire_hit_segments", async () => {
+  // 準備（自分へのメッセージ（折り返しの 3 区間）が補足の notes の説明を持つ）
+  const { renderMapSequence } = await loadParts();
+  const { parseSequence } = await loadSequence();
+  const { sequenceRows } = await loadRows();
+  const sequence = parseSequence(`sequenceDiagram
+  participant node as 動画作成ノード
+  participant am as aituber の MCP
+  node->>am: request_job
+  node->>node: 完了ファイルを待つ
+  node->>am: get（ジョブ）`);
+  const rows = sequenceRows(sequence, {
+    order: sequence.participants.map((item) => item.id),
+    collapsed: [],
+    entered: undefined,
+  });
+  // 実行
+  const { html } = renderMapSequence({
+    sequence,
+    rows: rows.rows,
+    participants: rows.participants,
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    notes: { "2": "待つ上限の時間は、進め方の文書で決定する" },
+  });
+  // 検証
+  const group =
+    html.match(/<g class="map-wire-hit" data-message="1"[\s\S]*?<\/g>/)?.[0] ??
+    "";
+  const bands = matches(group, /<rect class="map-wire-hit-segment"[^>]*>/g);
+  expect(bands).toHaveLength(3);
+  for (const band of bands) {
+    expect(band).not.toContain("tabindex");
+    expect(band).not.toContain("role=");
+    expect(band).not.toContain("aria-label");
+  }
+  const lengths = bands.map((band) => {
+    const [, , w, h] = bandBox(band);
+    return Math.max(w ?? 0, h ?? 0);
+  });
+  const owners = bands.filter((band) => band.includes("data-tip-owner"));
+  expect(owners).toHaveLength(1);
+  expect(bands.indexOf(owners[0] as string)).toBe(
+    lengths.indexOf(Math.max(...lengths)),
   );
 });
 
@@ -541,8 +671,8 @@ test("test_render_map_sequence_when_self_message", async () => {
   const selfLabel = labelOf(1);
   // 札の中心の左右は折り返しの左右の中央
   expect(selfLabel.left).toBe(((startX ?? 0) + (rightX ?? 0)) / 2);
-  // 札（高さ 20px、中心で配置）の下端は折り返しの上の辺の 6px 上
-  expect(selfLabel.top + 10).toBe((loopTop ?? 0) - 6);
+  // 札（線のラベルの文字 11px で高さ 18.5px、中心で配置）の下端は折り返しの上の辺の 6px 上
+  expect(selfLabel.top + 9.25).toBe((loopTop ?? 0) - 6);
   // ほかの参加者へのメッセージのラベルは線の中点の 14px 上のまま
   const other = wireOf(0).match(/^M([\d.]+) ([\d.]+)H([\d.]+)$/);
   const [, fromX, lineY, toX] = (other ?? []).map(Number);
@@ -553,7 +683,7 @@ test("test_render_map_sequence_when_self_message", async () => {
   ).toBeLessThanOrEqual(1);
   // 説明を持つ自分へのメッセージの線の押せる帯は、ツールチップの持ち主になる
   expect(html).toMatch(
-    /<path class="map-wire-hit" data-message="1"[^>]*data-tip-owner="message:1"/,
+    /<g class="map-wire-hit" data-message="1"[^>]*>(?:(?!<\/g>)[\s\S])*data-tip-owner="message:1"/,
   );
 });
 
@@ -605,7 +735,7 @@ test("test_render_map_sequence_when_notes", async () => {
     terms: { 補足: "意味" },
   });
   // 検証
-  const owners = matches(html, /<path class="map-wire-hit"[^>]*>/g).filter(
+  const owners = matches(html, /<g class="map-wire-hit"[\s\S]*?<\/g>/g).filter(
     (hit) => hit.includes("data-tip-owner"),
   );
   expect(owners).toHaveLength(1);
@@ -704,7 +834,10 @@ test("test_render_map_sequence_when_hints_off", async () => {
     hints: false,
   });
   // 検証
-  for (const hit of matches(html, /<path class="map-wire-hit"[^>]*>/g)) {
+  for (const hit of matches(
+    html,
+    /<rect class="map-wire-hit-segment"[^>]*>/g,
+  )) {
     expect(hit).not.toContain("data-tip-owner");
   }
   expect(tips).not.toContain('role="tooltip"');
@@ -799,7 +932,7 @@ test("test_render_map_flow_when_merged_notes", async () => {
   );
   expect(tip).not.toContain("Mermaid の記法の読み取り");
   expect(plain.html).not.toMatch(
-    /class="map-wire-hit" data-wire="read-&gt;layout" data-tip-owner/,
+    /<g class="map-wire-hit" data-wire="read-&gt;layout"[^>]*>(?:(?!<\/g>)[\s\S])*data-tip-owner/,
   );
 });
 
@@ -1426,7 +1559,10 @@ test("test_render_map_flow_when_hints_off", async () => {
   // 検証
   expect(html).not.toContain("mdmark-diagram-info");
   expect(html).not.toContain("mdmark-diagram-group-info");
-  for (const hit of matches(html, /<path class="map-wire-hit"[^>]*>/g)) {
+  for (const hit of matches(
+    html,
+    /<rect class="map-wire-hit-segment"[^>]*>/g,
+  )) {
     expect(hit).not.toContain("data-tip-owner");
   }
   expect(tips).not.toContain('role="tooltip"');
@@ -1447,7 +1583,7 @@ async function classArgs(hints?: boolean) {
     "../../../../src/map/class-diagram.ts"
   );
   const { layoutMap, estimateTextWidth } = await loadLayout();
-  const { spreadMapEnds } = await loadParts();
+  const { spreadWireEnds } = await loadLayout();
   const { CLASS } = await import("../../helpers/map.ts");
   const diagram = parseClassDiagram(CLASS);
   const chart = classToFlowchart(diagram);
@@ -1463,7 +1599,7 @@ async function classArgs(hints?: boolean) {
     { overrides, nodeFit: "height", measureText: estimateTextWidth },
   );
   return {
-    layout: { ...layout, wires: spreadMapEnds(layout) },
+    layout: { ...layout, wires: spreadWireEnds(layout) },
     kinds: {},
     lines: {},
     collapsed: [],
@@ -1615,43 +1751,6 @@ test("test_render_map_class_members_when_collapsed", async () => {
   expect(part.toggle).toContain('aria-expanded="false"');
 });
 
-// 同じ点に入る 3 本（正常系）
-test("test_spread_map_ends", async () => {
-  // 準備
-  const { spreadMapEnds } = await loadParts();
-  const node = { id: "親", x: 100, y: 0, w: 120, h: 40 };
-  const wire = (id: string, x: number) => ({
-    id,
-    from: id,
-    to: "親",
-    label: undefined,
-    merged: undefined,
-    points: [
-      [x, 200],
-      [x, 120],
-      [160, 120],
-      [160, 40],
-    ] as Array<[number, number]>,
-  });
-  const layout = {
-    width: 400,
-    height: 300,
-    nodes: [{ ...node, lines: [], faded: false, ancestors: [] }],
-    groups: [],
-    wires: [wire("a", 40), wire("b", 160), wire("c", 280)],
-  };
-  // 実行
-  const wires = spreadMapEnds(layout as never);
-  // 検証
-  const ends = wires.map((item) => item.points.at(-1) as [number, number]);
-  const xs = ends.map((point) => point[0]).sort((p, q) => p - q);
-  expect(xs).toEqual([144, 160, 176]);
-  for (const item of wires) {
-    const [last, before] = [item.points.at(-1), item.points.at(-2)];
-    expect(last?.[0]).toBe(before?.[0]);
-  }
-});
-
 /** アーキテクチャ図を配置して引き直した結果 */
 async function archLayout() {
   const { parseArchitecture, architectureToFlowchart } = await import(
@@ -1794,7 +1893,8 @@ test("test_render_map_c4_diagram", async () => {
   // 準備
   const { parseC4, c4ToFlowchart } = await import("../../../../src/map/c4.ts");
   const { layoutMap, estimateTextWidth } = await loadLayout();
-  const { renderMapC4Diagram, spreadMapEnds } = await loadParts();
+  const { renderMapC4Diagram } = await loadParts();
+  const { spreadWireEnds } = await loadLayout();
   const { C4 } = await import("../../helpers/map.ts");
   const { MAP_C4_KINDS } = await import("../../../../src/map/c4.ts");
   const diagram = parseC4(C4);
@@ -1811,7 +1911,7 @@ test("test_render_map_c4_diagram", async () => {
       .filter((item) => item.external)
       .map((item) => item.id),
     reversed,
-    layout: { ...layout, wires: spreadMapEnds(layout) },
+    layout: { ...layout, wires: spreadWireEnds(layout) },
     kinds: MAP_C4_KINDS,
     lines: {},
     collapsed: [],

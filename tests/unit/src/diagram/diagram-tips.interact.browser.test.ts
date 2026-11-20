@@ -509,3 +509,35 @@ test("test_attach_diagram_tips_when_chart_item", async () => {
   ].filter((tip) => !tip.hidden);
   expect(open).toHaveLength(1);
 });
+
+// map の線の持ち主でない区間の帯に重ねても開き、線ごとの g から離れると閉じる（正常系）
+test("test_attach_diagram_tips_when_wire_band_hovered", async () => {
+  // 準備（2 つ目の帯だけが持ち主の線）
+  vi.useFakeTimers();
+  const { attachDiagramTips } = await loadTips();
+  const figure = createFigure();
+  const holder = document.createElement("div");
+  holder.innerHTML =
+    '<svg><g class="map-wire-hit" data-wire="band"><rect class="map-wire-hit-segment" aria-hidden="true"></rect><rect class="map-wire-hit-segment" data-tip-owner="band" tabindex="0"></rect></g></svg><div class="mdmark-diagram-tip" data-tip-for="band" hidden>線の説明</div>';
+  figure.append(...holder.childNodes);
+  const { detach } = attachDiagramTips({ figure, placement: "top" });
+  detachers.push(detach);
+  const group = figure.querySelector("g.map-wire-hit") as Element;
+  const first = group.querySelector(".map-wire-hit-segment") as Element;
+  const tip = figure.querySelector<HTMLElement>(
+    '.mdmark-diagram-tip[data-tip-for="band"]',
+  ) as HTMLElement;
+  // 実行: 1 つ目の帯に重ねる（g へ伝わる）
+  first.dispatchEvent(
+    new PointerEvent("pointerenter", { pointerType: "mouse", bubbles: true }),
+  );
+  // 検証
+  expect(tip.hidden).toBe(false);
+  // 実行: 線ごとの g から離れる
+  group.dispatchEvent(
+    new PointerEvent("pointerleave", { pointerType: "mouse" }),
+  );
+  vi.runAllTimers();
+  // 検証
+  expect(tip.hidden).toBe(true);
+});

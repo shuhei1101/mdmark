@@ -13,6 +13,7 @@ functions:
     description: |-
       ツールチップの持ち主は、線のラベル・ノードの右上のマーカー・グループのタイトルのマーカー・`data-tip-owner` を持つグラフの項目にする。
       ノードそのものは持ち主にしない。
+      map の線の押せる範囲は区間ごとの帯に分かれ、持ち主は最も長い区間の帯だけのため、持ち主が `g.map-wire-hit` の中にあるときは、`pointerenter`・`pointerleave`・`pointerdown` をその `g` で受ける（`focus`・`blur` は持ち主で受ける）。
 
       | ポインター | 開く | 閉じる |
       | --- | --- | --- |
@@ -109,6 +110,12 @@ functions:
         condition: 折れ線のグラフのクリックを受ける円にフォーカスし、次に map の構成図のノードの説明のマーカーに `pointerenter`。`placement` は `bottom`
         mock: なし（Chromium）
         expected: それぞれの `aria-describedby` が指すツールチップが `hidden` を持たず、`top` が持ち主の `bottom` 以上。同時に開いているのは 1 つ
+      - name: test_attach_diagram_tips_when_wire_band_hovered
+        case: 正常
+        summary: map の線の持ち主でない区間の帯に重ねても開く
+        condition: '`g.map-wire-hit` の中に帯が 2 つあり、2 つ目の帯だけが `data-tip-owner` を持つ図に付け、1 つ目の帯に `pointerType` が `mouse` の `pointerenter`（`g` へ伝わるように `bubbles`）を送信し、次に `g` に `pointerleave` を送信する'
+        mock: なし
+        expected: 1 つ目の帯への `pointerenter` でツールチップが開き、`g` の `pointerleave` の後に閉じる
 lead: '図のツールチップの操作の付与を受け持ち、図のツールチップの開き方を変えるときに参照する。'
 tags:
   - name: topic:図

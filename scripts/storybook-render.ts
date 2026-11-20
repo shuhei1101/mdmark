@@ -123,6 +123,7 @@ import {
   layoutMap,
   MAP_LAYOUT,
   separateWires,
+  spreadWireEnds,
 } from "../src/map/layout.ts";
 import { type MapListItem, renderMapList } from "../src/map/list.part.ts";
 import { flowListItems, sequenceListItems } from "../src/map/list.ts";
@@ -142,7 +143,6 @@ import {
   renderMapStateDiagram,
   rewireMapArchitecture,
   rewireMapEr,
-  spreadMapEnds,
 } from "../src/map/map.part.ts";
 import { mindmapItemOf, parseMindmap } from "../src/map/mindmap.ts";
 import { layoutMindmap } from "../src/map/mindmap-layout.ts";
@@ -927,6 +927,16 @@ const MAP_FLOW_WIRE_ENDS = `flowchart LR
   N[/台形\\] --> O(((終了)))
   P@{ shape: doc, label: "文書" } --> L`;
 
+/** 構成図の SharedSide: 1 つのノードの下の辺から 4 本、上の辺に 2 本の線が出入りする（モック `docs/mock/components/map-wire-ports/` の `FAN`） */
+const MAP_FLOW_SHARED_SIDE = `flowchart TB
+  hub[mount] --> a[表]
+  hub --> b[図]
+  hub --> c[注意書き]
+  hub --> d[コードブロック]
+  x[設定] --> hub
+  y[索引] --> hub
+`;
+
 const MAP_FLOW_PARALLEL = `flowchart LR
   subgraph A [A]
     a1
@@ -1226,6 +1236,7 @@ const mapFlowStorySource = (
     wrapped: MAP_FLOW_WRAPPED,
     measured: MAP_FLOW_MEASURED,
     parallel: MAP_FLOW_PARALLEL,
+    "shared-side": MAP_FLOW_SHARED_SIDE,
     styled: MAP_FLOW_STYLED,
     "wire-ends": MAP_FLOW_WIRE_ENDS,
   };
@@ -1570,8 +1581,11 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         measureText: estimateTextWidth,
       },
     );
-    // 図に描くときと同じく、同じ区間を通る線を並べる
-    const layout = { ...placed, wires: separateWires(placed).wires };
+    // 図に描くときと同じく、同じ辺の線の端を並べてから、同じ区間を通る線を並べる
+    const layout = {
+      ...placed,
+      wires: separateWires({ ...placed, wires: spreadWireEnds(placed) }).wires,
+    };
     const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
     const selected = jsonList(args.selected);
     return mapFrame(
@@ -1760,7 +1774,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       { collapsed, entered },
       { overrides: inputs.overrides, nodeFit, measureText: estimateTextWidth },
     );
-    const layout = { ...placed, wires: spreadMapEnds(placed) };
+    const layout = { ...placed, wires: spreadWireEnds(placed) };
     const part = renderMapClassDiagram({
       layout,
       kinds: MAP_CLASS_KINDS,
@@ -1863,7 +1877,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       { collapsed, entered },
       { overrides, nodeFit: "height", measureText: estimateTextWidth },
     );
-    const layout = { ...placed, wires: spreadMapEnds(placed) };
+    const layout = { ...placed, wires: spreadWireEnds(placed) };
     // 閉じた境界の中の要素への関係は、境界へまとめた線に付け替える（mount の attachMapFlow と同じ）
     const drawnWire = (id: string): string => {
       if (layout.wires.some((wire) => wire.id === id)) return id;

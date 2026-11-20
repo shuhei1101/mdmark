@@ -1,0 +1,105 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 同じノードの同じ辺から出る線の出る位置がずれ、並んで走る線の間隔が取られる。ノードの名前・種類の行・線のラベルとマインドマップの項目の文字が細めで小さめになり、マインドマップの項目が枠を持ち短い名前を折り返さない。線の押せる範囲を変えても、ポインターを重ねたときの強調とドラッグで区間を動かす操作は今と同じ。「ポインターを適用する」を「ポインターを重ねる」にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-40.yaml
+    impact: changed
+    detail: ER 図・クラス図のノートのマーカーを含め、ツールチップを持つ要素にポインターを重ねてもカーソルが help にならない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-6.yaml
+    impact: changed
+    detail: VS Code 拡張機能が書き出す HTML に元の Markdown を埋めず、書き出すときに描いた HTML と純粋な Markdown を埋め、開いたときはそれを描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-9.yaml
+    impact: following
+    detail: 印刷する HTML も、書き出しと同じく描いた HTML から起動する
+    depends_on:
+      - docs/scenario/SC-472-6.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: changed
+    detail: 「ポインターを適用する」を「ポインターを重ねる」にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: 「ポインターを適用する」を「ポインターを重ねる」にする。まとめた線にポインターを重ねたときの強調は今と同じ
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 「ポインターを適用する」を「ポインターを重ねる」にする。全画面の構成図で線にポインターを重ねたときの強調は今と同じ
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 「フォーカスを適用したとき」を、ほかの文書と同じ言い方にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: run_only
+    detail: map で描く mermaid のコードブロックの図も、文字の見た目と線の出る位置の変更が及ぶ
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-41.yaml
+    impact: run_only
+    detail: 案内で強調する線とノードの見た目が、線の押せる範囲と文字の見た目の変更で壊れないか
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図を辿って読む流れが、線と文字の見た目の変更で壊れないか
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-88.yaml
+    impact: run_only
+    detail: VS Code で書き出して PDF にする流れが、書き出す中身の変更で壊れないか
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 補足の `notes` の行の「ポインターを適用したとき」を「ポインターを重ねたとき」にする（#749）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
+  - page: docs/guide/構成図の決まり.mark.md
+    new: false
+    change: '`## 線`・`## 交差` に、同じノードの同じ辺から出る線の出る位置をずらすことと、並んで走る線の間隔を、実装で決めた値で記載する（#767。今の「4px ずつずらす」は実装に無い）。ノードの文字の見た目を記載していれば追随する（#766）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
+  - page: docs/guide/VSCode拡張機能.mark.md
+    new: false
+    change: '`## HTML に書き出す` を、書き出すときに描いた HTML と純粋な Markdown を埋め、元の Markdown を埋めない説明にする（#769）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
+  - page: docs/guide/VSCodeで確認する-HTMLとPDFにする.md
+    new: false
+    change: 書き出した HTML の中身と開いたときの挙動の記述を、描いた HTML から起動する形に追随させる（#769。記述が変わらなければ done にする）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
+  - page: docs/guide/API.mark.md
+    change: 公開関数の一覧の表に `renderForMount(markdown, opts)` の行を追加し、関数の節に引数・戻り値（`mount` の `opts.rendered` と `opts.pureMarkdown` に指定する値）と使用方法を記載する（#769）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
+scope_out:
+  - item: マーカーの今の書き方を読む処理（`src/render/legacy-marks.ts`）の削除
+    reason: '#748 の洗い出しで旧と新が並ぶ候補に当たるが、次のマイナーバージョンの破壊的変更として別の Issue が持つ'
+    plan: '#479'
+  - item: map の範囲の外の mermaid のコードブロックを描く処理の重複
+    reason: '#748 が mermaid 以外の部品を対象にし、mermaid は #747 で対応済み'
+    plan: none
+  - item: 線をドラッグで動かす機能そのものの変更
+    reason: '#767 が対象外とし、#764 も今と同じに動くことを求めるため、振る舞いは変えない'
+    plan: none
+  - item: VS Code 拡張機能の結合テスト `test_normal_when_relative_mermaid`（HTML に書き出す）と `test_normal_when_mermaid`（プレビューを開く）の fail
+    reason: develop（origin/develop）の作業ツリーでも同じ 2 件が fail し、この作業 PR の変更に依らない。この作業 PR は mermaid の読み込みと描画を変えていない
+    plan: '#773'

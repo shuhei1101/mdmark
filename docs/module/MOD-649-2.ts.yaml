@@ -72,7 +72,7 @@ data_models:
         description: 子の `stateKey`
       - name: d
         type: string
-        description: SVG の `path` の `d`。親が今の図の根なら根の子の側の辺の中央、それ以外は親の持ち手の先から、子の内側の辺の中央（`plain` の子は下線の高さ）への 3 次ベジェ曲線
+        description: SVG の `path` の `d`。親が今の図の根なら根の子の側の辺の中央、それ以外は親の持ち手の先から、子の内側の辺の中央への 3 次ベジェ曲線
       - name: color
         type: string | undefined
         description: 子の枝の色の名前
@@ -141,7 +141,7 @@ functions:
         summary: 曲線の始点と終点
         condition: 同じ配置
         mock: なし
-        expected: 根から「目的」への曲線が根の右の辺の中央から始まる。「目的」から「利用者を増やす」（`plain`）への曲線が「目的」の右端より `gripWidth` 右から始まり、「利用者を増やす」の左端の下端で終わる
+        expected: 根から「目的」への曲線が根の右の辺の中央から始まる。「目的」から「利用者を増やす」（`plain`）への曲線が「目的」の右端より `gripWidth` 右から始まり、「利用者を増やす」の左の辺の中央で終わる（`plain` もほかの形状と同じく枠線を持つ）
     refs:
       - IF-472-35#constraints[map のマインドマップ]
   - name: mindmapBranchColor

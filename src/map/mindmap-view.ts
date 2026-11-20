@@ -30,6 +30,14 @@ import {
   writeMapState,
 } from "./state.ts";
 
+/** 押した要素で項目を選ぶか: 押せる要素か、名前の文字（ドラッグで文字を選んだときは選ばない） */
+const selectsItem = (target: Element): boolean => {
+  if (target.matches(".mdmark-diagram-node-hit")) return true;
+  if (!target.closest(".map-mindmap-item .mdmark-diagram-node-name"))
+    return false;
+  return String(getSelection() ?? "") === "";
+};
+
 /** `attachMapMindmap` の戻り値 */
 export type MapMindmapHandle = {
   /** 時計と操作を外す */
@@ -426,7 +434,7 @@ export const attachMapMindmap = (
     pressed = target?.closest("button") ?? null;
     if (clickControl(target)) return;
     pressed = null;
-    if (!target?.matches(".mdmark-diagram-node-hit")) return;
+    if (!target || !selectsItem(target)) return;
     const key = target.closest<HTMLElement>(".map-mindmap-item")?.dataset.node;
     if (key !== undefined) toggleSelected(key);
   };

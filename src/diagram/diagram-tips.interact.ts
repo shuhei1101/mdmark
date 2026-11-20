@@ -179,8 +179,10 @@ export function attachDiagramTips(options: {
 
   /** 持ち主にポインターとフォーカスの操作を付ける。タッチは `pointerenter`・`pointerleave` で開閉せず、`pointerdown` で切り替える（iOS の Safari はタップした持ち主に `:hover` を残すため） */
   const bind = (owner: HTMLElement, name: string): void => {
-    ownerNames.set(owner, name);
-    owner.addEventListener(
+    // map の線の押せる範囲は区間ごとの帯に分かれ、持ち主は最も長い区間の帯だけのため、ポインターは線ごとの g で受ける
+    const pointerArea = owner.closest<HTMLElement>("g.map-wire-hit") ?? owner;
+    ownerNames.set(pointerArea, name);
+    pointerArea.addEventListener(
       "pointerenter",
       (event) => {
         if (event.pointerType !== "touch") {
@@ -189,7 +191,7 @@ export function attachDiagramTips(options: {
       },
       { signal },
     );
-    owner.addEventListener(
+    pointerArea.addEventListener(
       "pointerleave",
       (event) => {
         if (event.pointerType !== "touch") {
@@ -198,7 +200,7 @@ export function attachDiagramTips(options: {
       },
       { signal },
     );
-    owner.addEventListener(
+    pointerArea.addEventListener(
       "pointerdown",
       (event) => {
         if (event.pointerType !== "touch") {

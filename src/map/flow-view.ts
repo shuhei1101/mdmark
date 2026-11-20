@@ -43,6 +43,7 @@ import {
   type MapOverride,
   type MeasureText,
   separateWires,
+  spreadWireEnds,
 } from "./layout.ts";
 import { attachMapList, flowListItems } from "./list.ts";
 import {
@@ -246,7 +247,7 @@ const textMeasurerOf = (
     measureText: (text) => {
       const known = widths.get(text);
       if (known !== undefined) return known;
-      font ??= `700 ${LABEL_METRICS.nameSize}px ${getComputedStyle(range).fontFamily}`;
+      font ??= `400 ${LABEL_METRICS.nameSize}px ${getComputedStyle(range).fontFamily}`;
       context.font = font;
       const width = context.measureText(text).width;
       widths.set(text, width);
@@ -257,7 +258,7 @@ const textMeasurerOf = (
       widths = new Map();
       font = undefined;
       return [...before].some(([text, width]) => {
-        font ??= `700 ${LABEL_METRICS.nameSize}px ${getComputedStyle(range).fontFamily}`;
+        font ??= `400 ${LABEL_METRICS.nameSize}px ${getComputedStyle(range).fontFamily}`;
         context.font = font;
         return context.measureText(text).width !== width;
       });
@@ -649,7 +650,10 @@ const groupKeyTarget = (
 const wireKeyTarget = (element: Element | undefined): KeyTarget | undefined => {
   const wire = element?.closest(".map-wire-hit")?.getAttribute("data-wire");
   if (!wire) return undefined;
-  return { wire, selector: `.map-wire-hit[data-wire="${CSS.escape(wire)}"]` };
+  return {
+    wire,
+    selector: `.map-wire-hit[data-wire="${CSS.escape(wire)}"] [tabindex]`,
+  };
 };
 
 /** キーで操作する要素 */
@@ -882,9 +886,10 @@ export const attachMapFlow = (
           wires: extension.rewire(placed, { collapsed: state.collapsed }),
         }
       : placed;
-    const separated = separateWires(rewired);
+    const ported = { ...rewired, wires: spreadWireEnds(rewired) };
+    const separated = separateWires(ported);
     return {
-      layout: { ...rewired, wires: separated.wires },
+      layout: { ...ported, wires: separated.wires },
       crowded: separated.crowded,
     };
   };

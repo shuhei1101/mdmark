@@ -44,14 +44,17 @@ functions:
          - `[warn]` 設定ファイルを読み込めないため設定なしで書き出す（パス・行・`message`）
          - `[warn]` エイリアスのずれ（`aliasIssues` の 1 件ずつ、ずれを 1 行にした値）
          - `[warn]` ライブラリをまとめられない（パス・誤り）
-      3. 書き出す先を決め（書き出す先を決める）、`getText()` の全文で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき、`importMap` は相対パスの色分けのライブラリを埋めるが返却した `imports`、`aliases` は設定ファイルを読み込むが返却した `aliases`）、記載する（一時ファイルから置き換える）
+      3. 配布物の描く処理を読み込み（`dist.ts` の `loadDistRenderer`。`version` は手順 1 のバージョン、`storageDir` は `context.globalStorageUri.fsPath`、`distBase` は `deps.distBase`）、`getText()` の全文を `renderForMount`（設定・エイリアス・プレビューと同じ読み込み方で集めた取り込む文書を指定）で描いた結果と純粋な Markdown にする（戻り値の Promise を待つ）
+         - `unavailable` の場合、画面設計の「配布物を取得できない通知」を `showErrorMessage` で出し、`undefined` を返却する
+         - `unsupported` の場合、「描いた HTML から起動できないバージョンの通知」を出し、`undefined` を返却する
+      4. 書き出す先を決め（書き出す先を決める）、描いた結果と純粋な Markdown で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき、`importMap` は相対パスの色分けのライブラリを埋めるが返却した `imports`、`aliases` は設定ファイルを読み込むが返却した `aliases`）、記載する（一時ファイルから置き換える）
          - 記載できない場合、画面設計の「書き出せない通知」を `showErrorMessage` で出し、`undefined` を返却する
            - `[error]` HTML を書き出せない（パス・誤り）
          - `[info]` HTML を書き出した（パス・バージョン・`mode`）
-      4. `mode` で分ける
+      5. `mode` で分ける
          - `export` の場合、「書き出した通知」を出す（待たずに返却する）。「ブラウザで開く」が押されたら `env.openExternal` で開く
          - `browser`・`print` の場合、`env.openExternal` で開く
-      5. 書き出した HTML の `Uri` を返却する
+      6. 書き出した HTML の `Uri` を返却する
     callees:
       - MOD-472-22#functions[decideVersion]
       - MOD-472-104#functions[loadConfig]
@@ -63,6 +66,7 @@ functions:
       - 'MOD-472-102#functions[embedLocalLibraries]'
       - MOD-472-102#functions[embedLocalSyntax]
       - MOD-472-117#functions[readFrontmatterValues]
+      - MOD-472-369#functions[loadDistRenderer]
     refs:
       - IF-472-15#
       - IF-472-15#constraints[エイリアス]

@@ -294,11 +294,11 @@ test("test_layout_map_when_name_fits_with_right_padding", async () => {
   const layout = await laid(
     {},
     {},
-    { source: "flowchart LR\n  A[データベース]\n" },
+    { source: "flowchart LR\n  A[データベース層]\n" },
   );
   // 検証
   const node = layout.nodes.find((item) => item.id === "A");
-  expect(node?.w).toBe(125);
+  expect(node?.w).toBe(132);
   expect(node?.h).toBe(leafHeight(1));
   expect(node?.lines).toHaveLength(1);
 });
@@ -325,7 +325,7 @@ test("test_layout_map_when_name_wraps_with_right_padding", async () => {
 test("test_layout_map_when_width_with_right_padding", async () => {
   // 準備
   const { leafHeight } = await loadLayout();
-  const name = "あ".repeat(12);
+  const name = "あ".repeat(13);
   // 実行
   const layout = await laid(
     {},
@@ -346,7 +346,7 @@ test("test_leaf_height", async () => {
   // 実行
   const heights = [leafHeight(1), leafHeight(2)];
   // 検証
-  expect(heights).toEqual([63, 83]);
+  expect(heights).toEqual([62, 80]);
 });
 
 /** 1 文字を決まった幅と測る関数 */
@@ -401,7 +401,7 @@ test("test_layout_map_when_pill_padding", async () => {
   );
   // 検証
   const node = layout.nodes.find((item) => item.id === "A");
-  expect(node?.w).toBe(145);
+  expect(node?.w).toBe(138);
   expect(node?.lines).toHaveLength(1);
 });
 
@@ -422,7 +422,7 @@ test("test_estimate_text_width", async () => {
   // 実行
   const width = estimateTextWidth("文書の Markdown");
   // 検証
-  expect(width).toBeCloseTo(117.6, 5);
+  expect(width).toBeCloseTo(109.2, 5);
 });
 
 // 閉じたグループのノードの数（正常系）
@@ -486,10 +486,10 @@ test("test_layout_map_when_collapsed_height", async () => {
     { collapsed: ["store"] },
     { store: { size: { w: 120, h: 30 } } },
   );
-  // 検証（タイトルの行 36px + 数の行 17px + 余白 上下 6px）
+  // 検証（タイトルの行 36px + 数の行 17px + 余白 上下 6px + 二重の枠線 6px）
   const store = layout.groups.find((group) => group.id === "store");
   expect(store?.collapsed).toBe(true);
-  expect(store?.h ?? 0).toBeGreaterThanOrEqual(59);
+  expect(store?.h ?? 0).toBeGreaterThanOrEqual(65);
 });
 
 // 間を広げる（正常系）
@@ -678,7 +678,7 @@ test("test_separate_wires", async () => {
   // 実行
   const result = separateWires(layout);
   // 検証
-  expect(corridorXs(result.wires)).toEqual([132, 140, 148]);
+  expect(corridorXs(result.wires)).toEqual([124, 140, 156]);
   expect(totalOverlap(result.wires)).toBe(0);
   for (const wire of result.wires) expect(orthogonal(wire.points)).toBe(true);
   expect(result.crowded).toBe(0);
@@ -688,13 +688,13 @@ test("test_separate_wires", async () => {
 test("test_separate_wires_when_grid_line", async () => {
   // 準備（L の右の辺から 12px の線。通り道は 112〜168px で、中ほどは 140px）
   const { separateWires } = await loadLayout();
-  const layout = corridorLayout({ n: 5, lineX: 112, rightX: 180 });
+  const layout = corridorLayout({ n: 3, lineX: 112, rightX: 180 });
   const left = layout.nodes.find((node) => node.id === "L") as Rect;
   const right = layout.nodes.find((node) => node.id === "R") as Rect;
   // 実行
   const result = separateWires(layout);
   // 検証
-  expect(corridorXs(result.wires)).toEqual([124, 132, 140, 148, 156]);
+  expect(corridorXs(result.wires)).toEqual([124, 140, 156]);
   for (const wire of result.wires) {
     for (const [k, point] of wire.points.slice(1).entries()) {
       const previous = wire.points[k] as Point;
@@ -709,9 +709,9 @@ test("test_separate_wires_when_grid_line", async () => {
 test("test_separate_wires_when_crowded", async () => {
   // 準備（通り道は 112〜128px の 16px で、束の幅 32px に 16px 足りない）
   const { separateWires } = await loadLayout();
-  const narrow = corridorLayout({ n: 5, lineX: 112, rightX: 140 });
+  const narrow = corridorLayout({ n: 3, lineX: 112, rightX: 140 });
   // spread: 16 で配置し直すと、R が 16px 右へ動く
-  const widened = corridorLayout({ n: 5, lineX: 112, rightX: 156 });
+  const widened = corridorLayout({ n: 3, lineX: 112, rightX: 156 });
   // 実行
   const crowded = separateWires(narrow).crowded;
   const after = separateWires(widened).crowded;
@@ -869,6 +869,97 @@ test("test_separate_wires_when_short_end", async () => {
     }
   }
   expect(totalOverlap(result.wires)).toBe(0);
+});
+
+/** 上の n 本の線の点の並び（向こう側の点の x を左から順に持ち、最後の点が N の辺の上の (endX, endY) にある） */
+const endingWires = (options: {
+  farXs: number[];
+  endX: number;
+  endY: number;
+  bendY: number;
+}): TestWire[] =>
+  options.farXs.map((farX, index) => ({
+    id: `S${index}->N`,
+    from: `S${index}`,
+    to: "N",
+    points: [
+      [farX, -40],
+      [farX, options.bendY],
+      [options.endX, options.bendY],
+      [options.endX, options.endY],
+    ],
+  }));
+
+// 同じ点に入る 3 本（正常系）
+test("test_spread_wire_ends", async () => {
+  // 準備（幅 120px の N の上の辺の中ほど (60, 100) に入る 3 本。向こう側の点は左から -100・0・200）
+  const { spreadWireEnds } = await loadLayout();
+  const wires = endingWires({
+    farXs: [200, -100, 0],
+    endX: 60,
+    endY: 100,
+    bendY: 60,
+  });
+  const layout = layoutOf([{ id: "N", x: 0, y: 100, w: 120, h: 40 }], wires);
+  // 実行
+  const result = spreadWireEnds(layout);
+  // 検証
+  const endOf = (id: string) =>
+    (result.find((wire) => wire.id === id)?.points.at(-1) ?? [Number.NaN])[0];
+  expect(endOf("S1->N")).toBe(44);
+  expect(endOf("S2->N")).toBe(60);
+  expect(endOf("S0->N")).toBe(76);
+  for (const wire of result) {
+    const end = wire.points.at(-1) as Point;
+    const next = wire.points.at(-2) as Point;
+    expect(end[1]).toBe(100);
+    expect(next[0]).toBe(end[0]);
+    expect(orthogonal(wire.points)).toBe(true);
+  }
+});
+
+// 辺に収まらない 4 本（正常系）
+test("test_spread_wire_ends_when_short_side", async () => {
+  // 準備（幅 48px の N の下の辺の中ほど (24, 40) から出る 4 本。16px 間隔では 64px 要る）
+  const { spreadWireEnds } = await loadLayout();
+  const wires: TestWire[] = [-100, -50, 100, 150].map((farX, index) => ({
+    id: `N->T${index}`,
+    from: "N",
+    to: `T${index}`,
+    points: [
+      [24, 40],
+      [24, 80],
+      [farX, 80],
+      [farX, 200],
+    ],
+  }));
+  const layout = layoutOf([{ id: "N", x: 0, y: 0, w: 48, h: 40 }], wires);
+  // 実行
+  const result = spreadWireEnds(layout);
+  // 検証
+  const starts = result.map((wire) => (wire.points[0] as Point)[0]);
+  expect(starts).toEqual([6, 18, 30, 42]);
+  for (const wire of result) {
+    const start = wire.points[0] as Point;
+    expect(start[0]).toBeGreaterThanOrEqual(0);
+    expect(start[0]).toBeLessThanOrEqual(48);
+    expect((wire.points[1] as Point)[0]).toBe(start[0]);
+    expect(orthogonal(wire.points)).toBe(true);
+  }
+});
+
+// 1 本だけの端（正常系）
+test("test_spread_wire_ends_when_single", async () => {
+  // 準備（N の上の辺の中ほどに入る 1 本だけの線）
+  const { spreadWireEnds } = await loadLayout();
+  const wires = endingWires({ farXs: [-100], endX: 60, endY: 100, bendY: 60 });
+  const layout = layoutOf([{ id: "N", x: 0, y: 100, w: 120, h: 40 }], wires);
+  // 実行
+  const result = spreadWireEnds(layout);
+  // 検証
+  expect(result.map((wire) => wire.points)).toEqual(
+    wires.map((wire) => wire.points),
+  );
 });
 
 type Side = "top" | "right" | "bottom" | "left";

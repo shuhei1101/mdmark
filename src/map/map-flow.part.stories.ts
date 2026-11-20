@@ -93,6 +93,12 @@ export const ParallelWires: Story = {
   args: { source: "parallel" },
 };
 
+export const SharedSide: Story = {
+  name: "SharedSide",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "shared-side" },
+};
+
 export const WrappedName: Story = {
   name: "WrappedName",
   parameters: { server: { id: "map-flow" } },

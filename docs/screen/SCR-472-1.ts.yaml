@@ -105,6 +105,24 @@ elements:
     action_ref: IF-472-24#
     reason: 歯車の配置場所は確認ログ「プレビューの歯車のボタンの配置場所と押したときの動き」の決定
     status: planned
+  - name: 配布物を取得できない通知
+    id: notify-dist-unavailable
+    kind: notification
+    position: VS Code の通知
+    description: 書き出すときに、決めたバージョンの `dist/index.js` を取得できず、拡張機能の保存先にも無いときに `showErrorMessage` で出す（`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`）
+    label: '`HTML を書き出せませんでした。mdmark {バージョン} の配布物を取得できません（{理由}）。ネットワークにつながっているかを確認してから、もう一度実行してください。`'
+    visible_when: 決めたバージョンの `dist/index.js` を jsDelivr から取得できず、保存先にも無いとき
+    action_ref: IF-472-15#constraints[バージョンと描く処理]
+    status: planned
+  - name: 描いた HTML から起動できないバージョンの通知
+    id: notify-version-unsupported
+    kind: notification
+    position: VS Code の通知
+    description: 決めたバージョンの配布物が `renderForMount` を公開していないときに `showErrorMessage` で出す（`mdmark.exportHtml`・`mdmark.openInBrowser`・`mdmark.printToPdf`）
+    label: '`HTML を書き出せませんでした。mdmark {バージョン} はこの書き出しに対応していません。設定 mdmark.version を latest か、より新しいバージョンに修正してください。`'
+    visible_when: 決めたバージョンが描いた HTML から起動できないとき
+    action_ref: IF-472-15#exceptions[なし（描いた HTML から起動できないバージョン）]
+    status: planned
 screen: vscode/package.json
 lead: VS Code 拡張機能が VS Code の画面に追加する操作の場所（エディタのタイトルのボタン・コマンドパレットのコマンド）と、VS Code のダイアログ・通知に出す文言。外観は VS Code のままで、モックは作らない。
 refs:

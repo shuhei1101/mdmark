@@ -1778,3 +1778,53 @@ test("test_mount_when_rendered_invalid", async () => {
   expect(empty.innerHTML).toBe("");
   expect(mixed.innerHTML).toBe("");
 });
+
+// 描いた結果の 5 つの項目と純粋な Markdown を返却し、元の Markdown のマーカーを残さない（正常系）
+test("test_render_for_mount", async () => {
+  // 準備
+  const { renderForMount } = await loadMount();
+  const markdown = [
+    "# 文書",
+    "",
+    "<!-- 原本だけの目印 -->",
+    "",
+    '<!-- features: {"print": false} -->',
+    "",
+    '<!-- table: {"kind": "data"} -->',
+    "",
+    "| a | b |",
+    "| --- | --- |",
+    "| 1 | 2 |",
+    "",
+    "<!-- /table -->",
+    "",
+    wrapDirective("param", STRENGTH_TEXT),
+    "",
+  ].join("\n");
+  // 実行
+  const { rendered, pureMarkdown } = await renderForMount(markdown);
+  // 検証
+  expect(Object.keys(rendered).sort()).toEqual([
+    "extensionDefinitions",
+    "features",
+    "html",
+    "page",
+    "paramDefinitions",
+  ]);
+  expect(rendered.features.print).toBe(false);
+  expect(rendered.paramDefinitions).toHaveLength(1);
+  for (const text of [rendered.html, pureMarkdown]) {
+    expect(text).not.toContain("原本だけの目印");
+    expect(text).not.toContain("<!-- table");
+  }
+});
+
+// 文字列でない Markdown は TypeError（異常系）
+test("test_render_for_mount_when_not_string", async () => {
+  // 準備
+  const { renderForMount } = await loadMount();
+  // 実行・検証
+  await expect(
+    renderForMount(null as unknown as string),
+  ).rejects.toBeInstanceOf(TypeError);
+});
