@@ -41,6 +41,29 @@ functions:
     returns:
       type: Pick<MountOptions, "index" | "docId" | "references" | "aliases">
       description: '`payload` と `docId` が持つものだけを入れた引数（持たないキーは入れない）'
+  - name: renderedOptions
+    title: 描いた結果の引数を組み立てる
+    container: src/viewer/includes.ts
+    kind: 関数
+    scope: internal
+    summary: 書き出しの中身の文書 1 つから、`mount` の `rendered`・`pureMarkdown`・`path` を作る。`bundle` では `rendered.html` の `mdmark-asset:{キー}` を `assets` の `data:` URL に替える
+    args:
+      - name: options
+        type: '{ payload: ExportPayload; doc: ExportPayload["docs"][number] }'
+        required: true
+        description: 書き出しの中身と、開く文書
+    returns:
+      type: '{ rendered: MdmarkRendered; pureMarkdown: string; path: string }'
+      description: '`mount` に指定する引数'
+    callees:
+      - MOD-472-247#functions[restoreAssets]
+    unit_tests:
+      - name: test_rendered_options
+        case: 正常
+        summary: '描いた結果の画像のキーを data: URL に替え、純粋な Markdown とパスをそのまま渡す'
+        condition: '`kind: bundle`、`rendered.html` に `<img src="mdmark-asset:a">`、`assets` に `a`'
+        mock: なし
+        expected: '`rendered.html` の `src` が `assets.a` の `data:` URL、`pureMarkdown`・`path` が文書の値'
 tags:
   - name: tool:html
     main: true

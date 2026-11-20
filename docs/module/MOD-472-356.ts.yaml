@@ -101,6 +101,12 @@ functions:
         mock: ファイルを表で返却する `$.fs`
         expected: '`GlossaryError` を投げ、メッセージにパスが入る'
         exception: '`configPath` か索引が無いか YAML として読み取れない'
+      - name: test_load_glossary_skips_alias_row
+        case: 正常
+        summary: 表を囲まない `alias_row` の `glossary` のマーカーを飛ばし、その行の用語はエイリアスから集める
+        condition: '`<!-- glossary: {"alias_row": "terms"} -->` だけを持つ用語集の文書と、行 `terms` を `aliases` に持つ `mdmark.config.yaml`'
+        mock: '`$.fs` を手元の中身を返却する関数に差し替える'
+        expected: 例外を投げず、返却する用語集に行 `terms` のエイリアスがあり、表から入れた用語が無い
     callees:
       - IF-472-26#
     refs:

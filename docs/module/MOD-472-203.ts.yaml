@@ -47,6 +47,15 @@ data_models:
       - name: resolveIdLink
         type: ResolveIdLink | undefined
         description: '`id:` で始まるリンク先（`id:` を含む値）を開く URL に変える関数。文書を描く処理（`renderDocument` の `resolveIdLink`）と、ビューとコメントの部品を付ける処理（`attachParts` の `resolveIdLink`。map のノードのリンク）に指定する。省くと `id:` のリンク先を許可しないリンク先として扱う'
+      - name: rendered
+        type: MdmarkRendered | undefined
+        description: 書き出しが `renderDocument` で描いた結果（`html`・`features`・`page`・`paramDefinitions`・`extensionDefinitions`）。指定すると Markdown を描かず、操作だけを付ける
+      - name: pureMarkdown
+        type: string | undefined
+        description: '`rendered` で描いたときの Markdown のコピーとエクスポートのボタンが使用する純粋な Markdown'
+      - name: path
+        type: string | undefined
+        description: 描く文書の、設定ファイルのフォルダからの相対パス。`renderDocument` に指定する
   - name: MountHandle
     title: 描いた要素の操作
     container: src/mount.ts
@@ -79,6 +88,26 @@ data_models:
         type: string[]
         description: 隠している列の見出しの文字（`textContent` の前後の空白を除いたもの）を表の列の順に並べた変更後の配列
     status: planned
+  - name: MdmarkRendered
+    title: 描いた結果
+    container: src/mount.ts
+    summary: '`mount` の `rendered` に指定する、`renderDocument` の戻り値のうち `mount` が使用する項目。`Pick<RenderedDocument, "html" | "features" | "page" | "paramDefinitions" | "extensionDefinitions">` で導出し、公開の型として export する'
+    properties:
+      - name: html
+        type: string
+        description: 描いた本文の HTML 文字列
+      - name: features
+        type: Record<string, boolean>
+        description: 文書のマーカーを重ねた機能のオン・オフ
+      - name: page
+        type: PageSettings
+        description: page のマーカーのページの設定
+      - name: paramDefinitions
+        type: MdmarkParamDefinition[]
+        description: 操作できる部品の定義
+      - name: extensionDefinitions
+        type: unknown[]
+        description: 範囲の拡張のマーカーの部品の定義
 constants:
   - name: mounted
     title: 描いた要素の記録
@@ -459,6 +488,30 @@ functions:
         condition: '`location.hash` を `#見出し` にし、`## 見出し` と、中身に `## 見出し` と表を持つ言語 `markdown` のコードブロックの文書を描き、続けて `hashchange` を発生させる'
         mock: '`Element.prototype.scrollIntoView` を記録する関数に差し替える'
         expected: 描いた結果に `h2` があり、`scrollIntoView` を呼んだ要素に描いた結果の中の要素が無い
+      - name: test_mount_with_rendered
+        case: 正常
+        summary: 描いた結果を要素に入れ、Markdown から描いたときと同じ HTML と操作にする
+        condition: インターフェース定義『文書を描く』の正常系（描いた結果から描く）の文書を `renderDocument` で描いた `rendered` と `pureMarkdown`。同じ文書を `markdown` で描いた要素と比べる
+        mock: Chromium の `document`（`.browser.test.ts` で実行する）
+        expected: 要素の `innerHTML` が等しい。表の並べ替えのボタンが動き、要素にダークの class が付き、Markdown でコピーで `pureMarkdown` が書き込まれる
+      - name: test_mount_with_rendered_param
+        case: 正常
+        summary: 描いた結果の `paramDefinitions` で操作できる部品を付ける
+        condition: '`param` の範囲を持つ文書の `rendered`'
+        mock: Chromium の `document`
+        expected: スライダーを動かすと値が更新される
+      - name: test_mount_when_rendered_without_pure_markdown
+        case: 正常
+        summary: '`pureMarkdown` が無いとき、Markdown のコピーとエクスポートのボタンを配置しない'
+        condition: '`rendered` だけを指定し、`markdown-buttons` がオン'
+        mock: Chromium の `document`
+        expected: 右側の目次に Markdown でコピーのボタンが無い
+      - name: test_mount_when_rendered_invalid
+        case: 異常
+        summary: '`markdown` も `rendered` も無いときと、`rendered` を `baseMarkdown` と一緒に指定したときに TypeError を投げる'
+        condition: 2 つの誤った引数
+        mock: Chromium の `document`
+        expected: どちらも `TypeError`、要素が空
   - name: checkBaseMarkdown
     title: 比較元を検める
     container: src/mount.ts

@@ -98,7 +98,16 @@ functions:
         condition: '`config.mermaid.theme` が `mdmark`、`docs[0]` の `title` が `mdmark の紹介`・`path` が `mdmark-intro.md`、`index` の用語が `mdmark`'
         mock: なし
         expected: '`config.mermaid.theme` が `zq` で、`title`・`path`・`index` の用語は `mdmark` のまま'
+      - name: test_hide_payload_with_rendered
+        case: 正常
+        summary: '`docs[].rendered.html` に `hideRenderedHtml` を適用し、`docs[].pureMarkdown` は置き換えない'
+        condition: '`rendered.html` と `pureMarkdown` に `mdmark` を持つ中身'
+        mock: なし
+        expected: '`rendered.html` のタグの mdmark が別名、`pureMarkdown` は元のまま'
     status: planned
+    callees:
+      - '#functions[hideNames]'
+      - '#functions[hideRenderedHtml]'
   - name: hideCss
     title: CSS の痕跡を隠す
     container: src/cli/traces.ts
@@ -152,6 +161,30 @@ functions:
         mock: なし
         expected: 2 つの `/*!` の注釈が元の文字のまま残る
     status: planned
+  - name: hideRenderedHtml
+    title: 埋める本文の HTML の痕跡を隠す
+    container: src/cli/traces.ts
+    kind: 関数
+    scope: internal
+    summary: 埋める本文の HTML の要素名・属性名・`class`・`id`・`data-*` の属性の値・`style` の属性の CSS 変数の名前・`mdmark-asset:` の `mdmark` を別名へ置き換え、HTML のコメントを削除する
+    description: テキストのノードと `href`・`src`・`alt`・`title` の属性の値は置き換えない。DOM に頼らず、タグの字句を読み取って置き換える（書き出しは Node で動く）
+    args:
+      - name: html
+        type: string
+        required: true
+        description: '`renderDocument` が返却した本文の HTML'
+    returns:
+      type: string
+      description: 隠した HTML
+    callees:
+      - '#functions[hideNames]'
+    unit_tests:
+      - name: test_hide_rendered_html
+        case: 正常
+        summary: タグと属性の mdmark を置き換え、本文の文字とリンク先は残す
+        condition: '`<mdmark-chart class="mdmark-x" data-mdmark-mermaid style="color:var(--mdmark-fg)"><a href="mdmark-intro.md">mdmark</a></mdmark-chart><!-- c --><img src="mdmark-asset:1">`'
+        mock: なし
+        expected: 要素名・`class`・属性名・CSS 変数・`mdmark-asset:` が別名になり、`href` とテキストの `mdmark` は残り、コメントが無い
 refs:
   - IF-472-33#constraints[mdmark の痕跡]
 lead: '書き出した HTML の mdmark の痕跡を隠す処理を受け持ち、書き出しで隠す範囲を変えるときに参照する。'
