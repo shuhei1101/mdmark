@@ -18,6 +18,25 @@ const OPEN_CLASS = "is-open";
 const BELOW_CLASS = "is-below";
 const DISMISSED_CLASS = "is-dismissed";
 
+// 開いたツールチップを持つ表のセルに付ける class（留めたセルの重なりのまとまりの中のツールチップを、見出し行・ピン止めした列より手前に描く）
+const TIP_OPEN_CELL_CLASS = "is-tip-open";
+
+// 同じセルの中の開いたツールチップ（用語と脚注）
+const OPEN_TIP_SELECTOR = ".mdmark-term-wrap.is-open, .mdmark-fn-ref.is-open";
+
+/** 開いたツールチップを持つ要素が表のセルの中にあれば、セルに `is-tip-open` を付ける */
+function markTipCell(element: HTMLElement): void {
+  element.closest("th, td")?.classList.add(TIP_OPEN_CELL_CLASS);
+}
+
+/** 閉じた後、表のセルの中に開いたツールチップが残っていなければ、セルの `is-tip-open` を削除する */
+function unmarkTipCell(element: HTMLElement): void {
+  const cell = element.closest("th, td");
+  if (cell && !cell.querySelector(OPEN_TIP_SELECTOR)) {
+    cell.classList.remove(TIP_OPEN_CELL_CLASS);
+  }
+}
+
 // `id` を重ならせないための、操作を付けた回数の通し番号
 let attachCounter = 0;
 
@@ -143,6 +162,7 @@ export function attachTermTips(options: {
     clearTimeout(timers.get(wrap));
     wrap.classList.remove(OPEN_CLASS, BELOW_CLASS);
     clearPlace(wrap);
+    unmarkTipCell(wrap);
   };
   /** ほかのツールチップを閉じてから開く。Esc で閉じた後は、単語を離れるまでもう一度開かない */
   const open = (wrap: HTMLElement): void => {
@@ -156,6 +176,7 @@ export function attachTermTips(options: {
       }
     }
     wrap.classList.add(OPEN_CLASS);
+    markTipCell(wrap);
     place({ wrap, placement });
   };
   /** ポインターもフォーカスも単語とツールチップを離れたら、少し待って閉じる */

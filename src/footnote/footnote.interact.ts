@@ -13,6 +13,25 @@ const OPEN_CLASS = "is-open";
 const BELOW_CLASS = "is-below";
 const DISMISSED_CLASS = "is-dismissed";
 
+// 開いたツールチップを持つ表のセルに付ける class（留めたセルの重なりのまとまりの中のツールチップを、見出し行・ピン止めした列より手前に描く）
+const TIP_OPEN_CELL_CLASS = "is-tip-open";
+
+// 同じセルの中の開いたツールチップ（用語と脚注）
+const OPEN_TIP_SELECTOR = ".mdmark-term-wrap.is-open, .mdmark-fn-ref.is-open";
+
+/** 開いたツールチップを持つ要素が表のセルの中にあれば、セルに `is-tip-open` を付ける */
+function markTipCell(element: HTMLElement): void {
+  element.closest("th, td")?.classList.add(TIP_OPEN_CELL_CLASS);
+}
+
+/** 閉じた後、表のセルの中に開いたツールチップが残っていなければ、セルの `is-tip-open` を削除する */
+function unmarkTipCell(element: HTMLElement): void {
+  const cell = element.closest("th, td");
+  if (cell && !cell.querySelector(OPEN_TIP_SELECTOR)) {
+    cell.classList.remove(TIP_OPEN_CELL_CLASS);
+  }
+}
+
 // もう一度振る `id` の頭（長い頭から適用する）。注記は脚注の部品と同じ要素で、map の図の持ち主を含む
 const ID_PREFIXES = [
   "mdmark-fn-tip-",
@@ -155,6 +174,7 @@ export function attachFootnotes(options: {
     clearTimeout(timers.get(ref));
     ref.classList.remove(OPEN_CLASS, BELOW_CLASS);
     clearPlace(ref);
+    unmarkTipCell(ref);
   };
   /** ほかのツールチップを閉じてから開く。Esc で閉じた後と番号を押した後は、番号を離れるまでもう一度開かない */
   const open = (ref: HTMLElement): void => {
@@ -168,6 +188,7 @@ export function attachFootnotes(options: {
       }
     }
     ref.classList.add(OPEN_CLASS);
+    markTipCell(ref);
     place({ ref, placement });
   };
   /** ポインターもフォーカスも番号とツールチップを離れたら、少し待って閉じる */
