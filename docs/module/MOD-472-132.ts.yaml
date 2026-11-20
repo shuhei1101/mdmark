@@ -51,7 +51,7 @@ data_models:
     properties:
       - name: reveal
         type: '(ids: string[]) => void'
-        description: ノードか参加者を囲む矩形と `FOCUS_MARGIN_PX` の余白が表示する枠に収まる倍率と位置へ、`zoomControlOf` の `focusRect` で図を移す（読者が触った後は `resume` まで何もしない）
+        description: ノードか参加者を囲む矩形が見える位置へ、`zoomControlOf` の `centerRect` で倍率を変えずに図を移す（読者が触った後は `resume` まで何もしない）
       - name: resume
         type: () => void
         description: 読者が触って止めた移動を再開する
@@ -71,17 +71,11 @@ constants:
     usecase: 図を巡回する
     summary: 区切りの幅がこの px より細いとき、手順のバーに `is-dense` を付けて今の区切りを広げる
     value: '12'
-  - name: FOCUS_MARGIN_PX
-    title: 手順へ移すときの余白
-    container: src/map/band.ts
-    usecase: 図を巡回する
-    summary: 強調するノードを囲む矩形の周りに残す、表示する枠の中の余白（px）
-    value: '32'
   - name: FOCUS_MS
     title: 手順へ移す時間
     container: src/map/band.ts
     usecase: 図を巡回する
-    summary: 強調するノードへ図の倍率と位置を移す時間（ミリ秒）。動きを減らす設定では 0
+    summary: 強調するノードへ図の位置を移す時間（ミリ秒）。動きを減らす設定では 0
     value: '300'
 functions:
   - name: attachBand
@@ -161,7 +155,7 @@ functions:
     container: src/map/band.ts
     usecase: 図を巡回する
     role: 処理
-    summary: 図の枠の中を、指定したノードか参加者を囲む矩形が収まる倍率と位置へ移し、読者が表示する枠を触ったら `resume` まで止める
+    summary: 図の枠の中を、指定したノードか参加者を囲む矩形が見える位置へ、倍率を変えずに移し、読者が表示する枠を触ったら `resume` まで止める
     scope: public
     args:
       - name: figure
@@ -176,21 +170,21 @@ functions:
       type: FollowHandle
       description: 移す関数・再開する関数・片付ける関数
     process: |-
-      1. `reveal` は、指定した ID の `[data-node]`・`[data-participant]`（シーケンス図の線は `.map-wire-hit[data-message]`）を囲む矩形を、倍率を掛ける前の中身の座標で求め、表示する枠の `zoomControlOf` の `focusRect`（余白 `FOCUS_MARGIN_PX`、時間は `reducedMotion` なら 0、そうでなければ `FOCUS_MS`）を呼ぶ
+      1. `reveal` は、指定した ID の `[data-node]`・`[data-participant]`（シーケンス図の線は `.map-wire-hit[data-message]`）を囲む矩形を、倍率を掛ける前の中身の座標で求め、表示する枠の `zoomControlOf` の `centerRect`（時間は `reducedMotion` なら 0、そうでなければ `FOCUS_MS`）を呼ぶ。倍率は変えず、移すかどうかは `centerRect` が決める
       2. 読者が表示する枠でホイール・`pointerdown`・キー・タッチをしたら、`resume` まで `reveal` で移さない
     unit_tests:
       - name: test_create_follow_when_touched
         case: 正常
         summary: 読者が触る
         condition: '`reveal` を呼び、表示する枠でホイールを回して `reveal`、`resume` の後に `reveal` を呼ぶ'
-        mock: '`zoomControlOf` が返す `focusRect`'
-        expected: '`focusRect` を 1 回目と 3 回目だけ呼ぶ'
+        mock: '`zoomControlOf` が返す `centerRect`'
+        expected: '`centerRect` を 1 回目と 3 回目だけ呼び、`focusRect` は呼ばない'
       - name: test_create_follow_when_reduced_motion
         case: 正常
         summary: 動きを減らす設定
         condition: '`reducedMotion: true` で 2 つのノードの `reveal` を呼ぶ'
-        mock: '`focusRect`'
-        expected: '`focusRect` に 2 つのノードを囲む矩形と、余白 32・時間 0 が渡る'
+        mock: '`centerRect`'
+        expected: '`centerRect` に 2 つのノードを囲む矩形と、時間 0 が渡る'
     callees:
       - MOD-472-177#functions[zoomControlOf]
 lead: '案内と再生のバーの手順の選び方と繰り返し・停止と、手順へ図を移す処理を受け持ち、案内と再生のバーの操作を変えるときに参照する。'

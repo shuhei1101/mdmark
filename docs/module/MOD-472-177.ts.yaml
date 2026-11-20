@@ -54,6 +54,10 @@ functions:
 
       `focusRect(rect, { margin, duration })` は、倍率を掛ける前の中身の座標の矩形と周りの `margin` が表示する枠に収まる倍率（全体が収まる倍率以上・上限以下）と、矩形の中心が表示する枠の中央に来る位置へ、`duration` ミリ秒かけて `requestAnimationFrame` で倍率と位置を変える（`duration` が 0 なら 1 回で変える。文書のスクロールは変えない）。移している間に読者がホイール・ドラッグ・キー・ツールのボタン（`data-tool`）で操作したら、移すのを止める（ボタンを持つ要素の中の帯の区切りなど、ほかの押下では止めない）。
 
+      `centerRect(rect, { duration })` は、倍率を変えずに、倍率を掛ける前の中身の座標の矩形の中心が表示する枠の中央に来る位置へ、`focusRect` と同じ動きと止め方で移す（中身の端より外へはスクロールしない）。今の倍率が全体が収まる倍率で、矩形の全体が表示する枠に見えているときは移さない。
+
+      `resize(size)` は、中身の大きさ（倍率を掛ける前）を `size` の値をその場で書き換えて差し替え、全体が収まる倍率を求め直す。全体が収まる倍率で確認していたなら `reset` と同じく新しい全体が収まる倍率と左上の位置にし、そうでなければ今の倍率の全体が収まる倍率に対する比（倍率の文字）を保つ倍率（下限・上限に収める）にして、表示する枠の中央にあった中身の座標を中央に保つ
+
       付けた表示する枠と戻り値を `zoomControlOf` で引けるように登録し、`detach` で登録を消す
     args:
       - name: options
@@ -62,7 +66,7 @@ functions:
         description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）・全体が収まる倍率の下限（既定は下限なし。`attachDiagrams` が図の `data-fit-min` を指定する）・指の移動の扱い（既定 `pointer`。`attachDiagrams` は `native`）・拡大中のホイールをスクロールする祖先へ渡すか（既定 `false`。`attachDiagrams` は `true`）
     returns:
       type: 'ZoomControl'
-      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・倍率を保って下限を求め直す関数・矩形が収まる倍率と位置へ移す関数・付けた操作を削除する関数
+      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・倍率を保って下限を求め直す関数・矩形が収まる倍率と位置へ移す関数・倍率を変えずに矩形を中央へ移す関数・倍率の文字を保って中身の大きさを差し替える関数・付けた操作を削除する関数
     callees:
       - 'MOD-472-173#functions[fitScale]'
     unit_tests:
@@ -186,6 +190,36 @@ functions:
         condition: '`test_attach_zoom_when_wheel` と同じ表示する枠で拡大を 2 回押し、`scrollLeft` を 0 にしてから、`shiftKey` と `deltaY: 100` の `wheel`、続けて `shiftKey` と `deltaX: 50` の `wheel` を発火する'
         mock: なし
         expected: どちらの `wheel` も `defaultPrevented` で、表示する枠の `scrollLeft` が 100、続けて 150 になり、祖先の要素の `scrollTop` は変わらない
+      - name: test_attach_zoom_when_center_rect
+        case: 正常
+        summary: 倍率を変えずに矩形を中央へ移す
+        condition: '幅 600px・高さ 400px の枠に幅 1200・高さ 800 の中身。拡大のボタンで倍率を 1 にしてから `centerRect({ x: 550, y: 350, width: 100, height: 100 }, { duration: 0 })`'
+        mock: なし
+        expected: 倍率が 1 のままで、`scrollLeft` が 300、`scrollTop` が 200
+      - name: test_attach_zoom_when_center_rect_at_fit
+        case: 正常
+        summary: 全体が収まる倍率で矩形が見えていれば移さない
+        condition: '同じ枠と中身を全体が収まる倍率（0.5）のまま `centerRect({ x: 900, y: 600, width: 100, height: 100 }, { duration: 0 })`'
+        mock: なし
+        expected: 倍率が 0.5 のままで、`scrollLeft`・`scrollTop` が 0
+      - name: test_attach_zoom_when_center_rect_at_fit_hidden
+        case: 正常
+        summary: 全体が収まらない下限の倍率では、見えていない矩形だけを中央へ移す
+        condition: '`fitMin: 1` で同じ枠と中身。`centerRect({ x: 100, y: 100, width: 100, height: 100 }, { duration: 0 })` の後に `centerRect({ x: 900, y: 600, width: 100, height: 100 }, { duration: 0 })`'
+        mock: なし
+        expected: 1 回目の後は `scrollLeft`・`scrollTop` が 0。2 回目の後は倍率が 1 のままで、`scrollLeft` が 600・`scrollTop` が 400（中身の端で止める）
+      - name: test_attach_zoom_when_resize
+        case: 正常
+        summary: 中身の大きさを差し替えても倍率の文字を保つ
+        condition: '`percentBase: "fit"` で同じ枠と中身。倍率を全体が収まる倍率の 2 倍（1）にしてから `resize({ width: 600, height: 400 })`'
+        mock: なし
+        expected: 全体が収まる倍率が 1、倍率が 2、倍率の文字が `200%` のまま
+      - name: test_attach_zoom_when_resize_at_fit
+        case: 正常
+        summary: 全体が収まる倍率では新しい中身の全体が収まる倍率にする
+        condition: '`percentBase: "fit"` で同じ枠と中身を全体が収まる倍率のまま `resize({ width: 2400, height: 800 })`'
+        mock: なし
+        expected: 倍率が 0.25、倍率の文字が `100%`、`scrollLeft`・`scrollTop` が 0
     status: planned
   - name: zoomControlOf
     title: 表示する枠の拡大・縮小の操作を引く
