@@ -316,17 +316,21 @@ export const initialPinnedColumns = (options: {
   rowHeadCount: number;
   /** ピン止めの動き */
   mode: TablePinMode;
+  /** `data-pin` が無いときに既定の列を留めるか（設定の `table.pin_default`） */
+  pinDefault: boolean;
   /** `data-unpin` の位置（既定で留める列から除く。無ければ空） */
   unpin?: number[];
 }): number[] => {
-  const { pin, rowHeadCount, mode, unpin = [] } = options;
-  // 留める元の列は、pinned の列、無ければ行見出しの全ての列（行見出しも無ければ先頭の列）から pinned の false の列を除いたもの
+  const { pin, rowHeadCount, mode, pinDefault, unpin = [] } = options;
+  // 留める元の列は、pinned の列、無ければ pinDefault のときだけ行見出しの全ての列（行見出しも無ければ先頭の列）から pinned の false の列を除いたもの
   const base =
     pin.length > 0
       ? [...new Set(pin)].sort((a, b) => a - b)
-      : columnsThrough(Math.max(1, rowHeadCount) - 1).filter(
-          (column) => !unpin.includes(column),
-        );
+      : pinDefault
+        ? columnsThrough(Math.max(1, rowHeadCount) - 1).filter(
+            (column) => !unpin.includes(column),
+          )
+        : [];
   if (base.length === 0) {
     return [];
   }

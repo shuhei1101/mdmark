@@ -160,6 +160,7 @@ function createDiffHtmlRenderer(options: {
           placement: config.tooltips.placement,
           diagramPlacement: config.tooltips.diagramPlacement,
           pinMode: config.table.pin,
+          pinDefault: config.table.pinDefault,
           longColumnMin: config.table.longColumnMin,
         }),
     };
@@ -236,25 +237,26 @@ function parseElement(html: string): HTMLElement {
   return template.content.firstElementChild as HTMLElement;
 }
 
-/** 後の文書を描いた HTML を、前の文書と比べて追加と削除の色を適用した中身にする。前の文書は `render` で同じ引数で描く */
+/** 後と前の文書を、機能 `frontmatter` だけをオンにした同じ引数で描き、前の文書と比べて追加と削除の色を適用した後の文書の中身にする */
 function drawColoredBlocks(options: {
-  /** 後の文書を描いた HTML */
-  rendered: string;
   /** 後の Markdown */
   after: string;
   /** 前の Markdown */
   before: string;
-  /** Markdown を同じ引数で描いた HTML にする関数 */
+  /** Markdown を、機能 `frontmatter` だけをオンにした同じ引数で描いた HTML にする関数 */
   render: (markdown: string) => string;
+  /** 元の機能 `frontmatter` のオン・オフ */
+  frontmatter: boolean;
 }): DocumentFragment {
   const afterTemplate = document.createElement("template");
-  afterTemplate.innerHTML = options.rendered;
+  afterTemplate.innerHTML = options.render(options.after);
   const beforeTemplate = document.createElement("template");
   beforeTemplate.innerHTML = options.render(options.before);
   colorDiffBlocks({
     before: { root: beforeTemplate.content, markdown: options.before },
     after: { root: afterTemplate.content, markdown: options.after },
     segmenter: createSegmenter(),
+    frontmatter: options.frontmatter,
   });
   return afterTemplate.content;
 }
@@ -329,11 +331,14 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   // コメントの機能に読み込みと保存の関数が要ることを出したか（`mount` ごとに 1 回だけ出す）
   const warned = { missingStore: false };
 
-  /** Markdown を、この `mount` の設定・索引・取り込む文書で描く */
-  const renderMarkdown = (markdown: string): RenderedDocument =>
+  /** Markdown を、この `mount` の設定（`drawn` を指定したときはその設定）・索引・取り込む文書で描く */
+  const renderMarkdown = (
+    markdown: string,
+    drawn: ResolvedConfig = config,
+  ): RenderedDocument =>
     renderDocument({
       markdown,
-      config,
+      config: drawn,
       index: opts.index,
       docId: opts.docId,
       references: opts.references,
@@ -353,12 +358,17 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       el.innerHTML = rendered.html;
       return;
     }
+    // 比べる中身はフロントマターの折りたたみを持つよう、機能 frontmatter だけをオンにして描く
+    const withFrontmatter: ResolvedConfig = {
+      ...config,
+      features: { ...config.features, frontmatter: true },
+    };
     el.replaceChildren(
       drawColoredBlocks({
-        rendered: rendered.html,
         after: markdown,
         before: from,
-        render: (source) => renderMarkdown(source).html,
+        render: (source) => renderMarkdown(source, withFrontmatter).html,
+        frontmatter: rendered.features.frontmatter === true,
       }),
     );
   };
@@ -552,6 +562,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       placement: config.tooltips.placement,
       diagramPlacement: config.tooltips.diagramPlacement,
       pinMode: config.table.pin,
+      pinDefault: config.table.pinDefault,
       longColumnMin: config.table.longColumnMin,
       onColumnsChange,
       sectionStates,

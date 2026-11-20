@@ -4,6 +4,7 @@ import {
   type DiffResult,
   jsdiffEngine,
 } from "./compute.ts";
+import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import { renderDiffBlock } from "./diff-blocks.part.ts";
 import {
   checkRevisions,
@@ -453,6 +454,71 @@ export function colorDiffBlocks(options: {
   /** 単語の区切り。持たないブラウザでは `undefined` */
   segmenter: Intl.Segmenter | undefined;
   /** 比較の計算。既定は `jsdiffEngine` */
+  engine?: DiffEngine;
+  /** 元の機能 `frontmatter` のオン・オフ（前と後の中身は機能 `frontmatter` をオンにして描いたもの。既定 `false`） */
+  frontmatter?: boolean;
+}): void {
+  const kept = takeFrontmatter({
+    before: options.before,
+    after: options.after,
+    shown: options.frontmatter === true,
+  });
+  colorBodyBlocks(options);
+  if (kept) {
+    options.after.root.prepend(kept);
+  }
+}
+
+/** 前と後の中身の直下のフロントマターの折りたたみを取り外し、本文の先頭に戻す要素を返却する。中身が違えば後を追加の色、前にだけあれば前を削除の色で包み、同じか両方に無ければ `shown` のときだけ後をそのまま返却する */
+function takeFrontmatter(options: {
+  before: Side;
+  after: Side;
+  shown: boolean;
+}): Element | undefined {
+  const { before, after, shown } = options;
+  const beforeDetails = frontmatterDetails(before.root);
+  const afterDetails = frontmatterDetails(after.root);
+  beforeDetails?.remove();
+  afterDetails?.remove();
+  const beforeContent = splitFrontmatter(before.markdown).content;
+  const afterContent = splitFrontmatter(after.markdown).content;
+  if (afterDetails && afterContent !== beforeContent) {
+    if (!shown) {
+      afterDetails.setAttribute("open", "");
+    }
+    return parseElement(
+      renderDiffBlock({
+        kind: "add",
+        unit: "block",
+        html: afterDetails.outerHTML,
+      }),
+    );
+  }
+  if (beforeDetails && !afterDetails) {
+    beforeDetails.setAttribute("open", "");
+    return parseElement(
+      renderDiffBlock({
+        kind: "del",
+        unit: "block",
+        html: beforeDetails.outerHTML,
+      }),
+    );
+  }
+  return shown ? afterDetails : undefined;
+}
+
+/** 中身の直下のフロントマターの折りたたみ（無ければ `undefined`） */
+function frontmatterDetails(root: ParentNode): Element | undefined {
+  return [...root.children].find((child) =>
+    child.matches("details.mdmark-frontmatter"),
+  );
+}
+
+/** 前と後の本文のブロックを比べ、追加・変更したブロックと削除したブロックに色を適用する */
+function colorBodyBlocks(options: {
+  before: Side;
+  after: Side;
+  segmenter: Intl.Segmenter | undefined;
   engine?: DiffEngine;
 }): void {
   const { before, after, segmenter, engine = jsdiffEngine } = options;

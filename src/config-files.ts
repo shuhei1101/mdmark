@@ -464,7 +464,7 @@ function isValidSideToc(
   return true;
 }
 
-/** 設定の `table` を検める。キーと値の構造でなければ、`pin` が `each` と `through` のどちらでもなければ、`long_column_min` が 0 より大きい有限の数でなければ、`schema` のずれを追加して `false` を返却する */
+/** 設定の `table` を検める。キーと値の構造でなければ、`pin` が `each` と `through` のどちらでもなければ、`pin_default` が真偽値でなければ、`long_column_min` が 0 より大きい有限の数でなければ、`schema` のずれを追加して `false` を返却する */
 function isValidTable(
   value: unknown,
   file: string,
@@ -490,6 +490,19 @@ function isValidTable(
         file,
         "table.pin",
         "`table.pin` は `each` か `through` で記載してください。",
+      ),
+    );
+    return false;
+  }
+  if (
+    value.pin_default !== undefined &&
+    typeof value.pin_default !== "boolean"
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "table.pin_default",
+        "`table.pin_default` は `true` か `false` で記載してください。",
       ),
     );
     return false;
