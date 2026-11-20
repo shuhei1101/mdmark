@@ -226,7 +226,7 @@ flows:
     summary: 相対パスの `mermaid.url` を、本体と chunk をまとめた `data:` の URL で埋め、Chromium で file:// で開いて描く
     setup:
       - name: 手元の mermaid を指すワークスペース
-        description: '`mdmark.config.yaml` の `mermaid.url` に、mermaid の本体と chunk の手元のコピーを相対パスで記載し、Markdown は言語 `mermaid` の flowchart のコードブロックを 1 つ持つ。コードブロックは、map で描かずに mermaid の図に戻すよう、先頭の行に `%%{init: {}}%%` を記載する'
+        description: '`mdmark.config.yaml` の `mermaid.url` に、mermaid の本体と chunk の手元のコピーを相対パスで記載し、Markdown は言語 `mermaid` の flowchart のコードブロックを 1 つ持つ。Markdown は、map で描かずに mermaid の図にするよう、先頭に `<!-- features: {"map": false} -->` を記載する'
       - name: Mock
         description: 正常系と同じ
     flow: |-
