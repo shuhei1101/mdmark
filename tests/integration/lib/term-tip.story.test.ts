@@ -29,19 +29,58 @@ function tipAndTermRects(page: Page) {
   });
 }
 
-/** 広い画面でストーリーを開き、開いたツールチップが単語の上にあり、透明な線が下側にあることを確認する */
+/** ツールチップの外側の要素の上下の余白と、内側の枠の 4 辺の枠線の色・幅と画面に対する上端・下端 */
+function frameLayout(page: Page) {
+  return page.evaluate(() => {
+    const tip = document.querySelector(".mdmark-term-tip");
+    const frame = tip?.querySelector(":scope > .mdmark-term-tip-frame");
+    if (!tip || !frame) {
+      throw new Error("ツールチップか内側の枠が無い");
+    }
+    const outer = getComputedStyle(tip);
+    const inner = getComputedStyle(frame);
+    const rect = frame.getBoundingClientRect();
+    return {
+      paddingTop: Number.parseFloat(outer.paddingBlockStart),
+      paddingBottom: Number.parseFloat(outer.paddingBlockEnd),
+      outerBorderWidth: Number.parseFloat(outer.borderBlockEndWidth),
+      colors: [
+        inner.borderBlockStartColor,
+        inner.borderInlineEndColor,
+        inner.borderBlockEndColor,
+        inner.borderInlineStartColor,
+      ],
+      widths: [
+        inner.borderBlockStartWidth,
+        inner.borderInlineEndWidth,
+        inner.borderBlockEndWidth,
+        inner.borderInlineStartWidth,
+      ].map(Number.parseFloat),
+      frameTop: rect.top,
+      frameBottom: rect.bottom,
+    };
+  });
+}
+
+/** 内側の枠の 4 辺の枠線が、透明でない同じ色と同じ幅で出ていることを確認する */
+function expectFourBorders(layout: Awaited<ReturnType<typeof frameLayout>>) {
+  expect(new Set(layout.colors).size).toBe(1);
+  expect(layout.colors[0]).not.toBe("rgba(0, 0, 0, 0)");
+  expect(new Set(layout.widths).size).toBe(1);
+  expect(layout.widths[0]).toBeGreaterThan(0);
+  expect(layout.outerBorderWidth).toBe(0);
+}
+
+/** 広い画面でストーリーを開き、開いたツールチップが単語の上にあり、内側の枠の 4 辺に枠線が出て、単語との間の余白が下側にあることを確認する */
 async function expectOpenedAbove(id: string): Promise<void> {
   const page = await holder.openStory(id, WIDE_VIEWPORT);
   const rects = await tipAndTermRects(page);
   expect(rects.tipBottom).toBeLessThanOrEqual(rects.termTop);
-  const borders = await page.locator(".mdmark-term-tip").evaluate((tip) => ({
-    bottom: getComputedStyle(tip).borderBlockEndColor,
-    bottomWidth: parseFloat(getComputedStyle(tip).borderBlockEndWidth),
-    top: getComputedStyle(tip).borderBlockStartColor,
-  }));
-  expect(borders.bottom).toBe("rgba(0, 0, 0, 0)");
-  expect(borders.bottomWidth).toBeGreaterThan(1);
-  expect(borders.top).not.toBe("rgba(0, 0, 0, 0)");
+  const layout = await frameLayout(page);
+  expectFourBorders(layout);
+  expect(layout.paddingBottom).toBeGreaterThan(1);
+  expect(layout.paddingTop).toBe(0);
+  expect(layout.frameBottom).toBeLessThan(rects.termTop - 1);
 }
 
 // 用語だけに一致した単語は、意味だけを持つ role="tooltip" のツールチップを開く（TermOnly）
@@ -115,7 +154,7 @@ test("test_both", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 上に収まらず単語の下に開いた状態は、is-below が付き、ツールチップが単語の下、透明な線が上側にある（Below）
+// 上に収まらず単語の下に開いた状態は、is-below が付き、ツールチップが単語の下、内側の枠の 4 辺に枠線が出て、単語との間の余白が上側にある（Below）
 test("test_below", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--below", WIDE_VIEWPORT);
@@ -124,29 +163,28 @@ test("test_below", async () => {
   await expect(wrap.getAttribute("class")).resolves.toContain("is-below");
   const rects = await tipAndTermRects(page);
   expect(rects.tipTop).toBeGreaterThanOrEqual(rects.termBottom);
-  const borders = await page.locator(".mdmark-term-tip").evaluate((tip) => ({
-    top: getComputedStyle(tip).borderBlockStartColor,
-    topWidth: parseFloat(getComputedStyle(tip).borderBlockStartWidth),
-    bottom: getComputedStyle(tip).borderBlockEndColor,
-  }));
-  expect(borders.top).toBe("rgba(0, 0, 0, 0)");
-  expect(borders.topWidth).toBeGreaterThan(1);
-  expect(borders.bottom).not.toBe("rgba(0, 0, 0, 0)");
+  const layout = await frameLayout(page);
+  expectFourBorders(layout);
+  expect(layout.paddingTop).toBeGreaterThan(1);
+  expect(layout.paddingBottom).toBe(0);
+  expect(layout.frameTop).toBeGreaterThan(rects.termBottom + 1);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 関連文書が高さの上限を超えるときは、ツールチップの中をスクロールする（ManyDocs）
+// 関連文書が高さの上限を超えるときは、ツールチップの内側の枠の中をスクロールする（ManyDocs）
 test("test_many_docs", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-termtip--many-docs");
   // 検証
   const tip = page.locator(".mdmark-term-tip");
   await expect(tip.locator(".mdmark-term-tip-doc").count()).resolves.toBe(7);
-  const sizes = await tip.evaluate((element) => ({
-    scroll: element.scrollHeight,
-    client: element.clientHeight,
-    overflowY: getComputedStyle(element).overflowY,
-  }));
+  const sizes = await tip
+    .locator(".mdmark-term-tip-frame")
+    .evaluate((element) => ({
+      scroll: element.scrollHeight,
+      client: element.clientHeight,
+      overflowY: getComputedStyle(element).overflowY,
+    }));
   expect(sizes.scroll).toBeGreaterThan(sizes.client);
   expect(sizes.overflowY).toBe("auto");
   await expect(pageOverflows(page)).resolves.toBe(false);

@@ -141,7 +141,7 @@ test("test_attach_map_when_played_follow", async () => {
   if (!zoom) {
     throw new Error("拡大・縮小が付いていない");
   }
-  const focusRect = vi.spyOn(zoom, "focusRect").mockImplementation(() => {});
+  const centerRect = vi.spyOn(zoom, "centerRect").mockImplementation(() => {});
   /** 帯を描き直した後の区切りを引く */
   const segment = (index: number) =>
     seq?.closest(".mdmark-map")?.querySelectorAll<HTMLElement>(".map-band-seg")[
@@ -150,12 +150,12 @@ test("test_attach_map_when_played_follow", async () => {
   // 実行
   segment(0)?.click();
   // 検証
-  expect(focusRect).toHaveBeenCalledTimes(1);
+  expect(centerRect).toHaveBeenCalledTimes(1);
   // 実行
   viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
   segment(1)?.click();
   // 検証
-  expect(focusRect).toHaveBeenCalledTimes(2);
+  expect(centerRect).toHaveBeenCalledTimes(2);
 });
 
 // 範囲の外の map の図は警告を出さない（正常系）

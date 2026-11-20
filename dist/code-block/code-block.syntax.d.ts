@@ -8,7 +8,7 @@ export declare const TREE_LINE_PATTERN: RegExp;
 export declare const TREE_WARNING_MIN_LINES = 2;
 /** マーカーだけの行コメントの頭。長いものから照らす */
 export declare const LINE_COMMENT_HEADS: readonly string[];
-/** `code` のマーカーの設定を、タイトル・行番号の有無と最初の行の番号・強調する行・最初から畳む行・折り返すかに読み込む */
+/** `code` のマーカーの設定を、タイトル・行番号の有無と最初の行の番号・強調する行・最初から畳む行・折り返すか・既定で元の Markdown を出すかに読み込む */
 export declare function readCodeSpec(options: {
     options: MarkOptions;
     lineCount: number;
@@ -17,6 +17,7 @@ export declare function readCodeSpec(options: {
     lineNumbers: boolean;
     lineStart: number;
     wrap: boolean;
+    raw: boolean;
     treeWarning: boolean;
     highlights: Set<number>;
     folds: Set<number>;
@@ -42,6 +43,8 @@ export declare function splitInfoString(info: string): {
     language: string;
     fileName: string;
 };
+/** 情報文字列の言語（小文字）がこれに含まれるコードブロックに、描いた結果と Raw のボタンを付ける */
+export declare const MARKDOWN_LANGUAGES: readonly string[];
 /** 色分けの言語の対応表: 情報文字列の最初の単語（小文字）から、highlight.js の言語のモジュール名を参照する。モジュール名は `{url}languages/{モジュール名}.min.js` と npm の `highlight.js/lib/languages/{モジュール名}` の名前に該当する */
 export declare const SYNTAX_LANGUAGES: Readonly<Record<string, string>>;
 /** 情報文字列の言語の単語を小文字にして `SYNTAX_LANGUAGES` を引き、色分けの言語のモジュール名を返却する。表に無ければ `undefined` */

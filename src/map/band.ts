@@ -29,7 +29,7 @@ export type BandHandle = {
 
 /** createFollow の戻り値 */
 export type FollowHandle = {
-  /** ノードか参加者を囲む矩形と余白が表示する枠に収まる倍率と位置へ図を移す（読者が触った後は resume まで何もしない） */
+  /** ノードか参加者を囲む矩形が見える位置へ、倍率を変えずに図を移す（読者が触った後は resume まで何もしない） */
   reveal: (ids: string[]) => void;
   /** 読者が触って止めた移動を再開する */
   resume: () => void;
@@ -43,10 +43,7 @@ export const STEP_MS = 2000;
 /** 区切りの幅がこの px より細いとき、手順のバーに is-dense を付けて今の区切りを広げる */
 export const BAND_DENSE_PX = 12;
 
-/** 強調するノードを囲む矩形の周りに残す、表示する枠の中の余白（px） */
-export const FOCUS_MARGIN_PX = 32;
-
-/** 強調するノードへ図の倍率と位置を移す時間（ミリ秒）。動きを減らす設定では 0 */
+/** 強調するノードへ図の位置を移す時間（ミリ秒）。動きを減らす設定では 0 */
 export const FOCUS_MS = 300;
 
 // 区切りの間（CSS の .map-band-steps の gap と同じ）
@@ -81,7 +78,7 @@ const visibleRectOf = (viewport: HTMLElement): FocusRect => {
   };
 };
 
-/** 図の枠の中を、指定したノードか参加者を囲む矩形が収まる倍率と位置へ移し、読者が表示する枠を触ったら resume まで止める */
+/** 図の枠の中を、指定したノードか参加者を囲む矩形が見える位置へ、倍率を変えずに移し、読者が表示する枠を触ったら resume まで止める */
 export const createFollow = (
   figure: HTMLElement,
   reducedMotion: boolean,
@@ -114,14 +111,14 @@ export const createFollow = (
       const top = Math.min(...rects.map((r) => r.top));
       const right = Math.max(...rects.map((r) => r.right));
       const bottom = Math.max(...rects.map((r) => r.bottom));
-      zoom.focusRect(
+      zoom.centerRect(
         {
           x: (left - base.left) / scale,
           y: (top - base.top) / scale,
           width: (right - left) / scale,
           height: (bottom - top) / scale,
         },
-        { margin: FOCUS_MARGIN_PX, duration: reducedMotion ? 0 : FOCUS_MS },
+        { duration: reducedMotion ? 0 : FOCUS_MS },
       );
     },
     resume: () => {

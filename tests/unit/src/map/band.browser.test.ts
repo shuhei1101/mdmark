@@ -240,14 +240,22 @@ async function setUpFollow(reducedMotion: boolean) {
     tools: figure,
   });
   const focusRect = vi.spyOn(zoom, "focusRect").mockImplementation(() => {});
+  const centerRect = vi.spyOn(zoom, "centerRect").mockImplementation(() => {});
   const follow = createFollow(figure, reducedMotion);
-  return { follow, viewport, focusRect, detach: () => zoom.detach() };
+  return {
+    follow,
+    viewport,
+    focusRect,
+    centerRect,
+    detach: () => zoom.detach(),
+  };
 }
 
 // 読者が触る（正常系）
 test("test_create_follow_when_touched", async () => {
   // 準備
-  const { follow, viewport, focusRect, detach } = await setUpFollow(false);
+  const { follow, viewport, focusRect, centerRect, detach } =
+    await setUpFollow(false);
   // 実行
   follow.reveal(["n1"]);
   viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
@@ -257,19 +265,20 @@ test("test_create_follow_when_touched", async () => {
   follow.destroy();
   detach();
   // 検証
-  expect(focusRect).toHaveBeenCalledTimes(2);
+  expect(centerRect).toHaveBeenCalledTimes(2);
+  expect(focusRect).not.toHaveBeenCalled();
 });
 
 // 動きを減らす設定（正常系）
 test("test_create_follow_when_reduced_motion", async () => {
   // 準備
-  const { follow, focusRect, detach } = await setUpFollow(true);
+  const { follow, centerRect, detach } = await setUpFollow(true);
   // 実行
   follow.reveal(["n1", "n2"]);
   detach();
   // 検証
-  expect(focusRect).toHaveBeenCalledWith(
+  expect(centerRect).toHaveBeenCalledWith(
     { x: 100, y: 50, width: 260, height: 130 },
-    { margin: 32, duration: 0 },
+    { duration: 0 },
   );
 });

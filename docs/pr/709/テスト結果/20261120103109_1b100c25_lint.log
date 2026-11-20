@@ -1,0 +1,66 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+
+# 結果: 単体テスト作成の工程。残る違反は tsc の、実装が無いことによる型の違反（centerRect・resize・renderCodeRaw・raw・markdown・preview・code-preview.interact.ts が無い）だけ。Biome の警告 1 件はこの PR が変えていない plugin/bin/setup.js のファイルの大きさ
+
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 969 files in 1037ms. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 323 packages, and audited 324 packages in 7s
+
+138 packages are looking for funding
+  run `npm fund` for details
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/code-block/code-block.part.test.ts(468,47): error TS2353: Object literal may only specify known properties, and 'markdown' does not exist in type '{ language: string; fileName?: string | undefined; title: string; lineNumbers: boolean; lineStart?: number | undefined; wrap?: boolean | undefined; lines: CodeLine[]; syntax?: string | undefined; ... 4 more ...; foldColumnHovered?: boolean | undefined; }'.
+tests/unit/src/code-block/code-block.part.test.ts(469,42): error TS2353: Object literal may only specify known properties, and 'markdown' does not exist in type '{ language: string; fileName?: string | undefined; title: string; lineNumbers: boolean; lineStart?: number | undefined; wrap?: boolean | undefined; lines: CodeLine[]; syntax?: string | undefined; ... 4 more ...; foldColumnHovered?: boolean | undefined; }'.
+tests/unit/src/code-block/code-block.part.test.ts(497,47): error TS2353: Object literal may only specify known properties, and 'preview' does not exist in type '{ language: string; fileName?: string | undefined; title: string; lineNumbers: boolean; lineStart?: number | undefined; wrap?: boolean | undefined; lines: CodeLine[]; syntax?: string | undefined; ... 4 more ...; foldColumnHovered?: boolean | undefined; }'.
+tests/unit/src/code-block/code-block.part.test.ts(498,42): error TS2353: Object literal may only specify known properties, and 'preview' does not exist in type '{ language: string; fileName?: string | undefined; title: string; lineNumbers: boolean; lineStart?: number | undefined; wrap?: boolean | undefined; lines: CodeLine[]; syntax?: string | undefined; ... 4 more ...; foldColumnHovered?: boolean | undefined; }'.
+tests/unit/src/code-block/code-block.part.test.ts(525,11): error TS2339: Property 'renderCodeRaw' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-display-keep-step-zoom-and-markdown-preview/src/code-block/code-block.part")'.
+tests/unit/src/code-block/code-block.syntax.test.ts(856,14): error TS2339: Property 'raw' does not exist on type '{ title: string; lineNumbers: boolean; lineStart: number; wrap: boolean; treeWarning: boolean; highlights: Set<number>; folds: Set<number>; warnings: WarningItem[]; }'.
+tests/unit/src/code-block/code-block.syntax.test.ts(857,19): error TS2339: Property 'raw' does not exist on type '{ title: string; lineNumbers: boolean; lineStart: number; wrap: boolean; treeWarning: boolean; highlights: Set<number>; folds: Set<number>; warnings: WarningItem[]; }'.
+tests/unit/src/code-block/code-block.syntax.test.ts(858,16): error TS2339: Property 'raw' does not exist on type '{ title: string; lineNumbers: boolean; lineStart: number; wrap: boolean; treeWarning: boolean; highlights: Set<number>; folds: Set<number>; warnings: WarningItem[]; }'.
+tests/unit/src/code-block/code-preview.interact.browser.test.ts(6,17): error TS2307: Cannot find module '../../../../src/code-block/code-preview.interact.ts' or its corresponding type declarations.
+tests/unit/src/code-block/code-preview.interact.browser.test.ts(175,52): error TS7006: Parameter 'inner' implicitly has an 'any' type.
+tests/unit/src/map/band.browser.test.ts(243,37): error TS2769: No overload matches this call.
+  The last overload gave the following error.
+    Argument of type '"centerRect"' is not assignable to parameter of type 'never'.
+tests/unit/src/map/band.browser.test.ts(243,70): error TS2345: Argument of type '() => void' is not assignable to parameter of type '() => never'.
+  Type 'void' is not assignable to type 'never'.
+tests/unit/src/shared/zoom.interact.browser.test.ts(735,8): error TS2339: Property 'centerRect' does not exist on type 'ZoomControl'.
+tests/unit/src/shared/zoom.interact.browser.test.ts(747,8): error TS2339: Property 'centerRect' does not exist on type 'ZoomControl'.
+tests/unit/src/shared/zoom.interact.browser.test.ts(759,8): error TS2339: Property 'centerRect' does not exist on type 'ZoomControl'.
+tests/unit/src/shared/zoom.interact.browser.test.ts(761,8): error TS2339: Property 'centerRect' does not exist on type 'ZoomControl'.
+tests/unit/src/shared/zoom.interact.browser.test.ts(775,8): error TS2339: Property 'resize' does not exist on type 'ZoomControl'.
+tests/unit/src/shared/zoom.interact.browser.test.ts(789,8): error TS2339: Property 'resize' does not exist on type 'ZoomControl'.
+
+> mdmark-vscode@0.2.0 typecheck
+> tsc --noEmit
+
+exit=1

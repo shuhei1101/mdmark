@@ -587,3 +587,69 @@ test("test_wrap", async () => {
   expect(result.numberTop).toBe("0px");
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
+
+/** Raw のボタン・描いた結果・pre の表示と、ボタンの位置と色 */
+function previewState(page: Awaited<ReturnType<typeof holder.openStory>>) {
+  return page.evaluate(() => {
+    const pick = (selector: string) =>
+      document.querySelector(selector) as HTMLElement;
+    const raw = pick(".mdmark-code-raw");
+    const preview = pick(".mdmark-code-preview");
+    const shown = (element: HTMLElement) =>
+      getComputedStyle(element).display !== "none";
+    return {
+      pressed: raw.getAttribute("aria-pressed"),
+      type: raw.getAttribute("type"),
+      text: raw.textContent,
+      rawLeftOfCopy:
+        raw.getBoundingClientRect().right <=
+        pick(".mdmark-code-copy").getBoundingClientRect().left,
+      color: getComputedStyle(raw).color,
+      background: getComputedStyle(raw).backgroundColor,
+      previewShown: shown(preview),
+      preShown: shown(pick(".mdmark-code > pre")),
+      heading: preview.querySelector("h1")?.textContent,
+    };
+  });
+}
+
+// 言語 markdown のコードブロックで、コピーのボタンの左に Raw のボタンを置き、描いた結果を出して pre を隠す（MarkdownPreview）
+test("test_markdown_preview", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--markdown-preview");
+  // 検証
+  const state = await previewState(page);
+  expect(state).toMatchObject({
+    pressed: "false",
+    type: "button",
+    text: "Raw（元の Markdown を表示）",
+    rawLeftOfCopy: true,
+    previewShown: true,
+    preShown: false,
+  });
+  expect(state.heading).toContain("在庫の点検");
+  await expect(
+    hasIcon(page.locator(".mdmark-code-raw"), "code-xml"),
+  ).resolves.toBe(true);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// Raw のボタンを押した状態は、ボタンの文字と地の色を変え、元の Markdown の pre を出す（MarkdownRaw）
+test("test_markdown_raw", async () => {
+  // 準備・実行
+  const preview = await previewState(
+    await holder.openStory("parts-codeblock--markdown-preview"),
+  );
+  const page = await holder.openStory("parts-codeblock--markdown-raw");
+  // 検証
+  const state = await previewState(page);
+  expect(state).toMatchObject({
+    pressed: "true",
+    rawLeftOfCopy: true,
+    previewShown: false,
+    preShown: true,
+  });
+  expect(state.color).not.toBe(preview.color);
+  expect(state.background).not.toBe(preview.background);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

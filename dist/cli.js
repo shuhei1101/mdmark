@@ -63092,7 +63092,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.f0bbb9f";
+  return "v0.14.0+develop.e60da79";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -69974,7 +69974,7 @@ function renderFootnoteRef(options) {
   const role = linked ? `role="group" aria-label="${label}"` : 'role="tooltip"';
   const classes = `mdmark-fn-ref${names2.refClass}${below ? " is-below" : ""}${afterRef ? " is-after-ref" : ""}`;
   const items = bodies.map((body) => `${FOOTNOTE_BODY_OPEN}${body}</span>`).join("");
-  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names2.refId}${number4}-${refIndex}" href="#${names2.itemId}${number4}" ${pointer}><span class="mdmark-visually-hidden">${names2.label} </span>${number4}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-title">${label}</span>${items}</span></sup>`;
+  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names2.refId}${number4}-${refIndex}" href="#${names2.itemId}${number4}" ${pointer}><span class="mdmark-visually-hidden">${names2.label} </span>${number4}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-frame"><span class="mdmark-fn-tip-title">${label}</span>${items}</span></span></sup>`;
 }
 function renderBackLink(options) {
   const { label: name, number: number4, index, count, ref } = options;
@@ -74187,6 +74187,9 @@ var code_schema_default = {
       type: "boolean"
     },
     tree_warning: {
+      type: "boolean"
+    },
+    raw: {
       type: "boolean"
     }
   },
@@ -79078,6 +79081,8 @@ function hiddenLinesOf(options) {
 // src/code-block/code-block.part.ts
 var SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
 var MERMAID_ATTRIBUTE = "data-mdmark-mermaid";
+var MARKDOWN_ATTRIBUTE = "data-mdmark-markdown";
+var RAW_ATTRIBUTE = "data-mdmark-raw";
 function renderCodeFoldToggle(options) {
   const { expanded, from, to, controls } = options;
   const icon = expanded ? "chevron-down" : "chevron-right";
@@ -79118,6 +79123,9 @@ function renderCodeCopy(options) {
   const { text: text2, icon } = COPY_LABELS[state];
   const status = state === "idle" ? "" : `\u30B3\u30FC\u30C9\u3092${text2}`;
   return `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="${state}">${iconSvg(icon)}${text2}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status">${status}</span></span>`;
+}
+function renderCodeRaw(options) {
+  return `<button class="mdmark-code-raw" type="button" aria-pressed="${options.pressed}">${iconSvg("code-xml")}Raw<span class="mdmark-visually-hidden">\uFF08\u5143\u306E Markdown \u3092\u8868\u793A\uFF09</span></button>`;
 }
 function labelOf(options) {
   const { title, fileName, language } = options;
@@ -79188,12 +79196,19 @@ function codeBody(options) {
   ).join("\n");
 }
 function wrapWithBar(options) {
-  const { pre, language, fileName, title, copyState, mermaidAttribute } = options;
-  const barContent = renderLanguageLabel({ language, fileName }) + (title ? escapeHtml2(title) : "") + (copyState === void 0 ? "" : renderCodeCopy({ state: copyState }));
+  const { language, fileName, title, copyState, attributes, preview } = options;
+  const raw = preview?.view === "raw";
+  const pre = preview?.view === "rendered" ? options.pre.replace(/^<pre/, "<pre hidden") : options.pre;
+  const meta2 = copyState === void 0 ? "" : renderCodeCopy({ state: copyState }).replace(
+    '<span class="mdmark-code-meta">',
+    `<span class="mdmark-code-meta">${preview ? renderCodeRaw({ pressed: raw }) : ""}`
+  );
+  const barContent = renderLanguageLabel({ language, fileName }) + (title ? escapeHtml2(title) : "") + meta2;
+  const previewHtml = preview ? `<div class="mdmark-code-preview"${raw ? " hidden" : ""}>${preview.html}</div>` : "";
   if (title) {
-    return `<figure class="mdmark-code"${mermaidAttribute}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}</figure>`;
+    return `<figure class="mdmark-code"${attributes}><figcaption class="mdmark-code-title mdmark-code-bar">${barContent}</figcaption>${pre}${previewHtml}</figure>`;
   }
-  return `<div class="mdmark-code"${mermaidAttribute}><div class="mdmark-code-bar">${barContent}</div>${pre}</div>`;
+  return `<div class="mdmark-code"${attributes}><div class="mdmark-code-bar">${barContent}</div>${pre}${previewHtml}</div>`;
 }
 function renderPre(options) {
   const { language, fileName, title, lineNumbers, lines, syntax } = options;
@@ -79222,13 +79237,16 @@ function renderCodeBlock(options) {
   if (!bar) {
     return `<pre${mermaidAttribute}${pre.slice("<pre".length)}`;
   }
+  const markdown = options.markdown === true;
+  const attributes = `${mermaidAttribute}${markdown ? ` ${MARKDOWN_ATTRIBUTE}` : ""}${markdown && options.raw === true ? ` ${RAW_ATTRIBUTE}` : ""}`;
   return wrapWithBar({
     pre,
     language,
     fileName,
     title,
     copyState,
-    mermaidAttribute
+    attributes,
+    preview: options.preview === void 0 ? void 0 : { view: options.preview, html: options.previewHtml ?? "" }
   });
 }
 
@@ -79310,6 +79328,7 @@ function readCodeSpec(options) {
     lineNumbers: lines !== void 0,
     lineStart,
     wrap: spec.wrap === true,
+    raw: spec.raw === true,
     treeWarning: spec.tree_warning !== false,
     highlights,
     folds,
@@ -79420,6 +79439,7 @@ function keepLanguageOnly(token, language) {
   const rest2 = token.info.trim().split(/\s+/).slice(1);
   token.info = [language, ...rest2].filter(Boolean).join(" ");
 }
+var MARKDOWN_LANGUAGES = ["markdown", "md"];
 var SYNTAX_LANGUAGES = {
   typescript: "typescript",
   ts: "typescript",
@@ -79513,25 +79533,37 @@ function fenceKind(token, target) {
   const isMermaid2 = token.info.trim().split(/\s+/)[0] === "mermaid";
   const mapSource = token.meta?.[MAP_SOURCE_META] === true;
   const mermaid = mermaidOn && isMermaid2 && !mapSource;
+  const plain = codeOn && !isMermaid2 && !mapSource;
   return {
     language,
     fileName,
     mermaid,
+    markdown: plain && MARKDOWN_LANGUAGES.includes(language.toLowerCase()),
     syntax: syntaxOn && !mermaid ? syntaxLanguageOf(language) : void 0,
-    checkTree: codeOn && !isMermaid2 && !mapSource && target.treeWarning
+    checkTree: plain && target.treeWarning
   };
 }
+var NO_CODE_SPEC = {
+  title: "",
+  lineNumbers: false,
+  lineStart: 1,
+  wrap: false,
+  raw: false
+};
 function codeBlockToken(state, block2) {
-  const { token, kind, lines, spec, bar } = block2;
+  const { token, kind, lines, bar } = block2;
+  const spec = block2.spec ?? NO_CODE_SPEC;
   return ownBlock(
     state,
     renderCodeBlock({
       language: kind.language,
       fileName: kind.fileName,
-      title: spec?.title ?? "",
-      lineNumbers: spec?.lineNumbers ?? false,
-      lineStart: spec?.lineStart ?? 1,
-      wrap: spec?.wrap ?? false,
+      title: spec.title,
+      lineNumbers: spec.lineNumbers,
+      lineStart: spec.lineStart,
+      wrap: spec.wrap,
+      markdown: kind.markdown,
+      raw: kind.markdown && spec.raw,
       lines,
       syntax: kind.syntax,
       mermaid: kind.mermaid,
@@ -81002,7 +81034,7 @@ function renderWordTip(options) {
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const termClass = replacement === void 0 ? "" : " mdmark-term-avoided";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
-  return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
+  return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}><span class="mdmark-term-tip-frame">${sections.join("")}</span></span></span>`;
 }
 function docsLabel(options) {
   return `\u300C${options.word}\u300D\u306E${options.meaning === "" ? "" : "\u7528\u8A9E\u3068"}\u95A2\u9023\u6587\u66F8`;
@@ -81062,7 +81094,7 @@ function renderAliasTip(options) {
   const described = role === "group" ? termDescribedBy({ described: hasDescription, target: meaningId }) : ` aria-describedby="${tipId}"`;
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
-  return `<span class="${wrapClass}"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${labelAttribute}>${renderSection(heading2, body)}</span></span>`;
+  return `<span class="${wrapClass}"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${labelAttribute}><span class="mdmark-term-tip-frame">${renderSection(heading2, body)}</span></span></span>`;
 }
 function renderAliasKind(options) {
   const { alias, copy, word } = options;

@@ -27,4 +27,6 @@ export declare function attachInteractions(options: {
     partStates?: PartStates;
     /** 付けたときに URL の `#ID` で開くか（既定 `true`） */
     revealHash?: boolean;
+    /** URL の `#ID` を追うか。`false` ならセクション・タブ・表の行を `#ID` で開かない（既定 `true`） */
+    followHash?: boolean;
 }): () => void;

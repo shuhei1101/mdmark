@@ -261,7 +261,7 @@ styles:
         value: 拡大のアイコンと GIF のボタンを隠し、`mdmark-only-light` を出して `mdmark-only-dark` を隠す。`video`・`audio` を隠して `mdmark-media-print` を出す。カードの後ろにリンク先の URL を出す。色のプリセットは選んだテーマの明るい配色の値で残す
       - class_name: .mdmark :is(.mdmark-fn-ref, .mdmark-footnotes)
         target: 脚注の番号・ツールチップ・末尾の一覧
-        value: '`docs/mock/refs/311/assets/footnote.css` の `@layer mdmark` の中身と、印刷の `footnote-print.css`（ツールチップと戻るリンクを隠す）。番号の色は `--mdmark-color-footnote-ref`（既定 `var(--mdmark-color-link)`）'
+        value: '`docs/mock/refs/311/assets/footnote.css` の `@layer mdmark` の中身と、印刷の `footnote-print.css`（ツールチップと戻るリンクを隠す）。番号の色は `--mdmark-color-footnote-ref`（既定 `var(--mdmark-color-link)`）。ツールチップは、枠線・角丸・背景・高さの上限・スクロールを内側の `.mdmark-fn-tip-frame` に持たせ、`.mdmark-fn-tip` は番号の側の 0.4em の `padding` だけを持つ（モックの透明な線から変えた。用語のツールチップの `.mdmark-term-tip` と `.mdmark-term-tip-frame` も同じ）。狭い画面で余白を上側に移す規則は `:not(.is-open)` に限る'
       - class_name: .mdmark .mdmark-inline-icon
         target: 行内のアイコン
         value: '`inline-flex` で文字の高さの中央にそろえ、中の `.mdmark-icon` を `--mdmark-icon-inline-size`（既定 `1em`）角にする。値は `docs/mock/refs/307/assets/notations.css`'
@@ -336,6 +336,9 @@ styles:
       - class_name: .mdmark .mdmark-table thead th .mdmark-pin[aria-pressed="false"]
         target: ポインターを乗せられる端末の押していないピン止めのボタン
         value: '`@media (hover: hover)` の中で `opacity: 0` にし、見出しのセルが `:hover` か `:focus-within` の間だけ `opacity: 1` にする。`visibility`・`display` は変えず、タブの順に残す。`(hover: none)` の端末と印刷では当てない'
+      - class_name: .mdmark .mdmark-code-raw・.mdmark .mdmark-code-preview
+        target: 言語 markdown のコードブロックの Raw のボタンと描いた結果
+        value: 部品設計『コードブロック』の注記「描いた結果の表示」の外観を、モック `docs/mock/refs/709/assets/markdown-preview.css` の `.mock-preview-toggle`・`.mock-preview-icon`・`.mock-preview-body` から写す（`.mock-preview-toggle` は `.mdmark-code-raw`、`.mock-preview-body` は `.mdmark-code-preview` にする）。`hidden` を持つ `pre` と描いた結果の要素は出さない。印刷では `.mdmark-code-raw` を出さない
     refs:
       - SCR-472-4#
       - CMP-472-65#

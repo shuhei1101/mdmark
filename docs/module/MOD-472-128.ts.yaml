@@ -105,8 +105,8 @@ functions:
         case: 正常
         summary: 再生で構成図を移す
         condition: '構成図と `plays_over: 1` のシーケンス図で、シーケンス図の 1 つ目の区切りを押す。次に構成図の表示する枠でホイールを回してから、2 つ目の区切りを押す'
-        mock: 構成図の表示する枠の `zoomControlOf` の `focusRect`
-        expected: 1 つ目の区切りで構成図の `focusRect` を 1 回呼び、ホイールの後の 2 つ目の区切りでも `resumeFollow` で再開して呼ぶ
+        mock: 構成図の表示する枠の `zoomControlOf` の `centerRect`
+        expected: 1 つ目の区切りで構成図の `centerRect` を 1 回呼び、ホイールの後の 2 つ目の区切りでも `resumeFollow` で再開して呼ぶ
       - name: test_attach_map_when_plain
         case: 正常
         summary: 範囲の外の map の図は警告を出さない

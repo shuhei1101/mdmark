@@ -302,7 +302,7 @@ export async function attachComments(options: {
         : below
     }px`;
   };
-  /** 選びに合わせてボタンを出し入れする。ボタンは選んだ文字のブロックの直後に配置し、Tab で届くようにする */
+  /** 選びに合わせてボタンを出し入れする。ボタンは選んだ文字のブロックの直後（表のセルのときはセルを含む表の直後）に配置し、Tab で届くようにする */
   const syncButton = (): void => {
     frame = 0;
     if (destroyed || open) {
@@ -317,7 +317,9 @@ export async function attachComments(options: {
       return;
     }
     pending = range.cloneRange();
-    block.after(addButton);
+    // 表のセルのときは、ボタンが行の子にならないよう表の直後に配置する
+    const table = block.matches("td, th") ? block.closest("table") : null;
+    (table ?? block).after(addButton);
     addButton.hidden = false;
     placeButton(range.getBoundingClientRect());
   };

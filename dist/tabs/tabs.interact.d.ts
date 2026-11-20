@@ -10,4 +10,7 @@ export declare function saveTabChoice(choice: {
 /** 要素を含む `role="tabpanel"` を外側から順にたどり、その中身のタブを選ぶ。選んだタブ名は残さず、同じ組のタブも統一しない。タブの中に無ければ何もしない */
 export declare function revealTabTarget(target: Element): void;
 /** 各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にして 1 つ目（組を持つなら残したタブ名のタブ）を選ぶ。URL の `#ID` が選ばれていない中身の中を指すときは、残したタブ名より先にそのタブを選んで要素へ移る。タブの並びを取り除き、中身を `render` の構造に戻す関数を返却する */
-export declare function attachTabs(root: HTMLElement): () => void;
+export declare function attachTabs(root: HTMLElement, options?: {
+    /** URL の `#ID` を追うか。`false` なら `#ID` の指すタブを選ばない（既定 `true`） */
+    followHash?: boolean;
+}): () => void;

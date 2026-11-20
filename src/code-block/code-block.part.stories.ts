@@ -279,3 +279,27 @@ export const LineStart: Story = {
       '[{"text":"import { mount } from \\"mdmark\\";"},{"text":"const doc = await fetch(\\"/README.md\\");","kind":"highlight"},{"text":"mount(document.querySelector(\\"#doc\\"), await doc.text());","kind":"highlight"}]',
   },
 };
+
+export const MarkdownPreview: Story = {
+  name: "MarkdownPreview",
+  parameters: { server: { id: "code-block" } },
+  args: {
+    language: "markdown",
+    copyState: "idle",
+    preview: "rendered",
+    lines:
+      '[{"text":"# 在庫の点検"},{"text":""},{"text":"> [!NOTE]"},{"text":"> 点検は毎朝 9 時までに済ませる。"}]',
+  },
+};
+
+export const MarkdownRaw: Story = {
+  name: "MarkdownRaw",
+  parameters: { server: { id: "code-block" } },
+  args: {
+    language: "markdown",
+    copyState: "idle",
+    preview: "raw",
+    lines:
+      '[{"text":"# 在庫の点検"},{"text":""},{"text":"> [!NOTE]"},{"text":"> 点検は毎朝 9 時までに済ませる。"}]',
+  },
+};

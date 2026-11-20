@@ -45,6 +45,12 @@ constants:
     refs:
       - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
     status: planned
+  - name: MARKDOWN_LANGUAGES
+    title: 描いた結果を出す言語
+    container: src/code-block/code-block.syntax.ts
+    usecase: markdownのコードブロックを描いた結果と見比べる
+    summary: 情報文字列の言語（小文字）がこれに含まれるコードブロックに、描いた結果と Raw のボタンを付ける
+    value: "['markdown', 'md']"
 functions:
   - name: readCodeSpec
     title: コードブロックのマーカーを読み込む
@@ -62,6 +68,7 @@ functions:
       | `highlight` | 強調する行 |
       | `fold` | 最初から畳む行 |
       | `wrap` | 折り返すか |
+      | `raw` | 既定で元の Markdown を出すか（`true` だけを出す指定にし、ほかは `false`） |
       | `tree_warning` | 罫線のフォルダ構成の記載の警告を出すか（`false` だけを止める指定にし、ほかは `true`） |
 
       `highlight`・`fold` の要素は行の番号か行の範囲（`from`〜`to`。`to` を省くと `from` の 1 行）で、`lines.start` から数えた行の番号として読み、コードブロックの行に無い番号と `from` より小さい `to` は当てずに警告にする
@@ -71,8 +78,8 @@ functions:
         required: true
         description: '`options` はマーカーの設定、`lineCount` はマーカーを削除した後のコードブロックの行の数'
     returns:
-      type: '{ title: string; lineNumbers: boolean; lineStart: number; highlights: Set<number>; folds: Set<number>; wrap: boolean; treeWarning: boolean; warnings: WarningItem[] }'
-      description: タイトル（無ければ空）・行番号を出すか・最初の行の番号・強調する行と最初から畳む行の位置（1 から）・折り返すか・罫線のフォルダ構成の記載の警告を出すか・読み込めなかった指定
+      type: '{ title: string; lineNumbers: boolean; lineStart: number; highlights: Set<number>; folds: Set<number>; wrap: boolean; raw: boolean; treeWarning: boolean; warnings: WarningItem[] }'
+      description: タイトル（無ければ空）・行番号を出すか・最初の行の番号・強調する行と最初から畳む行の位置（1 から）・折り返すか・既定で元の Markdown を出すか・罫線のフォルダ構成の記載の警告を出すか・読み込めなかった指定
     unit_tests:
       - name: test_read_code_spec
         case: 正常
@@ -110,6 +117,12 @@ functions:
         condition: '`{"tree_warning": false}`・`{"tree_warning": true}`・`{}`、`lineCount` が 3'
         mock: なし
         expected: '`treeWarning` が順に `false`・`true`・`true`。どれも `warnings` が空'
+      - name: test_read_code_spec_when_raw
+        case: 正常
+        summary: '`raw` を読み込む'
+        condition: '`{ raw: true }`・`{ raw: false }`・`{}` の 3 つの設定'
+        mock: なし
+        expected: '`raw` が `true`・`false`・`false`'
   - name: countTreeLines
     title: 罫線のフォルダ構成の行を数える
     container: src/code-block/code-block.syntax.ts
@@ -200,6 +213,7 @@ functions:
       | `mermaid` がオンで情報文字列の最初の単語がちょうど `mermaid` | `code` のオン・オフによらず部品に置き換え（`code` がオフなら `bar: false`）、`mermaid: true` を指定し、色分けの言語を指定しない |
 
       `code` がオンのときに部品へ指定するのは、言語・ファイル名・タイトル・行番号と最初の行の番号・`wrap`・行と、`syntax` がオンなら言語を `syntaxLanguageOf` で参照した色分けの言語。
+      言語を小文字にした値が `MARKDOWN_LANGUAGES` に含まれるコードブロック（mermaid のコードブロックを除く）には、`markdown: true` と、`readCodeSpec` の `raw`（マーカーが無ければ `false`）も指定する。
       `copyState` は指定しない。
       帯の右端のコピーのボタンは `mount` が付ける。
       `code` がオンのときは、`readFolds` で行にインデントのレベル・畳む行の数・`fold` の畳んだ状態を付けてから部品へ指定する。
@@ -344,6 +358,12 @@ functions:
         condition: インターフェース定義『文書をHTML文字列にする』の「正常系（focus・error・warning の行）」の文書
         mock: なし
         expected: '`pre` が `mdmark-code-lines` と `mdmark-code-has-focus` を持ち、1〜3 行目が `data-kind` の `focus`・`error`・`warning`'
+      - name: test_build_code_blocks_when_markdown
+        case: 正常
+        summary: 言語 markdown・md のコードブロックに印を付ける
+        condition: '言語 `markdown`・`MD`・`md:README.md`・`ts` のコードブロックと、`<!-- code: {"raw": true} -->` の後の言語 `markdown` のコードブロックを、`code` がオンとオフで描く'
+        mock: なし
+        expected: '`code` がオンのとき、`markdown`・`MD`・`md:README.md` の `div.mdmark-code` だけが `data-mdmark-markdown` を持ち、マーカーの後のものだけが `data-mdmark-raw` も持つ。`code` がオフのときはどれも持たない'
     reason: 色分けの対象を、mdmark が出した要素だけが持ち続ける属性 `data-mdmark-syntax` で示すため、マーカーも行のマーカーも持たない色分けの対象も部品に置き換える（`fence` のままだと `code` の属性は sanitize が生の HTML と同じく落とす）。部品は `pre` に同じスクリーンリーダー向けの名前と `tabindex` を付け、`markSourceLines` が元の行番号を付けるため、出力は `fence` のときと属性 1 つだけ違う
   - name: syntaxLanguageOf
     title: 色分けの言語を参照する

@@ -18,6 +18,8 @@
 
 #### マーカーで囲んで `html` のコードブロックを 1 つ配置する
 
+<!-- code: {"raw": true} -->
+
 ````markdown
 <!-- html -->
 
@@ -62,6 +64,8 @@ features:
 オンにした文書の全ての範囲の `css`・`ts`・`js` が該当する。
 
 #### 範囲に `css` と `ts` のコードブロックを配置する
+
+<!-- code: {"raw": true} -->
 
 ````markdown
 <!-- html -->
@@ -118,6 +122,8 @@ export default function (root: HTMLElement) {
 
 #### custom element の中に定義を記載する
 
+<!-- code: {"raw": true} -->
+
 ````markdown
 <!-- html -->
 
@@ -155,6 +161,8 @@ custom element の属性は読み込まない。
 ### ヒントを記載する
 
 #### 要素に `data-hint` を記載する
+
+<!-- code: {"raw": true} -->
 
 ````markdown
 <!-- html -->

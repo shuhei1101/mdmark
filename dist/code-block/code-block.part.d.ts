@@ -2,6 +2,10 @@
 export declare const SYNTAX_ATTRIBUTE = "data-mdmark-syntax";
 /** mermaid のコードブロックの一番外の要素に付ける属性。`mount` が図にする対象を見つけるのに使用する */
 export declare const MERMAID_ATTRIBUTE = "data-mdmark-mermaid";
+/** 言語 markdown のコードブロックの包む要素に付ける属性。`mount` が描いた結果を付ける対象を見つけるのに使用する */
+export declare const MARKDOWN_ATTRIBUTE = "data-mdmark-markdown";
+/** 既定で元の Markdown を出す言語 markdown のコードブロックの包む要素に付ける属性 */
+export declare const RAW_ATTRIBUTE = "data-mdmark-raw";
 /** コードの行 1 つ */
 export type CodeLine = {
     /** コードの行のマーカーを削除した行の文字（エスケープ前） */
@@ -41,6 +45,10 @@ export type CodeCopyState = "idle" | "copied" | "failed";
 export declare function renderCodeCopy(options: {
     state: CodeCopyState;
 }): string;
+/** 言語 markdown のコードブロックの帯のコピーのボタンの左に配置する、描いた結果と元の Markdown を切り替える Raw のボタン。押した状態は元の Markdown を出している状態 */
+export declare function renderCodeRaw(options: {
+    pressed: boolean;
+}): string;
 /** コードブロックの HTML を返却する。行番号か行の種類を持つときは行ごとの `mdmark-code-line` に分ける。`bar` が `true`（既定）のときは、言語のラベル・タイトル・コピーのボタンを持つ帯を `pre` の前に配置して包み、`false` のときは `pre` だけを返却する */
 export declare function renderCodeBlock(options: {
     /** 情報文字列の言語（無ければ空） */
@@ -69,4 +77,12 @@ export declare function renderCodeBlock(options: {
     foldButtons?: boolean | undefined;
     /** ポインターが開閉のボタンの列に乗っているか。`true` なら `pre` に `data-fold-hover` を付ける（既定 `false`） */
     foldColumnHovered?: boolean | undefined;
+    /** 言語 markdown のコードブロックか。`true` なら包む要素に `data-mdmark-markdown` を付ける（既定 `false`） */
+    markdown?: boolean | undefined;
+    /** 既定で元の Markdown を出すか。`markdown` も `true` なら包む要素に `data-mdmark-raw` を付ける（既定 `false`） */
+    raw?: boolean | undefined;
+    /** 指定すると、帯に Raw のボタンと `pre` の後ろに描いた結果を配置する（Storybook が指定する） */
+    preview?: "rendered" | "raw" | undefined;
+    /** 描いた結果の中身の HTML（`preview` を指定したときに使用する） */
+    previewHtml?: string | undefined;
 }): string;

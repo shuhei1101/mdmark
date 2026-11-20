@@ -1,0 +1,278 @@
+$ run_url=$(gh workflow run test.yml --ref "design/tooltip/border-all-sides" -f layer=integration -f paths="tests/integration/lib/term-tip.story.test.ts tests/integration/lib/footnote.story.test.ts tests/integration/lib/render.test.ts tests/integration/lib/mount.browser.test.ts" | grep -o 'https://[^ ]*/actions/runs/[0-9]*') && ... gh run view "$run_id" --log
+# 実行: https://github.com/shuhei1101/mdmark/actions/runs/44659559708（commit 7b5cf2a5）
+
+test	結合テストを回す	﻿2026-11-20T02:16:59.5644770Z ##[group]Run if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-20T02:16:59.5645027Z if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-20T02:16:59.5645224Z   npm run test:integration 2>&1 | tee test.log
+test	結合テストを回す	2026-11-20T02:16:59.5645407Z else
+test	結合テストを回す	2026-11-20T02:16:59.5645744Z   # PATHS は空白で区切った並びのため、引用符で囲まずに分ける
+test	結合テストを回す	2026-11-20T02:16:59.5645949Z   # shellcheck disable=SC2086
+test	結合テストを回す	2026-11-20T02:16:59.5646180Z   npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log
+test	結合テストを回す	2026-11-20T02:16:59.5646399Z fi
+test	結合テストを回す	2026-11-20T02:16:59.5693804Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test	結合テストを回す	2026-11-20T02:16:59.5694019Z env:
+test	結合テストを回す	2026-11-20T02:16:59.5694145Z   LAYER: integration
+test	結合テストを回す	2026-11-20T02:16:59.5694568Z   PATHS: tests/integration/lib/term-tip.story.test.ts tests/integration/lib/footnote.story.test.ts tests/integration/lib/render.test.ts tests/integration/lib/mount.browser.test.ts
+test	結合テストを回す	2026-11-20T02:16:59.5695016Z   XDG_RUNTIME_DIR: /run/user/1001
+test	結合テストを回す	2026-11-20T02:16:59.5695229Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+test	結合テストを回す	2026-11-20T02:16:59.5695480Z   XDG_CONFIG_HOME: 
+test	結合テストを回す	2026-11-20T02:16:59.5695689Z ##[endgroup]
+test	結合テストを回す	2026-11-20T02:17:00.3616830Z 
+test	結合テストを回す	2026-11-20T02:17:00.3637423Z  RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+test	結合テストを回す	2026-11-20T02:17:00.3641168Z 
+test	結合テストを回す	2026-11-20T02:17:23.8293078Z 2:17:23 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:23.8293908Z /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8298092Z 87 |  `);return t.at(-1)===""&&t.pop(),t};function qq(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-20T02:17:23.8299090Z 88 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-20T02:17:23.8299967Z 89 |  ...:n,ignoreIllegals:!0});return mW(o)}var pW;var gW=e=>import(e);function Iw(e,t,n){console.error(`${e}\u3092\u8AAD\...
+test	結合テストを回す	2026-11-20T02:17:23.8300629Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:23.8301026Z 90 |  ${t}
+test	結合テストを回す	2026-11-20T02:17:23.8301339Z 91 |  });
+test	結合テストを回す	2026-11-20T02:17:23.8301695Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:23.8302979Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:23.8303904Z 
+test	結合テストを回す	2026-11-20T02:17:23.8304301Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:23.8304796Z   File: /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8305663Z 2:17:23 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:23.8306265Z /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8307092Z 87 |  `);return t.at(-1)===""&&t.pop(),t};function qq(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-20T02:17:23.8308325Z 88 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-20T02:17:23.8309225Z 89 |  ...3066\u3044\u307E\u3059\u3002</p></div>',TW;var vW=e=>import(e);function CW(e){let{cache:t,importModule:n}=e,r=new ...
+test	結合テストを回す	2026-11-20T02:17:23.8309819Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:23.8310173Z 90 |  ${t}
+test	結合テストを回す	2026-11-20T02:17:23.8310465Z 91 |  });
+test	結合テストを回す	2026-11-20T02:17:23.8310826Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:23.8312116Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:23.8313015Z 
+test	結合テストを回す	2026-11-20T02:17:23.8313384Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:23.8314241Z   File: /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8326233Z 2:17:23 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:23.8327066Z /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8327570Z 90 |  ${t}
+test	結合テストを回す	2026-11-20T02:17:23.8327903Z 91 |  });
+test	結合テストを回す	2026-11-20T02:17:23.8328612Z 92 |  ...:l});f&&d.push(f)}return OW(d)}var HW="1.59.0",FW=e=>import(e),NW=e=>fetch(e,{method:"HEAD"}),ff=e=>`https://cdn.j...
+test	結合テストを回す	2026-11-20T02:17:23.8329302Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:23.8330097Z 93 |  `):(t.textContent??"").replace(/\n$/,"")}function mf(e,t){let n=document.createElement("template");n.innerHTML=zi({st...
+test	結合テストを回す	2026-11-20T02:17:23.8331258Z 94 |  `)return;let M=document.createElement("span");return M.className="mdmark-code-break",w.replaceWith(M),M.append(w),M})...
+test	結合テストを回す	2026-11-20T02:17:23.8332034Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:23.8333358Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:23.8334333Z 
+test	結合テストを回す	2026-11-20T02:17:23.8334759Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:23.8335360Z   File: /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8336322Z 2:17:23 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:23.8337015Z /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8337682Z 95 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-20T02:17:23.8338221Z 96 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-20T02:17:23.8339040Z 97 |  ...verse())r()}}var y5="data-mdmark-drawn",Hf;var w5=e=>import(e);async function gv(e){let{root:t,libraries:n,isCurre...
+test	結合テストを回す	2026-11-20T02:17:23.8339732Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:23.8340470Z 98 |  `)[0]?.trim()??"",j5=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-20T02:17:23.8341634Z 99 |  `),s=Ji({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-20T02:17:23.8342536Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:23.8343897Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:23.8344916Z 
+test	結合テストを回す	2026-11-20T02:17:23.8345349Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:23.8346102Z   File: /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8351497Z 2:17:23 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:23.8352389Z /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8365094Z 95 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-20T02:17:23.8365781Z 96 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-20T02:17:23.8366488Z 97 |  ..."attachMap"]},Nf=new Map,kv=new Map,xv=new Map,S5=e=>import(e);function yv(e,t){return e instanceof Error?(e.cause...
+test	結合テストを回す	2026-11-20T02:17:23.8367104Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:23.8367820Z 98 |  `)[0]?.trim()??"",j5=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-20T02:17:23.8368904Z 99 |  `),s=Ji({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-20T02:17:23.8369643Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:23.8370965Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:23.8372487Z 
+test	結合テストを回す	2026-11-20T02:17:23.8376003Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:23.8376593Z   File: /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8377361Z 2:17:23 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:23.8378018Z /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:23.8378618Z 95 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-20T02:17:23.8379126Z 96 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-20T02:17:23.8379900Z 97 |  ...-theme-light",vv;var Cv=Promise.resolve(),Wf=0,_5=e=>import(e),jf=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+test	結合テストを回す	2026-11-20T02:17:23.8380534Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:23.8381249Z 98 |  `)[0]?.trim()??"",j5=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-20T02:17:23.8382299Z 99 |  `),s=Ji({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-20T02:17:23.8383016Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:23.8384317Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:23.8385259Z 
+test	結合テストを回す	2026-11-20T02:17:23.8385803Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:23.8386345Z   File: /tmp/mdmark-integration-dist-2ktjxZ/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6701979Z 2:17:24 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:24.6702929Z /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6703902Z 87 |  `);return t.at(-1)===""&&t.pop(),t};function qq(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-20T02:17:24.6704861Z 88 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-20T02:17:24.6705997Z 89 |  ...:n,ignoreIllegals:!0});return mW(o)}var pW;var gW=e=>import(e);function Iw(e,t,n){console.error(`${e}\u3092\u8AAD\...
+test	結合テストを回す	2026-11-20T02:17:24.6706674Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:24.6707073Z 90 |  ${t}
+test	結合テストを回す	2026-11-20T02:17:24.6707417Z 91 |  });
+test	結合テストを回す	2026-11-20T02:17:24.6707837Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:24.6709198Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:24.6717293Z 
+test	結合テストを回す	2026-11-20T02:17:24.6717746Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:24.6718291Z   File: /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6719438Z 2:17:24 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:24.6720117Z /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6721010Z 87 |  `);return t.at(-1)===""&&t.pop(),t};function qq(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-20T02:17:24.6721932Z 88 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-20T02:17:24.6722852Z 89 |  ...3066\u3044\u307E\u3059\u3002</p></div>',TW;var vW=e=>import(e);function CW(e){let{cache:t,importModule:n}=e,r=new ...
+test	結合テストを回す	2026-11-20T02:17:24.6723496Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:24.6724098Z 90 |  ${t}
+test	結合テストを回す	2026-11-20T02:17:24.6724430Z 91 |  });
+test	結合テストを回す	2026-11-20T02:17:24.6724849Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:24.6726243Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:24.6727226Z 
+test	結合テストを回す	2026-11-20T02:17:24.6727585Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:24.6728097Z   File: /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6744927Z 2:17:24 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:24.6826889Z /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6872987Z 90 |  ${t}
+test	結合テストを回す	2026-11-20T02:17:24.6917243Z 91 |  });
+test	結合テストを回す	2026-11-20T02:17:24.6918332Z 92 |  ...:l});f&&d.push(f)}return OW(d)}var HW="1.59.0",FW=e=>import(e),NW=e=>fetch(e,{method:"HEAD"}),ff=e=>`https://cdn.j...
+test	結合テストを回す	2026-11-20T02:17:24.6919027Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:24.6919772Z 93 |  `):(t.textContent??"").replace(/\n$/,"")}function mf(e,t){let n=document.createElement("template");n.innerHTML=zi({st...
+test	結合テストを回す	2026-11-20T02:17:24.6921132Z 94 |  `)return;let M=document.createElement("span");return M.className="mdmark-code-break",w.replaceWith(M),M.append(w),M})...
+test	結合テストを回す	2026-11-20T02:17:24.6921872Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:24.6923145Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:24.6924122Z 
+test	結合テストを回す	2026-11-20T02:17:24.6924534Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:24.6925101Z   File: /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6926143Z 2:17:24 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:24.6926795Z /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6927416Z 95 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-20T02:17:24.6927876Z 96 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-20T02:17:24.6928581Z 97 |  ...verse())r()}}var y5="data-mdmark-drawn",Hf;var w5=e=>import(e);async function gv(e){let{root:t,libraries:n,isCurre...
+test	結合テストを回す	2026-11-20T02:17:24.6929229Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:24.6929992Z 98 |  `)[0]?.trim()??"",j5=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-20T02:17:24.6931115Z 99 |  `),s=Ji({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-20T02:17:24.6931864Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:24.6933746Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:24.6934693Z 
+test	結合テストを回す	2026-11-20T02:17:24.6935070Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:24.6935820Z   File: /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6936531Z 2:17:24 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:24.6937162Z /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6937760Z 95 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-20T02:17:24.6938271Z 96 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-20T02:17:24.6939006Z 97 |  ..."attachMap"]},Nf=new Map,kv=new Map,xv=new Map,S5=e=>import(e);function yv(e,t){return e instanceof Error?(e.cause...
+test	結合テストを回す	2026-11-20T02:17:24.6939965Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:24.6940692Z 98 |  `)[0]?.trim()??"",j5=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-20T02:17:24.6942046Z 99 |  `),s=Ji({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-20T02:17:24.6942881Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:24.6944202Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:24.6945199Z 
+test	結合テストを回す	2026-11-20T02:17:24.6945744Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:24.6946269Z   File: /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6946931Z 2:17:24 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-20T02:17:24.6947577Z /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:24.6948157Z 95 |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-20T02:17:24.6948874Z 96 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-20T02:17:24.6949567Z 97 |  ...-theme-light",vv;var Cv=Promise.resolve(),Wf=0,_5=e=>import(e),jf=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+test	結合テストを回す	2026-11-20T02:17:24.6950198Z    |                                                                 ^
+test	結合テストを回す	2026-11-20T02:17:24.6950911Z 98 |  `)[0]?.trim()??"",j5=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-20T02:17:24.6951979Z 99 |  `),s=Ji({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-20T02:17:24.6952709Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-20T02:17:24.6954256Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-20T02:17:24.6955265Z 
+test	結合テストを回す	2026-11-20T02:17:24.6955812Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-20T02:17:24.6956348Z   File: /tmp/mdmark-integration-dist-31t1Qa/dist/index.js
+test	結合テストを回す	2026-11-20T02:17:25.7728886Z  ✓  integration-browser-touch (chromium)  tests/integration/lib/mount.browser.test.ts (324 tests | 322 skipped) 1589ms
+test	結合テストを回す	2026-11-20T02:17:25.7748121Z    ✓ test_normal_when_unmarked_table_sorted_by_touch 1172ms
+test	結合テストを回す	2026-11-20T02:17:27.7317766Z  ✓  integration-node  tests/integration/lib/render.test.ts (104 tests) 5465ms
+test	結合テストを回す	2026-11-20T02:17:27.7318793Z    ✓ test_normal 1403ms
+test	結合テストを回す	2026-11-20T02:17:27.7319809Z    ✓ test_normal_when_marks_and_scripts 422ms
+test	結合テストを回す	2026-11-20T02:17:27.7320417Z    ✓ test_normal_when_table_features 527ms
+test	結合テストを回す	2026-11-20T02:17:27.7387284Z    ✓ test_normal_when_no_intl_segmenter 553ms
+test	結合テストを回す	2026-11-20T02:17:49.2007581Z  ✓  integration-storybook  tests/integration/lib/footnote.story.test.ts (13 tests) 20932ms
+test	結合テストを回す	2026-11-20T02:17:49.2008460Z    ✓ test_footnote_ref_closed 1794ms
+test	結合テストを回す	2026-11-20T02:17:49.2009032Z    ✓ test_footnote_ref_open 1007ms
+test	結合テストを回す	2026-11-20T02:17:49.2009490Z    ✓ test_footnote_ref_below 1064ms
+test	結合テストを回す	2026-11-20T02:17:49.2009952Z    ✓ test_footnote_ref_with_link 1040ms
+test	結合テストを回す	2026-11-20T02:17:49.2010450Z    ✓ test_footnote_ref_long 2811ms
+test	結合テストを回す	2026-11-20T02:17:49.2011252Z    ✓ test_footnote_ref_two_digits 2300ms
+test	結合テストを回す	2026-11-20T02:17:49.2011716Z    ✓ test_footnotes_closed 1995ms
+test	結合テストを回す	2026-11-20T02:17:49.2012192Z    ✓ test_footnotes_open 1191ms
+test	結合テストを回す	2026-11-20T02:17:49.2012682Z    ✓ test_footnotes_referenced_twice 1092ms
+test	結合テストを回す	2026-11-20T02:17:49.2013171Z    ✓ test_footnotes_long 2465ms
+test	結合テストを回す	2026-11-20T02:17:49.2013621Z    ✓ test_footnote_ref_annotation 1043ms
+test	結合テストを回す	2026-11-20T02:17:49.2014129Z    ✓ test_footnote_ref_annotation_after_ref 1745ms
+test	結合テストを回す	2026-11-20T02:17:49.2014652Z    ✓ test_footnotes_annotations 1319ms
+test	結合テストを回す	2026-11-20T02:17:51.7022133Z stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_zoomed
+test	結合テストを回す	2026-11-20T02:17:51.7063679Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	結合テストを回す	2026-11-20T02:17:52.4549833Z stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_panned
+test	結合テストを回す	2026-11-20T02:17:52.4556423Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	結合テストを回す	2026-11-20T02:17:55.1658654Z  ✓  integration-storybook  tests/integration/lib/term-tip.story.test.ts (22 tests) 33221ms
+test	結合テストを回す	2026-11-20T02:17:55.1671831Z    ✓ test_term_only 2081ms
+test	結合テストを回す	2026-11-20T02:17:55.1672510Z    ✓ test_docs_only 3206ms
+test	結合テストを回す	2026-11-20T02:17:55.1673129Z    ✓ test_both 3640ms
+test	結合テストを回す	2026-11-20T02:17:55.1673604Z    ✓ test_below 1155ms
+test	結合テストを回す	2026-11-20T02:17:55.1674085Z    ✓ test_many_docs 1099ms
+test	結合テストを回す	2026-11-20T02:17:55.1674631Z    ✓ test_long_meaning 1279ms
+test	結合テストを回す	2026-11-20T02:17:55.1675112Z    ✓ test_closed 1772ms
+test	結合テストを回す	2026-11-20T02:17:55.1675721Z    ✓ test_avoided 4087ms
+test	結合テストを回す	2026-11-20T02:17:55.1676227Z    ✓ test_avoided_closed 1309ms
+test	結合テストを回す	2026-11-20T02:17:55.1676725Z    ✓ test_alias_term 2258ms
+test	結合テストを回す	2026-11-20T02:17:55.1677208Z    ✓ test_alias_doc 1275ms
+test	結合テストを回す	2026-11-20T02:17:55.1677698Z    ✓ test_alias_command 2277ms
+test	結合テストを回す	2026-11-20T02:17:55.1678226Z    ✓ test_alias_command_copied 895ms
+test	結合テストを回す	2026-11-20T02:17:55.1678760Z    ✓ test_alias_command_failed 733ms
+test	結合テストを回す	2026-11-20T02:17:55.1679514Z    ✓ test_alias_command_long 1196ms
+test	結合テストを回す	2026-11-20T02:17:55.1695688Z    ✓ test_alias_url 826ms
+test	結合テストを回す	2026-11-20T02:17:55.1696368Z    ✓ test_alias_url_long 691ms
+test	結合テストを回す	2026-11-20T02:17:55.1696919Z    ✓ test_alias_url_not_http 950ms
+test	結合テストを回す	2026-11-20T02:17:55.1697445Z    ✓ test_alias_skill 721ms
+test	結合テストを回す	2026-11-20T02:17:55.1697944Z    ✓ test_alias_tool 547ms
+test	結合テストを回す	2026-11-20T02:17:55.1698448Z    ✓ test_alias_path 602ms
+test	結合テストを回す	2026-11-20T02:17:55.1698945Z    ✓ test_alias_avoid 585ms
+test	結合テストを回す	2026-11-20T02:18:28.7937273Z  ✓  integration-browser (chromium)  tests/integration/lib/mount.browser.test.ts (324 tests | 2 skipped) 65300ms
+test	結合テストを回す	2026-11-20T02:18:28.7948361Z    ✓ test_normal 892ms
+test	結合テストを回す	2026-11-20T02:18:28.7948891Z    ✓ test_normal_when_library_mark 318ms
+test	結合テストを回す	2026-11-20T02:18:28.7949824Z    ✓ test_normal_when_table_pinned 1002ms
+test	結合テストを回す	2026-11-20T02:18:28.7950724Z    ✓ test_normal_when_table_pin_and_wide 815ms
+test	結合テストを回す	2026-11-20T02:18:28.7951232Z    ✓ test_normal_when_table_header_stuck 5598ms
+test	結合テストを回す	2026-11-20T02:18:28.7951778Z    ✓ test_normal_when_table_header_stuck_in_scroller 9023ms
+test	結合テストを回す	2026-11-20T02:18:28.7952360Z    ✓ test_normal_when_every_table_header_stuck 5571ms
+test	結合テストを回す	2026-11-20T02:18:28.7952969Z    ✓ test_normal_when_code_copied 2087ms
+test	結合テストを回す	2026-11-20T02:18:28.7953445Z    ✓ test_normal_when_diagram_zoomed 705ms
+test	結合テストを回す	2026-11-20T02:18:28.7953932Z    ✓ test_normal_when_diagram_panned 1021ms
+test	結合テストを回す	2026-11-20T02:18:28.7954489Z    ✓ test_normal_when_diagram_fullscreen 509ms
+test	結合テストを回す	2026-11-20T02:18:28.7955047Z    ✓ test_normal_when_diagram_tooltip 602ms
+test	結合テストを回す	2026-11-20T02:18:28.7955746Z    ✓ test_normal_when_diagram_tooltip_touch 466ms
+test	結合テストを回す	2026-11-20T02:18:28.7956309Z    ✓ test_normal_when_diagram_pinched 567ms
+test	結合テストを回す	2026-11-20T02:18:28.7956904Z    ✓ test_normal_when_destroyed_while_waiting 1104ms
+test	結合テストを回す	2026-11-20T02:18:28.7957510Z    ✓ test_normal_when_diff_blocks_updated 928ms
+test	結合テストを回す	2026-11-20T02:18:28.7958111Z    ✓ test_error_when_part_module_unavailable 303ms
+test	結合テストを回す	2026-11-20T02:18:28.7958693Z    ✓ test_normal_when_no_syntax_target 307ms
+test	結合テストを回す	2026-11-20T02:18:28.7959316Z    ✓ test_normal_when_side_toc_hovered_and_pinned 318ms
+test	結合テストを回す	2026-11-20T02:18:28.7959943Z    ✓ test_normal_when_side_toc_focused 417ms
+test	結合テストを回す	2026-11-20T02:18:28.7960548Z    ✓ test_normal_when_back_to_top_pressed 635ms
+test	結合テストを回す	2026-11-20T02:18:28.7961163Z    ✓ test_normal_when_back_to_top_in_scroll_container 654ms
+test	結合テストを回す	2026-11-20T02:18:28.7961817Z    ✓ test_normal_when_back_to_top_avoids_side_parts 474ms
+test	結合テストを回す	2026-11-20T02:18:28.7962396Z    ✓ test_normal_when_lightbox_pinched 402ms
+test	結合テストを回す	2026-11-20T02:18:28.7962931Z    ✓ test_normal_when_gif_toggled 2020ms
+test	結合テストを回す	2026-11-20T02:18:28.7963546Z    ✓ test_normal_when_gif_reduced_motion 668ms
+test	結合テストを回す	2026-11-20T02:18:28.7966459Z    ✓ test_normal_when_side_toc_over_table 615ms
+test	結合テストを回す	2026-11-20T02:18:28.7967534Z    ✓ test_normal_when_side_toc_at_scroll_edge 570ms
+test	結合テストを回す	2026-11-20T02:18:28.7968425Z    ✓ test_normal_when_glossary_touch 454ms
+test	結合テストを回す	2026-11-20T02:18:28.7968991Z    ✓ test_normal_when_table_pinned_through 321ms
+test	結合テストを回す	2026-11-20T02:18:28.7969527Z    ✓ test_normal_when_diagram_placement_top 422ms
+test	結合テストを回す	2026-11-20T02:18:28.7970054Z    ✓ test_normal_when_chart_item_tooltip 665ms
+test	結合テストを回す	2026-11-20T02:18:28.7970584Z    ✓ test_normal_when_diagram_resized 665ms
+test	結合テストを回す	2026-11-20T02:18:28.7971103Z    ✓ test_normal_when_block_spacing 506ms
+test	結合テストを回す	2026-11-20T02:18:28.7971601Z    ✓ test_normal_when_mermaid_drawn 386ms
+test	結合テストを回す	2026-11-20T02:18:28.7972139Z    ✓ test_normal_when_mermaid_scheme_changed 430ms
+test	結合テストを回す	2026-11-20T02:18:28.7972679Z    ✓ test_normal_when_mermaid_printed 705ms
+test	結合テストを回す	2026-11-20T02:18:28.7973228Z    ✓ test_normal_when_mermaid_theme_configured 319ms
+test	結合テストを回す	2026-11-20T02:18:28.7973771Z    ✓ test_normal_when_no_mermaid_target 305ms
+test	結合テストを回す	2026-11-20T02:18:28.7974299Z    ✓ test_error_when_mermaid_syntax_invalid 303ms
+test	結合テストを回す	2026-11-20T02:18:28.7974814Z    ✓ test_normal_when_mermaid_node_link 908ms
+test	結合テストを回す	2026-11-20T02:18:28.7975328Z    ✓ test_normal_when_pinned_column_resized 367ms
+test	結合テストを回す	2026-11-20T02:18:28.7976171Z    ✓ test_normal_when_pinned_columns_exceed_visible_width 339ms
+test	結合テストを回す	2026-11-20T02:18:28.7976724Z    ✓ test_normal_when_map_hints_off 469ms
+test	結合テストを回す	2026-11-20T02:18:28.7977234Z    ✓ test_error_when_plain_map_cannot_read 463ms
+test	結合テストを回す	2026-11-20T02:18:28.7989689Z 
+test	結合テストを回す	2026-11-20T02:18:28.7993033Z  Test Files  5 passed (5)
+test	結合テストを回す	2026-11-20T02:18:28.7995734Z       Tests  463 passed | 324 skipped (787)
+test	結合テストを回す	2026-11-20T02:18:28.7996244Z    Start at  02:17:00
+test	結合テストを回す	2026-11-20T02:18:28.7998845Z    Duration  88.39s (tests 96%, transform 2%, worker 1%, import 1%)
+test	結合テストを回す	2026-11-20T02:18:28.8008668Z 

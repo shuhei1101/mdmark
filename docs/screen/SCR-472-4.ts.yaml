@@ -775,7 +775,7 @@ elements:
     position: 描く先の要素 > map の構成図・map のシーケンス図・map の ER 図・map の状態遷移図・map のクラス図・map のアーキテクチャ図・map の C4 図・map のマインドマップ・map の軸と格子の配置の図の図の枠の下
     description: 案内と再生の帯。始める前も常に出し、始める前と停止の後は手順のバーと左右の矢印のボタンだけを出す
     visible_when: 構成図・ER 図・クラス図・アーキテクチャ図・`C4Dynamic` 以外の C4 図・マインドマップ・ブロック図は補足に `walkthroughs` があるとき、シーケンス図・状態遷移図・`C4Dynamic`・ガントチャート・タイムライン・Git グラフ・ジャーニーは常時
-    action: 区切り・左右の矢印のボタン・← → で手順を選んで停止するまで繰り返し（矢印は端で反対の端へ回る）、強調するノードが収まる位置と倍率へ図の枠の中をなめらかに移す。帯のバーと矢印のボタンの外・図の枠の空いた場所・Esc で停止して強調を解く。シーケンス図の再生は、補足の `plays_over` で指した構成図の上でも強調する。片方の図で案内か再生を始めると、もう片方の強調を解く
+    action: 区切り・左右の矢印のボタン・← → で手順を選んで停止するまで繰り返し（矢印は端で反対の端へ回る）、倍率を変えずに、強調するノードが見える位置へ図の枠の中をなめらかに移す（100 % で強調するノードが見えていれば移さない）。帯のバーと矢印のボタンの外・図の枠の空いた場所・Esc で停止して強調を解く。シーケンス図の再生は、補足の `plays_over` で指した構成図の上でも強調する。片方の図で案内か再生を始めると、もう片方の強調を解く
     refs:
       - IF-472-35#constraints[map の強調]
       - IF-472-35#constraints[map の案内と再生の帯]
@@ -1037,7 +1037,7 @@ elements:
     id: comment-add
     kind: button
     component: CMP-472-14#
-    position: 描く先の要素 > 選んだ文字のブロックの直後
+    position: 描く先の要素 > 選んだ文字のブロックの直後（表のセルのときはセルを含む表の直後）
     description: 本文の文字を 1 つのブロック（段落・リストの項目・表のセル・見出し・引用）の中で選んだとき、選んだ文字の終わりの下（収まらなければ上）に出す
     label: コメント
     visible_when: '`comments` がオンで `opts.commentStore` を指定したか `mountComments` を呼び、文字を選んでいて入力欄を開いていないとき。入力欄・ビューの操作・コード・既にあるマーカーの中の選びでは出さない。コメントの部品のモジュールを読み込めないときは出さない'
@@ -2038,6 +2038,33 @@ elements:
     action: 出したときに入力欄へフォーカスを移す。閉じるボタンで削除し、コピーのボタンへフォーカスを戻す
     refs:
       - IF-472-35#constraints[Markdown のコピーとエクスポートのボタン]
+    status: planned
+  - name: コードの Raw のボタン
+    id: code-raw
+    kind: button
+    component: CMP-472-18#
+    args:
+      - name: preview
+        value: '描いた直後は直前の `<!-- code: {…} -->` の `raw` が `true` なら `raw`、無ければ `rendered`。読者が押すたびに入れ替える'
+    position: 描く先の要素 > コードブロック > 帯のコピーのボタンの左
+    description: 言語 `markdown`・`md` のコードブロックの帯に配置する、コードのアイコン `code-xml` と文字 `Raw` のボタン。スクリーンリーダー向けの名前は `Raw（元の Markdown を表示）` で、元の Markdown を出しているかを `aria-pressed` で伝える
+    label: Raw
+    visible_when: 言語が `markdown` か `md` のコードブロックで、中身を描け、印刷していないとき
+    initial_state: 活性
+    initial_value: 押していない（`aria-pressed="false"`）。`raw` が `true` のコードブロックは押した状態
+    action: 押すと（Enter・Space を含む）、描いた結果を隠して元の Markdown を出し、もう一度押すと描いた結果に戻す。ほかのコードブロックの表示と文書のスクロールの位置は変えない
+    refs:
+      - IF-472-35#constraints[言語 markdown のコードブロックの描いた結果]
+    status: planned
+  - name: コードの描いた結果
+    id: code-preview
+    kind: region
+    component: CMP-472-18#
+    position: 描く先の要素 > コードブロック > 帯の下
+    description: 言語 `markdown`・`md` のコードブロックの中身を、外の文書と同じ設定で描いた結果（`div.mdmark-code-preview`）。右側の目次・先頭へ戻る・Markdown のコピーとエクスポート・被参照・コメント・印刷の処理は中に付けず、中の見出しは外の文書の右側の目次に入れない。印刷では、印刷した時点で出している側をそのまま出す
+    visible_when: 言語が `markdown` か `md` のコードブロックで、Raw のボタンが押した状態（`aria-pressed="true"`）でないとき
+    refs:
+      - IF-472-35#constraints[言語 markdown のコードブロックの描いた結果]
     status: planned
 mock: docs/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が追加する UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張のマーカーの場所・拡張記法の部品・記載の警告）を持つ。

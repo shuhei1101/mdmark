@@ -3343,7 +3343,7 @@ constraints:
 
       `code` がオンのとき、コードブロックの直前の `<!-- code: {JSON のオブジェクト} -->` を次のコードブロックへの指定として読み込む。
 
-      キーは `title`（タイトル。空白を含められる）・`lines`（行番号。`lines.start` は最初の行の番号で、省くと 1）・`highlight`（強調する行。行の番号か行の範囲 `{"from": 4, "to": 6}` の配列）・`fold`（最初から畳む行。`highlight` と同じ記載方法）・`wrap`（`true` で長い行を枠の幅で折り返す）・`tree_warning`（`false` で罫線のフォルダ構成の記載の警告を止める。既定は `true`）。
+      キーは `title`（タイトル。空白を含められる）・`lines`（行番号。`lines.start` は最初の行の番号で、省くと 1）・`highlight`（強調する行。行の番号か行の範囲 `{"from": 4, "to": 6}` の配列）・`fold`（最初から畳む行。`highlight` と同じ記載方法）・`wrap`（`true` で長い行を枠の幅で折り返す）・`tree_warning`（`false` で罫線のフォルダ構成の記載の警告を止める。既定は `true`）・`raw`（`true` で、言語 `markdown`・`md` のコードブロックを既定で元の Markdown の表示にする。既定は `false`）。
 
       `highlight`・`fold` の行の番号と、コードブロックに無い行の判定は、1 行目を `lines.start` の番号として数える。
 
@@ -3368,6 +3368,8 @@ constraints:
       `pre` のスクリーンリーダー向けの名前は、タイトルを持てば `コード: {タイトル}`、ファイル名を持てば `コード: {ファイル名}`、言語を持てば `コード: {言語}`、どれも無ければ `コード` にする。
 
       コピーのボタンは `mount` が帯の右端に付ける。
+
+      言語（`:` の前）が `markdown`・`md` のコードブロックは、囲む `div.mdmark-code`（タイトルを持てば `figure.mdmark-code`）に属性 `data-mdmark-markdown` を付け、マーカーの `raw` が `true` なら `data-mdmark-raw` も付ける。`render` は中身を描かず、描いた結果と Raw のボタンは `mount` が付ける（文書を描く.ts の制約『言語 markdown のコードブロックの描いた結果』）。
 
       行番号と行頭の `+`・`-` は HTML の文字に入れない（CSS の擬似要素で出し、選んで写す中身に入らない）。
 

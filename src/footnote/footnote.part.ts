@@ -78,7 +78,7 @@ export function renderFootnoteRef(options: {
   const items = bodies
     .map((body) => `${FOOTNOTE_BODY_OPEN}${body}</span>`)
     .join("");
-  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names.refId}${number}-${refIndex}" href="#${names.itemId}${number}" ${pointer}><span class="mdmark-visually-hidden">${names.label} </span>${number}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-title">${label}</span>${items}</span></sup>`;
+  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names.refId}${number}-${refIndex}" href="#${names.itemId}${number}" ${pointer}><span class="mdmark-visually-hidden">${names.label} </span>${number}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-frame"><span class="mdmark-fn-tip-title">${label}</span>${items}</span></span></sup>`;
 }
 
 /** 参照 1 つへ戻るリンクの行き先 */

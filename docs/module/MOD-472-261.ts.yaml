@@ -29,6 +29,7 @@ functions:
     summary: 単語・`id`・意味・関連文書から、部品設計『用語のツールチップ』の単語とツールチップの組の HTML（`mdmark-term-wrap` の中に単語と、その直後のツールチップ）を返却する
     description: |-
       意味だけのときは `role="tooltip"`、関連文書があるときは `role="group"` にする。
+      ツールチップの中身（区分）は、ツールチップの直下の枠 `mdmark-term-tip-frame` に入れる。
       区分には意味だけのときも見出し（`用語`・`関連文書`）を付ける（モック `docs/mock/components/term-tooltip/` のとおり）。
       `hidden` は付けず、開閉は CSS（`:hover`・`:focus-within`）と `attachTermTips` が付ける class が決める。
       `replacement` があるときは `meaning`・`docs` を使用せず、単語に class `mdmark-term mdmark-term-avoided` を付け、`role="tooltip"` のツールチップに見出し `代わりの用語` の区分だけを配置して `mdmark-term-tip-replacement`（代わりの用語の単語）と `mdmark-term-tip-meaning`（意味）を出し（`meaning` が無ければ意味を配置しない）、単語の `aria-describedby` でツールチップを指す。
@@ -54,7 +55,7 @@ functions:
         summary: 部品設計の状態ごとに HTML を返却する
         condition: 部品設計『用語のツールチップ』の `TermOnly`・`DocsOnly`・`Both` の引数
         mock: なし
-        expected: '`role` が状態のとおりで、`TermOnly` は見出し `用語` だけ、`DocsOnly` は `関連文書` だけ、`Both` は `用語` → `関連文書` の順。どの状態も `hidden` を持たない'
+        expected: '`role` が状態のとおりで、`TermOnly` は見出し `用語` だけ、`DocsOnly` は `関連文書` だけ、`Both` は `用語` → `関連文書` の順。どの状態も `hidden` を持たず、区分がツールチップの直下の `mdmark-term-tip-frame` の中にある'
       - name: test_render_term_tip_escapes
         case: 正常
         summary: 意味とタイトルをエスケープする
