@@ -328,8 +328,9 @@ test("test_glossary_rule_with_alias_row", async () => {
   const html = parser.render(ALIAS_ROW_MARKDOWN, env);
   const offHtml = parser.render(offMarkdown, offEnv);
   // 検証
+  // 後の段落の「マーク」はエイリアスの別名として下線の要素になる
   expect(html).toContain("<table");
-  expect(html).toContain("マークを記載する。");
+  expect(html).toContain("を記載する。");
   expect(env.ownGlossary).toEqual([]);
   expect(offHtml).toContain("<table");
   expect(offHtml).toContain("マークを記載する。");
@@ -364,7 +365,10 @@ test("test_alias_glossary_tokens", async () => {
   expect(bodyRows[0]).toContain("マーカー");
   expect(bodyRows[1]).toContain("機能");
   expect(html).not.toContain("使用方法");
-  expect(html).toContain('href="コアコンセプト-文書を描く仕組み.md"');
+  const hrefs = [...html.matchAll(/href="([^"]*)"/g)].map((match) =>
+    decodeURI(match[1] ?? ""),
+  );
+  expect(hrefs).toEqual(["コアコンセプト-文書を描く仕組み.md"]);
   expect(html).toContain("文書を描く仕組み");
 });
 
