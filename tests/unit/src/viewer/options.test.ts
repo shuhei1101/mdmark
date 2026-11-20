@@ -1,12 +1,12 @@
 import { expect, test } from "vitest";
 
 /** 埋めた描いた結果から mount の引数を作る処理を読み込む（ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む。実装が無い間は各テストが個別に失敗する） */
-const loadRendered = (): Promise<
-  typeof import("../../../../src/viewer/rendered.ts")
+const loadOptions = (): Promise<
+  typeof import("../../../../src/viewer/options.ts")
 > =>
   import(
     /* @vite-ignore */ new URL(
-      "../../../../src/viewer/rendered.ts",
+      "../../../../src/viewer/options.ts",
       import.meta.url,
     ).href
   );
@@ -14,7 +14,7 @@ const loadRendered = (): Promise<
 // 描いた結果の画像のキーを data: URL に替え、純粋な Markdown とパスをそのまま渡す（正常系）
 test("test_rendered_options", async () => {
   // 準備
-  const { renderedOptions } = await loadRendered();
+  const { renderedOptions } = await loadOptions();
   const doc = {
     path: "guide/a.md",
     title: "A",

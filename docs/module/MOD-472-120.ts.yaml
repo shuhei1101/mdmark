@@ -30,7 +30,7 @@ functions:
       埋める設定には `mermaid` の `theme`・`themeVariables` だけをコピーし、`url` を写さない。
       設定に `aliases` があれば `loadAliases` の `aliases` を `payload.aliases` に入れ、`issues` は 1 件ずつずれを 1 行にした（`formatCheckIssue`）警告にする（終了コードは変えない）。
       警告は `{ファイル}: {内容}` の文字列で、読み込めない画像・絶対 URL の画像・まとめられないモジュールと拡張・まとめられない色分けのライブラリ（`{設定ファイル}: 色分けのライブラリ \`{URL}\` をまとめられません（{理由}）。\`syntax.url\` を修正してください。`）・読み込めない `theme`・読み込めない索引の文書を出す。
-      `hideTraces` が `true` のときは、`collectMarkNames` の名前で `payload.docs[].markdown` と `payload.includes` の値に `hideMarkdown` を適用し、`compileHtmlScripts` には元の文書に `hideMarkdown` を適用した Markdown を指定する（`usedParts`・`usesMap` は元の文書で判定する）
+      `hideTraces` が `true` のときは、`hidePayload` が `payload.docs[].rendered.html` に `hideRenderedHtml` を適用する。`compileHtmlScripts` には元の文書を指定する（`usedParts`・`usesMap` も元の文書で判定する）
     kind: 関数
     scope: internal
     is_async: true
@@ -355,7 +355,7 @@ functions:
         required: true
         description: 置き換えた Markdown と、開いたときに `mount` に指定する値（`path` は設定ファイルのフォルダからの相対パス）
     returns:
-      type: '{ rendered: MdmarkRendered; pureMarkdown: string }'
+      type: 'Promise<{ rendered: MdmarkRendered; pureMarkdown: string }>'
       description: 埋める描いた結果と純粋な Markdown
     callees:
       - MOD-472-212#functions[renderDocument]
@@ -373,6 +373,7 @@ functions:
         condition: include のマーカーで別の文書の見出しの中だけを取り込む Markdown と取り込む文書の表
         mock: なし
         expected: '`rendered.html` に取り込んだ見出しの中の文があり、取り込まない文が無い'
+    is_async: true
 lead: '文書を 1 枚の HTML に書き出すコマンドを受け持ち、書き出しの流れを変えるときに参照する。'
 tags:
   - name: topic:書き出し

@@ -10659,7 +10659,7 @@ flows:
       - name: mdmark を読み込むページ
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込む HTML
       - name: 記法を持つ文書の描いた結果
-        description: '表のマーカー・タブ・言語 `ts` のコードブロック・索引の用語・拡張のマーカー・`<!-- page: {"colorScheme": "dark"} -->` を持つ文書を、書き出しと同じ処理で描いた `opts.rendered` と、その文書の純粋な Markdown の `opts.pureMarkdown`。拡張は登録してある'
+        description: '表のマーカー・タブ・言語 `ts` のコードブロック・索引の用語・拡張のマーカー・`<!-- page: {"scheme": "dark"} -->` を持つ文書を、書き出しと同じ処理で描いた `opts.rendered` と、その文書の純粋な Markdown の `opts.pureMarkdown`。拡張は登録してある'
       - name: Mock
         description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
     flow: |-

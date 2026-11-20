@@ -123,7 +123,7 @@ functions:
       - name: test_start_bundle_with_rendered
         case: 正常
         summary: 開いた文書を埋めた描いた結果で描き、page の値で明暗を決める
-        condition: 文書 2 つの `bundle`、2 つ目の `rendered.page.colorScheme` が `dark`。URL の `#` で 2 つ目を開く
+        condition: 文書 2 つの `bundle`、2 つ目の `rendered.page.scheme` が `dark`。URL の `#` で 2 つ目を開く
         mock: Chromium の `document`（`.browser.test.ts` で実行する）
         expected: 2 つ目の `rendered.html` が描かれ、描く先にダークの class が付く
     callees:

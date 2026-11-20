@@ -132,9 +132,9 @@ functions:
       - name: test_build_site_without_markdown
         case: 正常
         summary: まとめる文書ごとに描いた結果と純粋な Markdown を埋め、元の Markdown を埋めない。page のマーカーの値を `rendered.page` に持つ
-        condition: '`<!-- page: {"colorScheme": "dark"} -->` を持つ文書と持たない文書の 2 つを `build` の対象にする'
+        condition: '`<!-- page: {"scheme": "dark"} -->` を持つ文書と持たない文書の 2 つを `build` の対象にする'
         mock: なし（一時フォルダの実ファイル）
-        expected: 書き込んだ HTML の中身の `docs` が `markdown` を持たず、1 つ目の `rendered.page.colorScheme` が `dark`、中身に `includes` が無い
+        expected: 書き込んだ HTML の中身の `docs` が `markdown` を持たず、1 つ目の `rendered.page.scheme` が `dark`、中身に `includes` が無い
     callees:
       - 'MOD-472-109#functions[requireConfig]'
       - 'MOD-472-117#functions[collectBuildDocuments]'
