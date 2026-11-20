@@ -92,6 +92,46 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-20T01:14:41.773284+00:00'
+  - page: docs/guide/カスタマイズ-テーマを上書きする.md
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:20:02.770523+00:00'
+  - page: docs/guide/カスタマイズ-拡張を登録する.md
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:20:02.770523+00:00'
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:20:02.770523+00:00'
+  - page: docs/guide/図を描く-固有の部品とCSSを適用する.md
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:20:02.770523+00:00'
+  - page: docs/guide/図を描く-操作できる部品を作る.md
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:20:02.770523+00:00'
+  - page: docs/guide/構成図の決まり.mark.md
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:20:02.770523+00:00'
+  - page: docs/guide/記載する-索引と用語集を記載する.mark.md
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:20:02.770523+00:00'
+  - page: docs/guide/記載する-色で強調する.md
+    change: '記法の書き方を見せる言語 markdown・md のコードブロックに `<!-- code: {"raw": true} -->` を追加する（要件 No.5）'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:20:02.770523+00:00'
 scope_out:
   - item: mdmark-style（Claude Code の返答と発言の描き換え）のコードブロックで、言語が markdown のときにソースと描いた結果を切り替える
     reason: '#697 の要望は mdmark の文書の中のコードブロックが対象。mdmark-style は部品の木へ描き換える別のサブシステムで、含めるかは部品設計のレビューで確定する（今の判断は含めない）'
