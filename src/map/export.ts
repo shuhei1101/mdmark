@@ -361,7 +361,8 @@ const save = (blob: Blob, name: string): void => {
   link.href = url;
   link.download = name;
   link.click();
-  URL.revokeObjectURL(url);
+  // ダウンロードの開始は非同期のため、URL の解放は次のタスクまで遅らせる
+  setTimeout(() => URL.revokeObjectURL(url), 0);
 };
 
 /** 範囲の図の枠の書き出すボタンに、「SVG」「PNG」の要素の開閉と保存を付け、片付ける関数を返却する */

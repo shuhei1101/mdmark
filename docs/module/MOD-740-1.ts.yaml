@@ -136,7 +136,7 @@ functions:
       1. 書き出すボタン（`[data-tool="export"]`）を押すと、要素（`div.mdmark-diagram-export`）の `hidden` とボタンの `aria-expanded` を切り替える
       2. 要素の「SVG」（`data-export="svg"`）を押すと `exportMapSvg` の文字を Blob にして保存させ、要素を閉じる
       3. 「PNG」を押すと `exportMapPng` を待ち、Blob があれば保存させて閉じ、`null` なら要素を開いたままその中の `role="status"` に「この大きさの図は PNG にできません。SVG で書き出してください。」を入れる
-      4. 保存は `URL.createObjectURL` の URL と `mapExportFileName` の名前を `download` に持つ `a` を押し、URL を `URL.revokeObjectURL` で解放する
+      4. 保存は `URL.createObjectURL` の URL と `mapExportFileName` の名前を `download` に持つ `a` を押し、ダウンロードの開始を待つため、次のタスク（`setTimeout` の 0 ms）で URL を `URL.revokeObjectURL` で解放する
       5. Esc・要素とボタンの外側の `pointerdown` で閉じ、Esc のときは書き出すボタンへフォーカスを戻す
     unit_tests:
       - name: test_attach_map_export
