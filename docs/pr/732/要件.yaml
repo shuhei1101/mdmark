@@ -14,8 +14,10 @@ scope_out:
 docs:
   - page: docs/component/CMP-472-61.ts.yaml
     new: false
-    change: 注記「列の幅」に、列の幅を決める中身はセルに見えている文字だけで、開いていないツールチップなど表示していない要素の文字を数えないことを記載する
-    status: todo
+    change: 注記「列の幅」に、行はセルに見えている文字だけで作り、ツールチップ（開いているかに関わらない）とスクリーンリーダー用の文字を含めないことを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:31:52.607578+00:00'
   - page: docs/interface/IF-472-35.ts.yaml
     new: false
     change: 用語を含む列の幅が見えている文字の幅で決まる結合テストの期待を記載する
@@ -24,5 +26,5 @@ docs:
     updated_at: '2026-11-20T04:20:15.531310+00:00'
   - page: docs/module/MOD-472-347.ts.yaml
     new: false
-    change: measureColumns の行の分け方に、複製したセルから表示していない要素を除いてから文字を取ることと、その単体テストを記載する
+    change: measureColumns の行の分け方に、複製したセルからツールチップとスクリーンリーダー用の文字を除いてから文字を取ることと、その単体テストを記載する
     status: todo
