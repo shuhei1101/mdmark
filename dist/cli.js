@@ -407,7 +407,7 @@ var require_codegen2 = __commonJS({
       AND: new code_1._Code("&&"),
       ADD: new code_1._Code("+")
     };
-    var Node3 = class {
+    var Node4 = class {
       optimizeNodes() {
         return this;
       }
@@ -415,7 +415,7 @@ var require_codegen2 = __commonJS({
         return this;
       }
     };
-    var Def = class extends Node3 {
+    var Def = class extends Node4 {
       constructor(varKind, name, rhs) {
         super();
         this.varKind = varKind;
@@ -438,7 +438,7 @@ var require_codegen2 = __commonJS({
         return this.rhs instanceof code_1._CodeOrName ? this.rhs.names : {};
       }
     };
-    var Assign = class extends Node3 {
+    var Assign = class extends Node4 {
       constructor(lhs, rhs, sideEffects) {
         super();
         this.lhs = lhs;
@@ -468,7 +468,7 @@ var require_codegen2 = __commonJS({
         return `${this.lhs} ${this.op}= ${this.rhs};` + _n;
       }
     };
-    var Label = class extends Node3 {
+    var Label = class extends Node4 {
       constructor(label) {
         super();
         this.label = label;
@@ -478,7 +478,7 @@ var require_codegen2 = __commonJS({
         return `${this.label}:` + _n;
       }
     };
-    var Break = class extends Node3 {
+    var Break = class extends Node4 {
       constructor(label) {
         super();
         this.label = label;
@@ -489,7 +489,7 @@ var require_codegen2 = __commonJS({
         return `break${label};` + _n;
       }
     };
-    var Throw = class extends Node3 {
+    var Throw = class extends Node4 {
       constructor(error2) {
         super();
         this.error = error2;
@@ -501,7 +501,7 @@ var require_codegen2 = __commonJS({
         return this.error.names;
       }
     };
-    var AnyCode = class extends Node3 {
+    var AnyCode = class extends Node4 {
       constructor(code2) {
         super();
         this.code = code2;
@@ -520,7 +520,7 @@ var require_codegen2 = __commonJS({
         return this.code instanceof code_1._CodeOrName ? this.code.names : {};
       }
     };
-    var ParentNode = class extends Node3 {
+    var ParentNode = class extends Node4 {
       constructor(nodes = []) {
         super();
         this.nodes = nodes;
@@ -30212,13 +30212,13 @@ __export(dist_exports, {
   Script: () => Script,
   Style: () => Style,
   Tag: () => Tag,
-  Text: () => Text,
+  Text: () => Text2,
   isTag: () => isTag
 });
 function isTag(element) {
   return element.type === ElementType.Tag || element.type === ElementType.Script || element.type === ElementType.Style;
 }
-var ElementType, Root, Text, Directive, Comment, Script, Style, Tag, CDATA, Doctype;
+var ElementType, Root, Text2, Directive, Comment, Script, Style, Tag, CDATA, Doctype;
 var init_dist2 = __esm({
   "node_modules/domelementtype/dist/index.js"() {
     (function(ElementType2) {
@@ -30233,7 +30233,7 @@ var init_dist2 = __esm({
       ElementType2["Doctype"] = "doctype";
     })(ElementType || (ElementType = {}));
     Root = ElementType.Root;
-    Text = ElementType.Text;
+    Text2 = ElementType.Text;
     Directive = ElementType.Directive;
     Comment = ElementType.Comment;
     Script = ElementType.Script;
@@ -30269,12 +30269,12 @@ function hasChildren(node2) {
 function cloneNode(node2, recursive2 = false) {
   let result;
   if (isText(node2)) {
-    result = new Text2(node2.data);
+    result = new Text3(node2.data);
   } else if (isComment(node2)) {
     result = new Comment2(node2.data);
   } else if (isTag2(node2)) {
     const children = recursive2 ? cloneChildren(node2.children) : [];
-    const clone2 = new Element(node2.name, { ...node2.attribs }, children);
+    const clone2 = new Element2(node2.name, { ...node2.attribs }, children);
     for (const child of children) {
       child.parent = clone2;
     }
@@ -30331,11 +30331,11 @@ function cloneChildren(childs) {
   }
   return children;
 }
-var Node, DataNode, Text2, Comment2, ProcessingInstruction, NodeWithChildren, CDATA2, Document, Element;
+var Node2, DataNode, Text3, Comment2, ProcessingInstruction, NodeWithChildren, CDATA2, Document, Element2;
 var init_node = __esm({
   "node_modules/domhandler/dist/node.js"() {
     init_dist2();
-    Node = class {
+    Node2 = class {
       /** Parent of the node */
       parent = null;
       /** Previous sibling */
@@ -30386,7 +30386,7 @@ var init_node = __esm({
         return cloneNode(this, recursive2);
       }
     };
-    DataNode = class extends Node {
+    DataNode = class extends Node2 {
       data;
       /**
        * @param data The content of the data node
@@ -30406,7 +30406,7 @@ var init_node = __esm({
         this.data = data;
       }
     };
-    Text2 = class extends DataNode {
+    Text3 = class extends DataNode {
       type = ElementType.Text;
       get nodeType() {
         return 3;
@@ -30435,7 +30435,7 @@ var init_node = __esm({
       /** If this is a doctype, the document type system identifier (parse5 only). */
       "x-systemId";
     };
-    NodeWithChildren = class extends Node {
+    NodeWithChildren = class extends Node2 {
       children;
       /**
        * @param children Children of the node. Only certain node types can have children.
@@ -30476,7 +30476,7 @@ var init_node = __esm({
         return 9;
       }
     };
-    Element = class extends NodeWithChildren {
+    Element2 = class extends NodeWithChildren {
       name;
       attribs;
       type;
@@ -30607,7 +30607,7 @@ var init_dist3 = __esm({
       }
       onopentag(name, attribs) {
         const type = this.options.xmlMode ? ElementType.Tag : void 0;
-        const element = new Element(name, attribs, void 0, type);
+        const element = new Element2(name, attribs, void 0, type);
         this.addNode(element);
         this.tagStack.push(element);
       }
@@ -30619,7 +30619,7 @@ var init_dist3 = __esm({
             lastNode.endIndex = this.parser.endIndex;
           }
         } else {
-          const node2 = new Text2(data);
+          const node2 = new Text3(data);
           this.addNode(node2);
           this.lastNode = node2;
         }
@@ -30637,7 +30637,7 @@ var init_dist3 = __esm({
         this.lastNode = null;
       }
       oncdatastart() {
-        const text2 = new Text2("");
+        const text2 = new Text3("");
         const node2 = new CDATA2([text2]);
         this.addNode(node2);
         text2.parent = node2;
@@ -30867,7 +30867,7 @@ function renderNode2(node2, options, xmlMode) {
     case Tag: {
       return renderTag(node2, options, xmlMode);
     }
-    case Text: {
+    case Text2: {
       const element = node2;
       const data = element.data || "";
       if ((options.encodeEntities ?? options.decodeEntities) !== false && !(!xmlMode && element.parent && unencodedElements.has(element.parent.name))) {
@@ -32617,7 +32617,7 @@ var require_node = __commonJS({
       }
       return offset;
     }
-    var Node3 = class _Node {
+    var Node4 = class _Node {
       get proxyOf() {
         return this;
       }
@@ -32962,8 +32962,8 @@ var require_node = __commonJS({
         return result.warn(text2, data);
       }
     };
-    module.exports = Node3;
-    Node3.default = Node3;
+    module.exports = Node4;
+    Node4.default = Node4;
   }
 });
 
@@ -32971,8 +32971,8 @@ var require_node = __commonJS({
 var require_comment = __commonJS({
   "node_modules/postcss/lib/comment.js"(exports, module) {
     "use strict";
-    var Node3 = require_node();
-    var Comment4 = class extends Node3 {
+    var Node4 = require_node();
+    var Comment4 = class extends Node4 {
       constructor(defaults) {
         super(defaults);
         this.type = "comment";
@@ -32987,8 +32987,8 @@ var require_comment = __commonJS({
 var require_declaration = __commonJS({
   "node_modules/postcss/lib/declaration.js"(exports, module) {
     "use strict";
-    var Node3 = require_node();
-    var Declaration2 = class extends Node3 {
+    var Node4 = require_node();
+    var Declaration2 = class extends Node4 {
       get variable() {
         return this.prop.startsWith("--") || this.prop[0] === "$";
       }
@@ -33011,7 +33011,7 @@ var require_container = __commonJS({
     "use strict";
     var Comment4 = require_comment();
     var Declaration2 = require_declaration();
-    var Node3 = require_node();
+    var Node4 = require_node();
     var { isClean, my } = require_symbols();
     var AtRule2;
     var parse13;
@@ -33039,7 +33039,7 @@ var require_container = __commonJS({
         }
       }
     }
-    var Container2 = class _Container extends Node3 {
+    var Container2 = class _Container extends Node4 {
       get first() {
         if (!this.proxyOf.nodes) return void 0;
         return this.proxyOf.nodes[0];
@@ -33064,7 +33064,7 @@ var require_container = __commonJS({
             node2.cleanRaws(keepBetween);
             continue;
           }
-          Node3.prototype.cleanRaws.call(node2, keepBetween);
+          Node4.prototype.cleanRaws.call(node2, keepBetween);
           if (node2.nodes) {
             for (let child of node2.nodes) stack.push(child);
           }
@@ -37798,7 +37798,7 @@ var require_postcss = __commonJS({
     var Input2 = require_input();
     var LazyResult = require_lazy_result();
     var list3 = require_list();
-    var Node3 = require_node();
+    var Node4 = require_node();
     var parse13 = require_parse();
     var Processor2 = require_processor();
     var Result2 = require_result();
@@ -37865,7 +37865,7 @@ var require_postcss = __commonJS({
     postcss2.Input = Input2;
     postcss2.Rule = Rule2;
     postcss2.Root = Root3;
-    postcss2.Node = Node3;
+    postcss2.Node = Node4;
     LazyResult.registerPostcss(postcss2);
     module.exports = postcss2;
     postcss2.default = postcss2;
@@ -52849,7 +52849,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
     AND: new code_1._Code("&&"),
     ADD: new code_1._Code("+")
   };
-  var Node3 = class {
+  var Node4 = class {
     optimizeNodes() {
       return this;
     }
@@ -52857,7 +52857,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return this;
     }
   };
-  var Def = class extends Node3 {
+  var Def = class extends Node4 {
     constructor(varKind, name, rhs) {
       super();
       this.varKind = varKind;
@@ -52878,7 +52878,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return this.rhs instanceof code_1._CodeOrName ? this.rhs.names : {};
     }
   };
-  var Assign = class extends Node3 {
+  var Assign = class extends Node4 {
     constructor(lhs, rhs, sideEffects) {
       super();
       this.lhs = lhs;
@@ -52906,7 +52906,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return `${this.lhs} ${this.op}= ${this.rhs};` + _n;
     }
   };
-  var Label = class extends Node3 {
+  var Label = class extends Node4 {
     constructor(label) {
       super();
       this.label = label;
@@ -52916,7 +52916,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return `${this.label}:` + _n;
     }
   };
-  var Break = class extends Node3 {
+  var Break = class extends Node4 {
     constructor(label) {
       super();
       this.label = label;
@@ -52926,7 +52926,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return `break${this.label ? ` ${this.label}` : ""};` + _n;
     }
   };
-  var Throw = class extends Node3 {
+  var Throw = class extends Node4 {
     constructor(error2) {
       super();
       this.error = error2;
@@ -52938,7 +52938,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return this.error.names;
     }
   };
-  var AnyCode = class extends Node3 {
+  var AnyCode = class extends Node4 {
     constructor(code2) {
       super();
       this.code = code2;
@@ -52957,7 +52957,7 @@ var require_codegen = /* @__PURE__ */ __commonJSMin(((exports) => {
       return this.code instanceof code_1._CodeOrName ? this.code.names : {};
     }
   };
-  var ParentNode = class extends Node3 {
+  var ParentNode = class extends Node4 {
     constructor(nodes = []) {
       super();
       this.nodes = nodes;
@@ -59788,8 +59788,8 @@ function stripTrailingSlash(path) {
 function supportsScopeChallengeResolver(transport) {
   return typeof transport === "object" && transport !== null && "setScopeChallengeResolver" in transport && typeof transport.setScopeChallengeResolver === "function";
 }
-function assertScope(scope, location) {
-  if (typeof scope !== "string" || !/^[\u0021\u0023-\u005B\u005D-\u007E]+$/.test(scope)) throw new TypeError(`${location} must satisfy the OAuth scope-token grammar`);
+function assertScope(scope, location2) {
+  if (typeof scope !== "string" || !/^[\u0021\u0023-\u005B\u005D-\u007E]+$/.test(scope)) throw new TypeError(`${location2} must satisfy the OAuth scope-token grammar`);
 }
 function validateScopeChallenge(challenge) {
   if (challenge === null || typeof challenge !== "object" || !Array.isArray(challenge.scopes) || challenge.scopes.length === 0) throw new TypeError("scope challenge must contain at least one scope");
@@ -63097,7 +63097,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.2038328";
+  return "v0.14.0+develop.7263b19";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -86039,6 +86039,25 @@ import {
 } from "node:path";
 import { build as build5 } from "esbuild";
 
+// src/diff/revision-picker.part.ts
+var DATE_FORMAT = new Intl.DateTimeFormat("ja-JP", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+  day: "2-digit",
+  hour: "2-digit",
+  minute: "2-digit"
+});
+
+// src/diagram/diagram-resize.interact.ts
+var KEY_STEPS = {
+  ArrowUp: -RESIZE.step,
+  ArrowDown: RESIZE.step
+};
+
+// src/tree/tree.interact.ts
+var measureContext = typeof document === "undefined" ? void 0 : document.createElement("canvas").getContext("2d");
+
 // src/markdown/pure-blocks.logic.ts
 var FIGURE_MARKS = {
   chart: "diagrams",
@@ -86759,6 +86778,50 @@ ${content}
     markdown: `${front}${converted}
 `,
     warnings: context.warnings
+  };
+}
+
+// src/mermaid.ts
+var renderQueue = Promise.resolve();
+
+// src/section/side-toc.interact.ts
+var CURRENT_LINE_RATIO = 0.25;
+var LINE_BAND_MARGIN = `0px 0px -${(1 - CURRENT_LINE_RATIO) * 100}% 0px`;
+
+// src/mount.ts
+async function renderForMount(markdown, opts = {}) {
+  if (typeof markdown !== "string") {
+    throw new TypeError(
+      "renderForMount \u306E markdown \u306F\u6587\u5B57\u5217\u3067\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044"
+    );
+  }
+  const { config: config3, index, docId, includes } = opts;
+  const result = renderDocument({
+    markdown,
+    config: resolveConfig({ config: config3 }),
+    index,
+    docId,
+    references: opts.references,
+    aliases: opts.aliases,
+    includes,
+    icons: opts.icons,
+    path: opts.path
+  });
+  const pure = await toPureMarkdown(markdown, {
+    config: config3,
+    index,
+    docId,
+    includes
+  });
+  return {
+    rendered: {
+      html: result.html,
+      features: result.features,
+      page: result.page,
+      paramDefinitions: result.paramDefinitions,
+      extensionDefinitions: result.extensionDefinitions
+    },
+    pureMarkdown: pure.markdown
   };
 }
 
@@ -88192,10 +88255,12 @@ var MAP_LAYOUT = {
   minGap: 16,
   /** 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる） */
   usedCost: 60,
-  /** 同じ区間を通る線を並べるときの線の間 */
-  wireGap: 8,
+  /** 同じ区間を通る線を並べるときの線の間と、同じ辺に並べる線の端の間 */
+  wireGap: 16,
   /** 閉じたグループの数の行の高さ（補足の文字 12px × 行の高さ 1.4 の切り上げ） */
-  closedCount: 17
+  closedCount: 17,
+  /** 閉じたグループの二重の枠線の上下の幅の和（CSS の `.map-closed-group` の `border: 3px double`） */
+  closedBorder: 6
 };
 
 // src/map/flowchart.ts
@@ -92305,7 +92370,7 @@ var Result = import_postcss.default.Result;
 var Input = import_postcss.default.Input;
 var Rule = import_postcss.default.Rule;
 var Root2 = import_postcss.default.Root;
-var Node2 = import_postcss.default.Node;
+var Node3 = import_postcss.default.Node;
 
 // src/cli/figure-svg.ts
 var SVG_ATTRIBUTES = Object.fromEntries(
@@ -93228,34 +93293,8 @@ function whenFilled(key, value) {
 }
 var ASSET_PREFIX = "mdmark-asset:";
 async function renderPayloadDoc(options) {
-  const { markdown, config: config3, index, docId, includes } = options;
-  const result = renderDocument({
-    markdown,
-    config: resolveConfig({ config: config3 }),
-    index,
-    docId,
-    references: options.references,
-    aliases: options.aliases,
-    includes,
-    icons: options.icons,
-    path: options.path
-  });
-  const pure = await toPureMarkdown(markdown, {
-    config: config3,
-    index,
-    docId,
-    includes
-  });
-  return {
-    rendered: {
-      html: result.html,
-      features: result.features,
-      page: result.page,
-      paramDefinitions: result.paramDefinitions,
-      extensionDefinitions: result.extensionDefinitions
-    },
-    pureMarkdown: pure.markdown
-  };
+  const { markdown, ...opts } = options;
+  return renderForMount(markdown, opts);
 }
 function withAssetUrls(markdown, assets) {
   let restored = markdown;

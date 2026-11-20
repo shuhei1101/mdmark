@@ -73,4 +73,28 @@ type RenderedDocument = ReturnType<typeof renderDocument>;
 export declare function checkBaseMarkdown(value: unknown): asserts value is string | null | undefined;
 /** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張のマーカーを描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、再描画と片付けの関数を返却する。`diffSource` か `commentStore` を指定して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
 export declare function mount(el: HTMLElement, opts: MountOptions): MountHandle;
+/** `renderForMount` の第 2 引数（開いたときに `mount` に指定するのと同じ値） */
+export type RenderForMountOptions = {
+    /** 利用側の設定。省いたキーには既定を適用する */
+    config?: MdmarkConfig;
+    /** 索引 */
+    index?: MdmarkIndex;
+    /** 描く文書の索引の `id` */
+    docId?: string;
+    /** 参照の表 */
+    references?: MdmarkReferences;
+    /** エイリアス */
+    aliases?: MdmarkAlias[];
+    /** 取り込む文書の表。描いた結果と純粋な Markdown の両方に取り込む */
+    includes?: Record<string, string>;
+    /** まとめていない名前のアイコンの形状の表 */
+    icons?: Record<string, MdmarkIconNode>;
+    /** 描く文書の、設定ファイルのフォルダからの相対パス */
+    path?: string;
+};
+/** `mount` が `opts.markdown` を描くのと同じ処理で描き、`opts.rendered` に指定する描いた結果と `opts.pureMarkdown` に指定する純粋な Markdown を返却する（DOM を使用しない） */
+export declare function renderForMount(markdown: string, opts?: RenderForMountOptions): Promise<{
+    rendered: MdmarkRendered;
+    pureMarkdown: string;
+}>;
 export {};
