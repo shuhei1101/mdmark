@@ -138,9 +138,9 @@ scenarios:
       - 終了コードが 0 以外
       - 設定・索引・文書が変わっていない
     test: test_normal_when_legacy_mark
-  - name: 正常シナリオ（座標で書いた図がある）
+  - name: 正常シナリオ（座標で記載した図がある）
     setup:
-      - name: 座標で書いた図を持つフォルダ
+      - name: 座標で記載した図を持つフォルダ
         description: 正常シナリオのフォルダの 1 つ目の文書に `<!-- flow -->` の範囲 1 つと `<!-- er -->` の範囲 1 つ、2 つ目の文書に `<!-- sequence -->` の範囲 1 つを記載したもの。どれも廃止の前のバージョンで描けた部品の定義を持つ
       - name: Mock
         description: 差し替える依存は無い。点検はブラウザを使用しない
@@ -560,7 +560,7 @@ scenarios:
         participant C as mdmark CLI
         participant M as mdmark の点検の処理
         W->>C: mdmark check
-        C->>C: 設定・索引・文書を読み込み、拡張子の提案を止める設定を読む
+        C->>C: 設定・索引・文書を読み込み、拡張子の提案を止める設定を読み込む
         C->>M: checkIndex（索引・文書）
         M-->>C: 空のずれの一覧
         C-->>W: ずれ 0 件・終了コード 0

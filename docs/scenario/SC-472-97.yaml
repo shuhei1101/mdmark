@@ -9,7 +9,7 @@ preconditions:
   - mdmark-style の設定の `enabled` が `true` で、`targets` に `assistant` がある
 stakeholders:
   - name: Claude Code を使用する人
-    interest: 返答の表・注意書き・見出し・コードと、行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブなどの中身・図と表の番号を、Web で開く mdmark の文書と同じ見た目で確認できる。マーカーの文字が画面に出ない
+    interest: 返答の表・注意書き・見出し・コードと、行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブなどの中身・図と表の番号を、Web で開く mdmark の文書と同じ外観で確認できる。マーカーの文字が画面に出ない
   - name: Claude Code
     interest: mdmark-style が描けない返答でも、Claude Code の元の描画で返答が出る
 scenarios:
@@ -143,10 +143,10 @@ scenarios:
     expected:
       - 表の罫線が端末の幅の中に収まり、3 列目のセルの中身が複数の行に折り返されて全ての文字が画面に出る
     test: test_normal_when_terminal_narrow
-  - name: 異常シナリオ（設定ファイルを読めない）
+  - name: 異常シナリオ（設定ファイルを読み取れない）
     setup:
       - name: mdmark-style を入れた Claude Code
-        description: 正常シナリオと同じ。`MDMARK_STYLE_CONFIG` が YAML として読めない設定ファイルを指す
+        description: 正常シナリオと同じ。`MDMARK_STYLE_CONFIG` が YAML として読み取れない設定ファイルを指す
       - name: 固定の返答
         description: 正常シナリオと同じ
       - name: Mock
@@ -161,7 +161,7 @@ scenarios:
         participant M as mdmark-style
         U->>C: 固定の Markdown を返答させる発言
         C->>M: ui.render（AssistantMessage と返答の本文）
-        M->>M: 設定ファイルを読めず、デバッグログに理由を出す
+        M->>M: 設定ファイルを読み取れず、デバッグログに理由を出す
         M-->>C: next(e) の戻り値
         C-->>U: Claude Code の元の描画の返答
       ```
@@ -169,7 +169,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 返答が Claude Code の元の描画で描かれる
-      - Claude Code のデバッグログに、mdmark-style の名前と設定ファイルを読めなかった理由の行がある
+      - Claude Code のデバッグログに、mdmark-style の名前と設定ファイルを読み取れなかった理由の行がある
     test: test_error_when_config_unreadable
   - name: 正常シナリオ（本文の部品）
     setup:

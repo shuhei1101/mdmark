@@ -7,7 +7,7 @@ stakeholders:
   - name: 読者
     interest: 描いた文書の中身を、マーカーや定義の JSON を手で削除せずに、ほかのツール（チャット・Issue・別のエディタ）へ貼り付けられる
   - name: 利用側のページ
-    interest: ボタンを出したくない画面では、設定で消せる
+    interest: ボタンを出したくない画面では、設定で非表示にできる
 trigger: 読者が、描いた文書の Markdown でコピーするボタンか、Markdown でエクスポートするボタンを押す
 preconditions:
   - ページが mdmark の配布物を読み込み、`mount` で文書を描いているか、`mdmark build` でまとめた HTML を開いている
@@ -19,7 +19,7 @@ scenarios:
       - name: 記法を持つ文書を描いたページ
         description: 『文書をMarkdownに書き出す』の正常シナリオと同じ文書と、`script` 要素・`div` の生の HTML を持つ段落を `mount` で描いたページ
       - name: Mock
-        description: クリップボードへの書き込みを許したブラウザーで開く
+        description: クリップボードへの書き込みを許可したブラウザーで開く
     flow: |-
       <!-- map -->
 
@@ -57,7 +57,7 @@ scenarios:
         participant D as ブラウザーの保存
         R->>P: Markdown でエクスポートするボタンを押す
         P->>P: 描いた文書の Markdown を純粋な Markdown に変換する
-        P->>D: 文書のタイトルを名前にした .md のファイルを渡す
+        P->>D: 文書のタイトルを名前にした .md のファイルを指定する
         D-->>R: ファイルを保存する
       ```
 
@@ -92,9 +92,9 @@ scenarios:
       - ボタンを押してからコピーしたことが出るまでの外への要求が 0 件
       - クリップボードの Markdown は、同じ文書を CLI で書き出した Markdown から `chart`・`param`・埋め込んだ HTML の場所を取り除いたものと同じ
     test: test_normal_when_bundle
-  - name: 正常シナリオ（ボタンを消す）
+  - name: 正常シナリオ（ボタンを削除する）
     setup:
-      - name: ボタンを消す設定で描いたページ
+      - name: ボタンを削除する設定で描いたページ
         description: 設定の `features.markdown-buttons` を `false` にして、正常シナリオ（コピーする）と同じ文書を描いたページ
       - name: Mock
         description: 差し替える依存は無い

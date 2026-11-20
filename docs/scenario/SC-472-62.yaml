@@ -479,7 +479,7 @@ scenarios:
         participant M as mdmark
         P->>M: 設定と Markdown を指定して描かせる
         M->>M: 先頭のフロントマターを本文から除外する
-        M-->>P: 本文の先頭にフロントマターの表示を置いて描く
+        M-->>P: 本文の先頭にフロントマターの表示を配置して描く
         P-->>U: 文書を表示
       ```
 
@@ -508,7 +508,7 @@ scenarios:
         participant M as mdmark
         P->>M: Markdown を指定して描かせる
         M->>M: 設定の features に文書のマーカーを重ねる
-        M-->>P: 本文の先頭にフロントマターの表示を置いて描く
+        M-->>P: 本文の先頭にフロントマターの表示を配置して描く
         P-->>U: 文書を表示
       ```
 
@@ -553,7 +553,7 @@ stakeholders:
   - name: 利用側のアプリの開発者
     interest: 設定で決めた既定が、マーカーの無い文書にそのまま該当する
   - name: 機能を作る Issue
-    interest: 決まったオン・オフを読み込んで、機能を出すかを決められる
+    interest: 決定したオン・オフを読み込んで、機能を出すかを決められる
 trigger: 利用側のページが、設定と、マーカーを持つ文書を指定して描かせる
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる

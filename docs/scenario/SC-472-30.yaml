@@ -77,7 +77,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - リロードせずに、プレビューの描く先の要素の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値になる
+      - リロードせずに、プレビューの描く先の要素の背景色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値になる
     test: test_normal_when_setting_changed
     refs:
       - SC-472-32#scenarios[正常シナリオ（VS Code の設定でテーマを選ぶ）]

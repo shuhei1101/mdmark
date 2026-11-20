@@ -206,11 +206,11 @@ scenarios:
       - 各行の内容が、マーカーの引数を JSON のオブジェクトで記載することと、`mdmark upgrade` で書き換えられることを挙げる
       - 終了コードが 0 以外
     test: test_normal_when_legacy_mark_args
-  - name: 正常シナリオ（JSON として読めない引数）
+  - name: 正常シナリオ（JSON として読み取れない引数）
     setup:
       - name: 作業のフォルダ
         description: 正常シナリオと同じ
-      - name: 読めない引数を持つ文字列
+      - name: 読み取れない引数を持つ文字列
         description: '末尾のカンマを持つ `<!-- code: {"title": "app.ts",} -->` の直後のコードブロックと、値に `--\u003e` を記載した `<!-- details: {"title": "a --\u003e b"} -->` 〜 `<!-- /details -->` の範囲を持つ Markdown の文字列'
       - name: Mock
         description: 正常シナリオと同じ
@@ -224,14 +224,14 @@ scenarios:
         participant R as mdmark の描画の処理
         W->>C: mdmark check（Markdown の文字列）
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
-        R-->>C: code のマーカーの JSON として読めない引数の記載の警告
+        R-->>C: code のマーカーの JSON として読み取れない引数の記載の警告
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
       ```
 
       <!-- /map -->
     expected:
-      - ずれの行が 1 つだけで、code のマーカーの行を指し、種類が記載の警告、内容が JSON として読めない位置と理由を挙げる
-      - details のマーカーを指す行が無い（`\u003e` で記載した `>` は値の `-->` として読む）
+      - ずれの行が 1 つだけで、code のマーカーの行を指し、種類が記載の警告、内容が JSON として読み取れない位置と理由を挙げる
+      - details のマーカーを指す行が無い（`\u003e` で記載した `>` は値の `-->` として読み取る）
       - 終了コードが 0 以外
     test: test_normal_when_mark_args_not_json
   - name: 正常シナリオ（値に --> を記載した引数）
@@ -240,7 +240,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: 値に --> を持つ文字列
         description: '段落の後に、値に `-->` をそのまま記載した `<!-- details: {"title": "a --> b"} -->` と段落と `<!-- /details -->` を持つ Markdown の文字列'
-        notes: 'HTML コメントは最初の `-->` で閉じるため、マーカーの引数は `{"title": "a ` までになり、残りの ` b"} -->` はコメントの外の文字になる。同じ文字列を `render` で描くと、details のマーカーの場所に JSON として読めない引数の記載の警告が出て、範囲は既定の見出し `詳細` の閉じた折り畳みで描かれ、` b"} -->` は本文の文字として出る'
+        notes: 'HTML コメントは最初の `-->` で閉じるため、マーカーの引数は `{"title": "a ` までになり、残りの ` b"} -->` はコメントの外の文字になる。同じ文字列を `render` で描くと、details のマーカーの場所に JSON として読み取れない引数の記載の警告が出て、範囲は既定の見出し `詳細` の閉じた折り畳みで描かれ、` b"} -->` は本文の文字として出る'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -253,14 +253,14 @@ scenarios:
         participant R as mdmark の描画の処理
         W->>C: mdmark check（Markdown の文字列）
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告を集める
-        R-->>C: details のマーカーの JSON として読めない引数の記載の警告
+        R-->>C: details のマーカーの JSON として読み取れない引数の記載の警告
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
       ```
 
       <!-- /map -->
     expected:
       - ずれの行が details のマーカーの行を指し、種類が記載の警告
-      - 行の内容が、JSON として読めない位置と理由に加えて、値に `-->` を記載するとコメントがそこで閉じることと、`>` を `\u003e` にした `--\u003e` で記載する方法を挙げる
+      - 行の内容が、JSON として読み取れない位置と理由に加えて、値に `-->` を記載するとコメントがそこで閉じることと、`>` を `\u003e` にした `--\u003e` で記載する方法を挙げる
       - 終了コードが 0 以外
     test: test_normal_when_comment_end_in_value
   - name: 正常シナリオ（map の書き方の警告がある）
@@ -268,7 +268,7 @@ scenarios:
       - name: 作業のフォルダ
         description: 正常シナリオと同じ
       - name: map の書き方を誤った文字列
-        description: map の範囲の中に、GitHub の Mermaid でも読めない行を 1 行持つ mermaid のブロックと、知らないトップレベルのキーを 1 つ持つ補足を持つ Markdown の文字列
+        description: map の範囲の中に、GitHub の Mermaid でも読み取れない行を 1 行持つ mermaid のブロックと、知らないトップレベルのキーを 1 つ持つ補足を持つ Markdown の文字列
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -287,7 +287,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - ずれの行が 2 つあり、読めない行と知らないキーをそれぞれ指す
+      - ずれの行が 2 つあり、読み取れない行と知らないキーをそれぞれ指す
       - 各行の内容が、同じ文字列を描いたときの書き方の警告と同じ
       - 終了コードが 0 以外
     test: test_normal_when_map_warnings

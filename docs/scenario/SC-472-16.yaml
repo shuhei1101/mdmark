@@ -110,7 +110,7 @@ scenarios:
         participant M as mdmark
         P->>M: html-scripts をオンにした設定と Markdown を指定して描かせる
         M->>M: 範囲の html を HTML として読み込み、スクリプトとイベントの属性を落とす
-        M->>M: 範囲の css を範囲の根の要素にだけ当て、ts の型を削除する
+        M->>M: 範囲の css を範囲の根の要素にだけ適用し、ts の型を削除する
         M->>M: 既定のエクスポートの関数を範囲の根の要素で呼ぶ
         M-->>P: 外観と動きを追加した HTML
         P-->>U: 文書を表示
