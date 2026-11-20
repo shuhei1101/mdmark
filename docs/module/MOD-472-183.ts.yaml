@@ -186,6 +186,40 @@ functions:
         condition: モーダルの中でツールチップ A にポインターを乗せて Esc、ツールチップ B にポインターを乗せて Esc（Playwright のキー操作）
         mock: なし
         expected: どちらの Esc の後もツールチップが `hidden` を持ち、`dialog` が `open` のまま
+  - name: renumberIds
+    title: 図のidを付け替える
+    kind: 関数
+    scope: public
+    container: src/diagram/diagram.interact.ts
+    summary: 図の `id` の頭を付け替え、それを指す属性も合わせて付け替える
+    description: 全画面のモーダルに複製した図と、同じページに並べた図の `id` が重ならないよう、`id` の頭 `from` を `to` に付け替える。
+    args:
+      - name: scope
+        type: HTMLElement
+        required: true
+        description: 付け替える図の要素
+      - name: from
+        type: string
+        required: true
+        description: 付け替える前の `id` の頭（空なら何もしない）
+      - name: to
+        type: string
+        required: true
+        description: 付け替えた後の `id` の頭
+    returns:
+      type: void
+      description: なし
+    process: |-
+      1. `scope` と中の要素の `id` のうち `{from}-` で始まるものを `{to}-` で始まる値にする
+      2. `aria-describedby`・`aria-labelledby`・`aria-controls`・`for` の値の中の同じ頭の `id` を付け替える
+      3. 線の矢じりと端の記号の参照（`marker-start`・`marker-end`）と塗りの模様の参照（`fill`）の `url(#{from}-…)` を `url(#{to}-…)` にする
+    unit_tests:
+      - name: test_renumber_ids
+        case: 正常
+        summary: id と、それを指す属性・矢じりと端の記号の参照を付け替える
+        condition: '`id` が `map-1-head-0`・`map-1-head-0-from-circle` の `marker` と、`marker-start` に `url(#map-1-head-0-from-circle)`・`marker-end` に `url(#map-1-head-0)` を持つ `path`、`aria-describedby` に `map-1-tip-0` を持つ要素を持つ図を、`from` が `map-1`・`to` が `map-1-modal` で付け替える'
+        mock: なし
+        expected: '`marker` の `id` が `map-1-modal-head-0`・`map-1-modal-head-0-from-circle`、`path` の `marker-start` が `url(#map-1-modal-head-0-from-circle)`・`marker-end` が `url(#map-1-modal-head-0)`、`aria-describedby` が `map-1-modal-tip-0`'
 lead: '図の拡大・縮小・移動・全画面の操作の付与を受け持ち、図の表示の操作を変えるときに参照する。'
 tags:
   - name: topic:図

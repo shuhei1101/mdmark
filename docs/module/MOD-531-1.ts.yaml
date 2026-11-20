@@ -56,7 +56,7 @@ functions:
     process: |-
       1. 行ごとに、`{テーブル} {` で始まるテーブルの区間（`}` まで）・関連の行（`{元} {左の記号}{--|..}{右の記号} {先} : {ラベル}`）・`%%`・空の行に分けて読み取る。mermaid と同じく、引用符で囲んだテーブル名（Unicode と Markdown の文字を含む）・別名のテーブル（`{ID}["{名前}"]`。区間を持つものを含む）・区間も関連も持たないテーブル名だけの行・単語で記載した多重度（`only one`・`zero or one`・`one or more`・`one or many`・`many(1)`・`1+`・`zero or more`・`zero or many`・`many(0)`・`0+`・`1`、つなぎの `to`・`optionally to`）・空白を持たない関連（`a||--||b`）・`direction`・`subgraph`（`[{タイトル}]`・引用符の名前・入れ子・中の `direction` を含む。グループにする）と `end`・`{テーブル}:::{クラス}`（関連の行と区間の開きを含む）・`class`・`classDef`（`default` を含む）・`style`（`readMermaidStyles` で `styles` に入れる）も読み取る
       2. テーブルの区間の行は `{型} {名前} [PK|FK|UK[, …]] ["{コメント}"]` として列に読み取る
-      3. 関連の左右の記号（`||`・`|o`・`o|`・`}|`・`|{`・`}o`・`o{`）を多重度にし、`..` を破線にする
+      3. 関連の左右の記号（`||`・`|o`・`o|`・`}|`・`|{`・`}o`・`o{`）を多重度にし、`..` を破線にする。`subgraph` の ID を指す関連の端はテーブルを作らず、グループへの関連にする（後ろの行で開いた `subgraph` の ID を含む）
          - 読み取れない行・閉じの無いテーブルは `map_invalid` の項目（行番号・行の文字・修正方法）にする
     unit_tests:
       - name: test_parse_er_diagram
@@ -83,6 +83,12 @@ functions:
         condition: '`"This ❤ Unicode"`・`CAR 1 to zero or more NAMED-DRIVER : allows`・`a["Customer Account"] { string email }`・`direction LR`・`subgraph id1 [title 1]` と入れ子の `subgraph` と `end`・`id1||--||id2 : label`・`PERSON:::foo ||--|| CAR : owns`・`classDef foo stroke:#f00`・`style id1 fill:#f9f` を持つ ER 図'
         mock: なし
         expected: '`problems` が空。`This ❤ Unicode` のテーブルがあり、`CAR` → `NAMED-DRIVER` の多重度が 1 つと 0 以上、`a` の名前が `Customer Account`、`id1` のグループのタイトルが `title 1`、`styles.nodes.PERSON` の `stroke` が `#f00`、`styles.nodes.id1` の `fill` が `#f9f`'
+      - name: test_parse_er_diagram_when_subgraph_relation
+        case: 正常
+        summary: subgraph の ID を指す関連はテーブルにしない
+        condition: '`subgraph g` の中に `A ||--|| B : r1` を持ち、`g ||--|| C : r2` と `C ||--|| h : r3`（`h` は後ろの行で開く `subgraph h`）を持つ erDiagram'
+        mock: なし
+        expected: '`problems` が空。テーブルが `A`・`B`・`C` だけで `g`・`h` が無く、`r2` の元が `g`、`r3` の先が `h` の関連がある'
   - name: erColumnFor
     title: 関連の端の列を決める
     kind: 関数
