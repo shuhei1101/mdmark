@@ -371,7 +371,7 @@ suite("HTML に書き出す", () => {
     );
     await writeFixture(
       "docs/flow.md",
-      "<!-- features: {\"map\": false} -->\n\n# 図\n\n```mermaid\nflowchart LR\n  A[受付] --> B[回答]\n```\n",
+      '<!-- features: {"map": false} -->\n\n# 図\n\n```mermaid\nflowchart LR\n  A[受付] --> B[回答]\n```\n',
     );
     await openMarkdown("docs/flow.md");
     trackFile("docs/flow.html");
