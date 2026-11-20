@@ -107,6 +107,8 @@
 | `docs/pr/772/テスト結果/20261121040152_56ef4e06_単体テスト.log` | R7 | なし（結合テストが読み込まない） | - |
 | `docs/pr/772/テスト結果/20261121041449_26a5cb96_lint.log` | R7 | なし（結合テストが読み込まない） | - |
 | `docs/pr/772/テスト結果/20261121042430_26a5cb96_単体テスト.log` | R7 | なし（結合テストが読み込まない） | - |
+| `docs/pr/772/テスト結果/20261121043327_89d56736_lint.log` | R7 | なし（結合テストが読み込まない） | - |
+| `docs/pr/772/テスト結果/20261121043327_89d56736_単体テスト.log` | R7 | なし（結合テストが読み込まない） | - |
 | `docs/pr/772/ライブラリ本体.mark.md` | R7 | なし（結合テストが読み込まない） | - |
 | `docs/pr/772/確認ログ.yaml` | R7 | なし（結合テストが読み込まない） | - |
 | `docs/pr/772/要件.mark.md` | R7 | なし（結合テストが読み込まない） | - |
@@ -122,19 +124,29 @@
 | `docs/screen/SCR-472-1.ts.yaml` | R7 | なし（結合テストが読み込まない） | - |
 | `scripts/storybook-render.ts` | R7 | `tests/integration/lib/map-*.story.test.ts`（部品の描画のインターフェースが Storybook に返す図） | - |
 | `src/cli/export.ts` | R7 | `tests/integration/lib/export.test.ts`（IF-472-33 の `test_file`） | - |
+| `src/diagram/diagram-tips.interact.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/index.css` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
-| `src/index.ts` | R7 | `tests/integration/lib/render-for-mount.test.ts`（新規。IF-472-51 の `test_file`）・`tests/integration/lib/mount.browser.test.ts` | - |
+| `src/index.ts` | R7 | `tests/integration/lib/render-for-mount.browser.test.ts`（IF-472-51 の `test_file`）・`tests/integration/lib/mount.browser.test.ts` | - |
 | `src/map/c4-view.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/map/class-view.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/map/drag.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/map/flow-view.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/map/layout.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
+| `src/map/map-flow.part.stories.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/map/map.part.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/map/mindmap-layout.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/map/mindmap-view.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
 | `src/map/sequence-view.ts` | R7 | `tests/integration/lib/map-flow.story.test.ts`・`map-sequence.story.test.ts`・`map-er.story.test.ts`・`map-class.story.test.ts`・`map-c4.story.test.ts`・`map-mindmap.story.test.ts`・`map-state.story.test.ts`・`map-architecture.story.test.ts`・`map-band.story.test.ts`・`map-list.story.test.ts`・`map-axis-grid.story.test.ts`・`tests/integration/lib/mount.browser.test.ts`（map の部品の描画と操作） | - |
-| `src/mount.ts` | R7 | `tests/integration/lib/render-for-mount.test.ts`（新規。IF-472-51 の `test_file`）・`tests/integration/lib/mount.browser.test.ts` | - |
+| `src/mount.ts` | R7 | `tests/integration/lib/render-for-mount.browser.test.ts`（IF-472-51 の `test_file`）・`tests/integration/lib/mount.browser.test.ts` | - |
 | `tests/files.yaml` | R7 | なし（結合テストの実行に影響しない） | - |
+| `tests/integration/lib/map-class.story.test.ts` | R2 | `tests/integration/lib/map-class.story.test.ts` | - |
+| `tests/integration/lib/map-er.story.test.ts` | R2 | `tests/integration/lib/map-er.story.test.ts` | - |
+| `tests/integration/lib/map-flow.story.test.ts` | R2 | `tests/integration/lib/map-flow.story.test.ts` | - |
+| `tests/integration/lib/map-mindmap.story.test.ts` | R2 | `tests/integration/lib/map-mindmap.story.test.ts` | - |
+| `tests/integration/lib/map-sequence.story.test.ts` | R2 | `tests/integration/lib/map-sequence.story.test.ts` | - |
+| `tests/integration/lib/mount.browser.test.ts` | R2 | `tests/integration/lib/mount.browser.test.ts` | - |
+| `tests/integration/lib/render-for-mount.browser.test.ts` | R2 | `tests/integration/lib/render-for-mount.browser.test.ts` | - |
+| `tests/integration/story.ts` | R7 | `tests/integration/lib/map-*.story.test.ts`（ストーリーの結合テストの共通の処理） | - |
 | `tests/unit/src/map/flow-view.browser.test.ts` | R7 | なし（結合テストの実行に影響しない） | - |
 | `tests/unit/src/map/layout.test.ts` | R7 | なし（結合テストの実行に影響しない） | - |
 | `tests/unit/src/map/map.part.test.ts` | R7 | なし（結合テストの実行に影響しない） | - |
@@ -147,8 +159,7 @@
 | `vscode/src/export/dist.ts` | R7 | `vscode/tests/integration/export.test.ts`（TP-472-1 の補足「VS Code 拡張機能」のコマンドで実行） | IF-472-15 は `test_file` を持たない。VS Code 拡張機能の結合テストの `export.test.ts` で確認する |
 | `vscode/src/export/export.ts` | R7 | `vscode/tests/integration/export.test.ts`（TP-472-1 の補足「VS Code 拡張機能」のコマンドで実行） | IF-472-15 は `test_file` を持たない。VS Code 拡張機能の結合テストの `export.test.ts` で確認する |
 | `vscode/src/export/html.ts` | R7 | `vscode/tests/integration/export.test.ts`（TP-472-1 の補足「VS Code 拡張機能」のコマンドで実行） | IF-472-15 は `test_file` を持たない。VS Code 拡張機能の結合テストの `export.test.ts` で確認する |
-| `docs/pr/772/テスト結果/20261121043327_89d56736_lint.log` | R7 | なし（結合テストが読み込まない） | - |
-| `docs/pr/772/テスト結果/20261121043327_89d56736_単体テスト.log` | R7 | なし（結合テストが読み込まない） | - |
+| `vscode/tests/integration/export.test.ts` | R2 | `vscode/tests/integration/export.test.ts`（TP-472-1 の補足「VS Code 拡張機能」のコマンドで実行） | - |
 
 <!-- /table -->
 
@@ -167,3 +178,4 @@
 | モジュール構成設計（単体テスト作成で見つけた食い違いの修正） | `0558fb9d..7e03796d` | - |
 | モジュール構成設計・画面設計（実装で見つけた食い違いの修正） | `e861d6cf`・`0fbd47f9`・`1bdbf283` | layout.ts の単体テストの期待値（13px）・マインドマップの選び方のテストの項目・起動できないバージョンの通知の条件 |
 | モジュール構成設計・インターフェース定義設計（レビュー指摘の反映。develop の配布物） | `6337ab52` | MOD-472-369・IF-472-15 |
+| インターフェース定義設計（結合テスト作成で見つけた食い違いの修正） | `1e96bc60` | IF-472-51 の `test_file` を `mount` と比べるブラウザのテストにした |
