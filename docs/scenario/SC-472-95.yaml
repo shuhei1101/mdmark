@@ -104,7 +104,7 @@ scenarios:
       - name: 空のフォルダ
         description: 正常シナリオと同じ
       - name: フロントマターを持つ文書群
-        description: 正常シナリオの見本の文書群のうち 1 つの文書の先頭に、`title`・`description`・`tags` を記載したフロントマターを配置し、索引のその文書の行からは `title`・`description`・`tags` を削除したもの
+        description: 正常シナリオの見本の文書群のうち入口の文書の先頭に、`title`・`description`・`aliases`・`tags` を記載したフロントマターを配置し、索引の入口の文書の行からは `title`・`description`・`tags` を削除したもの。用語集の表を持つ文書の本文に、入口の文書の別名を記載する
       - name: Mock
         description: 正常シナリオと同じく、外部ライブラリは手元のファイル
     flow: |-
@@ -125,8 +125,9 @@ scenarios:
     expected:
       - '`mdmark check` がずれ 0 件で終了コード 0 を返却する'
       - '`mdmark build` が `build.out` に 1 枚の HTML を書き込み、終了コード 0 を返却する'
-      - 書き出した HTML の文書の一覧と、その文書を開いたときの帯のタイトル・ページのタイトルに、フロントマターの `title` が出る
-      - その文書を参照している文書の関連文書の一覧に、フロントマターの `title` のリンクが出る
+      - 書き出した HTML の文書の一覧と、入口の文書を開いたときの帯のタイトル・ページのタイトルに、フロントマターの `title` が出る
+      - 入口からリンクされた文書の関連文書の一覧に、入口の文書がフロントマターの `title` で出る
+      - 用語集の表を持つ文書の本文の入口の別名のツールチップの「関連文書」に、フロントマターの `title` と `description` が出る
     test: test_normal_when_frontmatter_metadata
     uses:
       - SC-472-83#scenarios[正常シナリオ]

@@ -463,6 +463,41 @@ scenarios:
       - HTML に、class `mdmark`・`--mdmark-version`・`#mdmark-payload` の要素が残る
       - file:// で開くと、正常シナリオ（mdmark を使用していることを隠す）と同じ表示の文書と文書の一覧が描かれる
     test: test_normal_when_traces_kept
+  - name: 正常シナリオ（フロントマターのメタデータ）
+    setup:
+      - name: フロントマターを持つ文書群
+        description: 正常シナリオの文書 3 つのうち入口の文書の先頭に、`title`（`はじめに`）・`description`（`mdmark の入口`）・`aliases`（`入口の文書`）を記載したフロントマターを配置し、索引の入口の行を `id`・`path` だけにしたもの。用語集の表を持つ文書の本文に `入口の文書` を記載する
+      - name: build の設定
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark
+        participant F as build.out
+        W->>C: mdmark build
+        C->>C: 設定・索引・include の文書を読み込む
+        C->>M: collectReferences（索引・文書）
+        M->>M: 索引に無いキーを文書の先頭のフロントマターの値で補う
+        M-->>C: 参照の表
+        C->>F: 文書のタイトルにフロントマターの title を使用した HTML を書き込む
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0 で、`build.out` に HTML が 1 つある
+      - 文書の一覧で、入口の文書が `はじめに` のタイトルで並ぶ
+      - 入口の文書を開くと、帯のタイトルとページのタイトルが `はじめに`
+      - 入口からリンクされた文書の末尾の関連文書に、入口が `はじめに` のリンクで出る
+      - 用語集の文書の本文の `入口の文書` に破線の下線が付き、ツールチップの「関連文書」に `はじめに` と `mdmark の入口` が出る
+      - 外への要求が 0 件
+    test: test_normal_when_frontmatter_metadata
 lead: 文書の作成者が設定の `build` で対象を決めて `mdmark build` を実行し、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる。
 primary_actor: 文書の作成者
 trigger: 文書の作成者が、複数の文書を行き来できる構造でサーバー無しで配りたくなる
@@ -486,3 +521,4 @@ tags:
   - name: action:まとめ
   - name: action:ビルド
   - name: topic:cli
+  - name: topic:フロントマター
