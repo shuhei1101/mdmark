@@ -1490,6 +1490,21 @@ const seqMessageGeometry = (
   };
 };
 
+/** 中央の参加者へのメッセージ（`->>()`・`()->>`）の端の小さな円 */
+const seqCentral = (
+  item: SequenceMessage,
+  geometry: { y: number; self: boolean; start: number; end: number },
+  dim: string,
+): string => {
+  if (item.central === undefined || geometry.self) return "";
+  const at = (x: number) =>
+    `<circle class="map-seq-central${dim}" cx="${x}" cy="${geometry.y}" r="4" fill="var(--mdmark-color-bg)" stroke="var(--mdmark-color-diagram-line)" stroke-width="1.5"></circle>`;
+  return (
+    (item.central === "to" ? "" : at(geometry.start)) +
+    (item.central === "from" ? "" : at(geometry.end))
+  );
+};
+
 /** メッセージの線の矢じりの属性 */
 const seqArrowHeads = (id: string, style: SequenceArrowStyle): string => {
   const head =
@@ -1546,7 +1561,7 @@ const renderSeqMessage = (
   const noteOwner = seqNoteOwner(context, { message, item, noteTips });
   const { d } = geometry;
   return {
-    wire: `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${seqArrowHeads(context.id, style)}></path><path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
+    wire: `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${seqArrowHeads(context.id, style)}></path>${seqCentral(item, geometry, dim)}<path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
     label: seqMessageLabel(context, { message, item, geometry, dim }),
     // 選んだ参加者のメッセージと再生している今のメッセージの線に、データの印を送り手から受け手へ流す
     packet:
