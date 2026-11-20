@@ -67,7 +67,7 @@ export type ClassDiagram = {
   /** `click`・`link` の行のクラスの ID からリンク先 */
   links: Record<string, string>;
   /** `readMermaidStyles` が読み取ったクラスの色 */
-  styles?: MermaidStyles;
+  styles: MermaidStyles;
   problems: MapProblem[];
 };
 
@@ -262,28 +262,51 @@ const readInside = (reading: ClassReading, text: string): void => {
 const readRelation = (reading: ClassReading, text: string): boolean => {
   const match = RELATION_RE.exec(text);
   if (!match?.[1] || !match[5] || !match[8]) return false;
-  const left = match[4] === undefined ? undefined : LEFT_ENDS[match[4]];
-  const right = match[6] === undefined ? undefined : RIGHT_ENDS[match[6]];
-  const from = ensureClass(reading, match[1], match[2]);
-  const to = ensureClass(reading, match[8], match[9]);
-  // `()` の側のクラスは、ロリポップの円で描くインターフェースにする
-  if (left === "lollipop") from.interface = true;
-  if (right === "lollipop") to.interface = true;
-  const label = match[10]?.trim();
+  const left = LEFT_ENDS[match[4] ?? ""];
+  const right = RIGHT_ENDS[match[6] ?? ""];
+  const from = relationEnd(reading, {
+    name: match[1],
+    generic: match[2],
+    end: left,
+  });
+  const to = relationEnd(reading, {
+    name: match[8],
+    generic: match[9],
+    end: right,
+  });
+  const label = match[10]?.trim() ?? "";
   reading.relations.push({
     id: `r${reading.relations.length + 1}`,
     from: from.id,
     to: to.id,
     fromCardinality: match[3],
     toCardinality: match[7],
-    fromEnd: left === "lollipop" ? undefined : left,
-    toEnd: right === "lollipop" ? undefined : right,
+    fromEnd: endShape(left),
+    toEnd: endShape(right),
     dashed: match[5] === "..",
-    label:
-      label === undefined || label === "" ? undefined : restore(reading, label),
+    label: label === "" ? undefined : restore(reading, label),
   });
   return true;
 };
+
+/** 関係の端のクラス（`()` の側のクラスは、ロリポップの円で描くインターフェースにする） */
+const relationEnd = (
+  reading: ClassReading,
+  side: {
+    name: string;
+    generic: string | undefined;
+    end: ClassEndShape | "lollipop" | undefined;
+  },
+): ClassItem => {
+  const item = ensureClass(reading, side.name, side.generic);
+  if (side.end === "lollipop") item.interface = true;
+  return item;
+};
+
+/** 端の形（ロリポップは端の形を持たない） */
+const endShape = (
+  end: ClassEndShape | "lollipop" | undefined,
+): ClassEndShape | undefined => (end === "lollipop" ? undefined : end);
 
 /** `class` の行の名前と注釈を当てる */
 const applyClassTail = (

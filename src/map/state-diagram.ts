@@ -95,6 +95,37 @@ const unreadable = (line: number, raw: string): MapProblem => ({
   message: `${line + 1} 行目 \`${raw.trim()}\` を読めません。Mermaid の stateDiagram-v2 の記法（\`{状態} --> {状態} : {ラベル}\` など）で記載してください。`,
 });
 
+/** 複数行のノートの 1 行を足す。`end note` なら閉じて `undefined` を返却する */
+const continueNote = (note: StateNote, raw: string): StateNote | undefined => {
+  const text = raw.trim();
+  if (text === "end note") return undefined;
+  note.text = note.text === "" ? text : `${note.text}\n${text}`;
+  return note;
+};
+
+/** 閉じの無い入れ子の状態の項目 */
+const unclosedComposite = (open: {
+  composite: StateComposite;
+  line: number;
+}): MapProblem => ({
+  kind: "map_invalid",
+  line: open.line,
+  message: `入れ子の状態 \`${open.composite.id}\` の \`{\` に対応する \`}\` がありません。入れ子の状態の最後の行の後に \`}\` を記載してください。`,
+});
+
+/** 状態の説明を、状態の名前と入れ子の状態のタイトルにする */
+const applyDescriptions = (
+  descriptions: Map<string, string>,
+  target: { states: Map<string, StateNode>; composites: StateComposite[] },
+): void => {
+  for (const [id, description] of descriptions) {
+    const state = target.states.get(id);
+    if (state) state.label = description;
+    const composite = target.composites.find((item) => item.id === id);
+    if (composite) composite.title = description;
+  }
+};
+
 /** `stateDiagram-v2`・`stateDiagram` の Mermaid を、状態・入れ子の状態・遷移・注記と読めない行の項目に読む */
 export const parseStateDiagram = (source: string): StateDiagram => {
   const states = new Map<string, StateNode>();
@@ -279,10 +310,7 @@ export const parseStateDiagram = (source: string): StateDiagram => {
   ];
   for (const [line, raw] of source.split("\n").entries()) {
     if (openNote) {
-      if (raw.trim() === "end note") openNote = undefined;
-      else
-        openNote.text =
-          openNote.text === "" ? raw.trim() : `${openNote.text}\n${raw.trim()}`;
+      openNote = continueNote(openNote, raw);
       continue;
     }
     const text = raw.replace(/%%.*$/, "").trim();
@@ -290,20 +318,9 @@ export const parseStateDiagram = (source: string): StateDiagram => {
     if (!readers.some((read) => read(text, line, raw)))
       problems.push(unreadable(line, raw));
   }
-  for (const open of stack) {
-    problems.push({
-      kind: "map_invalid",
-      line: open.line,
-      message: `入れ子の状態 \`${open.composite.id}\` の \`{\` に対応する \`}\` がありません。入れ子の状態の最後の行の後に \`}\` を記載してください。`,
-    });
-  }
+  problems.push(...stack.map(unclosedComposite));
   const compositeIds = new Set(composites.map((item) => item.id));
-  for (const [id, description] of descriptions) {
-    const state = states.get(id);
-    if (state) state.label = description;
-    const composite = composites.find((item) => item.id === id);
-    if (composite) composite.title = description;
-  }
+  applyDescriptions(descriptions, { states, composites });
   return {
     direction,
     states: [...states.values()].filter((item) => !compositeIds.has(item.id)),

@@ -304,44 +304,59 @@ const DATE_TOKENS: ReadonlyArray<readonly [string, string, string]> = [
   ["x", "(-?\\d+)", "unixMs"],
 ];
 
-/** `dateFormat` の書式で日時を読み取る（読み取れなければ undefined） */
-const parseGanttDate = (text: string, format: string): Date | undefined => {
+/** `dateFormat` の書式から、読み取る正規表現と、組ごとの値の入れ先 */
+const datePattern = (format: string): { re: RegExp; fields: string[] } => {
   const fields: string[] = [];
   let pattern = "";
   for (let at = 0; at < format.length; ) {
     const token = DATE_TOKENS.find(([name]) => format.startsWith(name, at));
-    if (token) {
-      pattern += token[1];
-      fields.push(token[2]);
-      at += token[0].length;
-    } else {
-      pattern += (format[at] ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      at += 1;
-    }
+    pattern += token
+      ? token[1]
+      : (format[at] ?? "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    if (token) fields.push(token[2]);
+    at += token ? token[0].length : 1;
   }
-  const match = new RegExp(`^${pattern}$`).exec(text.trim());
+  return { re: new RegExp(`^${pattern}$`), fields };
+};
+
+/** 読み取った値の年（4 桁が無ければ 2 桁の年を 2000 年代、どちらも無ければ 1970） */
+const yearOf = (value: Record<string, number>): number => {
+  if (value.year !== undefined) return value.year;
+  return value.year2 === undefined ? 1970 : 2000 + value.year2;
+};
+
+/** 読み取った値から UTC の日時を作る（読み取れなければ undefined） */
+const dateOfFields = (value: Record<string, number>): Date | undefined => {
+  if (value.unix !== undefined) return new Date(value.unix * 1000);
+  if (value.unixMs !== undefined) return new Date(value.unixMs);
+  const year = yearOf(value);
+  const v = {
+    month: 1,
+    day: 1,
+    hour: 0,
+    minute: 0,
+    second: 0,
+    ms: 0,
+    ...value,
+  };
+  const date = new Date(
+    Date.UTC(year, v.month - 1, v.day, v.hour, v.minute, v.second, v.ms),
+  );
+  // 2 桁の年（0〜99）を 1900 年代にしない
+  date.setUTCFullYear(year);
+  return Number.isNaN(date.getTime()) ? undefined : date;
+};
+
+/** `dateFormat` の書式で日時を読み取る（読み取れなければ undefined） */
+const parseGanttDate = (text: string, format: string): Date | undefined => {
+  const { re, fields } = datePattern(format);
+  const match = re.exec(text.trim());
   if (!match) return undefined;
   const value: Record<string, number> = {};
   fields.forEach((field, index) => {
     value[field] = Number(match[index + 1]);
   });
-  if (value.unix !== undefined) return new Date(value.unix * 1000);
-  if (value.unixMs !== undefined) return new Date(value.unixMs);
-  const year =
-    value.year ?? (value.year2 === undefined ? 1970 : 2000 + value.year2);
-  const date = new Date(
-    Date.UTC(
-      year,
-      (value.month ?? 1) - 1,
-      value.day ?? 1,
-      value.hour ?? 0,
-      value.minute ?? 0,
-      value.second ?? 0,
-      value.ms ?? 0,
-    ),
-  );
-  date.setUTCFullYear(year);
-  return Number.isNaN(date.getTime()) ? undefined : date;
+  return dateOfFields(value);
 };
 
 /** 期間の文字のミリ秒（期間でなければ undefined） */
@@ -365,21 +380,30 @@ type GanttTask = {
   sectionOrder: number | undefined;
 };
 
+/** タスクの `:` の後ろを、前に並べたタグと残りの値に分ける（値が 1 つだけならタグにしない） */
+const splitGanttTags = (text: string): { tags: string[]; parts: string[] } => {
+  const parts = text.split(",").map((part) => part.trim());
+  const tags: string[] = [];
+  while (parts.length > 1 && GANTT_TAG_NAMES.has(parts[0] ?? ""))
+    tags.push(parts.shift() ?? "");
+  return { tags, parts };
+};
+
+/** タグを除いた値が、`{ID,}{開始,}{終了}` の 1〜3 個の空でない値か */
+const isGanttParts = (parts: string[]): boolean =>
+  parts.length >= 1 &&
+  parts.length <= 3 &&
+  parts.every((part) => part !== "") &&
+  !(parts.length === 1 && GANTT_TAG_NAMES.has(parts[0] ?? ""));
+
 /** タスクの行を、名前・タグ・ID・開始・終了に分ける（読めなければ undefined） */
 const readGanttTask = (
   text: string,
 ): Omit<GanttTask, "line" | "sectionOrder"> | undefined => {
   const match = /^(.+?)\s*:(.*)$/.exec(text);
   if (!match) return undefined;
-  const parts = (match[2] ?? "").split(",").map((part) => part.trim());
-  const tags: string[] = [];
-  while (parts.length > 1 && GANTT_TAG_NAMES.has(parts[0] ?? "")) {
-    tags.push(parts.shift() ?? "");
-  }
-  if (parts.length === 1 && GANTT_TAG_NAMES.has(parts[0] ?? ""))
-    return undefined;
-  if (parts.length < 1 || parts.length > 3 || parts.some((part) => part === ""))
-    return undefined;
+  const { tags, parts } = splitGanttTags(match[2] ?? "");
+  if (!isGanttParts(parts)) return undefined;
   return {
     label: (match[1] ?? "").trim(),
     id: parts.length === 3 ? parts[0] : undefined,
@@ -884,43 +908,50 @@ const shapeLabel = (
     : { label: body.slice(0, end).trim(), length: end + close.length };
 };
 
+/** ID の後ろの形状（矢印のブロックか、形状の開きと閉じ）。形状が無ければ undefined */
+const blockShapeAt = (
+  rest: string,
+): { label: string; shape: AxisGridShape; length: number } | undefined => {
+  const arrow = /^<\["([^"]*)"\]>\(([\w\s,]+)\)/.exec(rest);
+  if (arrow)
+    return {
+      label: (arrow[1] ?? "").replaceAll("&nbsp;", " "),
+      shape:
+        ARROW_SHAPES[(arrow[2] ?? "").split(",")[0]?.trim() ?? ""] ??
+        "arrow-right",
+      length: arrow[0].length,
+    };
+  for (const [name, open, close] of BLOCK_SHAPES) {
+    if (!rest.startsWith(open)) continue;
+    const found = shapeLabel(rest.slice(open.length), close);
+    if (found)
+      return {
+        label: found.label,
+        shape: name,
+        length: open.length + found.length,
+      };
+  }
+  return undefined;
+};
+
 /** 行の先頭の 1 つのブロック（`{ID}{形状}:{幅}`・`space:{幅}`・矢印のブロック）を読む */
 const readBlockAt = (text: string): BlockToken | undefined => {
-  const idMatch = BLOCK_ID_RE.exec(text);
-  if (!idMatch) return undefined;
-  const id = idMatch[0];
-  let rest = text.slice(id.length);
-  let consumed = id.length;
-  let label = id;
-  let shape: AxisGridShape = id === "space" ? "space" : "square";
-  const arrow = /^<\["([^"]*)"\]>\(([\w\s,]+)\)/.exec(rest);
-  if (arrow) {
-    label = (arrow[1] ?? "").replaceAll("&nbsp;", " ");
-    shape =
-      ARROW_SHAPES[(arrow[2] ?? "").split(",")[0]?.trim() ?? ""] ??
-      "arrow-right";
-    consumed += arrow[0].length;
-    rest = rest.slice(arrow[0].length);
-  } else {
-    for (const [name, open, close] of BLOCK_SHAPES) {
-      if (!rest.startsWith(open)) continue;
-      const found = shapeLabel(rest.slice(open.length), close);
-      if (!found) continue;
-      label = found.label;
-      shape = name;
-      consumed += open.length + found.length;
-      rest = rest.slice(open.length + found.length);
-      break;
-    }
-  }
-  const width = /^:(\d+)/.exec(rest);
-  if (width) consumed += width[0].length;
+  const id = BLOCK_ID_RE.exec(text)?.[0];
+  if (id === undefined) return undefined;
+  const space = id === "space";
+  const shaped = blockShapeAt(text.slice(id.length)) ?? {
+    label: id,
+    shape: space ? "space" : "square",
+    length: 0,
+  };
+  const consumed = id.length + shaped.length;
+  const width = /^:(\d+)/.exec(text.slice(consumed)) ?? ["", "1"];
   return {
     id,
-    label: id === "space" ? "" : label,
-    shape,
-    width: Number(width?.[1] ?? "1"),
-    consumed,
+    label: space ? "" : shaped.label,
+    shape: shaped.shape,
+    width: Number(width[1]),
+    consumed: consumed + width[0].length,
   };
 };
 
@@ -949,49 +980,54 @@ const addBlock = (context: BlockContext, token: BlockToken): void => {
   });
 };
 
-/** 1 行のブロックと線を左から読む（読めない記載があれば false） */
-const readBlockTokens = (context: BlockContext, text: string): boolean => {
+/** 1 行のブロックと線を左から読む（読めない記載があれば undefined） */
+const scanBlockLine = (
+  text: string,
+): { tokens: BlockToken[]; links: DraftLink[] } | undefined => {
   const tokens: BlockToken[] = [];
   const links: DraftLink[] = [];
   let rest = text.trim();
   let pending: { label: string | undefined } | undefined;
   while (rest !== "") {
     const token = readBlockAt(rest);
-    if (!token) return false;
-    if (pending) {
-      const from = tokens.at(-1);
-      if (from)
-        links.push({
-          from: from.id,
-          to: token.id,
-          kind: "arrow",
-          label: pending.label,
-        });
-      pending = undefined;
-    }
+    if (!token) return undefined;
+    const from = tokens.at(-1);
+    if (pending && from)
+      links.push({
+        from: from.id,
+        to: token.id,
+        kind: "arrow",
+        label: pending.label,
+      });
     tokens.push(token);
     rest = rest.slice(token.consumed).trimStart();
     const arrow = BLOCK_ARROW_RE.exec(rest);
-    if (arrow) {
-      pending = { label: arrow[1] };
-      rest = rest.slice(arrow[0].length).trimStart();
-      if (rest === "") return false;
-    }
+    pending = arrow ? { label: arrow[1] } : undefined;
+    if (arrow) rest = rest.slice(arrow[0].length).trimStart();
   }
-  // 線の両端だけに出た既にあるブロック・入れ子のブロックの ID は項目にしない
-  const sectionLabels = new Set(context.state.sections.map((one) => one.label));
-  const linked = links.length > 0;
-  for (const token of tokens)
-    if (
-      !(
-        linked &&
-        token.label === token.id &&
-        token.shape === "square" &&
-        (context.seen.has(token.id) || sectionLabels.has(token.id))
-      )
-    )
+  return pending ? undefined : { tokens, links };
+};
+
+/** 線の両端だけに出た、既にあるブロック・入れ子のブロックを指す ID か */
+const isLinkEndOnly = (
+  context: BlockContext,
+  token: BlockToken,
+  sections: Set<string>,
+): boolean =>
+  token.label === token.id &&
+  token.shape === "square" &&
+  (context.seen.has(token.id) || sections.has(token.id));
+
+/** 1 行のブロックと線を項目と線にする（読めない記載があれば false） */
+const readBlockTokens = (context: BlockContext, text: string): boolean => {
+  const scanned = scanBlockLine(text);
+  if (!scanned) return false;
+  const sections = new Set(context.state.sections.map((one) => one.label));
+  const linked = scanned.links.length > 0;
+  for (const token of scanned.tokens)
+    if (!(linked && isLinkEndOnly(context, token, sections)))
       addBlock(context, token);
-  context.state.links.push(...links);
+  context.state.links.push(...scanned.links);
   return true;
 };
 
@@ -1074,11 +1110,14 @@ const eachLine = (
 
 /** 種類ごとの読み取りを、読み取りの状態に書き込む */
 const readKind = (
-  kind: AxisGridKind,
-  source: string,
+  input: {
+    kind: AxisGridKind;
+    source: string;
+    mainBranchName: string | undefined;
+  },
   state: ParseState,
-  mainBranchName: string | undefined,
 ): string => {
+  const { kind, source, mainBranchName } = input;
   switch (kind) {
     case "gantt": {
       const context: GanttContext = { state, section: undefined, tasks: [] };
@@ -1223,10 +1262,12 @@ export const parseAxisGrid = (options: {
 }): AxisGrid => {
   const state = emptyState();
   const firstWord = readKind(
-    options.kind,
-    options.source,
+    {
+      kind: options.kind,
+      source: options.source,
+      mainBranchName: options.mainBranchName,
+    },
     state,
-    options.mainBranchName,
   );
   const styles = readMermaidStyles({
     lines: options.kind === "block" ? options.source.split(/\r?\n/) : [],

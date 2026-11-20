@@ -544,29 +544,40 @@ const flowNode = (args: MapFlowArgs, node: MapNode): MdmarkDiagramNode => {
   };
 };
 
+/** Mermaid の面・枠線・文字の色（`color` が無く `fill` があるときの文字は `textColorOn`。`changed` なら枠線を持たせない） */
+const mermaidPaint = (
+  painted: MermaidNodeStyle | undefined,
+  changed: boolean,
+): { fill?: string; stroke?: string; text?: string } => {
+  if (painted === undefined) return {};
+  const text =
+    painted.color ??
+    (painted.fill === undefined ? undefined : textColorOn(painted.fill));
+  return {
+    ...(painted.fill === undefined ? {} : { fill: painted.fill }),
+    ...(painted.stroke === undefined || changed
+      ? {}
+      : { stroke: painted.stroke }),
+    ...(text === undefined ? {} : { text }),
+  };
+};
+
 /** ノードの種類の行・アイコン・形状・色 */
 const flowNodeStyle = (
   args: MapFlowArgs,
   node: MapNode,
 ): MdmarkDiagramNode["style"] => {
-  const kind = kindOf(args.kinds, node.classes);
-  const painted = args.styles?.nodes[node.id];
+  const kind = kindOf(args.kinds, node.classes) ?? {};
+  const note = args.shapes?.[node.id] === "note";
   // 計画した変更を持つノードは、変更の色の枠線を優先する
-  const stroke =
-    args.changes?.[node.id] === undefined ? painted?.stroke : undefined;
-  const text =
-    painted?.color ??
-    (painted?.fill === undefined ? undefined : textColorOn(painted.fill));
+  const changed = args.changes?.[node.id] !== undefined;
   return {
-    label:
-      args.shapes?.[node.id] === "note" ? STATE_SHAPE_NAMES.note : kind?.label,
-    icon: kind?.icon,
+    label: note ? STATE_SHAPE_NAMES.note : kind.label,
+    icon: kind.icon,
     // layoutMap は map の種類の形状に無い Mermaid の形状だけを持たせる
-    shape: (node.shape as MdmarkMermaidShape | undefined) ?? kind?.shape,
-    color: args.colors?.[node.id] ?? kind?.color,
-    ...(painted?.fill === undefined ? {} : { fill: painted.fill }),
-    ...(stroke === undefined ? {} : { stroke }),
-    ...(text === undefined ? {} : { text }),
+    shape: (node.shape as MdmarkMermaidShape | undefined) ?? kind.shape,
+    color: args.colors?.[node.id] ?? kind.color,
+    ...mermaidPaint(args.styles?.nodes[node.id], changed),
   };
 };
 
@@ -3732,13 +3743,12 @@ const axisGridStyle = (
   const item = context.args.grid.items.find(
     (one) => one.stateKey === placed.stateKey,
   );
-  const painted =
+  const paint = mermaidPaint(
     item?.id === undefined
       ? undefined
-      : context.args.grid.styles?.nodes[item.id];
-  const text =
-    painted?.color ??
-    (painted?.fill === undefined ? undefined : textColorOn(painted.fill));
+      : context.args.grid.styles?.nodes[item.id],
+    false,
+  );
   return [
     `left:${placed.x}px`,
     `top:${placed.y}px`,
@@ -3748,9 +3758,9 @@ const axisGridStyle = (
     fill === undefined ? "" : `--map-axis-fill:${fill}`,
     ...(
       [
-        ["--map-node-fill", painted?.fill],
-        ["--map-node-stroke", painted?.stroke],
-        ["--map-node-text", text],
+        ["--map-node-fill", paint.fill],
+        ["--map-node-stroke", paint.stroke],
+        ["--map-node-text", paint.text],
       ] as const
     ).flatMap(([name, value]) => {
       const safe = safeCssColor(value);

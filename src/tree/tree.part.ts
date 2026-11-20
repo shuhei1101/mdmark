@@ -223,22 +223,48 @@ export function renderTree(options: {
   const context: RenderContext = { interactive, open, id };
   const openAttribute =
     open === undefined ? "" : ` data-open="${escapeHtml(open)}"`;
-  const bar = interactive
-    ? renderTreeBar({ language, copyState: copyState ?? "idle" })
-    : "";
   const list = `<ul class="mdmark-tree-list" aria-label="ファイルツリー">${nodes
     .map((node, index) =>
       renderNode(node, context, { depth: 0, path: String(index) }),
     )
     .join("")}</ul>`;
-  const panel =
-    interactive && copyFallback
-      ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source })
-      : "";
+  const { bar, panel } = treeControls({
+    interactive,
+    language,
+    copyState,
+    copyFallback,
+    id,
+    source,
+  });
   const holderClass = options.wrap
     ? "mdmark-tree mdmark-tree-wrap"
     : "mdmark-tree";
-  const languageAttribute =
-    language === "tree" ? "" : ` data-tree-language="${escapeHtml(language)}"`;
-  return `<div class="${holderClass}"${openAttribute}${languageAttribute} data-source="${escapeHtml(source)}">${bar}${list}${panel}</div>`;
+  return `<div class="${holderClass}"${openAttribute}${treeLanguageAttribute(language)} data-source="${escapeHtml(source)}">${bar}${list}${panel}</div>`;
+}
+
+/** `mount` が付けた状態の帯と、クリップボードに書き込めなかったときのパネル（`interactive` でなければ空） */
+function treeControls(options: {
+  interactive: boolean;
+  language: string;
+  copyState: TreeCopyState | undefined;
+  copyFallback: boolean;
+  id: string;
+  source: string;
+}): { bar: string; panel: string } {
+  const { interactive, language, copyState, copyFallback, id, source } =
+    options;
+  if (!interactive) return { bar: "", panel: "" };
+  return {
+    bar: renderTreeBar({ language, copyState: copyState ?? "idle" }),
+    panel: copyFallback
+      ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source })
+      : "",
+  };
+}
+
+/** 言語が tree でないファイルツリーの記載した言語の属性（空の言語は空の値） */
+function treeLanguageAttribute(language: string): string {
+  return language === "tree"
+    ? ""
+    : ` data-tree-language="${escapeHtml(language)}"`;
 }

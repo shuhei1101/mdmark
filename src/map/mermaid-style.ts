@@ -55,77 +55,137 @@ const ids = (text: string): string[] =>
     .map((part) => part.trim())
     .filter((part) => part !== "");
 
+/** 読み取りの途中の色 */
+type StyleReading = {
+  classDefs: Record<string, MermaidNodeStyle>;
+  applied: Array<{ id: string; className: string }>;
+  styled: Record<string, MermaidNodeStyle>;
+  wires: Record<number, MermaidWireStyle>;
+  defaultWire: MermaidWireStyle | undefined;
+  /** 図に出た ID（`classDef default` を当てる） */
+  seen: Set<string>;
+};
+
+/** `classDef` の行（読んだら true） */
+const readClassDef = (reading: StyleReading, text: string): boolean => {
+  const match = CLASS_DEF_RE.exec(text);
+  if (!match?.[1] || !match[2]) return false;
+  for (const name of ids(match[1]))
+    reading.classDefs[name] = {
+      ...reading.classDefs[name],
+      ...readColors(match[2]),
+    };
+  return true;
+};
+
+/** `style` の行（読んだら true） */
+const readStyle = (reading: StyleReading, text: string): boolean => {
+  const match = STYLE_RE.exec(text);
+  if (!match?.[1] || !match[2]) return false;
+  reading.styled[match[1]] = {
+    ...reading.styled[match[1]],
+    ...readColors(match[2]),
+  };
+  reading.seen.add(match[1]);
+  return true;
+};
+
+/** `linkStyle` の行（読んだら true） */
+const readLinkStyle = (reading: StyleReading, text: string): boolean => {
+  const match = LINK_STYLE_RE.exec(text);
+  if (!match?.[1] || !match[2]) return false;
+  const { stroke, color } = readColors(match[2]);
+  const wire: MermaidWireStyle = {
+    ...(stroke ? { stroke } : {}),
+    ...(color ? { color } : {}),
+  };
+  for (const index of ids(match[1])) {
+    if (index === "default")
+      reading.defaultWire = { ...reading.defaultWire, ...wire };
+    else if (/^\d+$/.test(index))
+      reading.wires[Number(index)] = {
+        ...reading.wires[Number(index)],
+        ...wire,
+      };
+  }
+  return true;
+};
+
+/** `class`・`cssClass` の行のクラスを当てる（`class` の行なら true） */
+const readClassLine = (
+  reading: StyleReading,
+  text: string,
+  classTarget: "class" | "cssClass",
+): boolean => {
+  const match =
+    classTarget === "cssClass" ? CSS_CLASS_RE.exec(text) : CLASS_RE.exec(text);
+  if (!match?.[1] || !match[2]) return false;
+  for (const id of ids(match[1])) {
+    reading.applied.push({ id, className: match[2] });
+    reading.seen.add(id);
+  }
+  return classTarget === "class";
+};
+
+/** 行の中の `{ID}:::{クラス}` と、ノードと線の文の ID を拾う */
+const readShorthand = (reading: StyleReading, text: string): void => {
+  for (const match of text.matchAll(SHORTHAND_RE)) {
+    if (match[1] && match[2]) {
+      reading.applied.push({ id: match[1], className: match[2] });
+      reading.seen.add(match[1]);
+    }
+  }
+  for (const id of nodeIdsOf(text)) reading.seen.add(id);
+};
+
+/** 読み取った色を、`classDef default`・クラス・`style` の順に重ねたノードの色にする */
+const nodeStylesOf = (
+  reading: StyleReading,
+): Record<string, MermaidNodeStyle> => {
+  const nodes: Record<string, MermaidNodeStyle> = {};
+  const base = reading.classDefs.default;
+  if (base) for (const id of reading.seen) nodes[id] = { ...base };
+  for (const { id, className } of reading.applied) {
+    const def = reading.classDefs[className];
+    if (def) nodes[id] = { ...nodes[id], ...def };
+  }
+  for (const [id, colors] of Object.entries(reading.styled))
+    nodes[id] = { ...nodes[id], ...colors };
+  for (const [id, colors] of Object.entries(nodes))
+    if (Object.keys(colors).length === 0) delete nodes[id];
+  return nodes;
+};
+
 /** Mermaid の行から、外観を指定する行を読み取ってノードと線の色を返却する */
 export const readMermaidStyles = (options: {
   lines: string[];
   classTarget: "class" | "cssClass";
 }): MermaidStyles => {
-  const classDefs: Record<string, MermaidNodeStyle> = {};
-  const applied: Array<{ id: string; className: string }> = [];
-  const styled: Record<string, MermaidNodeStyle> = {};
-  const wires: Record<number, MermaidWireStyle> = {};
-  let defaultWire: MermaidWireStyle | undefined;
-  const seen = new Set<string>();
+  const reading: StyleReading = {
+    classDefs: {},
+    applied: [],
+    styled: {},
+    wires: {},
+    defaultWire: undefined,
+    seen: new Set(),
+  };
   for (const raw of options.lines) {
     const text = raw.replace(/%%.*$/, "").trim();
-    if (text === "") continue;
-    const classDef = CLASS_DEF_RE.exec(text);
-    if (classDef?.[1] && classDef[2]) {
-      for (const name of ids(classDef[1]))
-        classDefs[name] = { ...classDefs[name], ...readColors(classDef[2]) };
+    if (
+      text === "" ||
+      readClassDef(reading, text) ||
+      readStyle(reading, text) ||
+      readLinkStyle(reading, text) ||
+      readClassLine(reading, text, options.classTarget)
+    )
       continue;
-    }
-    const style = STYLE_RE.exec(text);
-    if (style?.[1] && style[2]) {
-      styled[style[1]] = { ...styled[style[1]], ...readColors(style[2]) };
-      seen.add(style[1]);
-      continue;
-    }
-    const link = LINK_STYLE_RE.exec(text);
-    if (link?.[1] && link[2]) {
-      const colors = readColors(link[2]);
-      const wire: MermaidWireStyle = {
-        ...(colors.stroke ? { stroke: colors.stroke } : {}),
-        ...(colors.color ? { color: colors.color } : {}),
-      };
-      for (const index of ids(link[1])) {
-        if (index === "default") defaultWire = { ...defaultWire, ...wire };
-        else if (/^\d+$/.test(index))
-          wires[Number(index)] = { ...wires[Number(index)], ...wire };
-      }
-      continue;
-    }
-    const classLine =
-      options.classTarget === "cssClass"
-        ? CSS_CLASS_RE.exec(text)
-        : CLASS_RE.exec(text);
-    if (classLine?.[1] && classLine[2]) {
-      for (const id of ids(classLine[1])) {
-        applied.push({ id, className: classLine[2] });
-        seen.add(id);
-      }
-      if (options.classTarget === "class") continue;
-    }
-    for (const match of text.matchAll(SHORTHAND_RE)) {
-      if (match[1] && match[2]) {
-        applied.push({ id: match[1], className: match[2] });
-        seen.add(match[1]);
-      }
-    }
-    for (const id of nodeIdsOf(text)) seen.add(id);
+    readShorthand(reading, text);
   }
-  const nodes: Record<string, MermaidNodeStyle> = {};
-  const base = classDefs.default;
-  if (base) for (const id of seen) nodes[id] = { ...base };
-  for (const { id, className } of applied) {
-    const def = classDefs[className];
-    if (def) nodes[id] = { ...nodes[id], ...def };
-  }
-  for (const [id, colors] of Object.entries(styled))
-    nodes[id] = { ...nodes[id], ...colors };
-  for (const [id, colors] of Object.entries(nodes))
-    if (Object.keys(colors).length === 0) delete nodes[id];
-  return { nodes, wires, defaultWire };
+  return {
+    nodes: nodeStylesOf(reading),
+    wires: reading.wires,
+    defaultWire: reading.defaultWire,
+  };
 };
 
 /** `classDef default` を当てるため、線とノードの文の ID を拾う */

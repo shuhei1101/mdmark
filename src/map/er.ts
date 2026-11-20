@@ -57,11 +57,11 @@ export type ErDiagram = {
   tables: ErTable[];
   relations: ErRelation[];
   /** `subgraph` のグループ */
-  groups?: ErGroup[];
+  groups: ErGroup[];
   /** `direction` の向き */
   direction?: Direction;
   /** `readMermaidStyles` が読み取ったテーブルとグループの色 */
-  styles?: MermaidStyles;
+  styles: MermaidStyles;
   problems: MapProblem[];
 };
 
@@ -157,41 +157,42 @@ const readRelation = (text: string): Omit<ErRelation, "id"> | undefined => {
   return { ...ends, label: label === "" ? undefined : label };
 };
 
+/** 両端のテーブルと多重度がそろっていれば関連の端にする */
+const endsOf = (parts: {
+  from: string | undefined;
+  to: string | undefined;
+  left: ErCardinality | undefined;
+  right: ErCardinality | undefined;
+  dashed: boolean;
+}): Omit<ErRelation, "id" | "label"> | undefined => {
+  const { from, to, left, right, dashed } = parts;
+  if (!left || !right || from === undefined || to === undefined)
+    return undefined;
+  return { from, to, fromCardinality: left, toCardinality: right, dashed };
+};
+
 /** 関連の記号か単語の多重度の部分を、両端のテーブルと多重度に読む */
 const relationEnds = (
   text: string,
 ): Omit<ErRelation, "id" | "label"> | undefined => {
   const symbol = SYMBOL_RELATION_RE.exec(text);
-  if (symbol) {
-    const left = cardinalityOf(symbol[3]);
-    const right = cardinalityOf(symbol[5]);
-    const from = symbol[1] ?? symbol[2];
-    const to = symbol[6] ?? symbol[7];
-    if (!left || !right || from === undefined || to === undefined)
-      return undefined;
-    return {
-      from,
-      to,
-      fromCardinality: left,
-      toCardinality: right,
+  if (symbol)
+    return endsOf({
+      from: symbol[1] ?? symbol[2],
+      to: symbol[6] ?? symbol[7],
+      left: cardinalityOf(symbol[3]),
+      right: cardinalityOf(symbol[5]),
       dashed: symbol[4] === "..",
-    };
-  }
+    });
   const word = WORD_RELATION_RE.exec(text);
   if (!word) return undefined;
-  const from = word[1] ?? word[2];
-  const to = word[6] ?? word[7];
-  const left = WORD_CARDINALITY[word[3] ?? ""];
-  const right = WORD_CARDINALITY[word[5] ?? ""];
-  if (!left || !right || from === undefined || to === undefined)
-    return undefined;
-  return {
-    from,
-    to,
-    fromCardinality: left,
-    toCardinality: right,
+  return endsOf({
+    from: word[1] ?? word[2],
+    to: word[6] ?? word[7],
+    left: WORD_CARDINALITY[word[3] ?? ""],
+    right: WORD_CARDINALITY[word[5] ?? ""],
     dashed: word[4] === "optionally to",
-  };
+  });
 };
 
 /** `{` を開いたテーブルと、その行 */
@@ -209,89 +210,137 @@ const readInTable = (
   return current;
 };
 
+/** 読み取りの途中の状態 */
+type ErReading = {
+  tables: Map<string, ErTable>;
+  relations: ErRelation[];
+  problems: MapProblem[];
+  groups: ErGroup[];
+  /** 開いている `subgraph` の並び（外から） */
+  stack: ErGroup[];
+  direction: Direction | undefined;
+  current: OpenTable | undefined;
+};
+
+/** テーブルを返却する（無ければ今の `subgraph` の中に作る） */
+const tableOf = (reading: ErReading, name: string): ErTable => {
+  const found = reading.tables.get(name);
+  if (found) return found;
+  const table: ErTable = { name, columns: [] };
+  reading.tables.set(name, table);
+  reading.stack.at(-1)?.tables.push(name);
+  return table;
+};
+
+/** `subgraph` の行（読んだら true） */
+const readSubgraph = (reading: ErReading, text: string): boolean => {
+  const subgraph = SUBGRAPH_RE.exec(text);
+  if (!subgraph) return false;
+  const id = subgraph[1] ?? subgraph[2] ?? "";
+  const group: ErGroup = {
+    id,
+    title: subgraph[3]?.trim() ?? id,
+    parent: reading.stack.at(-1)?.id,
+    direction: undefined,
+    tables: [],
+  };
+  reading.groups.push(group);
+  reading.stack.push(group);
+  return true;
+};
+
+/** `end`・`direction` の行（読んだら true） */
+const readEndOrDirection = (reading: ErReading, text: string): boolean => {
+  if (text === "end" && reading.stack.length > 0) {
+    reading.stack.pop();
+    return true;
+  }
+  const dir = DIRECTION_RE.exec(text);
+  if (!dir?.[1]) return false;
+  const value: Direction = dir[1] === "LR" || dir[1] === "RL" ? "LR" : "TB";
+  const current = reading.stack.at(-1);
+  if (current) current.direction = value;
+  else reading.direction = value;
+  return true;
+};
+
+/** テーブルの宣言の行（別名・`{` を含む。読んだら true） */
+const readTableLine = (
+  reading: ErReading,
+  at: { text: string; line: number },
+): boolean => {
+  const table = TABLE_RE.exec(at.text);
+  if (!table) return false;
+  const found = tableOf(reading, table[1] ?? table[2] ?? "");
+  const label = table[3] ?? table[4];
+  if (label !== undefined) found.label = label.trim();
+  if (table[5] !== undefined) reading.current = { table: found, line: at.line };
+  return true;
+};
+
+/** 関連の行（読んだら true） */
+const readRelationLine = (reading: ErReading, text: string): boolean => {
+  const relation = readRelation(text);
+  if (!relation) return false;
+  tableOf(reading, relation.from);
+  tableOf(reading, relation.to);
+  reading.relations.push({
+    id: `r${reading.relations.length + 1}`,
+    ...relation,
+  });
+  return true;
+};
+
+/** テーブルの外の 1 行を読む（読めなければ false） */
+const readOutside = (
+  reading: ErReading,
+  at: { text: string; line: number },
+): boolean =>
+  STYLE_RE.test(at.text) ||
+  readSubgraph(reading, at.text) ||
+  readEndOrDirection(reading, at.text) ||
+  readTableLine(reading, at) ||
+  readRelationLine(reading, at.text);
+
 /** `erDiagram` の Mermaid を、テーブル・列・関連と読めない行の項目に読む */
 export const parseErDiagram = (source: string): ErDiagram => {
-  const tables = new Map<string, ErTable>();
-  const relations: ErRelation[] = [];
-  const problems: MapProblem[] = [];
-  const groups: ErGroup[] = [];
-  const stack: ErGroup[] = [];
-  let direction: Direction | undefined;
-  const tableOf = (name: string): ErTable => {
-    const found = tables.get(name);
-    if (found) return found;
-    const table: ErTable = { name, columns: [] };
-    tables.set(name, table);
-    stack.at(-1)?.tables.push(name);
-    return table;
+  const reading: ErReading = {
+    tables: new Map(),
+    relations: [],
+    problems: [],
+    groups: [],
+    stack: [],
+    direction: undefined,
+    current: undefined,
   };
-  /** `subgraph`・`end`・`direction` の行（読んだら true） */
-  const readStructure = (text: string): boolean => {
-    const subgraph = SUBGRAPH_RE.exec(text);
-    if (subgraph) {
-      const id = subgraph[1] ?? subgraph[2] ?? "";
-      const group: ErGroup = {
-        id,
-        title: subgraph[3]?.trim() ?? id,
-        parent: stack.at(-1)?.id,
-        direction: undefined,
-        tables: [],
-      };
-      groups.push(group);
-      stack.push(group);
-      return true;
-    }
-    if (text === "end" && stack.length > 0) {
-      stack.pop();
-      return true;
-    }
-    const dir = DIRECTION_RE.exec(text);
-    if (!dir?.[1]) return false;
-    const value: Direction = dir[1] === "LR" || dir[1] === "RL" ? "LR" : "TB";
-    const current = stack.at(-1);
-    if (current) current.direction = value;
-    else direction = value;
-    return true;
-  };
-  let current: OpenTable | undefined;
+  const { problems } = reading;
   for (const [line, raw] of source.split("\n").entries()) {
     const text = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text === "") continue;
-    const at = { text, line, raw, problems };
-    if (current) {
-      current = readInTable(current, at);
-      continue;
-    }
-    if (STYLE_RE.test(text) || readStructure(text)) continue;
-    const table = TABLE_RE.exec(text);
-    if (table) {
-      const found = tableOf(table[1] ?? table[2] ?? "");
-      const label = table[3] ?? table[4];
-      if (label !== undefined) found.label = label.trim();
-      if (table[5] !== undefined) current = { table: found, line };
-      continue;
-    }
-    const relation = readRelation(text);
-    if (!relation) {
+    if (reading.current)
+      reading.current = readInTable(reading.current, {
+        text,
+        line,
+        raw,
+        problems,
+      });
+    else if (!readOutside(reading, { text, line }))
       problems.push(unreadable(line, raw));
-      continue;
-    }
-    tableOf(relation.from);
-    tableOf(relation.to);
-    relations.push({ id: `r${relations.length + 1}`, ...relation });
   }
-  if (current) {
+  if (reading.current) {
     problems.push({
       kind: "map_invalid",
-      line: current.line,
-      message: `テーブル \`${current.table.name}\` の \`{\` に対応する \`}\` がありません。テーブルの最後の行の後に \`}\` を記載してください。`,
+      line: reading.current.line,
+      message: `テーブル \`${reading.current.table.name}\` の \`{\` に対応する \`}\` がありません。テーブルの最後の行の後に \`}\` を記載してください。`,
     });
   }
   return {
-    tables: [...tables.values()],
-    relations,
-    groups,
-    ...(direction === undefined ? {} : { direction }),
+    tables: [...reading.tables.values()],
+    relations: reading.relations,
+    groups: reading.groups,
+    ...(reading.direction === undefined
+      ? {}
+      : { direction: reading.direction }),
     styles: readMermaidStyles({
       lines: source.split("\n").slice(1),
       classTarget: "class",

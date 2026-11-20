@@ -358,6 +358,16 @@ export const prefersReducedMotion = (): boolean =>
   matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 /** 範囲の図の番号・Mermaid・補足を読む（拡張が読んだ図があればそれを使う） */
+/** 補足の layout の collapsed と、Mermaid の `{ID}@{ view: collapsed }` の、閉じて始めるグループ */
+const initialCollapsed = (data: MapData, chart: Flowchart): string[] => [
+  ...new Set([
+    ...Object.entries(data.layout)
+      .filter(([, entry]) => entry.collapsed === true)
+      .map(([id]) => id),
+    ...(chart.collapsed ?? []),
+  ]),
+];
+
 /** Mermaid の色の線の番号を、記載順の線の ID に置き換える */
 const mapStylesOf = (chart: Flowchart): MapMermaidStyles | undefined => {
   if (chart.styles === undefined) return undefined;
@@ -717,15 +727,7 @@ export const attachMapFlow = (
       ids,
       urlState: config.map.url_state,
       focus: args.focus,
-      // 補足の layout の collapsed と、Mermaid の `{ID}@{ view: collapsed }` のグループを閉じて始める
-      collapsed: [
-        ...new Set([
-          ...Object.entries(data.layout)
-            .filter(([, entry]) => entry.collapsed === true)
-            .map(([id]) => id),
-          ...(chart.collapsed ?? []),
-        ]),
-      ],
+      collapsed: initialCollapsed(data, chart),
       storage,
       location,
     }),

@@ -166,6 +166,31 @@ const parentProblems = (
   });
 };
 
+/** `align row|column {ID} …` の行を読む。読めた行なら `true` */
+const readAlign = (diagram: ArchitectureDiagram, text: string): boolean => {
+  const align = ALIGN_RE.exec(text);
+  if (!align?.[1] || !align[2]) return false;
+  diagram.aligns.push({
+    axis: align[1] === "row" ? "row" : "column",
+    ids: align[2].trim().split(/\s+/),
+  });
+  return true;
+};
+
+/** junction の行を読む。読めた行なら `true` */
+const readJunction = (diagram: ArchitectureDiagram, text: string): boolean => {
+  const junction = JUNCTION_RE.exec(text);
+  if (!junction?.[1]) return false;
+  diagram.services.push({
+    id: junction[1],
+    icon: undefined,
+    label: "",
+    parent: junction[2],
+    junction: true,
+  });
+  return true;
+};
+
 /** `architecture-beta` の Mermaid を、group・service・junction・線と読めない行の項目に読む */
 export const parseArchitecture = (source: string): ArchitectureDiagram => {
   const diagram: ArchitectureDiagram = {
@@ -180,22 +205,12 @@ export const parseArchitecture = (source: string): ArchitectureDiagram => {
     const text = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text === "" || IGNORED_RE.test(text)) continue;
     const count = diagram.groups.length + diagram.services.length;
-    const junction = JUNCTION_RE.exec(text);
-    const align = ALIGN_RE.exec(text);
-    if (align?.[1] && align[2])
-      diagram.aligns.push({
-        axis: align[1] === "row" ? "row" : "column",
-        ids: align[2].trim().split(/\s+/),
-      });
-    else if (junction?.[1])
-      diagram.services.push({
-        id: junction[1],
-        icon: undefined,
-        label: "",
-        parent: junction[2],
-        junction: true,
-      });
-    else if (!readItem(diagram, { text, line }) && !readEdge(diagram, text))
+    if (
+      !readAlign(diagram, text) &&
+      !readJunction(diagram, text) &&
+      !readItem(diagram, { text, line }) &&
+      !readEdge(diagram, text)
+    )
       diagram.problems.push(invalid(line, unreadableText(line, raw)));
     const added = [...diagram.groups, ...diagram.services].slice(count);
     for (const item of added) lines.set(item.id, line);

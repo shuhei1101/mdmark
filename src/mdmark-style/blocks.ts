@@ -803,19 +803,23 @@ const partBlockOf = (options: {
   if (lang === "tree" && parts.tree) {
     return treeBlockOf(source, line);
   }
-  // 言語が tree でなくても、罫線の行を持つコードブロックはファイルツリーにする
-  if (
-    options.plainTree &&
-    parts.tree &&
-    parts.code &&
-    !PLAIN_TREE_EXCLUDED_LANGUAGES.includes(lang) &&
-    countTreeLines(source) >= PLAIN_TREE_MIN_LINES
-  ) {
-    const tree = treeBlockOf(source, line);
-    if (tree) return tree;
-  }
+  const tree = isPlainTree(options) ? treeBlockOf(source, line) : undefined;
+  if (tree) return tree;
   return lang === "csv" && parts.stack ? csvBlockOf(source, line) : undefined;
 };
+
+/** 言語が tree でなくても、罫線の行を持つコードブロックはファイルツリーにする */
+const isPlainTree = (options: {
+  parts: Parts;
+  lang: string;
+  source: string;
+  plainTree: boolean;
+}): boolean =>
+  options.plainTree &&
+  options.parts.tree &&
+  options.parts.code &&
+  !PLAIN_TREE_EXCLUDED_LANGUAGES.includes(options.lang) &&
+  countTreeLines(options.source) >= PLAIN_TREE_MIN_LINES;
 
 /** コードブロックの塊 */
 const handleFence = (state: State, chunk: Chunk): void => {

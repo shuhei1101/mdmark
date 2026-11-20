@@ -118,6 +118,16 @@ const DECL_RE = new RegExp(
   `^(?:create\\s+)?(participant|actor)\\s+(${SEQ_ID})(?:@\\{([^}]*)\\})?(?:\\s+as\\s+(.+))?$`,
 );
 
+/** 矢印の前後の `()` から、中央の参加者へのメッセージの側 */
+const centralOf = (
+  before: string | undefined,
+  after: string | undefined,
+): SequenceMessage["central"] => {
+  if (before && after) return "both";
+  if (before) return "from";
+  return after ? "to" : undefined;
+};
+
 /** `@{ "type": "…", "alias": "…" }` の中の値 */
 const declAttribute = (
   body: string | undefined,
@@ -303,14 +313,7 @@ export const parseSequence = (source: string): Sequence => {
     ensure(message[1]);
     ensure(message[6]);
     const activation = activationOf(message[5]);
-    const central =
-      message[2] && message[4]
-        ? "both"
-        : message[2]
-          ? "from"
-          : message[4]
-            ? "to"
-            : undefined;
+    const central = centralOf(message[2], message[4]);
     messages.push({
       from: message[1],
       to: message[6],

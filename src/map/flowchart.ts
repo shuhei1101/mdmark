@@ -277,6 +277,38 @@ const skipSpace = (cursor: Cursor): void => {
 
 const rest = (cursor: Cursor): string => cursor.text.slice(cursor.pos);
 
+/** 名前の `<br>` を改行にし、Markdown の記号と文字の参照を戻す */
+const nodeLabel = (label: string): string =>
+  decodeEntities(plainMarkdownLabel(label).replace(/<br\s*\/?>/g, "\n"));
+
+/** `{ID}@{ shape: …, label: … }` の形状と名前 */
+const readAttributeShape = (
+  body: string,
+): { label: string; shape: FlowShape } => {
+  const values = readAttributes(body);
+  const pictured = values.icon !== undefined || values.img !== undefined;
+  return {
+    label: nodeLabel(values.label ?? ""),
+    shape: pictured ? "rect" : (FLOW_SHAPE_NAMES[values.shape ?? ""] ?? "rect"),
+  };
+};
+
+/** 開きの後ろの名前と、閉じまでの文字数（引用符で囲んだ名前は閉じの記号を含んでよい） */
+const bracketLabel = (
+  body: string,
+  close: string,
+): { label: string; length: number } | undefined => {
+  if (body.startsWith('"')) {
+    const end = body.indexOf('"', 1);
+    if (end < 0 || !body.startsWith(close, end + 1)) return undefined;
+    return { label: body.slice(1, end), length: end + 1 + close.length };
+  }
+  const end = body.indexOf(close);
+  return end < 0
+    ? undefined
+    : { label: body.slice(0, end), length: end + close.length };
+};
+
 /** 形状の中の文字を取り出す（引用符で囲んだ文字は閉じの記号を含んでよい） */
 const readShape = (
   cursor: Cursor,
@@ -290,43 +322,14 @@ const readShape = (
   const attributes = /^@\{([^}]*)\}/.exec(tail);
   if (attributes) {
     cursor.pos += attributes[0].length;
-    const values = readAttributes(attributes[1] ?? "");
-    const named = FLOW_SHAPE_NAMES[values.shape ?? ""];
-    const pictured = values.icon !== undefined || values.img !== undefined;
-    return {
-      label: decodeEntities(
-        plainMarkdownLabel(values.label ?? "").replace(/<br\s*\/?>/g, "\n"),
-      ),
-      shape: pictured ? "rect" : (named ?? "rect"),
-    };
+    return readAttributeShape(attributes[1] ?? "");
   }
-  for (const { open, close, shape } of SHAPES) {
-    if (!tail.startsWith(open)) continue;
-    let body = tail.slice(open.length);
-    let consumed = open.length;
-    let label: string;
-    if (body.startsWith('"')) {
-      const end = body.indexOf('"', 1);
-      if (end < 0) return undefined;
-      label = body.slice(1, end);
-      body = body.slice(end + 1);
-      consumed += end + 1;
-      if (!body.startsWith(close)) return undefined;
-    } else {
-      const end = body.indexOf(close);
-      if (end < 0) return undefined;
-      label = body.slice(0, end);
-      consumed += end;
-    }
-    cursor.pos += consumed + close.length;
-    return {
-      label: decodeEntities(
-        plainMarkdownLabel(label).replace(/<br\s*\/?>/g, "\n"),
-      ),
-      shape,
-    };
-  }
-  return undefined;
+  const found = SHAPES.find(({ open }) => tail.startsWith(open));
+  if (!found) return undefined;
+  const label = bracketLabel(tail.slice(found.open.length), found.close);
+  if (!label) return undefined;
+  cursor.pos += found.open.length + label.length;
+  return { label: nodeLabel(label.label), shape: found.shape };
 };
 
 /** `[/ /]`・`[\ \]`・`[/ \]`・`[\ /]` の斜めの辺を持つ形状 */
@@ -407,6 +410,27 @@ const LABELED_LINK_RE =
   /^([<ox])?(--|==|-\.)\s+(.+?)\s+(-{2,}|={2,}|\.+-)([>ox])?(?=\s|$|[A-Za-z0-9_\u0080-￿])/;
 const END_OF: Record<string, FlowEnd> = { o: "circle", x: "cross" };
 
+/** 線の端の丸・× */
+const endsOf = (
+  start: string | undefined,
+  head: string | undefined,
+): { from?: FlowEnd; to?: FlowEnd } => {
+  const from = start ? END_OF[start] : undefined;
+  const to = head ? END_OF[head] : undefined;
+  return { ...(from ? { from } : {}), ...(to ? { to } : {}) };
+};
+
+/** 実線と太線の、線の種類と記号の数から数えた長さ */
+const solidLink = (
+  body: string,
+  head: string | undefined,
+): { arrow: FlowArrow; length: number } => {
+  const headed = head !== undefined;
+  const length = Math.max(1, body.length - (headed ? 1 : 2));
+  if (body.startsWith("=")) return { arrow: headed ? "==>" : "---", length };
+  return { arrow: head === ">" ? "-->" : "---", length };
+};
+
 /** 線の記号から、線の種類・長さ・端を求める */
 const linkOf = (options: {
   start: string | undefined;
@@ -414,12 +438,6 @@ const linkOf = (options: {
   head: string | undefined;
 }): Omit<Arrow, "id" | "label"> => {
   const { start, body, head } = options;
-  const ends: { from?: FlowEnd; to?: FlowEnd } = {};
-  const fromEnd = start ? END_OF[start] : undefined;
-  const toEnd = head ? END_OF[head] : undefined;
-  if (fromEnd) ends.from = fromEnd;
-  if (toEnd) ends.to = toEnd;
-  const both = start === "<" && head === ">";
   if (body.startsWith("~"))
     return {
       arrow: "---",
@@ -428,69 +446,60 @@ const linkOf = (options: {
       invisible: true,
       length: Math.max(1, body.length - 2),
     };
-  if (body.includes(".")) {
+  const common = {
+    both: start === "<" && head === ">",
+    ends: endsOf(start, head),
+    invisible: false,
+  };
+  if (body.includes("."))
     return {
+      ...common,
       arrow: "-.->",
-      both,
-      ends,
-      invisible: false,
       length: Math.max(1, body.split(".").length - 1),
     };
-  }
-  const headed = head !== undefined;
-  const length = Math.max(1, body.length - (headed ? 1 : 2));
-  if (body.startsWith("="))
+  return { ...common, ...solidLink(body, head) };
+};
+
+/** 線の記号（ラベルを中に記載する書き方を先に試す）を読み、線と線の中のラベルを返却する */
+const readLink = (
+  cursor: Cursor,
+):
+  | { link: Omit<Arrow, "id" | "label">; label: string | undefined }
+  | undefined => {
+  const labeled = LABELED_LINK_RE.exec(rest(cursor));
+  if (labeled) {
+    cursor.pos += labeled[0].length;
+    const close = labeled[4] ?? "";
     return {
-      arrow: headed ? "==>" : "---",
-      both,
-      ends,
-      invisible: false,
-      length,
+      label: labeled[3],
+      link: linkOf({
+        start: labeled[1],
+        body: labeled[2] === "-." ? `-${close}` : close,
+        head: labeled[5],
+      }),
     };
+  }
+  const plain = LINK_RE.exec(rest(cursor));
+  if (!plain) return undefined;
+  cursor.pos += plain[0].length;
   return {
-    arrow: head === ">" ? "-->" : "---",
-    both,
-    ends,
-    invisible: false,
-    length,
+    label: undefined,
+    link: linkOf({ start: plain[1], body: plain[2] ?? "", head: plain[3] }),
   };
 };
 
 const readArrow = (cursor: Cursor): Arrow | undefined => {
   skipSpace(cursor);
-  let id: string | undefined;
   const idMatch = EDGE_ID_RE.exec(rest(cursor));
-  if (idMatch) {
-    id = idMatch[1];
-    cursor.pos += idMatch[0].length;
-  }
-  const labeled = LABELED_LINK_RE.exec(rest(cursor));
-  const plain = labeled ? undefined : LINK_RE.exec(rest(cursor));
-  if (!labeled && !plain) return undefined;
-  let label: string | undefined;
-  let link: Omit<Arrow, "id" | "label">;
-  if (labeled) {
-    cursor.pos += labeled[0].length;
-    label = labeled[3];
-    const close = labeled[4] ?? "";
-    link = linkOf({
-      start: labeled[1],
-      body: labeled[2] === "-." ? `-${close}` : close,
-      head: labeled[5],
-    });
-  } else {
-    const match = plain as RegExpExecArray;
-    cursor.pos += match[0].length;
-    link = linkOf({ start: match[1], body: match[2] ?? "", head: match[3] });
-  }
+  if (idMatch) cursor.pos += idMatch[0].length;
+  const read = readLink(cursor);
+  if (!read) return undefined;
   const pipe = /^\|([^|]*)\|/.exec(rest(cursor));
-  if (pipe) {
-    label = pipe[1];
-    cursor.pos += pipe[0].length;
-  }
+  if (pipe) cursor.pos += pipe[0].length;
+  const label = pipe ? pipe[1] : read.label;
   return {
-    id,
-    ...link,
+    id: idMatch?.[1],
+    ...read.link,
     label:
       label === undefined
         ? undefined
@@ -538,8 +547,14 @@ const unreadable = (line: number, raw: string): MapProblem => {
   };
 };
 
+/** parseFlowchart の戻り値（Mermaid の色と閉じて始めるグループを必ず持つ） */
+export type ParsedFlowchart = Flowchart & {
+  styles: MermaidStyles;
+  collapsed: string[];
+};
+
 /** `flowchart` の Mermaid を、ノード・グループ・線と、読めない行の項目に読む */
-export const parseFlowchart = (source: string): Flowchart => {
+export const parseFlowchart = (source: string): ParsedFlowchart => {
   const lines = joinMarkdownStrings(source.split("\n"));
   const header = /^\s*(flowchart|graph)\s+(\w+)/.exec(lines[0] ?? "");
   const direction = toDirection(header?.[2] ?? "TB") ?? "TB";
