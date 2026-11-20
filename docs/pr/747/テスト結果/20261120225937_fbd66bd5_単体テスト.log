@@ -1,0 +1,1274 @@
+# 単体テスト作成の Red（実装の前）
+
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map
+
+ ❯ |unit| tests/unit/src/map/layout.test.ts (38 tests | 1 failed) 1275ms
+   × test_layout_map_when_length_and_invisible 6ms
+ ❯ |unit| tests/unit/src/map/map.part.test.ts (65 tests | 2 failed) 2984ms
+   × test_render_map_flow_when_styles 8ms
+   × test_render_map_flow_when_wire_ends_and_shapes 1ms
+ ❯ |unit| tests/unit/src/map/check.test.ts (25 tests | 3 failed) 251ms
+   × test_collect_plain_map_problems 6ms
+   × test_collect_plain_map_problems_when_style 0ms
+   × test_collect_plain_map_problems_when_mermaid_samples 7ms
+ ❯ |unit| tests/unit/src/code-block/code-block.part.test.ts (20 tests | 1 failed) 68ms
+   × test_render_code_bar 4ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (23 tests | 1 failed) 4164ms
+   × test_attach_map_flow_when_mermaid_styles 422ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts (13 tests | 3 failed) 2298ms
+   × test_attach_map_when_plain_styled 520ms
+   × test_attach_map_when_mindmap 472ms
+   × test_attach_map_when_axis_grid 806ms
+ ❯ |unit| tests/unit/src/map/class-diagram.test.ts (15 tests | 1 failed) 138ms
+   × test_parse_class_diagram_when_mermaid_syntax 8ms
+ ❯ |unit-browser (chromium)| tests/unit/src/tree/tree.interact.browser.test.ts (8 tests | 4 failed) 2236ms
+   × test_attach_file_trees 556ms
+   × test_attach_file_trees_when_copied 304ms
+   × test_attach_file_trees_when_copy_denied 725ms
+   × test_attach_file_trees_when_detached 595ms
+ ❯ |unit| tests/unit/src/mdmark-style/blocks.test.ts (18 tests | 1 failed) 804ms
+   × test_split_blocks_when_plain_tree 23ms
+ ❯ |unit| tests/unit/src/tree/tree.part.test.ts (9 tests | 2 failed) 185ms
+   × test_render_tree_bar 26ms
+   × test_render_tree_when_language 18ms
+ ❯ |unit| tests/unit/src/map/axis-grid.test.ts (11 tests | 3 failed) 73ms
+   × test_parse_axis_grid_when_mermaid_gantt 36ms
+   × test_parse_axis_grid_when_mermaid_git_and_block 2ms
+   × test_parse_axis_grid_when_main_branch_in_range 1ms
+ ❯ |unit| tests/unit/src/map/flowchart.test.ts (14 tests | 3 failed) 159ms
+   × test_parse_flowchart_when_mermaid_shapes 19ms
+   × test_parse_flowchart_when_mermaid_edges 3ms
+   × test_parse_flowchart_when_styles 1ms
+ ❯ |unit| tests/unit/src/tree/tree.syntax.test.ts (14 tests | 5 failed) 144ms
+   × test_count_tree_lines 4ms
+   × test_count_tree_lines_when_not_tree 2ms
+   × test_build_plain_file_trees 12ms
+   × test_build_plain_file_trees_when_unreadable 6ms
+   × test_build_plain_file_trees_when_excluded 21ms
+ ❯ |unit| tests/unit/src/map/map.syntax.test.ts (10 tests | 1 failed) 145ms
+   × test_build_map_ranges_when_plain_config 17ms
+ ❯ |unit| tests/unit/src/map/structure.test.ts (13 tests | 3 failed) 25ms
+   × test_plain_map_source_of_when_config 6ms
+   × test_plain_map_source_of_when_block 1ms
+   × test_mermaid_main_branch_of 1ms
+ ❯ |unit-browser (chromium)| tests/unit/src/code-block/code-block.interact.browser.test.ts (6 tests | 1 failed) 983ms
+   × test_attach_code_copy_when_file_tree 896ms
+ ❯ |unit| tests/unit/src/render/used.test.ts (8 tests | 1 failed) 366ms
+   × test_uses_mermaid_when_plain 21ms
+ ❯ |unit| tests/unit/src/map/er.test.ts (8 tests | 1 failed) 120ms
+   × test_parse_er_diagram_when_mermaid_syntax 5ms
+ ❯ |unit| tests/unit/src/map/mindmap.test.ts (6 tests | 1 failed) 30ms
+   × test_parse_mindmap_when_markdown_string 18ms
+ ❯ |unit| tests/unit/src/map/sequence.test.ts (7 tests | 1 failed) 118ms
+   × test_parse_sequence_when_mermaid_syntax 19ms
+ ❯ |unit| tests/unit/vscode/scripts/build.test.ts (2 tests | 2 failed) 1476ms
+   × test_build_extension 1159ms
+   × test_build_extension_when_tests 316ms
+ ❯ |unit| tests/unit/src/map/state-diagram.test.ts (4 tests | 1 failed) 206ms
+   × test_parse_state_diagram_when_mermaid_syntax 8ms
+ ❯ |unit| tests/unit/src/map/architecture.test.ts (4 tests | 1 failed) 107ms
+   × test_parse_architecture_when_mermaid_syntax 7ms
+ ❯ |unit| tests/unit/vscode/src/extensions-bundle.test.ts (2 tests | 2 skipped) 8ms
+ ❯ |unit| tests/unit/src/map/mermaid-style.test.ts (3 tests | 3 failed) 73ms
+   × test_read_mermaid_styles 64ms
+   × test_read_mermaid_styles_when_ignored 4ms
+   × test_text_color_on 3ms
+ ❯ |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts (50 tests | 1 failed) 62912ms
+   × test_mount_when_plain_mermaid_styled 60258ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/vscode/src/extensions-bundle.test.ts [ tests/unit/vscode/src/extensions-bundle.test.ts ]
+Error: Cannot find module 'esbuild-wasm/esbuild.wasm'
+Require stack:
+- /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/vscode/package.json
+ ❯ tests/unit/vscode/src/extensions-bundle.test.ts:24:13
+     22|   );
+     23|   await copyFile(
+     24|     require.resolve("esbuild-wasm/esbuild.wasm"),
+       |             ^
+     25|     join(extensionPath, "dist", "esbuild.wasm"),
+     26|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/48]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 47 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/code-block/code-block.part.test.ts > test_render_code_bar
+TypeError: renderCodeBar is not a function
+ ❯ tests/unit/src/code-block/code-block.part.test.ts:552:16
+    550|   const { renderCodeBar } = await loadCodeBlock();
+    551|   // 実行
+    552|   const text = renderCodeBar({
+       |                ^
+    553|     language: "text",
+    554|     fileName: "",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/48]⎯
+
+ FAIL  |unit| tests/unit/src/mdmark-style/blocks.test.ts > test_split_blocks_when_plain_tree
+AssertionError: expected [ 'code', 'code', 'code' ] to deeply equal [ 'tree', 'code', 'code' ]
+
+- Expected
++ Received
+
+  [
+-   "tree",
++   "code",
+    "code",
+    "code",
+  ]
+
+ ❯ tests/unit/src/mdmark-style/blocks.test.ts:478:45
+    476|   const blocks = splitBlocks({ text, parts: ALL_PARTS });
+    477|   // 検証
+    478|   expect(blocks.map((block) => block.kind)).toEqual(["tree", "code", "…
+       |                                             ^
+    479|   expect(blocks[1]?.code?.lang).toBe("text");
+    480|   expect(blocks[2]?.code?.lang).toBe("text");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/architecture.test.ts > test_parse_architecture_when_mermaid_syntax
+AssertionError: expected [ { kind: 'map_invalid', …(2) }, …(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 1,
++     "message": "2 行目 `group api(logos:aws-lambda)[API]` を読めません。Mermaid の architecture-beta の記法（`{ID}:R --> L:{ID}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 2,
++     "message": "3 行目 `service db(logos:aws-aurora)[Database] in api` を読めません。Mermaid の architecture-beta の記法（`{ID}:R --> L:{ID}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 4,
++     "message": "5 行目 `align row db s1` を読めません。Mermaid の architecture-beta の記法（`{ID}:R --> L:{ID}` など）で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/architecture.test.ts:80:28
+     78|   const db = diagram.services.find((service) => service.id === "db");
+     79|   // 検証
+     80|   expect(diagram.problems).toEqual([]);
+       |                            ^
+     81|   expect(db).toMatchObject({ parent: "api", icon: undefined });
+     82|   expect(diagram.aligns).toContainEqual({ axis: "row", ids: ["db", "s1…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_mermaid_gantt
+AssertionError: expected [ { kind: 'map_invalid', …(2) }, …(5) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 4,
++     "message": "5 行目 `another task :24d` を読めないため、この行を読み飛ばしました。タスクは `{名前} :{タグ,}{ID,}{開始},{終了か期間}` で記載し、開始は `YYYY-MM-DD` か `after {ID}`、終了は `YYYY-MM-DD` か `{数}d` にしてください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 5,
++     "message": "6 行目 `Completed task :crit, done, 2014-01-06,24h` を読めないため、この行を読み飛ばしました。タスクは `{名前} :{タグ,}{ID,}{開始},{終了か期間}` で記載し、開始は `YYYY-MM-DD` か `after {ID}`、終了は `YYYY-MM-DD` か `{数}d` にしてください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 6,
++     "message": "7 行目 `Future task :crit, 5d` を読めないため、この行を読み飛ばしました。タスクは `{名前} :{タグ,}{ID,}{開始},{終了か期間}` で記載し、開始は `YYYY-MM-DD` か `after {ID}`、終了は `YYYY-MM-DD` か `{数}d` にしてください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 8,
++     "message": "9 行目 `cherry :active, c, after b a1, 1d` を読めないため、この行を読み飛ばしました。タスクは `{名前} :{タグ,}{ID,}{開始},{終了か期間}` で記載し、開始は `YYYY-MM-DD` か `after {ID}`、終了は `YYYY-MM-DD` か `{数}d` にしてください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 9,
++     "message": "10 行目 `apple :ap, 2017-07-20, 1w` を読めないため、この行を読み飛ばしました。タスクは `{名前} :{タグ,}{ID,}{開始},{終了か期間}` で記載し、開始は `YYYY-MM-DD` か `after {ID}`、終了は `YYYY-MM-DD` か `{数}d` にしてください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 10,
++     "message": "11 行目 `Add to mermaid :until ap` を読めないため、この行を読み飛ばしました。タスクは `{名前} :{タグ,}{ID,}{開始},{終了か期間}` で記載し、開始は `YYYY-MM-DD` か `after {ID}`、終了は `YYYY-MM-DD` か `{数}d` にしてください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/axis-grid.test.ts:204:25
+    202|     grid.items.find((one) => one.label === label)?.detail;
+    203|   // 検証
+    204|   expect(grid.problems).toEqual([]);
+       |                         ^
+    205|   expect(timeGrid.problems).toEqual([]);
+    206|   expect(numberGrid.problems).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_mermaid_git_and_block
+AssertionError: expected [ { kind: 'map_invalid', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 4,
++     "message": "5 行目 `checkout MetroLine1` を読めないため、この行を読み飛ばしました。`commit`・`branch`・`checkout`・`merge {ブランチ}`・`cherry-pick id: \"{ID}\"` の行にし、ブランチと ID は前の行で作ったものにしてください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/axis-grid.test.ts:250:28
+    248|   const blockGrid = parseAxisGrid({ kind: "block", source: block });
+    249|   // 検証
+    250|   expect(gitGrid.problems).toEqual([]);
+       |                            ^
+    251|   expect(gitGrid.branches).toEqual(["MetroLine1", "MetroLine2"]);
+    252|   expect(gitGrid.links.filter((link) => link.kind === "merge")).toHave…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/axis-grid.test.ts > test_parse_axis_grid_when_main_branch_in_range
+AssertionError: expected [ { kind: 'map_invalid', …(2) } ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 5,
++     "message": "6 行目 `checkout MetroLine1` を読めないため、この行を読み飛ばしました。`commit`・`branch`・`checkout`・`merge {ブランチ}`・`cherry-pick id: \"{ID}\"` の行にし、ブランチと ID は前の行で作ったものにしてください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/axis-grid.test.ts:279:25
+    277|   const grid = parseAxisGrid({ kind: "gitGraph", source });
+    278|   // 検証
+    279|   expect(grid.problems).toEqual([]);
+       |                         ^
+    280|   expect(grid.branches).toEqual(["MetroLine1", "MetroLine2"]);
+    281| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_plain_map_problems
+TypeError: collectPlainMapProblems is not a function
+ ❯ tests/unit/src/map/check.test.ts:554:20
+    552|   ].join("\n");
+    553|   // 実行
+    554|   const problems = collectPlainMapProblems({
+       |                    ^
+    555|     kind: "flowchart",
+    556|     mermaid,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_plain_map_problems_when_style
+TypeError: collectPlainMapProblems is not a function
+ ❯ tests/unit/src/map/check.test.ts:586:5
+    584|   // 実行
+    585|   const results = [
+    586|     collectPlainMapProblems({ kind: "flowchart", mermaid: flow, line: …
+       |     ^
+    587|     collectPlainMapProblems({ kind: "mindmap", mermaid: mindmap, line:…
+    588|   ];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/check.test.ts > test_collect_plain_map_problems_when_mermaid_samples
+TypeError: collectPlainMapProblems is not a function
+ ❯ tests/unit/src/map/check.test.ts:617:16
+    615|         const plain = plainMapSourceOf(source);
+    616|         if (plain === undefined) return [`${name}#${index + 1}: map の図…
+    617|         return collectPlainMapProblems({
+       |                ^
+    618|           kind: plain.kind,
+    619|           mermaid: plain.body,
+ ❯ tests/unit/src/map/check.test.ts:613:65
+ ❯ tests/unit/src/map/check.test.ts:612:26
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/class-diagram.test.ts > test_parse_class_diagram_when_mermaid_syntax
+AssertionError: expected [ Array(11) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 1,
++     "message": "2 行目 `note \"From Duck till Zebra\"` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 2,
++     "message": "3 行目 `class Animal[\"Animal with a label\"]` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 3,
++     "message": "4 行目 `class `Car Class`` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 4,
++     "message": "5 行目 `Animal <|--|> Zebra` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 5,
++     "message": "6 行目 `bar ()-- foo` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 6,
++     "message": "7 行目 `namespace Company.Engineering {` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 10,
++     "message": "11 行目 `}` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 11,
++     "message": "12 行目 `class Shape <<interface>>` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 12,
++     "message": "13 行目 `class Animal:::pink {` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 13,
++     "message": "14 行目 `-int sizeInFeet` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 14,
++     "message": "15 行目 `}` を読めません。Mermaid の classDiagram の記法（`{クラス} <|-- {クラス}` など）で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/class-diagram.test.ts:402:28
+    400|   const item = (id: string) => diagram.classes.find((one) => one.id ==…
+    401|   // 検証
+    402|   expect(diagram.problems).toEqual([]);
+       |                            ^
+    403|   expect(item("Animal")?.label).toBe("Animal with a label");
+    404|   expect(item("Car Class")).toBeDefined();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/er.test.ts > test_parse_er_diagram_when_mermaid_syntax
+AssertionError: expected [ Array(15) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 1,
++     "message": "2 行目 `direction LR` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 2,
++     "message": "3 行目 `\"This ❤ Unicode\"` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 3,
++     "message": "4 行目 `CAR 1 to zero or more NAMED-DRIVER : allows` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 4,
++     "message": "5 行目 `a[\"Customer Account\"] {` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 5,
++     "message": "6 行目 `string email` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 6,
++     "message": "7 行目 `}` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 7,
++     "message": "8 行目 `subgraph id1 [title 1]` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 8,
++     "message": "9 行目 `subgraph inner` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 9,
++     "message": "10 行目 `PERSON` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 10,
++     "message": "11 行目 `end` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 11,
++     "message": "12 行目 `end` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 12,
++     "message": "13 行目 `id1x||--||id2 : label` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 13,
++     "message": "14 行目 `PERSON:::foo ||--|| CAR : owns` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 14,
++     "message": "15 行目 `classDef foo stroke:#f00` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 15,
++     "message": "16 行目 `style id2 fill:#f9f` を読めません。Mermaid の erDiagram の記法（`{テーブル} ||--o{ {テーブル} : \"{ラベル}\"` など）で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/er.test.ts:165:28
+    163|   const diagram = parseErDiagram(source);
+    164|   // 検証
+    165|   expect(diagram.problems).toEqual([]);
+       |                            ^
+    166|   expect(diagram.tables.map((table) => table.name)).toContain(
+    167|     "This ❤ Unicode",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_mermaid_shapes
+AssertionError: expected [ { kind: 'map_invalid', …(2) }, …(3) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 4,
++     "message": "5 行目 `O(((終了)))` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 5,
++     "message": "6 行目 `P@{ shape: doc, label: \"文書\" }` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 6,
++     "message": "7 行目 `Q@{ shape: cyl, label: \"DB\" }` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 7,
++     "message": "8 行目 `R@{ icon: \"fa:user\", form: \"square\", label: \"User\", pos: \"t\", h: 60 }` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/flowchart.test.ts:245:26
+    243|   const chart = parseFlowchart(source);
+    244|   // 検証
+    245|   expect(chart.problems).toEqual([]);
+       |                          ^
+    246|   expect(chart.nodes.map((node) => node.shape)).toEqual([
+    247|     "lean-right",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_mermaid_edges
+AssertionError: expected [ { kind: 'map_invalid', …(2) }, …(7) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 1,
++     "message": "2 行目 `A --o B` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 2,
++     "message": "3 行目 `A --x C` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 3,
++     "message": "4 行目 `D o--o E` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 4,
++     "message": "5 行目 `F x--x G` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 5,
++     "message": "6 行目 `H ~~~ I` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 6,
++     "message": "7 行目 `J ---->|No| K` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 7,
++     "message": "8 行目 `J -- No ----> L` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 9,
++     "message": "10 行目 `e1@{ animate: true }` を読めません。Mermaid の flowchart の記法で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/flowchart.test.ts:280:26
+    278|   const edge = (id: string) => chart.edges.find((item) => item.id === …
+    279|   // 検証
+    280|   expect(chart.problems).toEqual([]);
+       |                          ^
+    281|   expect(edge("A->B")?.ends).toEqual({ to: "circle" });
+    282|   expect(edge("A->C")?.ends).toEqual({ to: "cross" });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/flowchart.test.ts > test_parse_flowchart_when_styles
+TypeError: Cannot read properties of undefined (reading 'nodes')
+ ❯ tests/unit/src/map/flowchart.test.ts:311:23
+    309|   // 検証
+    310|   expect(chart.problems).toEqual([]);
+    311|   expect(chart.styles.nodes.A).toEqual({ fill: "#f9f", stroke: "#c3c" …
+       |                       ^
+    312|   expect(chart.styles.nodes.D).toEqual({ fill: "#ffe08a", stroke: "#b8…
+    313|   expect(chart.styles.nodes.E).toEqual({ fill: "#ffe08a", stroke: "#b8…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/layout.test.ts > test_layout_map_when_length_and_invisible
+AssertionError: expected NaN to be greater than or equal to 127
+ ❯ tests/unit/src/map/layout.test.ts:1119:31
+    1117|   // 検証
+    1118|   const step = top("B") - top("A");
+    1119|   expect(top("C") - top("B")).toBeGreaterThanOrEqual(step);
+       |                               ^
+    1120|   expect(top("D")).toBeGreaterThan(top("B"));
+    1121|   expect(layout.wires.map((wire) => wire.id)).not.toContain("B->D");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_styles
+TypeError: Cannot read properties of undefined (reading 'wires')
+ ❯ mermaidFlowArgs tests/unit/src/map/map.part.test.ts:2422:33
+    2420|   const wireIds = chart.edges.map((edge) => edge.id);
+    2421|   const wires = Object.fromEntries(
+    2422|     Object.entries(chart.styles.wires).map(([index, style]) => [
+       |                                 ^
+    2423|       wireIds[Number(index)],
+    2424|       style,
+ ❯ tests/unit/src/map/map.part.test.ts:2464:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_wire_ends_and_shapes
+TypeError: Cannot read properties of undefined (reading 'wires')
+ ❯ mermaidFlowArgs tests/unit/src/map/map.part.test.ts:2422:33
+    2420|   const wireIds = chart.edges.map((edge) => edge.id);
+    2421|   const wires = Object.fromEntries(
+    2422|     Object.entries(chart.styles.wires).map(([index, style]) => [
+       |                                 ^
+    2423|       wireIds[Number(index)],
+    2424|       style,
+ ❯ tests/unit/src/map/map.part.test.ts:2498:16
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.syntax.test.ts > test_build_map_ranges_when_plain_config
+AssertionError: expected [] to have a length of 3 but got +0
+
+- Expected
++ Received
+
+- 3
++ 0
+
+ ❯ tests/unit/src/map/map.syntax.test.ts:203:17
+    201|   // 検証
+    202|   const opens = matches(html, /<div class="mdmark-map"[^>]*>/g);
+    203|   expect(opens).toHaveLength(3);
+       |                 ^
+    204|   for (const open of opens) expect(open).toContain("data-map-plain");
+    205|   expect(html).not.toContain("data-mdmark-mermaid");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/mermaid-style.test.ts > test_read_mermaid_styles
+Error: Cannot find module '/src/map/mermaid-style.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/tests/unit/src/map/mermaid-style.test.ts
+ ❯ tests/unit/src/map/mermaid-style.test.ts:22:33
+     20| test("test_read_mermaid_styles", async () => {
+     21|   // 準備
+     22|   const { readMermaidStyles } = await loadMermaidStyle();
+       |                                 ^
+     23|   // 実行
+     24|   const styles = readMermaidStyles({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/mermaid-style.test.ts > test_read_mermaid_styles_when_ignored
+Error: Cannot find module '/src/map/mermaid-style.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/tests/unit/src/map/mermaid-style.test.ts
+ ❯ tests/unit/src/map/mermaid-style.test.ts:38:33
+     36| test("test_read_mermaid_styles_when_ignored", async () => {
+     37|   // 準備
+     38|   const { readMermaidStyles } = await loadMermaidStyle();
+       |                                 ^
+     39|   // 実行
+     40|   const styles = readMermaidStyles({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/mermaid-style.test.ts > test_text_color_on
+Error: Cannot find module '/src/map/mermaid-style.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/tests/unit/src/map/mermaid-style.test.ts
+ ❯ tests/unit/src/map/mermaid-style.test.ts:59:27
+     57| test("test_text_color_on", async () => {
+     58|   // 準備
+     59|   const { textColorOn } = await loadMermaidStyle();
+       |                           ^
+     60|   // 実行
+     61|   const colors = [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/mindmap.test.ts > test_parse_mindmap_when_markdown_string
+AssertionError: expected [ { kind: 'map_invalid', …(2) }, …(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 2,
++     "message": "3 行目 `a second line` は根より浅いか同じ字下げのため、2 つ目の根になります。マインドマップの根は 1 つにし、この行を根より深く字下げしてください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 3,
++     "message": "4 行目 `Unicode works too: 🤓`\"]` は根より浅いか同じ字下げのため、2 つ目の根になります。マインドマップの根は 1 つにし、この行を根より深く字下げしてください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/mindmap.test.ts:131:28
+    129|   const mindmap = parseMindmap(source);
+    130|   // 検証
+    131|   expect(mindmap.problems).toEqual([]);
+       |                            ^
+    132|   expect(mindmap.root?.label).toBe(
+    133|     "Root with\na second line\nUnicode works too: 🤓",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/sequence.test.ts > test_parse_sequence_when_mermaid_syntax
+AssertionError: expected [ { kind: 'map_invalid', …(2) }, …(4) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 1,
++     "message": "2 行目 `participant API@{ \"type\": \"boundary\", \"alias\": \"Internal Name\" } as External Name` を読めません。Mermaid の sequenceDiagram の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 2,
++     "message": "3 行目 `actor DB@{ \"type\": \"database\" }` を読めません。Mermaid の sequenceDiagram の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 5,
++     "message": "6 行目 `Alice->>()John: Hello` を読めません。Mermaid の sequenceDiagram の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 6,
++     "message": "7 行目 `Alice ->>+ John: Did you want to go?` を読めません。Mermaid の sequenceDiagram の記法で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 7,
++     "message": "8 行目 `John -->>- Alice: Yeah!` を読めません。Mermaid の sequenceDiagram の記法で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/sequence.test.ts:141:29
+    139|     sequence.participants.find((one) => one.id === id);
+    140|   // 検証
+    141|   expect(sequence.problems).toEqual([]);
+       |                             ^
+    142|   expect(participant("API")).toMatchObject({
+    143|     label: "External Name",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/state-diagram.test.ts > test_parse_state_diagram_when_mermaid_syntax
+AssertionError: expected [ { kind: 'map_invalid', …(2) }, …(7) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "kind": "map_invalid",
++     "line": 1,
++     "message": "2 行目 `s2 : This is a state description` を読めません。Mermaid の stateDiagram-v2 の記法（`{状態} --> {状態} : {ラベル}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 2,
++     "message": "3 行目 `state fork_state <<fork>>` を読めません。Mermaid の stateDiagram-v2 の記法（`{状態} --> {状態} : {ラベル}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 5,
++     "message": "6 行目 `note right of s2` を読めません。Mermaid の stateDiagram-v2 の記法（`{状態} --> {状態} : {ラベル}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 6,
++     "message": "7 行目 `Important information!` を読めません。Mermaid の stateDiagram-v2 の記法（`{状態} --> {状態} : {ラベル}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 7,
++     "message": "8 行目 `second line.` を読めません。Mermaid の stateDiagram-v2 の記法（`{状態} --> {状態} : {ラベル}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 8,
++     "message": "9 行目 `end note` を読めません。Mermaid の stateDiagram-v2 の記法（`{状態} --> {状態} : {ラベル}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 11,
++     "message": "12 行目 `--` を読めません。Mermaid の stateDiagram-v2 の記法（`{状態} --> {状態} : {ラベル}` など）で記載してください。",
++   },
++   {
++     "kind": "map_invalid",
++     "line": 14,
++     "message": "15 行目 `Crash:::bad --> [*]` を読めません。Mermaid の stateDiagram-v2 の記法（`{状態} --> {状態} : {ラベル}` など）で記載してください。",
++   },
++ ]
+
+ ❯ tests/unit/src/map/state-diagram.test.ts:88:28
+     86|   const state = (id: string) => diagram.states.find((one) => one.id ==…
+     87|   // 検証
+     88|   expect(diagram.problems).toEqual([]);
+       |                            ^
+     89|   expect(state("s2")?.label).toBe("This is a state description");
+     90|   expect(diagram.notes.find((note) => note.of === "s2")?.text).toBe(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/structure.test.ts > test_plain_map_source_of_when_config
+AssertionError: expected undefined to be 'gitGraph' // Object.is equality
+
+- Expected:
+"gitGraph"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/structure.test.ts:157:28
+    155|   );
+    156|   // 検証
+    157|   expect(withConfig?.kind).toBe("gitGraph");
+       |                            ^
+    158|   expect(withConfig?.mainBranchName).toBe("MetroLine1");
+    159|   expect(withInit?.kind).toBe("flowchart");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/structure.test.ts > test_plain_map_source_of_when_block
+AssertionError: expected undefined to be 'block' // Object.is equality
+
+- Expected:
+"block"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/structure.test.ts:173:23
+    171|   const beta = plainMapSourceOf("block-beta\n  a b");
+    172|   // 検証
+    173|   expect(block?.kind).toBe("block");
+       |                       ^
+    174|   expect(beta?.kind).toBe("block");
+    175| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/48]⎯
+
+ FAIL  |unit| tests/unit/src/map/structure.test.ts > test_mermaid_main_branch_of
+TypeError: mermaidMainBranchOf is not a function
+ ❯ tests/unit/src/map/structure.test.ts:190:21
+    188|     `${front}${init}gitGraph\n  commit`,
+    189|     "gitGraph\n  commit",
+    190|   ].map((source) => mermaidMainBranchOf(source));
+       |                     ^
+    191|   // 検証
+    192|   expect(names).toEqual(["MetroLine1", "trunk", "trunk", undefined]);
+ ❯ tests/unit/src/map/structure.test.ts:190:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/48]⎯
+
+ FAIL  |unit| tests/unit/src/render/used.test.ts > test_uses_mermaid_when_plain
+AssertionError: expected [ false, true, true ] to deeply equal [ false, false, true ]
+
+- Expected
++ Received
+
+  [
+    false,
+-   false,
++   true,
+    true,
+  ]
+
+ ❯ tests/unit/src/render/used.test.ts:202:19
+    200|   ];
+    201|   // 検証
+    202|   expect(results).toEqual([false, false, true]);
+       |                   ^
+    203| });
+    204|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/48]⎯
+
+ FAIL  |unit| tests/unit/src/tree/tree.part.test.ts > test_render_tree_bar
+AssertionError: expected '<div class="mdmark-tree-bar"><span cl…' to contain '<span class="mdmark-code-lang-name" a…'
+
+Expected: "<span class="mdmark-code-lang-name" aria-hidden="true">tree</span>"
+Received: "<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><span class="mdmark-tree-meta"><button class="mdmark-tree-copy" type="button" data-state="idle"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>コピー</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></span></div>"
+
+ ❯ tests/unit/src/tree/tree.part.test.ts:218:16
+    216|   const noLanguage = renderTreeBar({ language: "" });
+    217|   // 検証
+    218|   expect(idle).toContain('<span class="mdmark-code-lang-name" aria-hid…
+       |                ^
+    219|   expect(idle).toContain(
+    220|     '<button class="mdmark-code-copy" type="button" data-state="idle">…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/48]⎯
+
+ FAIL  |unit| tests/unit/src/tree/tree.part.test.ts > test_render_tree_when_language
+AssertionError: expected '<div class="mdmark-tree" data-source=…' to contain 'data-tree-language="text"'
+
+- Expected
++ Received
+
+- data-tree-language="text"
++ <div class="mdmark-tree" data-source="mdmark/
++ ├── src/
++ │   └── index.ts
++ └── README.md"><div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><span class="mdmark-tree-meta"><button class="mdmark-tree-copy" type="button" data-state="idle"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>コピー</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></span></div><ul class="mdmark-tree-list" aria-label="ファイルツリー"><li class="mdmark-tree-folder"><span class="mdmark-tree-row"><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-controls="mdmark-tree-0"><span class="mdmark-tree-name">mdmark/</span></button></span><ul id="mdmark-tree-0"><li class="mdmark-tree-folder"><span class="mdmark-tree-row"><button class="mdmark-tree-toggle" type="button" aria-expanded="true" aria-controls="mdmark-tree-0-0"><span class="mdmark-tree-name">src/</span></button></span><ul id="mdmark-tree-0-0"><li class="mdmark-tree-file" data-file-icon="file-code"><span class="mdmark-tree-row"><span class="mdmark-tree-name">index.ts</span></span></li></ul></li><li class="mdmark-tree-file" data-file-icon="file-text"><span class="mdmark-tree-row"><span class="mdmark-tree-name">README.md</span></span></li></ul></li></ul></div>
+
+ ❯ tests/unit/src/tree/tree.part.test.ts:317:16
+    315|   });
+    316|   // 検証
+    317|   expect(text).toContain('data-tree-language="text"');
+       |                ^
+    318|   expect(text).toContain('aria-hidden="true">text</span>');
+    319|   expect(none).toContain('data-tree-language=""');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/48]⎯
+
+ FAIL  |unit| tests/unit/src/tree/tree.syntax.test.ts > test_count_tree_lines
+TypeError: countTreeLines is not a function
+ ❯ tests/unit/src/tree/tree.syntax.test.ts:219:17
+    217|   ].join("\n");
+    218|   // 実行
+    219|   const count = countTreeLines(source);
+       |                 ^
+    220|   // 検証
+    221|   expect(count).toBe(7);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/48]⎯
+
+ FAIL  |unit| tests/unit/src/tree/tree.syntax.test.ts > test_count_tree_lines_when_not_tree
+TypeError: countTreeLines is not a function
+ ❯ tests/unit/src/tree/tree.syntax.test.ts:232:17
+    230|   );
+    231|   // 実行
+    232|   const count = countTreeLines(source);
+       |                 ^
+    233|   // 検証
+    234|   expect(count).toBe(0);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/48]⎯
+
+ FAIL  |unit| tests/unit/src/tree/tree.syntax.test.ts > test_build_plain_file_trees
+AssertionError: expected [] to have a length of 2 but got +0
+
+- Expected
++ Received
+
+- 2
++ 0
+
+ ❯ tests/unit/src/tree/tree.syntax.test.ts:265:54
+    263|   const { html } = renderDoc(markdown);
+    264|   // 検証
+    265|   expect(matches(html, /<div class="mdmark-tree"/g)).toHaveLength(2);
+       |                                                      ^
+    266|   expect(html).toContain('data-tree-language="text"');
+    267|   expect(html).toContain('data-tree-language=""');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/48]⎯
+
+ FAIL  |unit| tests/unit/src/tree/tree.syntax.test.ts > test_build_plain_file_trees_when_unreadable
+AssertionError: expected '<div class="mdmark-syntax-warning" ro…' to contain '3 行目'
+
+- Expected
++ Received
+
+- 3 行目
++ <div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">記載の警告</p><p>言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。言語を <code>tree</code> にすると、アイコン・開閉・注釈・コピーを付けたファイルツリーで描きます。罫線のまま見せるときは、直前に <code>&lt;!-- code: {"tree_warning": false} --&gt;</code> を記載してください。コードブロックのまま描いています。</p></div><div class="mdmark-code"><div class="mdmark-code-bar"><span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">text</span></span></div><pre tabindex="0" aria-label="コード: text"><code class="language-text">mdmark/
++ ├── src/
++ │   │   └── index.ts
++ └── README.md
++ </code></pre></div>
+
+ ❯ tests/unit/src/tree/tree.syntax.test.ts:281:16
+    279|   // 検証
+    280|   expect(matches(html, /mdmark-syntax-warning"/g)).toHaveLength(1);
+    281|   expect(html).toContain("3 行目");
+       |                ^
+    282|   expect(html).not.toContain('<div class="mdmark-tree"');
+    283|   expect(html.indexOf("<pre")).toBeGreaterThan(
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/48]⎯
+
+ FAIL  |unit| tests/unit/src/tree/tree.syntax.test.ts > test_build_plain_file_trees_when_excluded
+AssertionError: expected '<p>[object Object]</p>\n<div class="m…' not to contain '罫線のフォルダ構成'
+
+- Expected
++ Received
+
+- 罫線のフォルダ構成
++ <p>[object Object]</p>
++ <div class="mdmark-syntax-warning" role="note"><p class="mdmark-syntax-warning-title">記載の警告</p><p>言語 <code>text</code> のコードブロックに、罫線のフォルダ構成があります。言語を <code>tree</code> にすると、アイコン・開閉・注釈・コピーを付けたファイルツリーで描きます。罫線のまま見せるときは、直前に <code>&lt;!-- code: {"tree_warning": false} --&gt;</code> を記載してください。コードブロックのまま描いています。</p></div><div class="mdmark-code"><div class="mdmark-code-bar"><span class="mdmark-code-lang"><span class="mdmark-code-lang-name" aria-hidden="true">text</span></span></div><pre tabindex="0" aria-label="コード: text"><code class="language-text">mdmark/
++ ├── src/
++ │   └── index.ts
++ └── README.md
++ </code></pre></div>
+
+ ❯ tests/unit/src/tree/tree.syntax.test.ts:310:22
+    308|   for (const html of results) {
+    309|     expect(html).not.toContain('<div class="mdmark-tree"');
+    310|     expect(html).not.toContain("罫線のフォルダ構成");
+       |                      ^
+    311|   }
+    312| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/48]⎯
+
+ FAIL  |unit| tests/unit/vscode/scripts/build.test.ts > test_build_extension
+ FAIL  |unit| tests/unit/vscode/scripts/build.test.ts > test_build_extension_when_tests
+Error: Build failed with 1 error:
+src/extensions-bundle.ts:3:25: ERROR: Could not resolve "esbuild-wasm/lib/browser.js"
+ ❯ failureErrorWithLog node_modules/esbuild/lib/main.js:1752:15
+ ❯ node_modules/esbuild/lib/main.js:1211:25
+ ❯ runOnEndCallbacks node_modules/esbuild/lib/main.js:1592:45
+ ❯ buildResponseToResult node_modules/esbuild/lib/main.js:1209:7
+ ❯ node_modules/esbuild/lib/main.js:1236:16
+ ❯ responseCallbacks.<computed> node_modules/esbuild/lib/main.js:886:9
+ ❯ handleIncomingPacket node_modules/esbuild/lib/main.js:941:12
+ ❯ Socket.readFromStdout node_modules/esbuild/lib/main.js:864:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/mount.browser.test.ts > test_mount_when_plain_mermaid_styled
+AssertionError: expected [ 1, 1 ] to deeply equal [ +0, 2 ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/mount.browser.test.ts/test_mount_when_plain_mermaid_styled.png
+
+- Expected
++ Received
+
+  [
+-   0,
+-   2,
++   1,
++   1,
+  ]
+
+ ❯ vi.waitFor.timeout tests/unit/src/mount.browser.test.ts:1406:45
+    1404|     // 実行
+    1405|     const handle = await mountTracked(el, { markdown, config });
+    1406|     await vi.waitFor(() => expect(counts()).toEqual([0, 2]), {
+       |                                             ^
+    1407|       timeout: MERMAID_WAIT_MS,
+    1408|     });
+ ❯ checkCallback node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:6076:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[38/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/code-block/code-block.interact.browser.test.ts > test_attach_code_copy_when_file_tree
+AssertionError: expected  to have a length of 1 but got +0
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/code-block.interact.browser.test.ts/test_attach_code_copy_when_file_tree.png
+
+- Expected
++ Received
+
+- 1
++ 0
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2635:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2435:14
+ ❯ tests/unit/src/code-block/code-block.interact.browser.test.ts:218:5
+    216|   expect(
+    217|     root.querySelectorAll(".mdmark-tree > .mdmark-code-bar .mdmark-cod…
+    218|   ).toHaveLength(1);
+       |     ^
+    219|   expect(
+    220|     root.querySelectorAll(".mdmark-code > .mdmark-code-bar .mdmark-cod…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[39/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_mermaid_styles
+AssertionError: expected '' to be '#f9f' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_mermaid_styles.png
+
+- Expected
++ Received
+
+- #f9f
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:865:67
+    863|   // 検証
+    864|   const nodeA = root.querySelector<HTMLElement>('[data-node="A"]');
+    865|   expect(nodeA?.style.getPropertyValue("--map-node-fill").trim()).toBe…
+       |                                                                   ^
+    866|   const wire = root.querySelector<SVGPathElement>(
+    867|     'path.mdmark-diagram-wire[data-wire="A->B"]',
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[40/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_plain_styled
+AssertionError: expected …(2) to have a length of +0 but got 2
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_plain_styled.png
+
+- Expected
++ Received
+
+- 0
++ 2
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2635:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2435:14
+ ❯ tests/unit/src/map/index.browser.test.ts:191:58
+    189|   detachers.push(attachMap(root, resolveConfig({ config: { map: CONFIG…
+    190|   // 検証
+    191|   expect(root.querySelectorAll("[data-mdmark-mermaid]")).toHaveLength(…
+       |                                                          ^
+    192|   const ranges = [...root.querySelectorAll<HTMLElement>("div.mdmark-ma…
+    193|   expect(ranges).toHaveLength(2);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[41/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_mindmap
+AssertionError: expected <figure …(4)>…(3)</figure> to have a length of 2 but got 1
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_mindmap.png
+
+- Expected
++ Received
+
+- 2
++ 1
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2635:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2435:14
+ ❯ tests/unit/src/map/index.browser.test.ts:218:19
+    216|   // 検証
+    217|   const figures = root.querySelectorAll("figure.mdmark-diagram");
+    218|   expect(figures).toHaveLength(2);
+       |                   ^
+    219|   for (const figure of figures) {
+    220|     expect(figure.querySelectorAll(".map-mindmap-item").length).toBeGr…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[42/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_axis_grid
+AssertionError: expected [ <figure …(4)>…(4)</figure>, …(4) ] to have a length of 6 but got 5
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_axis_grid.png
+
+- Expected
++ Received
+
+- 6
++ 5
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2635:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2435:14
+ ❯ tests/unit/src/map/index.browser.test.ts:251:19
+    249|     ),
+    250|   ];
+    251|   expect(figures).toHaveLength(6);
+       |                   ^
+    252|   expect(
+    253|     figures.map(
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[43/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/tree/tree.interact.browser.test.ts > test_attach_file_trees
+AssertionError: the given combination of arguments (undefined and string) is invalid for this assertion. You can use an array, a map, an object, a set, a string, or a weakset instead of a string
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tree.interact.browser.test.ts/test_attach_file_trees.png
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2565:15
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=3a31127b:2435:14
+ ❯ tests/unit/src/tree/tree.interact.browser.test.ts:115:72
+    113|   // 検証
+    114|   const tree = treeOf(root);
+    115|   expect(tree.querySelector(":scope > .mdmark-code-bar")?.textContent)…
+       |                                                                        ^
+    116|   expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "true…
+    117|   expect(nestedListOf(toggleOf(tree, "src/")).hasAttribute("hidden")).…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[44/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/tree/tree.interact.browser.test.ts > test_attach_file_trees_when_copied
+Error: コピーのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tree.interact.browser.test.ts/test_attach_file_trees_when_copied.png
+
+ ❯ copyButtonOf tests/unit/src/tree/tree.interact.browser.test.ts:82:11
+     80|   );
+     81|   if (!button) {
+     82|     throw new Error("コピーのボタンが無い");
+       |           ^
+     83|   }
+     84|   return button;
+ ❯ tests/unit/src/tree/tree.interact.browser.test.ts:209:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[45/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/tree/tree.interact.browser.test.ts > test_attach_file_trees_when_copy_denied
+Error: コピーのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tree.interact.browser.test.ts/test_attach_file_trees_when_copy_denied.png
+
+ ❯ copyButtonOf tests/unit/src/tree/tree.interact.browser.test.ts:82:11
+     80|   );
+     81|   if (!button) {
+     82|     throw new Error("コピーのボタンが無い");
+       |           ^
+     83|   }
+     84|   return button;
+ ❯ tests/unit/src/tree/tree.interact.browser.test.ts:244:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[46/48]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/tree/tree.interact.browser.test.ts > test_attach_file_trees_when_detached
+Error: コピーのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/tree.interact.browser.test.ts/test_attach_file_trees_when_detached.png
+
+ ❯ copyButtonOf tests/unit/src/tree/tree.interact.browser.test.ts:82:11
+     80|   );
+     81|   if (!button) {
+     82|     throw new Error("コピーのボタンが無い");
+       |           ^
+     83|   }
+     84|   return button;
+ ❯ tests/unit/src/tree/tree.interact.browser.test.ts:286:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=3a31127b:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[47/48]⎯
+
+
+ Test Files  26 failed | 303 passed (329)
+      Tests  47 failed | 2683 passed | 2 skipped (2732)
+   Start at  22:58:01
+   Duration  67.25s (worker 78%, tests 14%, import 5%, transform 3%)
+
+exit=1
+
+# tests/unit/vscode/src/extensions-bundle.test.ts の失敗は vscode/ の依存を入れていなかったため。npm ci --prefix vscode の後に個別実行で pass した
+$ npx vitest run --project 'unit*' tests/unit/vscode/src/extensions-bundle.test.ts
+ Test Files  1 passed (1)
+      Tests  2 passed (2)
+
+# 実装の前から pass したテスト: test_build_map_ranges_when_plain（範囲の外の gantt を map の図にする振る舞いは develop の src/map/structure.ts の plainMapSourceOf が既に持つ）
