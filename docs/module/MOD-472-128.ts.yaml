@@ -19,11 +19,8 @@ data_models:
     container: src/map/index.ts
     usecase: mermaidの図を描く
     role: データモデル
-    summary: '`attachMap` が範囲の外の map の図を mermaid の図に戻したときに呼ぶ関数'
+    summary: '`attachMap` に `mount` が指定する関数'
     properties:
-      - name: restoreMermaid
-        type: '(blocks: HTMLElement[]) => void'
-        description: 戻した mermaid のコードブロック（`data-mdmark-mermaid` を持つ要素）を指定して呼ぶ。`mount` が mermaid の図を付ける
       - name: resolveIdLink
         type: ResolveIdLink | undefined
         description: '`mount` の `resolveIdLink`。構成図のノードの `id:` のリンク先を URL に変える'
@@ -46,9 +43,9 @@ functions:
       - MOD-596-6#functions[attachMapC4]
       - MOD-472-140#functions[parseMapArgs]
       - MOD-472-135#functions[collectMapProblems]
-      - MOD-472-135#functions[needsMermaidFallback]
       - MOD-649-3#functions[attachMapMindmap]
       - MOD-653-3#functions[attachMapAxisGrid]
+      - MOD-472-135#functions[collectPlainMapProblems]
     args:
       - name: root
         type: HTMLElement
@@ -61,7 +58,7 @@ functions:
       - name: hooks
         type: MapHooks
         required: false
-        description: 範囲の外の map の図を mermaid の図に戻したときに呼ぶ関数
+        description: '`mount` の `resolveIdLink`'
     returns:
       type: () => void
       description: 付けた操作と観察を解除する関数
@@ -69,7 +66,7 @@ functions:
       1. `div.mdmark-map` ごとに `data-map-args` を `parseMapArgs` で読み取り、`data-map-kind`（`flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram`・`classDiagram`・`architecture`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block`）で `attachMapFlow`・`attachMapSequence`・`attachMapEr`・`attachMapState`・`attachMapClass`・`attachMapArchitecture`・`attachMapC4`・`attachMapMindmap`・`attachMapAxisGrid` のどれかに引数と一緒に指定する（`attachMapFlow`・`attachMapEr`・`attachMapState`・`attachMapClass`・`attachMapArchitecture`・`attachMapC4` には `hooks.resolveIdLink` も指定する）。`collapse` があれば図の枠を `details`（`open` は `collapse.open`、見出しは `collapse.title` か `title`）で包む
       2. 範囲ごとに `collectMapProblems`（`includeUnknownKeys: false`、`idLinks` は `resolve` と `hooks.resolveIdLink`。範囲が `data-map-annotations` を持てば、そのキーを定義のある注記の ID として指定する）から `collectMapStructure` の項目を除いた項目があれば、`render` の記載の警告に追加するか、無ければ図の枠の前に部品『書き方の警告』を配置する
       3. シーケンス図の補足の `plays_over` が指す構成図を探し、再生の強調を構成図にも適用する。片方の図で案内か再生を始めたら、もう片方の強調を解く。再生でメッセージへ移ったら構成図の `resumeFollow` と `follow` で、送り手と受け手のノードが収まる倍率と位置へ構成図を移す（構成図に無い相手のメッセージでは移さない）
-      4. `data-map-plain` を持つ範囲は、`needsMermaidFallback` が `true` なら図を付けず、`data-map-front-matter` と中のコードブロックのソースをつないだ元の文字を `renderCodeBlock`（`mermaid: true`）の mermaid のコードブロックにして範囲と置き換え、置き換えた要素を全てまとめて `hooks.restoreMermaid` に指定する。`false` なら手順 1 のとおり図を付け、手順 2 の記載の警告を出さない（許可しないリンク先はリンクを持たないノードで描く）
+      4. `data-map-plain` を持つ範囲は、mermaid の図に戻さずに手順 1 のとおり図を付ける。手順 2 の代わりに `collectPlainMapProblems` の項目（Mermaid の読み取れない行・閉じの無い `subgraph` と複合フラグメント）だけを、図の枠の前の記載の警告にする（許可しないリンク先はリンクを持たないノード、設定の `map.kinds` に無いクラスは種類を持たないノードで描き、警告にしない）
     unit_tests:
       - name: test_attach_map
         case: 正常
@@ -113,24 +110,24 @@ functions:
         condition: '`data-map-plain` を持ち、`click A "javascript:alert(1)"` の行を持つ flowchart の範囲'
         mock: なし（jsdom）
         expected: '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、記載の警告が無く、ノード A が `a.mdmark-diagram-node-link` を持たない'
-      - name: test_attach_map_when_plain_fallback
+      - name: test_attach_map_when_plain_styled
         case: 正常
-        summary: 外観の指定を持つ図を mermaid のコードブロックに戻す
-        condition: '`data-map-front-matter` に `title: 受付` を持ち、`style A fill:#f9f` の行を持つ `data-map-plain` の flowchart の範囲と、読み取れる行だけの `data-map-plain` の範囲。`hooks.restoreMermaid` に呼ばれた引数を記録する関数を指定する'
+        summary: 外観の指定と設定の行と読み取れない行を持つ範囲の外の図を map の図で描く
+        condition: '`style A fill:#f9f` の行と `%%{init: {"theme": "forest"}}%%` の行を持つ `data-map-plain` の flowchart の範囲と、読み取れない行 `A -> ->` と設定の `map.kinds` に無いクラス `:::warn` を持つ `data-map-plain` の flowchart の範囲'
         mock: なし（jsdom）
-        expected: 1 つ目の範囲が `data-mdmark-mermaid` を持つ要素に替わり、その `code` の文字が `---` から始まり `style A fill:#f9f` を含む。`restoreMermaid` が 1 回、その要素だけを持つ配列で呼ばれる。図の枠は 2 つ目の範囲の 1 つだけ
+        expected: どちらも `figure.mdmark-diagram[data-diagram=map]` になり `data-mdmark-mermaid` を持つ要素が無い。1 つ目のノード A の面が `#f9f` で記載の警告が無い。2 つ目の図の枠の前の記載の警告が読み取れない行の 1 件だけで、`warn` の項目を持たない
       - name: test_attach_map_when_mindmap
         case: 正常
         summary: マインドマップ
         condition: '`data-map-kind="mindmap"` の範囲と、`data-map-plain` を持ち `::icon()` の行を持つ mindmap の範囲'
         mock: なし（jsdom）
-        expected: 1 つ目の範囲が `div.map-mindmap-item` を持つ図の枠になり、2 つ目の範囲が `data-mdmark-mermaid` を持つ要素に替わる
+        expected: 1 つ目の範囲が `div.map-mindmap-item` を持つ図の枠になり、2 つ目の範囲も `div.map-mindmap-item` を持つ図の枠になり、`::icon()` の行の項目が無く、記載の警告が無い
       - name: test_attach_map_when_axis_grid
         case: 正常
         summary: 軸と格子の配置の図
         condition: '`data-map-kind` が `gantt`・`timeline`・`gitGraph`・`journey`・`block` の範囲と、`data-map-plain` を持ち読み取れない行を持つ gantt の範囲'
         mock: なし（jsdom）
-        expected: 5 つの範囲がそれぞれの `data-map-kind` を持つ図の枠になり、読み取れない行の範囲が `data-mdmark-mermaid` を持つ要素に替わる
+        expected: 5 つの範囲がそれぞれの `data-map-kind` を持つ図の枠になり、読み取れない行の範囲も `gantt` の図の枠になり、図の枠の前の記載の警告に読み取れない行が 1 件ある
       - name: test_attach_map_when_id_link
         case: 正常
         summary: 'id: のノードのリンク先'
@@ -150,7 +147,7 @@ functions:
         mock: なし（Chromium）
         expected: 3 つの範囲に `[data-tool="export"]` があり、`[data-tool="list"]` は構成図とシーケンス図だけにある。片付けた後は書き出すボタンを押しても `aria-expanded` が変わらない
     refs:
-      - IF-472-35#constraints[範囲の外の map の図を mermaid の図に戻す]
+      - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
       - IF-472-35#constraints[範囲の外の map の図に付く操作]
     notes:
       書き出し: '範囲ごとに `attachMapExport` を文書の中の map の番号（`data-map`）と今の図の枠のタイトル（`figcaption` の題名。プレーンの map の図の種類の名前はタイトルとして扱う）で付け、片付ける関数を返却する片付けで呼ぶ。全ての種類の map の図が `renderDiagramFrame` に `exportable: true` を指定する'

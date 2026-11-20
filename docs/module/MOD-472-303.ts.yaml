@@ -28,7 +28,7 @@ functions:
       描かない範囲（mermaid のブロックが無い・2 つ以上・補足が 2 つ以上・描けない種類）は `div.mdmark-map` で囲まず、警告だけを差し込む。
       `map` がオフの文書では範囲のマーカーと補足のコメントを落とし、mermaid のブロックは普通の mermaid のコードブロックにする。
       `mermaid` と `map` がオンの文書で、範囲の外の言語 `mermaid` のコードブロックは、`plainMapSourceOf` が値を返却したとき、補足を持たない範囲と同じ `div.mdmark-map` で囲み、`data-map-plain` を付ける（図の番号は範囲と通し）。
-      `data-map-args` は `{"title": …}` だけで、値は `plainMapSourceOf` の `title`、無ければ `mermaidKindName` の図の種類の名前にする。
+      `data-map-args` は `{"title": …}` だけで、値は `plainMapSourceOf` の `title`、無ければ `mermaidKindName` の図の種類の名前にする。`plainMapSourceOf` の `mainBranchName` があれば `data-map-main-branch` に持たせる。
       中のコードブロックのソースは `body` にし、`frontMatter` があれば `data-map-front-matter` に入れる。
       `data-map-terms` は範囲と同じく付け、`data-map-annotations` と記載の警告は付けない
     args:
@@ -85,7 +85,7 @@ functions:
         summary: 範囲の外の純粋な Mermaid を map の図にする
         condition: 範囲の外の flowchart と gantt のコードブロック、その後ろに構成図の範囲
         mock: なし
-        expected: flowchart が `div.mdmark-map[data-map-plain]` で `data-map` が `1`、`data-map-args` が `{"title":"フローチャート"}`。gantt は `data-mdmark-mermaid` を持つコードブロックのまま。範囲の `data-map` が `2`
+        expected: flowchart が `div.mdmark-map[data-map-plain]` で `data-map` が `1`、`data-map-args` が `{"title":"フローチャート"}`。gantt が `div.mdmark-map[data-map-plain]` で `data-map` が `2`。範囲の `data-map` が `3`
       - name: test_build_map_ranges_when_plain_front_matter
         case: 正常
         summary: front matter を除いてタイトルにする
@@ -94,10 +94,10 @@ functions:
         expected: '`data-map-args` が `{"title":"受付"}`、中のコードブロックのソースが `flowchart` から始まる、`data-map-front-matter` が front matter の 4 行'
       - name: test_build_map_ranges_when_plain_config
         case: 正常
-        summary: 設定を持つコードブロックは mermaid のまま
-        condition: 'front matter に `config:` を持つ flowchart と、1 行目が `%%{init: {"theme": "forest"}}%%` の sequenceDiagram'
+        summary: 設定を持つコードブロックも範囲の外の map の図にする
+        condition: 'front matter に `config:` を持つ flowchart と、1 行目が `%%{init: {"theme": "forest"}}%%` の sequenceDiagram、front matter に `config.gitGraph.mainBranchName: MetroLine1` を持つ gitGraph'
         mock: なし
-        expected: '`div.mdmark-map` が無く、どちらも `data-mdmark-mermaid` を持つ'
+        expected: '3 つとも `div.mdmark-map[data-map-plain]` で `data-mdmark-mermaid` を持たない。2 つ目の中のコードブロックのソースが `%%{` の行を含まない。3 つ目が `data-map-main-branch="MetroLine1"` を持つ'
       - name: test_build_map_ranges_when_plain_features_off
         case: 正常
         summary: 機能を解除すると範囲の外の map の図にしない
