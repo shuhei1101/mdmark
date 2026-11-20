@@ -36,13 +36,23 @@ const TAG_PATTERN = /<(\/?)([^\s/>]+)([^>]*)>/g;
 /** タグの中の属性（名前と、あれば値） */
 const ATTRIBUTE_PATTERN = /([^\s=/]+)(\s*=\s*)?("[^"]*"|'[^']*'|[^\s"'>]+)?/g;
 
-/** 名前を置き換える属性の値か（`class`・`id`・`data-*`） */
+/** 名前を置き換える属性の値か（`class`・`id`・`data-*` と、文書の中の `id` を指す `aria-*`・`for`・`headers`） */
 const isNameValue = (name: string): boolean =>
-  name === "class" || name === "id" || name.startsWith("data-");
+  name === "class" ||
+  name === "id" ||
+  name === "for" ||
+  name === "headers" ||
+  name.startsWith("data-") ||
+  name.startsWith("aria-");
 
 /** 属性の値の `mdmark` を、属性の種類に合わせて置き換える */
 const hideAttributeValue = (name: string, value: string): string => {
   if (isNameValue(name)) {
+    return hideNames(value);
+  }
+  // 文書の中の id を指す `href="#…"` は、指す先の id と同じく置き換える
+  const quote = value[0] === '"' || value[0] === "'" ? value[0] : "";
+  if (name === "href" && value.slice(quote.length).startsWith("#")) {
     return hideNames(value);
   }
   const assets = value.replace(/\bmdmark-asset:/g, `${TRACE_ALIAS}-asset:`);
@@ -51,7 +61,7 @@ const hideAttributeValue = (name: string, value: string): string => {
     : assets;
 };
 
-/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` だけを別名へ置き換え、HTML のコメントを削除する。テキストのノードと `href`・`src`・`alt`・`title` の値は置き換えない */
+/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`・`for`・`headers` の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` だけを別名へ置き換え、HTML のコメントを削除する。テキストのノードと、それ以外の `href`・`src`・`alt`・`title` の値は置き換えない */
 export const hideRenderedHtml = (html: string): string =>
   html.replace(COMMENT_PATTERN, "").replace(TAG_PATTERN, (...tag: string[]) => {
     const [, slash = "", name = "", rest = ""] = tag;
