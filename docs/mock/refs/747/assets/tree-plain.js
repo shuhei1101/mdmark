@@ -26,7 +26,7 @@ const fence = (language, source) => ["```" + language, source, "```"].join("\n")
 const markdown = [
   "# 言語が tree でない罫線のフォルダ構成のコードブロック",
   "",
-  "同じ罫線を、今の描き方（記載の警告とコードブロック）と案（ファイルツリー）で並べた。案のファイルツリーの帯は、コードブロックの帯と同じ部品にしている。",
+  "同じ罫線を、今の描き方（記載の警告とコードブロック）と案（ファイルツリー）で並べた。案のファイルツリーの帯は、コードブロックの帯と同じ部品にし、ラベルに記載した言語を出す（言語なしはラベルを出さない）。",
   "",
   "## 今（記載の警告とコードブロック）",
   "",
@@ -67,11 +67,17 @@ const markdown = [
   fence("text", UNICODE_TREE),
 ].join("\n");
 
+/** 案のツリーに書き換えたコードブロックの、記載した言語（帯のラベルにする。言語なしは空） */
+const writtenLanguages = [];
+
 /** 案の見出しの下のコードブロックを、言語 tree のコードブロックに書き換える（モックだけの読み替え） */
 const toTreeFences = (source) =>
   source.replace(
-    /<div class="mock-to-tree">\n\n```[^\n]*\n([\s\S]*?)\n```\n\n<\/div>/g,
-    (_, body) => fence("tree", body),
+    /<div class="mock-to-tree">\n\n```([^\n]*)\n([\s\S]*?)\n```\n\n<\/div>/g,
+    (_, language, body) => {
+      writtenLanguages.push(language.trim());
+      return fence("tree", body);
+    },
   );
 
 /** 罫線を読み取れない言語 tree のブロック: 案では読み取れない行の記載の警告だけを出すため、今の配布物が重ねて出す言語の警告を除く（モックだけの再現） */
@@ -94,16 +100,22 @@ const relabelBroken = (root) => {
 
 /** ファイルツリーの帯を、コードブロックの帯と同じクラスの組み立てにする（案: 帯を共通の部品にする） */
 const unifyBars = (root) => {
-  for (const bar of root.querySelectorAll(".mdmark-tree-bar")) {
+  [...root.querySelectorAll(".mdmark-tree-bar")].forEach((bar, index) => {
     bar.classList.add("mdmark-code-bar");
     const kind = bar.querySelector(".mdmark-tree-kind");
     if (kind) {
-      kind.className = "mdmark-code-lang";
-      kind.innerHTML = `<span class="mdmark-code-lang-name" aria-hidden="true">tree</span>`;
+      // 帯のラベルは記載した言語。言語なしはラベルを出さない
+      const language = writtenLanguages[index] ?? "";
+      if (language === "") {
+        kind.remove();
+      } else {
+        kind.className = "mdmark-code-lang";
+        kind.innerHTML = `<span class="mdmark-code-lang-name" aria-hidden="true">${language}</span>`;
+      }
     }
     bar.querySelector(".mdmark-tree-meta")?.classList.add("mdmark-code-meta");
     bar.querySelector(".mdmark-tree-copy")?.classList.add("mdmark-code-copy");
-  }
+  });
 };
 
 const root = document.getElementById("doc");

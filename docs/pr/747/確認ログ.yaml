@@ -1,0 +1,19 @@
+confirmations:
+  - topic: 言語が tree でない罫線を描いたファイルツリーの帯のラベル
+    decision: 記載した言語を出す。言語なしはラベルを出さない（案 B）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 166327de
+    thread: https://github.com/shuhei1101/mdmark/pull/747#discussion_r4641755990
+  - topic: 見た目を指定する行の色を map の図に適用するか
+    decision: 'style・classDef（class の行と flowchart の ::: を含む）の塗りと線の色をノードに、linkStyle の色を線に適用し、文字の色は color: か塗りとのコントラストで決める（案 B）。mermaid で書けるものは map でも同じ機能で描く'
+    decided_by: reply
+    approver: shuhei1101
+    commit: 166327de
+    thread: https://github.com/shuhei1101/mdmark/pull/747#discussion_r4641757107
+  - topic: モックの見た目で進めてよいか
+    decision: 修正してから進める（案 B）。帯のラベルを記載した言語にし、map の文字の書体・線の自動配置・マインドマップの見た目は別の Issue で対応する
+    decided_by: reply
+    approver: shuhei1101
+    commit: 166327de
+    thread: https://github.com/shuhei1101/mdmark/pull/747#discussion_r4641758137
