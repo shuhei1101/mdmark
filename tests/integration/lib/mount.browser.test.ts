@@ -20330,6 +20330,77 @@ test("test_normal_when_many_tables_column_widths", async () => {
   });
 });
 
+/** 用語と脚注を含む列の幅の確認の、用語の意味と脚注の定義の文 */
+const HIDDEN_TIP_TEXT = fullWidth(100);
+
+/** 用語 `ターン` を持つ索引 */
+const TURN_INDEX: MdmarkIndex = {
+  schema: 2,
+  docs: [],
+  terms: [{ id: "turn", term: "ターン", meaning: HIDDEN_TIP_TEXT }],
+};
+
+// 用語・脚注のツールチップの文字を数えず、セルに見えている文字の幅で列の幅を決める（正常系（用語と脚注を含む列の幅））
+test("test_normal_when_column_width_ignores_hidden_tips", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    const markdown = [
+      "本文の段落。",
+      "",
+      markedTableMarkdown(
+        '{"kind": "data"}',
+        ["用語", "説明"],
+        [
+          ["ターン", fullWidth(10)],
+          ["確認[^1]", fullWidth(10)],
+        ],
+      ),
+      `[^1]: ${HIDDEN_TIP_TEXT}`,
+      "",
+    ].join("\n");
+    // 実行
+    await mountTracked(el, {
+      markdown,
+      index: TURN_INDEX,
+      config: { features: { "side-toc": false } },
+    });
+    const wrapper = find<HTMLElement>(el, ".mdmark-table");
+    await vi.waitFor(() => {
+      expect(find(wrapper, "table").hasAttribute("data-auto-width")).toBe(true);
+    });
+    // 検証: 用語と脚注の参照を描いている
+    const [head, turnCell, confirmCell] = columnCells(wrapper, 0) as [
+      HTMLElement,
+      HTMLElement,
+      HTMLElement,
+    ];
+    expect(find(turnCell, ".mdmark-term").textContent).toBe("ターン");
+    find(confirmCell, ".mdmark-fn-ref");
+    // 検証: 用語の列の幅は、見えている文字と見出しの中身が収まる幅で、用語の意味の文の幅より狭い
+    const visible = Math.max(
+      headContentWidth(head),
+      lineWidthIn(turnCell, "ターン"),
+      lineWidthIn(confirmCell, "確認1"),
+    );
+    const width = head.getBoundingClientRect().width;
+    expect(Math.abs(width - visible)).toBeLessThanOrEqual(4);
+    expect(width).toBeLessThan(lineWidthIn(turnCell, HIDDEN_TIP_TEXT));
+    // 検証: 表は本文の幅より狭く、横にスクロールしない
+    const table = find<HTMLElement>(wrapper, "table").getBoundingClientRect();
+    expect(table.width).toBeLessThan(bodyWidth(el));
+    const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+    expect(scroller.scrollWidth).toBeLessThanOrEqual(scroller.clientWidth);
+    // 検証: 用語の列のセルは 1 行（脚注の番号は上付きで上端がずれるため、確認のセルは本文の文字の行を数える）
+    expect(textLineCount(turnCell)).toBe(1);
+    const confirmText = document.createRange();
+    confirmText.selectNodeContents(confirmCell.firstChild as Node);
+    expect(
+      new Set([...confirmText.getClientRects()].map((rect) => rect.top)).size,
+    ).toBe(1);
+  });
+});
+
 // 狭い幅でも最終列を畳まず、表の中で横にスクロールして全ての列を出す（正常系（狭い幅でも最終列を畳まない））
 test("test_normal_when_last_column_not_collapsed", async () => {
   await withViewport(390, async () => {

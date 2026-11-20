@@ -1,0 +1,41 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: run_only
+    detail: 用語を含む列の幅が、見えている文字の幅で決まるようになる。列の幅を中身から決める流れの記述は変わらない
+    depends_on: []
+scope_out:
+  - item: docs/mock/refs/505/assets/table-width.js の linesOf の同じ処理
+    reason: 参照用のモックで、文書の描画に使用しない
+    plan: none
+  - item: ピン止めした列の用語のツールチップが見出し行の下に隠れる事象
+    reason: 要望に含まれない（ツールチップの重なりで、列の幅の計測と別の事象）
+    plan: '#729'
+  - item: src/shared/text.interact.ts の visibleText・cellValue が、脚注・注記のツールチップ（.mdmark-fn-tip）の定義の文字を並べ替え・絞り込み・コピーの値に含める
+    reason: セルの値に見えていない脚注の定義の文字が入る不具合（reviewer が対象外の逸脱として報告）。要望は列の幅の計測だけで、並べ替え・絞り込み・コピーの値は含まない
+    plan: '#734'
+docs:
+  - page: docs/component/CMP-472-61.ts.yaml
+    new: false
+    change: 注記「列の幅」に、行はセルに見えている文字だけで作り、ツールチップ（開いているかに関わらない）とスクリーンリーダー用の文字を含めないことを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:31:52.607578+00:00'
+  - page: docs/interface/IF-472-35.ts.yaml
+    new: false
+    change: 用語を含む列の幅が見えている文字の幅で決まる結合テストの期待を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:20:15.531310+00:00'
+  - page: docs/module/MOD-472-347.ts.yaml
+    new: false
+    change: measureColumns の行の分け方に、複製したセルからツールチップとスクリーンリーダー用の文字を除いてから文字を取ることと、その単体テストを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:38:35.159984+00:00'
+  - page: docs/module/MOD-472-229.ts.yaml
+    new: false
+    change: セルの中で幅を取らない文字の要素の定数 HIDDEN_TEXT_SELECTOR と、複製した要素からその要素を取り除く removeHiddenText とその単体テストを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:38:35.159984+00:00'

@@ -39,3 +39,23 @@ test("test_cell_value", async () => {
   // 検証
   expect(values).toEqual(["false", "未定"]);
 });
+
+// ツールチップとスクリーンリーダー用の文字を取り除き、見えている文字を残す（正常系）
+test("test_remove_hidden_text", async () => {
+  // 準備
+  const { removeHiddenText } = await loadText();
+  const root = createRootFromHtml(
+    '<table><tbody><tr><td><span class="mdmark-term-wrap"><span class="mdmark-term">ターン</span><span class="mdmark-term-tip is-open">用語意味</span></span>と確認<sup class="mdmark-fn-ref"><a class="mdmark-fn-link"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip">脚注定義</span></sup></td></tr></tbody></table>',
+  );
+  const cell = root.querySelector("td");
+  if (!cell) {
+    throw new Error("セルが無い");
+  }
+  const before = cell.innerHTML;
+  const copy = cell.cloneNode(true) as HTMLTableCellElement;
+  // 実行
+  removeHiddenText(copy);
+  // 検証
+  expect(copy.textContent).toBe("ターンと確認1");
+  expect(cell.innerHTML).toBe(before);
+});

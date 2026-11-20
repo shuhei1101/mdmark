@@ -50,6 +50,29 @@ functions:
         condition: '`<td data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>` と `<td>未定</td>`'
         mock: なし（Chromium）
         expected: '`false` と `未定`'
+  - name: removeHiddenText
+    title: 幅を取らない文字の要素を取り除く
+    container: src/shared/text.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 要素の子孫のうち `HIDDEN_TEXT_SELECTOR` に該当する要素を取り除く
+    description: 表の列の幅を測るときに、複製したセルと見出しの中身を指定して呼ぶ（描いた要素を指定しない）。並べ替え・絞り込みの値を読み込む `visibleText` は、スクリーンリーダー用の文字を値に含めるため、この関数を使用しない
+    args:
+      - name: root
+        type: Element
+        required: true
+        description: 取り除く要素を探す要素（複製した要素）
+    returns:
+      type: void
+      description: 戻り値は無い
+    side_effects: '`root` の子孫から該当した要素を取り除く'
+    unit_tests:
+      - name: test_remove_hidden_text
+        case: 正常
+        summary: ツールチップとスクリーンリーダー用の文字を取り除き、見えている文字を残す
+        condition: '`<td><span class="mdmark-term-wrap"><span class="mdmark-term">ターン</span><span class="mdmark-term-tip is-open">用語意味</span></span>と確認<sup class="mdmark-fn-ref"><a class="mdmark-fn-link"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip">脚注定義</span></sup></td>` を複製した要素'
+        mock: なし（Chromium）
+        expected: 複製した要素の `textContent` が `ターンと確認1`（開いているツールチップも取り除く）。元の `td` の中身が変わらない
 lead: '要素の見える文字と表のセルの値の取り出しを受け持ち、コピーや見出しの文字の取り出し方を変えるときに参照する。'
 tags:
   - name: topic:用語
@@ -59,3 +82,12 @@ tags:
   - name: topic:部品
   - name: action:コピー
   - name: action:取り出し
+constants:
+  - name: HIDDEN_TEXT_SELECTOR
+    title: セルの中で幅を取らない文字の要素
+    container: src/shared/text.interact.ts
+    summary: 用語・脚注・注記のツールチップと画面に出さないスクリーンリーダー用の文字の要素を指すセレクタ。表示の状態（開いているか）でなくクラスで決める
+    value: "'.mdmark-term-tip, .mdmark-fn-tip, .mdmark-visually-hidden'"
+    refs:
+      - CMP-472-61#notes
+    status: planned
