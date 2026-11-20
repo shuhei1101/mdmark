@@ -236,12 +236,18 @@ functions:
       description: 読み取り結果
     process: |-
       1. 1 行目・空の行・`%%` で始まる行を飛ばし、`title` の行を `title` にする
-      2. `kind` ごとに行を読み取る（ガントチャートは `dateFormat`・`axisFormat`・`excludes`・`todayMarker`・`section`・タスクの行、タイムラインは `section` と `{期間} : {出来事}` の行と `:` で始まる続きの行、Git グラフは `commit`・`branch`・`checkout`・`switch`・`merge`・`cherry-pick`、ジャーニーは `section` と `{タスク名}: {点数}: {人}` の行、ブロック図は `columns`・ブロック・`space`・`block:{ID}` と `end`・線）。mermaid と同じく、ガントチャートは開始を省いたタスク（直前のタスクの終了から始める）・タグ（`crit`・`done`・`active`・`milestone`・`vert`）の組み合わせ・期間の `w`・`d`・`h`・`m`・`s`・`after {ID} {ID}`（最も遅い終了）・`until {ID}`・`dateFormat` の時刻（`HH:mm`）と数（`X`・`x`）・`weekend friday`・`tickInterval`・`topAxis`・`inclusiveEndDates`・`click`、Git グラフは範囲の `data-map-main-branch` の最初のブランチの名前（無ければ `main`）と `branch {名前} order: {数}`・`commit` の `type:`・`tag:`、ブロック図は最初の単語 `block`・引用符で囲んだラベルの形状（`([ ])`・`[[ ]]`・`> ]`・`{ }`・`{{ }}`・`[/ /]`・`[\ \]`・`[/ \]`・`[\ /]`・`((( )))`）・ブロックの矢印（`{ID}<["{ラベル}"]>({向き})`。向きの矢印の形状の項目にする）・`space:{数}`・同じ行に並べた複数のブロック・`classDef`・`class`・`style`（`readMermaidStyles` で項目の色にする）も読み取る。読み取れない行は `map_invalid` の項目（行番号・行の文字・修正方法）にして次の行へ進む
+      2. `kind` ごとに行を読み取る（ガントチャートは `dateFormat`・`axisFormat`・`excludes`・`todayMarker`・`section`・タスクの行、タイムラインは `section` と `{期間} : {出来事}` の行と `:` で始まる続きの行、Git グラフは `commit`・`branch`・`checkout`・`switch`・`merge`・`cherry-pick`、ジャーニーは `section` と `{タスク名}: {点数}: {人}` の行、ブロック図は `columns`・ブロック・`space`・`block:{ID}` と `end`・線）。mermaid と同じく、ガントチャートは開始を省いたタスク（直前のタスクの終了から始める）・タグ（`crit`・`done`・`active`・`milestone`・`vert`）の組み合わせ・期間の `w`・`d`・`h`・`m`・`s`・`after {ID} {ID}`（最も遅い終了）・`until {ID}`・`dateFormat` の時刻（`HH:mm`）と数（`X`・`x`）・`weekend friday`・`tickInterval`・`topAxis`・`inclusiveEndDates`・`click`、Git グラフは最初のブランチの名前（範囲の外の map の図は範囲の `data-map-main-branch`、範囲の中の map の図は `source` を `mermaidMainBranchOf` で読み取った値。無ければ `main`）と `branch {名前} order: {数}`・`commit` の `type:`・`tag:`、ブロック図は最初の単語 `block`・引用符で囲んだラベルの形状（`([ ])`・`[[ ]]`・`> ]`・`{ }`・`{{ }}`・`[/ /]`・`[\ \]`・`[/ \]`・`[\ /]`・`((( )))`）・ブロックの矢印（`{ID}<["{ラベル}"]>({向き})`。向きの矢印の形状の項目にする）・`space:{数}`・同じ行に並べた複数のブロック・`classDef`・`class`・`style`（`readMermaidStyles` で項目の色にする）も読み取る。読み取れない行は `map_invalid` の項目（行番号・行の文字・修正方法）にして次の行へ進む
       3. ガントチャートは、開始の `after {ID}` をそのタスクの終了日に、終了の `{数}d` を開始日からの日数（`excludes weekends` のときは土日を数えない）にして開始日と終了日を決め、`after` を `links` に入れる。無い ID を指す `after`・読み取れない日付のタスクは `map_invalid` にしてスキップする
       4. Git グラフは、commit を今のブランチの先頭につなぎ、親を `links`（`parent`）に、merge は取り込むブランチの先頭も `merge`、cherry-pick は元の commit を `cherryPick` に入れる。Mermaid が振る乱数の ID は作らない
       5. ブロック図は、入れ子の `block:{ID}` を `sections` に入れ、中の項目の `section` をその `stateKey` にする。線は `arrow` とラベルで `links` に入れる。閉じの無い `block` は `map_invalid` にし、最後の行で閉じたものとして扱う
       6. ID を持たない項目の `label` と section の名前を数え、2 つ以上のものを `ambiguous` に入れ、その項目の `stateKey` を `n{order}`、section の `stateKey` を `s{order}` にする
     unit_tests:
+      - name: test_parse_axis_grid_when_main_branch_in_range
+        case: 正常
+        summary: 範囲の中の Git グラフも %%{init} の mainBranchName を読み取る
+        condition: '1 行目が `%%{init: {"gitGraph": {"mainBranchName": "MetroLine1"}}}%%` で、`commit`・`branch MetroLine2`・`commit`・`checkout MetroLine1`・`merge MetroLine2` を持つ範囲の中の gitGraph の Mermaid（`mainBranchName` を指定しない）'
+        mock: なし
+        expected: '`problems` が空で、`branches` が `MetroLine1`・`MetroLine2`'
       - name: test_parse_axis_grid_when_gantt
         case: 正常
         summary: ガントチャート
@@ -303,6 +309,7 @@ functions:
       - IF-472-35#constraints[map のジャーニー]
       - IF-472-35#constraints[map のブロック図]
     callees:
+      - MOD-589-1#functions[mermaidMainBranchOf]
       - MOD-747-1#functions[readMermaidStyles]
   - name: axisGridItemOf
     title: キーが指す項目を探す
