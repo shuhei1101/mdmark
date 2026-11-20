@@ -12,7 +12,7 @@ use_cases:
 docs:
   - page: docs/nonfunctional/NFR-472-1.yaml
     new: false
-    change: 表の多い文書（表 16 個・本文のセル 480 個）で全ての表の列の幅を決め終える時間の上限（NFR-13、500 ミリ秒）を決定値として加える
+    change: 表の多い文書（表 16 個・本文のセル 480 個）で `mount` を呼んでから全ての表の列の幅を決定するまでの時間の上限（NFR-13、1,000 ミリ秒）と、今の実装での実測を加える
     status: done
     updated_by: planner
     updated_at: '2026-11-20T02:06:33.502653+00:00'
