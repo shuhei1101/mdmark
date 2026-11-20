@@ -1,0 +1,14 @@
+/* #747 のモックだけの規則（mdmark の層の外） */
+
+/* 案: ファイルツリーの帯をコードブロックの帯と同じ部品にしたときの見た目。ツリーの外側の枠線を帯とツリーの共通の枠線にする */
+.mdmark .mdmark-tree > .mdmark-tree-bar.mdmark-code-bar {
+  border: 0;
+  border-radius: 0;
+  font-family: var(--mdmark-font-mono);
+}
+
+/* 案 B: style・classDef で指定した塗りと線の色を、map のノードの面と枠線に適用する */
+.mock-styled-node.mdmark-diagram-node {
+  border-color: var(--mock-node-stroke);
+  background: var(--mock-node-fill);
+}

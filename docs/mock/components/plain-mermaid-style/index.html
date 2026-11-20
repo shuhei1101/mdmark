@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>plain-mermaid-style（mermaid のライブラリへ戻している mermaid のコードブロック） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #747 のモックだけの規則 -->
+  <link rel="stylesheet" href="../../refs/747/assets/mock.css">
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / plain-mermaid-style
+  </nav>
+  <main class="host">
+    <!-- 配布物の mount で、同じ Mermaid を今の描き方（mermaid の図）と案 A・案 B（map の図）で描いた文書 -->
+    <div id="doc"></div>
+  </main>
+  <script type="module" src="../../refs/747/assets/plain-mermaid-style.js"></script>
+</body>
+</html>
