@@ -40,7 +40,7 @@
 .mdmark-diagram-node.map740-added { border-color: var(--mdmark-color-diff-add-sign) !important; box-shadow: 0 0 0 1px var(--mdmark-color-diff-add-sign); }
 .mdmark-diagram-node.map740-changed { border-color: var(--mdmark-color-accent-orange-text) !important; box-shadow: 0 0 0 1px var(--mdmark-color-accent-orange-text); }
 .mdmark-diagram-node.map740-removed { border-color: var(--mdmark-color-diff-del-sign) !important; border-style: dashed !important; }
-.mdmark-diagram-node.map740-removed :is(.mdmark-diagram-node-name, .mdmark-diagram-node-name *) { text-decoration-line: line-through !important; text-decoration-color: var(--mdmark-color-diff-del-sign) !important; }
+.mdmark-diagram-node.map740-removed .mdmark-diagram-node-name { word-break: normal !important; text-decoration: line-through var(--mdmark-color-diff-del-sign) 2px !important; }
 .map740-badge[data-change="added"] { border-color: var(--mdmark-color-diff-add-sign); color: var(--mdmark-color-diff-add-sign); }
 .map740-badge[data-change="changed"] { border-color: var(--mdmark-color-accent-orange-text); color: var(--mdmark-color-accent-orange-text); }
 .map740-badge[data-change="removed"] { border-color: var(--mdmark-color-diff-del-sign); color: var(--mdmark-color-diff-del-sign); border-style: dashed; }
@@ -108,3 +108,9 @@ path.map740-wire-removed { stroke: var(--mdmark-color-diff-del-sign) !important;
 .map740-list .map740-note,
 .map740-list .map740-out { color: var(--mdmark-color-muted); font-size: 13px; }
 .map740-list .map740-out { flex-basis: 100%; padding-left: 1.5em; }
+
+/* 一覧の項目の確信度と変更: 名前の後ろにバッジを並べ、削除の項目は名前に取り消し線を引く */
+.map740-list .map740-badge { align-self: center; }
+.map740-list .map740-item-removed > .map740-row > .map740-name { text-decoration: line-through var(--mdmark-color-diff-del-sign) 2px; }
+/* 読み上げだけに出す文字 */
+.map740-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

@@ -10,49 +10,59 @@
   <!-- 利用側のページの外観（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/287/assets/scene.css">
   <!-- 確信度・計画した変更・書き出し・一覧の表示の規則（#740 で追加するアセット） -->
-  <link rel="stylesheet" href="../../refs/740/assets/map-extra.css?v=2">
+  <link rel="stylesheet" href="../../refs/740/assets/map-extra.css?v=5">
   <style>
     /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
     .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
     .map-catalog h2 { font-size: 24px; margin: 48px 0 8px; }
-    .map-catalog p.state-note { margin: 0 0 8px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .map-catalog p.state-note { margin: 0 0 8px; color: var(--mdmark-color-muted); font-size: 13px; max-width: 75ch; }
     .narrow { max-width: 390px; }
-    .dark-host { padding: 16px; border-radius: 8px; background: var(--mdmark-color-bg); }
   </style>
 </head>
 <body>
+  <!-- モック専用の操作列: 明暗の切り替え（配布物のダークはページ全体の配色を変えるため、ページごと切り替える） -->
+  <div class="mock-bar" data-mock-bar>
+    <div class="mock-bar-group" role="group" aria-label="明暗">
+      <span class="mock-bar-label">明暗</span>
+      <a class="mock-bar-item" href="?scheme=light">明るい配色</a>
+      <a class="mock-bar-item" href="?scheme=dark">ダーク</a>
+    </div>
+  </div>
   <header class="host-bar">利用側のアプリ</header>
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../index.md">components</a> / map-trust-changes
   </nav>
   <main class="map-catalog">
     <h1>map-trust-changes</h1>
+    <p class="state-note">上の操作列の「ダーク」で、全ての場面をダークで確認できる</p>
 
     <h2>確信度のバッジ</h2>
     <p class="state-note">補足の <code>trust</code> を持つノードとグループのタイトルの右上に、確信度の名前のバッジを枠線をまたいで重ねる。仮説・出典なしはバッジの枠線を破線にし、色に頼らず見分ける。ラベルを持つ線はラベルの後ろ、ラベルを持たない線は経路の中点にバッジだけを出す。<code>trust</code> を持たないノード（キャッシュ）と線にはバッジが無い</p>
-    <div class="mdmark-theme-light"><div id="trust"></div></div>
+    <div id="trust"></div>
 
     <h2>確信度を持つ線のツールチップ</h2>
     <p class="state-note">確信度を持つ線にポインターを重ねると、補足の <code>notes</code> の説明の有無に依らずツールチップを出し、先頭の行を確信度にする。左は説明を持つ線、右は説明を持たない線</p>
-    <div class="mdmark-theme-light"><div id="tip"></div></div>
+    <div id="tip"></div>
 
     <h2>計画した変更</h2>
     <p class="state-note">補足の <code>changes</code> の <code>added</code> は差分の追加の色、<code>changed</code> は色の名前 orange、<code>removed</code> は差分の削除の色の破線の枠線と取り消し線の名前で描き、それぞれのバッジを付ける。削除のノードと線も配置に含める。確信度と変更の両方を持つノード（mount）は、2 つのバッジを右から並べる</p>
-    <div class="mdmark-theme-light"><div id="changes"></div></div>
+    <div id="changes"></div>
 
     <h2>記載の警告</h2>
     <p class="state-note">無い ID（<code>map_unknown_ref</code>）と知らない値（<code>map_invalid_value</code>。使用できる値の一覧を含む）を図の前の記載の警告に出し、その 2 つにはバッジを付けない。シーケンス図など <code>trust</code>・<code>changes</code> を使用できない種類に記載したときも、同じ記載の警告にしてバッジを付けない</p>
-    <div class="mdmark-theme-light"><div id="warning"></div></div>
-    <div class="mdmark-theme-light"><div id="warning-seq"></div></div>
+    <div id="warning"></div>
+    <div id="warning-seq"></div>
 
-    <h2>ダーク</h2>
-    <div class="dark-host mdmark-theme-dark"><div id="dark"></div></div>
 
     <h2>狭い幅</h2>
     <p class="state-note">図の倍率は変えず、バッジは図と一緒に横にスクロールする</p>
-    <div class="narrow mdmark-theme-light"><div id="narrow"></div></div>
+    <div class="narrow" id="narrow"></div>
   </main>
   <script type="module">
+    // 明暗: ?scheme=dark でページ全体をダークにする
+    const scheme = new URLSearchParams(location.search).get("scheme") === "dark" ? "dark" : "light";
+    document.body.classList.add(`mdmark-theme-${scheme}`);
+    document.querySelector(`.mock-bar-item[href="?scheme=${scheme}"]`)?.setAttribute("aria-current", "page");
     import { addWarning, decorate, renderDoc, showWireTip } from "../../refs/740/assets/map-extra.js";
 
     const FLOW = (title) => `<!-- map: {"title": "${title}"} -->
@@ -128,13 +138,6 @@ sequenceDiagram
 <!-- /map -->`;
     const [seq] = await renderDoc(document.getElementById("warning-seq"), SEQ);
     addWarning(seq, [{ kind: "map_invalid_value", message: "補足の <code>trust</code> は、シーケンス図では使用できません。使用できるのは flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図です。" }]);
-
-    const [dark] = await renderDoc(document.getElementById("dark"), FLOW("ダーク"));
-    decorate(dark, {
-      trust: TRUST,
-      changes: { cache: { type: "added" }, mount: { type: "changed" }, legacy: { type: "removed" }, "mount->legacy": { type: "removed" } },
-      wires: WIRES,
-    });
 
     const [narrow] = await renderDoc(document.getElementById("narrow"), FLOW("狭い幅"));
     decorate(narrow, { trust: TRUST, changes: { mount: { type: "changed" } }, wires: WIRES });

@@ -267,7 +267,12 @@ function renderTree(items) {
       const row = document.createElement("span");
       row.className = "map740-row";
       const hasChildren = Boolean(item.children?.length);
-      row.innerHTML = `<span class="map740-toggle" aria-hidden="true">${hasChildren ? "▾" : ""}</span><span class="map740-name">${item.name}</span>${item.kind ? `<span class="map740-kind">${item.kind}</span>` : ""}${item.note ? `<span class="map740-note">${item.note}</span>` : ""}${(item.out ?? []).map((o) => `<span class="map740-out">${o}</span>`).join("")}`;
+      const badges = [
+        item.change ? `<span class="map740-badge" data-change="${item.change}">${CHANGE_LABELS[item.change]}</span>` : "",
+        item.level ? `<span class="map740-badge" data-level="${item.level}"><span class="map740-sr">確信度 </span>${TRUST_LABELS[item.level]}</span>` : "",
+      ].join("");
+      if (item.change === "removed") li.classList.add("map740-item-removed");
+      row.innerHTML = `<span class="map740-toggle" aria-hidden="true">${hasChildren ? "▾" : ""}</span><span class="map740-name">${item.name}</span>${badges}${item.kind ? `<span class="map740-kind">${item.kind}</span>` : ""}${item.note ? `<span class="map740-note">${item.note}</span>` : ""}${(item.out ?? []).map((o) => `<span class="map740-out">${o}</span>`).join("")}`;
       li.append(row);
       if (hasChildren) {
         li.setAttribute("aria-expanded", "true");

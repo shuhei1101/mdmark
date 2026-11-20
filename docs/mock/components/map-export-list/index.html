@@ -10,22 +10,31 @@
   <!-- 利用側のページの外観（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/287/assets/scene.css">
   <!-- 確信度・計画した変更・書き出し・一覧の表示の規則（#740 で追加するアセット） -->
-  <link rel="stylesheet" href="../../refs/740/assets/map-extra.css?v=2">
+  <link rel="stylesheet" href="../../refs/740/assets/map-extra.css?v=5">
   <style>
     /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
     .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
     .map-catalog h2 { font-size: 24px; margin: 48px 0 8px; }
-    .map-catalog p.state-note { margin: 0 0 8px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .map-catalog p.state-note { margin: 0 0 8px; color: var(--mdmark-color-muted); font-size: 13px; max-width: 75ch; }
     .narrow { max-width: 390px; }
   </style>
 </head>
-<body class="mdmark-theme-light">
+<body>
+  <!-- モック専用の操作列: 明暗の切り替え（配布物のダークはページ全体の配色を変えるため、ページごと切り替える） -->
+  <div class="mock-bar" data-mock-bar>
+    <div class="mock-bar-group" role="group" aria-label="明暗">
+      <span class="mock-bar-label">明暗</span>
+      <a class="mock-bar-item" href="?scheme=light">明るい配色</a>
+      <a class="mock-bar-item" href="?scheme=dark">ダーク</a>
+    </div>
+  </div>
   <header class="host-bar">利用側のアプリ</header>
   <nav class="crumbs" aria-label="パンくずリスト">
     <a href="../index.md">components</a> / map-export-list
   </nav>
   <main class="map-catalog">
     <h1>map-export-list</h1>
+    <p class="state-note">上の操作列の「ダーク」で、全ての場面をダークで確認できる</p>
 
     <h2>書き出すボタンとメニュー</h2>
     <p class="state-note">パネルを開くと、全画面のボタンの隣に書き出すボタン（スクリーンリーダー向けの名前「図を書き出す」）がある。押すと SVG と PNG の項目のメニューを開き、選ぶとグループの開閉を今のまま、倍率と表示する位置に依らず等倍の図の全体を書き出す（PNG は 2 倍の画素数）。Esc と外側のクリックでメニューを閉じ、書き出すボタンへフォーカスを戻す。このモックでは実際にダウンロードする</p>
@@ -37,6 +46,10 @@
     <h2>一覧の表示（構成図）</h2>
     <p class="state-note">パネルの map のグループの先頭に一覧の表示のボタン（「一覧で表示」と <code>aria-pressed</code>）がある。押すと表示する枠の中を、グループを子を持つ項目・ノードを項目にした入れ子の一覧に替える。ノードの項目は名前・種類の名前・補足の説明・出る線（「→ 相手」と線のラベル）を持つ。↑↓ で項目を移り、→ で開き、← で閉じる。もう一度押すと、倍率・位置・開閉を保ったまま図の表示に戻す</p>
     <div id="list-flow"></div>
+
+    <h2>一覧の表示（確信度と計画した変更を持つ構成図）</h2>
+    <p class="state-note">確信度と変更を持つノードの項目は、名前の後ろに図と同じバッジ（変更・確信度の順）を並べ、スクリーンリーダーでは名前の後ろに「追加」「確信度 推測」のように読み上げる。削除のノードの項目は名前に取り消し線を引く</p>
+    <div id="list-trust"></div>
 
     <h2>一覧の表示（シーケンス図）</h2>
     <p class="state-note">メッセージを記載順に「送信元 → 送信先: メッセージ」の項目で並べる</p>
@@ -50,6 +63,10 @@
     <div class="narrow" id="narrow"></div>
   </main>
   <script type="module">
+    // 明暗: ?scheme=dark でページ全体をダークにする
+    const scheme = new URLSearchParams(location.search).get("scheme") === "dark" ? "dark" : "light";
+    document.body.classList.add(`mdmark-theme-${scheme}`);
+    document.querySelector(`.mock-bar-item[href="?scheme=${scheme}"]`)?.setAttribute("aria-current", "page");
     import { addExport, addListToggle, renderDoc } from "../../refs/740/assets/map-extra.js";
 
     const FLOW = (title) => `<!-- map: {"title": "${title}"} -->
@@ -115,6 +132,30 @@ flowchart LR
     const [listFrame] = await renderDoc(document.getElementById("list-flow"), FLOW("全体の構成"));
     addExport(listFrame, 2);
     addListToggle(listFrame, FLOW_ITEMS)?.click();
+
+    const [trustFrame] = await renderDoc(document.getElementById("list-trust"), FLOW("確信度と計画した変更"));
+    addExport(trustFrame, 6);
+    addListToggle(trustFrame, () => [
+      { name: "利用側のページ", kind: "外部", level: "confirmed", out: ["→ mount（設定と Markdown）"] },
+      {
+        name: "mdmark",
+        kind: "グループ",
+        children: [
+          { name: "mount", kind: "処理", change: "changed", level: "inferred", out: ["→ マーカーの読み取り"] },
+          {
+            name: "記法の読み取り",
+            kind: "グループ",
+            level: "inferred",
+            children: [
+              { name: "マーカーの読み取り", kind: "処理", level: "hypothesis", out: ["→ 補足の検査"] },
+              { name: "補足の検査", kind: "処理", level: "unsourced", note: "補足のキーと値を点検する", out: ["→ キャッシュ"] },
+            ],
+          },
+          { name: "キャッシュ", kind: "保存先", change: "added" },
+          { name: "旧版の読み取り", kind: "処理", change: "removed" },
+        ],
+      },
+    ])?.click();
 
     const SEQ = `<!-- map: {"title": "描くまでの流れ"} -->
 
