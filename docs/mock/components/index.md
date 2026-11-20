@@ -42,6 +42,8 @@
 | [link-card](./link-card/index.html) | URL だけの行のリンクのカードと、ファイルへのリンクだけの行の添付のカード |
 | [map-diagram](./map-diagram/index.html) | Mermaid と補足で書いた map の図（全体・グループの中・閉じたグループとまとめた線・案内の最初と最後・再生の一時停止・狭い幅） |
 | [map-er-state](./map-er-state/index.html) | map の ER 図・状態遷移図（テーブルの列と多重度・分類の箱・列と分類の開閉・状態遷移図の開始と終了と分岐・入れ子の状態・遷移の再生・狭い幅） |
+| [map-er-toggle-direction](./map-er-toggle-direction/index.html) | map の ER 図・クラス図の開閉のボタン（枠線の無い山形・閉じたときに数を出さない）と、ER 図の関連の線のデータの印の 1 対多の向き（行が増える関連のマーカーとの同時の表示・狭い幅） |
+| [map-group-resize](./map-group-resize/index.html) | map の図のグループの右下の角のハンドル（常に出す案・ポインターを重ねたときだけ出す案・構成図のグループと ER 図の分類の箱・狭い幅） |
 | [map-class-arch-c4](./map-class-arch-c4/index.html) | map のクラス図・アーキテクチャ図・C4 図（メンバーの行と関係の端の形・メンバーと namespace の開閉・service のアイコンと group と junction・要素の種類の行と境界・狭い幅） |
 | [map-c4-dynamic-play](./map-c4-dynamic-play/index.html) | map の C4Dynamic の番号つきの関係の再生（実演・始める前・説明を持つ関係・閉じた境界の中の要素・両向きの関係・案内の手順を持つ図・帯を出さないコンテナ図・狭い幅） |
 | [map-dim-contrast](./map-dim-contrast/index.html) | map の図で薄くした要素の文字のコントラスト（案 A・B の薄め方・C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダーク） |

@@ -114,7 +114,7 @@ test("test_attach_map_class_when_members_collapsed", async () => {
   const toggle = base.querySelector<HTMLButtonElement>(
     "button.map-class-toggle",
   );
-  expect(toggle?.textContent).toContain("メンバー 3");
+  expect(toggle?.textContent).toBe("");
   expect(toggle?.getAttribute("aria-expanded")).toBe("false");
 });
 

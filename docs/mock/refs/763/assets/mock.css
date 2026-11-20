@@ -1,0 +1,161 @@
+/* #763 のモックの規則: 配布物（dist/index.css）の上に、変える見た目だけを重ねる */
+
+/* ER 図・クラス図の開閉のボタン: 枠線と面を外し、グループの開閉のボタン（.map-disclosure）と同じ山形だけにする */
+.mock-763 :is(.map-er-toggle, .map-class-toggle) {
+  min-width: 24px;
+  min-height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mdmark-radius);
+  background: transparent;
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+  cursor: pointer;
+}
+.mock-763 :is(.map-er-toggle, .map-class-toggle):hover {
+  color: var(--mdmark-color-text);
+  background: var(--mdmark-color-surface);
+}
+.mock-763 :is(.map-er-toggle, .map-class-toggle):focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: 1px;
+}
+
+/* グループの右下の角のハンドル: 角の内側に 16px 四方の当たり、見た目は 2 本の斜線 */
+.mock-763 .mock-group-corner {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 16px;
+  height: 16px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--mdmark-color-muted);
+  cursor: nwse-resize;
+  touch-action: none;
+}
+.mock-763 .mock-group-corner svg {
+  display: block;
+  width: 16px;
+  height: 16px;
+}
+.mock-763 .mock-group-corner:hover,
+.mock-763 .mock-group-corner.is-dragging {
+  color: var(--mdmark-color-text);
+}
+.mock-763 .mock-group-corner:focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: -2px;
+}
+/* 案 B: 角のハンドルをポインターを重ねたときとフォーカスしたときだけ出す */
+.mock-763.corner-hover .mock-group-corner { opacity: 0; }
+.mock-763.corner-hover :is(.map-group, [data-group]):hover > .mock-group-corner,
+.mock-763.corner-hover .mock-group-corner:focus-visible,
+.mock-763.corner-hover .mock-group-corner.is-dragging { opacity: 1; }
+
+/* テーブル名の行を 1 行にする（見出しの高さ 36px）: 空の種類の行を無くし、開閉のボタンをテーブル名・クラス名の行の右端へ置く */
+.mock-763.one-row-head .mdmark-diagram-node-kind:has(:is(.map-er-toggle, .map-class-toggle)) {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  margin: 0;
+  padding: 0;
+}
+.mock-763.one-row-head .mdmark-diagram-node:has(:is(.map-er-toggle, .map-class-toggle)) > .mdmark-diagram-node-name {
+  position: absolute;
+  top: 0;
+  left: 10px;
+  /* 名前の要素は文字の幅だけにし、ノードの押せる範囲を隠さない */
+  max-width: calc(100% - 44px);
+  height: 36px;
+  display: flex;
+  align-items: center;
+  margin: 0;
+}
+
+/* グループの縁（左・右・下）の 8px の帯: 掴むとグループを動かす（上の縁はタイトルの行の帯が受け持つ）。角のハンドルの下には重ねない */
+.mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge {
+  inset: auto;
+  height: auto;
+  cursor: grab;
+}
+.mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge.is-left { inset: 36px auto 16px 0; width: 8px; }
+.mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge.is-right { inset: 36px 0 16px auto; width: 8px; }
+.mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge.is-bottom { inset: auto 16px 0 8px; height: 8px; }
+.mock-763 .mock-group-edge:hover { background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent); }
+
+/* ER 図の列の説明のマーカー（.map-er-note）の案。押せる範囲は 24px 四方を保ち、見た目だけを変える */
+/* 案 A: 枠の丸を無くし、14px の線の i のアイコンだけを薄い色で出す */
+.mock-763.note-a .map-er-note {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: var(--mdmark-radius);
+  background: transparent;
+  color: var(--mdmark-color-muted);
+  font-size: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.mock-763.note-a .map-er-note::before {
+  content: "";
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='10'/%3E%3Cpath d='M12 16v-4'/%3E%3Cpath d='M12 8h.01'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+.mock-763.note-a .map-er-note:hover { color: var(--mdmark-color-text); background: var(--mdmark-color-surface); }
+/* 案 B: マーカーを出さず、列の名前に点線の下線を引く。名前にポインターを重ねると説明が出る（ボタンはキーボードのフォーカスのときだけ見える） */
+.mock-763.note-b .map-er-note {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: transparent;
+  font-size: 0;
+}
+.mock-763.note-b .map-er-note:focus-visible { outline: 2px solid var(--mdmark-color-link); outline-offset: -4px; }
+.mock-763.note-b .map-er-column:has(.map-er-note) .map-er-name {
+  text-decoration: underline dotted var(--mdmark-color-muted);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 4px;
+  cursor: help;
+}
+/* 案 C: 名前の右上に 6px の小さい点（通知の点）を付ける。押せる範囲は点の周りの 24px 四方 */
+.mock-763.note-c .map-er-note {
+  width: 24px;
+  height: 24px;
+  min-width: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  font-size: 0;
+  display: inline-grid;
+  place-items: center;
+}
+.mock-763.note-c .map-er-note::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--mdmark-color-link);
+}
+.mock-763.note-c .map-er-note:hover { background: var(--mdmark-color-surface); }
+/* 案 A（採用）: 説明のマーカーを列の行の高さの中央に置く（行の中の inline の置き方で、文字の基準線に寄って上がるのを防ぐ） */
+.mock-763.note-a .map-er-note-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.mock-763.note-a .map-er-note {
+  display: grid;
+  vertical-align: middle;
+}

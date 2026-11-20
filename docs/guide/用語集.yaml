@@ -663,7 +663,7 @@ terms:
     href: ./構成図の決まり.mark.md#操作
 - id: er-diagram
   name: ER 図
-  description: map の範囲の `erDiagram` から描く図。テーブルを列の行を持つノードにし、関連の線を FK の列の行から引いて、両端に多重度の記号を配置する
+  description: map の範囲の `erDiagram` から描く図。テーブルを列の行を持つノードにし、関連の線を FK の列の行から引いて、両端に多重度の記号を配置する。テーブル名の行の右端の山形で列を閉じる
   details:
   - title: Mermaidと補足で図を描く
     href: ./図を描く-Mermaidと補足で図を描く.md#er-図を描く
@@ -995,7 +995,7 @@ terms:
     href: ./記法.mark.md#map
 - id: data-packet
   name: データの印
-  description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。補足の `layout` の `packet` で色と形を変える
+  description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。ER 図では多重度の多い側から少ない側へ流れる。補足の `layout` の `packet` で色と形を変える
   aliases:
   - パケット
   details:

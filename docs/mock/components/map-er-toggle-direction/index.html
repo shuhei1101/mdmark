@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-er-toggle-direction（ER 図・クラス図の開閉のボタンと、ER 図の 1 対多の向き） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #763 で変える見た目 -->
+  <link rel="stylesheet" href="../../refs/763/assets/mock.css">
+  <style>
+    /* カタログの並び: 状態ごとに見出しと図を縦に並べる */
+    .map-catalog { box-sizing: border-box; max-width: 1100px; margin: 0 auto; padding: 16px; }
+    .map-catalog h2 { font-size: 20px; margin: 32px 0 4px; }
+    .map-catalog p.state-note { margin: 0 0 8px; color: var(--mdmark-color-muted); font-size: 13px; }
+    .narrow { max-width: 390px; }
+  </style>
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-er-toggle-direction
+  </nav>
+  <main class="map-catalog" id="catalog">
+    <h1>map-er-toggle-direction</h1>
+    <p class="state-note">配布物の mount で描いた実物の図に、#763 で変える見た目（開閉のボタン・テーブル名の行の高さ）と振る舞い（データの印の向き）だけを重ねている。テーブル名・クラス名の行は、空の種類の行を無くした 1 行（36px）にし、開閉のボタンを同じ行の右端に置く。後半に、列の説明のマーカーの案 A・B・C を並べる</p>
+  </main>
+  <script type="module">
+    // テーブル名の行を 1 行にした寸法で描く（ユーザーの指摘: 見出しの空白が広い）
+    import { useOneRowHead } from "../../refs/763/assets/head-row.js";
+    await useOneRowHead();
+    const { drawMap, patchToggles, patchDirection, patchNoteUnderline } = await import("../../refs/763/assets/mock.js");
+
+    const ER = (title, layout = {}) => `<!-- map: {"title": "${title}"} -->
+
+\`\`\`mermaid
+erDiagram
+  顧客 {
+    int id PK
+    string 名前
+    string メール UK "ログインに使用する"
+  }
+  注文 {
+    int id PK
+    int 顧客ID FK "参照: 顧客.id"
+    date 注文日
+  }
+  明細 {
+    int id PK
+    int 注文ID FK "参照: 注文.id"
+    int 商品ID FK "参照: 商品.id"
+    int 数量
+  }
+  商品 {
+    int id PK
+    int 推薦した顧客ID FK "参照: 顧客.id"
+    string 名前
+    int 価格
+  }
+  顧客 ||--o{ 注文 : "注文する"
+  注文 ||--|{ 明細 : "含む"
+  明細 }o--|| 商品 : "指す"
+  商品 |o--|| 顧客 : "推薦される"
+\`\`\`
+
+<!-- map-data: {"version": 1, "groups": {"記録": {"title": "記録", "tables": ["注文", "明細"]}}, "layout": ${JSON.stringify(layout)}} -->
+
+<!-- /map -->
+`;
+    const CLASS = (title, layout = {}) => `<!-- map: {"title": "${title}"} -->
+
+\`\`\`mermaid
+classDiagram
+  class 図形 {
+    +string 名前
+    +面積() number
+  }
+  class 円 {
+    +number 半径
+    +面積() number
+  }
+  class 四角形 {
+    +number 幅
+    +number 高さ
+    +面積() number
+  }
+  図形 <|-- 円
+  図形 <|-- 四角形
+\`\`\`
+
+<!-- map-data: {"version": 1, "layout": ${JSON.stringify(layout)}} -->
+
+<!-- /map -->
+`;
+    // 多い側から少ない側へ流すために、線の先から元へ流す関連（r1: 顧客 ||--o{ 注文、r2: 注文 ||--|{ 明細）
+    const REVERSED = new Set(["r1", "r2"]);
+    const direction = patchDirection(REVERSED);
+    const both = (host) => { patchToggles(host); direction(host); };
+
+    /** 状態の見出し・補足・Markdown・初期の操作 */
+    const STATES = [
+      ["ER 図（開閉のボタン・開いた状態）", "テーブル名の行を 1 行（36px）にし、右端の開閉のボタンは枠線と面を持たない下向きの山形。グループ「記録」の左上の開閉のボタンと同じ見た目", ER("記録の構造（開いた状態）")],
+      ["ER 図（列を閉じた状態）", "列を閉じた「顧客」「商品」は、テーブル名の 1 行と右向きの山形だけになり、「列 3」などの数の文字を出さない。数はボタンのスクリーンリーダー向けの名前に残す", ER("記録の構造（列を閉じた状態）", { "顧客": { collapsed: true }, "商品": { collapsed: true } })],
+      ["クラス図（メンバーを閉じた状態）", "メンバーを閉じた「図形」も、クラス名の 1 行と右向きの山形だけになり、「メンバー 2」の文字を出さない", CLASS("図形（メンバーを閉じた状態）", { "図形": { collapsed: true } })],
+      ["ER 図（1 対多の向き: テーブル「注文」を選ぶ）", "「注文」を選んだ状態。「注文」の 2 本の関連の線では、データの印が注文 → 顧客、明細 → 注文の向きに流れる。ほかの線にポインターを重ねたときも同じ規則で、データの印が多い側（o{・|{・}o の端）のテーブルから少ない側（||・|o の端）のテーブルへ流れる。顧客と注文の線は注文 → 顧客、注文と明細の線は明細 → 注文、明細と商品の線は明細 → 商品へ流れる。両端が同じ側の「商品 |o--|| 顧客」は記載の左（商品）から右（顧客）へ流れる", ER("記録の構造（1 対多の向き）"), ["注文"]],
+      ["ER 図（1 対多の向きと、行が増える関連のマーカーを同時に出す）", "「顧客」と「明細」を選んだ状態。経路の関連に付く ×n のマーカーは 1 の側から多の側へ向き（行が増える向き）、データの印は多い側から少ない側へ流れる。2 つの向きが逆になる", ER("記録の構造（2 つのテーブルを選ぶ）"), ["顧客", "明細"]],
+    ];
+    const catalog = document.getElementById("catalog");
+    const add = (title, note, markdown, select = [], narrow = false) => {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      if (narrow) host.classList.add("narrow");
+      catalog.append(host);
+      drawMap(host, markdown, both);
+      // 選ぶ状態は、テーブル名の行を押して再現する
+      if (select.length > 0) {
+        const pick = (index) => {
+          const name = select[index];
+          if (name === undefined) return;
+          const node = host.querySelector(`.mdmark-diagram-stage [data-node="${name}"] .mdmark-diagram-node-kind, .mdmark-diagram-stage [data-node="${name}"]`);
+          if (!node) return void setTimeout(() => pick(index), 200);
+          node.dispatchEvent(new PointerEvent("pointerdown", { bubbles: true, isPrimary: true, button: 0 }));
+          node.dispatchEvent(new PointerEvent("pointerup", { bubbles: true, isPrimary: true, button: 0 }));
+          node.click();
+          setTimeout(() => pick(index + 1), 100);
+        };
+        setTimeout(() => pick(0), 300);
+      }
+    };
+    STATES.forEach(([title, note, markdown, select]) => add(title, note, markdown, select));
+    // 列の説明のマーカーの案（ユーザーの指摘: 丸の i が大きく、図に溶け込んでいない）
+    const NOTE_VARIANTS = [
+      ["note-a", "説明のマーカーの案 A: 丸の枠を無くした小さい i のアイコン（推奨）", "枠の丸を無くし、14px の線の i のアイコンを薄い色で出す。ポインターを重ねると濃くなり、面が付く。押せる範囲は 24px 四方のまま"],
+      ["note-b", "説明のマーカーの案 B: 列の名前に点線の下線", "マーカーを出さず、説明を持つ列の名前に点線の下線を引く。名前にポインターを重ねると説明が出る。キーボードでは名前の右の見えないボタンにフォーカスすると枠と説明が出る"],
+      ["note-c", "説明のマーカーの案 C: 小さい点（通知の点）", "名前の右に 6px の点を出す。ポインターを重ねると点の周りに面が付き、説明が出る。押せる範囲は点の周りの 24px 四方"],
+    ];
+    for (const [variant, title, note] of NOTE_VARIANTS) {
+      catalog.append(Object.assign(document.createElement("h2"), { textContent: title }));
+      catalog.append(Object.assign(document.createElement("p"), { className: "state-note", textContent: note }));
+      const host = document.createElement("div");
+      host.classList.add(variant);
+      catalog.append(host);
+      drawMap(host, ER(`記録の構造（${title.split(":")[0]}）`), (h) => { both(h); if (variant === "note-b") patchNoteUnderline(h); });
+    }
+    add("狭い幅（390px）", "列を閉じたテーブルの開閉のボタンは 24px 四方の押せる範囲を保つ", ER("記録の構造（狭い幅）", { "顧客": { collapsed: true } }), [], true);
+  </script>
+</body>
+</html>

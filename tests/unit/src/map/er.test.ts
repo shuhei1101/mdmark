@@ -136,3 +136,18 @@ test("test_er_to_flowchart", async () => {
     "r5",
   ]);
 });
+
+// 両端の多重度ごとのデータの印の向き（正常系）
+test("test_er_packet_direction", async () => {
+  // 準備
+  const { erPacketDirection, parseErDiagram } = await loadEr();
+  const er = parseErDiagram(`erDiagram
+  A ||--o{ B : r1
+  C }o--|| D : r2
+  E |o--|| F : r3
+  G }o--|{ H : r4`);
+  // 実行
+  const directions = er.relations.map(erPacketDirection);
+  // 検証
+  expect(directions).toEqual(["backward", "forward", "forward", "forward"]);
+});

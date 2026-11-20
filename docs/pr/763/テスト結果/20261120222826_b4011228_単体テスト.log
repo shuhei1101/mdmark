@@ -1,0 +1,198 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/state.test.ts tests/unit/src/map/drag.browser.test.ts tests/unit/src/map/map.part.test.ts tests/unit/src/diagram/diagram.interact.browser.test.ts
+
+# 実装の前から pass したテスト
+- test_start_drag_when_group_edge: グループの縁の帯（.map-group-bar）を押して動かす処理は src/map/drag.ts の pressedOf（.map-group-bar, .map-group-head の closest）に既にある（9412c199）
+- test_render_map_flow_when_packets_backward: direction backward の印（keyPoints="1;0"）は src/map/map.part.ts に既にある（4c455f92）
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-er-toggle-fullscreen-cardinality-group-resize
+
+ ❯ |unit| tests/unit/src/map/state.test.ts (12 tests | 1 failed) 1299ms
+   × test_write_map_state_when_modal 46ms
+ ❯ |unit| tests/unit/src/map/map.part.test.ts (65 tests | 3 failed) 3464ms
+   × test_render_map_flow_when_group_resize 24ms
+   × test_render_map_er_when_collapsed 2ms
+   × test_render_map_class_members_when_collapsed 5ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts (13 tests | 4 failed) 1908ms
+   × test_start_drag_when_group_corner 871ms
+   × test_resize_by_key 334ms
+   × test_resize_by_key_when_min 301ms
+   × test_resize_by_key_when_blocked 278ms
+ ❯ |unit-browser (chromium)| tests/unit/src/diagram/diagram.interact.browser.test.ts (17 tests | 1 failed) 2014ms
+   × test_open_diagram_dialog_when_attach_modal 542ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 9 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_group_resize
+Error: 開始タグが無い: map-group-resize
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/map/map.part.test.ts:377:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/9]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_er_when_collapsed
+AssertionError: expected '列 8' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ 列 8
+
+ ❯ tests/unit/src/map/map.part.test.ts:937:36
+    935|   // 検証
+    936|   expect(result.columns).not.toContain("map-er-column");
+    937|   expect(plainText(result.toggle)).toBe("");
+       |                                    ^
+    938|   expect(result.toggle).toContain("<svg");
+    939|   expect(result.toggle).toContain('aria-expanded="false"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/9]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_class_members_when_collapsed
+AssertionError: expected 'メンバー 3' to be '' // Object.is equality
+
+- Expected
++ Received
+
++ メンバー 3
+
+ ❯ tests/unit/src/map/map.part.test.ts:1613:34
+    1611|   // 検証
+    1612|   expect(part.members).not.toContain('role="list"');
+    1613|   expect(plainText(part.toggle)).toBe("");
+       |                                  ^
+    1614|   expect(part.toggle).toContain("<svg");
+    1615|   expect(part.toggle).toContain('aria-expanded="false"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/9]⎯
+
+ FAIL  |unit| tests/unit/src/map/state.test.ts > test_write_map_state_when_modal
+AssertionError: expected 'place' to be 'read' // Object.is equality
+
+Expected: "read"
+Received: "place"
+
+ ❯ tests/unit/src/map/state.test.ts:322:25
+    320|   expect(saved.collapsed).toEqual(["store"]);
+    321|   expect(saved.groupSizes).toEqual({ place: { w: 336, h: 274 } });
+    322|   expect(saved.entered).toBe("read");
+       |                         ^
+    323|   expect(saved.selected).toEqual(["lib"]);
+    324|   expect(calls).toEqual([]);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/diagram/diagram.interact.browser.test.ts > test_open_diagram_dialog_when_attach_modal
+AssertionError: expected [] to have a length of 1 but got +0
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/diagram.interact.browser.test.ts/test_open_diagram_dialog_when_attach_modal.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- 1[39m
+[31m+ 0[39m
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=afec7afc:2635:20
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=afec7afc:2435:14
+ ❯ tests/unit/src/diagram/diagram.interact.browser.test.ts:342:17
+    340|   const dialog = root.querySelector("dialog");
+    341|   // 検証
+    342|   expect(calls).toHaveLength(1);
+       |                 ^
+    343|   expect(dialog?.contains(calls[0]?.modal ?? null)).toBe(true);
+    344|   expect(calls[0]?.source).toBe(figure);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=afec7afc:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts > test_start_drag_when_group_corner
+AssertionError: expected undefined to deeply equal { w: 208, h: 184 }
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/drag.browser.test.ts/test_start_drag_when_group_corner.png
+
+[32m- Expected:[39m
+{
+  "h": 184,
+  "w": 208,
+}
+
+[31m+ Received:[39m
+undefined
+
+ ❯ tests/unit/src/map/drag.browser.test.ts:339:33
+    337|     positions: Record<string, { x: number; y: number }>;
+    338|   };
+    339|   expect(last.groupSizes?.page).toEqual({ w: 208, h: 184 });
+       |                                 ^
+    340|   expect(last.positions.A ?? { x: 0, y: 0 }).toEqual({ x: 0, y: 0 });
+    341| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=afec7afc:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts > test_resize_by_key
+TypeError: resizeByKey is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/drag.browser.test.ts/test_resize_by_key.png
+
+ ❯ tests/unit/src/map/drag.browser.test.ts:362:16
+    360|   const { resizeByKey } = await loadDrag();
+    361|   // 実行
+    362|   const next = resizeByKey({
+       |                ^
+    363|     layout: groupLayout(undefined),
+    364|     state: STATE,
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=afec7afc:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts > test_resize_by_key_when_min
+TypeError: resizeByKey is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/drag.browser.test.ts/test_resize_by_key_when_min.png
+
+ ❯ tests/unit/src/map/drag.browser.test.ts:379:5
+    377|   // 実行・検証: 今の大きさが中のノードを囲む大きさ
+    378|   expect(
+    379|     resizeByKey({
+       |     ^
+    380|       layout: groupLayout(undefined),
+    381|       state: STATE,
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=afec7afc:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/9]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts > test_resize_by_key_when_blocked
+TypeError: resizeByKey is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/drag.browser.test.ts/test_resize_by_key_when_blocked.png
+
+ ❯ tests/unit/src/map/drag.browser.test.ts:394:16
+    392|   const { resizeByKey } = await loadDrag();
+    393|   // 実行: 右のノードとの間が 20px
+    394|   const next = resizeByKey({
+       |                ^
+    395|     layout: groupLayout(20),
+    396|     state: STATE,
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=afec7afc:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/9]⎯
+
+
+ Test Files  4 failed (4)
+      Tests  9 failed | 98 passed (107)
+   Start at  22:28:03
+   Duration  12.54s (worker 44%, tests 33%, transform 13%, import 10%)
+

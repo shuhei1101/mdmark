@@ -74,6 +74,7 @@ const STATE = {
   attachments: {},
   order: undefined,
   height: undefined,
+  groupSizes: {},
 };
 
 /** 要素をドラッグする（pointerdown → move → up） */
@@ -267,4 +268,150 @@ test("test_start_drag_when_cancelled", async () => {
   expect(moves.at(-1)).toBe(STATE);
   expect(moves).toHaveLength(count);
   expect(clicks).toHaveLength(0);
+});
+
+/** グループ page の中のノード A の配置（右のノード B を置くかは引数で決める） */
+function groupLayout(right: number | undefined) {
+  const node = ({
+    id,
+    x,
+    y,
+    ancestors,
+  }: {
+    id: string;
+    x: number;
+    y: number;
+    ancestors: string[];
+  }) => ({
+    id,
+    x,
+    y,
+    w: 120,
+    h: 60,
+    lines: [id],
+    faded: false,
+    ancestors,
+  });
+  return {
+    width: 600,
+    height: 400,
+    nodes: [
+      node({ id: "A", x: 48, y: 84, ancestors: ["page"] }),
+      ...(right === undefined
+        ? []
+        : [node({ id: "B", x: 192 + right, y: 24, ancestors: [] })]),
+    ],
+    groups: [
+      {
+        id: "page",
+        title: "page",
+        x: 24,
+        y: 24,
+        w: 168,
+        h: 144,
+        ancestors: [],
+        collapsed: false,
+        faded: false,
+      },
+    ],
+    wires: [],
+  };
+}
+
+/** グループの縁の帯・角のボタンを配置して、押したときにドラッグを始める */
+async function setUpGroup(selector: string) {
+  const { startDrag } = await loadDrag();
+  const root = createRootFromHtml(
+    '<div data-group="page"><div class="map-group-bar is-left"></div><button class="map-group-resize"></button><div data-node="A"></div></div>',
+  );
+  const moves: Array<Record<string, unknown>> = [];
+  const target = root.querySelector(selector) as Element;
+  target.addEventListener("pointerdown", (event) => {
+    startDrag({
+      event: event as PointerEvent,
+      layout: groupLayout(undefined),
+      state: STATE,
+      onMove: (state) =>
+        moves.push(state as unknown as Record<string, unknown>),
+      onClick: () => undefined,
+    });
+  });
+  return { target, moves };
+}
+
+// グループの角で大きさを変える（正常系）
+test("test_start_drag_when_group_corner", async () => {
+  // 準備
+  const { target, moves } = await setUpGroup(".map-group-resize");
+  // 実行
+  drag(target, { dx: 40, dy: 40 });
+  // 検証
+  const last = moves.at(-1) as {
+    groupSizes?: Record<string, { w: number; h: number }>;
+    positions: Record<string, { x: number; y: number }>;
+  };
+  expect(last.groupSizes?.page).toEqual({ w: 208, h: 184 });
+  expect(last.positions.A ?? { x: 0, y: 0 }).toEqual({ x: 0, y: 0 });
+});
+
+// グループの縁で動かす（正常系）
+test("test_start_drag_when_group_edge", async () => {
+  // 準備
+  const { target, moves } = await setUpGroup(".map-group-bar.is-left");
+  // 実行
+  drag(target, { dx: 30, dy: 0 });
+  // 検証: 中のノードはグループの中身の左上からの座標のまま、グループが 30 動く
+  const last = moves.at(-1) as {
+    positions: Record<string, { x: number; y: number }>;
+  };
+  expect(last.positions.page).toEqual({ x: 30, y: 0 });
+  expect(last.positions.A).toEqual({ x: 0, y: 0 });
+});
+
+// 広げる（正常系）
+test("test_resize_by_key", async () => {
+  // 準備
+  const { resizeByKey } = await loadDrag();
+  // 実行
+  const next = resizeByKey({
+    layout: groupLayout(undefined),
+    state: STATE,
+    group: "page",
+    dw: 8,
+    dh: 32,
+  });
+  // 検証
+  expect(next?.groupSizes?.page).toEqual({ w: 176, h: 176 });
+});
+
+// 中身より小さくしない（正常系）
+test("test_resize_by_key_when_min", async () => {
+  // 準備
+  const { resizeByKey } = await loadDrag();
+  // 実行・検証: 今の大きさが中のノードを囲む大きさ
+  expect(
+    resizeByKey({
+      layout: groupLayout(undefined),
+      state: STATE,
+      group: "page",
+      dw: -32,
+      dh: 0,
+    }),
+  ).toBeUndefined();
+});
+
+// ほかのノードに近づけない（正常系）
+test("test_resize_by_key_when_blocked", async () => {
+  // 準備
+  const { resizeByKey } = await loadDrag();
+  // 実行: 右のノードとの間が 20px
+  const next = resizeByKey({
+    layout: groupLayout(20),
+    state: STATE,
+    group: "page",
+    dw: 32,
+    dh: 0,
+  });
+  // 検証: 間が 16px になる手前まで
+  expect(next?.groupSizes?.page).toEqual({ w: 172, h: 144 });
 });

@@ -31,6 +31,7 @@ functions:
       表示する枠の大きさを `ResizeObserver` で確認して、開いたときの倍率のままならもう一度求める。
       `fitHeight` は関数で指定し、リサイズハンドルで高さを変えた後だけ `true` を返却する。
 
+      全画面のボタンでは `openDiagramDialog` に `attachModal` を指定する（map の図が全画面のモーダルの図に操作を付け直す）。
       図ごとに `attachDiagramTips` を付け、`attachZoom` の `onPanStart` でその `closeOpen` を呼ぶ。
       `div.mdmark-diagram-resize` を持つ図には `attachDiagramResize` を付け、高さを変えたら `attachZoom` の `refit()` を呼ぶ。
       `attachDiagramResize` のキーは `diagramHeightKey` に `location.pathname`・`root` の中の `figure.mdmark-diagram` の順・題名を指定する。
@@ -48,9 +49,9 @@ functions:
       ドラッグを始めない要素は、map の図の文字と、mermaid の図の SVG の文字（`text`・`tspan`・`foreignObject` の中の要素）にする
     args:
       - name: options
-        type: '{ root: HTMLElement; placement: TooltipPlacement; storage?: Storage | null; figures?: HTMLElement[] }'
+        type: '{ root: HTMLElement; placement: TooltipPlacement; storage?: Storage | null; figures?: HTMLElement[]; attachModal?: (modal: HTMLElement, source: HTMLElement) => (() => void) }'
         required: true
-        description: 描いた要素と、図のツールチップを先に出す側（設定の `tooltips.diagramPlacement`。`attachDiagramTips` と `openDiagramDialog` へ指定する）と、高さを保つ先（既定は `sessionStorage`。読み込めないときは `null`。単体テストで差し替える）と、付ける図（省くと `root` の中の全ての `figure.mdmark-diagram`。mermaid の図は描いた後に指定する。高さのキーの通し番号は `figures` を指定しても `root` の中の順）
+        description: 描いた要素と、図のツールチップを先に出す側（設定の `tooltips.diagramPlacement`。`attachDiagramTips` と `openDiagramDialog` へ指定する）と、高さを保つ先（既定は `sessionStorage`。読み込めないときは `null`。単体テストで差し替える）と、付ける図（省くと `root` の中の全ての `figure.mdmark-diagram`。mermaid の図は描いた後に指定する。高さのキーの通し番号は `figures` を指定しても `root` の中の順）と、全画面のモーダルに複製した図へ部品の操作を付け直す関数（`openDiagramDialog` へ指定する）
     returns:
       type: () => void
       description: 付けた操作と監視を解除し、開いている全画面を閉じる関数
@@ -153,13 +154,14 @@ functions:
     summary: '図を全画面の `dialog` で開き、閉じたらフォーカスを全画面のボタンへ戻す'
     description: |-
       図のタイトル・中身・凡例をコピーした `modal` の枠を `dialog` に入れて `root` の中に配置し、`showModal()` で開き、拡大・縮小とツールチップを付ける。
+      `attachModal` があれば、複製した図と元の図を指定して呼び、部品の操作（種類 `map` の図の操作）を付け直す。閉じたときに返された解除の関数を呼ぶ。モーダルの図の `DIAGRAM_REDRAW_EVENT` でツールチップを付け直す（部品が中身を描き直したとき）。
       ツールチップを開いている間は、`dialog` の中の `keydown` の Esc を `preventDefault` してツールチップだけを閉じる（close request を発生させない。`cancel` を取り消す作りは、history-action activation を使用し切ると 2 回目から取り消せないため使用しない）。
       閉じるボタンか Esc で閉じたら、`close` で付けた操作と監視を解除して `dialog` を削除し、フォーカスを全画面のボタンへ戻す
     args:
       - name: options
-        type: '{ figure: HTMLElement; opener: HTMLButtonElement; placement: TooltipPlacement }'
+        type: '{ figure: HTMLElement; opener: HTMLButtonElement; placement: TooltipPlacement; attachModal?: (modal: HTMLElement, source: HTMLElement) => (() => void) }'
         required: true
-        description: 開く図・全画面のボタン・モーダルの中のツールチップを先に出す側
+        description: 開く図・全画面のボタン・モーダルの中のツールチップを先に出す側・複製した図に部品の操作を付け直して解除の関数を返す関数
     returns:
       type: () => void
       description: 開いた全画面を閉じる関数
@@ -172,6 +174,12 @@ functions:
         condition: 全画面のボタンを押し、ツールチップを開かずに Esc を押す（Playwright のキー操作）
         mock: なし
         expected: 押した後に `dialog[open]` が 1 つあり、Esc の後に `dialog` が無く、フォーカスが全画面のボタン
+      - name: test_open_diagram_dialog_when_attach_modal
+        case: 正常
+        summary: 複製した図に部品の操作を付け直し、閉じたら解除する
+        condition: '`attachModal` を記録する関数にして全画面のボタンを押し、閉じるボタンを押す'
+        mock: '`attachModal`（呼び出しと、返す解除の関数の呼び出しを記録）'
+        expected: '`attachModal` がモーダルの中の図と元の図で 1 回呼ばれ、閉じた後に解除の関数が 1 回呼ばれる'
       - name: test_open_diagram_dialog_when_tip_open
         case: 正常
         summary: ツールチップを開いている間の Esc は何度でもツールチップだけを閉じる

@@ -112,13 +112,13 @@ test("test_default", async () => {
   }
 });
 
-// 「基本図形」のメンバーを閉じると、名前と「メンバー 3」の 1 行になる（MembersCollapsed）
+// 「基本図形」のメンバーを閉じると、名前と山形だけの開閉のボタンの 1 行になる（MembersCollapsed）
 test("test_members_collapsed", async () => {
   // 準備・実行
   const page = await openStory("members-collapsed");
   // 検証
   const toggle = page.locator('[data-node="基本図形"] button.map-class-toggle');
-  await expect(toggle.innerText()).resolves.toBe("メンバー 3");
+  await expect(toggle.innerText()).resolves.toBe("");
   await expect(toggle.getAttribute("aria-expanded")).resolves.toBe("false");
   await expect(
     page.locator('[data-node="基本図形"] .map-class-member').count(),

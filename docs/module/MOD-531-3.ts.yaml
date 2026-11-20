@@ -44,6 +44,7 @@ functions:
       3. `extension.selectionOf` で、1 つ選べばその関連と相手、2 つ選べば `erFanouts` の経路を残す
       4. `extension.afterRender` で、前の行が増える関連のマーカーとツールチップを削除し、2 つ選んでいれば `renderMapErFanouts` に関連（`erPartRelations` の結果）を指定して再描画し、図のツールチップを付け替える
       5. `extension.collapsedTag` で、閉じた分類に「テーブル {数} 件」を返却する
+      6. `extension.packetDirection` で、関連の `fromCardinality`・`toCardinality` のうち多い側（`MANY` の `1..n`・`0..n`。記号では `}|`・`}o`・`|{`・`o{` の端）が線の元なら `forward`、先なら `backward`、両端が同じ側なら `forward` を返却する
     unit_tests:
       - name: test_attach_map_er
         case: 正常

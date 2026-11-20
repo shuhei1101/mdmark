@@ -57,6 +57,8 @@ export type MapOverride = {
   /** 線の経由点（両端の共通の祖先の中身の左上からの座標） */
   via?: Array<{ x: number; y: number }> | undefined;
   size?: { w: number; h: number } | undefined;
+  /** 開いたグループの下限の大きさ（角で大きさを変えたグループ） */
+  minSize?: { w: number; h: number } | undefined;
   /** ノードの上に空ける高さ（同じ状態への遷移の線とラベルの置き場所。線も通さない） */
   above?: number | undefined;
   /** ノードの左右に空ける幅（ER 図の関連の端と多重度の置き場所。線は通す） */
@@ -827,9 +829,13 @@ const pushApart = (context: {
 /** 中身を左上へ寄せて箱の大きさを決め、余白とタイトルの分ずらした中身の配置を記録する */
 const storeBox = (
   box: ViewBox,
-  context: { locals: Local[]; placed: Map<string, Local[]> },
+  context: {
+    locals: Local[];
+    placed: Map<string, Local[]>;
+    minSize: { w: number; h: number } | undefined;
+  },
 ): void => {
-  const { locals, placed } = context;
+  const { locals, placed, minSize } = context;
   const minX = Math.min(0, ...locals.map((local) => local.x));
   const minY = Math.min(0, ...locals.map((local) => local.y));
   for (const local of locals) {
@@ -846,8 +852,8 @@ const storeBox = (
   );
   const top = box.id === "" ? 0 : MAP_LAYOUT.groupTitle;
   const pad = box.id === "" ? 0 : MAP_LAYOUT.groupPad;
-  box.w = contentW + pad * 2;
-  box.h = contentH + pad * 2 + top;
+  box.w = Math.max(contentW + pad * 2, minSize?.w ?? 0);
+  box.h = Math.max(contentH + pad * 2 + top, minSize?.h ?? 0);
   placed.set(
     box.id,
     locals.map((local) => ({
@@ -875,7 +881,7 @@ const layoutBox = (box: ViewBox, context: BoxContext): void => {
   const vertical = box.direction === "TB";
   const locals = placeRows(box, { rows, overrides, vertical, spread });
   pinLocals(locals, { overrides, vertical });
-  storeBox(box, { locals, placed });
+  storeBox(box, { locals, placed, minSize: overrides[box.id]?.minSize });
 };
 
 type Heap = {

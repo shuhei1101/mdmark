@@ -5,11 +5,11 @@ implementation: src/map/map.part.ts#renderMapErDiagram
 story: Parts/MapEr
 states:
   - name: Default
-    description: テーブル 5 つ・分類のグループ「記録」・関連 5 本。テーブルは列の行（キー・名前・型・説明のボタン）を持ち、関連は FK の列の行の高さの辺から引き、両端に多重度を出す
+    description: テーブル 5 つ・分類のグループ「記録」・関連 5 本。テーブルは種類の行を持たない 1 行（高さ 36px）のテーブル名の行と、列の行（キー・名前・型・説明のボタン）を持ち、テーブル名の行の右端に枠線の無い下向きの山形の開閉のボタンを、列の説明のボタンには丸の枠線を持たない 14px の線の i を列の行の高さの中央に出し、関連は FK の列の行の高さの辺から引き、両端に多重度を出す
     notes:
       定義: モックの `ER`・`ER_DATA`（`docs/mock/refs/531/assets/samples.js`）
   - name: ColumnsCollapsed
-    description: 「注文」の列を閉じた。テーブル名と「列 8」のボタンの 1 行になり、関連はノードの辺の中ほどにつながる
+    description: 「注文」の列を閉じた。テーブル名と右向きの山形の開閉のボタンの 1 行（高さ 36px。列の数の文字は出さない）になり、関連はノードの辺の中ほどにつながる
     args:
       - name: collapsed
         value: '["注文"]'
@@ -42,6 +42,13 @@ states:
         value: '["顧客", "明細"]'
       - name: fanouts
         value: '[{"wire": "r1", "from": "顧客", "to": "注文"}, {"wire": "r2", "from": "注文", "to": "明細"}, {"wire": "r3", "from": "商品", "to": "明細"}]'
+  - name: PacketDirection
+    description: 「注文」を選んだ。「顧客」→「注文」（`||--o{`）の線ではデータの印が「注文」から「顧客」へ、「注文」→「明細」（`||--|{`）の線では「明細」から「注文」へ流れる
+    args:
+      - name: selected
+        value: '["注文"]'
+      - name: packets
+        value: '[{"wire": "r1", "direction": "backward"}, {"wire": "r2", "direction": "backward"}]'
   - name: Narrow
     description: 幅 390px の置き場所。図は倍率 1 のまま表示する枠の中で横にスクロールする
 lead: map の `erDiagram` を、テーブルを列の行を持つノード、補足の `groups` の分類を入れ子のグループにして、構成図の部品の上に描く。関連の端を列の行の高さへ付け替え、両端の多重度とラベル、列の開閉、2 つのテーブルの経路の強調と行が増える関連のマーカーを持つ。
@@ -67,7 +74,7 @@ args:
     type: 配列
     required: false
     default: '[]'
-    description: 列を閉じたテーブル名と、閉じた分類の ID。閉じたテーブルはテーブル名と「列 {数}」の開閉のボタンの 1 行で描き、閉じた分類は名前の行の下の行に「テーブル {数} 件」を出す
+    description: 列を閉じたテーブル名と、閉じた分類の ID。閉じたテーブルはテーブル名と右向きの山形の開閉のボタンの 1 行で描き（列の数はボタンのスクリーンリーダー向けの名前に持つ）、閉じた分類は名前の行の下の行に「テーブル {数} 件」を出す
   - name: entered
     type: 文字列
     required: false
@@ -92,7 +99,7 @@ args:
     type: オブジェクトの配列
     required: false
     default: '[]'
-    description: データの印を流す関連。構成図の部品と同じ
+    description: データの印を流す関連。向きは関連の両端の多重度で決め、多い側（`}|`・`}o`・`|{`・`o{` の端）のテーブルから少ない側のテーブルへ流す（多い側が線の元なら `forward`、先なら `backward`。両端が同じ側の関連は `forward`）。ほかは構成図の部品と同じ
   - name: terms
     type: オブジェクト
     required: false
@@ -130,6 +137,7 @@ accessibility:
   - 列の説明のボタンと行が増える旨のマーカーは `button` で、フォーカスとポインターで図のツールチップを出し、`aria-describedby` でつなぐ。Esc とフォーカスを解除したときに閉じる
   - テーブルのノードは構成図のノードと同じく、ノードの全体を覆う押せる要素（`span.mdmark-diagram-node-hit`）が `tabindex="0"` を持ってノードの代わりにフォーカスを受け、列の開閉と列の説明のボタンを入れ子にしない。選んだかをスクリーンリーダー向けの名前の末尾の `（選択中）` で伝える
   - 列の名前の文字は選んでコピーできる
+  - 列の開閉のボタンと列の説明のボタンは、押せる大きさを 24px 四方にする
   - 行が増える旨のマーカーは色だけでなく「×n」の文字で示す
 refs:
   - IF-472-35#constraints[map の ER 図]
