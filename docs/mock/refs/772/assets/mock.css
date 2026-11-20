@@ -60,12 +60,14 @@
 /* マインドマップの項目（#765）: 形状の指定の無い項目にも枠線、短い名前を折り返さない、文字を構成図の案 A と同じにする */
 .mind-a .mdmark-diagram[data-diagram="map"] {
   & .map-mindmap-item {
-    font-size: 13px;
-    font-weight: 400;
     overflow-wrap: break-word;
     word-break: keep-all;
   }
-  & .map-mindmap-root {
+  & .map-mindmap-item .mdmark-diagram-node-name {
+    font-size: 13px;
+    font-weight: 400;
+  }
+  & .map-mindmap-root .mdmark-diagram-node-name {
     font-size: 15px;
     font-weight: 600;
   }
