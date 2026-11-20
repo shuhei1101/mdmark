@@ -55,7 +55,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T04:09:30.271607+00:00'
   - process: 部品設計
-    status: todo
+    status: skipped
+    reason: 部品設計『用語のツールチップ』『脚注の番号』が定める HTML の出力・引数・状態は変わらず、開いたツールチップをどの重なりの順で描くかは、両方の部品設計が「開閉と配置場所は mount の操作が付ける」としている mount の操作（term.interact.ts・footnote.interact.ts・index.css）が受け持ち、モジュール構成設計で決めるため
+    updated_by: planner
+    updated_at: '2026-11-20T04:13:19.687532+00:00'
   - process: 画面設計
     status: skipped
     reason: 画面を持たないライブラリの部品の重なりの修正のため（判定フローチャート『画面設計要否』）
