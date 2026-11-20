@@ -20,7 +20,9 @@ docs:
   - page: docs/config/index.yaml
     new: false
     change: docs/config/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:40:46.163253+00:00'
   - page: docs/data/index.yaml
     new: false
     change: docs/data/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
@@ -48,7 +50,9 @@ docs:
   - page: docs/layout/index.yaml
     new: false
     change: docs/layout/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T04:40:46.163253+00:00'
   - page: docs/library/index.yaml
     new: false
     change: docs/library/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
