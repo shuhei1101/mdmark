@@ -154,7 +154,7 @@ functions:
     summary: '図を全画面の `dialog` で開き、閉じたらフォーカスを全画面のボタンへ戻す'
     description: |-
       図のタイトル・中身・凡例をコピーした `modal` の枠を `dialog` に入れて `root` の中に配置し、`showModal()` で開き、拡大・縮小とツールチップを付ける。
-      `attachModal` があれば、複製した図と元の図を指定して呼び、部品の操作（種類 `map` の図の操作）を付け直す。閉じたときに返された解除の関数を呼ぶ。
+      `attachModal` があれば、複製した図と元の図を指定して呼び、部品の操作（種類 `map` の図の操作）を付け直す。閉じたときに返された解除の関数を呼ぶ。モーダルの図の `DIAGRAM_REDRAW_EVENT` でツールチップを付け直す（部品が中身を描き直したとき）。
       ツールチップを開いている間は、`dialog` の中の `keydown` の Esc を `preventDefault` してツールチップだけを閉じる（close request を発生させない。`cancel` を取り消す作りは、history-action activation を使用し切ると 2 回目から取り消せないため使用しない）。
       閉じるボタンか Esc で閉じたら、`close` で付けた操作と監視を解除して `dialog` を削除し、フォーカスを全画面のボタンへ戻す
     args:
