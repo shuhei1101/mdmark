@@ -192,6 +192,29 @@ functions:
     returns:
       type: MapErRelation[]
       description: 部品『mapのER図』の関連
+  - name: erPacketDirection
+    title: 関連の線のデータの印の向き
+    kind: 関数
+    container: src/map/er.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 関連の `fromCardinality`・`toCardinality` のうち多い側（`MANY`）が線の先なら `backward`、元か両端が同じ側なら `forward` を返却する
+    scope: public
+    args:
+      - name: relation
+        type: 'Pick<ErRelation, "fromCardinality" | "toCardinality">'
+        required: true
+        description: 関連の両端の多重度
+    returns:
+      type: '"forward" | "backward"'
+      description: データの印の向き
+    unit_tests:
+      - name: test_er_packet_direction
+        case: 正常
+        summary: 両端の多重度ごとの向き
+        condition: '`||--o{`・`}o--||`・`|o--||`・`}o--|{` の関連'
+        mock: なし
+        expected: '`backward`・`forward`・`forward`・`forward`'
   - name: erColumnNotes
     title: 列の説明
     kind: 関数
