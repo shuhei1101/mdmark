@@ -19,27 +19,39 @@ docs:
   - page: docs/guide/設定.mark.md
     new: false
     change: 表の既定のピン止めを選ぶ設定を追加し、表のピン止めの動きの節とフロントマターの表示の機能の節に差分のブロックでの示し方を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:10:01.335665+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: '`columns.{列名}.pinned` とピン止めの機能の、描いた直後に留める列の既定を修正する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:10:01.335665+00:00'
   - page: docs/guide/記載する-表に機能を付ける.md
     new: false
     change: '「ピン止めする列を決める」の、描いた直後に先頭の列が留まる既定と `"pinned": false` の説明を修正する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:10:01.335665+00:00'
   - page: docs/guide/VSCode拡張機能.mark.md
     new: false
     change: '`table` の行に、既定のピン止めを選ぶ設定への参照を追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:10:01.335665+00:00'
   - page: docs/guide/導入-差分を表示する.md
     new: false
     change: 比較元の Markdown を指定した差分のブロックで、フロントマターの変更も示すことを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:10:01.335665+00:00'
   - page: docs/guide/コアコンセプト-差分を表示する仕組み.md
     new: false
     change: 描いた文書のブロックの色分けの流れに、フロントマターの変更を比べる手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:10:01.335665+00:00'
   - page: migrations/no-steps.yaml
     new: false
     change: 設定の JSON Schema の変更に、移行の手順が要らない行を追加する（手順が要るとデータ設計で決めたときは `migrations/next/` に手順を配置する）
