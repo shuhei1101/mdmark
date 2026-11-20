@@ -52,7 +52,7 @@ flows:
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: glossary のマーカーで囲んだ表の列を読み込む
-        M-->>C: { backlinks, glossary }
+        M-->>C: { backlinks, glossary, docs }
       ```
 
       <!-- /map -->
@@ -77,7 +77,7 @@ flows:
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: 構造の合わない文書を除く
-        M-->>C: { backlinks, glossary }
+        M-->>C: { backlinks, glossary, docs }
       ```
 
       <!-- /map -->
@@ -104,7 +104,7 @@ flows:
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: href の ? と # 以降を除き、符号化を戻して解決する
-        M-->>C: { backlinks, glossary }
+        M-->>C: { backlinks, glossary, docs }
       ```
 
       <!-- /map -->
@@ -130,7 +130,7 @@ flows:
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: 別名と本文の文字を正規化して照合する
-        M-->>C: { backlinks, glossary }
+        M-->>C: { backlinks, glossary, docs }
       ```
 
       <!-- /map -->
@@ -155,7 +155,7 @@ flows:
         participant M as mdmark
         C->>M: collectReferences({ index, documents })
         M->>M: 各文書の本文の先頭のフロントマターを除外してから、リンクと別名の出現を取得する
-        M-->>C: { backlinks, glossary }
+        M-->>C: { backlinks, glossary, docs }
       ```
 
       <!-- /map -->
