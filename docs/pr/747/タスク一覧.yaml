@@ -60,7 +60,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T12:35:45.519972+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:36:44.202740+00:00'
   - process: ドキュメント修正
     status: todo
     note: アーキテクチャ図 ARCH-472-1 の guide/ の行（#741）と、ガイドの記法・本文を部品で組む・mermaidの図を描く
