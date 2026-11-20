@@ -20,7 +20,7 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/src/mdmark-style/blocks.test.ts` | 全実行 | 変更 | ✅ | 単体テストの全件の実行に含む<br>`テスト結果/20261121000756_a366dc9b_単体テスト.log` |
+| `tests/unit/src/mdmark-style/blocks.test.ts` | 全実行 | 変更 | ✅ | 単体テストの全件の実行に含む<br>`テスト結果/20261121003921_6f15d944_単体テスト.log` |
 
 ### 結合テストの実行範囲
 
@@ -31,3 +31,9 @@
 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | - |
 
 `render-reply.test.tsx` はランナーに Claude Code の CLI が無いため、テスト実行方法の補足「Claude Code の mod の結合テスト」の `npm run test:mdmark-style -- render-reply.test.tsx` で手元で実行する。
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | test_normal_when_document_parts | 変更 | ✅ | 言語の無い罫線のコードブロックの確認を追加。手元で 13 テスト pass<br>`テスト結果/20261121004013_09a40a07_結合テスト.log` |
