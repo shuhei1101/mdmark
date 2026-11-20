@@ -63097,7 +63097,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.ae9b747";
+  return "v0.14.0+develop.5383a76";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -86354,8 +86354,8 @@ var parseSequence = (source) => {
 // src/map/map.part.ts
 var MAP_ER = {
   width: 240,
-  /** テーブル名の行（種類の行と名前）の高さ */
-  head: 56,
+  /** テーブル名の行（名前と開閉のボタンの 1 行）の高さ */
+  head: 36,
   row: 28,
   foot: 6,
   /** ノードの左右に空ける幅（関連の端と多重度の置き場所） */
