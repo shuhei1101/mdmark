@@ -327,7 +327,7 @@ functions:
         summary: キーで操作する場所
         condition: '`entered: read` と、`entered` なし'
         mock: なし
-        expected: '配置した全てのノードの `span.mdmark-diagram-node-hit` と線の押せる帯が `tabindex="0"`・`role="button"` を持ち、ノードの `div` は `tabindex`・`role` を持たず、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある'
+        expected: '配置した全てのノードの `span.mdmark-diagram-node-hit` と線の最も長い区間の帯が `tabindex="0"`・`role="button"` を持ち、ノードの `div` は `tabindex`・`role` を持たず、`read` の `.map-group-bar` が `entered: read` では無く、`entered` なしではある'
       - name: test_render_map_flow_when_note_node
         case: 正常
         summary: 説明と用語を持つノードの中に、フォーカスできる要素を入れ子にしない
@@ -424,6 +424,12 @@ functions:
         condition: 部品設計の PlannedChanges の `changes`
         mock: なし
         expected: '`user` のノードが class `map-change-added` と `data-change="added"` のバッジ「追加」を持ち、押せる要素の `aria-label` が「利用側のページ、追加」で終わる。`mount->legacy` の線の `path` が class `map-change-removed` を持つ。`changes` を持たないノードはバッジを持たない'
+      - name: test_render_map_flow_when_wire_hit_segments
+        case: 正常
+        summary: 線の押せる範囲を区間ごとの帯にする
+        condition: 点が `[[0,0],[0,40],[100,40],[100,60]]`（区間の長さ 40・100・20）の線 1 本
+        mock: なし
+        expected: '`g.map-wire-hit[data-wire]` が 1 つで、中に `rect.map-wire-hit-segment` が 3 つあり、それぞれの矩形が区間を幅 14px で囲む（1 つ目は `x=-7 y=-7 width=14 height=54`）。`tabindex="0"`・`role="button"`・`aria-label` を持つのは 2 つ目（長さ 100）の帯だけで、ほかの帯は `aria-hidden="true"` を持ち `tabindex` を持たない。帯は `data-segment`（区間の番号）と、区間の向きの `data-axis`（`x`・`y`）を持つ'
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数
@@ -478,6 +484,12 @@ functions:
         condition: 部品の Default の引数
         mock: なし
         expected: 参加者ごとに `line.map-lifeline-hit` が 1 本あり、`data-lifeline`・`x1`・`y1`・`x2`・`y2` がその参加者の `line.mdmark-diagram-lifeline` と同じで、文書の順でどの `.map-wire-hit[data-message]` よりも前にある
+      - name: test_render_map_sequence_when_wire_hit_segments
+        case: 正常
+        summary: メッセージの線を区間ごとの帯にする
+        condition: 自分へのメッセージ（折り返しの 3 区間）が補足の `notes` の説明を持つ
+        mock: なし
+        expected: '`g.map-wire-hit[data-message]` の中に帯が 3 つあり、どの帯も `tabindex`・`role`・`aria-label` を持たず、最も長い区間の帯だけが `data-tip-owner` を持つ'
   - name: renderMapErDiagram
     title: mapのER図のHTML
     kind: 関数
@@ -712,7 +724,7 @@ functions:
       - name: args
         type: 'MapFlowArgs & { classes: MapClassNode[]; ends: MapClassEnd[]; terms?: Record<string, string> }'
         required: true
-        description: '構成図の部品の引数（`layout` の線は `spreadMapEnds` でずらした線）と、クラスの中身・関係の端。`notes` の `{クラス}.{メンバー}` の説明と `annotations` の注記は、そのクラスの `renderMapClassMembers` にメンバーの名前ごとに指定する（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）'
+        description: '構成図の部品の引数（`layout` の線は `attachMapFlow` が `spreadWireEnds` で端を並べた線）と、クラスの中身・関係の端。`notes` の `{クラス}.{メンバー}` の説明と `annotations` の注記は、そのクラスの `renderMapClassMembers` にメンバーの名前ごとに指定する（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）'
     returns:
       type: MapPart
       description: 図の中身とツールチップの HTML
@@ -795,29 +807,6 @@ functions:
         condition: 縦の区間の右にノートのノード、左にクラスのノードが接し、中ほどの高さにグループのタイトルの行がある、ラベル「応答の変換」を持つ関係の `layout`
         mock: なし
         expected: ラベルの文字の矩形（文字数 × `MAP_ER.labelChar` の幅）が、どのノードの矩形とタイトルの行の矩形とも重ならず、線のいずれかの区間の周りにある
-  - name: spreadMapEnds
-    title: 同じ点の線の端をずらす
-    kind: 関数
-    container: src/map/map.part.ts
-    usecase: Mermaidと補足で図を描く
-    role: 処理
-    summary: 同じ点から出る・入る線の端を、辺に沿って `MAP_CLASS.endGap`（16px）ずつ、ずらした幅の中ほどが元の点になるようにずらし、端から次の点までの区間を辺と直角に保つ（クラス図・C4 図）
-    scope: public
-    args:
-      - name: layout
-        type: MapLayout
-        required: true
-        description: 配置の結果
-    returns:
-      type: MapLayout["wires"]
-      description: ずらした線
-    unit_tests:
-      - name: test_spread_map_ends
-        case: 正常
-        summary: 同じ点に入る 3 本
-        condition: ノードの上の辺の中ほどに先の端を持つ線 3 本
-        mock: なし
-        expected: 3 本の先の端の x が 16px ずつ違い、中ほどの端が元の点で、端から次の点までの区間が縦
   - name: renderMapArchitecture
     title: mapのアーキテクチャ図のHTML
     kind: 関数
@@ -889,7 +878,7 @@ functions:
       - name: args
         type: 'MapFlowArgs & { descriptions: Record<string, string>; boundaries: Record<string, "enterprise" | "system" | "boundary">; externals: string[]; reversed: string[]; terms?: Record<string, string> }'
         required: true
-        description: 構成図の部品の引数（`layout` の線は `spreadMapEnds` でずらした線）と、要素ごとの説明・境界ごとの種類
+        description: 構成図の部品の引数（`layout` の線は `attachMapFlow` が `spreadWireEnds` で端を並べた線）と、要素ごとの説明・境界ごとの種類
     returns:
       type: MapPart
       description: 図の中身とツールチップの HTML

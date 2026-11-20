@@ -361,6 +361,18 @@ styles:
       - class_name: .mdmark-map-list
         target: map の一覧
         value: 表示する枠の高さいっぱいで縦にスクロールし、上の余白をパネルの高さ分（56px）とる。項目の行は折り返す flex で、名前は太字、種類・説明・出る線は `--mdmark-color-muted` の 13px、入れ子は 20px 字下げ。フォーカスした項目の行に 2px のリンクの色の枠。`data-change="removed"` の項目の名前は 2px の取り消し線。値はモックの `map740-list` から取る
+      - class_name: .mdmark-diagram-node-name・.mdmark-diagram-node-kind・.mdmark-diagram-label
+        target: map の図のノードの名前・種類の行・線のラベルの文字
+        value: '名前を `font-size: 13px; font-weight: 400`、種類の行と線のラベルを `font-size: 11px; font-weight: 400` にする（確認ログ『map の図のノードの名前・種類の行・線のラベルの文字の大きさと太さ』。モック `docs/mock/refs/772/assets/mock.css` の `.text-a`）。`src/map/layout.ts` の `LABEL_METRICS` と合わせる'
+      - class_name: .map-wire-hit・.map-wire-hit-segment
+        target: map の図の線の押せる範囲
+        value: '`g.map-wire-hit` の中の `rect.map-wire-hit-segment` は `fill: transparent; pointer-events: all`、ポインターの形状は `data-axis` が `y`（縦の区間）なら `ew-resize`、`x` なら `ns-resize`。今の `.map-wire-hit:focus-visible` の色を `g.map-wire-hit:focus-within .map-wire-hit-segment` に当て、線の全ての区間の帯に色を付ける。帯そのものの `outline` は出さない。`.map-lifeline-hit` は今のまま'
+      - class_name: .map-er-note・.map-class-note
+        target: ER 図の列の説明のボタン・クラス図のメンバーの説明のボタン
+        value: '`cursor: help` を削除し、ほかのボタンと同じ `cursor: pointer` にする'
+      - class_name: .map-mindmap-item・.map-mindmap-root
+        target: map のマインドマップの項目
+        value: '名前を `font-size: 13px; font-weight: 400`、根の名前を `font-size: 15px; font-weight: 600` にする。`data-shape="plain"` の項目は `border: 1px solid var(--node-color); border-radius: 6px; background: var(--mdmark-color-bg-opaque)`（下線だけの規則を削除する）。名前は `overflow-wrap: break-word; word-break: keep-all` で文節の切れ目でだけ折り返す。`:hover` は面を `color-mix(in srgb, var(--node-color) 10%, var(--mdmark-color-bg-opaque))`、`[data-selected]` は 18% にし、名前の上のポインターの形状を `pointer` にする（モック `docs/mock/refs/772/assets/mock.css` の `.mind-a`）'
     refs:
       - SCR-472-4#
       - CMP-472-65#
