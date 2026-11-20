@@ -16,58 +16,6 @@ test("test_hide_names", async () => {
   expect(hidden).toBe(".zq-table{} __zqHtmlScript ZQ Zq @layer zq");
 });
 
-// 部品の要素名・CSS 変数・class の値だけを置き換える（正常系）
-test("test_hide_markdown", async () => {
-  // 準備
-  const { hideMarkdown } = await loadTraces();
-  const markdown =
-    'mdmark は描く。<mdmark-chart>{}</mdmark-chart> <p class="mdmark-align-center">x</p> [紹介](./mdmark-intro.md) var(--mdmark-color-fg)';
-  // 実行
-  const hidden = hideMarkdown({ markdown, markNames: new Set<string>() });
-  // 検証
-  expect(hidden).toBe(
-    'mdmark は描く。<zq-chart>{}</zq-chart> <p class="zq-align-center">x</p> [紹介](./mdmark-intro.md) var(--zq-color-fg)',
-  );
-});
-
-// マーカーの名前でないコメントだけを削除する（正常系）
-test("test_hide_markdown_when_comments", async () => {
-  // 準備
-  const { hideMarkdown } = await loadTraces();
-  const markdown = [
-    "<!-- todo -->",
-    "",
-    "<!-- 補足: あとで -->",
-    "",
-    "<!-- table: data -->",
-    "",
-    "| a |",
-    "| --- |",
-    "| 1 |",
-    "",
-    "<!-- /table -->",
-    "",
-    "<!-- greet -->",
-    "",
-    "```md",
-    "<!-- todo -->",
-    "```",
-    "",
-  ].join("\n");
-  // 実行
-  const hidden = hideMarkdown({
-    markdown,
-    markNames: new Set(["table", "greet"]),
-  });
-  // 検証
-  expect(hidden).not.toContain("補足: あとで");
-  expect(hidden.match(/<!-- todo -->/g)).toHaveLength(1);
-  expect(hidden).toContain("```md\n<!-- todo -->\n```");
-  expect(hidden).toContain("<!-- table: data -->");
-  expect(hidden).toContain("<!-- /table -->");
-  expect(hidden).toContain("<!-- greet -->");
-});
-
 // 設定の値だけを置き換え、利用者が記載した値を残す（正常系）
 test("test_hide_payload", async () => {
   // 準備
@@ -84,7 +32,14 @@ test("test_hide_payload", async () => {
       {
         path: "mdmark-intro.md",
         title: "mdmark の紹介",
-        markdown: "mdmark は描く。\n",
+        rendered: {
+          html: "<p>mdmark は描く。</p>",
+          features: {},
+          page: {},
+          paramDefinitions: [],
+          extensionDefinitions: [],
+        },
+        pureMarkdown: "mdmark は描く。\n",
       },
     ],
     entry: "mdmark-intro.md",
@@ -152,4 +107,50 @@ test("test_hide_script_when_license", async () => {
   // 検証
   expect(hidden).toContain(extensionLicense);
   expect(hidden).toContain(bundledLicense);
+});
+
+// docs[].rendered.html に hideRenderedHtml を適用し、docs[].pureMarkdown は置き換えない（正常系）
+test("test_hide_payload_with_rendered", async () => {
+  // 準備
+  const { hidePayload } = await loadTraces();
+  const payload: PayloadView = {
+    kind: "document",
+    config: {},
+    docs: [
+      {
+        path: "a.md",
+        title: "A",
+        rendered: {
+          html: '<div class="mdmark-table" data-mdmark-kind="data"><p>mdmark は描く。</p></div>',
+          features: {},
+          page: {},
+          paramDefinitions: [],
+          extensionDefinitions: [],
+        },
+        pureMarkdown: "mdmark は描く。\n",
+      },
+    ],
+    entry: "a.md",
+  };
+  // 実行
+  const hidden = hidePayload(payload);
+  // 検証
+  expect(hidden.docs[0]?.rendered.html).toBe(
+    '<div class="zq-table" data-zq-kind="data"><p>mdmark は描く。</p></div>',
+  );
+  expect(hidden.docs[0]?.pureMarkdown).toBe("mdmark は描く。\n");
+});
+
+// タグと属性の mdmark を置き換え、本文の文字とリンク先は残し、HTML のコメントを削除する（正常系）
+test("test_hide_rendered_html", async () => {
+  // 準備
+  const { hideRenderedHtml } = await loadTraces();
+  const html =
+    '<mdmark-chart class="mdmark-x" data-mdmark-mermaid style="color:var(--mdmark-fg)"><a href="mdmark-intro.md">mdmark</a></mdmark-chart><!-- c --><img src="mdmark-asset:1">';
+  // 実行
+  const hidden = hideRenderedHtml(html);
+  // 検証
+  expect(hidden).toBe(
+    '<zq-chart class="zq-x" data-zq-mermaid style="color:var(--zq-fg)"><a href="mdmark-intro.md">mdmark</a></zq-chart><img src="zq-asset:1">',
+  );
 });

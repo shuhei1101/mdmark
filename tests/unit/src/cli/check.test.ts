@@ -1045,3 +1045,53 @@ test("test_collect_mark_names", async () => {
     expect(names.has(name)).toBe(true);
   }
 });
+
+// 設定の term の行に無い alias_row（無い行・enabled が false の行）だけをずれにする（異常系）
+test("test_check_glossary_alias_rows", async () => {
+  // 準備
+  const { checkGlossaryAliasRows } = await loadCheck();
+  const aliasRows = [
+    {
+      id: "terms",
+      paths: ["docs/guide/用語集.yaml"],
+      alias_type: "term",
+      records: "terms",
+    },
+    {
+      id: "off-terms",
+      paths: ["docs/guide/off.yaml"],
+      alias_type: "term",
+      enabled: false,
+    },
+    { id: "docs", paths: ["docs/guide/files.yml"], alias_type: "doc" },
+  ];
+  const documents = [
+    { path: "docs/guide/用語集.mark.md", markdown: '<!-- glossary: {"alias_row": "terms"} -->\n' },
+    {
+      path: "guide.mark.md",
+      markdown: [
+        "# ガイド",
+        "",
+        '<!-- glossary: {"alias_row": "glossary-terms"} -->',
+        "",
+        '<!-- glossary: {"alias_row": "off-terms"} -->',
+        "",
+        '<!-- glossary: {"alias_row": "docs"} -->',
+        "",
+      ].join("\n"),
+    },
+  ];
+  // 実行
+  const issues = checkGlossaryAliasRows({ documents, aliasRows });
+  // 検証
+  expect(issues.map((issue) => [issue.file, issue.where])).toEqual([
+    ["guide.mark.md", "3"],
+    ["guide.mark.md", "5"],
+    ["guide.mark.md", "7"],
+  ]);
+  for (const issue of issues) {
+    expect(issue.kind).toBe("glossary_alias_row_missing");
+  }
+  expect(issues[0]?.message).toContain("glossary-terms");
+  expect(issues[1]?.message).toContain("off-terms");
+});

@@ -80,3 +80,27 @@ test("test_match_terms_when_glossary_table", async () => {
   // 検証
   expect(marks.map((mark) => mark.title)).toEqual(["配信元"]);
 });
+
+// 表を囲まない alias_row の glossary のマーカーを飛ばし、その行の用語はエイリアスから集める（正常系）
+test("test_load_glossary_skips_alias_row", async () => {
+  // 準備
+  const { loadGlossary, matchTerms } = await loadTerms();
+  const files = {
+    ...GLOSSARY_FILES,
+    "/g/guide.md": [
+      "# ガイド",
+      "",
+      '<!-- glossary: {"alias_row": "words"} -->',
+      "",
+      "配信元の説明。",
+      "",
+    ].join("\n"),
+  };
+  const $ = createFakeEngine({ files });
+  // 実行
+  const glossary = await loadGlossary($, { configPath: GLOSSARY_CONFIG });
+  const marks = matchTerms({ glossary, text: "アカウントと配信元" });
+  // 検証
+  expect(glossary.aliases.map((alias) => alias.name)).toEqual(["アカウント"]);
+  expect(marks.map((mark) => mark.title)).toEqual(["アカウント"]);
+});

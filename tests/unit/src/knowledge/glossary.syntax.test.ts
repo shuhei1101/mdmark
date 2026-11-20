@@ -260,3 +260,136 @@ test("test_read_glossary_rows_when_unknown_avoid_column", async () => {
   expect(warning).toContain("別名");
   expect(warning).toContain("意味");
 });
+
+/** 行 `terms` の term のエイリアス 2 件と、行 `docs` の doc のエイリアス 1 件 */
+const ALIAS_ROW_ALIASES = [
+  {
+    alias_type: "term",
+    row: "terms",
+    id: "marker",
+    name: "マーカー",
+    aliases: ["マーク"],
+    avoid: ["印"],
+    description: "HTML コメントで記載する指定",
+    details: [
+      {
+        title: "文書を描く仕組み",
+        href: "docs/guide/コアコンセプト-文書を描く仕組み.md",
+      },
+    ],
+  },
+  {
+    alias_type: "term",
+    row: "terms",
+    id: "feature",
+    name: "機能",
+    aliases: [],
+    description: "オン・オフを決められる働き",
+  },
+  {
+    alias_type: "doc",
+    row: "docs",
+    id: "usage",
+    name: "使用方法",
+    aliases: [],
+    description: "使用方法の文書",
+  },
+];
+
+/** 行 `terms` を指す用語集の表のマーカーと、後の段落を持つ文書 */
+const ALIAS_ROW_MARKDOWN = [
+  '<!-- glossary: {"alias_row": "terms"} -->',
+  "",
+  "マークを記載する。",
+  "",
+].join("\n");
+
+/** 文書のパスとエイリアスを持つ env で、`aliasGlossaryTokens` に指定する状態を作る */
+async function aliasRowState() {
+  const { createParser } = await loadParser();
+  const parser = createParser();
+  const env = createEnv({
+    aliases: ALIAS_ROW_ALIASES,
+    path: "docs/guide/用語集.mark.md",
+  });
+  const state = new parser.core.State("", parser, env);
+  return { parser, env, state };
+}
+
+// alias_row のマーカーを、閉じのマーカーを探さず表に置き換え、env.ownGlossary に追加しない。glossary がオフでも表を描く（正常系）
+test("test_glossary_rule_with_alias_row", async () => {
+  // 準備
+  const { createParser } = await loadParser();
+  const parser = createParser();
+  const env = createEnv({ aliases: ALIAS_ROW_ALIASES });
+  const offEnv = createEnv({ aliases: ALIAS_ROW_ALIASES });
+  const offMarkdown = `<!-- features: {"glossary": false} -->\n\n${ALIAS_ROW_MARKDOWN}`;
+  // 実行
+  const html = parser.render(ALIAS_ROW_MARKDOWN, env);
+  const offHtml = parser.render(offMarkdown, offEnv);
+  // 検証
+  expect(html).toContain("<table");
+  expect(html).toContain("マークを記載する。");
+  expect(env.ownGlossary).toEqual([]);
+  expect(offHtml).toContain("<table");
+  expect(offHtml).toContain("マークを記載する。");
+});
+
+// 行の term のエイリアスだけを 5 列の表にし、詳細のリンク先を描く文書からの相対パスにする（正常系）
+test("test_alias_glossary_tokens", async () => {
+  // 準備
+  const { aliasGlossaryTokens } = await loadGlossary();
+  const { parser, env, state } = await aliasRowState();
+  // 実行
+  const { tokens, warning } = aliasGlossaryTokens({
+    options: { alias_row: "terms" },
+    mark: '<!-- glossary: {"alias_row": "terms"} -->',
+    state,
+  });
+  const html = parser.renderer.render(tokens, parser.options, env);
+  // 検証
+  expect(warning).toBeUndefined();
+  const headings = [...html.matchAll(/<th[^>]*>([^<]*)<\/th>/g)].map(
+    (match) => match[1],
+  );
+  expect(headings).toEqual(["用語", "別名", "使用しない言い方", "意味", "詳細"]);
+  const bodyRows = html.split("<tbody>")[1]?.split("<tr").slice(1) ?? [];
+  expect(bodyRows).toHaveLength(2);
+  expect(bodyRows[0]).toContain("マーカー");
+  expect(bodyRows[1]).toContain("機能");
+  expect(html).not.toContain("使用方法");
+  expect(html).toContain('href="コアコンセプト-文書を描く仕組み.md"');
+  expect(html).toContain("文書を描く仕組み");
+});
+
+// 行の term のエイリアスが無いとき、表を作らず警告を返却する（異常系）
+test("test_alias_glossary_tokens_when_row_missing", async () => {
+  // 準備
+  const { aliasGlossaryTokens } = await loadGlossary();
+  const { state } = await aliasRowState();
+  // 実行
+  const { tokens, warning } = aliasGlossaryTokens({
+    options: { alias_row: "glossary-terms" },
+    mark: '<!-- glossary: {"alias_row": "glossary-terms"} -->',
+    state,
+  });
+  // 検証
+  expect(tokens).toEqual([]);
+  expect(warning).toContain("glossary-terms");
+});
+
+// 列の指定と一緒に記載したとき、表と警告の両方を返却する（異常系）
+test("test_alias_glossary_tokens_when_mixed", async () => {
+  // 準備
+  const { aliasGlossaryTokens } = await loadGlossary();
+  const { state } = await aliasRowState();
+  // 実行
+  const { tokens, warning } = aliasGlossaryTokens({
+    options: { alias_row: "terms", term: { column: "用語" } },
+    mark: '<!-- glossary: {"alias_row": "terms", "term": {"column": "用語"}} -->',
+    state,
+  });
+  // 検証
+  expect(tokens.some((token) => token.type === "table_open")).toBe(true);
+  expect(warning).toContain("term");
+});

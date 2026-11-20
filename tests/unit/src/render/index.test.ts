@@ -294,3 +294,30 @@ test("test_render_document_when_index_title_missing", async () => {
   // 検証
   expect(outerHtml(html, "mdmark-backlinks")).toContain(">api</a>");
 });
+
+// path を env.path に入れ、エイリアスの行から描く用語集の表のリンク先を描く文書からの相対パスにする（正常系）
+test("test_render_document_with_path", async () => {
+  // 準備
+  const { renderDocument } = await loadRender();
+  const aliases = [
+    {
+      alias_type: "term",
+      row: "terms",
+      id: "marker",
+      name: "マーカー",
+      aliases: [],
+      description: "HTML コメントで記載する指定",
+      details: [{ title: "a", href: "docs/guide/a.md" }],
+    },
+  ] as MdmarkAlias[];
+  // 実行
+  const { html } = renderDocument({
+    markdown: '<!-- glossary: {"alias_row": "terms"} -->\n',
+    config: resolvedConfig(),
+    aliases,
+    path: "docs/guide/用語集.mark.md",
+  });
+  // 検証
+  expect(html).toContain("<table");
+  expect(html).toContain('href="a.md"');
+});
