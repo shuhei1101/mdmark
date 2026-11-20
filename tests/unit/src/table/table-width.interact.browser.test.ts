@@ -157,6 +157,112 @@ test("test_measure_columns_when_rows_limited", async () => {
   expect(column?.longest).toBeLessThan(longLine);
 });
 
+/** 計測の順の記録の 1 件（計測用の要素の配置・幅の取得・取り除き・見出しの最小幅の書き込み） */
+type MeasureCall = "append" | "rect" | "remove" | "head-width";
+
+/** 計測用の要素（`visibility: hidden` で配置する一時的な要素）か */
+const isProbe = (node: unknown): boolean =>
+  node instanceof HTMLElement && node.style.visibility === "hidden";
+
+/** `append`・`getBoundingClientRect`・`remove`・`setProperty` を、元の処理を呼んだうえで計測に関わる呼び出しの順を記録する spy にする */
+const recordMeasureCalls = (): MeasureCall[] => {
+  const calls: MeasureCall[] = [];
+  const append = Element.prototype.append;
+  vi.spyOn(Element.prototype, "append").mockImplementation(function (
+    this: Element,
+    ...nodes: Array<Node | string>
+  ) {
+    if (nodes.some(isProbe)) {
+      calls.push("append");
+    }
+    append.apply(this, nodes);
+  });
+  const rect = Element.prototype.getBoundingClientRect;
+  vi.spyOn(Element.prototype, "getBoundingClientRect").mockImplementation(
+    function (this: Element) {
+      if (isProbe(this)) {
+        calls.push("rect");
+      }
+      return rect.call(this);
+    },
+  );
+  const remove = Element.prototype.remove;
+  vi.spyOn(Element.prototype, "remove").mockImplementation(function (
+    this: Element,
+  ) {
+    if (isProbe(this)) {
+      calls.push("remove");
+    }
+    remove.call(this);
+  });
+  const setProperty = CSSStyleDeclaration.prototype.setProperty;
+  vi.spyOn(CSSStyleDeclaration.prototype, "setProperty").mockImplementation(
+    function (
+      this: CSSStyleDeclaration,
+      property: string,
+      value: string | null,
+      priority?: string,
+    ) {
+      if (property === "--mdmark-column-head-width") {
+        calls.push("head-width");
+      }
+      setProperty.call(this, property, value, priority);
+    },
+  );
+  return calls;
+};
+
+/** 記録の中で、最初と最後に `kind` が出た位置 */
+const firstAndLast = (
+  calls: MeasureCall[],
+  kind: MeasureCall,
+): { first: number; last: number } => ({
+  first: calls.indexOf(kind),
+  last: calls.lastIndexOf(kind),
+});
+
+// 計測用の要素の配置と幅の取得を交互にしない（正常系）
+test("test_measure_columns_when_batched", async () => {
+  // 準備
+  addStyles();
+  const { measureColumns } = await loadTableWidth();
+  const { root } = createRoot(
+    [
+      "| 短い | 単語 | 隠す |",
+      "| --- | --- | --- |",
+      "| ab<br>abcdef | x hello-world y | z |",
+      "",
+    ].join("\n"),
+  );
+  root.style.font = "14px/1.5 monospace";
+  const { table, headCells } = tableParts(root);
+  for (const row of table.rows) {
+    row.cells[2]?.setAttribute("hidden", "");
+  }
+  const bodyCells = table.tBodies[0]?.rows[0]?.cells;
+  if (!bodyCells?.[0] || !bodyCells[1]) {
+    throw new Error("本文のセルが無い");
+  }
+  const longest = expectedWidth(bodyCells[0], "abcdef");
+  const longestWord = expectedWidth(bodyCells[1], "hello-world");
+  const calls = recordMeasureCalls();
+  // 実行
+  const columns = measureColumns(table, headCells);
+  // 検証
+  const appended = firstAndLast(calls, "append");
+  const rects = firstAndLast(calls, "rect");
+  const removed = firstAndLast(calls, "remove");
+  expect(appended.first).toBeGreaterThanOrEqual(0);
+  expect(rects.first).toBeGreaterThanOrEqual(0);
+  expect(removed.first).toBeGreaterThanOrEqual(0);
+  expect(appended.last).toBeLessThan(rects.first);
+  expect(removed.first).toBeGreaterThan(rects.last);
+  expect(columns.map((column) => column.column)).toEqual([0, 1]);
+  expect(columns[0]).toMatchObject({ longest, em: 14 });
+  expect(columns[1]).toMatchObject({ longestWord });
+  expect(table.querySelector("span[style*='visibility']")).toBeNull();
+});
+
 // 長文の列を残りの幅で広げ、ほかの列を最も長い行の幅にする（正常系）
 test("test_attach_auto_column_widths", async () => {
   // 準備
@@ -523,4 +629,43 @@ test("test_attach_auto_column_widths_when_pin_hidden", async () => {
   headCells.forEach((cell, index) => {
     expect(before[index]).toBeLessThan(Math.floor(headContentWidth(cell)));
   });
+});
+
+// 描いたときの 1 回の決定で、計測用の要素の配置と幅の取得を交互にしない（正常系）
+test("test_attach_auto_column_widths_when_batched", async () => {
+  // 準備
+  addStyles();
+  const { attachAutoColumnWidths } = await loadTableWidth();
+  const { root } = createRoot(CONTENT_TABLE);
+  setRootWidth(root, 1280);
+  const { wrapper, table, scroller, headCells } = tableParts(root);
+  insertHeadTools(headCells);
+  const calls = recordMeasureCalls();
+  // 実行
+  const handle = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin: 45,
+  });
+  const recorded = [...calls];
+  vi.restoreAllMocks();
+  detachers.push(handle.detach);
+  // 検証
+  expect(table.hasAttribute("data-auto-width")).toBe(true);
+  const appended = firstAndLast(recorded, "append");
+  const rects = firstAndLast(recorded, "rect");
+  const headWidths = firstAndLast(recorded, "head-width");
+  expect(appended.first).toBeGreaterThanOrEqual(0);
+  expect(rects.first).toBeGreaterThanOrEqual(0);
+  expect(headWidths.first).toBeGreaterThanOrEqual(0);
+  expect(appended.last).toBeLessThan(rects.first);
+  expect(headWidths.first).toBeGreaterThan(rects.last);
+  for (const cell of headCells) {
+    expect(
+      Number.parseFloat(
+        cell.style.getPropertyValue("--mdmark-column-head-width"),
+      ),
+    ).toBeGreaterThanOrEqual(Math.floor(headContentWidth(cell)));
+  }
 });
