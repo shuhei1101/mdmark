@@ -218,11 +218,17 @@ export function revealTabTarget(target: Element): void {
 }
 
 /** 各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にして 1 つ目（組を持つなら残したタブ名のタブ）を選ぶ。URL の `#ID` が選ばれていない中身の中を指すときは、残したタブ名より先にそのタブを選んで要素へ移る。タブの並びを取り除き、中身を `render` の構造に戻す関数を返却する */
-export function attachTabs(root: HTMLElement): () => void {
+export function attachTabs(
+  root: HTMLElement,
+  options: {
+    /** URL の `#ID` を追うか。`false` なら `#ID` の指すタブを選ばない（既定 `true`） */
+    followHash?: boolean;
+  } = {},
+): () => void {
   const detachers = [...root.querySelectorAll<HTMLElement>(".mdmark-tabs")].map(
     attachTabGroup,
   );
-  const id = rowIdFromHash(location.hash);
+  const id = options.followHash === false ? "" : rowIdFromHash(location.hash);
   const target = id
     ? [...root.querySelectorAll<HTMLElement>("[id]")].find(
         (element) => element.id === id,

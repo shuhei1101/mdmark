@@ -259,6 +259,9 @@ function drawColoredBlocks(options: {
   return afterTemplate.content;
 }
 
+/** 描いた結果の入れ子の `mount` が描く先の要素。URL の `#ID` を追わず、外の文書の開いた位置を動かさない */
+const previewTargets = new WeakSet<HTMLElement>();
+
 /** 描く先の要素の子を本文の列（`div.mdmark-content`）に包み、本文の列を返却する */
 function wrapContent(el: HTMLElement): HTMLElement {
   const content = document.createElement("div");
@@ -554,6 +557,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       sectionStates,
       partStates,
       revealHash: !fromUpdate,
+      followHash: !previewTargets.has(el),
     });
     startLoading({ body, rendered, drawn, isCurrent });
     const attached = attachParts({
@@ -590,6 +594,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     // 外の文書の操作を付け終えた後に付け、描いた結果の中には入れ子の mount の操作だけが付く
     if (features.code === true) {
       detachers.previews = attachCodePreviews(body, (target, source) => {
+        previewTargets.add(target);
         const nested = mount(target, {
           ...previewOptions,
           markdown: source,

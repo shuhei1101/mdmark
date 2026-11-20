@@ -1600,3 +1600,37 @@ test("test_mount_when_markdown_preview", async () => {
   }
   expect(el.querySelector(".mdmark-code-preview")).toBeNull();
 });
+
+// URL の #ID が描いた結果の中の見出しと同じでも、描いた結果の中へは移らない（正常系）
+test("test_mount_when_markdown_preview_hash", async () => {
+  // 準備
+  history.replaceState(null, "", "#見出し");
+  const markdown = [
+    "## 見出し",
+    "",
+    "本文",
+    "",
+    "```markdown",
+    "## 見出し",
+    "",
+    "| 名前 |",
+    "| --- |",
+    "| a |",
+    "```",
+    "",
+  ].join("\n");
+  const scrolled: Element[] = [];
+  vi.spyOn(Element.prototype, "scrollIntoView").mockImplementation(function (
+    this: Element,
+  ) {
+    scrolled.push(this);
+  });
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown });
+  window.dispatchEvent(new HashChangeEvent("hashchange"));
+  // 検証: 描いた結果はあり、移った要素は全て描いた結果の外
+  const preview = el.querySelector(".mdmark-code-preview") as HTMLElement;
+  expect(preview.querySelector("h2")).not.toBeNull();
+  expect(scrolled.filter((element) => preview.contains(element))).toEqual([]);
+});

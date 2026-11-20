@@ -616,9 +616,11 @@ function attachTable(
     pinMode: TablePinMode;
     longColumnMin: number;
     partStates: PartStates | undefined;
+    followHash: boolean;
   },
 ): () => void {
-  const { notifyColumns, pinMode, longColumnMin, partStates } = options;
+  const { notifyColumns, pinMode, longColumnMin, partStates, followHash } =
+    options;
   tableCounter += 1;
   const id = `mdmark-table-${tableCounter}`;
   // 横にスクロールさせる、表を包む要素（包まれていない表はその表）
@@ -1414,7 +1416,7 @@ function attachTable(
       }, COPIED_NOTICE_MS),
     );
   };
-  if (features.includes("rowlink")) {
+  if (features.includes("rowlink") && followHash) {
     window.addEventListener("hashchange", revealRow);
     cleanups.push(() => {
       window.removeEventListener("hashchange", revealRow);
@@ -1695,7 +1697,7 @@ function attachTable(
       }),
     );
   }
-  if (features.includes("rowlink")) {
+  if (features.includes("rowlink") && followHash) {
     revealRow();
   }
   cleanups.push(() => {
@@ -1772,6 +1774,8 @@ export function attachTables(
     longColumnMin?: number | undefined;
     /** 階層の表に指定する部品の開閉の記録（省くと記録しない） */
     partStates?: PartStates | undefined;
+    /** URL の `#ID` を追うか。`false` なら `#ID` の指す行へ移らない（既定 `true`） */
+    followHash?: boolean | undefined;
   } = {},
 ): () => void {
   const {
@@ -1779,6 +1783,7 @@ export function attachTables(
     pinMode = "each",
     longColumnMin = DEFAULT_LONG_COLUMN_MIN_EM,
     partStates,
+    followHash = true,
   } = options;
   const detachers: Array<() => void> = [];
   // 列の表示を付けた表の、削除したブロックの中を除いた文書の順の位置
@@ -1803,6 +1808,7 @@ export function attachTables(
         pinMode,
         longColumnMin,
         partStates,
+        followHash,
       }),
     );
   }

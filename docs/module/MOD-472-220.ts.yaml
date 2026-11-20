@@ -33,7 +33,7 @@ functions:
       各 `mdmark-tabs` の頭にタブの並びを配置し、中身を `role="tabpanel"` にする。
       `data-group` を持つものは `loadTabChoice` のタブ名のタブ、無ければ 1 つ目を選ぶ。
       中身の選び方を `tabPanelSelectors` に登録する。
-      付けたときに URL の `#ID`（`rowIdFromHash` で読み込む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。
+      `followHash` が `false` でなければ、付けたときに URL の `#ID`（`rowIdFromHash` で読み込む）が選ばれていない中身の中を指すなら、残したタブ名より先に `revealTabTarget` でそのタブを選んで要素を `scrollIntoView` する。
 
       押すと左右の矢印・Home・End で選ぶ。
       `data-group` を持つときは、ページの `document.querySelectorAll(".mdmark-tabs[data-group]")` を `dataset.group === group` で絞った `mdmark-tabs` を、`tabSelectors` から参照した関数で同じタブ名へ切り替え、`saveTabChoice` で残す。
@@ -50,6 +50,10 @@ functions:
         type: HTMLElement
         required: true
         description: 描いた要素
+      - name: options
+        type: '{ followHash?: boolean }'
+        required: false
+        description: URL の `#ID` の指すタブを選ぶか（`followHash`。既定 `true`）
     returns:
       type: () => void
       description: タブの並びを取り除き、`tabSelectors` と `tabPanelSelectors` から除外し、中身を `render` の構造に戻す関数
