@@ -39,8 +39,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T16:41:18.704843+00:00'
   - process: モック作成
-    status: todo
+    status: done
     note: '変わる部品だけ作る: map の図の文字（#766）・マインドマップの項目（#765）・線の出る位置と間隔（#767）'
+    updated_by: planner
+    updated_at: '2026-11-20T17:13:12.667761+00:00'
   - process: データ設計
     status: skipped
     reason: 補足・マーカーの設定・索引などのデータの構造は変わらないため対象外

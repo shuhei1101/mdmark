@@ -1,0 +1,19 @@
+confirmations:
+  - topic: map の図のノードの名前・種類の行・線のラベルの文字の大きさと太さ（#766）
+    decision: 名前 13px・種類の行と線のラベル 11px、どれも標準の太さ（400）にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 97792b8e091cd0be12a1a6a9c4c5f6374295769f
+    thread: https://github.com/shuhei1101/mdmark/pull/772#discussion_r4645396956
+  - topic: 同じノードの同じ辺に出入りする線の端と、並んで走る線どうしの間隔（#767）
+    decision: 端を相手の並びの順に 16px 間隔で並べ（辺に収まらなければ辺の長さを等分）、並んで走る区間も 16px 離す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 97792b8e091cd0be12a1a6a9c4c5f6374295769f
+    thread: https://github.com/shuhei1101/mdmark/pull/772#discussion_r4645398451
+  - topic: マインドマップの項目の選び方（#765）
+    decision: 名前の文字の上を押しても項目を選び（ドラッグで文字を選んだときは選ばない）、ポインターを重ねた項目と選んだ項目の面に枝の色を敷く（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 97792b8e091cd0be12a1a6a9c4c5f6374295769f
+    thread: https://github.com/shuhei1101/mdmark/pull/772#discussion_r4645399620
