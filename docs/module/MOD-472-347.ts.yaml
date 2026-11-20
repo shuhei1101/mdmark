@@ -20,7 +20,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 表示している列ごとに、見出しのセルと先頭から `MEASURE_ROWS` 行までの本文のセルを改行（`br`・`li`・`p`）で行に分け、最も長い行の幅と最も長い半角の単語の幅を測って返却する
-    description: '行の文字は、セルの中に `position: absolute`・`visibility: hidden`・`white-space: nowrap` の `span` を一時的に配置して入れ、`getBoundingClientRect().width` で測ってすぐ取り除く（セルの文字の大きさと書体で測るため）。見出しのセルは、中身（`.mdmark-th`。列名とボタン）を同じ見えない要素として折り返さずに置いて測る。`hidden` のピン止めのボタン（表がはみ出していない間）は幅に含めない。測った幅にセルの左右の余白と罫線の幅と端数の 2px を足し、切り上げる。半角の単語は `[\x21-\x7e]+` の連なり。行の詳細の行・`一致する行がありません` の行・集計の行のように、列と 1 対 1 でない行は測らない。`hidden` の列は返却しない'
+    description: '行の文字は、セルの中に `position: absolute`・`visibility: hidden`・`white-space: nowrap` の `span` を一時的に配置して入れ、`getBoundingClientRect().width` で測る（セルの文字の大きさと書体で測るため）。1 回の呼び出しの中では、要素の配置と幅の取得を交互にしない。先に全ての測るセル（見出しのセルを含む）の行の分け方と、`getComputedStyle` の左右の余白と罫線の幅・見出しのセルの文字の大きさを取得し、次に全ての計測用の要素を配置し、全ての幅を取得し終えてから全ての計測用の要素を取り除く（レイアウトの計算を 1 回の呼び出しで 1 回にする）。見出しのセルは、中身（`.mdmark-th`。列名とボタン）を同じ見えない要素として折り返さずに置いて測る。`hidden` のピン止めのボタン（表がはみ出していない間）は幅に含めない。測った幅にセルの左右の余白と罫線の幅と端数の 2px を足し、切り上げる。半角の単語は `[\x21-\x7e]+` の連なり。行の詳細の行・`一致する行がありません` の行・集計の行のように、列と 1 対 1 でない行は測らない。`hidden` の列は返却しない'
     args:
       - name: table
         type: HTMLTableElement
@@ -46,6 +46,12 @@ functions:
         condition: 201 行の表で、201 行目だけが長い文を持つ列
         mock: なし
         expected: その列の `longest` が、201 行目の文の幅より狭い
+      - name: test_measure_columns_when_batched
+        case: 正常
+        summary: 計測用の要素の配置と幅の取得を交互にしない
+        condition: '`test_measure_columns` と同じ表で、`Element.prototype.append`・`HTMLElement.prototype.getBoundingClientRect`・`Element.prototype.remove` の呼び出しの順を記録する'
+        mock: 3 つのメソッドを、元の処理を呼んだうえで呼び出しの順を記録する spy にする
+        expected: 計測用の要素の `append` が全て最初の `getBoundingClientRect` より前で、計測用の要素の `remove` が全て最後の `getBoundingClientRect` より後。返却する値は `test_measure_columns` と同じ
     status: planned
   - name: attachAutoColumnWidths
     title: 表の列の幅を自動で決める
@@ -66,7 +72,7 @@ functions:
       CSS は `data-auto-width` の表を `table-layout: fixed` にして、この 2 つの変数を `width` に使用する（印刷の媒体では使用しない）。
       読者がつまみで入れたインラインの `width` は変数より優先される。
 
-      見出しのセルの中のピン止めのボタンの `hidden` が変わったとき（表がはみ出してボタンを出したとき・収まって隠したとき）は、`MutationObserver` で受けて見出しの中身の幅だけを測り直し、`--mdmark-column-head-width` を入れ直して列の幅を決め直す（ボタンを出して広げた表ははみ出したまま、隠して狭めた表は収まったままで、出し入れを繰り返さない）。
+      見出しのセルの中のピン止めのボタンの `hidden` が変わったとき（表がはみ出してボタンを出したとき・収まって隠したとき）は、`MutationObserver` で受けて見出しの中身の幅だけを測り直し（全ての列の見出しの計測用の要素を配置してから幅をまとめて取得する）、`--mdmark-column-head-width` を入れ直して列の幅を決め直す（ボタンを出して広げた表ははみ出したまま、隠して狭めた表は収まったままで、出し入れを繰り返さない）。
       表を包む要素を `ResizeObserver` で見、`contentRect.width` が前と変わったときだけ決め直す（高さだけの変化・並べ替え・絞り込み・列の表示の切り替えでは決め直さない）。
       戻り値の `columnsChanged` は、列の表示を切り替えた後に呼び、測り直さず、表示している列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅の合計にする。
       後から表示した列は、前に決めた幅があればその幅、無ければその時点で測って `columnBounds` の `min`（`is-resized` の列は `offsetWidth`）を入れる。
