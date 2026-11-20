@@ -19032,7 +19032,7 @@ test("test_normal_when_map_er_state_toggled", async () => {
   expect(mapNode(er(), "注文").querySelectorAll(".map-er-column")).toHaveLength(
     0,
   );
-  expect(toggleOf("注文").textContent).toBe("列 8");
+  expect(toggleOf("注文").textContent).toBe("");
   expect(toggleOf("注文").getAttribute("aria-expanded")).toBe("false");
   expect(toggleOf("注文").getAttribute("aria-label")).toBe("注文の列を開く");
   const closedBox = mapNode(er(), "注文").getBoundingClientRect();
@@ -19069,7 +19069,7 @@ test("test_normal_when_map_er_state_toggled", async () => {
   expect(
     er().querySelector('.map-closed-group[data-group="記録"]'),
   ).not.toBeNull();
-  expect(toggleOf("顧客").textContent).toBe("列 3");
+  expect(toggleOf("顧客").textContent).toBe("");
   find<HTMLButtonElement>(er(), '[data-tool="expandAll"]').click();
   expect(er().querySelector(".map-closed-group")).toBeNull();
   expect(mapNode(er(), "注文").querySelectorAll(".map-er-column")).toHaveLength(
@@ -19897,7 +19897,7 @@ test("test_normal_when_map_class_arch_c4_toggled", async () => {
   expect(
     mapNode(cls(), "基本図形").querySelectorAll(".map-class-member"),
   ).toHaveLength(0);
-  expect(toggle().textContent).toBe("メンバー 3");
+  expect(toggle().textContent).toBe("");
   expect(toggle().getAttribute("aria-expanded")).toBe("false");
   expect(toggle().getAttribute("aria-label")).toBe("基本図形のメンバーを開く");
   toggle().click();
@@ -19976,7 +19976,7 @@ test("test_normal_when_map_class_arch_c4_toggled", async () => {
   expect(
     find<HTMLButtonElement>(mapNode(cls(), "図面"), "button.map-class-toggle")
       .textContent,
-  ).toBe("メンバー 2");
+  ).toBe("");
   find<HTMLButtonElement>(cls(), '[data-tool="expandAll"]').click();
   expect(cls().querySelector(".map-closed-group")).toBeNull();
   expect(

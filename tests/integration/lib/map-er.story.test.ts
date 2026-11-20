@@ -201,18 +201,21 @@ test("test_default", async () => {
       .sort(),
   ).toEqual(["含む", "指す", "支払う", "最後に見た", "注文する"].sort());
   expectApart(texts, (text) => `${text.text}(${text.wire})`);
-  // 検証: 同じ辺から出る線どうしの間隔（含む と 支払う。押せる帯の 2 つ目の点の x が、辺から出た縦の区間の x）
-  const r2 = await wireEnds(page, "r2");
+  // 検証: 同じ辺につながる線どうしの間隔（「注文」の右の辺の 注文する（先の端）と 支払う（元の端）。押せる帯の、辺の隣の点の x が辺から出た縦の区間の x）
+  const r1 = await wireEnds(page, "r1");
   const r4 = await wireEnds(page, "r4");
-  expect(Math.abs(r2.start.x - r4.start.x)).toBeLessThan(1);
+  expect(Math.abs(r1.end.x - r4.start.x)).toBeLessThan(1);
   const stubs = await page
-    .locator('path.map-wire-hit:is([data-wire="r2"], [data-wire="r4"])')
+    .locator('path.map-wire-hit:is([data-wire="r1"], [data-wire="r4"])')
     .evaluateAll((paths) =>
       paths.map((path) => {
-        const numbers = (path.getAttribute("d") ?? "")
-          .match(/-?\d+(\.\d+)?/g)
-          ?.map(Number);
-        return numbers?.[2] ?? 0;
+        const numbers =
+          (path.getAttribute("d") ?? "").match(/-?\d+(\.\d+)?/g)?.map(Number) ??
+          [];
+        // 支払う は元の端の隣（2 つ目の点）、注文する は先の端の隣（最後から 2 つ目の点）
+        return path.getAttribute("data-wire") === "r4"
+          ? (numbers[2] ?? 0)
+          : (numbers.at(-4) ?? 0);
       }),
     );
   expect(Math.abs((stubs[0] ?? 0) - (stubs[1] ?? 0))).toBeGreaterThanOrEqual(
