@@ -314,6 +314,39 @@ test("test_open_diagram_dialog", async () => {
   expect(document.activeElement).toBe(opener);
 });
 
+// 複製した図に部品の操作を付け直し、閉じたら解除する（正常系）
+test("test_open_diagram_dialog_when_attach_modal", async () => {
+  // 準備
+  const { attachDiagrams } = await loadDiagrams();
+  const root = createDiagramRoot();
+  const calls: Array<{ modal: HTMLElement; source: HTMLElement }> = [];
+  let detached = 0;
+  detachers.push(
+    attachDiagrams({
+      root,
+      placement: "top",
+      attachModal: (modal, source) => {
+        calls.push({ modal, source });
+        return () => {
+          detached += 1;
+        };
+      },
+    }),
+  );
+  const figure = root.querySelector("figure.mdmark-diagram");
+  button(root, "表示の操作を開く").click();
+  // 実行
+  button(root, "全画面で開く").click();
+  const dialog = root.querySelector("dialog");
+  // 検証
+  expect(calls).toHaveLength(1);
+  expect(dialog?.contains(calls[0]?.modal ?? null)).toBe(true);
+  expect(calls[0]?.source).toBe(figure);
+  expect(detached).toBe(0);
+  button(dialog as HTMLElement, "全画面を閉じる").click();
+  expect(detached).toBe(1);
+});
+
 // ツールチップを開いている間の Esc は、何度でもツールチップだけを閉じる（正常系）
 test("test_open_diagram_dialog_when_tip_open", async () => {
   // 準備
