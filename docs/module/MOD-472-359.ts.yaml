@@ -1,7 +1,7 @@
 id: MOD-472-359
 visibility: internal
 title: ライブラリ本体 / 記法の共通 / style-tokens.logic.ts
-lead: 共通スタイルの色（見出し・注意書きの種類・用語の下線・罫線・コードブロックの背景・発言の背景）を、既定のテーマの明るい配色と暗い配色の 16 進で持つ。mod が描く色はここから取り、Web の CSS 変数と同じ値であることを単体テストで確かめる。
+lead: 共通スタイルの色（見出し・注意書きの種類・用語の下線・罫線・コードブロックの背景・発言の背景・色の名前・面と本文）を、既定のテーマの明るい配色と暗い配色の 16 進で持つ。mod が描く色はここから取り、Web の CSS 変数と同じ値であることを単体テストで確かめる。
 test_files:
   - tests/unit/src/shared/style-tokens.logic.test.ts
 constants:
@@ -29,6 +29,12 @@ constants:
       - key: userBand
         value: 暗い配色 `#3a3a3a`、明るい配色 `#f0f0f0`、`themes` の `light-daltonized` が `#dcdcdc`（Claude Code 2.1.328 の配布物の明るいテーマの `userMessageBackground` の `rgb(240, 240, 240)`。取った箇所は `docs/pr/699/テスト結果/20261119215519_73687ecc_発言の背景の色.log`）
         description: Claude Code の標準の発言の背景の帯の色。`css` を持たない
+      - key: accentBlueText / accentBlueBg / accentRedText / accentRedBg / accentGreenText / accentGreenBg / accentYellowText / accentYellowBg / accentOrangeText / accentOrangeBg / accentPurpleText / accentPurpleBg / accentGrayText / accentGrayBg
+        value: '`src/index.css` の既定のテーマの値'
+        description: 色の名前の文字色と背景色。`css` は `--mdmark-color-accent-{色}-text`・`--mdmark-color-accent-{色}-bg`
+      - key: surface / text
+        value: '`src/index.css` の既定のテーマの値'
+        description: 色の無いバッジの面と文字の色。`css` は `--mdmark-color-surface`・`--mdmark-color-text`
     refs:
       - IF-472-45#constraints[色]
       - IF-472-46#constraints[背景の帯]
@@ -70,6 +76,12 @@ functions:
         condition: '`userBand` を `theme` が `light-daltonized` と `light` で取る'
         mock: なし
         expected: '`#dcdcdc` と `#f0f0f0`'
+      - name: test_style_color_accent
+        case: 正常
+        summary: 色の名前の色
+        condition: '`accentGreenBg` を `theme` が `light` と `dark` で取る'
+        mock: なし
+        expected: '`#cbf2d2` と `#1a3821`'
     status: planned
 tags:
   - name: topic:色

@@ -92,3 +92,9 @@ export const ParallelWires: Story = {
   parameters: { server: { id: "map-flow" } },
   args: { source: "parallel" },
 };
+
+export const WrappedName: Story = {
+  name: "WrappedName",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "wrapped" },
+};

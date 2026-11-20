@@ -45,7 +45,7 @@ constraints:
   - item: 回数
     constraint: 1 回の SessionStart で 1 つだけ追加する。セッションをまたいだ記録は持たず、`/clear`・圧縮の後の SessionStart でも追加する
   - item: 説明の文
-    constraint: '`mdmark-style:` で始め、表の種類（`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->`）・注意書き（`> [!NOTE]` などの 5 種）・コードブロックの飾り（`<!-- code: title=... lines -->` と行末の `[!code ++]` など）・開閉の範囲（`<!-- details: タイトル -->` 〜 `<!-- /details -->`）の書き方を、それぞれ 1 行で示す。マーカーは画面に出ないことを 1 行で添える。合計 600 文字以内'
+    constraint: '`mdmark-style:` で始め、表の種類（`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->`）・注意書き（`> [!NOTE]` などの 5 種）・コードブロックの飾り（`<!-- code: title=... lines -->` と行末の `[!code ++]` など）・開閉の範囲（`<!-- details: タイトル -->` 〜 `<!-- /details -->`）・ステップ（`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト）・ファイルツリー（言語 `tree` のコードブロックと注釈の ` # `）・バッジ（`badge:色:文言`）の書き方を、それぞれ 1 行で示す。マーカーは画面に出ないことを 1 行で添える。合計 600 文字以内'
   - item: 使用しないフック
     constraint: '`session.start` の戻り値はモデルの文脈を変えないため使用しない'
     decided_by: LIB-472-1#
@@ -70,7 +70,7 @@ flows:
 
       <!-- /map -->
     expected:
-      - '`additionalContext` が `other` と説明の 2 つで、説明は `mdmark-style:` で始まり `<!-- table: {"kind": "data"} -->` を含む'
+      - '`additionalContext` が `other` と説明の 2 つで、説明は `mdmark-style:` で始まり `<!-- table: {"kind": "data"} -->`・`<!-- steps -->`・`tree`・`badge:` を含む'
       - 説明が 600 文字以内
     test: test_normal
     refs:

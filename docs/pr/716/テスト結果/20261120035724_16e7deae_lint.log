@@ -1,0 +1,75 @@
+# lint: 16e7deae（単体テスト作成）
+
+Biome・ESLint・vscode の tsc・actionlint は違反なし。ルートの tsc の違反 33 件は、全て単体テストが参照する実装（inline-marks.ts・document-parts.tsx・ReplyBlock の steps/tree/stack・table.figure/details・parts の追加のキー・色の名前の色）が無いことによるもの。
+
+## コマンド
+
+(rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+
+## 出力
+
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 966 files in 1028ms. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/mdmark-style/blocks.test.ts(222,28): error TS2339: Property 'figure' does not exist on type '{ kind: TableKind; header: string[]; rows: string[][]; align: ("center" | "left" | "right")[]; }'.
+tests/unit/src/mdmark-style/blocks.test.ts(223,28): error TS2339: Property 'details' does not exist on type '{ kind: TableKind; header: string[]; rows: string[][]; align: ("center" | "left" | "right")[]; }'.
+tests/unit/src/mdmark-style/blocks.test.ts(253,21): error TS2339: Property 'steps' does not exist on type 'ReplyBlock'.
+tests/unit/src/mdmark-style/blocks.test.ts(278,28): error TS2339: Property 'tree' does not exist on type 'ReplyBlock'.
+tests/unit/src/mdmark-style/blocks.test.ts(278,45): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/blocks.test.ts(281,36): error TS2339: Property 'tree' does not exist on type 'ReplyBlock'.
+tests/unit/src/mdmark-style/blocks.test.ts(338,21): error TS2339: Property 'stack' does not exist on type 'ReplyBlock'.
+tests/unit/src/mdmark-style/blocks.test.ts(359,28): error TS2353: Object literal may only specify known properties, and 'steps' does not exist in type 'Record<PartName, boolean>'.
+tests/unit/src/mdmark-style/blocks.test.ts(365,28): error TS2339: Property 'figure' does not exist on type '{ kind: TableKind; header: string[]; rows: string[][]; align: ("center" | "left" | "right")[]; }'.
+tests/unit/src/mdmark-style/blocks.test.ts(398,24): error TS2339: Property 'details' does not exist on type '{ kind: TableKind; header: string[]; rows: string[][]; align: ("center" | "left" | "right")[]; }'.
+tests/unit/src/mdmark-style/blocks.test.ts(443,17): error TS2339: Property 'tree' does not exist on type 'ReplyBlock'.
+tests/unit/src/mdmark-style/blocks.test.ts(443,34): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/blocks.test.ts(444,17): error TS2339: Property 'tree' does not exist on type 'ReplyBlock'.
+tests/unit/src/mdmark-style/blocks.test.ts(444,34): error TS7006: Parameter 'line' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/document-parts.test.ts(15,10): error TS2307: Cannot find module '../../../../src/mdmark-style/document-parts.tsx' or its corresponding type declarations.
+tests/unit/src/mdmark-style/inline-marks.test.ts(4,33): error TS2307: Cannot find module '../../../../src/mdmark-style/inline-marks.ts' or its corresponding type declarations.
+tests/unit/src/mdmark-style/inline-marks.test.ts(15,34): error TS7006: Parameter 'segment' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/inline-marks.test.ts(17,18): error TS7031: Binding element 'kind' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/inline-marks.test.ts(17,24): error TS7031: Binding element 'text' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/inline-marks.test.ts(17,30): error TS7031: Binding element 'color' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/inline-marks.test.ts(17,37): error TS7031: Binding element 'keys' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/inline-marks.test.ts(24,24): error TS7006: Parameter 'segment' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/inline-marks.test.ts(34,32): error TS7006: Parameter 'segment' implicitly has an 'any' type.
+tests/unit/src/mdmark-style/reply.test.ts(454,22): error TS2322: Type '"accentGreenBg"' is not assignable to type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+tests/unit/src/mdmark-style/reply.test.ts(494,22): error TS2322: Type '"accentGreenBg"' is not assignable to type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+tests/unit/src/mdmark-style/settings.test.ts(89,12): error TS7053: Element implicitly has an 'any' type because expression of type '"figure" | "inline" | "row_detail" | "stack" | "steps" | "tree"' can't be used to index type 'Record<PartName, boolean>'.
+  Property 'figure' does not exist on type 'Record<PartName, boolean>'.
+tests/unit/src/mdmark-style/user-message.test.ts(230,30): error TS2345: Argument of type '"accentGreenBg"' is not assignable to parameter of type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+tests/unit/src/mdmark-style/user-message.test.ts(231,20): error TS2345: Argument of type '"accentGreenText"' is not assignable to parameter of type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+tests/unit/src/mdmark-style/user-message.test.ts(236,30): error TS2345: Argument of type '"surface"' is not assignable to parameter of type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+tests/unit/src/mdmark-style/user-message.test.ts(237,20): error TS2345: Argument of type '"text"' is not assignable to parameter of type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+tests/unit/src/mdmark-style/user-message.test.ts(241,54): error TS2345: Argument of type '"accentYellowBg"' is not assignable to parameter of type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+tests/unit/src/shared/style-tokens.logic.test.ts(91,23): error TS2322: Type '"accentGreenBg"' is not assignable to type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+tests/unit/src/shared/style-tokens.logic.test.ts(92,23): error TS2322: Type '"accentGreenBg"' is not assignable to type '"border" | "calloutCaution" | "calloutImportant" | "calloutNote" | "calloutTip" | "calloutWarning" | "codeBackground" | "heading" | "termUnderline" | "userBand"'.
+
+> mdmark-vscode@0.2.0 typecheck
+> tsc --noEmit
+
+
+## base ブランチ（develop 6022765c）の npm run typecheck
+
+
+> typecheck
+> tsc --noEmit
+

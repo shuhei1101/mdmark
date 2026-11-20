@@ -94,12 +94,13 @@ functions:
       type: UiNode
       description: 部品の木
     process: |-
-      1. `table`: 列の幅を決め（`wrap` は `surface` が `desktop` でないとき）、セルを折り返して罫線で囲む。`kind` が `data` なら見出しの行を太字にする。`surface` が `desktop` で表の幅が `columns` を超えれば表の Box を `overflowX: "scroll"` にする
-      2. `heading`: 太字と見出しの色の Text
+      1. `table`: `figure` があれば表の上に `dimColor` の `表 {figure}` の Text を描く。`parts.inline` が真のときは各セルの文字を行内の記法を分けるで分け、列の幅と折り返しの位置は行内の記法を描いた文字にするで得た文字の表示幅で数える。列の幅を決め（`wrap` は `surface` が `desktop` でないとき）、セルを折り返して罫線で囲む。行内の記法を含むセルは用語付きの行を描くで描く。`kind` が `data` なら見出しの行を太字にする。`details` の行は先頭のセルに行の詳細の Button を置き、開いていればその行の下に全ての列をまたぐ詳細を描く（行の詳細を描く）。`surface` が `desktop` で表の幅が `columns` を超えれば表の Box を `overflowX: "scroll"` にする
+      2. `heading`: 太字と見出しの色の Text。`parts.inline` が真で行内の記法があれば、見出しの色と太字を保ったまま用語付きの行を描くで描く
       3. `callout`: 種類の色の縦線（`┃`）と太字の種類のラベルの後ろに中身を描く。`closed` なら開閉のボタンで包む
       4. `code`: 背景の面の Box の中に、タイトルと言語のラベルとコピーボタンの行、`Code` 部品で色分けした行（行番号・行の色）を並べる。コピーボタンは押すと `$.ui.copy` で各行の `text` を改行でつないでコピーする
       5. `fold`: 開閉のボタンを描き、開いていれば下に中身を描く
-      6. `markdown`: 用語の一致の行と位置を、ブロックの `line` と `columns` でブロックの行の中の位置に修正する。修正した一致が無ければ `Markdown` 部品に渡す
+      6. `steps`・`tree`・`stack`: ステップを描く・ファイルツリーを描く・縦に並べる範囲を描く。中身のブロックはこの関数で描く
+      7. `markdown`: 用語の一致の行と位置を、ブロックの `line` と `columns` でブロックの行の中の位置に修正する。`parts.inline` が真で行内の記法（行内の記法を分ける）があるか、修正した一致があれば用語付きの行を描く。どちらも無ければ `Markdown` 部品に渡す
     unit_tests:
       - name: test_render_block_table
         case: 正常
@@ -137,11 +138,42 @@ functions:
         condition: 段落 `a <!-- x --> WS` を分けたブロック、用語の一致が `line` 1・`start` 13 の `WS`
         mock: '`h`'
         expected: 下線の Text が `WS` の 1 つ
+      - name: test_render_block_table_when_figure_and_detail
+        case: 正常
+        summary: 表の番号と行の詳細の Button
+        condition: '`figure` が 1、`details` が `row` 0 の 2 行の表'
+        mock: '`h`・`$.ui.invalidate`'
+        expected: 表の上に `表 1` の Text、1 行目の先頭のセルに `[ ▸ ]` の Button がある
+      - name: test_render_block_when_inline_marks
+        case: 正常
+        summary: 行内の記法を含む段落は Text で描く
+        condition: 行内のコード `badge:green:完了` を含む `markdown` のブロック、用語の一致は無い
+        mock: '`h`'
+        expected: '`Markdown` 部品を使用せず、`green` の背景色の `完了` の Text がある'
+      - name: test_render_block_table_when_inline_marks
+        case: 正常
+        summary: 表のセルと見出しの行内の記法を描く
+        condition: セルに行内のコード `badge:green:完了` を持つ 2 列の表と、行内のコード `kbd:Ctrl+C` を含む見出し、`parts.inline` が真
+        mock: '`h`'
+        expected: セルに `green` の背景色の ` 完了 ` の Text があり、その列の幅が ` 完了 ` の表示幅で数えられ、見出しに太字の `[Ctrl]` の Text がある
+      - name: test_render_block_table_when_detail_row_wrapped
+        case: 正常
+        summary: 折り返した行にも行の詳細の Button を描く
+        condition: '`details` が `row` 0 で、その行の先頭のセルが折り返される `columns` が 24 の表。Button の `onPress` を呼んでからもう一度描く'
+        mock: '`h`・`$.ui.invalidate`'
+        expected: 1 回目に `[ ▸ ]` の Button があって詳細が無く、2 回目に詳細の文字がある
     callees:
       - MOD-472-354#functions[fitColumns]
       - MOD-472-354#functions[wrapCell]
       - MOD-472-359#functions[styleColor]
       - '#functions[renderFold]'
+      - MOD-472-357#functions[renderTermText]
+      - MOD-472-366#functions[splitInlineMarks]
+      - MOD-472-367#functions[renderSteps]
+      - MOD-472-367#functions[renderTree]
+      - MOD-472-367#functions[renderStack]
+      - MOD-472-367#functions[renderRowDetail]
+      - MOD-472-366#functions[inlinePlainText]
       - MOD-472-357#functions[renderTermText]
     refs:
       - SCR-472-5#elements[表]
@@ -149,6 +181,8 @@ functions:
       - SCR-472-5#elements[注意書き]
       - SCR-472-5#elements[コードブロック]
       - SCR-472-5#elements[コピーボタン]
+      - SCR-472-5#elements[行の詳細のボタン]
+      - SCR-472-5#elements[表の番号]
     status: planned
   - name: renderFold
     title: 開閉の範囲を描く

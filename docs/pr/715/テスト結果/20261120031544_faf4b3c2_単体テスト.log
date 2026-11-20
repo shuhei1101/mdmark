@@ -1,0 +1,204 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-sequence-participant-hover
+
+ ❯ |unit| tests/unit/src/map/map.part.test.ts (61 tests | 1 failed) 1850ms
+   × test_render_map_sequence_when_lifeline_hits 12ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts (12 tests | 4 failed) 4811ms
+   × test_attach_map_sequence_when_participant_hovered 742ms
+   × test_attach_map_sequence_when_hovered_after_unselect 405ms
+   × test_attach_map_sequence_when_hovered_by_touch 1555ms
+   × test_attach_map_sequence_when_hovered_on_name 1686ms
+ ❯ |unit| tests/unit/vscode/scripts/build.test.ts (2 tests | 2 failed) 1159ms
+   × test_build_extension 1019ms
+   × test_build_extension_when_tests 138ms
+ ❯ |unit| tests/unit/vscode/src/extensions-bundle.test.ts (2 tests | 2 skipped) 15ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/vscode/src/extensions-bundle.test.ts [ tests/unit/vscode/src/extensions-bundle.test.ts ]
+Error: Cannot find module 'esbuild-wasm/esbuild.wasm'
+Require stack:
+- /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-sequence-participant-hover/vscode/package.json
+ ❯ tests/unit/vscode/src/extensions-bundle.test.ts:24:13
+     22|   );
+     23|   await copyFile(
+     24|     require.resolve("esbuild-wasm/esbuild.wasm"),
+       |             ^
+     25|     join(extensionPath, "dist", "esbuild.wasm"),
+     26|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 7 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_participant_hovered
+TypeError: Cannot read properties of null (reading 'dispatchEvent')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sequence-view.browser.test.ts/test_attach_map_sequence_when_participant_hovered.png
+
+ ❯ point tests/unit/src/map/sequence-view.browser.test.ts:249:10
+    247|   options: { pointerType?: string; relatedTarget?: Element | null } = …
+    248| ) =>
+    249|   target.dispatchEvent(
+       |          ^
+    250|     new PointerEvent(type, {
+    251|       bubbles: true,
+ ❯ tests/unit/src/map/sequence-view.browser.test.ts:271:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=753e53d4:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_hovered_after_unselect
+AssertionError: expected [] to deeply equal [ 'DIV|layout|||', …(11) ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sequence-view.browser.test.ts/test_attach_map_sequence_when_hovered_after_unselect.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "DIV|layout|||",[39m
+[32m-   "DIV|marker|||",[39m
+[32m-   "DIV|mermaid|||",[39m
+[32m-   "DIV|user|||",[39m
+[32m-   "SPAN|||2|label",[39m
+[32m-   "SPAN|||3|label",[39m
+[32m-   "line||layout||",[39m
+[32m-   "line||marker||",[39m
+[32m-   "line||mermaid||",[39m
+[32m-   "line||user||",[39m
+[32m-   "path|||2|",[39m
+[32m-   "path|||3|",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/unit/src/map/sequence-view.browser.test.ts:319:28
+    317|   // 検証
+    318|   expect(afterUnselect).toEqual([]);
+    319|   expect(dimmedKeys(root)).toEqual(expected);
+       |                            ^
+    320| });
+    321|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=753e53d4:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_hovered_by_touch
+TypeError: Cannot read properties of null (reading 'dispatchEvent')
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sequence-view.browser.test.ts/test_attach_map_sequence_when_hovered_by_touch.png
+
+ ❯ point tests/unit/src/map/sequence-view.browser.test.ts:249:10
+    247|   options: { pointerType?: string; relatedTarget?: Element | null } = …
+    248| ) =>
+    249|   target.dispatchEvent(
+       |          ^
+    250|     new PointerEvent(type, {
+    251|       bubbles: true,
+ ❯ tests/unit/src/map/sequence-view.browser.test.ts:327:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=753e53d4:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_hovered_on_name
+AssertionError: expected [] to deeply equal [ 'DIV|layout|||', …(11) ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sequence-view.browser.test.ts/test_attach_map_sequence_when_hovered_on_name.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "DIV|layout|||",[39m
+[32m-   "DIV|marker|||",[39m
+[32m-   "DIV|mermaid|||",[39m
+[32m-   "DIV|user|||",[39m
+[32m-   "SPAN|||2|label",[39m
+[32m-   "SPAN|||3|label",[39m
+[32m-   "line||layout||",[39m
+[32m-   "line||marker||",[39m
+[32m-   "line||mermaid||",[39m
+[32m-   "line||user||",[39m
+[32m-   "path|||2|",[39m
+[32m-   "path|||3|",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/unit/src/map/sequence-view.browser.test.ts:350:18
+    348|   point(hit, "pointerout", { relatedTarget: name });
+    349|   // 検証
+    350|   expect(onName).toEqual(expected);
+       |                  ^
+    351|   expect(dimmedKeys(root)).toEqual(expected);
+    352| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=753e53d4:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_sequence_when_lifeline_hits
+AssertionError: expected [] to have a length of 5 but got +0
+
+- Expected
++ Received
+
+- 5
++ 0
+
+ ❯ tests/unit/src/map/map.part.test.ts:202:16
+    200|   const lifelines = findTags(html, 'class="mdmark-diagram-lifeline');
+    201|   const hits = findTags(html, 'class="map-lifeline-hit"');
+    202|   expect(hits).toHaveLength(sequence.participants.length);
+       |                ^
+    203|   for (const lifeline of lifelines) {
+    204|     const name = attribute(lifeline, "data-lifeline");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/8]⎯
+
+ FAIL  |unit| tests/unit/vscode/scripts/build.test.ts > test_build_extension
+ FAIL  |unit| tests/unit/vscode/scripts/build.test.ts > test_build_extension_when_tests
+Error: Build failed with 1 error:
+src/extensions-bundle.ts:3:25: ERROR: Could not resolve "esbuild-wasm/lib/browser.js"
+ ❯ failureErrorWithLog node_modules/esbuild/lib/main.js:1752:15
+ ❯ node_modules/esbuild/lib/main.js:1211:25
+ ❯ runOnEndCallbacks node_modules/esbuild/lib/main.js:1592:45
+ ❯ buildResponseToResult node_modules/esbuild/lib/main.js:1209:7
+ ❯ node_modules/esbuild/lib/main.js:1236:16
+ ❯ responseCallbacks.<computed> node_modules/esbuild/lib/main.js:886:9
+ ❯ handleIncomingPacket node_modules/esbuild/lib/main.js:941:12
+ ❯ Socket.readFromStdout node_modules/esbuild/lib/main.js:864:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/8]⎯
+
+
+ Test Files  4 failed | 318 passed (322)
+      Tests  7 failed | 2559 passed | 2 skipped (2568)
+   Start at  03:04:16
+   Duration  42.53s (worker 80%, tests 11%, import 6%, transform 4%)
+
+
+# 実装の前から pass したテスト
+- test_attach_map_sequence_when_hovered_while_selected・test_attach_map_sequence_when_hovered_after_escape: ポインターの強調を出さないことを確かめるテストで、src/map/sequence-view.ts の onPointerOver がメッセージの線（.map-wire-hit[data-message]）だけを扱い、参加者の箱にはポインターの処理が無いため pass する（9412c199、8659c279）
+
+# 環境による fail（実装と無関係）
+- tests/unit/vscode/scripts/build.test.ts・tests/unit/vscode/src/extensions-bundle.test.ts: vscode/ の依存（esbuild-wasm）を入れていなかったため。vscode/ で npm ci を実行した後に個別に流し直して pass した
+
+$ npx vitest run --project 'unit*' tests/unit/vscode/scripts/build.test.ts tests/unit/vscode/src/extensions-bundle.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-sequence-participant-hover
+
+
+ Test Files  2 passed (2)
+      Tests  4 passed (4)
+   Start at  03:15:16
+   Duration  2.55s (tests 98%, import 1%, transform 1%)
+

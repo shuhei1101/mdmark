@@ -23,6 +23,15 @@ constants:
     refs:
       - IF-472-45#constraints[コードブロック]
     status: planned
+  - name: STACK_MARKERS
+    title: 縦に並べる範囲のマーカー
+    container: src/mdmark-style/blocks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: '`stack` のブロックにする範囲のマーカーの名前'
+    value: '["tabs", "columns", "cards", "wide", "view"]'
+    refs:
+      - IF-472-45#constraints[縦に並べる範囲]
+    status: planned
 data_models:
   - name: ReplyBlock
     title: 返答のブロック
@@ -31,14 +40,14 @@ data_models:
     summary: '`kind` で分けたブロック 1 つ。`line` は返答の本文の頭からの、ブロックの本文の先頭の行（1 から。注意書きの中のブロックも返答の本文の頭から数える）'
     properties:
       - name: kind
-        type: '"table" | "callout" | "heading" | "code" | "fold" | "markdown"'
+        type: '"table" | "callout" | "heading" | "code" | "fold" | "steps" | "tree" | "stack" | "markdown"'
         description: ブロックの種類
       - name: line
         type: number
         description: ブロックの先頭の、返答の本文の頭からの行
       - name: table
-        type: '{ kind: "default" | "data" | "plain"; header: string[]; rows: string[][]; align: ("left" | "center" | "right")[] }'
-        description: '`kind` が `table` のとき。`kind` は直前の `table` のマーカーの種類'
+        type: '{ kind: "default" | "data" | "plain"; header: string[]; rows: string[][]; align: ("left" | "center" | "right")[]; figure?: number; details?: { row: number; body: ReplyBlock[] }[] }'
+        description: '`kind` が `table` のとき。`kind` は直前の `table` のマーカーの種類。`figure` は直前の `fig` のマーカーの通し番号（`parts.figure` が真のとき）。`details` は直後の `row-detail` の範囲（`row` は見出しの行を除いて 0 から数えた行。`parts.row_detail` が真で `at` が行の数以下のとき）。言語 `csv` のコードブロックはライブラリ本体の `parseCsv` で 1 行目を `header` にした表にする（`parts.stack` が真のとき）'
       - name: callout
         type: '{ type: string; title?: string; closed: boolean; body: ReplyBlock[] }'
         description: '`kind` が `callout` のとき。末尾に `-` を付けた種類は `closed` を真にする'
@@ -57,6 +66,15 @@ data_models:
       - name: columns
         type: number[][]
         description: '`kind` が `markdown` のとき。`markdown` の行ごとの、各文字の返答の本文の行での位置（行内のマーカーと注意書きの `> ` を除いた分のずれを戻す）'
+      - name: steps
+        type: '{ items: ReplyBlock[][] }'
+        description: '`kind` が `steps` のとき。項目ごとの中身のブロック'
+      - name: tree
+        type: '{ lines: { rule: string; name: string; note?: string }[] }'
+        description: '`kind` が `tree` のとき。行ごとの罫線・名前・`#` を除いた注釈'
+      - name: stack
+        type: '{ kind: "tabs" | "columns" | "cards" | "wide" | "view"; sections: { title?: string; body: ReplyBlock[] }[] }'
+        description: '`kind` が `stack` のとき。`title` はタブ名（タブだけ）'
     status: planned
 functions:
   - name: splitBlocks
@@ -64,7 +82,7 @@ functions:
     kind: 関数
     container: src/mdmark-style/blocks.ts
     usecase: ClaudeCodeの返答を共通スタイルで描く
-    summary: 返答の Markdown を `ReplyBlock` の並びにする。`parts` でオフにした種類は `markdown` のブロックにする
+    summary: 返答の Markdown を `ReplyBlock` の並びにする。`parts` でオフにした種類は、その部品の飾りだけを除外したブロックにする
     description: 図（言語 `mermaid` のコードブロック・`map` の範囲）と埋め込んだ HTML（`html` の範囲）は `code` のブロックにする。知らないマーカー・引数は無視して本文から取り除く。行内のマーカーを除いた前後の文字は 1 つの空白でつなぐ
     scope: public
     is_async: false
@@ -78,9 +96,13 @@ functions:
       description: 本文の順のブロック
     process: |-
       1. markdown-it でトークンにし、最上位のトークンを本文の行の範囲（`map`）ごとにまとめる
-      2. 単独の行の HTML コメントのマーカーを読み込み、`table`・`code` は直後のブロックの属性に、`details`〜`/details` と `section: closed` の見出しのセクションは `fold` のブロックにする
+      2. 単独の行の HTML コメントのマーカーを読み込み、`table`・`code` は直後のブロックの属性に、`details`〜`/details` と `section: closed` の見出しのセクションは `fold` のブロックにする。`fig` は直後の表の `figure` に、ブロックの頭から数えた通し番号を付け、`id` と番号の対応を控える（直後が表でなければ無視する）。`row-detail`〜`/row-detail` は直前の表の `details` にする。直前が表でないか `at` が表の行の数を超えるときは、中身をその位置のブロックとして並べる
       3. 表・見出し・コード・1 行目が `[!種類]` の引用を対応する `kind` にし、それ以外と `parts` でオフの種類は元の行からマーカーを除いた `markdown` にし、各文字の返答の本文の行での位置を `columns` に持たせる。注意書きの中身は `> ` を除いて同じ手順で分け、行は返答の本文の頭から数える
       4. `parts.fold` が偽のときは `fold` を作らず、中身のブロックをその位置に並べる
+      5. `steps` の範囲の最初の番号付きリストを、項目ごとのブロックの並びを持つ `steps` にする（`parts.steps` が偽なら番号付きリストの `markdown`）
+      6. 言語 `tree` のコードブロックを、ライブラリ本体の `parseTree` に注釈をそのまま返す `renderNote`（`(note) => note`）を渡して解釈する。入れ子の `TreeNode` を行の順にたどり、各行の `rule` を階層と兄弟の有無から `│   `・`├── `・`└── ` で作り直す（ASCII の罫線も同じ文字で描く）。`parseTree` が行番号を返すときと、字下げ（`│   `・`|   `・空白 4 つ）の後ろに罫線（`├── `・`└── `・`|-- `・`` `-- ``）が無い行があるときは、言語 `tree` の `code` にする（`parts.tree` が偽なら `code`）
+      7. `tabs`・`columns`・`cards`・`wide`・`view` の範囲を、区切りごとのブロックの並びを持つ `stack` にする。タブは範囲の中で最初に出る見出しの階層で区切りその文字を `title` に、段組みは `column` のマーカーで区切り、カードは項目を `タイトル — 説明` の箇条書きの `markdown` にする（`parts.stack` が偽ならマーカーを除いた中身をその位置に並べる）
+      8. `parts.figure` が真のとき、`markdown` の本文と表のセルの `[文字](#fig-{ID})` のリンクの文字を、手順 2 で控えた `表 {番号}` に替える（控えに無い `id` は替えない）
     unit_tests:
       - name: test_split_blocks
         case: 正常
@@ -130,11 +152,74 @@ functions:
         condition: 段落 `a <!-- x --> WS`
         mock: なし
         expected: '`markdown` が `a WS`、`columns` が `[[0, 1, 13, 14]]`'
+      - name: test_split_blocks_when_row_detail_and_figure
+        case: 正常
+        summary: 行の詳細と表の番号を表に付ける
+        condition: '`<!-- fig: {"id": "a"} -->` の直後の 2 行の表と、その直後の `<!-- row-detail: {"at": 1} -->`〜`<!-- /row-detail -->` の段落'
+        mock: なし
+        expected: '`table` の `figure` が 1、`details` が `row` 0 の 1 つで、詳細の段落が本文のブロックに残らない'
+      - name: test_split_blocks_when_steps
+        case: 正常
+        summary: ステップを分ける
+        condition: '`<!-- steps -->`〜`<!-- /steps -->` の 2 項目の番号付きリスト'
+        mock: なし
+        expected: '`steps` の `items` が 2 つ'
+      - name: test_split_blocks_when_tree
+        case: 正常
+        summary: ファイルツリーと解釈できないツリー
+        condition: 注釈を持つ言語 `tree` のコードブロックと、上の行より 2 階層深い行を持つ言語 `tree` のコードブロック
+        mock: なし
+        expected: 1 つ目が `tree` で注釈に `#` が無く、2 つ目が `lang` が `tree` の `code`
+      - name: test_split_blocks_when_stack
+        case: 正常
+        summary: タブ・段組み・CSV を分ける
+        condition: 見出し `macOS`・`Windows` で区切った `tabs` の範囲、`column` で 2 列に区切った `columns` の範囲、言語 `csv` のコードブロック
+        mock: なし
+        expected: '`stack`（`tabs`・`title` が `macOS`・`Windows`）・`stack`（`columns`・区切り 2 つ）・`table`（`header` が CSV の 1 行目）の順'
+      - name: test_split_blocks_when_document_part_disabled
+        case: 正常
+        summary: オフにした部品は飾りだけ除外する
+        condition: '`steps` の範囲と `fig` を付けた表、`parts.steps` と `parts.figure` が偽'
+        mock: なし
+        expected: 番号付きリストの `markdown` と、`figure` を持たない `table`
+      - name: test_split_blocks_when_row_detail_without_table
+        case: 正常
+        summary: 表に付けられない行の詳細は本文にする
+        condition: '段落の直後の `<!-- row-detail: {"at": 1} -->`〜`<!-- /row-detail -->`、と、2 行の表の直後の `at` が 5 の `row-detail`'
+        mock: なし
+        expected: どちらの詳細の中身もその位置の `markdown` になり、表の `details` が空
+      - name: test_split_blocks_when_figure_link
+        case: 正常
+        summary: 表を指すリンクの文字を番号に替える
+        condition: '`<!-- fig: {"id": "price"} -->` を付けた表と、段落 `[価格の表](#fig-price) と [別](#fig-none)`'
+        mock: なし
+        expected: '`markdown` が `[表 1](#fig-price) と [別](#fig-none)`'
+      - name: test_split_blocks_when_tree_rule_missing
+        case: 正常
+        summary: 字下げの後ろに罫線が無い行はコードブロックにする
+        condition: '`├── src/` の次の行が `│   index.ts` の言語 `tree` のコードブロック'
+        mock: なし
+        expected: '`lang` が `tree` の `code`'
+      - name: test_split_blocks_when_tree_note_escaped
+        case: 正常
+        summary: 注釈を HTML にしないで持つ
+        condition: ルートの行 `src/` の下に、注釈が `a < b & c` の行と、ASCII の罫線 `|-- ` と `` `-- `` の 2 行を持つ言語 `tree` のコードブロック
+        mock: なし
+        expected: '`tree` の注釈が `a < b & c` のままで、`rule` が空・`├── `・`└── `'
     refs:
       - IF-472-45#constraints[描き換えるブロック]
       - IF-472-45#constraints[マーカー]
       - IF-472-45#constraints[描かないブロック]
+      - IF-472-45#constraints[行の詳細]
+      - IF-472-45#constraints[ステップ]
+      - IF-472-45#constraints[ファイルツリー]
+      - IF-472-45#constraints[縦に並べる範囲]
+      - IF-472-45#constraints[図と表の番号]
+      - IF-472-45#constraints[部品のオン・オフ]
     status: planned
+    callees:
+      - MOD-472-285#functions[parseTree]
+      - MOD-472-301#functions[parseCsv]
 tags:
   - name: topic:マーカー
     main: true

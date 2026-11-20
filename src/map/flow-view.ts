@@ -240,6 +240,42 @@ const parentOf = (chart: Flowchart, id: string): string | undefined =>
 export const sessionStorageOf = (): Storage | undefined =>
   typeof sessionStorage === "undefined" ? undefined : sessionStorage;
 
+/** 絶対配置でなく、`display` が `none` でない子要素 */
+const inFlowChildren = (element: HTMLElement): Element[] =>
+  [...element.children].filter((child) => {
+    const style = getComputedStyle(child);
+    return (
+      !["absolute", "fixed"].includes(style.position) &&
+      style.display !== "none"
+    );
+  });
+
+/**
+ * ノードの中身が上下の余白と枠線の内側に入る高さから、ノードの高さを引いた量（px。配置の座標の単位）。
+ * 中身の高さは、最初の子要素のマージンの上端から最後の子要素のマージンの下端までで、中身を上寄せにするノードも上下の中央に配置するノードも同じ量になる
+ */
+const contentOverflow = (element: HTMLElement): number => {
+  const children = inFlowChildren(element);
+  const first = children[0];
+  const last = children.at(-1);
+  if (!first || !last || element.offsetHeight === 0) return 0;
+  const scale = element.getBoundingClientRect().height / element.offsetHeight;
+  const top =
+    first.getBoundingClientRect().top / scale -
+    Number.parseFloat(getComputedStyle(first).marginTop);
+  const bottom =
+    last.getBoundingClientRect().bottom / scale +
+    Number.parseFloat(getComputedStyle(last).marginBottom);
+  const style = getComputedStyle(element);
+  const frame = [
+    style.paddingTop,
+    style.paddingBottom,
+    style.borderTopWidth,
+    style.borderBottomWidth,
+  ].reduce((sum, value) => sum + Number.parseFloat(value), 0);
+  return bottom - top + frame - element.offsetHeight;
+};
+
 /** 要素の大きさの変化を見る ResizeObserver（使えない環境では `undefined`） */
 const resizeObserverOf = (callback: () => void): ResizeObserver | undefined =>
   typeof ResizeObserver === "undefined"
@@ -816,8 +852,8 @@ export const attachMapFlow = (
         `.mdmark-diagram-node[${attribute}="${CSS.escape(item.id)}"]`,
       );
       if (!element) continue;
-      // 枠線を含む高さに、中身があふれた分を足す
-      const over = Math.ceil(element.scrollHeight - element.clientHeight);
+      // 中身が上下の余白の内側に入る高さに足りない分を、高さに追加する
+      const over = Math.ceil(contentOverflow(element));
       if (over > 1) {
         sizes[item.id] = { w: item.w, h: item.h + over };
         changed = true;

@@ -49,3 +49,9 @@ export const Narrow: Story = {
   parameters: { server: { id: "map-state" } },
   args: { frameWidth: "390px" },
 };
+
+export const WrappedName: Story = {
+  name: "WrappedName",
+  parameters: { server: { id: "map-state" } },
+  args: { sample: "wrapped" },
+};

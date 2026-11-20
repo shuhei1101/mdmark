@@ -1,0 +1,134 @@
+id: MOD-472-366
+visibility: internal
+title: ClaudeCodeプラグイン / mdmark-style / inline-marks.ts
+lead: 返答の 1 行の文字列から、バッジ・文字の色・蛍光ペン・キーの行内の記法を読み取り、描き方ごとの区切りに分ける。
+test_files:
+  - tests/unit/src/mdmark-style/inline-marks.test.ts
+data_models:
+  - name: InlineSegment
+    title: 行内の区切り
+    container: src/mdmark-style/inline-marks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 1 行を描き方ごとに分けた 1 つ
+    properties:
+      - name: kind
+        type: '"text" | "badge" | "color" | "highlight" | "kbd"'
+        description: 区切りの種類
+      - name: text
+        type: string
+        description: 描く文字。`text` は元の文字、`badge` はラベル、`color`・`highlight` は囲んだ文字、`kbd` は空
+      - name: color
+        type: ColorName | undefined
+        description: '`badge`・`color`・`highlight` の色の名前。`highlight` で省かれたときは `yellow`、`badge` で省かれたときは無し'
+      - name: keys
+        type: string[] | undefined
+        description: '`kbd` のとき、`+` で区切ったキー'
+      - name: start
+        type: number
+        description: 行の中の、区切りの記法の頭の文字の位置
+    status: planned
+functions:
+  - name: splitInlineMarks
+    title: 行内の記法を分ける
+    kind: 関数
+    container: src/mdmark-style/inline-marks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: 1 行の文字列を `InlineSegment` の並びにする。記法が無い行は `text` の 1 つだけを返却する
+    description: バッジの色の分け方はライブラリ本体の `splitBadgeColor`、キーの区切りは `splitKeys`、色の名前の見分けは `isColorName` を使用する。頭が `badge:`・`kbd:` でない行内のコードの中は記法として解釈せず `text` に残す
+    scope: public
+    is_async: false
+    args:
+      - name: line
+        type: string
+        required: true
+        description: 返答の 1 行の Markdown
+    returns:
+      type: InlineSegment[]
+      description: 行の頭からの順の区切り
+    process: |-
+      1. 行内のコードを数え、頭が `badge:` のコードを `badge`、`kbd:` のコードを `kbd` にする（頭の後ろが空のものと `\:` で打ち消したものは `text`）
+      2. 行内のコード以外の `[文字]{color=色}` を `color`、`==文字==` と `==文字=={color=色}` を `highlight` にする（開きの `==` の直後と閉じの `==` の直前が空白のものは `text`）。`color` で色の名前に無い値は色を付けず、括弧と属性を除いた `text` にし、`highlight` で色の名前に無い値は `yellow` にする
+      3. 残りの文字を `text` の区切りにして、`start` の順に並べる
+    unit_tests:
+      - name: test_split_inline_marks
+        case: 正常
+        summary: 4 種類の記法を分ける
+        condition: 行に `badge:green:完了` のコード・`[注意]{color=red}`・`==決め手==`・`kbd:Ctrl+C` のコードをこの順に含む
+        mock: なし
+        expected: '`badge`（`green`・`完了`）・`color`（`red`・`注意`）・`highlight`（`yellow`・`決め手`）・`kbd`（`["Ctrl", "C"]`）がこの順で、間が `text`'
+      - name: test_split_inline_marks_when_unknown_color
+        case: 正常
+        summary: 知らない色の名前は色を付けない
+        condition: 行 `[注意]{color=pink}`
+        mock: なし
+        expected: '`text` の `注意` だけ'
+      - name: test_split_inline_marks_when_badge_without_color
+        case: 正常
+        summary: 色の無いバッジ
+        condition: 行内のコード `badge:v1:beta`
+        mock: なし
+        expected: '`badge` の `v1:beta` で `color` が無い'
+      - name: test_split_inline_marks_when_escaped
+        case: 正常
+        summary: 打ち消した記法と普通のコードの中はそのまま
+        condition: 行内のコード `badge\:v1` と、行内のコード `==x==`
+        mock: なし
+        expected: '`text` の 1 つだけで、元の行と同じ文字'
+      - name: test_split_inline_marks_when_plus_key
+        case: 正常
+        summary: '`+` のキー'
+        condition: 行内のコード `kbd:Ctrl++`
+        mock: なし
+        expected: '`kbd` の `keys` が `["Ctrl", "+"]`'
+      - name: test_split_inline_marks_when_spaced_equals
+        case: 正常
+        summary: 空白で囲んだ `==` は蛍光ペンにしない
+        condition: 行 `a == b == c`
+        mock: なし
+        expected: '`text` の 1 つだけで、元の行と同じ文字'
+      - name: test_split_inline_marks_when_highlight_unknown_color
+        case: 正常
+        summary: 知らない色の名前の蛍光ペンは黄色にする
+        condition: 行 `==x=={color=pink}`
+        mock: なし
+        expected: '`highlight`（`yellow`・`x`）だけ'
+    callees:
+      - MOD-472-286#functions[splitBadgeColor]
+      - MOD-472-293#functions[splitKeys]
+      - MOD-472-312#functions[isColorName]
+    refs:
+      - IF-472-45#constraints[行内の記法]
+    status: planned
+  - name: inlinePlainText
+    title: 行内の記法を描いた文字にする
+    kind: 関数
+    container: src/mdmark-style/inline-marks.ts
+    usecase: ClaudeCodeの返答を共通スタイルで描く
+    summary: '`InlineSegment` の並びを、画面に描かれる文字の列にする。表のセルの幅と折り返しの位置を数えるために使用する'
+    scope: public
+    is_async: false
+    args:
+      - name: segments
+        type: InlineSegment[]
+        required: true
+        description: 行内の区切り
+    returns:
+      type: string
+      description: バッジは前後に空白を付けたラベル、キーは `[キー]` を `+` でつないだ文字、ほかは `text` をつないだ文字
+    process: 1. 区切りごとに描かれる文字にしてつなぐ
+    unit_tests:
+      - name: test_inline_plain_text
+        case: 正常
+        summary: 描かれる文字にする
+        condition: '`badge`（`完了`）・`text`（` と `）・`kbd`（`["Ctrl", "C"]`）の区切り'
+        mock: なし
+        expected: '` 完了  と [Ctrl]+[C]`'
+    refs:
+      - IF-472-45#constraints[行内の記法]
+    status: planned
+tags:
+  - name: topic:バッジ
+  - name: topic:色
+  - name: topic:蛍光ペン
+  - name: topic:キー
+  - name: tool:claude-code

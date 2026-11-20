@@ -1,7 +1,7 @@
 id: SC-472-97
 visibility: internal
 title: ClaudeCodeの返答を共通スタイルで描く
-lead: Claude Code を使用する人が、mdmark-style を入れた Claude Code の画面で、アシスタントの返答の表・注意書き・見出し・コードを mdmark の共通スタイルの部品で確認する。返答に記載された mdmark のマーカーは描き方に使用し、画面には出さない。
+lead: Claude Code を使用する人が、mdmark-style を入れた Claude Code の画面で、アシスタントの返答の表・注意書き・見出し・コードと、行の詳細・ステップなどの本文の部品を mdmark の共通スタイルの部品で確認する。返答に記載された mdmark のマーカーは描き方に使用し、画面には出さない。
 primary_actor: Claude Code を使用する人
 trigger: アシスタントの返答が Claude Code の画面に描かれる
 preconditions:
@@ -9,7 +9,7 @@ preconditions:
   - mdmark-style の設定の `enabled` が `true` で、`targets` に `assistant` がある
 stakeholders:
   - name: Claude Code を使用する人
-    interest: 返答の表・注意書き・見出し・コードを、Web で開く mdmark の文書と同じ見た目で確認できる。マーカーの文字が画面に出ない
+    interest: 返答の表・注意書き・見出し・コードと、行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブなどの中身・図と表の番号を、Web で開く mdmark の文書と同じ見た目で確認できる。マーカーの文字が画面に出ない
   - name: Claude Code
     interest: mdmark-style が描けない返答でも、Claude Code の元の描画で返答が出る
 scenarios:
@@ -171,7 +171,48 @@ scenarios:
       - 返答が Claude Code の元の描画で描かれる
       - Claude Code のデバッグログに、mdmark-style の名前と設定ファイルを読めなかった理由の行がある
     test: test_error_when_config_unreadable
-success_guarantee: 返答の表・注意書き・見出し・コードが共通スタイルの部品で描かれ、mdmark のマーカーの文字は画面に出ない。設定でオフにした部品と場所は Claude Code の描き方のまま描かれる。
+  - name: 正常シナリオ（本文の部品）
+    setup:
+      - name: mdmark-style を入れた Claude Code
+        description: 正常シナリオと同じ
+        notes: 設定ファイルは配置せず、既定値で動かす
+      - name: 本文の部品の返答
+        description: '`<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` の詳細を持つ表・`<!-- steps -->` の 2 項目の番号付きリスト・注釈（`# ソース`）を持つ言語 `tree` のコードブロック・行内の `badge:green:完了`・`[注意]{color=red}`・`==決め手==`・`kbd:Ctrl+C`・見出し `macOS`・`Windows` で区切った `<!-- tabs -->` の範囲・`<!-- column -->` で 2 列に区切った `<!-- columns -->` の範囲・2 項目の `<!-- cards -->` のリスト・`<!-- view -->` の範囲の表・`<!-- wide -->` 〜 `<!-- /wide -->` で囲んだ表・言語 `csv` のコードブロック・`<!-- fig: {"id": "price"} -->` を付けた表を持つ Markdown をファイルに配置し、その中身だけを返答させる発言'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as Claude Code を使用する人
+        participant C as Claude Code
+        participant M as mdmark-style
+        U->>C: 本文の部品の Markdown を返答させる発言
+        C->>M: ui.render（AssistantMessage と返答の本文）
+        M->>M: 本文をブロックに分け、部品のマーカーと記法を描き方に使用する
+        M-->>C: 共通スタイルの部品の木
+        C-->>U: 描き換えた返答
+        U->>C: 表の行の詳細のボタンを押す
+        C->>M: ui.render（同じ返答）
+        M-->>C: 行の下に詳細を開いた部品の木
+        C-->>U: 行の詳細が開いた返答
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表の 1 行目の先頭に `▸` の開閉のボタンが描かれ、詳細の文は描かれない。押すと 1 行目の下に詳細の文が開き、もう一度押すと閉じる
+      - ステップの番号 `1`・`2` が共通スタイルの色で描かれ、番号の右に項目の文が描かれる
+      - ファイルツリーが罫線のまま等幅で描かれ、注釈 `ソース` が薄い色で描かれて `#` は出ない
+      - バッジ `完了` が緑の面と緑の文字、`注意` が赤の太字、`決め手` が黄色の背景で描かれ、`badge:`・`{color=red}`・`==` の文字は出ない
+      - キーが `[Ctrl]+[C]` の囲みで描かれ、`kbd:` の文字は出ない
+      - タブの `macOS`・`Windows` が見出しとして描かれ、それぞれの下に中身が順に縦に並ぶ
+      - 段組みの 2 列の中身とカードの 2 項目が、横に並ばずに記載した順に縦に並ぶ
+      - ビューの範囲の表・wide の範囲の表・CSV のコードブロックが、正常シナリオの表と同じ罫線の表で描かれ、CSV は 1 行目が見出しの行になる。ビュー・wide・CSV の切り替えのボタンは描かれない
+      - 番号を付けた表の上に `表 1` が描かれる
+      - 画面に `<!--` の文字が 0 件
+    test: test_normal_when_document_parts
+success_guarantee: 返答の表・注意書き・見出し・コードと、行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブなどの中身・図と表の番号が共通スタイルの部品で描かれ、mdmark のマーカーの文字は画面に出ない。設定でオフにした部品と場所は Claude Code の描き方のまま描かれる。
 minimal_guarantee: mdmark-style が描けないときも、返答は Claude Code の元の描画で出て、セッションは続く。返答として保存される本文は変わらない。
 notes:
   描かないもの: 図（言語 `mermaid` のコードブロック・map の範囲）と埋め込んだ HTML（`<!-- html -->` の範囲）は、図や HTML として描かず、コードブロックとして Code 部品で描く。文字の大きさは変えない。
@@ -186,3 +227,9 @@ tags:
   - name: topic:見出し
   - name: topic:コードブロック
   - name: topic:マーカー
+  - name: topic:ステップ
+  - name: topic:ファイルツリー
+  - name: topic:バッジ
+  - name: topic:タブ
+  - name: topic:色
+  - name: topic:図表の番号

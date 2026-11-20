@@ -1,5 +1,7 @@
 import { type Engine, expect, test } from "claude-code/testing";
 import {
+  allTexts,
+  DOCUMENT_PARTS_REPLY,
   GLOSSARY_CONFIG,
   GLOSSARY_FILES,
   installWorld,
@@ -7,6 +9,7 @@ import {
   PLUGIN,
   settingsFile,
   textOf,
+  textProps,
 } from "./world.ts";
 
 /** 返答の画面の要素を全て持つ返答 */
@@ -206,4 +209,79 @@ test("test_user_band_when_light_theme", async ($, on) => {
   const band = (await ui.drawn()) as { props?: Record<string, unknown> };
   expect(band.props?.backgroundColor).toBe("#f0f0f0");
   await ui.unmount();
+});
+
+/** 本文の部品を全てオフにする設定の行 */
+const DOCUMENT_PARTS_OFF = [
+  "parts:",
+  "  row_detail: false",
+  "  steps: false",
+  "  tree: false",
+  "  inline: false",
+  "  stack: false",
+  "  figure: false",
+];
+
+// 返答の行の詳細のボタン・ステップ・ファイルツリー・バッジ・文字の色・キー・タブ名の見出し・表の番号（正常系）
+test("test_document_part_elements", async ($, on) => {
+  // 準備
+  installWorld(on, { files: {} });
+  for (const surface of SURFACES) {
+    // 実行
+    const ui = await mount($, {
+      component: "AssistantMessage",
+      text: DOCUMENT_PARTS_REPLY,
+      surface,
+    });
+    // 検証
+    const tree = await ui.drawn();
+    const texts = (text: string) =>
+      nodesOf(tree, (node) => node.type === "Text" && textOf(node) === text);
+    expect((await ui.find({ type: "Button" }))?.props.label).toBe("[ ▸ ]");
+    expect(textProps(tree, "1").bold).toBe(true);
+    expect(texts("│")).toHaveLength(1);
+    expect(textProps(tree, "ソース").dimColor).toBe(true);
+    expect(textProps(tree, " 完了 ").backgroundColor).toBeDefined();
+    expect(textProps(tree, "注意").bold).toBe(true);
+    expect(textProps(tree, "決め手").backgroundColor).toBeDefined();
+    expect(texts("[Ctrl]")).toHaveLength(1);
+    expect(textProps(tree, "macOS").bold).toBe(true);
+    expect(textProps(tree, "表 1").dimColor).toBe(true);
+    await ui.unmount();
+  }
+});
+
+// 本文の部品をオフにした返答（正常系）
+test("test_document_part_elements_when_parts_disabled", async ($, on) => {
+  // 準備
+  installWorld(on, { files: settingsFile(...DOCUMENT_PARTS_OFF) });
+  for (const surface of SURFACES) {
+    // 実行
+    const ui = await mount($, {
+      component: "AssistantMessage",
+      text: DOCUMENT_PARTS_REPLY,
+      surface,
+    });
+    // 検証
+    const tree = await ui.drawn();
+    const texts = (text: string) =>
+      nodesOf(tree, (node) => node.type === "Text" && textOf(node) === text);
+    expect(
+      (await ui.findAll({ type: "Button" })).map((node) => node.props.label),
+    ).not.toContain("[ ▸ ]");
+    expect(texts("│")).toEqual([]);
+    expect(texts("表 1")).toEqual([]);
+    expect(texts(" 完了 ")).toEqual([]);
+    expect(
+      await ui.find({ type: "Code", text: "├── src/ # ソース" }),
+    ).toBeDefined();
+    expect(allTexts(tree).join("\n")).toContain("badge:green:完了");
+    expect(
+      nodesOf(
+        tree,
+        (node) => node.type === "Box" && node.props?.paddingLeft === 2,
+      ).filter((node) => allTexts(node).join("").includes("brew")),
+    ).toEqual([]);
+    await ui.unmount();
+  }
 });

@@ -1,7 +1,7 @@
 id: IF-472-45
 visibility: internal
 title: 返答を共通スタイルで描く
-lead: Claude Code が返答のブロックを描く前に、返答の Markdown をブロックに分け、表・注意書き・見出し・コードブロック・開閉の範囲を mdmark の共通スタイルの部品の木で描き、mdmark のマーカーを描き方に使用して画面から消す。段落・箇条書きは Claude Code の Markdown 部品に任せ、描けないときは Claude Code の元の描画に任せる。
+lead: Claude Code が返答のブロックを描く前に、返答の Markdown をブロックに分け、表・注意書き・見出し・コードブロック・開閉の範囲と、行の詳細・ステップなどの本文の部品を mdmark の共通スタイルの部品の木で描き、mdmark のマーカーを描き方に使用して画面から消す。段落・箇条書きは Claude Code の Markdown 部品に任せ、描けないときは Claude Code の元の描画に任せる。
 entry:
   kind: trigger
   value: 'Claude Code の mod の `ui.render`（`component`: `AssistantMessage`）のフック'
@@ -69,9 +69,9 @@ constraints:
   - item: 描き換える条件
     constraint: '`enabled` が `true` で、`targets` に `assistant` があるときだけ描き換える。そうでなければ `next(e)` を返却する'
   - item: 描き換えるブロック
-    constraint: '表・注意書き（`> [!NOTE]` などの 5 種）・見出し（`#`〜`######`）・コードブロック・開閉の範囲（`<!-- details: タイトル -->`〜`<!-- /details -->`・`<!-- section: closed -->` の付いた見出しの節・`closed` の注意書き）。`parts` でオフにした種類と、ほかのブロック（段落・箇条書き・引用）は、そのブロックの Markdown を `Markdown` 部品に渡して Claude Code の標準の描き方で描く'
+    constraint: '表・注意書き（`> [!NOTE]` などの 5 種）・見出し（`#`〜`######`）・コードブロック・開閉の範囲（`<!-- details: タイトル -->`〜`<!-- /details -->`・`<!-- section: closed -->` の付いた見出しの節・`closed` の注意書き）・行の詳細（`<!-- row-detail -->`）・ステップ（`<!-- steps -->`）・ファイルツリー（言語 `tree` のコードブロック）・縦に並べる範囲（`<!-- tabs -->`・`<!-- columns -->`・`<!-- cards -->`・`<!-- wide -->`・`<!-- view -->`）・言語 `csv` のコードブロック・番号を付けた表（`<!-- fig -->`）。行内の記法（`badge:`・`[文字]{color=色}`・`==文字==`・`kbd:`）は、引用を除くブロックの中で描き換える。`parts` でオフにした種類と、ほかのブロック（段落・箇条書き・引用）は、そのブロックの Markdown を `Markdown` 部品に渡して Claude Code の標準の描き方で描く'
   - item: マーカー
-    constraint: 単独の行のマーカーと行内のマーカーを描かない。行内のマーカーを消した後の前後の文字は 1 つの空白でつなぐ。`table` の `kind`・`code` の `title`・`lines`・`highlight` を描き方に使用し、知らないマーカー・引数は描かずに無視する
+    constraint: 単独の行のマーカーと行内のマーカーを描かない。行内のマーカーを消した後の前後の文字は 1 つの空白でつなぐ。`table` の `kind`・`code` の `title`・`lines`・`highlight`・`row-detail` の `at`・`fig` の `id` を描き方に使用し、知らないマーカー・引数は描かずに無視する
   - item: 描かないブロック
     constraint: 図（言語 `mermaid` のコードブロック・`map` の範囲）と埋め込んだ HTML（`html` の範囲）はコードブロックとして描く
   - item: 表
@@ -85,7 +85,7 @@ constraints:
   - item: 開閉の範囲
     constraint: 閉じた範囲は Button（ラベル `▸ {タイトル}`）だけを描き、押すと開閉の状態を反転して `$.ui.invalidate("ui.render")` で描き直す。開いた範囲は Button（ラベル `▾ {タイトル}`）の下に中身を描く。開閉の状態は `requestId`・ブロックの本文（`e.props.text`）のハッシュ・範囲の順番を鍵にして（1 つの返答の複数のブロックが同じ `requestId` を持っても鍵が重ならない） mod のモジュールの中に持ち、Claude Code を閉じると消える
   - item: 色
-    constraint: 見出し・注意書きの種類・用語の下線・罫線の色は、共通スタイルの定義のモジュールの値を使用する
+    constraint: 見出し・注意書きの種類・用語の下線・罫線・色の名前（`blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`）の文字色と背景色の色は、共通スタイルの定義のモジュールの値を使用する
   - item: 部品の木の上限
     constraint: ノードの数 20,000・深さ 32・文字数 100,000 のどれかを超えるときは `next(e)` を返却する
     decided_by: LIB-472-1#
@@ -93,6 +93,20 @@ constraints:
     constraint: インターフェース定義『発言の用語にマーカーを付ける』の制約「用語の照合」「下線」「カード」「脚注」と同じ規則で、返答の段落・箇条書き・注意書きの中の用語にも付ける。用語のマーカーを付けた段落・箇条書きは `Markdown` 部品に任せず、同じ描き方（太字・行内のコード・リンク）を Text で描く
   - item: 読み直し
     constraint: 設定ファイルと用語集は呼ばれるたびに `$.fs.read` で読み直す
+  - item: 行の詳細
+    constraint: 直前の表の `at` 番目の行（見出しの行を除いて 1 から数える）の先頭のセルに Button（閉じているとき `[ ▸ ]`、開いているとき `[ ▾ ]`）を描き、押すと開閉の状態を反転して `$.ui.invalidate("ui.render")` で描き直す。開いた行の下に、全ての列をまたぐ 1 つのセルで詳細の中身を 2 桁字下げして描く。描いた直後は閉じる。開閉の状態の鍵と持ち方は制約「開閉の範囲」と同じ。`at` が表の行の数を超えるときと直前が表でないときは、詳細の中身を表の後ろに本文として描く
+  - item: ステップ
+    constraint: 範囲の最初の番号付きリストの項目ごとに、見出しの色の太字の番号と項目の中身を横に並べ、項目の間に罫線の色の `│` を 1 行描く。項目の中身は段落・箇条書きと同じ描き方にし、入れ子の番号付きリストはステップにしない。番号付きリストが無い範囲は中身をそのまま描く
+  - item: ファイルツリー
+    constraint: 罫線（`├── `・`└── `・`│   ` と `tree --charset=ascii` の `|-- `・`` `-- ``・`|   `）を薄い色、名前を本文の色で等幅のまま描き、前に空白がある最初の `#` から後ろを注釈として全ての行で同じ桁にそろえて薄い色で描く（`#` は描かない）。開閉・アイコン・コピーは描かない。上の行より 2 階層以上深い行か、罫線の後ろに罫線が無い行があるときは、コードブロックの部品で描く
+  - item: 行内の記法
+    constraint: バッジ（`badge:文言`・`badge:色:文言`）は前後に 1 桁の空白を付けた文言を色の名前の背景色と文字色（色が無いときは、共通スタイルの定義の面の色と本文の色）で描く。文字の色（`[文字]{color=色}`）は色の名前の文字色の太字、蛍光ペン（`==文字==`・`==文字=={color=色}`）は色の名前の背景色（既定は `yellow`）と本文の文字色、キー（`kbd:Ctrl+C`）は `+` で区切ったキーごとに `[Ctrl]` の太字と薄い色の `+` で描く。色の名前に無い値と、頭の後ろが空の記法は、mdmark の記法の説明と同じく色を付けずに描くか行内のコードのまま描く。行内のコードの中とコードブロックの中は描き換えない。行内の記法を含む段落・箇条書きは `Markdown` 部品に任せず、制約「用語のマーカー」と同じく Text で描く
+  - item: 縦に並べる範囲
+    constraint: 切り替え・横並び・広げる幅の Button を描かず、中身を記載した順に縦に並べる。タブは範囲の中で最初に出る見出しの階層で区切り、タブ名を制約「見出し」と同じ描き方で描き、中身を 2 桁字下げする。段組み・カードの格子・wide の範囲は見出しを付けずに描き、カードは項目ごとに `タイトル — 説明` の箇条書きにする。ビューの範囲の最初の表と言語 `csv` のコードブロック（1 行目を見出しの行にする）は、制約「表」と同じ描き方で描く。範囲の中のブロックは、範囲の外と同じ部品で描く
+  - item: 図と表の番号
+    constraint: '`fig` のマーカーの直後の表の上に、返答のブロックの頭から数えた通し番号の `表 {番号}` を薄い色で描く。画像・ギャラリーに付けた `fig` は描かずに無視する。本文の `#fig-{ID}` へのリンクの文字はその表の `表 {番号}` に替える'
+  - item: 部品のオン・オフ
+    constraint: '`parts` の `row_detail`・`steps`・`tree`・`inline`・`stack`・`figure` が `false` のとき、その部品の飾りだけを外し、マーカーの行は描かない。`row_detail` は開閉の Button を描かず、詳細の中身を表の後ろに `Markdown` 部品で描く。`steps` は番号付きリストを `Markdown` 部品で描く。`tree` は言語 `tree` のコードブロックを制約「コードブロック」のとおりに描く（`parts.code` が `false` なら `Markdown` 部品）。`inline` は行内の記法を記載した文字のまま描く。`stack` は縦に並べる範囲のタブ名の見出し・字下げ・カードの箇条書きを作らず、言語 `csv` のコードブロックを表にしない。`figure` は `表 {番号}` を描かず、リンクの文字を替えない。範囲の中のブロックと、番号を付けた表そのものは、それぞれの部品のオン・オフのとおりに描く'
 flows:
   - name: 正常系
     summary: 既定の設定で、表・注意書き・見出し・コードブロックを共通スタイルで描き、マーカーを消す
@@ -341,6 +355,118 @@ flows:
     test: test_error_when_config_unreadable
     refs:
       - SC-472-97#scenarios[異常シナリオ（設定ファイルを読めない）]
+  - name: 正常系（本文の部品）
+    summary: 行の詳細・ステップ・ファイルツリー・行内の記法・縦に並べる範囲・図と表の番号を共通スタイルで描き、マーカーと記法の文字を消す
+    setup:
+      - name: Mock
+        description: 正常系と同じ
+      - name: 本文の部品の返答
+        description: SC-472-97 の `正常シナリオ（本文の部品）` の `本文の部品の返答` と同じ Markdown
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: ui.render（AssistantMessage・本文）
+        M->>M: 本文をブロックに分け、部品のマーカーと記法を描き方に使用する
+        M-->>C: 共通スタイルの部品の木
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表の 1 行目の先頭のセルにラベル `[ ▸ ]` の Button があり、詳細の中身の Text が無い
+      - ステップの番号 `1`・`2` が見出しの色の太字の Text で、項目の間に罫線の色の `│` の Text がある
+      - ファイルツリーの注釈 `ソース` が薄い色の Text で、`#` を含まない
+      - バッジ `完了` が `green` の背景色と文字色の Text、`注意` が `red` の文字色の太字の Text、`決め手` が `yellow` の背景色の Text、キーが `[Ctrl]`・`+`・`[C]` の Text で描かれる
+      - タブ名 `macOS`・`Windows` が見出しの色の太字の Text で、中身が 2 桁字下げされる。段組み・カードの中身が記載した順に縦に並ぶ
+      - ビュー・wide・CSV の表が罫線の Box で描かれ、切り替えの Button が無い
+      - 番号を付けた表の上に `表 1` の Text がある
+      - 部品の木の Text に `<!--`・`badge:`・`{color=`・`==`・`kbd:` が 0 件
+    test: test_normal_when_document_parts
+    refs:
+      - SC-472-97#scenarios[正常シナリオ（本文の部品）]
+  - name: 正常系（行の詳細を押す）
+    summary: 行の詳細の Button を押すと行の下に詳細が開き、もう一度押すと閉じる
+    setup:
+      - name: Mock
+        description: 正常系と同じ。描いた部品の木の Button を `ui.press` で押す
+      - name: 行の詳細
+        description: '2 行の表の直後に `<!-- row-detail: {"at": 1} -->` 〜 `<!-- /row-detail -->` で詳細「りんごは青森県から届く。」を持つ返答'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: ui.render（AssistantMessage・本文）
+        M-->>C: 1 行目に Button（[ ▸ ]）を持つ表
+        C->>M: Button の押下
+        M->>C: $.ui.invalidate(ui.render)
+        C->>M: ui.render（同じ requestId）
+        M-->>C: 1 行目の下に詳細を開いた表
+      ```
+
+      <!-- /map -->
+    expected:
+      - 描いた直後は Button のラベルが `[ ▸ ]` で、詳細の Text が無い
+      - 1 回押すと、ラベルが `[ ▾ ]` になり、1 行目と 2 行目の間に `りんごは青森県から届く。` の Text が描かれる
+      - 2 回押すと、描いた直後と同じ部品の木に戻る
+    test: test_normal_when_row_detail_pressed
+    refs:
+      - SC-472-97#scenarios[正常シナリオ（本文の部品）]
+  - name: 正常系（本文の部品をオフにしている）
+    summary: '`parts.steps` と `parts.figure` が `false` のとき、ステップの範囲だけ Markdown 部品に任せ、中の行内の記法は描き換える。番号を付けた表は表の部品のまま `表 1` だけを外す'
+    setup:
+      - name: Mock
+        description: '正常系と同じ。`on("fs.read")` で `global.parts.steps: false`・`global.parts.figure: false` の設定ファイルを返す'
+      - name: 本文の部品の返答
+        description: 正常系（本文の部品）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        participant F as ファイル
+        C->>M: ui.render（AssistantMessage・本文）
+        M->>F: 設定ファイルを読む
+        F-->>M: parts.steps・figure: false
+        M-->>C: ステップだけ Markdown 部品の部品の木
+      ```
+
+      <!-- /map -->
+    expected:
+      - ステップの範囲が、マーカーの行を除いた番号付きリストの Markdown を渡した `Markdown` 部品で描かれる
+      - そのほかの本文の部品は正常系（本文の部品）と同じ部品で描かれる
+      - 番号を付けた表は正常系（本文の部品）と同じ罫線の Box で描かれ、上に `表 1` の Text が無い
+    test: test_normal_when_document_part_disabled
+  - name: 正常系（ファイルツリーを解釈できない）
+    summary: 上の行より 2 階層以上深い行を持つ言語 `tree` のコードブロックを、コードブロックの部品で描く
+    setup:
+      - name: Mock
+        description: 正常系と同じ
+      - name: 解釈できないファイルツリー
+        description: '`├── src/ # ソース` の次の行が `│   │   └── index.ts` の言語 `tree` のコードブロックを持つ返答'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as Claude Code
+        participant M as mdmark-style
+        C->>M: ui.render（AssistantMessage・本文）
+        M->>M: 罫線の階層を読めない
+        M-->>C: コードブロックの部品の部品の木
+      ```
+
+      <!-- /map -->
+    expected:
+      - コードブロックが背景の面の Box の中の `Code` 部品で、言語のラベル `tree` を持ち、`#` を含む元の行のまま描かれる
+    test: test_normal_when_tree_unreadable
 refs:
   - CFG-472-4#
   - LIB-472-1#
@@ -354,3 +480,9 @@ tags:
   - name: topic:注意書き
   - name: topic:コードブロック
   - name: topic:マーカー
+  - name: topic:ステップ
+  - name: topic:ファイルツリー
+  - name: topic:バッジ
+  - name: topic:タブ
+  - name: topic:色
+  - name: topic:図表の番号

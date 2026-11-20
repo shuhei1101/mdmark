@@ -1,0 +1,23 @@
+$ run_runner（gh workflow run test.yml -f layer=unit ...）
+run=https://github.com/shuhei1101/mdmark/actions/runs/44588701195
+failed to get jobs: HTTP 404: Not Found (https://api.github.com/repos/shuhei1101/mdmark/actions/runs/44588701195/jobs?per_page=100)
+run 44588701195 is still in progress; logs will be available when it is complete
+exit=1
+
+# ランナーで回せなかった理由: 起動した直後に gh run watch が実行のジョブを 404 で取得できず、テストランナーの集計の行が出なかった。run_runner は起動し直さず、手元の全件実行で回した
+
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-sequence-participant-hover
+
+
+ Test Files  322 passed (322)
+      Tests  2568 passed (2568)
+   Start at  03:30:26
+   Duration  35.63s (worker 81%, tests 13%, import 5%, transform 1%)
+
+exit=0

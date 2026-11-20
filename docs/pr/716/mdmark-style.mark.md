@@ -1,0 +1,164 @@
+# mdmark-style
+
+## 現状
+
+<!-- table: {"kind": "data"} -->
+
+| 分類 | ページ / ファイル | 概要 | 補足 |
+| --- | --- | --- | --- |
+| ドキュメント | [docs/scenario/SC-472-97.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/scenario/SC-472-97.yaml) | 返答を共通スタイルで描く | 追加する部品の期待を追加する |
+| ドキュメント | [docs/scenario/SC-472-99.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/scenario/SC-472-99.yaml) | セッションの開始でマーカーの記載方法を受け取る | 追加する部品のマーカーの記載方法を説明に含める |
+| ドキュメント | [docs/scenario/SC-472-98.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/scenario/SC-472-98.yaml) | 発言と返答の用語にマーカーを付ける | 実行のみ |
+| ドキュメント | [docs/interface/IF-472-45.tsx.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/interface/IF-472-45.tsx.yaml) | 返答を共通スタイルで描く | 制約の「描き換えるブロック」に部品を追加し、部品ごとの制約とフローを追加する |
+| ドキュメント | [docs/interface/IF-472-47.ts.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/interface/IF-472-47.ts.yaml) | マーカーの記載方法を注入する | 制約「説明の文」に追加する部品のマーカーを含める |
+| ドキュメント | [docs/config/CFG-472-4.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/config/CFG-472-4.yaml) | 設定: mdmark-style | `parts` のキーを追加する |
+| ドキュメント | [docs/screen/SCR-472-5.tsx.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/screen/SCR-472-5.tsx.yaml) | ClaudeCodeの返答と発言 | 行の詳細の開閉のボタン・ステップ・ファイルツリー・バッジなどの要素を追加する |
+| ドキュメント | [docs/mock/pages/claude-code-terminal/699/mdmark-style/index.html](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/mock/pages/claude-code-terminal/699/mdmark-style/index.html) | claude-code-terminal のモック | この PR の番号のフォルダに、追加する部品を描いた画面のモックを作る |
+| ドキュメント | [docs/module/](https://github.com/shuhei1101/mdmark/tree/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/docs/module) の MOD-472-352・MOD-472-353・MOD-472-355・MOD-472-358 | settings.ts・blocks.ts・reply.tsx・marker-guide.ts のモジュール構成 | 部品の分け方と描き方を追加する。reply.tsx が大きくなるときは部品ごとのモジュールに分ける |
+| 実装 | [src/mdmark-style/](https://github.com/shuhei1101/mdmark/tree/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/src/mdmark-style) | 返答の描き換え・ブロックへの分け方・設定・マーカーの記載方法の注入 | 部品の追加 |
+| 実装 | [mdmark-style/settings.sample.yaml](https://github.com/shuhei1101/mdmark/blob/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/mdmark-style/settings.sample.yaml) | 設定のキーの見本 | 追加する `parts` のキーを追加する |
+| テスト | [tests/unit/src/mdmark-style/](https://github.com/shuhei1101/mdmark/tree/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/tests/unit/src/mdmark-style) | 単体テスト | 部品ごとのケースを追加する |
+| テスト | [tests/integration/ClaudeCodeプラグイン/mdmark-style/](https://github.com/shuhei1101/mdmark/tree/4e2ff2643a1bb2caa39955c9a8705e88b8f672a5/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/mdmark-style) | 結合テスト（render-reply・screen・inject-marker-guide） | 追加するフローと画面の要素のケースを追加する |
+
+<!-- /table -->
+
+## 変更方針
+
+<!-- table: {"kind": "data"} -->
+
+| 対象 | 方針 | 補足 |
+| --- | --- | --- |
+| マーカーの解釈 | 行の詳細・ステップ・タブ・段組み・カードの格子・wide・ビュー・CSV・図と表の番号のマーカーと、行内のバッジ・文字の色・蛍光ペン・キーの記法を、ライブラリ本体の記法の解釈と同じ規則で解釈する | ライブラリ本体の関数をまとめて使用できるかはモジュール構成設計で決める |
+| 行の詳細 | 表の行ごとに開閉の Button を描き、開閉の状態は今の開閉の範囲と同じ鍵で持つ | - |
+| ステップ | 番号を共通スタイルの色で描き、項目の中身は今の段落・箇条書きと同じ描き方にする | - |
+| ファイルツリー | 罫線のツリーを等幅のまま描き、注釈を薄い色にする | 階層を解釈できない行があるときはコードブロックのまま描く |
+| バッジ・文字の色・蛍光ペン・キー | 色の名前の文字色・背景色を共通スタイルの定義から取り、キーは `[Ctrl]` の囲みで描く | 色の名前に無い値は色を付けずに描く |
+| タブ・段組み・カードの格子・wide・ビュー・CSV | 区切りの名前を見出しにして中身を縦に並べ、ビュー・CSV の表は今の表の部品で描く | - |
+| 図と表の番号 | 番号を付けた表の前に番号の文字を描く | 番号を図に付けたときは、図をコードブロックとして描く今の描き方の前に番号を描く |
+| 設定 | 要件の表の行ごとに `parts` のキー（`row_detail`・`steps`・`tree`・`inline`・`stack`・`figure`）を追加し、既定を `true` にする | - |
+| マーカーの記載方法の注入 | 追加する部品のうちステップ・ファイルツリー・バッジの記載方法を説明の文に含め、今の文字数の上限に収める | - |
+| 既存機能への影響 | 今の表・注意書き・見出し・コードブロック・開閉の範囲・用語のマーカーの描き方を変えない | SC-472-97・SC-472-98 の結合テストと E2E で確認する |
+| 部品の木の上限 | 追加した部品も、今の上限（ノードの数・深さ・文字数）を超えるときは `next(e)` を返却する | - |
+
+<!-- /table -->
+
+## 設計書の確定コミット
+
+| 工程 | 範囲 | 補足 |
+| --- | --- | --- |
+| 単一ユースケース設計 | `4e2ff264..e1ab85ea` | - |
+| 単一ユースケース設計 | `e1ab85ea..963d46e1` | レビューの指摘の修正 |
+| 単一ユースケース設計 | `963d46e1..fc90f0fe` | モックのレビューの指摘（バッジの描き方）の修正 |
+| インターフェース定義設計 | `fc90f0fe..b114f304` | IF-472-45・IF-472-47・CFG-472-4 |
+| インターフェース定義設計 | `b114f304..a8635350` | レビューの指摘（部品のオフ・色の無いバッジ）の修正 |
+| 画面設計 | `a8635350..e9ab35d8` | SCR-472-5 |
+| 画面設計 | `e9ab35d8..c9cc15d6` | レビューの指摘（モックの照合）の修正 |
+| モジュール構成設計 | `c9cc15d6..ed0a14b2` | MOD-472-352・353・355・357・358・359・366・367 |
+| モジュール構成設計 | `c514d718..01a94fbf` | レビューの指摘（tree・fig・row-detail・セルの行内の記法）の修正 |
+| モジュール構成設計 | `0d16b1f5..30bc9d4d` | 実装のレビューの指摘（蛍光ペンの空白と知らない色・折り返した行の行の詳細）の手順と単体テストの行の修正 |
+
+## テスト結果
+
+### 単体
+
+<!-- table: {"kind": "data"} -->
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/mdmark-style/inline-marks.test.ts` | 全実行 | 新規 | ✅ | 8 テスト pass<br>`テスト結果/20261120042208_30bc9d4d_単体テスト.log` |
+| `tests/unit/src/mdmark-style/document-parts.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass |
+| `tests/unit/src/mdmark-style/blocks.test.ts` | 全実行 | 変更 | ✅ | 17 テスト pass |
+| `tests/unit/src/mdmark-style/reply.test.ts` | 全実行 | 変更 | ✅ | - |
+| `tests/unit/src/mdmark-style/user-message.test.ts` | 全実行 | 変更 | ✅ | - |
+| `tests/unit/src/mdmark-style/settings.test.ts` | 全実行 | 変更 | ✅ | - |
+| 単体テスト（フロント）の全件 | 全実行 | 実行のみ | ✅ | 2589 テスト pass（ランナー） |
+
+<!-- /table -->
+
+直したテスト: `test_split_blocks_when_tree_note_escaped`（[a2ec5860](https://github.com/shuhei1101/mdmark/commit/a2ec5860)）。
+ライブラリ本体の `parseTree` はルートの行が無いツリー（1 行目から `|-- ` で始まる）を「上の行より 2 階層深い」と返し、設計書（MOD-472-353 の手順 6）はそのときコードブロックにするため、テストの入力にルートの行 `src/` を足し、`rule` の期待値に空のルートの行を加えた。
+設計書のテストの行も同じ内容に直した。
+
+レビューの指摘で追加したテスト（[30bc9d4d](https://github.com/shuhei1101/mdmark/commit/30bc9d4d)）: `test_split_inline_marks_when_spaced_equals`・`test_split_inline_marks_when_highlight_unknown_color`・`test_render_block_table_when_detail_row_wrapped`。設計書（MOD-472-366・355）のテストの行にも追加した。
+
+### 結合テストの実行範囲
+
+`judge_integration_scope` の判定では、全てのファイルが一覧と対応表に無く R7 になる。
+mdmark-style の結合テストはランナーでは回せず、手元の `npm run test:mdmark-style -- {ファイル名}` で回す（テスト実行方法 TL-3 の補足）。
+Vitest の結合テスト（`integration-*`）から読み込む変更は無い（`style-tokens.logic.ts` を読み込むのは mdmark-style だけ）。
+
+<!-- table: {"kind": "data"} -->
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無いエントリーポイント |
+| --- | --- | --- | --- |
+| `docs/config/CFG-472-4.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/guide/ClaudeCodeで使用する-画面を共通スタイルで描く.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/guide/設定.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/interface/IF-472-45.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/interface/IF-472-47.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/files.yml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/pages/claude-code-terminal/716/document-parts/index.html` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/pages/claude-code-terminal/716/index.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/pages/claude-code-terminal/index.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/refs/716/assets/parts.css` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/refs/716/index.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/mock/refs/index.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-352.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-353.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-355.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-357.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-358.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-359.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-366.ts.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/MOD-472-367.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/module/index.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/README.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/mdmark-style.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/タスク一覧.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120035724_16e7deae_lint.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120035821_16e7deae_単体テスト.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120041106_d3c3aa83_lint.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120041311_d3c3aa83_単体テスト.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120041942_30bc9d4d_lint.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120042208_30bc9d4d_単体テスト.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120043423_dca35a36_lint.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/テスト結果/20261120043423_dca35a36_結合テスト.log` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/ライブラリ本体.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/確認ログ.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/要件.mark.md` | R7（文書で、実装から参照しない） | - | - |
+| `docs/pr/716/要件.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/scenario/SC-472-97.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/scenario/SC-472-99.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `docs/screen/SCR-472-5.tsx.yaml` | R7（文書で、実装から参照しない） | - | - |
+| `mdmark-style/settings.sample.yaml` | R7（見本のファイルで、プラグインは読み込まない） | - | - |
+| `src/mdmark-style/blocks.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `src/mdmark-style/document-parts.tsx` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `src/mdmark-style/inline-marks.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `src/mdmark-style/marker-guide.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
+| `src/mdmark-style/reply.tsx` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `src/mdmark-style/settings.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
+| `src/mdmark-style/user-message.tsx` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | - |
+| `src/shared/style-tokens.logic.ts` | R7（読み込むモジュールを import でたどった） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/world.ts` | R7（4 ファイルが読み込む共通の準備） | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx`<br>`tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | - |
+| `tests/unit/src/mdmark-style/blocks.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/document-parts.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/inline-marks.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/reply.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/settings.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/mdmark-style/user-message.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+| `tests/unit/src/shared/style-tokens.logic.test.ts` | R7（単体テストで、結合テストから参照しない） | - | - |
+
+<!-- /table -->
+
+実行する結合テスト（合わせた範囲）: `render-reply.test.tsx`・`screen.test.tsx`・`mark-user-terms.test.tsx`・`inject-marker-guide.test.ts`（`tests/integration/ClaudeCodeプラグイン/mdmark-style/` の 4 ファイル。それぞれ変更したモジュールを読み込むため）。
+
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | 全実行 | 変更 | ✅ | 13 テスト pass（追加: `test_normal_when_document_parts`・`test_normal_when_row_detail_pressed`・`test_normal_when_document_part_disabled`・`test_normal_when_tree_unreadable`）<br>`テスト結果/20261120043423_dca35a36_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/screen.test.tsx` | 全実行 | 変更 | ✅ | 7 テスト pass（追加: `test_document_part_elements`・`test_document_part_elements_when_parts_disabled`） |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/mark-user-terms.test.tsx` | 全実行 | 実行のみ | ✅ | 5 テスト pass |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/inject-marker-guide.test.ts` | 全実行 | 実行のみ | ✅ | 4 テスト pass |

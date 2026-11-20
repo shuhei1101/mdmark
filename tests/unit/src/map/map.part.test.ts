@@ -1,6 +1,7 @@
 import { expect, test } from "vitest";
 import {
   findTag,
+  findTags,
   innerHtml,
   matches,
   outerHtml,
@@ -166,6 +167,49 @@ test("test_render_map_sequence", async () => {
   expect(matches(html, /aria-expanded="true"/g).length).toBeGreaterThanOrEqual(
     3,
   );
+});
+
+// ライフラインの判定の線（正常系）
+test("test_render_map_sequence_when_lifeline_hits", async () => {
+  // 準備
+  const { renderMapSequence } = await loadParts();
+  const { parseSequence } = await loadSequence();
+  const { sequenceRows } = await loadRows();
+  const sequence = parseSequence(SEQUENCE);
+  const view = {
+    order: sequence.participants.map((item) => item.id),
+    collapsed: [],
+    entered: undefined,
+  };
+  const rows = sequenceRows(sequence, view);
+  // 実行
+  const { html } = renderMapSequence({
+    sequence,
+    rows: rows.rows,
+    participants: rows.participants,
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+  });
+  // 検証
+  const attribute = (tag: string, name: string) =>
+    new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];
+  const coordinates = (tag: string) =>
+    ["x1", "y1", "x2", "y2"].map((name) => attribute(tag, name));
+  const lifelines = findTags(html, 'class="mdmark-diagram-lifeline');
+  const hits = findTags(html, 'class="map-lifeline-hit"');
+  expect(hits).toHaveLength(sequence.participants.length);
+  for (const lifeline of lifelines) {
+    const name = attribute(lifeline, "data-lifeline");
+    const hit = hits.find((tag) => attribute(tag, "data-lifeline") === name);
+    expect(hit?.startsWith("<line")).toBe(true);
+    expect(coordinates(hit ?? "")).toEqual(coordinates(lifeline));
+  }
+  const firstMessageHit = html.search(/class="map-wire-hit" data-message=/);
+  const lastLifelineHit = html.lastIndexOf('class="map-lifeline-hit"');
+  expect(firstMessageHit).toBeGreaterThan(-1);
+  expect(lastLifelineHit).toBeLessThan(firstMessageHit);
 });
 
 // 始める前（正常系）

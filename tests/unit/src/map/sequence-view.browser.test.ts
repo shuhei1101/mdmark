@@ -202,3 +202,169 @@ test("test_attach_map_sequence_when_actor_default", async () => {
     ),
   ).not.toBeNull();
 });
+
+/** 強調で薄くした要素を、要素の種類と持ち主で並べる */
+const dimmedKeys = (root: HTMLElement): string[] =>
+  [...root.querySelectorAll(".map-dim")]
+    .map((element) =>
+      [
+        element.tagName,
+        element.getAttribute("data-participant") ?? "",
+        element.getAttribute("data-lifeline") ?? "",
+        element.getAttribute("data-message") ?? "",
+        element.classList.contains("mdmark-diagram-label") ? "label" : "",
+      ].join("|"),
+    )
+    .sort();
+
+/** 参加者を押して選び、Esc で解いて、選んだときに薄くした要素を返却する */
+const dimmedWhenSelected = (root: HTMLElement, id: string): string[] => {
+  const head = root.querySelector<HTMLElement>(
+    `.map-participant[data-participant="${id}"]`,
+  ) as HTMLElement;
+  head.click();
+  const keys = dimmedKeys(root);
+  root
+    .querySelector(".mdmark-map figure")
+    ?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+  return keys;
+};
+
+/** その参加者が送る・受けるメッセージの線の数 */
+const messageCountOf = async (id: string): Promise<number> => {
+  const { parseSequence } = await import("../../../../src/map/sequence.ts");
+  return parseSequence(SEQUENCE).messages.filter(
+    (message) => message.from === id || message.to === id,
+  ).length;
+};
+
+/** ポインターの出来事を発火する */
+const point = (
+  target: Element,
+  type: "pointerover" | "pointerout",
+  options: { pointerType?: string; relatedTarget?: Element | null } = {},
+) =>
+  target.dispatchEvent(
+    new PointerEvent(type, {
+      bubbles: true,
+      pointerId: 1,
+      pointerType: options.pointerType ?? "mouse",
+      relatedTarget: options.relatedTarget ?? null,
+    }),
+  );
+
+const lifelineHitOf = (root: HTMLElement, id: string) =>
+  root.querySelector(`.map-lifeline-hit[data-lifeline="${id}"]`) as Element;
+const headOf = (root: HTMLElement, id: string) =>
+  root.querySelector(`.map-participant[data-participant="${id}"]`) as Element;
+
+// ライフラインのポインターの強調（正常系）
+test("test_attach_map_sequence_when_participant_hovered", async () => {
+  // 準備
+  const root = await setUp();
+  const expected = dimmedWhenSelected(root, "mount");
+  const stored = sessionStorage.getItem(`mdmark-map:${location.pathname}#1`);
+  const hit = lifelineHitOf(root, "mount");
+  // 実行
+  point(hit, "pointerover");
+  const hovered = dimmedKeys(root);
+  const packets = root.querySelectorAll(".map-packets-hover").length;
+  point(hit, "pointerout", { relatedTarget: document.body });
+  // 検証
+  expect(expected.length).toBeGreaterThan(0);
+  expect(hovered).toEqual(expected);
+  expect(packets).toBe(await messageCountOf("mount"));
+  expect(dimmedKeys(root)).toEqual([]);
+  expect(root.querySelector(".map-packets-hover")).toBeNull();
+  expect(sessionStorage.getItem(`mdmark-map:${location.pathname}#1`)).toBe(
+    stored,
+  );
+});
+
+// 選んでいる間はポインターで変えない（正常系）
+test("test_attach_map_sequence_when_hovered_while_selected", async () => {
+  // 準備
+  const root = await setUp();
+  (headOf(root, "mount") as HTMLElement).click();
+  const before = dimmedKeys(root);
+  // 実行
+  point(
+    root.querySelector(
+      '.map-participant[data-participant="layout"] .mdmark-diagram-node-hit',
+    ) as Element,
+    "pointerover",
+  );
+  // 検証
+  expect(dimmedKeys(root)).toEqual(before);
+  expect(root.querySelector(".map-packets-hover")).toBeNull();
+});
+
+// 選択を解いた直後は出さない（正常系）
+test("test_attach_map_sequence_when_hovered_after_unselect", async () => {
+  // 準備
+  const root = await setUp();
+  const expected = dimmedWhenSelected(root, "mount");
+  // 実行: 箱を押して選び、もう一度押して解き、同じ箱にポインターを合わせる
+  point(headOf(root, "mount"), "pointerover");
+  (headOf(root, "mount") as HTMLElement).click();
+  (headOf(root, "mount") as HTMLElement).click();
+  point(headOf(root, "mount"), "pointerover");
+  const afterUnselect = dimmedKeys(root);
+  point(headOf(root, "mount"), "pointerout", { relatedTarget: document.body });
+  point(headOf(root, "mount"), "pointerover");
+  // 検証
+  expect(afterUnselect).toEqual([]);
+  expect(dimmedKeys(root)).toEqual(expected);
+});
+
+// タッチでは出さない（正常系）
+test("test_attach_map_sequence_when_hovered_by_touch", async () => {
+  // 準備
+  const root = await setUp();
+  // 実行
+  point(lifelineHitOf(root, "mount"), "pointerover", { pointerType: "touch" });
+  // 検証
+  expect(dimmedKeys(root)).toEqual([]);
+  expect(root.querySelector(".map-packets-hover")).toBeNull();
+});
+
+// 名前の文字の上も箱に含める（正常系）
+test("test_attach_map_sequence_when_hovered_on_name", async () => {
+  // 準備
+  const root = await setUp();
+  const expected = dimmedWhenSelected(root, "mount");
+  const name = root.querySelector(
+    '.map-participant[data-participant="mount"] .mdmark-diagram-node-name',
+  ) as Element;
+  const hit = root.querySelector(
+    '.map-participant[data-participant="mount"] .mdmark-diagram-node-hit',
+  ) as Element;
+  // 実行
+  point(name, "pointerover");
+  const onName = dimmedKeys(root);
+  point(hit, "pointerover");
+  point(hit, "pointerout", { relatedTarget: name });
+  // 検証
+  expect(onName).toEqual(expected);
+  expect(dimmedKeys(root)).toEqual(expected);
+});
+
+// Esc で解いた直後は出さない（正常系）
+test("test_attach_map_sequence_when_hovered_after_escape", async () => {
+  // 準備
+  const root = await setUp();
+  (headOf(root, "mount") as HTMLElement).click();
+  // 実行
+  point(headOf(root, "mount"), "pointerover");
+  root
+    .querySelector(".mdmark-map figure")
+    ?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+  point(headOf(root, "mount"), "pointerover");
+  // 検証
+  expect(dimmedKeys(root)).toEqual([]);
+  expect(root.querySelector(".map-packets-hover")).toBeNull();
+});

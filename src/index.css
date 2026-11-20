@@ -10000,7 +10000,8 @@
   .mdmark-diagram[data-diagram="map"] .map-colored-wire path {
     stroke: var(--map-wire);
   }
-  .map-wire-hit {
+  .map-wire-hit,
+  .map-lifeline-hit {
     fill: none;
     stroke: transparent;
     stroke-width: 14;
@@ -10646,6 +10647,7 @@
     .mdmark-diagram-stage
     > .mdmark-diagram-node {
     justify-content: flex-start;
+    /* src/map/layout.ts の LABEL_METRICS.padRight と同じ値 */
     padding-right: 28px;
   }
   /* 種類を持たないノードは種類の行を描かず、名前をノードの上下の中央に置く */

@@ -1900,6 +1900,22 @@ files:
     visibility: internal
     description: 'モック『699』の外観: Claude Code のターミナル版の画面（等幅の文字の格子・発言の背景の帯・返答の部品・用語のカード）の規則。このモックの外観を変えるときに参照する。'
     tags: [topic:モック, tool:css]
+  - path: pages/claude-code-terminal/716/index.md
+    visibility: internal
+    description: '#716 の画面『claude-code-terminal』のモックの案の一覧。この PR の画面の案を探すときに参照する。'
+    tags: [topic:モック, tool:claude-code]
+  - path: pages/claude-code-terminal/716/document-parts/index.html
+    visibility: internal
+    description: '画面『claude-code-terminal』のモック: mdmark-style が返答の行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・タブ・段組み・カード・ビュー・wide・CSV・図表の番号を描いた画面と、行の詳細を開いた・ステップの部品をオフにした・ファイルツリーを解釈できない場面、mdmark-style なしの比較。画面の見え方を決めるときに参照する。'
+    tags: [topic:モック, tool:claude-code, topic:ステップ, topic:ファイルツリー, topic:バッジ, topic:タブ]
+  - path: refs/716/index.md
+    visibility: internal
+    description: '#716（mdmark-style で残りの mdmark の機能を Claude Code の画面に描く）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/716/assets/parts.css
+    visibility: internal
+    description: 'モック『716』の外観: Claude Code のターミナル版の画面の本文の部品（行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・図表の番号）の規則。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, tool:css]
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166
   reviewed: []

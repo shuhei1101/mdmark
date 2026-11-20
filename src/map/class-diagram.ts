@@ -1,5 +1,12 @@
 import type { Flowchart, FlowEdge, FlowGroup, FlowNode } from "./flowchart.ts";
-import { LABEL_METRICS, MAP_LAYOUT, type MapOverride } from "./layout.ts";
+import {
+  LABEL_METRICS,
+  leafHeight,
+  MAP_LAYOUT,
+  type MapOverride,
+  splitLines,
+  textWidth,
+} from "./layout.ts";
 import {
   MAP_CLASS,
   MAP_ER,
@@ -456,7 +463,18 @@ const labelAsides = (diagram: ClassDiagram): Map<string, number> => {
   return asides;
 };
 
-/** 部品に指定するクラスの中身・関係の端と、クラスの幅とメンバーの行の数と開閉で決まる大きさ・左右に空ける幅の上書き */
+/** ノートのノードの大きさ（文の幅と左右の余白が収まる幅を minWidth から maxWidth の間で決め、その幅で折り返した行が全て入る高さ） */
+const noteSize = (text: string, maxWidth: number): { w: number; h: number } => {
+  const { nameSize, padX, padRight, border } = LABEL_METRICS;
+  const inset = padX + padRight + border * 2;
+  const w = Math.min(
+    maxWidth,
+    Math.max(MAP_LAYOUT.minWidth, Math.ceil(textWidth(text, nameSize) + inset)),
+  );
+  return { w, h: leafHeight(splitLines(text, nameSize, w - inset).length) };
+};
+
+/** 部品に指定するクラスの中身・関係の端と、クラスの幅とメンバーの行の数と開閉で決まる大きさ・左右に空ける幅・ノートの大きさの上書き */
 export const classPartInputs = (
   diagram: ClassDiagram,
   view: {
@@ -492,6 +510,9 @@ export const classPartInputs = (
   // 閉じた namespace のノードは、タイトルと「クラス {数} 件」が収まる大きさにする
   for (const space of diagram.namespaces)
     overrides[space] = { size: mapClosedGroupSize(space) };
+  // ノートのノードは、右の余白を除いた幅で折り返した文の行が全て入る大きさにする
+  for (const note of diagram.notes)
+    overrides[note.id] = { size: noteSize(note.text, view.maxWidth) };
   const ends: MapClassEnd[] = diagram.relations.flatMap((relation) =>
     (
       [

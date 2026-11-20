@@ -8,7 +8,7 @@ preconditions:
   - Claude Code に mdmark-style を入れている
 stakeholders:
   - name: Claude Code を使用する人
-    interest: 返答の表・注意書きが、マーカーで選んだ描き方で描かれる
+    interest: 返答の表・注意書き・ステップ・ファイルツリー・バッジが、マーカーで選んだ描き方で描かれる
   - name: Claude Code
     interest: 説明が 1 回の開始につき 1 回だけ入り、文脈を余分に使わない
 scenarios:
@@ -40,6 +40,7 @@ scenarios:
     expected:
       - SessionStart の結果の `additionalContext` に、マーカーの記載方法の説明が 1 つだけ入る
       - モデルが、説明のとおりのマーカーの書式を回答する
+      - 説明に、表・注意書き・コードブロックの飾り・開閉の範囲に加えて、ステップ（`<!-- steps -->`）・ファイルツリー（言語 `tree` のコードブロック）・バッジ（`badge:`）の記載方法が入る
     test: test_normal
   - name: 正常シナリオ（/clear の後）
     decisions:

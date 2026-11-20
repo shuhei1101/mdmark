@@ -1,5 +1,16 @@
 import { type Engine, expect, test } from "claude-code/testing";
-import { CONFIG_PATH, installWorld, PLUGIN, settingsFile } from "./world.ts";
+import {
+  allTexts,
+  CONFIG_PATH,
+  DOCUMENT_PARTS_REPLY,
+  type DrawnNode,
+  installWorld,
+  nodesOf,
+  PLUGIN,
+  settingsFile,
+  textOf,
+  textProps,
+} from "./world.ts";
 
 /** 正常系の固定の返答 */
 const REPLY = [
@@ -42,24 +53,6 @@ const mountReply = (
     viewport: { columns: options.columns ?? 88, rows: 40 },
     props: { text: options.text, isFirstOfReply: true },
   });
-
-/** 部品の木の全ての文字（Text の子・Markdown の `text`・Code の `source`） */
-const allTexts = (node: unknown): string[] => {
-  if (typeof node === "string") {
-    return [node];
-  }
-  if (typeof node !== "object" || node === null) {
-    return [];
-  }
-  const { props = {}, children = [] } = node as {
-    props?: Record<string, unknown>;
-    children?: unknown[];
-  };
-  const own = [props.text, props.source, props.label].filter(
-    (value): value is string => typeof value === "string",
-  );
-  return [...own, ...children.flatMap(allTexts)];
-};
 
 /** Button の押下の参照（描くたびに変わる `press`）を除いた部品の木 */
 const withoutHandles = (node: unknown): unknown =>
@@ -300,5 +293,179 @@ test("test_error_when_config_unreadable", async ($, on) => {
   expect(debug).toHaveLength(1);
   expect(debug[0]?.text).toContain("mdmark-style");
   expect(debug[0]?.text).toContain(CONFIG_PATH);
+  await ui.unmount();
+});
+
+/** 暗い配色の共通スタイルの色 */
+const DARK = {
+  heading: "#ededef",
+  border: "#b4b4bc",
+  greenBg: "#1a3821",
+  greenText: "#4ade80",
+  redText: "#f87171",
+  yellowBg: "#40380e",
+};
+
+/** 文字が一致する Text */
+const textNodes = (tree: unknown, text: string): DrawnNode[] =>
+  nodesOf(tree, (node) => node.type === "Text" && textOf(node) === text);
+
+// 行の詳細・ステップ・ファイルツリー・行内の記法・縦に並べる範囲・図と表の番号を描く（正常系）
+test("test_normal_when_document_parts", async ($, on) => {
+  // 準備
+  installWorld(on, { files: {} });
+  // 実行
+  const ui = await mountReply($, { text: DOCUMENT_PARTS_REPLY });
+  const tree = await ui.drawn();
+  // 検証
+  const buttons = nodesOf(tree, (node) => node.type === "Button");
+  expect(buttons.map((node) => node.props?.label)).toEqual(["[ ▸ ]"]);
+  expect(allTexts(tree).join("\n")).not.toContain("りんごは青森県から届く。");
+  for (const number of ["1", "2"]) {
+    expect(textProps(tree, number)).toMatchObject({
+      bold: true,
+      color: DARK.heading,
+    });
+  }
+  expect(textNodes(tree, "│").map((node) => node.props?.color)).toEqual([
+    DARK.border,
+  ]);
+  expect(textProps(tree, "ソース").dimColor).toBe(true);
+  expect(textProps(tree, " 完了 ")).toMatchObject({
+    backgroundColor: DARK.greenBg,
+    color: DARK.greenText,
+  });
+  expect(textProps(tree, "注意")).toMatchObject({
+    bold: true,
+    color: DARK.redText,
+  });
+  expect(textProps(tree, "決め手").backgroundColor).toBe(DARK.yellowBg);
+  expect(textProps(tree, "[Ctrl]").bold).toBe(true);
+  expect(textProps(tree, "+").dimColor).toBe(true);
+  expect(textProps(tree, "[C]").bold).toBe(true);
+  for (const title of ["macOS", "Windows"]) {
+    expect(textProps(tree, title)).toMatchObject({
+      bold: true,
+      color: DARK.heading,
+    });
+  }
+  const indented = nodesOf(
+    tree,
+    (node) => node.type === "Box" && node.props?.paddingLeft === 2,
+  ).map((node) => allTexts(node).join(""));
+  expect(indented).toEqual(
+    expect.arrayContaining([
+      expect.stringContaining("brew で入れる。"),
+      expect.stringContaining("winget で入れる。"),
+    ]),
+  );
+  const texts = allTexts(tree).join("\n");
+  const order = [
+    "左の列",
+    "右の列",
+    "使用方法 — 導入の手順",
+    "リファレンス — 名前の一覧",
+  ];
+  const positions = order.map((text) => texts.indexOf(text));
+  expect(positions.every((position) => position >= 0)).toBe(true);
+  expect(positions).toEqual([...positions].sort((a, b) => a - b));
+  const tables = nodesOf(
+    tree,
+    (node) =>
+      node.type === "Box" && String(node.props?.key ?? "").startsWith("table-"),
+  );
+  expect(tables).toHaveLength(4);
+  expect(allTexts(tables[3]).join("")).toContain("東京, 本社");
+  expect(textNodes(tree, "表 1")).toHaveLength(1);
+  expect(texts.indexOf("表 1")).toBeLessThan(texts.indexOf("名前"));
+  for (const raw of ["<!--", "badge:", "{color=", "==", "kbd:"]) {
+    expect(texts).not.toContain(raw);
+  }
+  await ui.unmount();
+});
+
+// 行の詳細の Button を押す（正常系）
+test("test_normal_when_row_detail_pressed", async ($, on) => {
+  // 準備
+  installWorld(on, { files: {} });
+  const text = [
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| りんご | 10 |",
+    "| みかん | 2 |",
+    "",
+    '<!-- row-detail: {"at": 1} -->',
+    "",
+    "りんごは青森県から届く。",
+    "",
+    "<!-- /row-detail -->",
+  ].join("\n");
+  // 実行
+  const ui = await mountReply($, { text });
+  const closed = await ui.drawn();
+  const button = await ui.find({ type: "Button" });
+  await ui.press({ key: String(button?.key) });
+  const opened = await ui.drawn();
+  await ui.press({ key: String(button?.key) });
+  // 検証
+  expect(button?.props.label).toBe("[ ▸ ]");
+  expect(allTexts(closed).join("")).not.toContain("りんごは青森県から届く。");
+  expect(
+    nodesOf(opened, (node) => node.type === "Button").map(
+      (node) => node.props?.label,
+    ),
+  ).toEqual(["[ ▾ ]"]);
+  const openedText = allTexts(opened).join("");
+  const detailAt = openedText.indexOf("りんごは青森県から届く。");
+  expect(detailAt).toBeGreaterThan(openedText.indexOf("りんご"));
+  expect(detailAt).toBeLessThan(openedText.indexOf("みかん"));
+  expect(withoutHandles(await ui.drawn())).toEqual(withoutHandles(closed));
+  await ui.unmount();
+});
+
+// ステップと表の番号をオフにした（正常系）
+test("test_normal_when_document_part_disabled", async ($, on) => {
+  // 準備
+  installWorld(on, {
+    files: settingsFile("parts:", "  steps: false", "  figure: false"),
+  });
+  // 実行
+  const ui = await mountReply($, { text: DOCUMENT_PARTS_REPLY });
+  const tree = await ui.drawn();
+  // 検証
+  expect(
+    (await ui.findAll({ type: "Markdown" })).map((node) => node.text),
+  ).toContain("1. 依存を入れる\n2. ビルドする");
+  expect(textNodes(tree, "表 1")).toEqual([]);
+  expect(await ui.find({ type: "Box", key: "table-2" })).toBeDefined();
+  expect(textProps(tree, "ソース").dimColor).toBe(true);
+  expect(textProps(tree, " 完了 ").backgroundColor).toBe(DARK.greenBg);
+  expect(textProps(tree, "macOS").bold).toBe(true);
+  expect(allTexts(tree).join("\n")).not.toContain("<!--");
+  await ui.unmount();
+});
+
+// 罫線を解釈できないファイルツリー（正常系）
+test("test_normal_when_tree_unreadable", async ($, on) => {
+  // 準備
+  installWorld(on, { files: {} });
+  const text = [
+    "```tree",
+    "mdmark/",
+    "├── src/ # ソース",
+    "│   │   └── index.ts",
+    "```",
+  ].join("\n");
+  // 実行
+  const ui = await mountReply($, { text });
+  // 検証
+  const code = await ui.find({ type: "Box", key: "code-1" });
+  expect(code?.props.backgroundColor).toBeDefined();
+  expect((await ui.find({ type: "Text", text: "tree" }))?.props.dimColor).toBe(
+    true,
+  );
+  expect(
+    (await ui.findAll({ type: "Code" })).map((node) => node.props.source),
+  ).toEqual(["mdmark/", "├── src/ # ソース", "│   │   └── index.ts"]);
   await ui.unmount();
 });

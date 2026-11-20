@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- color-scheme: 明るい配色とダークの両方を持つことをブラウザへ伝える -->
+  <meta name="color-scheme" content="light dark">
+  <title>claude-code-terminal / document-parts（返答の本文の部品を共通スタイルで描く） | mdmark のモック</title>
+  <!-- 本文の規則とモック専用の操作列（#16 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/16/assets/sample.css">
+  <!-- 採用スタイル本体の変数の値 -->
+  <link rel="stylesheet" href="../../../../assets/style.css">
+  <!-- Claude Code のターミナル版の画面（#699 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/699/assets/terminal.css">
+  <!-- 本文の部品（#716 で共有するアセット） -->
+  <link rel="stylesheet" href="../../../../refs/716/assets/parts.css">
+  <!-- 端末のテーマと場面の切り替え（#69 で共有するアセット。モックだけの仕組み） -->
+  <script src="../../../../refs/69/assets/preview.js" defer></script>
+</head>
+<body>
+  <!-- モック専用の操作列: 端末のテーマと、画面の場面 -->
+  <div class="mock-bar" data-mock-bar>
+    <div class="mock-bar-group" role="group" aria-label="端末のテーマ">
+      <a class="mock-bar-item" data-theme-value="dark">ダーク</a>
+      <a class="mock-bar-item" data-theme-value="light">ライト</a>
+    </div>
+    <div class="mock-bar-group" role="group" aria-label="画面の場面">
+      <a class="mock-bar-item" data-scene-value="styled">mdmark-style あり</a>
+      <a class="mock-bar-item" data-scene-value="row-open">行の詳細を開いた</a>
+      <a class="mock-bar-item" data-scene-value="steps-off">ステップの部品をオフ</a>
+      <a class="mock-bar-item" data-scene-value="tree-error">ファイルツリーを解釈できない</a>
+      <a class="mock-bar-item" data-scene-value="standard">mdmark-style なし（比較）</a>
+    </div>
+  </div>
+
+  <main class="host">
+    <h1 class="term-title">mdmark-style が返答の本文の部品を描いた Claude Code のターミナル版の画面</h1>
+    <nav class="mock-breadcrumb" aria-label="パンくず">
+      <a href="../../../index.md">pages</a> / <a href="../../index.md">claude-code-terminal</a> / <a href="../index.md">716</a> / document-parts
+    </nav>
+
+    <div class="term" role="log" aria-label="Claude Code のターミナル版の画面">
+
+      <div class="term-row term-user">
+        <span class="term-mark" aria-hidden="true">❯</span>
+        <p class="term-body">ビルドの手順と、変更したファイルをまとめて</p>
+      </div>
+
+      <!-- 返答: mdmark-style なし（Claude Code の標準の描画。マーカーと記法の文字がそのまま出る） -->
+      <div class="term-row" data-scene="standard">
+        <span class="term-mark" aria-hidden="true">●</span>
+        <div class="term-body">
+          <p class="std-heading">ビルドの手順</p>
+          <p>&lt;!-- steps --&gt;</p>
+          <p>1. 依存を入れる</p>
+          <p>2. <span class="std-code">kbd:Ctrl+C</span> で止めてから、もう一度ビルドする</p>
+          <p>&lt;!-- /steps --&gt;</p>
+          <pre class="ms-code">mdmark/
+├── src/ # ソース
+└── README.md # 説明</pre>
+          <p>状態は <span class="std-code">badge:green:完了</span> で、[注意]{color=red} は ==決め手== の 1 文だけです。</p>
+          <p>&lt;!-- fig: {"id": "price"} --&gt;</p>
+          <table class="ms-table">
+            <tr><th>名前</th><th>値</th></tr>
+            <tr><td>りんご</td><td>10</td></tr>
+            <tr><td>みかん</td><td>2</td></tr>
+          </table>
+          <p>&lt;!-- row-detail: {"at": 1} --&gt;</p>
+          <p>りんごは青森県から届く。</p>
+          <p>&lt;!-- /row-detail --&gt;</p>
+          <p>&lt;!-- tabs --&gt;</p>
+          <p class="std-heading">macOS</p>
+          <p>brew で入れる。</p>
+          <p class="std-heading">Windows</p>
+          <p>winget で入れる。</p>
+          <p>&lt;!-- /tabs --&gt;</p>
+        </div>
+      </div>
+
+      <!-- 返答: mdmark-style あり。本文の部品を描き換え、マーカーと記法の文字は出さない -->
+      <div class="term-row" data-scene="styled row-open steps-off tree-error">
+        <span class="term-mark" aria-hidden="true">●</span>
+        <div class="term-body">
+          <p class="ms-heading">ビルドの手順</p>
+
+          <!-- ステップ: 見出しの色の番号と、番号をつなぐ縦線 -->
+          <ol class="ms-steps" data-scene="styled row-open tree-error">
+            <li><span class="ms-step-num">1</span><span>依存を入れる</span></li>
+            <li><span class="ms-step-line" aria-hidden="true">│</span></li>
+            <li><span class="ms-step-num">2</span><span><span class="ms-kbd">[Ctrl]</span><span class="ms-kbd-join">+</span><span class="ms-kbd">[C]</span> で止めてから、もう一度ビルドする</span></li>
+          </ol>
+          <!-- ステップの部品をオフにした場面: Claude Code の番号付きリストのまま（マーカーの行は出さない。キーは描く） -->
+          <div data-scene="steps-off">
+            <p>1. 依存を入れる</p>
+            <p>2. <span class="ms-kbd">[Ctrl]</span><span class="ms-kbd-join">+</span><span class="ms-kbd">[C]</span> で止めてから、もう一度ビルドする</p>
+          </div>
+
+          <!-- ファイルツリー: 罫線のまま等幅で描き、注釈を薄い色にする（# は出さない） -->
+          <pre class="ms-tree" data-scene="styled row-open steps-off">mdmark/
+<span class="ms-tree-rule">├── </span>src/          <span class="ms-tree-note">ソース</span>
+<span class="ms-tree-rule">└── </span>README.md     <span class="ms-tree-note">説明</span></pre>
+          <!-- ファイルツリーを解釈できない場面（上の行より 2 階層以上深い行がある）: コードブロックの部品のまま描く -->
+          <div class="ms-code-block" data-scene="tree-error">
+            <span class="ms-code-lang">tree</span>
+            <pre class="ms-code">mdmark/
+├── src/ # ソース
+│   │   └── index.ts # 2 階層深い行
+└── README.md # 説明</pre>
+          </div>
+
+          <!-- バッジ・文字の色・蛍光ペン -->
+          <p>状態は <span class="ms-badge">完了</span> で、<span class="ms-text-red">注意</span> は <mark class="ms-highlight">決め手</mark> の 1 文だけです。</p>
+
+          <!-- 図表の番号と行の詳細: 表の上に `表 1`、詳細を持つ行の先頭のセルに開閉の Button -->
+          <p class="ms-figure-label">表 1</p>
+          <table class="ms-table">
+            <tr><th>名前</th><th>値</th></tr>
+            <tr><td><span class="ms-row-toggle" data-scene="styled steps-off tree-error">[ ▸ ]</span><span class="ms-row-toggle" data-scene="row-open">[ ▾ ]</span> りんご</td><td>10</td></tr>
+            <tr class="ms-row-detail" data-scene="row-open"><td colspan="2">りんごは青森県から届く。</td></tr>
+            <tr><td>みかん</td><td>2</td></tr>
+          </table>
+
+          <!-- タブ: 切り替えにせず、タブ名を見出しにして中身を縦に並べる。中身は 2 桁字下げし、範囲の終わりを字下げの戻りで示す -->
+          <p class="ms-heading ms-part-heading">macOS</p>
+          <p class="ms-part-body">brew で入れる。</p>
+          <p class="ms-heading ms-part-heading">Windows</p>
+          <p class="ms-part-body">winget で入れる。</p>
+
+          <!-- 段組みとカードの格子: 横に並べず、記載した順に縦に並べる -->
+          <p>左の列: 変更したのは描き方だけです。</p>
+          <p>右の列: 設定の既定は変えていません。</p>
+          <ul class="ms-list">
+            <li>使用方法 — 導入と使用方法の手順</li>
+            <li>リファレンス — 名前から参照する一覧</li>
+          </ul>
+
+          <!-- ビュー・wide・CSV: 切り替えのボタンを描かず、正常シナリオの表と同じ罫線の表で描く -->
+          <table class="ms-table">
+            <tr><th>タイトル</th><th>状態</th></tr>
+            <tr><td>配色の変数を洗い出す</td><td>未着手</td></tr>
+          </table>
+          <table class="ms-table">
+            <tr><th>列 1</th><th>列 2</th><th>列 3</th><th>列 4</th></tr>
+            <tr><td>1</td><td>2</td><td>3</td><td>4</td></tr>
+          </table>
+          <table class="ms-table">
+            <tr><th>名前</th><th>拠点</th><th>金額</th></tr>
+            <tr><td>北山</td><td>東京, 本社</td><td>1200</td></tr>
+          </table>
+        </div>
+      </div>
+
+      <p class="term-prompt"><span class="term-dim">❯ </span></p>
+    </div>
+  </main>
+</body>
+</html>

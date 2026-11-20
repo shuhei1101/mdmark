@@ -1,0 +1,10 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: map のクラス図を描く流れと期待結果は変わらない。折り返したノートの文がノードに収まるようになるだけ
+    depends_on: []
+scope_out:
+  - item: 構成図・状態遷移図のノードの既定の見積もり（src/map/layout.ts の sizeLeaf）が、右上の i と開閉の山形の分の右の余白 28px を見積もらないこと
+    reason: Issue の範囲はクラス図のノートで、sizeLeaf を変えると構成図・状態遷移図の全てのノードの大きさが変わる。この作業 PR がマージされなくても同じ内容で成り立つため、モジュール構成設計のレビューの回答で起票した
+    plan: '#718'

@@ -1,0 +1,108 @@
+/* mdmark-style が返答の本文の部品を描くモック（#716 で共有するアセット）
+   #699 の terminal.css の端末の格子と変数に、行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・図表の番号を追加する。
+   色の名前の色は Web の --mdmark-color-accent-{色}-text・-bg と同じ値（暗い配色・明るい配色）。 */
+
+.term {
+  --term-accent-red-text: #f87171;
+  --term-accent-green-text: #4ade80;
+  --term-accent-green-bg: #1a3821;
+  --term-accent-yellow-bg: #40380e;
+}
+
+body.vscode-light .term {
+  --term-accent-red-text: #b91c1c;
+  --term-accent-green-text: #166534;
+  --term-accent-green-bg: #cbf2d2;
+  --term-accent-yellow-bg: #fff2af;
+}
+
+/* ---- 行の詳細: 行の先頭のセルの開閉の Button と、行の下の詳細 ---- */
+.ms-row-toggle {
+  color: var(--term-link);
+  cursor: pointer;
+}
+
+.ms-row-detail td {
+  padding-left: 3ch;
+  color: var(--term-fg);
+}
+
+/* ---- ステップ: 見出しの色の番号と、番号をつなぐ縦線 ---- */
+.ms-steps {
+  margin-block: 0.5lh;
+  padding: 0;
+  list-style: none;
+}
+
+.ms-steps li {
+  display: flex;
+  gap: 1ch;
+}
+
+.ms-step-num {
+  flex: none;
+  font-weight: 700;
+  color: var(--term-heading);
+}
+
+.ms-step-line {
+  color: var(--term-rule);
+}
+
+/* ---- ファイルツリー: 罫線のまま等幅で描き、注釈を薄い色にする ---- */
+.ms-tree {
+  margin-block: 0.5lh;
+  padding-left: 2ch;
+  white-space: pre;
+}
+
+.ms-tree-rule,
+.ms-tree-note {
+  color: var(--term-dim);
+}
+
+/* ---- バッジ・文字の色・蛍光ペン・キー ---- */
+.ms-badge {
+  padding-inline: 1ch;
+  background: var(--term-accent-green-bg);
+  color: var(--term-accent-green-text);
+}
+
+.ms-text-red {
+  font-weight: 700;
+  color: var(--term-accent-red-text);
+}
+
+.ms-highlight {
+  background: var(--term-accent-yellow-bg);
+  color: inherit;
+}
+
+.ms-kbd {
+  color: var(--term-fg);
+  font-weight: 700;
+}
+
+.ms-kbd-join {
+  color: var(--term-dim);
+}
+
+/* ---- 図表の番号: 表の上の `表 1` ---- */
+.ms-figure-label {
+  margin-top: 0.5lh;
+  color: var(--term-dim);
+}
+
+.ms-figure-label + .ms-table {
+  margin-top: 0;
+}
+
+/* タブ・段組み・カードの区切りの見出し: 見出しの部品と同じ描き方 */
+.ms-part-heading {
+  margin-top: 0.5lh;
+}
+
+/* タブの中身: 2 桁字下げし、範囲の後ろの本文と分ける */
+.ms-part-body {
+  padding-left: 2ch;
+}

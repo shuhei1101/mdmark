@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-sequence-participant-hover
+
+
+ Test Files  322 passed (322)
+      Tests  2568 passed (2568)
+   Start at  03:18:32
+   Duration  34.77s (worker 81%, tests 14%, import 5%, transform 1%)
+
+exit=0
