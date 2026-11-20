@@ -78,7 +78,7 @@ files:
     tags: [topic:モック, topic:図]
   - path: components/diff-blocks/index.html
     visibility: internal
-    description: '部品『diff-blocks』のモック: 描いた文書の上の差分の色分けで、追加・変更したブロックと削除したブロックを段落・見出し・表の行・リストの項目・コードブロック・注意書き・長い URL ごとに、案 A（左の余白の記号）と案 B（枠と右上の札）で並べたもの。部品の外観や状態を決めるときに参照する。'
+    description: '部品『diff-blocks』のモック: 描いた文書の上の差分の色分けで、追加・変更したブロックと削除したブロックを段落・見出し・表の行・リストの項目・コードブロック・注意書き・長い URL ごとに、案 A（左の余白の記号）と案 B（枠と右上の札）で並べたもの。文書の先頭のフロントマターの変更・削除の示し方の案 A・B・C（機能 `frontmatter` のオフとオン、長い値）。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:差分]
   - path: components/diff-blocks/style.css
     visibility: internal
@@ -242,7 +242,7 @@ files:
     tags: [topic:モック, topic:構文]
   - path: components/table/index.html
     visibility: internal
-    description: '部品『table』のモック: 表の種類ごとの外観と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`、列の強調と行の色、はみ出す表の既定のピン止めと `-pin`・`pin=`・`wide=`・`check=` の ✓、多段の見出し・行見出し・セルの結合と並べ替え・絞り込みの後の再結合・行見出しの列までのピン止め、押した列だけを留めて左端か右端に留めるピン止めと `table.pin: through`・複数の列の `pin=`、本文の幅に広げた表、列のボタンの案 A・B・C（アイコンだけ・隠した列の数のバッジ・設定のメニュー）。部品の外観や状態を決めるときに参照する。'
+    description: '部品『table』のモック: 表の種類ごとの外観と、並べ替え・絞り込み・ピン止め・閉じた表・件数の表示・列の表示の切り替え・計算ごとの集計の行・コピーの形式・行へのリンク、画面の上端と下端に留める見出し行と集計の行、狭い幅で畳む最終列、閉じた表の見出しと `title=`、列の強調と行の色、はみ出す表の既定（どの列も留めない）と設定で既定の列を留める表、`-pin`・`pin=`・`wide=`・`check=` の ✓、多段の見出し・行見出し・セルの結合と並べ替え・絞り込みの後の再結合・行見出しの列までのピン止め、押した列だけを留めて左端か右端に留めるピン止めと `table.pin: through`・複数の列の `pin=`、本文の幅に広げた表、列のボタンの案 A・B・C（アイコンだけ・隠した列の数のバッジ・設定のメニュー）。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:テーブル]
   - path: components/tabs/index.html
     visibility: internal
@@ -1389,6 +1389,14 @@ files:
     visibility: internal
     description: '部品『map-dim-contrast』のモック: map の図の再生・選択・中へ入る操作で薄くした要素の文字のコントラストを 4.5:1 以上に保つ薄め方を、案 A（opacity を上げる）と案 B（文字の色を変え、面と枠を背景と混ぜる）で、C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダークに並べる。薄くした要素の外観を決めるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: refs/735/index.md
+    visibility: internal
+    description: '#735（はみ出す表の既定をピン止めなしにする・差分のブロックでフロントマターの変更を示す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/735/assets/table-samples.js
+    visibility: internal
+    description: '#735 のモックの見本: #283 の表の見本と同じ列と行で、はみ出す表の既定（どの列も留めない）と、設定で既定の列を留める指定をした表の定義。このモックの表の見本を変えるときに参照する。'
+    tags: [topic:モック, topic:テーブル]
   - path: refs/709/index.md
     visibility: internal
     description: '#709（map の手順の再生で倍率を変えない・言語が markdown のコードブロックでソースと描いた結果を切り替える）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
