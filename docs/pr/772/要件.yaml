@@ -64,22 +64,32 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: 補足の `notes` の行の「ポインターを適用したとき」を「ポインターを重ねたとき」にする（#749）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
   - page: docs/guide/構成図の決まり.mark.md
     new: false
     change: '`## 線`・`## 交差` に、同じノードの同じ辺から出る線の出る位置をずらすことと、並んで走る線の間隔を、実装で決めた値で記載する（#767。今の「4px ずつずらす」は実装に無い）。ノードの文字の見た目を記載していれば追随する（#766）'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
   - page: docs/guide/VSCode拡張機能.mark.md
     new: false
     change: '`## HTML に書き出す` を、書き出すときに描いた HTML と純粋な Markdown を埋め、元の Markdown を埋めない説明にする（#769）'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
   - page: docs/guide/VSCodeで確認する-HTMLとPDFにする.md
     new: false
     change: 書き出した HTML の中身と開いたときの挙動の記述を、描いた HTML から起動する形に追随させる（#769。記述が変わらなければ done にする）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
   - page: docs/guide/API.mark.md
     change: 公開関数の一覧の表に `renderForMount(markdown, opts)` の行を追加し、関数の節に引数・戻り値（`mount` の `opts.rendered` と `opts.pureMarkdown` に指定する値）と使用方法を記載する（#769）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:44.785403+00:00'
 scope_out:
   - item: マーカーの今の書き方を読む処理（`src/render/legacy-marks.ts`）の削除
     reason: '#748 の洗い出しで旧と新が並ぶ候補に当たるが、次のマイナーバージョンの破壊的変更として別の Issue が持つ'

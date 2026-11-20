@@ -66,8 +66,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T18:27:01.670022+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: '#749 の「ポインターを適用する」「フォーカスを適用した」の修正と、公開ドキュメント（VS Code の書き出しのガイド・リファレンス）の追随'
+    updated_by: planner
+    updated_at: '2026-11-20T18:45:49.109359+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
