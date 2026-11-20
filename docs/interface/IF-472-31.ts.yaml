@@ -163,6 +163,38 @@ flows:
       - '`backlinks.api` に `guide` が無い（フロントマターの `公開関数`）'
       - '`backlinks.arch` が `["api"]`（フロントマターの `[設計](../設計/arch.md)` のリンクを数えない）'
     test: test_normal_when_frontmatter
+  - name: 正常系（フロントマターのメタデータ）
+    summary: 索引に無いキーをフロントマターの値で補い、索引に無くフロントマターに `title` を持つ文書を加える
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常系と同じ
+      - name: フロントマターを持つ索引と本文
+        description: 正常系の索引のうち `arch` の行を `id`・`path` だけにしたもの。`設計/arch.md` の本文の先頭のフロントマターが `title` に `アーキテクチャ`、`aliases` に `[構成図]` を持ち、`使い方/guide.md` の本文の先頭のフロントマターが `aliases` に文字列の `使い方` を持ち、本文の段落に `構成図` が出る。`documents` は、索引に無い `note.md`（先頭のフロントマターが `title` に `メモ` を持ち、本文が `[構成](設計/arch.md)`）と `draft.md`（フロントマターを持たず、本文が `[構成](設計/arch.md)`）も持つ
+        notes: 型の合わない `aliases` を `guide` に、フロントマターに `title` を持つ・持たない索引に無い文書を並べて、補う・補わない・加える・加えないを決定的に発生させる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: collectReferences({ index, documents })
+        M->>M: 各文書の先頭のフロントマターを解析し、索引に無いキーを補い、title を持つ索引に無い文書を加える
+        M->>M: 補った文書で related・本文のリンク・別名の出現を取得する
+        M-->>C: { backlinks, glossary, docs }
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`docs` の 1 つ目が `{ id: "arch", path: "設計/arch.md", title: "アーキテクチャ", aliases: ["構成図"] }`'
+      - '`docs` の `guide` が `aliases` を持たない（文字列の `使い方` を使用しない）'
+      - '`docs` の最後が `{ id: "note.md", path: "note.md", title: "メモ" }` で、`draft.md` の文書が無い'
+      - '`backlinks.arch` が `["api", "guide", "note.md"]`（`guide` は本文の `構成図`、`note.md` は本文のリンク）'
+      - '`backlinks` に `draft.md` のキーが無い'
+      - 引数の `index` と `documents` が書き換わっていない
+    test: test_normal_when_frontmatter_metadata
 lead: 利用側のサーバーや CLI（#9 の `mdmark build`）が、索引と全ての文書の本文を指定して、文書ごとの被参照と、用語集の表から入れた用語をまとめた参照の表を受け取る。`mount`・`render` はこの表を `opts.references` で受け取り、ほかの文書の本文を読み込まずに被参照とほかの文書の用語を描く。
 idempotent: true
 side_effects: なし（引数を書き換えず、ファイルとネットワークを読み込まない）
@@ -179,7 +211,7 @@ request:
     location: argument
     description: 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表
     example: '{ "設計/arch.md": "# アーキテクチャ\n" }'
-    notes: 索引に無いパスの文書は無視する。索引にあって表に無い文書は、`related` だけで参照に入る
+    notes: 索引に無いパスの文書は、先頭のフロントマターに使用できる `title` を持つときだけ索引の文書として加え（制約「フロントマターのメタデータ」）、ほかは無視する。索引にあって表に無い文書は、`related` だけで参照に入る
   - name: input.config
     type: MdmarkConfig
     required: false
@@ -209,7 +241,7 @@ response:
   - name: backlinks
     type: Record<string, string[]>
     description: 文書の `id` から、その文書を参照している文書の `id` の並びを参照する表
-    constraints: 並びは索引の `docs` の順。重なりと自分自身は入らない。参照されていない文書は空の並び
+    constraints: 並びは索引の `docs` の順。重なりと自分自身は入らない。参照されていない文書は空の並び。フロントマターで加えた文書も、その `id`（文書のパス）で入る
     notes: 参照は、参照元の `related` の要素の相手（オブジェクトは `to`、文字列はその値）が参照先の `id`、参照元の本文のリンクが参照先の `path` を指す（`#` 以降を除いて比べる）、参照元の本文に参照先の `aliases` が用語と同じ照合で出る、のどれか
   - name: glossary
     type: MdmarkGlossaryEntry[]
@@ -230,6 +262,10 @@ response:
   - name: glossary[].avoid
     type: string[]
     description: やめた言い方の列を「、」「,」で区切ったもの。やめた言い方の列が無いときは空。`mount`・`render` がほかの文書の表のやめた言い方にマーカーを付けるのに使用する
+  - name: docs
+    type: MdmarkIndexDoc[]
+    description: 索引の `docs` の文書をフロントマターの値で補い、索引に無くフロントマターに使用できる `title` を持つ文書を加えた文書の並び。`mount`・`render` は被参照の一覧とツールチップの関連文書に、`opts.index` の `docs` の代わりにこれを使用する
+    constraints: 並びは索引の `docs` の順の後ろに、加えた文書を `documents` のキーの順。Schema に合わない索引の文書は入らない
 response_example: |-
   ```json
   {
@@ -258,6 +294,9 @@ constraints:
     constraint: 全ての文書の本文を 1 回ずつ解析する。結果は利用側が持ち、文書を書き換えたときに再作成する
   - item: フロントマター
     constraint: 各文書の本文の先頭のフロントマターは、インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じ判定で除外してから、本文のリンクの解決と文書の別名の照合・用語集の表の取り出しをする。フロントマターの中のリンク・文書の別名・用語は、被参照と用語の出現に数えない
+  - item: フロントマターのメタデータ
+    constraint: 各文書の本文の先頭のフロントマター（制約「フロントマター」と同じ判定）の中身を YAML として解析し、最上位のマッピングの `title`・`description`・`aliases`・`tags` だけを参照する。`title`・`description` は空でない文字列、`aliases` は空でない文字列の並び、`tags` は索引の `docs[].tags` と同じ要素の並びのときだけ使用し、型の合わないキーと、解析できない・最上位がマッピングでない中身は、無いものとして扱う（例外を投げない）。索引の文書は、索引に無いキーだけをフロントマターの値で補う（両方にあれば索引の値）。索引に無い文書は、使用できる `title` を持つときだけ、`id` と `path` をその文書のパスにした文書として加える。加える文書の `id` が索引の文書の `id` と重なるときは加えない
+    notes: 補った文書はレスポンスの `docs`。`checkIndex`・`collectMatches` も同じ規則で補う
 refs:
   - SC-472-75#
   - SC-472-72#

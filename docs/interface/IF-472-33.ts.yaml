@@ -802,6 +802,8 @@ constraints:
       本文のコードの例の `<mdmark-*>` も別名で表示される。
 
       `--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確かめる（「無い」を確かめる行も別名で確かめる）。'
+  - item: ページのタイトル
+    constraint: '`<title>` は、参照の表の `docs` に書き出す文書があればその `title`、無ければ文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名'
 test_file: tests/integration/lib/export.test.ts
 tags:
   - name: topic:書き出し

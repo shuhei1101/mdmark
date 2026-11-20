@@ -709,7 +709,7 @@ constraints:
     constraint: まとめる文書への相対リンク（map の図のノードの `click` のリンク先を含む）は、開いたとき 1 枚の中の文書へ移る。それ以外の文書への相対リンクは記載したままの `href` で残し、リンクを持つ文書とリンク先を警告に出す
     notes: 1 枚の中の文書を指す URL の記載方法は画面設計で決める
   - item: 参照の表
-    constraint: 設定に `index` があるとき、索引と索引の `docs` の文書を `collectReferences` に指定して作った参照の表を埋め、索引にある文書はその `id` を `mount` の `docId` に指定する
+    constraint: 設定に `index` があるとき、索引と、索引の `docs` の文書とまとめる文書を `collectReferences` に指定して作った参照の表を埋め、参照の表の `docs` にある文書（フロントマターで加えた文書を含む）はその `id` を `mount` の `docId` に指定する
     decided_by: IF-472-31#
   - item: 用語集の文書
     constraint: '`build.glossary` の文書の用語集の表の用語を、まとめた全ての文書で有効にしる（索引が無いときも）。まとめる文書に該当しないパスは飛ばして警告に出す'
@@ -751,6 +751,8 @@ constraints:
   - item: mdmark の痕跡
     constraint: 文書をHTMLに書き出す.ts の制約「mdmark の痕跡」と同じ。まとめる全ての文書の本文・取り込む文書の表に同じ規則を当て、文書のパスと文書間のリンクの `href` は置き換えない
     decided_by: IF-472-33#constraints[mdmark の痕跡]
+  - item: 文書のタイトル
+    constraint: 文書の一覧・帯のタイトル・ページのタイトルに出す文書のタイトルは、参照の表の `docs` のその文書の `title`（索引の `title`、無ければフロントマターの `title`）、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名。設定に `index` が無いときも、文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）を本文の最初の h1 より先に使用する
 test_file: tests/integration/lib/bundle.test.ts
 tags:
   - name: tool:html

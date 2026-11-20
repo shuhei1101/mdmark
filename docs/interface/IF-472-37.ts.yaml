@@ -262,6 +262,83 @@ flows:
       - '`where` が `schema` の行の `message` に `mdmark upgrade` がある'
       - 文書のタグ `MCP` のずれは無い
     test: test_normal_when_old_schema
+  - name: 正常系（フロントマターのメタデータ）
+    summary: 索引に無いキーをフロントマターで補い、ずれを返却しない
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常系と同じ
+      - name: フロントマターを持つ索引と本文
+        description: 索引が `arch`（`id`・`path` だけ）と `api`（`title` に `API`）を持ち、`arch.md` の先頭のフロントマターが `title` に `アーキテクチャ`、`tags` に `[設計]` を持ち、`api.md` の先頭のフロントマターが `title` に `API` を持つ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M->>M: フロントマターの値で索引の文書を補い、両方にあるキーの値を比べる
+        M-->>C: []
+      ```
+
+      <!-- /map -->
+    expected:
+      - 例外を投げない
+      - 戻り値が空（`arch` の `title` が無いことを `schema` のずれにしない）
+    test: test_normal_when_frontmatter_metadata
+  - name: 正常系（索引に無い文書がフロントマターを持つ）
+    summary: フロントマターに `title` を持つ索引に無い文書を `orphan_doc` にしない
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常系と同じ
+      - name: 索引に無い文書を含む本文
+        description: 索引が `arch` だけを持ち、`documents` が `arch.md`・`note.md`（先頭のフロントマターが `title` に `メモ` を持つ）・`draft.md`（フロントマターを持たない）を持つ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M->>M: title を持つ索引に無い文書を索引の文書に加える
+        M-->>C: ずれの一覧
+      ```
+
+      <!-- /map -->
+    expected:
+      - '戻り値が `{ file: "draft.md", where: "", kind: "orphan_doc" }` の 1 つだけ'
+    test: test_normal_when_frontmatter_unindexed_document
+  - name: 正常系（索引とフロントマターの値が違う）
+    summary: 両方にあって値の違うキーを `frontmatter_mismatch` にする
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常系と同じ
+      - name: 値が違う索引と本文
+        description: 索引が `guide`（`title` に `使用方法`、`tags` に `[手順]`）と `faq`（`title` に `よくある質問`）を持つ。`guide.md` の先頭のフロントマターが `title` に `使い方`、`tags` に `[手順]` を持ち、`faq.md` の先頭のフロントマターは YAML として解析できない
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: checkIndex({ index, documents })
+        M->>M: 索引とフロントマターの両方にあるキーの値を比べる
+        M-->>C: ずれの一覧
+      ```
+
+      <!-- /map -->
+    expected:
+      - 例外を投げない
+      - '戻り値が `{ file: "index.yaml", where: "docs[0].title", kind: "frontmatter_mismatch" }` の 1 つだけで、`message` に `使用方法` と `使い方` がある'
+    test: test_normal_when_frontmatter_mismatch
 lead: 利用側の処理（#9 の `mdmark check`・#11 の MCP の `check`）が、索引と、索引のフォルダにある文書の本文を指定して、索引と文書のずれの一覧を受け取る。ファイルを読み込むのは呼ぶ側で、mdmark は指定された値だけを確認する。
 idempotent: true
 side_effects: なし（引数・索引・文書を書き換えない）
@@ -297,7 +374,7 @@ response:
   - name: '[]'
     type: MdmarkIndexIssue[]
     description: ずれの一覧。ずれが無ければ空
-    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` の順、同じ種類の中は索引の並びとパスの順
+    constraints: 並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `frontmatter_mismatch` → `duplicate_term` → `avoided_term` の順、同じ種類の中は索引の並びとパスの順
   - name: '[].file'
     type: string
     description: ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス
@@ -307,9 +384,9 @@ response:
     description: 索引のキーのパス（`docs[3].path`・`docs[0].tags[1]`・`docs[0].related[1].to`）か、文書の行（`3 行目`）。ファイル全体のずれは空文字
     example: docs[3].path
   - name: '[].kind'
-    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'duplicate_term' | 'avoided_term'"
+    type: "'schema' | 'missing_doc' | 'orphan_doc' | 'broken_ref' | 'untyped_related' | 'one_sided_change_together' | 'related_link_overlap' | 'missed_change_together' | 'frontmatter_mismatch' | 'duplicate_term' | 'avoided_term'"
     description: ずれの種類
-    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無い文書、`broken_ref` は `related` の切れた `id`、`untyped_related` は `type` と `when` を持たない文字列の関連、`one_sided_change_together` は相手が自分への `change_together` を記載していない `change_together`、`related_link_overlap` は本文でリンクしている文書への関連（`change_together` を除く）、`missed_change_together` は `changedPaths` で片方だけが変わった `change_together` の組、`duplicate_term` は用語の重複、`avoided_term` は本文に出た用語のやめた言い方'
+    notes: '`schema` は Schema に合わない索引、`missing_doc` は索引にあって消えた文書、`orphan_doc` は索引に無く、先頭のフロントマターに使用できる `title` も持たない文書、`broken_ref` は `related` の切れた `id`、`untyped_related` は `type` と `when` を持たない文字列の関連、`one_sided_change_together` は相手が自分への `change_together` を記載していない `change_together`、`related_link_overlap` は本文でリンクしている文書への関連（`change_together` を除く）、`missed_change_together` は `changedPaths` で片方だけが変わった `change_together` の組、`frontmatter_mismatch` は索引とフロントマターの両方にあって値の違うキー、`duplicate_term` は用語の重複、`avoided_term` は本文に出た用語のやめた言い方'
   - name: '[].message'
     type: string
     description: ずれの内容と修正方法。日本語の 1 文
@@ -339,12 +416,14 @@ constraints:
 
       最上位のキーは `schema`・`docs`・`terms` だけで、ほかのキー（v0.9.0 までのタグの語彙 `tags` を含む）は `where` がそのキーの `schema` のずれにする。
 
+      `docs[]` の必須のキーは `id`・`path` だけで、`title` は任意。
+
       `docs[].tags` の要素は、空でない文字列か、`name`（必須・空でない文字列）と `main`（真偽値）だけを持つオブジェクト。
 
       `docs[].related` は件数の上限を配置しない並びで、要素は空でない文字列か、`to`（必須・空でない文字列）・`type`（必須。`requires`・`references`・`replaces`・`part_of`・`change_together` のどれか）・`when`（必須・空でない文字列）・`paths`（空でない文字列の並び）だけを持つオブジェクト'
     notes: 検査の仕方（ライブラリを使用するか）はモジュール構成設計で決める
   - item: 文書の対応
-    constraint: 索引の `docs[].path` と `documents` のキーを、`./` と重なった `/` を除いた文字列で比べる。大文字と小文字は区別する
+    constraint: 索引の `docs[].path` と `documents` のキーを、`./` と重なった `/` を除いた文字列で比べる。大文字と小文字は区別する。`documents` にあって索引に無い文書は、インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」で加えられる文書のとき `orphan_doc` にせず、索引の文書として以降の照合に含める
   - item: 用語の重複
     constraint: 索引の `terms` どうし・索引の `terms` と用語集の表・用語集の表どうしで、単語か別名を NFKC・英字の小文字化・前後の空白の除去で正規化した後に同じになるものを、後に出た用語ごとに重なる先のうち最初の 1 つとの組で 1 つの `duplicate_term` にする（索引 → 索引の `docs` の順の文書の表の順で後と先を決める）。`file` と `where` は後に出た側を指す。索引の側は `file` が `indexFile`、`where` が `terms[1].term` か `terms[1].aliases[0]`。用語集の表の側は `file` が文書のパス、`where` が表のその行の文書の中の行番号（`12 行目`。解析器のトークンの `map` の開始行 + 1）。`message` に後に出た側の記載した表記と先の側の場所を記載する
     notes: 用語集の表は `collectReferences` と同じ読み込み方で取得する
@@ -359,7 +438,7 @@ constraints:
       出た行とやめた言い方の組ごとに 1 つの `avoided_term` にし、`file` は文書のパス、`where` はその単語が出た文書の中の行番号（`8 行目`。解析器の行内のトークンの `map` の開始行 + 単語より前の改行の数 + 1。行内のトークンが `map` を持たない表のセルは、そのセルを囲む `tr_open` の `map` の開始行 + 1）。
       `message` にやめた言い方と代わりに使用する用語の単語を記載する。
       並びは索引の `docs` の順、文書の中は行の順、同じ行の中は出た順
-    notes: 索引に無い文書（`orphan_doc`）は探さない。単語の切れ目と探す範囲は `collectReferences` の文書の別名の一致と同じ
+    notes: 索引に無い文書は探さない（フロントマターで加えた文書は索引の文書として探す）。単語の切れ目と探す範囲は `collectReferences` の文書の別名の一致と同じ
   - item: 関連の点検
     constraint: |-
       関連の相手は、文字列の要素はその文字列、オブジェクトの要素は `to` とする。
@@ -373,6 +452,8 @@ constraints:
     constraint: '`changedPaths` を指定したときだけ行う。どちらかの側が `change_together` で記載した組を、組ごとに 1 回だけ確認し、片方の文書の `path` だけが `changedPaths` にあるとき 1 つの `missed_change_together` にする。`file` は変わっていない側の文書のパス、`where` は空文字、`message` に変わった側の文書のパスと、変わっていない側も修正するか確認する修正方法を記載する。並びは、組を先に記載した側の文書の索引の並び'
   - item: フロントマター
     constraint: 文書の本文の先頭のフロントマターは、インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じ判定で除外してから、文書の対応・関連・やめた言い方・修正漏れを照合する。フロントマターの中の文字からは、ずれを返さない
+  - item: 索引とフロントマターの値の違い
+    constraint: インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ規則でフロントマターを参照し、索引の文書とフロントマターの両方に使用できる値があるキーごとに比べる。`title`・`description` は文字列が違うとき、`aliases` は要素の集合が違うとき、`tags` はタグの名前と `main` の組の集合が違うとき、1 つの `frontmatter_mismatch` にする。`file` は `indexFile`、`where` はそのキーの索引のパス（`docs[0].title`）、`message` に索引の値とフロントマターの値と、どちらかに合わせる修正方法を記載する。並びは索引の `docs` の順、文書の中は `title`・`description`・`aliases`・`tags` の順
 refs:
   - SC-472-70#
   - IF-472-31#

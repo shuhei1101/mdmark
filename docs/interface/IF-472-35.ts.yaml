@@ -10653,7 +10653,7 @@ request:
     default: なし（被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない）
     location: argument
     description: '`collectReferences` が返却した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語に使用する'
-    notes: 構造はインターフェース定義『参照の表を作る』のレスポンス。`glossary[].avoid` が無い用語は、やめた言い方を持たない用語として扱う
+    notes: 構造はインターフェース定義『参照の表を作る』のレスポンス。`glossary[].avoid` が無い用語は、やめた言い方を持たない用語として扱う。`docs` を持つときは、被参照の一覧とツールチップの関連文書（タイトル・概要・別名）に `opts.index` の `docs` の代わりに使用し、`opts.docId` には索引に無くフロントマターで加えた文書の `id`（文書のパス）も指定できる
   - name: opts.diffSource
     type: DiffSource
     required: false
