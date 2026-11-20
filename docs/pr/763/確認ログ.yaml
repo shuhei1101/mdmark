@@ -17,3 +17,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/763#discussion_r4642289464
+  - topic: ER 図の列の説明のマーカーの見せ方
+    decision: 丸を無くした 14px の線の i のアイコンを薄い色で出し、列の行の高さの中央に置く（推奨案 A）。中央に揃えた後の確認は不要
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/763#discussion_r4642405150

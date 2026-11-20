@@ -148,3 +148,14 @@
   background: var(--mdmark-color-link);
 }
 .mock-763.note-c .map-er-note:hover { background: var(--mdmark-color-surface); }
+/* 案 A（採用）: 説明のマーカーを列の行の高さの中央に置く（行の中の inline の置き方で、文字の基準線に寄って上がるのを防ぐ） */
+.mock-763.note-a .map-er-note-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+.mock-763.note-a .map-er-note {
+  display: grid;
+  vertical-align: middle;
+}
