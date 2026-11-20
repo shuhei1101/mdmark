@@ -35,6 +35,9 @@ data_models:
       - name: height
         type: number | undefined
         description: 表示する枠の高さ
+      - name: groupSizes
+        type: 'Record<string, { w: number; h: number }>'
+        description: 角で大きさを変えたグループの幅と高さ
 constants:
   - name: MAP_STATE_KEY_PREFIX
     title: 状態のキーの頭
@@ -122,12 +125,12 @@ functions:
     container: src/map/state.ts
     usecase: 図のグループの中へ入る・開閉する
     role: 処理
-    summary: sessionStorage に状態を記載し、`url_state` が `true` なら中へ入ったグループ・ブロックを `history.replaceState` でクエリ文字列に書き込む（無ければキーを削除する）
+    summary: sessionStorage に状態を記載し、`url_state` が `true` なら中へ入ったグループ・ブロックを `history.replaceState` でクエリ文字列に書き込む（無ければキーを削除する）。`scope` が `modal`（全画面のモーダルの図）のときは、元の図と共有する `collapsed`・`positions`・`wireShifts`・`attachments`・`groupSizes` だけを、sessionStorage にある元の図の状態に重ねて記載し、`entered`・`selected`・`order`・`height` とクエリ文字列は変えない
     scope: public
     side_effects: sessionStorage と `history` の今の項目の URL を書き換える
     args:
       - name: options
-        type: '{ index: number; state: MapState; urlState: boolean; storage: Storage | undefined; history: History; location: Location }'
+        type: '{ index: number; state: MapState; urlState: boolean; storage: Storage | undefined; history: History; location: Location; scope?: "page" | "modal" }'
         required: true
         description: 図の番号・状態・設定・保存先
     returns:
@@ -152,6 +155,12 @@ functions:
         condition: '`entered: undefined`'
         mock: '`history`'
         expected: URL から `map-1` が消える
+      - name: test_write_map_state_when_modal
+        case: 正常
+        summary: 全画面のモーダルの図は共有する状態だけを記載する
+        condition: 'sessionStorage に `entered: read`・`selected: [A]` があり、`scope: modal`・`state` が `entered: place`・`selected: [B]`・`collapsed: [store]`・`groupSizes: { page: { w: 336, h: 274 } }`'
+        mock: '`history`'
+        expected: 'sessionStorage の `collapsed` が `[store]`・`groupSizes.page` が `{ w: 336, h: 274 }` で、`entered` が `read`・`selected` が `[A]` のまま。`replaceState` を呼ばない'
 lead: 'map の図の状態（中へ入ったグループ・開閉）の保持と復元を受け持ち、図の状態の保ち方を変えるときに参照する。'
 tags:
   - name: topic:map
