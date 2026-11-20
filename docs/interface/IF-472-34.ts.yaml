@@ -2607,12 +2607,12 @@ flows:
       - 5 つ目のコードブロックの前に記載の警告があり、本文に `wrap` の `"yes"` と、`true`・`false` で記載する修正方法があり、その `pre` が `mdmark-code-wrap` を持たない
     test: test_normal_when_wrap
   - name: 正常系（罫線のフォルダ構成の言語が tree でないコードブロック）
-    summary: 罫線の行を 2 行以上持つ言語が `tree` でないコードブロックの前に記載の警告を配置し、`code` のマーカーの `tree_warning` が `false` のコードブロックには配置しない
+    summary: 罫線の行を 2 行以上持つ言語が `tree` でないコードブロックをファイルツリーにし、`code` のマーカーの `tree_warning` が `false` のコードブロックは記載した言語のまま描く
     setup:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 罫線のコードブロックを持つ Markdown
-        description: '`mdmark/` の下へ `├── src/`・`│   └── index.ts`・`└── README.md` を記載した言語 `text` のコードブロック、`|-- index.ts`・`` `-- parts/ `` を記載した言語の無いコードブロック、`└── index.js` の 1 行だけを持つ言語 `text` のコードブロック、`<!-- code: {"tree_warning": false} -->` の直後の 1 つ目と同じ言語 `text` のコードブロック、1 つ目と同じ行を持つ言語 `tree` のコードブロック、`<!-- code: {"tree_warning": "no"} -->` の直後の 1 つ目と同じ言語 `text` のコードブロックを持つ文書'
+        description: '`mdmark/` の下へ `├── src/`・`│   └── index.ts`・`└── README.md` を記載した言語 `text` のコードブロック、`|-- index.ts`・`` `-- parts/ `` を記載した言語の無いコードブロック、`└── index.js` の 1 行だけを持つ言語 `text` のコードブロック、`<!-- code: {"tree_warning": false} -->` の直後の 1 つ目と同じ言語 `text` のコードブロック、1 つ目の `index.ts` の行を上の行より 2 階層深くした言語 `text` のコードブロック、`<!-- code: {"tree_warning": "no"} -->` の直後の 1 つ目と同じ言語 `text` のコードブロックを持つ文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -2623,17 +2623,17 @@ flows:
         participant C as 利用側の処理
         participant M as mdmark
         C->>M: render(markdown)
-        M->>M: 言語が tree でないコードブロックの罫線の行を数える
-        M-->>C: 罫線の行が 2 行以上のコードブロックの前に記載の警告を持つ HTML 文字列
+        M->>M: 言語が tree でないコードブロックの罫線の行を数え、2 行以上ならファイルツリーとして読み取る
+        M-->>C: 罫線のコードブロックをファイルツリーにした HTML 文字列
       ```
 
       <!-- /map -->
     expected:
-      - '1 つ目のコードブロックの前に記載の警告があり、本文が `言語 text のコードブロックに、罫線のフォルダ構成があります。` で始まり、言語を `tree` にすることと `<!-- code: {"tree_warning": false} -->` の記載方法がある。コードブロックは `language-text` の `pre` のまま'
-      - '2 つ目のコードブロックの前に記載の警告があり、本文が `言語の無いコードブロックに、罫線のフォルダ構成があります。` で始まる'
-      - '3 つ目・4 つ目のコードブロックの前に記載の警告が無い'
-      - '5 つ目はファイルツリー（`div.mdmark-tree`）で、記載の警告が無い'
-      - '6 つ目のコードブロックの前には記載の警告が 2 つあり、1 つは `tree_warning` の `"no"` と `true`・`false` で記載する修正方法、もう 1 つは罫線の記載の警告（読み取れない値は既定の `true` として扱う）'
+      - 1 つ目は `data-tree-language="text"` を持つ `div.mdmark-tree` で、`src/` がフォルダ、`index.ts` がファイルの項目になり、前に記載の警告が無い
+      - 2 つ目は `data-tree-language` を持たない `div.mdmark-tree` で、`src/` の下に `index.ts` と `parts/` の項目がある
+      - 3 つ目と 4 つ目は `language-text` の `pre` のコードブロックのままで、前に記載の警告が無い
+      - 5 つ目の前に、読み込めない行の行番号を記載した記載の警告が 1 つだけあり、コードブロックは `language-text` の `pre` のまま
+      - 6 つ目の前に `tree_warning` の `"no"` と `true`・`false` で記載する修正方法の記載の警告が 1 つあり、読み取れない値は既定の `true` として扱って `div.mdmark-tree` にする
     test: test_normal_when_tree_lines_without_tree_language
   - name: 正常系（mermaid のコードブロック）
     summary: mermaid のコードブロックは図にせず、属性 `data-mdmark-mermaid` を付けたコードブロックとして返却する
@@ -3248,9 +3248,9 @@ constraints:
       閉じの無い開きは、範囲の中に別のタブの開きを持たなければ文書の終わりまでを範囲にし、持てばその開きから文書の終わりまでのタブのマーカーをどれもタブにせず、見出しと中身をそのまま出す'
   - item: ステップ・ファイルツリー・バッジ
     constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<div class="mdmark-tree">` の中の `<ul class="mdmark-tree-list" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。直前の `<!-- tree: {JSON のオブジェクト} -->` の `wrap` の `true` は、そのツリーの `div.mdmark-tree` に class `mdmark-tree-wrap` を付ける（`depth` と同じオブジェクトに記載できる）。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を削除した文言}</span>` にし、`badge\:` の行内のコードは `\` を削除した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
-  - item: 罫線のフォルダ構成の記載の警告
-    constraint: '`code` がオンのとき、言語が `tree` でない普通のコードブロック（言語なし・`text`・`plaintext` などの言語。言語 `tree` のファイルツリー・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html`・mermaid・CSV の表・map の範囲のコードブロックは除く）のうち、行頭の空白と罫線の縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行を 2 行以上持つものの直前に、記載の警告を 1 つ配置する。直前の `<!-- code: {JSON のオブジェクト} -->` の `tree_warning` が `false` のコードブロックには配置しない。コードブロックは記載した言語のまま描く'
-    notes: 文言は画面設計『文書』の記載の警告。外観はモック `docs/mock/components/tree-lines-warning/`。確認ログ『罫線のコードブロックの警告の文言と警告を止める指定』
+  - item: 罫線のフォルダ構成のファイルツリー
+    constraint: '`code` がオンのとき、言語が `tree` でない普通のコードブロック（言語なし・`text`・`plaintext` などの言語。言語 `tree` のファイルツリー・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html`・mermaid・CSV の表・map の範囲のコードブロックは除く）のうち、行頭の空白と罫線の縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行を 2 行以上持つものを、制約『ステップ・ファイルツリー・バッジ』の言語 `tree` のコードブロックと同じ読み取りで `<div class="mdmark-tree">` にする。記載した言語を `div.mdmark-tree` の属性 `data-tree-language` に持たせる（言語なしは属性を付けない）。罫線を読み取れない行を持つものは、言語 `tree` のコードブロックと同じ記載の警告を 1 つだけ配置し、記載した言語のコードブロックのまま描く。直前の `<!-- code: {JSON のオブジェクト} -->` の `tree_warning` が `false` のコードブロックはファイルツリーにせず、記載の警告を配置せずに記載した言語のまま描く'
+    notes: '外観はモック `docs/mock/components/file-tree-plain-lines/`。確認ログ『言語が tree でない罫線を描いたファイルツリーの帯のラベル』『罫線のまま見せる指定 tree_warning: false の扱い』'
   - item: 見出しの ID とアンカー
     constraint: 全ての見出しに GitHub と同じ規則の `id` を付ける（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする。同じ ID の 2 つ目から `-1`・`-2` を付ける）。見出しの ID は機能に関わらず付ける。`anchors` がオンのとき、見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` を追加する
   - item: 目次
@@ -3343,7 +3343,7 @@ constraints:
 
       `code` がオンのとき、コードブロックの直前の `<!-- code: {JSON のオブジェクト} -->` を次のコードブロックへの指定として読み込む。
 
-      キーは `title`（タイトル。空白を含められる）・`lines`（行番号。`lines.start` は最初の行の番号で、省くと 1）・`highlight`（強調する行。行の番号か行の範囲 `{"from": 4, "to": 6}` の配列）・`fold`（最初から畳む行。`highlight` と同じ記載方法）・`wrap`（`true` で長い行を枠の幅で折り返す）・`tree_warning`（`false` で罫線のフォルダ構成の記載の警告を止める。既定は `true`）・`raw`（`true` で、言語 `markdown`・`md` のコードブロックを既定で元の Markdown の表示にする。既定は `false`）。
+      キーは `title`（タイトル。空白を含められる）・`lines`（行番号。`lines.start` は最初の行の番号で、省くと 1）・`highlight`（強調する行。行の番号か行の範囲 `{"from": 4, "to": 6}` の配列）・`fold`（最初から畳む行。`highlight` と同じ記載方法）・`wrap`（`true` で長い行を枠の幅で折り返す）・`tree_warning`（`false` で罫線のフォルダ構成をファイルツリーにせず、記載した言語のコードブロックのまま描く。既定は `true`）・`raw`（`true` で、言語 `markdown`・`md` のコードブロックを既定で元の Markdown の表示にする。既定は `false`）。
 
       `highlight`・`fold` の行の番号と、コードブロックに無い行の判定は、1 行目を `lines.start` の番号として数える。
 
@@ -3388,7 +3388,7 @@ constraints:
   - item: mermaid のコードブロック
     constraint: '機能 `mermaid` がオンの文書で、情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、制約『コードブロック』のとおりのコードブロックに描き、囲む `div.mdmark-code` に属性 `data-mdmark-mermaid` を付ける。`render` は図にせず、mermaid を読み込まない。色分けの対象にしない（`data-mdmark-syntax` を付けない）。機能 `mermaid` は文書の `<!-- features: {"mermaid": false} -->` を受け、返却する `features` に含める。
 
-      機能 `map` がオンで、ソースの front matter（先頭の `---` で囲んだ行）と `%%` で始まるコメントの行を飛ばした最初の単語が制約『map の範囲』の図の種類で、front matter に `config` を持たず `%%{` で始まる設定の行を持たないコードブロックは、この制約の対象にせず、制約『map の範囲』の「範囲の外の map の図」にする（機能 `mermaid` がオフのときは、どちらにもしない）'
+      機能 `map` がオンで、ソースの front matter（先頭の `---` で囲んだ行）と `%%` で始まるコメントの行を飛ばした最初の単語が制約『map の範囲』の図の種類で、コードブロックは、front matter の `config` と `%%{` で始まる設定の行・見た目を指定する行を持っていても、この制約の対象にせず、制約『map の範囲』の「範囲の外の map の図」にする（機能 `mermaid` がオフのときは、どちらにもしない）'
     notes: 図にするのは `mount`（文書を描く.ts の制約『mermaid の対象』〜『mermaid を読み込めないとき』）。JavaScript が動かない場所でもソースがコードブロックとして読み込める
   - item: 色の名前
     constraint: 色の名前は `blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`（小文字だけ）。表のマーカー・バッジ・本文の文字の属性に記載した色の名前を、出力の要素の `data-color` に写す。色の名前の一覧に無い名前は、その指定を適用せずに制約「作成者の誤り」と同じ記載の警告を配置し、本文に記載した名前と色の名前の一覧を出す
