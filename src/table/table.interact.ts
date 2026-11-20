@@ -640,6 +640,8 @@ function attachTable(
     cell ? headCells.indexOf(cell) : -1;
   const tbody = table.tBodies[0];
   const originalRows = bodyRows(table);
+  // URL の `#ID` の指す行へ移るか
+  const followRows = followHash && features.includes("rowlink");
   numberCells(originalRows, headColumns);
   /** 行の元の列の位置のセル（並べ替えた後もセルの `data-col` で参照する） */
   const cellAt = (
@@ -1416,7 +1418,7 @@ function attachTable(
       }, COPIED_NOTICE_MS),
     );
   };
-  if (features.includes("rowlink") && followHash) {
+  if (followRows) {
     window.addEventListener("hashchange", revealRow);
     cleanups.push(() => {
       window.removeEventListener("hashchange", revealRow);
@@ -1697,7 +1699,7 @@ function attachTable(
       }),
     );
   }
-  if (features.includes("rowlink") && followHash) {
+  if (followRows) {
     revealRow();
   }
   cleanups.push(() => {
@@ -1783,7 +1785,7 @@ export function attachTables(
     pinMode = "each",
     longColumnMin = DEFAULT_LONG_COLUMN_MIN_EM,
     partStates,
-    followHash = true,
+    followHash,
   } = options;
   const detachers: Array<() => void> = [];
   // 列の表示を付けた表の、削除したブロックの中を除いた文書の順の位置
@@ -1808,7 +1810,7 @@ export function attachTables(
         pinMode,
         longColumnMin,
         partStates,
-        followHash,
+        followHash: followHash !== false,
       }),
     );
   }
