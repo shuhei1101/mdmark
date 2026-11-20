@@ -1,0 +1,20 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: run_only
+    detail: 脚注・注記を含むセルで、並べ替え・絞り込み・コピーの値に脚注・注記の中身の文字が入らなくなる。並べ替え・絞り込み・コピーの流れの記述は変わらない
+    depends_on: []
+docs:
+  - page: docs/component/CMP-472-61.ts.yaml
+    new: false
+    change: 並べ替え・絞り込み・コピー・集計のセルの値に、脚注・注記のツールチップの文字を含めないことを記載する
+    status: todo
+  - page: docs/interface/IF-472-35.ts.yaml
+    new: false
+    change: 脚注・注記を含むセルの並べ替え・絞り込み・コピーの値に、脚注・注記のツールチップの文字が入らない結合テストの期待を記載する
+    status: todo
+  - page: docs/module/MOD-472-229.ts.yaml
+    new: false
+    change: visibleText か cellValue（設計で決める）が脚注・注記のツールチップの文字を除くことと、スクリーンリーダー用の文字の扱い、その単体テストを記載する
+    status: todo
+scope_out: []
