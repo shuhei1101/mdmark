@@ -1,12 +1,5 @@
 import { glob, readFile } from "node:fs/promises";
-import {
-  dirname,
-  extname,
-  join,
-  relative,
-  resolve,
-  sep,
-} from "node:path";
+import { dirname, extname, join, relative, resolve, sep } from "node:path";
 import { parse } from "yaml";
 import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import { resolveDocTitle } from "../knowledge/references.ts";
