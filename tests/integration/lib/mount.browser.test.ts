@@ -16470,7 +16470,111 @@ const MAP_FLOW_PARALLEL = `${MAP_FLOW_THICK}  subgraph from [送り元]
   a1 --> b3
   a2 --> b1
   a3 --> b2
+  subgraph fan [分かれる]
+    direction TB
+    f0["分岐"]:::step
+    f1["左"]:::step
+    f2["右"]:::step
+  end
+  f0 --> f1
+  f0 --> f2
 `;
+
+/** 構成図の舞台の上のノードの矩形（線のパスと同じ座標） */
+function mapStageRect(figure: Element, id: string) {
+  const node = find<HTMLElement>(
+    figure,
+    `.mdmark-diagram-stage > [data-node="${id}"]`,
+  );
+  return {
+    x: node.offsetLeft,
+    y: node.offsetTop,
+    w: node.offsetWidth,
+    h: node.offsetHeight,
+  };
+}
+
+/** 上のノードから下の段のノードへ出る線が、上のノードの下の辺から出て、下の段のノードの上の辺に入る */
+function expectMapWiresFacingDown(
+  figure: Element,
+  from: string,
+  targets: string[],
+): void {
+  const source = mapStageRect(figure, from);
+  for (const target of targets) {
+    const rect = mapStageRect(figure, target);
+    const points = mapWirePoints(figure, `${from}->${target}`);
+    expect(points[0]?.[1], target).toBeCloseTo(source.y + source.h, 0);
+    expect(points.at(-1)?.[1], target).toBeCloseTo(rect.y, 0);
+  }
+}
+
+/** ER 図の見本で、「注文」→「明細」の線が左右の辺のうち相手に近い方の辺につながり、どの線も両端以外のテーブルを横切らない */
+function expectMapErWiresNearAndClear(figure: Element): void {
+  const orderRect = mapStageRect(figure, "注文");
+  const detailRect = mapStageRect(figure, "明細");
+  const r2 = mapWirePoints(figure, "r2");
+  const nearX = (self: typeof orderRect, other: typeof orderRect) =>
+    other.x + other.w / 2 < self.x + self.w / 2 ? self.x : self.x + self.w;
+  expect(r2[0]?.[0]).toBeCloseTo(nearX(orderRect, detailRect), 0);
+  expect(r2.at(-1)?.[0]).toBeCloseTo(nearX(detailRect, orderRect), 0);
+  const rects = ["支払い", "明細", "注文", "商品", "顧客"].map((id) => ({
+    id,
+    ...mapStageRect(figure, id),
+  }));
+  const touches = (rect: (typeof rects)[number], [x, y]: [number, number]) =>
+    x >= rect.x - 0.5 &&
+    x <= rect.x + rect.w + 0.5 &&
+    y >= rect.y - 0.5 &&
+    y <= rect.y + rect.h + 0.5;
+  for (const wire of figure.querySelectorAll<SVGPathElement>(
+    ".map-wire-hits > .map-wire-hit[data-wire]",
+  )) {
+    const points = mapWirePoints(figure, wire.dataset.wire ?? "");
+    const ends = [points[0], points.at(-1)] as Array<[number, number]>;
+    for (const rect of rects.filter(
+      (item) => !ends.some((end) => touches(item, end)),
+    )) {
+      expect(
+        mapPolylineEntersRect(points, rect),
+        `${wire.dataset.wire} が ${rect.id} を横切る`,
+      ).toBe(false);
+    }
+  }
+}
+
+/** 線の押せる帯のパスの点 */
+function mapWirePoints(figure: Element, id: string): Array<[number, number]> {
+  const d =
+    find<SVGPathElement>(
+      figure,
+      `.map-wire-hit[data-wire="${id}"]`,
+    ).getAttribute("d") ?? "";
+  return [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map(
+    (match) => [Number(match[1]), Number(match[2])] as [number, number],
+  );
+}
+
+/** 縦横の折れ線のどれかの区間が、矩形の内側（辺を除く）を通るか */
+function mapPolylineEntersRect(
+  points: Array<[number, number]>,
+  rect: { x: number; y: number; w: number; h: number },
+): boolean {
+  const inside = (x: number, y: number) =>
+    x > rect.x + 0.5 &&
+    x < rect.x + rect.w - 0.5 &&
+    y > rect.y + 0.5 &&
+    y < rect.y + rect.h - 0.5;
+  return points.slice(1).some((point, k) => {
+    const previous = points[k] as [number, number];
+    for (let step = 0; step <= 20; step += 1) {
+      const x = previous[0] + ((point[0] - previous[0]) * step) / 20;
+      const y = previous[1] + ((point[1] - previous[1]) * step) / 20;
+      if (inside(x, y)) return true;
+    }
+    return false;
+  });
+}
 
 /** 矩形 */
 type MapRect = { left: number; top: number; right: number; bottom: number };
@@ -16749,7 +16853,7 @@ test("test_normal_when_map_flowchart_drawn", async () => {
       ".mdmark-diagram-stage > .mdmark-diagram-node[data-node]",
     ),
   ];
-  expect(nodes.length).toBe(16);
+  expect(nodes.length).toBe(19);
   for (const [i, a] of nodes.entries()) {
     for (const b of nodes.slice(i + 1)) {
       expect(
@@ -16773,6 +16877,8 @@ test("test_normal_when_map_flowchart_drawn", async () => {
       id,
     ).not.toBeNull();
   expect(mapWireOverlaps(figure)).toEqual([]);
+  // 検証: 中のグループで下の段の 2 つのノードへ出る線は、上のノードの下の辺から出て、下の段のノードの上の辺に入る
+  expectMapWiresFacingDown(figure, "f0", ["f1", "f2"]);
   // 検証: 種類の行と形・色
   const store = find<HTMLElement>(figure, '[data-node="index"]');
   expect(store.dataset.shape).toBe("rect");
@@ -18495,6 +18601,8 @@ test("test_normal_when_map_er_drawn", async () => {
   const figure = figures()[0] as HTMLElement;
   // 検証: 分類の外の「顧客」「商品」から中へ出る線を含め、同じ向きの区間が同じ直線の上で重ならない
   expect(mapWireOverlaps(figure)).toEqual([]);
+  // 検証: 「注文」→「明細」の線は左右の辺のうち相手に近い方の辺につながり、どの線も両端以外のテーブルを横切らない
+  expectMapErWiresNearAndClear(figure);
   // 検証: タイトル
   expect(find(figure, ".mdmark-diagram-title").textContent).toBe("記録の構造");
   // 検証: テーブルの列の行と、ノード・グループの重なり
