@@ -302,7 +302,7 @@ request:
     location: argument
     description: 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。複数の文書を指定できる
     example: '{ "使い方/guide.md": "# 使用方法\n\nワークスペースを開く。" }'
-    notes: 索引に無いパスの文書は無視する。他の文書の用語集の表の用語も、この表にある本文から読み込む
+    notes: 索引に無いパスの文書は、`input.frontmatter` に使用できる `title` を持つときだけ索引の文書として加え、ほかは無視する。他の文書の用語集の表の用語も、この表にある本文から読み込む
   - name: input.config
     type: MdmarkConfig
     required: false
@@ -317,6 +317,12 @@ request:
     description: '`mount` の `opts.aliases` と同じ。構造は ER 図『エイリアス』'
     notes: 使用できないエイリアス（`env` を含む）は `mount` と同じく除いて照合する
     status: planned
+  - name: input.frontmatter
+    type: Record<string, unknown>
+    required: false
+    default: なし（フロントマターで補わない）
+    location: argument
+    description: '`collectReferences` の `input.frontmatter` と同じ'
 request_example: |-
   ```json
   {
@@ -472,6 +478,8 @@ constraints:
     notes: 長い単語から取るため、用語・別名の一部として出たやめた言い方は返却しない。`byDocument` はやめた言い方を加えない照合のまま変えない
   - item: フロントマター
     constraint: 本文の先頭のフロントマターは、インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じ判定で除外してから照合する。フロントマターの中の用語・文書の別名は一致として返却しない。一致の位置は、除外する前の元の本文で数える（制約「位置の数え方」）
+  - item: フロントマターのメタデータ
+    constraint: インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ規則で、索引の文書を補い、索引に無い文書を加えてから照合する。返却する参照先のタイトル・短い説明も、補った値を使用する
 refs:
   - SC-472-60#
   - IF-472-31#

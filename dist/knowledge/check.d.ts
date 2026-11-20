@@ -1,5 +1,6 @@
 import type { Token } from "markdown-it";
 import { type MdmarkIndex, type MdmarkIndexDoc, type MdmarkIndexTerm } from "./index-shape.ts";
+import { type FrontmatterMetadata } from "./references.ts";
 /** `checkIndex` が返却するずれ 1 件 */
 export type MdmarkIndexIssue = {
     /** ずれのあるファイル */
@@ -7,7 +8,7 @@ export type MdmarkIndexIssue = {
     /** 索引のキーのパスか文書の行。ファイル全体は空文字 */
     where: string;
     /** ずれの種類 */
-    kind: "schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "untyped_related" | "one_sided_change_together" | "related_link_overlap" | "missed_change_together" | "duplicate_term" | "avoided_term";
+    kind: "schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "untyped_related" | "one_sided_change_together" | "related_link_overlap" | "missed_change_together" | "frontmatter_mismatch" | "duplicate_term" | "avoided_term";
     /** ずれの内容と修正方法 */
     message: string;
 };
@@ -40,7 +41,18 @@ export declare function findMissedChangeTogether(options: {
     /** 比べる基準から変わった文書のパス */
     changedPaths: string[];
 }): MdmarkIndexIssue[];
-/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返却する */
+/** 索引の文書とフロントマターの両方に使用できる値があり、値の違うキーごとに `frontmatter_mismatch` を返却する。並びは索引の `docs` の順、文書の中は `title`・`description`・`aliases`・`tags` の順 */
+export declare function findFrontmatterMismatches(options: {
+    /** `normalizeIndex` で検査した索引 */
+    index: MdmarkIndex;
+    /** 正規化した文書のパスから、`supplementIndexDocs` で取り出したメタデータ */
+    metadata: Map<string, FrontmatterMetadata>;
+    /** ずれの `file` に出す索引のファイルの名前 */
+    indexFile: string;
+    /** `where` に出す文書の位置。省くと `index.docs` の位置 */
+    positionOf?: (doc: MdmarkIndexDoc) => number;
+}): MdmarkIndexIssue[];
+/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`frontmatter_mismatch`・`duplicate_term`・`avoided_term` のずれをこの順で返却する */
 export declare function checkIndex(input: {
     /** 索引の値（構造を確認する前のもの） */
     index: unknown;
@@ -50,5 +62,7 @@ export declare function checkIndex(input: {
     indexFile?: string;
     /** 比べる基準から変わった文書のパス。指定したときだけ `change_together` の修正漏れを確認する */
     changedPaths?: string[];
+    /** 文書のパスから、解析したフロントマターの値を参照する表。指定したときだけ索引の文書を補い、`frontmatter_mismatch` を確認する */
+    frontmatter?: Record<string, unknown> | undefined;
 }): MdmarkIndexIssue[];
 export {};

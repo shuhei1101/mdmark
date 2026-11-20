@@ -48,9 +48,9 @@ tables:
         title: タイトル
         source: DATA-472-11#fields[title]
         type: string
-        not_null: true
+        not_null: false
         check: 空でない
-        description: 文書のタイトル。関連文書のリンクの文字に出す
+        description: 文書のタイトル。関連文書のリンクの文字に出す。省いたときは文書の先頭のフロントマターの `title` で補う
         example: アーキテクチャ
       - name: description
         title: 概要

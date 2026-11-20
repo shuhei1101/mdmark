@@ -9,6 +9,7 @@ type Built = {
     documents: Record<string, string>;
     indexFile?: string;
     changedPaths?: string[];
+    frontmatter?: Record<string, unknown>;
   }) => MdmarkIndexIssue[];
 };
 
@@ -417,4 +418,84 @@ test("test_normal_when_change_together_missed", async () => {
   });
   expect(missed[0]?.message).toContain("a.md");
   expect(bothChanged).toEqual([]);
+});
+
+// 索引に無いキーをフロントマターで補い、ずれを返却しない（正常系）
+test("test_normal_when_frontmatter_metadata", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const index = {
+    schema: 2,
+    docs: [
+      { id: "arch", path: "arch.md" },
+      { id: "api", path: "api.md", title: "API" },
+    ],
+  };
+  const documents = {
+    "arch.md": "---\ntitle: アーキテクチャ\ntags: [設計]\n---\n\n本文\n",
+    "api.md": "---\ntitle: API\n---\n\n本文\n",
+  };
+  const frontmatter = {
+    "arch.md": { title: "アーキテクチャ", tags: ["設計"] },
+    "api.md": { title: "API" },
+  };
+  // 実行
+  const issues = checkIndex({ index, documents, frontmatter });
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// フロントマターに title を持つ索引に無い文書を orphan_doc にしない（正常系）
+test("test_normal_when_frontmatter_unindexed_document", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const index = {
+    schema: 2,
+    docs: [{ id: "arch", path: "arch.md", title: "アーキテクチャ" }],
+  };
+  const documents = {
+    "arch.md": "# アーキテクチャ\n",
+    "note.md": "---\ntitle: メモ\n---\n\n本文\n",
+    "draft.md": "下書き\n",
+  };
+  const frontmatter = { "note.md": { title: "メモ" } };
+  // 実行
+  const issues = checkIndex({ index, documents, frontmatter });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([{ file: "draft.md", where: "", kind: "orphan_doc" }]);
+});
+
+// 両方にあって値の違うキーを frontmatter_mismatch にする（正常系）
+test("test_normal_when_frontmatter_mismatch", async () => {
+  // 準備
+  const { checkIndex } = await loadBuilt();
+  const index = {
+    schema: 2,
+    docs: [
+      { id: "guide", path: "guide.md", title: "使用方法", tags: ["手順"] },
+      { id: "faq", path: "faq.md", title: "よくある質問" },
+    ],
+  };
+  const documents = {
+    "guide.md": "---\ntitle: 使い方\ntags: [手順]\n---\n\n本文\n",
+    "faq.md": "---\ntitle: [\n---\n\n本文\n",
+  };
+  // `faq.md` のフロントマターは YAML として解析できず、値を持たない
+  const frontmatter = { "guide.md": { title: "使い方", tags: ["手順"] } };
+  // 実行
+  const issues = checkIndex({ index, documents, frontmatter });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    {
+      file: "index.yaml",
+      where: "docs[0].title",
+      kind: "frontmatter_mismatch",
+    },
+  ]);
+  expect(issues[0]?.message).toContain("使用方法");
+  expect(issues[0]?.message).toContain("使い方");
 });

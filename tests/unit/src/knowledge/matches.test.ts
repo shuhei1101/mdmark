@@ -772,3 +772,33 @@ test("test_collect_matches_when_diagram_term_is_alias_word", async () => {
   expect(guide.map((match) => cut(body, match))).toEqual(["公開関数"]);
   expect(guide[0]?.line).toBe(body.split("\n").indexOf("公開関数を呼ぶ。") + 1);
 });
+
+// フロントマターの別名とタイトルで照合し、参照先に補ったタイトルを返却する（正常系）
+test("test_collect_matches_when_frontmatter_metadata", async () => {
+  // 準備
+  const { collectMatches } = await loadMatches();
+  const index = {
+    schema: 2,
+    docs: [
+      { id: "api", path: "api.md" },
+      { id: "arch", path: "arch.md", title: "アーキテクチャ" },
+    ],
+  } as MdmarkIndex;
+  const documents = {
+    "api.md": "---\ntitle: 公開関数の一覧\naliases: [公開関数]\n---\n\n本文\n",
+    "arch.md": "# アーキテクチャ\n\n公開関数を使用する。\n",
+  };
+  const frontmatter = {
+    "api.md": { title: "公開関数の一覧", aliases: ["公開関数"] },
+  };
+  // 実行
+  const result = collectMatches({ index, documents, frontmatter });
+  // 検証
+  const api = result.targets.find(
+    (target) => target.kind === "doc" && target.id === "api",
+  );
+  expect(api?.title).toBe("公開関数の一覧");
+  expect(result.byDocument.arch?.map((match) => match.text)).toContain(
+    "公開関数",
+  );
+});

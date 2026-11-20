@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DEFAULT_FEATURES } from "../../../../src/config.ts";
+import type { MdmarkIndex } from "../../../../src/knowledge/index-shape.ts";
 import { parseDocument } from "../../../../src/knowledge/references.ts";
 import {
   AVOID_GLOSSARY_DOCUMENT,
@@ -772,6 +773,113 @@ test("test_find_missed_change_together_ignores_other_types", async () => {
   });
   // 実行
   const issues = findMissedChangeTogether({ index, changedPaths: ["a.md"] });
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// 索引に無いキーをフロントマターで補い、title の無い索引の文書を schema のずれにしない（正常系）
+test("test_check_index_when_frontmatter_metadata", async () => {
+  // 準備
+  const { checkIndex } = await loadCheck();
+  const index = {
+    schema: 2,
+    docs: [
+      { id: "arch", path: "arch.md" },
+      { id: "api", path: "api.md", title: "API" },
+    ],
+  };
+  const documents = {
+    "arch.md": "---\ntitle: アーキテクチャ\ntags: [設計]\n---\n\n本文\n",
+    "api.md": "---\ntitle: API\n---\n\n本文\n",
+  };
+  const frontmatter = {
+    "arch.md": { title: "アーキテクチャ", tags: ["設計"] },
+    "api.md": { title: "API" },
+  };
+  // 実行
+  const issues = checkIndex({ index, documents, frontmatter });
+  // 検証
+  expect(issues).toEqual([]);
+});
+
+// title を持つ索引に無い文書を orphan_doc にしない（正常系）
+test("test_check_index_when_frontmatter_unindexed_document", async () => {
+  // 準備
+  const { checkIndex } = await loadCheck();
+  const index = {
+    schema: 2,
+    docs: [{ id: "arch", path: "arch.md", title: "アーキテクチャ" }],
+  };
+  const documents = {
+    "arch.md": "# アーキテクチャ\n",
+    "note.md": "---\ntitle: メモ\n---\n\n本文\n",
+    "draft.md": "下書き\n",
+  };
+  const frontmatter = { "note.md": { title: "メモ" } };
+  // 実行
+  const issues = checkIndex({ index, documents, frontmatter });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([{ file: "draft.md", where: "", kind: "orphan_doc" }]);
+});
+
+// 値の違うキーだけを返却する（正常系）
+test("test_find_frontmatter_mismatches", async () => {
+  // 準備
+  const { findFrontmatterMismatches } = await loadCheck();
+  const index: MdmarkIndex = {
+    schema: 2,
+    docs: [
+      { id: "guide", path: "guide.md", title: "使用方法", tags: ["手順"] },
+    ],
+  };
+  const metadata = new Map([["guide.md", { title: "使い方", tags: ["手順"] }]]);
+  // 実行
+  const issues = findFrontmatterMismatches({
+    index,
+    metadata,
+    indexFile: "index.yaml",
+  });
+  // 検証
+  expect(
+    issues.map(({ file, where, kind }) => ({ file, where, kind })),
+  ).toEqual([
+    {
+      file: "index.yaml",
+      where: "docs[0].title",
+      kind: "frontmatter_mismatch",
+    },
+  ]);
+  expect(issues[0]?.message).toContain("使用方法");
+  expect(issues[0]?.message).toContain("使い方");
+});
+
+// aliases・tags は並びの違いを違いにしない（正常系）
+test("test_find_frontmatter_mismatches_when_order_differs", async () => {
+  // 準備
+  const { findFrontmatterMismatches } = await loadCheck();
+  const index: MdmarkIndex = {
+    schema: 2,
+    docs: [
+      {
+        id: "guide",
+        path: "guide.md",
+        title: "使用方法",
+        aliases: ["a", "b"],
+        tags: ["x"],
+      },
+    ],
+  };
+  const metadata = new Map([
+    ["guide.md", { aliases: ["b", "a"], tags: [{ name: "x", main: false }] }],
+  ]);
+  // 実行
+  const issues = findFrontmatterMismatches({
+    index,
+    metadata,
+    indexFile: "index.yaml",
+  });
   // 検証
   expect(issues).toEqual([]);
 });

@@ -2,6 +2,8 @@
 export declare const MARK_MARKDOWN_SUFFIX = ".mark.md";
 /** `.` と空の要素を除き、`/` で区切ったパスにそろえる（`./a//b.md` → `a/b.md`） */
 export declare function normalizePath(path: string): string;
+/** パスのファイル名から最後の拡張子を除いたもの（`使い方/guide.md` → `guide`） */
+export declare function fileTitle(path: string): string;
 /** 文書の `path` を基準に、本文のリンクの `href` を索引のファイルからのパスにする。参照にしないリンクは `undefined` */
 export declare function resolveLink(fromPath: string, href: string): string | undefined;
 /** 描く文書の `path` から参照先の `path` を指す相対パスを作る。描く文書の `path` が無ければ参照先のまま */

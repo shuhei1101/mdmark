@@ -128,6 +128,38 @@ scenarios:
       - 文書の末尾の「関連文書」に `使用方法` と `アーキテクチャ` が並ぶ
       - 本文が描かれている
     test: test_normal_when_alias_width_and_case_differ
+  - name: 正常シナリオ（フロントマターのメタデータ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: タイトルを持たない行を含む索引
+        description: 正常シナリオの 3 つの文書のうち `api` の行が `title` を持たない索引
+      - name: ほかの文書の本文
+        description: '`api` の本文の先頭のフロントマターが、`title` に `公開関数の一覧`、`aliases` に `公開関数`、`description` に `mount と render の引数` を持つ'
+      - name: 描く Markdown
+        description: '`arch` の本文。段落に `公開関数` が出る'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 索引・文書の id・参照・Markdown を指定して描かせる
+        M->>M: 参照の表に入ったフロントマターの値で、索引に無い api のタイトル・別名・概要を補う
+        M-->>P: 本文と被参照の一覧を描き、一致した単語に下線を描く
+        U->>P: 下線の付いた単語にフォーカスする
+        P-->>U: 関連文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - 文書の末尾の「関連文書」に `api` が `公開関数の一覧` のタイトルで並ぶ
+      - '`公開関数` に破線の下線が付き、ツールチップの「関連文書」に `公開関数の一覧` のタイトル、`../api.md` へのリンク、`mount と render の引数` がある'
+    test: test_normal_when_frontmatter_metadata
 lead: 読者が、描いた文書を参照している文書の一覧と、本文の単語に別名が一致した文書を確認する。被参照は保存せず、索引の `related`・本文の文書間のリンク・文書の別名の出現から描くときに算出する。
 primary_actor: 読者
 stakeholders:
@@ -149,3 +181,4 @@ tags:
   - name: topic:被参照
     main: true
   - name: topic:索引
+  - name: topic:フロントマター

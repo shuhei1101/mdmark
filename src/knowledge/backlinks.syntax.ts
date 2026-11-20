@@ -2,7 +2,7 @@ import type { StateCore } from "markdown-it";
 import { envOf, featureOn, ownBlock } from "../shared/tokens.syntax.ts";
 import { renderBacklinks } from "./backlinks.part.ts";
 import { readRelated } from "./index-shape.ts";
-import { relativeHref } from "./paths.ts";
+import { fileTitle, relativeHref } from "./paths.ts";
 
 /** 関連文書の一覧のタイトルの `id`（ページで一意にするのは `attachTermTips`） */
 const TITLE_ID = "mdmark-backlinks-title";
@@ -27,7 +27,7 @@ export function backlinksRule(state: StateCore): void {
     .filter((id) => id !== docId)
     .flatMap((id) => index.docs.filter((doc) => doc.id === id))
     .map((doc) => ({
-      title: doc.title,
+      title: doc.title ?? fileTitle(doc.path),
       href: relativeHref(ownPath, doc.path),
     }));
   const html = renderBacklinks({ id: TITLE_ID, docs });
