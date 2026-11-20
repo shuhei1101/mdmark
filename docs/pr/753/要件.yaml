@@ -159,4 +159,4 @@ docs:
 scope_out:
   - item: VS Code 拡張機能の HTML への書き出し（インターフェース定義『HTMLに書き出す』IF-472-15）で、元の Markdown を埋め込まない
     reason: '#532 の終了の条件が挙げる対象は export_html・build_site・CLI の export・build だけで、VS Code 拡張機能の書き出しは jsDelivr の配布物で mount に Markdown を指定する別の経路。今の判断はスコープ外だが、同じ「書き出した HTML から元の Markdown を参照できる」事象のため、含めるかをレビューで確定する'
-    plan: to_file
+    plan: '#769'
