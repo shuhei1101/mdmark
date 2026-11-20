@@ -17,3 +17,9 @@ confirmations:
     approver: shuhei1101
     commit: 166327de
     thread: https://github.com/shuhei1101/mdmark/pull/747#discussion_r4641758137
+  - topic: '罫線のまま見せる指定 tree_warning: false の扱い'
+    decision: キーの名前を tree_warning のまま変えず、意味を「罫線をファイルツリーで描くか」にする。false で記載した言語のコードブロックのまま描く（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 17a2fc0f
+    thread: https://github.com/shuhei1101/mdmark/pull/747#discussion_r4642294645
