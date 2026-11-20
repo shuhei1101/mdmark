@@ -1547,3 +1547,56 @@ test("test_mount_when_comments_without_side_toc", async () => {
     },
   );
 });
+
+// 描いた結果の中に外の文書の操作を二重に付けない（正常系）
+test("test_mount_when_markdown_preview", async () => {
+  // 準備
+  const markdown = [
+    "````markdown",
+    "```ts",
+    "if (ok) {",
+    "  run();",
+    "}",
+    "```",
+    "",
+    "本文[^1]",
+    "",
+    "[^1]: 脚注",
+    "````",
+    "",
+  ].join("\n");
+  const el = createElement();
+  const handle = await mountTracked(el, { markdown });
+  /** 描いた結果の中の開閉のボタンを 1 回押し、押す前と後の状態を返却する */
+  const pressFold = () => {
+    const preview = el.querySelector(".mdmark-code-preview") as HTMLElement;
+    const fold = preview.querySelector(
+      "button.mdmark-code-fold",
+    ) as HTMLButtonElement;
+    const before = fold.getAttribute("aria-expanded");
+    fold.click();
+    return {
+      before,
+      after: fold.getAttribute("aria-expanded"),
+      hidden: preview.querySelectorAll(".mdmark-code-line[hidden]").length,
+      copies: preview.querySelectorAll("button.mdmark-code-copy").length,
+      raws: el.querySelectorAll("button.mdmark-code-raw").length,
+    };
+  };
+  // 実行
+  const first = pressFold();
+  handle.update(markdown);
+  const second = pressFold();
+  handle.destroy();
+  // 検証: どちらの時点でも 1 回だけ切り替わり、ボタンは 1 つずつ
+  for (const result of [first, second]) {
+    expect(result).toEqual({
+      before: "true",
+      after: "false",
+      hidden: 1,
+      copies: 1,
+      raws: 1,
+    });
+  }
+  expect(el.querySelector(".mdmark-code-preview")).toBeNull();
+});
