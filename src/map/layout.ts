@@ -29,6 +29,8 @@ export const MAP_LAYOUT = {
   bendCost: 30,
   /** 祖先でないグループの枠を出入りする 1 回の重み。最短より出入りを増やさないために大きくする */
   borderCost: 100000,
+  /** 線の端を、相手のノードに向いた辺でない辺から出入りさせる 1 回の重み。向いた辺へ回る曲がりとノード 1 つ分の回り込みより大きくする */
+  sideCost: 1000,
   /** ドラッグで近づけられる間の下限 */
   minGap: 16,
   /** 先に引いた線が通った同じ向きの格子の区間 1 つの重み（曲がり 2 回分。別の通り道へ回るほうを選ばせる） */
@@ -61,6 +63,8 @@ export type MapOverride = {
   aside?: number | undefined;
   /** 線の ID に指定すると、段を決める処理でその線を使わない（経路は引く） */
   rankless?: boolean | undefined;
+  /** ノードの ID に指定すると、そのノードの線の端を左右の辺だけにつなぐ（ER 図のテーブル） */
+  sides?: "horizontal" | undefined;
   /** ノードの左の余白（種類の形状が pill のノードは LABEL_METRICS.padPill。無ければ LABEL_METRICS.padX） */
   padLeft?: number | undefined;
 };
@@ -1089,14 +1093,38 @@ const cellsOf = (
 };
 
 /** 線の出入り口（格子の点・出ていく向き・ノードの辺の上の点） */
-type Port = { point: number; dir: number; border: [number, number] };
+/** 出入り口（`cost` は向いた辺でないときの重み） */
+type Port = {
+  point: number;
+  dir: number;
+  border: [number, number];
+  cost: number;
+};
 
-/** ノードの 4 辺の出入り口のうち、通れるもの */
+/** 相手のノードに向いた辺の向きの番号（縦と横で差が大きい方。左右だけのときは相手の中心が左なら左、ほかは右） */
+const facingDirection = (
+  self: Rect,
+  other: Rect,
+  horizontal: boolean,
+): number => {
+  const dx = other.x + other.w / 2 - (self.x + self.w / 2);
+  const dy = other.y + other.h / 2 - (self.y + self.h / 2);
+  if (horizontal || Math.abs(dx) >= Math.abs(dy)) return dx < 0 ? 2 : 0;
+  return dy < 0 ? 3 : 1;
+};
+
+/** ノードの 4 辺（`horizontal` は左右の辺）の出入り口のうち、通れるもの。相手に向いた辺でない出入り口は `sideCost` の重みを持つ */
 const portsOf = (
   grid: Grid,
-  context: { leaf: InnerLeaf; cells: Cells },
+  context: {
+    leaf: InnerLeaf;
+    other: InnerLeaf;
+    cells: Cells;
+    horizontal: boolean;
+  },
 ): Port[] => {
-  const { leaf, cells } = context;
+  const { leaf, other, cells, horizontal } = context;
+  const facing = facingDirection(leaf, other, horizontal);
   const m = MAP_LAYOUT.clearance;
   const cx = leaf.x + leaf.w / 2;
   const cy = leaf.y + leaf.h / 2;
@@ -1122,19 +1150,23 @@ const portsOf = (
     { x: cx, y: leaf.y - m, dir: 3, border: [cx, leaf.y] },
   ];
   return list
+    .filter((port) => !horizontal || port.dir % 2 === 0)
     .map((port) => ({
       point: pointIndex(grid, [port.x, port.y]),
       dir: port.dir,
       border: port.border,
+      cost: port.dir === facing ? 0 : MAP_LAYOUT.sideCost,
     }))
     .filter((port) => cells.blockedAt[port.point] !== 1);
 };
 
-/** 補足の ends の辺の出入り口（その辺が通れなければ全ての出入り口） */
+/** 補足の ends の辺の出入り口（重みを持たない。その辺が通れなければ全ての出入り口） */
 const bySide = (list: Port[], side: MapSide | undefined): Port[] => {
   if (side === undefined) return list;
   const picked = list.filter((port) => port.dir === SIDE_DIRECTION[side]);
-  return picked.length > 0 ? picked : list;
+  return picked.length > 0
+    ? picked.map((port) => ({ ...port, cost: 0 }))
+    : list;
 };
 
 /** 線 1 本の経路を探すときに引く値 */
@@ -1160,6 +1192,8 @@ type Leg = {
   to: Set<number>;
   mask: number;
   center: { x: number; y: number; w: number; h: number };
+  /** 着く点へ向き dir で着いたときに加える重み（無ければ 0） */
+  arrive?: (point: number, dir: number) => number;
 };
 
 /** 残りの距離と、まだ出入りしていない祖先の枠の数（どちらも少なく見積もる） */
@@ -1246,7 +1280,7 @@ const pathOf = (
 /** 始まりの状態から、着く点のどれかまでの経路を探す（着いた点の状態と、点の列を返す） */
 const search = (
   routing: Routing,
-  leg: Leg & { from: Array<{ point: number; dir: number }> },
+  leg: Leg & { from: Array<{ point: number; dir: number; cost?: number }> },
 ): { reached: number; path: Array<[number, number]> } => {
   const { grid } = routing;
   const heuristic = heuristicOf(routing, leg);
@@ -1257,12 +1291,18 @@ const search = (
   const heap = createHeap();
   for (const start of leg.from) {
     const state = start.point * 4 + start.dir;
-    best[state] = 0;
-    heap.push(heuristic(start.point), state);
+    const cost = start.cost ?? 0;
+    if (cost >= (best[state] as number)) continue;
+    best[state] = cost;
+    heap.push(cost + heuristic(start.point), state);
   }
+  const arrive = leg.arrive ?? (() => 0);
   let current = -1;
   const relax = (next: number, cost: number): void => {
-    const nextCost = (best[current] as number) + cost;
+    const nextCost =
+      (best[current] as number) +
+      cost +
+      (leg.to.has(next >> 2) ? arrive(next >> 2, next & 3) : 0);
     if (nextCost < (best[next] as number)) {
       best[next] = nextCost;
       back[next] = current;
@@ -1299,6 +1339,12 @@ const legsOf = (
     })),
     {
       to: new Set(goals.map((goal) => goal.point)),
+      arrive: (point: number, dir: number): number => {
+        const goal = goals.find((item) => item.point === point);
+        if (goal === undefined) return 0;
+        const inward = (goal.dir + 2) & 3;
+        return goal.cost + (dir === inward ? 0 : MAP_LAYOUT.bendCost);
+      },
       mask:
         goals[0] === undefined ? 0 : (cells.maskAt[goals[0].point] as number),
       center: {
@@ -1316,7 +1362,7 @@ const walkLegs = (
   routing: Routing,
   route: { starts: Port[]; legs: Leg[] },
 ): { reached: number; path: Array<[number, number]> } => {
-  let from: Array<{ point: number; dir: number }> = route.starts;
+  let from: Array<{ point: number; dir: number; cost?: number }> = route.starts;
   let reached = -1;
   const path: Array<[number, number]> = [];
   for (const leg of route.legs) {
@@ -1388,8 +1434,25 @@ const routeEdge = (context: RouteContext, edge: ViewWire): PlacedWire => {
     used: context.used,
   };
   const sides = overrides[edge.id]?.ends;
-  const starts = bySide(portsOf(grid, { leaf: source, cells }), sides?.from);
-  const goals = bySide(portsOf(grid, { leaf: target, cells }), sides?.to);
+  const horizontal = (id: string) => overrides[id]?.sides === "horizontal";
+  const starts = bySide(
+    portsOf(grid, {
+      leaf: source,
+      other: target,
+      cells,
+      horizontal: horizontal(source.id),
+    }),
+    sides?.from,
+  );
+  const goals = bySide(
+    portsOf(grid, {
+      leaf: target,
+      other: source,
+      cells,
+      horizontal: horizontal(target.id),
+    }),
+    sides?.to,
+  );
   const via = (context.vias.get(edge.id) ?? []).filter(
     (point) => cells.blockedAt[pointIndex(grid, point)] !== 1,
   );
