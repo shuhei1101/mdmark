@@ -58,7 +58,7 @@ functions:
       1. `stage` の大きさを倍率を含まない等倍で求める
       2. `stage` を複製し、元の要素と複製の要素を同じ順で対応させる
       3. 選択の強調（`data-selected` とその強調の class）を複製から除き、パネル・リサイズハンドル・ツールチップとそのマーカー・記載の警告・当たり判定（`.map-wire-hit`・`.mdmark-diagram-node-hit`）・データの印・`display: none` の要素を除く
-      4. 残った要素ごとに、元の要素の `getComputedStyle` のうち、同じ要素名の既定のスタイル（文書の外に作った同じ要素名の要素の計算したスタイル）と異なるプロパティだけを複製の `style` 属性へ書き写す。`::before`・`::after` の `content` が `none` でない要素は、疑似要素の計算したスタイルを書き写した `span` を先頭・末尾に入れる
+      4. 残った要素ごとに、親から順に、元の要素の `getComputedStyle` のプロパティを比べ、異なるものだけを複製の `style` 属性へ書き写す。継承するプロパティ（`color`・`font-*`・`line-height` など）は、元の親の計算値（複製の親に書き写した値と同じ）と比べる。継承しないプロパティは、ページの CSS が当たらない文書（`document.implementation.createHTMLDocument` で作った文書を入れた、画面に出さない `iframe`）に置いた同じ要素名の要素の計算値と比べる（要素名ごとに 1 度だけ求め、書き出しの後に `iframe` を取り除く）。根（`stage` の複製）は継承するプロパティもこの文書の値と比べる。`::before`・`::after` の `content` が `none` でない要素は、疑似要素の計算したスタイルを書き写した `span` を先頭・末尾に入れる
       5. 全ての要素から `class` と、値に `var(` を持つ属性を除く
       6. 図の枠の背景の計算した色の `rect` と、XHTML の名前空間を付けて `XMLSerializer` で文字にした複製を入れた `foreignObject` を、`width`・`height` を等倍の大きさにした `svg` で包む
     unit_tests:
@@ -74,6 +74,12 @@ functions:
         condition: '`::after` で文字を描く要素を持つ `stage`'
         mock: なし（Chromium）
         expected: SVG が `::after` の文字を持つ `span` を含む
+      - name: test_export_map_svg_when_inherited_color
+        case: 正常
+        summary: 継承する色を親と比べる
+        condition: 種類の色 `green` を持つノードの中に、計算した色が既定の文字の色の名前の行を持つ構成図の `stage`
+        mock: なし（Chromium）
+        expected: 書き出した SVG を文書に入れて描いたとき、名前の行の計算した色がページの名前の行と同じで、種類の行が `green` のまま。書き出しの後に文書に `iframe` が残らない
   - name: exportMapPng
     title: SVG を 2 倍の PNG にする
     kind: 関数
