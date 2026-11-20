@@ -122,7 +122,7 @@ docs:
 scope_out:
   - item: ガイド（docs/guide/ の Markdown）のエイリアスの登録（files.yml の行に aliases を持たせる schemas/files.schema.yaml の変更）
     reason: 要望のエイリアスの登録先は設計書の aliases と用語集で、ガイドの Markdown は含まれない。含めるかはレビューで確定する
-    plan: to_file
+    plan: '#743'
   - item: コードのコメントと UI の文言の点検
     reason: '#289 で対応済みで、要望は docs/ の文書だけを対象にする'
     plan: none
@@ -131,10 +131,10 @@ scope_out:
     plan: none
   - item: mdmark に YAML から用語集の表を描く機能を追加する（要件の未確定の案 C）
     reason: コードの設計と実装が要り、要望の対象（文書）に含まれない。案 A を採ったときの 2 か所の用語を 1 か所にする後続
-    plan: to_file
+    plan: '#742'
   - item: アーキテクチャ図のフォルダの役割の表に、リポジトリの直下に無い `guide/` の行が残っている
     reason: 記述と実体のずれの修正で、文の削除とエイリアスの登録の要望に含まれない
-    plan: to_file
+    plan: '#741'
   - item: 開発コマンドのビルドの effects が配布ファイルの上限を 688KB と記載し、非機能要件の 712KB と食い違う
     reason: 記述どうしのずれの修正で、文の削除とエイリアスの登録の要望に含まれない
-    plan: to_file
+    plan: '#744'
