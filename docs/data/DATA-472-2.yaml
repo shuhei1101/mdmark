@@ -20,5 +20,25 @@ fields:
   type: int
   description: シーケンス図の補足だけが持つ。再生の強調を重ねる構成図の図の番号
   example: '1'
+- key: walkthroughs
+  title: 案内の手順
+  type: array
+  description: 構成図の案内の手順の並び。配列の順が手順の順
+  example: '[{"text": "map のマーカーを読み取り、範囲を 1 つの図にする", "nodes": ["marker"]}]'
+- key: layout
+  title: 配置の上書き
+  type: object
+  description: ノード・グループ・線の ID ごとの配置と外観の上書き（キーが ID）
+  example: '{"mount": {"color": "blue"}}'
+- key: groups
+  title: 分類
+  type: object
+  description: ER 図の補足だけが持つ。テーブルをまとめる分類の箱（キーが分類の ID）
+  example: '{"rec": {"title": "記録", "tables": ["注文"]}}'
+- key: changes
+  title: 計画した変更
+  type: object
+  description: ノード・グループ・線の ID ごとの計画した変更（キーが ID）
+  example: '{"mount": {"type": "added"}}'
 refs:
 - ER-472-2#tables[map_data]
