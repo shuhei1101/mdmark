@@ -157,6 +157,48 @@ test("test_measure_columns_when_rows_limited", async () => {
   expect(column?.longest).toBeLessThan(longLine);
 });
 
+/** 用語の単語と、その意味を持つツールチップの HTML */
+const termHtml = (word: string, meaning: string, open = false): string =>
+  `<span class="mdmark-term-wrap"><span class="mdmark-term">${word}</span><span class="mdmark-term-tip${open ? " is-open" : ""}">${meaning}</span></span>`;
+
+// ツールチップとスクリーンリーダー用の文字を測らない（正常系）
+test("test_measure_columns_when_hidden_text", async () => {
+  // 準備
+  addStyles();
+  const { measureColumns } = await loadTableWidth();
+  const { root } = createRoot(
+    ["| 名前 | 列 |", "| --- | --- |", "| ab | cd |", ""].join("\n"),
+  );
+  root.style.font = "14px/1.5 monospace";
+  const { table, headCells } = tableParts(root);
+  const [head0, head1] = headCells;
+  const [cell0, cell1] = [...(table.tBodies[0]?.rows[0]?.cells ?? [])];
+  if (!head0 || !head1 || !cell0 || !cell1) {
+    throw new Error("セルが無い");
+  }
+  const meaning = "a".repeat(40);
+  head0.innerHTML = `<span class="mdmark-th">${termHtml("名前", meaning)}</span>`;
+  cell0.innerHTML = termHtml("ab", meaning, true);
+  cell1.innerHTML = `cd<sup class="mdmark-fn-ref"><a class="mdmark-fn-link"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip">${meaning}</span></sup>`;
+  const head = expectedWidth(head0, "名前");
+  const longest0 = Math.max(head, expectedWidth(cell0, "ab"));
+  const longest1 = Math.max(
+    expectedWidth(head1, "列"),
+    expectedWidth(cell1, "cd1"),
+  );
+  const meaningWidth = expectedWidth(cell0, meaning);
+  // 実行
+  const columns = measureColumns(table, headCells);
+  // 検証
+  expect(columns[0]?.head).toBe(head);
+  expect(columns[0]?.longest).toBe(longest0);
+  expect(columns[0]?.longest).toBeLessThan(meaningWidth);
+  expect(columns[1]?.longest).toBe(longest1);
+  expect(table.querySelectorAll(".mdmark-term-tip")).toHaveLength(2);
+  expect(table.querySelectorAll(".mdmark-fn-tip")).toHaveLength(1);
+  expect(table.querySelectorAll(".mdmark-visually-hidden")).toHaveLength(1);
+});
+
 /** 計測の順の記録の 1 件（計測用の要素の配置・幅の取得・取り除き・見出しの最小幅の書き込み） */
 type MeasureCall = "append" | "rect" | "remove" | "head-width";
 
