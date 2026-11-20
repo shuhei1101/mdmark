@@ -1170,7 +1170,14 @@ const bySide = (list: Port[], side: MapSide | undefined): Port[] => {
 };
 
 /** 線 1 本の経路を探すときに引く値 */
-type Routing = { grid: Grid; cells: Cells; edgeId: string; used: UsedSteps };
+type Routing = {
+  grid: Grid;
+  cells: Cells;
+  edgeId: string;
+  used: UsedSteps;
+  /** 両端以外のノードの出入り口の点（通ると usedCost の重み。そのノードに入る線と重ねない） */
+  foreignPorts?: Set<number>;
+};
 
 /** 先に引いた線が通った格子の区間（点から右へ・下へ進む区間を、その点の番号で持つ） */
 type UsedSteps = { right: Uint8Array; down: Uint8Array };
@@ -1247,9 +1254,9 @@ const visitSteps = (
       bitCount(
         (cells.maskAt[point] as number) ^ (cells.maskAt[next] as number),
       ) * MAP_LAYOUT.borderCost;
-    const reuse = isUsed(routing.used, { point, next, d })
-      ? MAP_LAYOUT.usedCost
-      : 0;
+    const reuse =
+      (isUsed(routing.used, { point, next, d }) ? MAP_LAYOUT.usedCost : 0) +
+      (routing.foreignPorts?.has(next) ? MAP_LAYOUT.usedCost : 0);
     visit(
       next * 4 + d,
       length + (d === dir ? 0 : MAP_LAYOUT.bendCost) + cross + reuse,
@@ -1418,6 +1425,31 @@ const markUsed = (
   }
 };
 
+/** 両端以外のノードの 4 辺の出入り口の点 */
+const foreignPortsOf = (
+  grid: Grid,
+  context: { leaves: InnerLeaf[]; ends: string[] },
+): Set<number> => {
+  const m = MAP_LAYOUT.clearance;
+  const points = new Set<number>();
+  for (const leaf of context.leaves) {
+    if (context.ends.includes(leaf.id)) continue;
+    const cx = leaf.x + leaf.w / 2;
+    const cy = leaf.y + leaf.h / 2;
+    for (const [x, y] of [
+      [leaf.x + leaf.w + m, cy],
+      [cx, leaf.y + leaf.h + m],
+      [leaf.x - m, cy],
+      [cx, leaf.y - m],
+    ] as Array<[number, number]>) {
+      const i = grid.xIndex.get(x);
+      const j = grid.yIndex.get(y);
+      if (i !== undefined && j !== undefined) points.add(j * grid.nx + i);
+    }
+  }
+  return points;
+};
+
 /** 線 1 本を引く */
 const routeEdge = (context: RouteContext, edge: ViewWire): PlacedWire => {
   const { leaves, overrides, grid } = context;
@@ -1432,6 +1464,10 @@ const routeEdge = (context: RouteContext, edge: ViewWire): PlacedWire => {
     cells,
     edgeId: edge.id,
     used: context.used,
+    foreignPorts: foreignPortsOf(grid, {
+      leaves,
+      ends: [edge.from, edge.to],
+    }),
   };
   const sides = overrides[edge.id]?.ends;
   const horizontal = (id: string) => overrides[id]?.sides === "horizontal";
