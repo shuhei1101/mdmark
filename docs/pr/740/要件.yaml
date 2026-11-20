@@ -27,7 +27,7 @@ scope_out:
     plan: '#749'
   - item: ER-472-2 の補足の関連（walkthroughs・layout・groups・changes）の from_column・to_column が、列を持たない補足の実体のため設計書の検証（ai_monitor.design_docs validate）の違反になること
     reason: 設計書の検証の規則と、列を持たない JSON の補足の ER 図の書き方が食い違っている。既存の 3 本の関連から続く検出で、map に計画した変更などを追加する今回の要望に含まれない
-    plan: to_file
+    plan: '#768'
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
