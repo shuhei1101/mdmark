@@ -20,6 +20,12 @@ use_cases:
     detail: 言語が tree でない罫線のコードブロックを点検しても、罫線を読み取れればずれが出ず、読み取れない行だけをファイルツリーの警告で受け取る
     depends_on:
       - docs/scenario/SC-472-20.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-97.yaml
+    impact: changed
+    detail: mdmark-style でも、言語が tree でない罫線のコードブロックを Web と同じくファイルツリーで描く
+    depends_on:
+      - docs/scenario/SC-472-20.yaml
 docs:
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
