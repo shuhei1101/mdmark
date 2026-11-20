@@ -11,3 +11,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/763#discussion_r4641930506
+  - topic: ER 図・クラス図の見出しと開閉のボタン
+    decision: 見出しを 1 行（36px）にし、開閉のボタンを名前の行の右端に置く（推奨案 A）。あわせて、列の説明のマーカー（丸の i）の見せ方の案を複数示すよう依頼を受けた
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/763#discussion_r4642289464
