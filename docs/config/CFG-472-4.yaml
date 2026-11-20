@@ -7,17 +7,17 @@ files:
     manages: 設定ファイルのパス
   - file: ${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml
     manages: 描き換えのオン・オフ・部品・対象・用語集・注入の設定
-    notes: '`MDMARK_STYLE_CONFIG` があればそのパスを読む。ファイルが無ければ全てのキーを既定値にする。最上位に `global` と `projects` を置き、`projects[].match` が起動したプロジェクトに該当した要素を並びの順に `global` へ重ねる（辞書はキーごと、並びは後ろに追加）'
+    notes: '`MDMARK_STYLE_CONFIG` があればそのパスを参照する。ファイルが無ければ全てのキーを既定値にする。最上位に `global` と `projects` を配置し、`projects[].match` が起動したプロジェクトに該当した要素を並びの順に `global` へ重ねる（辞書はキーごと、並びは後ろに追加）'
   - file: settings.sample.yaml
     manages: 全てのキーと既定値の見本
-    notes: プラグインと一緒に配る。mdmark-style は読まない
+    notes: プラグインと一緒に配る。mdmark-style は参照しない
 settings:
   - key: MDMARK_STYLE_CONFIG
     title: 設定ファイルのパス
     file: 環境変数
     type: string
     default: '`${XDG_CONFIG_HOME:-~/.config}/mdmark-style/settings.yaml`'
-    description: mdmark-style が読む `settings.yaml` のパス。既定のパスと違う場所に置くときだけ `~/.claude/settings.json` の `env` に書く。先頭の `~` はホームに展開する
+    description: mdmark-style が参照する `settings.yaml` のパス。既定のパスと違う場所に配置するときだけ `~/.claude/settings.json` の `env` に記載する。先頭の `~` はホームに展開する
     env_var: MDMARK_STYLE_CONFIG
     reload: restart
     status: planned
@@ -119,7 +119,7 @@ settings:
     type: string
     default: なし（用語のマーカーを付けない）
     description: 用語を取る `mdmark.config.yaml` のパス。索引（`index`）の `terms[]`・`aliases`・用語集の表から用語を集める。相対パスは起動したプロジェクトの直下から解決する
-    allowed: 読める `mdmark.config.yaml` のパス。読めないときは用語のマーカーだけを付けず、理由を Claude Code のデバッグログに出す
+    allowed: 読み込める `mdmark.config.yaml` のパス。読み込めないときは用語のマーカーだけを付けず、理由を Claude Code のデバッグログに出す
     reload: immediate
     status: planned
     visibility: user
@@ -205,7 +205,7 @@ settings:
     status: planned
     visibility: user
 notes:
-  読み直し: 設定ファイルと用語集は `ui.render`・`classic.SessionStart` のたびに読み直す。読んだ値をプロセスの中に持ち越さないため、反映は `immediate`（次に描く返答・発言から効く）
+  読み直し: 設定ファイルと用語集は `ui.render`・`classic.SessionStart` のたびに読み込み直す。読み込んだ値をプロセスの中に持ち越さないため、反映は `immediate`（次に描く返答・発言から反映される）
 tags:
   - name: topic:設定
     main: true
