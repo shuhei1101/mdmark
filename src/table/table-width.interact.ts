@@ -35,6 +35,16 @@ export type ColumnMeasure = {
   longestWord: number;
   /** 見出しのセルの文字の大きさ（px） */
   em: number;
+  /** 見出しのセルの中身（列名とボタン）が収まる外側の幅（px。セルの余白と罫線を含む） */
+  head: number;
+};
+
+/** 同じ親の要素に配置する計測用の要素のまとまり */
+type ProbeGroup = {
+  /** 計測用の要素を配置する要素 */
+  parent: HTMLElement;
+  /** 計測用の要素 */
+  probes: HTMLElement[];
 };
 
 /** セルを改行（`br`・`li`・`p`）で行に分ける */
@@ -52,36 +62,61 @@ const linesOf = (cell: HTMLElement): string[] => {
     .filter(Boolean);
 };
 
-/** セルの中に文字を折り返さずに置いたときの表示の幅（px） */
-const textWidth = (cell: HTMLElement, text: string): number => {
+/** セルの中に文字を折り返さずに配置して幅を測る、計測用の要素 */
+const textProbe = (text: string): HTMLElement => {
   const probe = document.createElement("span");
   probe.style.cssText =
     "position:absolute;visibility:hidden;white-space:nowrap";
   probe.textContent = text;
-  cell.append(probe);
-  const width = probe.getBoundingClientRect().width;
-  probe.remove();
-  return width;
+  return probe;
 };
 
-/** 見出しのセルの中身（列名とボタン）を折り返さずに置いたときの表示の幅（px） */
-const headWidth = (cell: HTMLElement): number => {
+/** 見出しのセルの中身（列名とボタン）を折り返さずに配置して幅を測る、計測用の要素。中身が無いセルは行ごとの要素にする */
+const headProbes = (cell: HTMLElement): HTMLElement[] => {
   const content = cell.querySelector<HTMLElement>(":scope > .mdmark-th");
   if (!content) {
-    return Math.max(0, ...linesOf(cell).map((line) => textWidth(cell, line)));
+    return linesOf(cell).map(textProbe);
   }
   const probe = content.cloneNode(true) as HTMLElement;
   probe.style.cssText =
     "position:absolute;visibility:hidden;white-space:nowrap;width:max-content";
-  cell.append(probe);
-  const width = probe.getBoundingClientRect().width;
-  probe.remove();
-  return width;
+  return [probe];
 };
 
-/** 見出しのセルの中身（列名とボタン）が収まる外側の幅（px） */
-const headOuterWidth = (cell: HTMLElement): number =>
-  Math.ceil(headWidth(cell) + paddingOf(cell) + MEASURE_SLACK_PX);
+/** 全ての計測用の要素を配置してから幅をまとめて取得し、最後にまとめて取り除く。まとまりごとに幅（px）の並びを返却する */
+const measureGroups = (groups: ProbeGroup[]): number[][] => {
+  for (const { parent, probes } of groups) {
+    parent.append(...probes);
+  }
+  const widths = groups.map(({ probes }) =>
+    probes.map((probe) => probe.getBoundingClientRect().width),
+  );
+  for (const { probes } of groups) {
+    for (const probe of probes) {
+      probe.remove();
+    }
+  }
+  return widths;
+};
+
+/** 測った幅のうち最も広いものに、余白と罫線と端数を加えて切り上げた幅（px）。幅が無ければ 0 */
+const outerWidth = (widths: number[], padding: number): number =>
+  widths.length === 0 ? 0 : Math.ceil(Math.max(...widths) + padding);
+
+/** 見出しのセルの中身の幅（中身が無ければ 0）に、余白と罫線と端数を加えて切り上げた幅（px） */
+const headOuterWidth = (widths: number[], padding: number): number =>
+  Math.ceil(Math.max(0, ...widths) + padding);
+
+/** 見出しのセルの中身が収まる外側の幅（px）を、全てのセルの計測用の要素をまとめて配置して測る */
+const measureHeads = (heads: HTMLElement[]): number[] => {
+  const paddings = heads.map((head) => paddingOf(head) + MEASURE_SLACK_PX);
+  const widths = measureGroups(
+    heads.map((head) => ({ parent: head, probes: headProbes(head) })),
+  );
+  return heads.map((_, index) =>
+    headOuterWidth(widths[index] ?? [], paddings[index] ?? 0),
+  );
+};
 
 /** セルの左右の余白と罫線の幅（px） */
 const paddingOf = (cell: HTMLElement): number => {
@@ -108,39 +143,61 @@ const measuredRows = (
     )
     .slice(0, MEASURE_ROWS);
 
-/** 表示している列ごとに、最も長い行の幅と最も長い半角の単語の幅を測って返却する */
+/** 表示している列ごとに、最も長い行の幅と最も長い半角の単語の幅と見出しの中身が収まる幅を測って返却する */
 export const measureColumns = (
   table: HTMLTableElement,
   headCells: HTMLTableCellElement[],
 ): ColumnMeasure[] => {
   const rows = measuredRows(table, headCells.length);
-  return headCells.flatMap((head, column) => {
+  // 計測用の要素を配置する前に、行の分け方と余白・罫線・文字の大きさを全て取得する
+  const columns = headCells.flatMap((head, column) => {
     if (head.hidden) {
       return [];
     }
-    const cells = [
-      head,
-      ...rows.flatMap((row) => {
-        const cell = row.cells[column];
-        return cell ? [cell] : [];
-      }),
-    ];
-    let longest = headOuterWidth(head);
-    let longestWord = 0;
-    for (const cell of cells.slice(1)) {
-      const padding = paddingOf(cell) + MEASURE_SLACK_PX;
-      for (const line of linesOf(cell)) {
-        longest = Math.max(longest, Math.ceil(textWidth(cell, line) + padding));
-        for (const word of line.match(HALF_WIDTH_WORD) ?? []) {
-          longestWord = Math.max(
-            longestWord,
-            Math.ceil(textWidth(cell, word) + padding),
-          );
-        }
+    const cells = rows.flatMap((row) => {
+      const cell = row.cells[column];
+      if (!cell) {
+        return [];
       }
+      const lines = linesOf(cell);
+      return [
+        {
+          cell,
+          padding: paddingOf(cell) + MEASURE_SLACK_PX,
+          lines,
+          words: lines.flatMap((line) => line.match(HALF_WIDTH_WORD) ?? []),
+        },
+      ];
+    });
+    return [
+      {
+        column,
+        head,
+        headPadding: paddingOf(head) + MEASURE_SLACK_PX,
+        em: Number.parseFloat(getComputedStyle(head).fontSize),
+        cells,
+      },
+    ];
+  });
+  const groups = columns.flatMap(({ head, cells }) => [
+    { parent: head, probes: headProbes(head) },
+    ...cells.flatMap(({ cell, lines, words }) => [
+      { parent: cell, probes: lines.map(textProbe) },
+      { parent: cell, probes: words.map(textProbe) },
+    ]),
+  ]);
+  const widths = measureGroups(groups);
+  let next = 0;
+  const take = (): number[] => widths[next++] ?? [];
+  return columns.map(({ column, headPadding, em, cells }) => {
+    const head = headOuterWidth(take(), headPadding);
+    let longest = head;
+    let longestWord = 0;
+    for (const { padding } of cells) {
+      longest = Math.max(longest, outerWidth(take(), padding));
+      longestWord = Math.max(longestWord, outerWidth(take(), padding));
     }
-    const em = Number.parseFloat(getComputedStyle(head).fontSize);
-    return [{ column, longest, longestWord, em }];
+    return { column, longest, longestWord, em, head };
   });
 };
 
@@ -203,15 +260,10 @@ export const attachAutoColumnWidths = (
   const assigned = new Map<number, number>();
   let lastWidth: number | undefined;
 
-  /** 見出しのセルの中身が収まる外側の幅を測り、列の最小の幅の下限と `--mdmark-column-head-width` に入れる */
-  const measureHead = (column: number): void => {
-    const head = headCells[column];
-    if (!head) {
-      return;
-    }
-    const width = headOuterWidth(head);
+  /** 見出しのセルの中身が収まる外側の幅を、列の最小の幅の下限と `--mdmark-column-head-width` に入れる */
+  const writeHeadWidth = (column: number, width: number): void => {
     headMins.set(column, width);
-    head.style.setProperty(HEAD_WIDTH_VARIABLE, `${width}px`);
+    headCells[column]?.style.setProperty(HEAD_WIDTH_VARIABLE, `${width}px`);
   };
 
   /** 表示している列の測った値を返却する。まだ測っていない列があれば測る */
@@ -223,7 +275,7 @@ export const attachAutoColumnWidths = (
       for (const measure of measureColumns(table, headCells)) {
         if (!measures.has(measure.column)) {
           measures.set(measure.column, measure);
-          measureHead(measure.column);
+          writeHeadWidth(measure.column, measure.head);
         }
       }
     }
@@ -406,9 +458,14 @@ export const attachAutoColumnWidths = (
     if (!changed || !table.hasAttribute(AUTO_WIDTH_ATTRIBUTE)) {
       return;
     }
-    for (const column of headMins.keys()) {
-      measureHead(column);
-    }
+    const targets = [...headMins.keys()].flatMap((column) => {
+      const head = headCells[column];
+      return head ? [{ column, head }] : [];
+    });
+    const widths = measureHeads(targets.map(({ head }) => head));
+    targets.forEach(({ column }, index) => {
+      writeHeadWidth(column, widths[index] ?? 0);
+    });
     apply();
   });
   for (const head of headCells) {
