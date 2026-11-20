@@ -36,14 +36,26 @@ const TAG_PATTERN = /<(\/?)([^\s/>]+)([^>]*)>/g;
 /** タグの中の属性（名前と、あれば値） */
 const ATTRIBUTE_PATTERN = /([^\s=/]+)(\s*=\s*)?("[^"]*"|'[^']*'|[^\s"'>]+)?/g;
 
-/** 名前を置き換える属性の値か（`class`・`id`・`data-*` と、文書の中の `id` を指す `aria-*`・`for`・`headers`） */
+/** 文書の中の `id`（の並び）を値に持つ属性。`aria-label` などの文字の `aria-*` は含めない */
+const ID_REFERENCE_ATTRIBUTES = new Set([
+  "for",
+  "headers",
+  "aria-describedby",
+  "aria-details",
+  "aria-controls",
+  "aria-labelledby",
+  "aria-owns",
+  "aria-flowto",
+  "aria-activedescendant",
+  "aria-errormessage",
+]);
+
+/** 名前を置き換える属性の値か（`class`・`id`・`data-*` と、文書の中の `id` を指す属性） */
 const isNameValue = (name: string): boolean =>
   name === "class" ||
   name === "id" ||
-  name === "for" ||
-  name === "headers" ||
   name.startsWith("data-") ||
-  name.startsWith("aria-");
+  ID_REFERENCE_ATTRIBUTES.has(name);
 
 /** 属性の値の `mdmark` を、属性の種類に合わせて置き換える */
 const hideAttributeValue = (name: string, value: string): string => {
@@ -61,7 +73,7 @@ const hideAttributeValue = (name: string, value: string): string => {
     : assets;
 };
 
-/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`・`for`・`headers` の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` だけを別名へ置き換え、HTML のコメントを削除する。テキストのノードと、それ以外の `href`・`src`・`alt`・`title` の値は置き換えない */
+/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby` など）・`for`・`headers` の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` だけを別名へ置き換え、HTML のコメントを削除する。テキストのノードと、それ以外の `href`・`src`・`alt`・`title` の値は置き換えない */
 export const hideRenderedHtml = (html: string): string =>
   html.replace(COMMENT_PATTERN, "").replace(TAG_PATTERN, (...tag: string[]) => {
     const [, slash = "", name = "", rest = ""] = tag;
