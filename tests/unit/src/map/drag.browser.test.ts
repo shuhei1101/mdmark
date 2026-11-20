@@ -74,6 +74,7 @@ const STATE = {
   attachments: {},
   order: undefined,
   height: undefined,
+  groupSizes: {},
 };
 
 /** 要素をドラッグする（pointerdown → move → up） */
