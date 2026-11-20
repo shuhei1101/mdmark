@@ -10651,6 +10651,61 @@ flows:
     refs:
       - SC-472-55#scenarios[正常シナリオ（描いた結果の上でフロントマターの変更を色分けする）]
       - SC-472-55#scenarios[正常シナリオ（フロントマターを表示する文書で変更を色分けする）]
+  - name: 正常系（描いた結果から描く）
+    summary: 描いた結果の HTML を要素に入れ、Markdown から描いたときと同じ操作を付ける
+    setup:
+      - name: mdmark を読み込むページ
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込む HTML
+      - name: 記法を持つ文書の描いた結果
+        description: '表のマーカー・タブ・言語 `ts` のコードブロック・索引の用語・拡張のマーカー・`<!-- page: {"colorScheme": "dark"} -->` を持つ文書を、書き出しと同じ処理で描いた `opts.rendered` と、その文書の純粋な Markdown の `opts.pureMarkdown`。拡張は登録してある'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { rendered, pureMarkdown, config, index })
+        M->>M: rendered.html を要素に入れ、ページの設定を当てる
+        M->>M: 拡張のマーカーを描き、色分けと記法の操作を付ける
+        M-->>P: 描いた文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - 同じ文書を `opts.markdown` から描いた要素と、要素の中の HTML が同じ
+      - 表の並べ替え・タブの切り替え・用語のツールチップが動き、`ts` のコードブロックが色分けされる
+      - 拡張のマーカーの場所に拡張が描いた要素がある
+      - 描く先の要素にダークの class が付く
+      - 「Markdown でコピー」を押すと、`opts.pureMarkdown` と同じ文字列がクリップボードに入る
+    test: test_normal_when_rendered
+  - name: 異常系（描いた結果の指定の誤り・TypeError）
+    summary: Markdown も描いた結果も無いときと、描いた結果を差分・コメントと一緒に指定したときに TypeError を投げる
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常系（描いた結果から描く）と同じ
+      - name: 誤った引数
+        description: '`opts.markdown` も `opts.rendered` も無い引数と、`opts.rendered` と `opts.baseMarkdown` を一緒に指定した引数'
+      - name: Mock
+        description: 正常系（描いた結果から描く）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, 誤った引数)
+        M-->>P: TypeError
+      ```
+
+      <!-- /map -->
+    expected:
+      - どちらの引数も `TypeError` を投げる
+      - 要素の中が空のまま
+    test: test_error_when_rendered_invalid
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -10745,9 +10800,9 @@ request:
     description: 描く先の要素
   - name: opts.markdown
     type: string
-    required: true
+    required: false
     location: argument
-    description: 描く Markdown
+    description: 描く Markdown。`opts.rendered` を指定しないとき必須
   - name: opts.config
     type: MdmarkConfig
     required: false
@@ -11010,6 +11065,41 @@ request:
     constraints: 真偽値でない値は無視して `false` にする
     example: 'true'
     notes: '`mdmark.config.yaml` の `table.pin_default` と同じ値。`table` がオフのときは使用しない'
+  - name: opts.rendered
+    type: MdmarkRendered
+    required: false
+    default: なし（`opts.markdown` を描く）
+    location: argument
+    description: 書き出しが `render` と同じ処理で、同じ設定・索引・参照の表・エイリアス・取り込む文書・アイコンで描いた結果。指定すると Markdown を描かず、その HTML を要素に入れて操作を付ける
+    notes: '`opts.markdown` と一緒に指定したときは `opts.rendered` を使用する'
+  - name: opts.rendered.html
+    type: string
+    required: true
+    location: argument
+    description: 描いた本文の HTML 文字列（サニタイズした後の値）
+  - name: opts.rendered.features
+    type: Record<string, boolean>
+    required: true
+    location: argument
+    description: その文書で決定した機能のオン・オフ（設定の `features` に文書のマーカーを重ねた値）
+  - name: opts.rendered.page
+    type: MdmarkPageSettings
+    required: true
+    location: argument
+    description: その文書の page のマーカーから読み取った配色の明暗・テーマ・右側の目次の出し方（マーカーが無ければ空のオブジェクト）
+  - name: opts.pureMarkdown
+    type: string
+    required: false
+    default: なし（`opts.rendered` で描いたときは Markdown のコピーとエクスポートのボタンを配置しない）
+    location: argument
+    description: '`opts.rendered` で描いた文書の Markdown のコピーとエクスポートのボタンが使用する、書き出しが `toPureMarkdown` で作った純粋な Markdown'
+    notes: '`opts.rendered` を指定しないときは使用しない'
+  - name: opts.path
+    type: string
+    required: false
+    default: なし
+    location: argument
+    description: '`render` の `opts.path` と同じ'
 request_example: |-
   ```json
   {
@@ -11106,6 +11196,9 @@ exceptions:
   - name: なし（Lucide のアイコンを読み込めない）
     condition: まとめていない名前のアイコンのモジュールを読み込めず、同じ URL の `HEAD` も失敗する（404 以外の状態を含む）
     notes: 例外を投げず、読み込めなかった名前の場所を記載したとおりの行内のコードに戻し、文書の先頭に通知ブロックを 1 つだけ配置する。URL と元のエラーを `console.error` に出す
+  - name: TypeError（描いた結果）
+    condition: '`opts.markdown` も `opts.rendered` も無い。または `opts.rendered` を `opts.diffSource`・`opts.baseMarkdown`・`opts.commentStore` と一緒に指定した'
+    notes: 何も描かずに投げる
 constraints:
   - item: 描く本文
     constraint: '`render(markdown, { config })` が返却する HTML 文字列と同じ'
@@ -12229,7 +12322,7 @@ constraints:
   - item: Markdown のコピーとエクスポートのボタン
     constraint: |-
       `markdown-buttons` がオンで右側の目次を配置するとき、パネルの頭のすべて展開・すべて折りたたむのボタンとピン止めのボタンの間に、アイコンだけの `Markdown でコピー`（lucide の `copy`）と `Markdown でエクスポート`（`download`）のボタン（`type="button"`。名前とツールチップはその文言）を配置する。右側の目次を配置しない文書には配置しない。
-      どちらも描いている Markdown（`update` の後は差し替えた Markdown）を `toPureMarkdown` で `opts.config`・`opts.index`・`opts.docId`・`opts.includes` を指定し、`opts.figure` を指定せずに変換する。
+      どちらも描いている Markdown（`update` の後は差し替えた Markdown）を `toPureMarkdown` で `opts.config`・`opts.index`・`opts.docId`・`opts.includes` を指定し、`opts.figure` を指定せずに変換する。`opts.rendered` で描いたとき（`update` を呼ぶ前）は、変換せずに `opts.pureMarkdown` を使用し、`opts.pureMarkdown` が無ければボタンを配置しない。
       コピーは変換した文字列を `navigator.clipboard.writeText` に書き込み、書き込めたら通知を出さずにアイコンを `check` に替えて 2 秒で戻す。書き込めないとき（`navigator.clipboard` が無いか拒まれた）は、アイコンを `circle-alert` に替え、頭の下に表のコピーと同じパネルを、見出しに理由（拒まれたときはアクセスが許可されていないこと、`navigator.clipboard` が無いときはこのページでは使用できないこと）を添えて、変換した文字列を選択した状態で出し、閉じるまで残す。例外を外へ出さない。
       エクスポートは変換した文字列を `text/markdown` の Blob にし、`a[download]` で保存させる。ファイルの名前は文書の最初の h1 の文字に `.md` を付けたもので、`/`・`\`・`:`・`*`・`?`・`"`・`<`・`>`・`|` と制御文字を `_` に置き換え、前後の空白と末尾の `.` を除く。h1 が無いか残る文字が空のときは `document.md`。
       どちらのボタンも外へ要求しない。印刷ではボタンを出さない。`update` でもう一度付ける
@@ -12249,6 +12342,13 @@ constraints:
   - item: フロントマターの色分け
     constraint: 制約「描いた文書のブロックの色分け」で色分けするとき、前と後の Markdown の先頭のフロントマター（判定は docs/interface/IF-472-34.ts の制約「フロントマター」）の中身を比べる。中身が同じか、両方に無いときは何もしない。後にあって中身が違う（追加・書き換え）ときは後のフロントマターを追加の色、前にだけある（削除）ときは前のフロントマターを削除の色で、本文の先頭に部品『差分のブロック』（`unit` は `block`。読み上げの名前は本文のブロックと同じ `追加:`・`削除:`）で示す。機能 `frontmatter` がオフのときは、示すフロントマターを IF-472-34 の制約「フロントマター」と同じ折りたたみ（`open` を持つ）に描いて差分のブロックで包む。オンのときの追加・書き換えは、本文の先頭のフロントマターの表示を差分のブロックで包み（2 つ目を差し込まない）、削除はオフと同じく前のフロントマターを差し込む。差分を閉じて色を当てずに描き直したときは、差し込んだフロントマターを出さない
     notes: '示し方と読み上げの名前は確認ログの決定（案 C・`追加:`）。モックは docs/mock/components/diff-blocks/index.html の #735 のセクション'
+  - item: 描いた結果から描く
+    constraint: |-
+      `opts.rendered` を指定したときは、Markdown を描く処理を飛ばし、`opts.rendered.html` を要素に入れて、`opts.rendered.features` と `opts.rendered.page` を Markdown から描いたときの機能のオン・オフとページの設定として扱い、Markdown から描いたときと同じ操作（外部ライブラリと拡張のマーカーの場所の描画・色分け・mermaid・アイコン・範囲のスクリプト・右側の目次・記法の操作・ツールチップ・ビュー）を付ける。
+      同じ文書を同じ引数で Markdown から描いたときと、要素の中の DOM と付いた操作が同じになる。
+      `opts.diffSource`・`opts.baseMarkdown`・`opts.commentStore` と一緒には指定できない（TypeError）。
+      `update(markdown)` を呼ぶと、その後は差し替えた Markdown を描く
+    notes: 書き出した HTML の起動の処理が使用する。`opts.rendered.html` はもう一度サニタイズせずに入れるため、利用側は `render` と同じ処理が返却した値だけを指定する
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画

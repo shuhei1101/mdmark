@@ -1125,6 +1125,31 @@ flows:
     test: test_normal_when_map_node_id_link_checked
     refs:
       - 'SC-472-78#scenarios[正常シナリオ（map の flowchart のノードが id: のリンク先を持つ）]'
+  - name: 正常系（用語集の表が無いエイリアスの行を指す）
+    summary: glossary のマーカーの alias_row が設定の term の行に無いとき、glossary_alias_row_missing のずれを返却する
+    setup:
+      - name: エイリアスの行を持つ設定と文書
+        description: '`aliases` に `alias_type` が `term` の行 `terms` を持つ設定と、`<!-- glossary: {"alias_row": "terms"} -->` を持つ文書と、`<!-- glossary: {"alias_row": "glossary-terms"} -->` を 3 行目に持つ文書 `guide.mark.md`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        W->>C: mdmark check
+        C->>C: glossary のマーカーの alias_row を設定の term の行と照合する
+        C-->>W: ずれの一覧・終了コード 0 以外
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`glossary_alias_row_missing` のずれが 1 件で、ファイルが `guide.mark.md`、場所が 3 行目、内容に `glossary-terms` がある'
+      - '`terms` を指すマーカーはずれにならない'
+      - 終了コードが 0 以外
+    test: test_normal_when_glossary_alias_row_missing
 lead: 文書の作成者が、設定ファイルの構造・索引と文書のずれ（`checkIndex`）・`build` の対象の有無・文書の本文にある知らないマーカー・文書が指す見つからないファイル・文書の図の部品の定義を点検し、ファイル・場所・種類・内容の一覧を受け取る。`--text` か `--file` と `--key` を指定したときは、設定と索引の点検の代わりに、指定した Markdown を描いたときの記載の警告と図の定義のずれを同じ一覧で受け取る。点検は設定・索引・文書を書き換えない。
 idempotent: true
 side_effects: なし（設定・索引・文書を書き換えない）
@@ -1175,8 +1200,8 @@ response:
     description: 'ずれ 1 つを 1 行（`{ファイル}:{場所}: {種類}: {内容}`。場所が空のときは `{ファイル}: {種類}: {内容}`）で並べ、最後に `ずれ {件数} 件` の行を出す'
     notes: ファイルは設定ファイルのあるフォルダからの相対パス（`--text` のときは `-`、設定ファイルが無いときは今のフォルダからの相対パス）。`--text`・`--file` のときの並びは、場所の行の順（同じ行は描いたときの警告の順で、`unknown_mark`・`legacy_mark`・`unknown_mark_arg`・`mark_option_unapplied` は警告の後ろ）。並びは設定の `schema` → `unknown_color_theme` → `unknown_color_scheme` → `no_documents` → `checkIndex` が返却した並び → エイリアスのずれ（`buildAliases` が返却した並び。`alias_no_files`・`alias_unreadable` は読み込んだ行の順にその場所へ配置する） → `unknown_mark`・`legacy_mark`・`unknown_mark_arg`・`mark_option_unapplied`・`mark_option_invalid`（どれも文書のパスと行の順） → `missing_file` → `include_target_missing`・`include_circular`（どちらも文書のパスと行の順） → 図の点検のずれ（どれも文書のパスの順、同じ文書の中は行の順） → `plain_md_with_marks`（文書のパスの順）
   - name: 種類
-    type: '''schema'' | ''unknown_color_theme'' | ''unknown_color_scheme'' | ''no_documents'' | ''missing_doc'' | ''orphan_doc'' | ''broken_ref'' | ''untyped_related'' | ''one_sided_change_together'' | ''related_link_overlap'' | ''missed_change_together'' | ''frontmatter_mismatch'' | ''duplicate_term'' | ''avoided_term'' | ''alias_no_files'' | ''alias_unreadable'' | ''duplicate_alias_row_id'' | ''alias_records_missing'' | ''alias_field_missing'' | ''alias_unknown_type'' | ''alias_required_empty'' | ''duplicate_alias_id'' | ''unknown_mark'' | ''missing_file'' | ''include_target_missing'' | ''include_circular'' | ''diagram_invalid'' | ''retired_diagram'' | ''syntax_warning'' | ''unknown_mark_arg'' | ''legacy_mark'' | ''mark_option_unapplied'' | ''mark_option_invalid'' | ''plain_md_with_marks'''
-    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に該当しないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`unknown_color_scheme` は設定の `colorScheme` が `light`・`dark`・`auto` のどれでもない、`no_documents` は `build.include` に該当する文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に該当するファイルが 0 件、`alias_unreadable` は `paths` に該当したファイルを YAML として読み込めない、`unknown_mark` は文書の本文に知っているマーカーのどれにも該当しないマーカーがある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`include_target_missing` は include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダの外を指す、`include_circular` は include の取り込みが循環する、`diagram_invalid` は図の部品の定義を読み込めないか構造が合わない、`retired_diagram` は文書に廃止した `flow`・`sequence` の範囲がある、`syntax_warning` は `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち `unknown_mark`・`diagram_invalid`・`retired_diagram` に該当しないもの（include の取り込み先が無い警告を除く）、`unknown_mark_arg` はマーカーの JSON のオブジェクトに、描くときに警告を配置せずに無視する知らないキーがある、`legacy_mark` はマーカーの引数が今の書き方（JSON のオブジェクトでない）、`mark_option_unapplied` は `enabled` を `false` にした機能の列の設定がある、`mark_option_invalid` は点検する文書のマーカーの引数が JSON として読み取れないか、型・選べる値・必須に合わない、`plain_md_with_marks` は拡張子が純粋な `.md` の文書が mdmark の記法を含む。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
+    type: '''schema'' | ''unknown_color_theme'' | ''unknown_color_scheme'' | ''no_documents'' | ''missing_doc'' | ''orphan_doc'' | ''broken_ref'' | ''untyped_related'' | ''one_sided_change_together'' | ''related_link_overlap'' | ''missed_change_together'' | ''frontmatter_mismatch'' | ''duplicate_term'' | ''avoided_term'' | ''alias_no_files'' | ''alias_unreadable'' | ''duplicate_alias_row_id'' | ''alias_records_missing'' | ''alias_field_missing'' | ''alias_unknown_type'' | ''alias_required_empty'' | ''duplicate_alias_id'' | ''unknown_mark'' | ''missing_file'' | ''include_target_missing'' | ''include_circular'' | ''diagram_invalid'' | ''retired_diagram'' | ''syntax_warning'' | ''unknown_mark_arg'' | ''legacy_mark'' | ''mark_option_unapplied'' | ''mark_option_invalid'' | ''plain_md_with_marks'' | ''glossary_alias_row_missing'''
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に該当しないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`unknown_color_scheme` は設定の `colorScheme` が `light`・`dark`・`auto` のどれでもない、`no_documents` は `build.include` に該当する文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に該当するファイルが 0 件、`alias_unreadable` は `paths` に該当したファイルを YAML として読み込めない、`unknown_mark` は文書の本文に知っているマーカーのどれにも該当しないマーカーがある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`include_target_missing` は include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダの外を指す、`include_circular` は include の取り込みが循環する、`diagram_invalid` は図の部品の定義を読み込めないか構造が合わない、`retired_diagram` は文書に廃止した `flow`・`sequence` の範囲がある、`syntax_warning` は `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち `unknown_mark`・`diagram_invalid`・`retired_diagram` に該当しないもの（include の取り込み先が無い警告を除く）、`unknown_mark_arg` はマーカーの JSON のオブジェクトに、描くときに警告を配置せずに無視する知らないキーがある、`legacy_mark` はマーカーの引数が今の書き方（JSON のオブジェクトでない）、`mark_option_unapplied` は `enabled` を `false` にした機能の列の設定がある、`mark_option_invalid` は点検する文書のマーカーの引数が JSON として読み取れないか、型・選べる値・必須に合わない、`plain_md_with_marks` は拡張子が純粋な `.md` の文書が mdmark の記法を含む、`glossary_alias_row_missing` は `glossary` のマーカーの `alias_row` が設定の `term` の行に無い。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
     description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
@@ -1315,6 +1340,8 @@ constraints:
     decided_by: IF-472-35#request[opts.config.map.kinds]
   - item: フロントマターのメタデータ
     constraint: '`checkIndex` には、索引のフォルダの各文書の先頭のフロントマターの中身を YAML として解析した値を `frontmatter` に指定する。解析できない文書は指定せず、ずれにもしない'
+  - item: 用語集の表のエイリアスの行の点検
+    constraint: 点検する文書ごと（`--text`・`--file` のときを除く）に、`glossary` のマーカーの `alias_row` が、設定の `aliases` の `alias_type` が `term` で `enabled` が `false` でない行の `id` のどれでもないとき、1 つのマーカーにつき 1 件の `glossary_alias_row_missing` のずれにする。ファイルは文書の相対パス、場所はマーカーの行の番号（1 から）、内容は指した行の id と、設定の `aliases` に `term` の行を記載するか `alias_row` を修正する修正方法
 test_file: tests/integration/lib/check-config.test.ts
 tags:
   - name: action:点検
