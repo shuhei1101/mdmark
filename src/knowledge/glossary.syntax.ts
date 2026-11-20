@@ -243,7 +243,13 @@ function collectGlossary(
 }
 
 /** エイリアスの行から描く用語集の表の列 */
-const ALIAS_TABLE_COLUMNS = ["用語", "別名", "使用しない言い方", "意味", "詳細"];
+const ALIAS_TABLE_COLUMNS = [
+  "用語",
+  "別名",
+  "使用しない言い方",
+  "意味",
+  "詳細",
+];
 
 /** `alias_row` と一緒に記載できない列の指定のキー */
 const COLUMN_KEYS = ["term", "meaning", "aliases", "avoid"];
@@ -310,7 +316,9 @@ function tableMarkTokens(state: StateCore, source: Token): [Token, Token] {
     token.block = true;
     token.level = source.level;
     token.map = source.map;
-    const raw = closing ? "<!-- /table -->" : '<!-- table: {"kind": "data"} -->';
+    const raw = closing
+      ? "<!-- /table -->"
+      : '<!-- table: {"kind": "data"} -->';
     const mark: Mark = {
       name: "table",
       options: closing ? {} : { kind: "data" },

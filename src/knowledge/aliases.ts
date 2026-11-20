@@ -659,7 +659,9 @@ function takeRecord(
       value: readColumn(record, columnOf(row, "details")).value,
       sourcePath: source.path,
     });
-    build.aliases.push(toAlias(values, row.aliasType, { row: row.id, details }));
+    build.aliases.push(
+      toAlias(values, row.aliasType, { row: row.id, details }),
+    );
   }
 }
 
