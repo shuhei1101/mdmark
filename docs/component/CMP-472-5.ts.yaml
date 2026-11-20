@@ -172,7 +172,7 @@ args:
     type: オブジェクト
     required: false
     default: なし（map の配色）
-    description: Mermaid の `style`・`classDef`（`class` の行・`:::` で当てたもの）から読み取った色（`{ fill, stroke, color }`）。ノードの面・枠線・名前の文字の色にする。`color` が無く `fill` があるときの文字の色は、面に対するコントラスト比が高い方の `#000000` か `#ffffff`。明るい配色と暗い配色で変えない
+    description: Mermaid の `style`・`classDef`（`class` の行・`:::` で当てたもの）から読み取った色（`{ fill, stroke, color }`）。ノードの面・枠線・名前の文字の色にする。`color` が無く `fill` があるときの文字の色は、面に対するコントラスト比が高い方の `#000000` か `#ffffff`。明るい配色と暗い配色で変えない。同じノードが補足の `changes` を持つときは、枠線を変更の色にし、面と文字の色はこの色のままにする
   - name: layout.nodes[].shape
     type: 列挙
     required: false

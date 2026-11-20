@@ -11,6 +11,9 @@ data_models:
     role: データモデル
     summary: 部品設計『mapの構成図』の引数（`layout`・`notes`・`links`・`collapsed`・`entered`・`selected`・`focus`・`packets`・`dragging`）
     properties:
+      - name: styles
+        type: MermaidStyles | undefined
+        description: Mermaid の `style`・`classDef`・`linkStyle` の色（`readMermaidStyles` の戻り値）。ノードの面・枠線・名前の文字と、線・矢じり・線のラベルの文字に適用する。`color` を持たず `fill` を持つノードの文字は `textColorOn` の色。`changes` を持つノード・線は変更の色を枠線と線に優先し、面と文字の色は `styles` のままにする
       - name: layout
         type: MapLayout
         description: 配置の結果
@@ -284,8 +287,13 @@ functions:
 
       種類の行・名前・説明のマーカー・`nodeParts` の中身はその後ろの兄弟として重ね、押せる要素の中に入れない。
       選んだノードの `div` には今と同じく `data-selected` を付ける。
+
+      `styles` の色は、ノードの `div` の `style` 属性の `--map-node-fill`・`--map-node-stroke`・`--map-node-text` と、線の `path` の `stroke`・ラベルの `color` に入れる（明るい配色と暗い配色で変えない）。
+      線の `ends` は線の端に線の色の円（`circle`）か×（`cross`）の `marker` を付け、`invisible` の線は線・ラベル・押せる帯を描かない。
+      ノードの形状は `data-shape` に持たせ、追加した形状（`lean-right`・`lean-left`・`trapezoid`・`trapezoid-alt`・`double-circle`・`@{ shape }` の形状）は CSS の `clip-path` と外側の枠線で描く（文書など `clip-path` で表せない形状はノードの下に SVG の形状を重ねる）
     scope: public
     callees:
+      - MOD-747-1#functions[textColorOn]
       - MOD-472-172#functions[renderFlow]
     args:
       - name: args
@@ -296,6 +304,18 @@ functions:
       type: '{ html: string; tips: string }'
       description: 図の HTML（`html`）と、ノードの説明と用語のツールチップの HTML（`tips`。図の枠の `.mdmark-diagram-box` に配置する）
     unit_tests:
+      - name: test_render_map_flow_when_styles
+        case: 正常
+        summary: style・classDef・linkStyle の色をノードと線に適用し、文字の色をコントラストで決める
+        condition: 部品設計『mapの構成図』の状態 `Styled` の引数と、ノード `D` に `changes` の `changed` を重ねたもの
+        mock: なし
+        expected: '`A` のノードの `style` が面 `#f9f`・枠線 `#c3c`・文字 `#000000`、`D`・`E` が面 `#ffe08a` で文字 `#000000`、2 本目の線が `#d33`。`changed` を重ねた `D` の枠線は `orange` の色で、面は `#ffe08a` のまま'
+      - name: test_render_map_flow_when_wire_ends_and_shapes
+        case: 正常
+        summary: 線の端の丸・×、見えない線、追加した形状を描く
+        condition: 部品設計『mapの構成図』の状態 `WireEndsAndShapes` の引数
+        mock: なし
+        expected: '`--o` の線の終端に円、`--x` の線の終端に×の記号があり、`~~~` の線の `path.mdmark-diagram-wire` と押せる帯とラベルが無い。平行四辺形・台形・二重の円・文書のノードが `data-shape` にそれぞれの形状を持ち、名前が形状の内側に収まる'
       - name: test_render_map_flow
         case: 正常
         summary: グループとノード

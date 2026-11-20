@@ -220,6 +220,12 @@ functions:
     refs:
       - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
     unit_tests:
+      - name: test_collect_plain_map_problems_when_mermaid_samples
+        case: 正常
+        summary: mermaid の公式の記法の例の見本は記載の警告が 0 件
+        condition: '`tests/fixtures/mermaid-syntax/{図の種類}.md`（インターフェース定義『文書を描く』の制約『map の記法の mermaid 準拠』の 17 種類。採用している mermaid の版の公式ドキュメントの例を言語 `mermaid` のコードブロックで並べたもの）の全てのコードブロックを、`plainMapSourceOf` の `kind`・`body` で呼ぶ'
+        mock: なし
+        expected: どのコードブロックも空
       - name: test_collect_plain_map_problems
         case: 異常
         summary: 読み取れない行だけを返却し、クラスとリンク先は返却しない

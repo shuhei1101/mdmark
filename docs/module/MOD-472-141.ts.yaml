@@ -191,9 +191,15 @@ functions:
       description: 配置の結果
     process: |-
       1. 見せ方で表示する木を作る。中へ入ったグループの外は `faded` で残し、閉じたグループは 1 つのノードにして、そこへの線を同じ相手ごとに 1 本にまとめて元の線を `merged` に持つ。上書きの `size` を持たない葉は、上書きの `width` を持てばその幅、持たなければ `measureText` で測った名前の幅（`textWidth`）に左の余白（上書きの `padLeft`、無ければ `LABEL_METRICS.padX`）・右の余白 `LABEL_METRICS.padRight`・左右の枠線（`LABEL_METRICS.border` × 2）を加えた幅（小数は切り上げる）を `MAP_LAYOUT.minWidth` から上限（`nodeFit` が `height` なら `maxWidth`、`width` なら `maxWidthWide`）までに収めた幅にし、その幅から左右の余白と枠線を引いた幅で、名前を `measureText` で測って行に分けた（`splitLines`）行の数の `leafHeight` を高さにする。上書きの `size` を持つ葉は、その大きさにし、同じ幅で名前を行に分ける（表示する木を作る）
-      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを解除した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を適用して大きさを決める。段の中の間と段の間には `spread` を追加する。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
+      2. 内側のグループから順に、子孫の線を直下の子どうしの線に持ち上げ、`rankless` の線を除き、閉路の戻りを解除した最長路で段を決め、重心の 4 回の掃引で段の中の並びを決め、上書きの `align`・`order`・`justify`・`pos` を適用して大きさを決める。段の中の間と段の間には `spread` を追加する。線の `length` が 2 以上の線は、先のノードを元のノードから `length` 段離して段を決める。`invisible` の線は段と並びを決めるのに使用し、線の経路を引かず `wires` に含めない。アーキテクチャ図の `align` は、並べた ID を同じ段（`row`）か同じ列（`column`）にそろえる上書きにする。閉じたグループの葉の高さは、見積もりの高さと `groupTitle` + `closedCount` + 余白 上下 6px の大きいほうにする（グループの中を配置する）
       3. 外側から座標を追加して図の座標にし、線の経路を引く（線の経路を引く）
     unit_tests:
+      - name: test_layout_map_when_length_and_invisible
+        case: 正常
+        summary: 長さを指定した線と見えない線で段を決める
+        condition: '`flowchart TB` で `A --> B`・`A ----> C`・`B ~~~ D` の構成図'
+        mock: なし
+        expected: '`C` が `B` より 2 段下、`D` が `B` の 1 段下で、`wires` に `B->D` が無い'
       - name: test_layout_map
         case: 正常
         summary: 重なりと横切りが無い
