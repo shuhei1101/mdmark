@@ -42,7 +42,7 @@ functions:
       - name: test_migrate_retired_er
         case: 正常
         summary: build の対象と索引の文書を書き換え、報告の行を出す
-        condition: シナリオ『バージョンを上げる』の「正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）」の文書を、`build.include` の文書と索引だけの文書に分けて持つ一時フォルダ
+        condition: シナリオ『バージョンを上げる』の「正常シナリオ（部品の定義で記載した ER 図を map へ書き換える）」の文書を、`build.include` の文書と索引だけの文書に分けて持つ一時フォルダ
         mock: 一時フォルダ
         expected: 両方の文書がシナリオの期待値のとおりで、設定が変わらず、`report` が文書と行の順、`changed` が 2 つ
       - name: test_migrate_retired_er_when_extension

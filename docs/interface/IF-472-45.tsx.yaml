@@ -325,7 +325,7 @@ flows:
       - '`$.ui.log` が `to: "debug"` で、`mdmark-style` と `missing.yaml` を含む文で 1 回呼ばれる'
     test: test_error_when_glossary_unreadable
     refs:
-      - SC-472-98#scenarios[異常シナリオ（用語集の設定ファイルを読めない）]
+      - SC-472-98#scenarios[異常シナリオ（用語集の設定ファイルを読み取れない）]
   - name: 異常系（設定ファイルを読み取れない・なし）
     summary: 設定ファイルを YAML として読み取れないとき、`next(e)` を返却して Claude Code の元の描画に任せ、デバッグログに理由を出す
     setup:
@@ -354,7 +354,7 @@ flows:
       - '`$.ui.log` が `to: "debug"` で、`mdmark-style` と設定ファイルのパスを含む文で 1 回呼ばれる'
     test: test_error_when_config_unreadable
     refs:
-      - SC-472-97#scenarios[異常シナリオ（設定ファイルを読めない）]
+      - SC-472-97#scenarios[異常シナリオ（設定ファイルを読み取れない）]
   - name: 正常系（本文の部品）
     summary: 行の詳細・ステップ・ファイルツリー・行内の記法・縦に並べる範囲・図と表の番号を共通スタイルで描き、マーカーと記法の文字を削除する
     setup:

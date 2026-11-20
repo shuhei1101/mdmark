@@ -316,7 +316,7 @@ flows:
       - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
-      - 'SC-472-76#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
+      - 'SC-472-76#scenarios[正常シナリオ（blob: と動的 import を許可しない環境で開く）]'
   - name: 正常系（範囲のスクリプトと CSS）
     summary: 範囲の `ts` を変換してまとめ、文書を移るときに範囲の `destroy` を呼ぶ
     setup:
@@ -536,7 +536,7 @@ flows:
       - '`pageerror` が 0 件で、`console.warn` に表示の状態を保存できなかった旨が出る'
     test: test_normal_when_session_storage_unavailable
     refs:
-      - SC-472-13#scenarios[異常シナリオ（sessionStorage が使えない）]
+      - SC-472-13#scenarios[異常シナリオ（sessionStorage が使用できない）]
   - name: 正常系（文書を切り替えると map のクエリ文字列を削除する）
     summary: map のグループの中へ入った文書から文書の一覧で別の文書へ移ると、クエリ文字列の `map-*` を削除し、移った先の図を全体から描く
     setup:
@@ -741,7 +741,7 @@ constraints:
     notes: 表のメニュー・ドロワー・絞り込み、右側の目次、差分のパネル、コメントの吹き出しは戻さない。位置は URL に出さない
   - item: 表示の状態の保存先
     constraint: sessionStorage。キーは履歴の項目ごとに振る ID（`history.state` に持たせる）を含む。sessionStorage を取り出せない・書き込めないときは `console.warn` に出し、保存した状態を持たない項目と同じく描く
-    decided_by: SC-472-13#scenarios[異常シナリオ（sessionStorage が使えない）]
+    decided_by: SC-472-13#scenarios[異常シナリオ（sessionStorage が使用できない）]
   - item: map のクエリ文字列
     constraint: 文書の一覧と文書間のリンクで別の文書へ移るときは、クエリ文字列から `map-` で始まるキーを削除してから移る。戻る・進む・再読み込みでは削除せず、移った先の文書の map の図は sessionStorage の状態で描く
     decided_by: IF-472-35#constraints[map の状態の保存]

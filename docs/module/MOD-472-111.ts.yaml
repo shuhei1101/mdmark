@@ -87,7 +87,7 @@ functions:
       - name: test_assemble_html_when_traces_hidden
         case: 正常
         summary: 隠すときは名前・バージョン・コメントを残さず、タイトルを残す
-        condition: '`hideTraces: true`、`kind: bundle`、エントリーポイントの文書のタイトルが `mdmark の紹介`、`icons` を 1 つ持つ中身と、`:root{--mdmark-version:"v0.12.0"}` を持つ配布物の CSS'
+        condition: '`hideTraces: true`、`kind: bundle`、起点の文書のタイトルが `mdmark の紹介`、`icons` を 1 つ持つ中身と、`:root{--mdmark-version:"v0.12.0"}` を持つ配布物の CSS'
         mock: なし
         expected: '`<title>mdmark の紹介</title>` があり、それ以外の HTML の文字列（埋め込みの JSON の利用者が記載した値を除く）に `mdmark`・`v0.12.0`・`<!--` が無く、`id="zq-payload"`・`.zq-bundle` と、`/*! lucide` で始まるスクリプトがある'
     status: planned

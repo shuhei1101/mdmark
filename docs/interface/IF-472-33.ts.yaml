@@ -381,7 +381,7 @@ flows:
       - 描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
-      - 'SC-472-56#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
+      - 'SC-472-56#scenarios[正常シナリオ（blob: と動的 import を許可しない環境で開く）]'
   - name: 正常系（範囲のスクリプトと CSS）
     summary: '範囲の `ts` を変換してまとめたスクリプトに加え、blob: と動的 import を許可しない環境でも動かす'
     setup:

@@ -184,7 +184,7 @@ functions:
       - name: test_convert_retired_diagrams
         case: 正常
         summary: フロー図 2 つとシーケンス図を map の範囲にし、写さない値を報告に挙げる
-        condition: シナリオ『バージョンを上げる』の「正常シナリオ（座標で書いた図を map へ書き換える）」の文書
+        condition: シナリオ『バージョンを上げる』の「正常シナリオ（座標で記載した図を map へ書き換える）」の文書
         mock: なし
         expected: '`markdown` がシナリオの期待値のとおりで、範囲の外の行が変わらず、`report` が範囲ごとの `scope`・`updated` と `stickyTitles` の行で、`kinds` が文書のノードの種類だけ、`lines` が `read`・`write` だけ'
       - name: test_convert_retired_diagrams_when_unreadable
@@ -362,7 +362,7 @@ functions:
       - name: test_convert_retired_er
         case: 正常
         summary: ER 図の部品の範囲を map の範囲にし、写さない値を報告に挙げる
-        condition: シナリオ『バージョンを上げる』の「正常シナリオ（部品の定義で書いた ER 図を map へ書き換える）」の文書
+        condition: シナリオ『バージョンを上げる』の「正常シナリオ（部品の定義で記載した ER 図を map へ書き換える）」の文書
         mock: なし
         expected: '`markdown` がシナリオの期待値のとおりで、範囲の外の行が変わらず、`report` がテーブルの `kind`・`color`、列の `nn`、`scope`・`updated` の行で、座標の行が無い'
       - name: test_convert_retired_er_when_unconvertible

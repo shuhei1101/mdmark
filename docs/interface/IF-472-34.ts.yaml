@@ -446,7 +446,7 @@ flows:
       - 段落がある
     test: test_normal_when_retired_diagram
     refs:
-      - SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
+      - SC-472-43#scenarios[正常シナリオ（座標で記載した図の範囲）]
   - name: 正常系（埋め込んだ HTML）
     summary: マーカーを付けた `html` のコードブロックの中身を HTML として描き、スクリプトと許可していない宣言を落とす
     setup:
@@ -1172,7 +1172,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: ファイルツリーを持つ Markdown
-        description: '`<!-- tree: {"depth": "all"} -->` の後ろに、`mdmark/` の下へ `src/ #ソース`・`` index.ts # エントリーポイントの `mount` ``・`` README.md # **必読** `badge:新規` ``・`C#/`・`#notes.md`・`photo.PNG`・`Dockerfile`・`font.woff2`・`...` を罫線で記載した言語 `tree` のコードブロックと、マーカーの無い、`\|-- `・`` `-- ``・`\|   ` で `src/` の下に `index.ts` と `parts/` を書き込んだ言語 `tree` のコードブロックを並べた文書'
+        description: '`<!-- tree: {"depth": "all"} -->` の後ろに、`mdmark/` の下へ `src/ #ソース`・`` index.ts # 入口の `mount` ``・`` README.md # **必読** `badge:新規` ``・`C#/`・`#notes.md`・`photo.PNG`・`Dockerfile`・`font.woff2`・`...` を罫線で記載した言語 `tree` のコードブロックと、マーカーの無い、`\|-- `・`` `-- ``・`\|   ` で `src/` の下に `index.ts` と `parts/` を書き込んだ言語 `tree` のコードブロックを並べた文書'
         notes: '`index.ts` は `src/` の下。そのほかは `mdmark/` の直下'
       - name: Mock
         description: 差し替える依存は無い
@@ -2954,7 +2954,7 @@ flows:
       - 3 つ目の details の前の警告の本文に `-->` での記載方法があり、範囲が `<summary>詳細</summary>` の `details` に入り、本文に ` b"} -->` の文字がある
     test: test_normal_when_mark_args_not_json
     refs:
-      - SC-472-59#scenarios[異常シナリオ（JSON として読めないマーカーの引数）]
+      - SC-472-59#scenarios[異常シナリオ（JSON として読み取れないマーカーの引数）]
       - SC-472-52#scenarios[正常シナリオ（値に --> を記載した引数）]
   - name: 正常系（行番号の開始の番号）
     summary: '`lines.start` から数えた行番号と、その番号で数えた強調の行を描く'
@@ -3287,7 +3287,7 @@ constraints:
     notes: 定義の構造の項目はモジュール構成設計で型に記載する。見本は `docs/mock/refs/42/assets/samples.js`
   - item: 廃止した図の範囲
     constraint: '`<!-- flow -->`・`<!-- sequence -->`・`<!-- er -->` 〜 閉じのマーカーの範囲は図にせず、範囲の中の Markdown と定義の JSON を出力に残さずに、範囲の場所へ記載の警告を 1 つ配置する。本文は、その記載方法を廃止したことと、`mdmark upgrade` で map の範囲（Mermaid と補足）へ変換できることを記載する。閉じのマーカーの無い範囲は、マーカーから文書の終わりまでを範囲にする。機能 `diagrams` がオフでも同じ警告を配置する。`registerExtension` で `flow`・`sequence`・`er` と同じ `directive` の拡張を登録したページでは、その名前の範囲を廃止した図として扱わず、制約「マーカーの扱い」のとおり拡張のマーカーにする（インターフェース定義『拡張を登録する』の `directive`）'
-    decided_by: SC-472-43#scenarios[正常シナリオ（座標で書いた図の範囲）]
+    decided_by: SC-472-43#scenarios[正常シナリオ（座標で記載した図の範囲）]
     notes: 本文の文言は画面設計『文書』。変換は移行の手順（確認ログ）
   - item: 図の外観の決まり
     constraint: グラフは系列を色と線の模様と点の形状の組で描き分ける。グラフの凡例には系列（円とドーナツは項目）を記載する

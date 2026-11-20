@@ -220,7 +220,7 @@ flows:
       - '`$.ui.log` が `to: "debug"` で、`mdmark-style` と `missing.yaml` を含む文で 1 回呼ばれる'
     test: test_error_when_glossary_unreadable
     refs:
-      - SC-472-98#scenarios[異常シナリオ（用語集の設定ファイルを読めない）]
+      - SC-472-98#scenarios[異常シナリオ（用語集の設定ファイルを読み取れない）]
 refs:
   - CFG-472-4#
   - IF-472-36#
