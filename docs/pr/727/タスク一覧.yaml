@@ -50,8 +50,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T02:01:09.072601+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
     note: IF-472-35 の制約「列の幅」に、表の多い文書でも列の幅を決める処理で画面を止めない所要時間の制約と、その結合テストの期待を加える
+    updated_by: planner
+    updated_at: '2026-11-20T02:06:37.997221+00:00'
   - process: 部品設計
     status: skipped
     reason: 部品設計『表』の注記「列の幅」が定める列の幅の決め方（結果）は変えず、測り方はモジュール構成設計が持つため
