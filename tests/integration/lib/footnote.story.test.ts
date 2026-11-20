@@ -25,7 +25,7 @@ function linkText(page: Page) {
   }));
 }
 
-/** ツールチップと番号のリンクの画面に対する上端・下端と、透明な線の側 */
+/** ツールチップと番号のリンクの画面に対する上端・下端と、外側の要素の上下の余白、内側の枠の 4 辺の枠線の色・幅と上端・下端 */
 function tipLayout(page: Page) {
   return page.evaluate(() => {
     const tip = document.querySelector(".mdmark-fn-tip");
@@ -33,19 +33,49 @@ function tipLayout(page: Page) {
     if (!tip || !link) {
       throw new Error("ツールチップか番号が無い");
     }
+    const frame = tip.querySelector(":scope > .mdmark-fn-tip-frame");
+    if (!frame) {
+      throw new Error("ツールチップの内側の枠が無い");
+    }
     const t = tip.getBoundingClientRect();
     const l = link.getBoundingClientRect();
+    const f = frame.getBoundingClientRect();
     const style = getComputedStyle(tip);
+    const inner = getComputedStyle(frame);
     return {
       tipTop: t.top,
       tipBottom: t.bottom,
       linkTop: l.top,
       linkBottom: l.bottom,
+      frameTop: f.top,
+      frameBottom: f.bottom,
       display: style.display,
-      transparentTop: style.borderBlockStartColor === "rgba(0, 0, 0, 0)",
-      transparentBottom: style.borderBlockEndColor === "rgba(0, 0, 0, 0)",
+      paddingTop: Number.parseFloat(style.paddingBlockStart),
+      paddingBottom: Number.parseFloat(style.paddingBlockEnd),
+      outerBorderWidth: Number.parseFloat(style.borderBlockEndWidth),
+      colors: [
+        inner.borderBlockStartColor,
+        inner.borderInlineEndColor,
+        inner.borderBlockEndColor,
+        inner.borderInlineStartColor,
+      ],
+      widths: [
+        inner.borderBlockStartWidth,
+        inner.borderInlineEndWidth,
+        inner.borderBlockEndWidth,
+        inner.borderInlineStartWidth,
+      ].map(Number.parseFloat),
     };
   });
+}
+
+/** 内側の枠の 4 辺の枠線が、透明でない同じ色と同じ幅で出ていることを確認する */
+function expectFourBorders(layout: Awaited<ReturnType<typeof tipLayout>>) {
+  expect(new Set(layout.colors).size).toBe(1);
+  expect(layout.colors[0]).not.toBe("rgba(0, 0, 0, 0)");
+  expect(new Set(layout.widths).size).toBe(1);
+  expect(layout.widths[0]).toBeGreaterThan(0);
+  expect(layout.outerBorderWidth).toBe(0);
 }
 
 // 開く前は、番号の色の角括弧付きの上付きの番号だけが出て、ツールチップは隠れている（Closed）
@@ -81,7 +111,7 @@ test("test_footnote_ref_closed", async () => {
   expect((await tipLayout(page)).display).toBe("none");
 });
 
-// 開いたツールチップは番号の上にあり、タイトル `脚注 1` と中身を持つ role="tooltip"（Open）
+// 開いたツールチップは番号の上にあり、内側の枠の 4 辺に枠線が出て、番号との間の余白が下側にあり、タイトル `脚注 1` と中身を持つ role="tooltip"（Open）
 test("test_footnote_ref_open", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-footnoteref--open", WIDE_VIEWPORT);
@@ -89,7 +119,10 @@ test("test_footnote_ref_open", async () => {
   const layout = await tipLayout(page);
   expect(layout.display).toBe("block");
   expect(layout.tipBottom).toBeLessThanOrEqual(layout.linkTop);
-  expect(layout.transparentBottom).toBe(true);
+  expectFourBorders(layout);
+  expect(layout.paddingBottom).toBeGreaterThan(1);
+  expect(layout.paddingTop).toBe(0);
+  expect(layout.frameBottom).toBeLessThan(layout.linkTop - 1);
   const tip = page.locator(".mdmark-fn-tip");
   await expect(tip.getAttribute("role")).resolves.toBe("tooltip");
   await expect(page.locator(".mdmark-fn-tip-title").innerText()).resolves.toBe(
@@ -100,7 +133,7 @@ test("test_footnote_ref_open", async () => {
   );
 });
 
-// 下に開いたツールチップは番号の下にあり、透明な線が上側にある（Below）
+// 下に開いたツールチップは番号の下にあり、内側の枠の 4 辺に枠線が出て、番号との間の余白が上側にある（Below）
 test("test_footnote_ref_below", async () => {
   // 準備・実行
   const page = await holder.openStory(
@@ -110,8 +143,10 @@ test("test_footnote_ref_below", async () => {
   // 検証
   const layout = await tipLayout(page);
   expect(layout.tipTop).toBeGreaterThanOrEqual(layout.linkBottom);
-  expect(layout.transparentTop).toBe(true);
-  expect(layout.transparentBottom).toBe(false);
+  expectFourBorders(layout);
+  expect(layout.paddingTop).toBeGreaterThan(1);
+  expect(layout.paddingBottom).toBe(0);
+  expect(layout.frameTop).toBeGreaterThan(layout.linkBottom + 1);
 });
 
 // 中身がリンクを持つと role="group" で、番号が aria-details で指し、中のリンクへ Tab で移れる（WithLink）
