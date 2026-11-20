@@ -74,3 +74,5 @@ tags:
   - name: topic:map
   - name: topic:一覧
   - name: topic:アクセシビリティ
+test_files:
+  - tests/unit/src/map/list.part.test.ts
