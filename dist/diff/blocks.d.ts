@@ -63,5 +63,7 @@ export declare function colorDiffBlocks(options: {
     segmenter: Intl.Segmenter | undefined;
     /** 比較の計算。既定は `jsdiffEngine` */
     engine?: DiffEngine;
+    /** 元の機能 `frontmatter` のオン・オフ（前と後の中身は機能 `frontmatter` をオンにして描いたもの。既定 `false`） */
+    frontmatter?: boolean;
 }): void;
 export {};

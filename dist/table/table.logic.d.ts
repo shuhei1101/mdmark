@@ -102,6 +102,8 @@ export declare const initialPinnedColumns: (options: {
     rowHeadCount: number;
     /** ピン止めの動き */
     mode: TablePinMode;
+    /** `data-pin` が無いときに既定の列を留めるか（設定の `table.pin_default`） */
+    pinDefault: boolean;
     /** `data-unpin` の位置（既定で留める列から除く。無ければ空） */
     unpin?: number[];
 }) => number[];

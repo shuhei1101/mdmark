@@ -63097,7 +63097,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.611eb32";
+  return "v0.14.0+develop.fa2609d";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -63412,6 +63412,7 @@ function resolveTable(table2) {
   const valid = typeof requestedMin === "number" && Number.isFinite(requestedMin) && requestedMin > 0;
   return {
     pin: table2?.pin === "through" ? "through" : "each",
+    pinDefault: table2?.pin_default === true,
     longColumnMin: valid ? requestedMin : DEFAULT_LONG_COLUMN_MIN_EM
   };
 }
@@ -63825,6 +63826,9 @@ function isValidTable(value, file, issues) {
     );
     return false;
   }
+  if (!isValidPinDefault(value.pin_default, file, issues)) {
+    return false;
+  }
   const min = value.long_column_min;
   if (min !== void 0 && (typeof min !== "number" || !Number.isFinite(min) || min <= 0)) {
     issues.push(
@@ -63837,6 +63841,19 @@ function isValidTable(value, file, issues) {
     return false;
   }
   return true;
+}
+function isValidPinDefault(value, file, issues) {
+  if (value === void 0 || typeof value === "boolean") {
+    return true;
+  }
+  issues.push(
+    schemaIssue(
+      file,
+      "table.pin_default",
+      "`table.pin_default` \u306F `true` \u304B `false` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  );
+  return false;
 }
 function isValidAssets(value, file, issues) {
   if (!isRecord3(value)) {

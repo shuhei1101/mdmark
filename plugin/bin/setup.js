@@ -15155,6 +15155,12 @@ var mdmark_config_schema_default = {
           enum: ["each", "through"],
           default: "each"
         },
+        pin_default: {
+          title: "\u306F\u307F\u51FA\u3059\u8868\u306E\u65E2\u5B9A\u306E\u30D4\u30F3\u6B62\u3081",
+          description: "\u5E45\u304B\u3089\u306F\u307F\u51FA\u3059\u8868\u3092\u63CF\u3044\u305F\u76F4\u5F8C\u306B\u3001`columns.{\u5217\u540D}.pinned` \u304C `true` \u306E\u5217\u306E\u7121\u3044\u8868\u3067\u3001\u884C\u898B\u51FA\u3057\u306E\u5217\uFF08\u884C\u898B\u51FA\u3057\u3082\u7121\u3051\u308C\u3070\u5148\u982D\u306E\u5217\uFF09\u3092\u7559\u3081\u308B\u304B\u3002`false` \u306F `pinned` \u304C `true` \u306E\u5217\u3060\u3051\u3092\u7559\u3081\u3001\u305D\u306E\u5217\u304C\u7121\u3051\u308C\u3070\u3069\u306E\u5217\u3082\u7559\u3081\u306A\u3044\u3002`true` \u3067\u3082 `pinned` \u304C `false` \u306E\u5217\u306F\u7559\u3081\u306A\u3044\u3002`mount` \u306F\u4ED6\u306E\u5024\u3092\u7121\u8996\u3057\u3066 `false` \u306B\u3057\u3001CLI \u306F\u4ED6\u306E\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
+          type: "boolean",
+          default: false
+        },
         long_column_min: {
           title: "\u9577\u6587\u306E\u5217\u306E\u6700\u5C0F\u306E\u5E45",
           description: "\u8868\u306E\u9577\u6587\u306E\u5217\u306E\u6700\u5C0F\u306E\u5E45\u306E em \u306E\u6570\u3002\u5217\u306E\u6700\u3082\u9577\u3044\u884C\u306E\u5E45\u306E\u65B9\u304C\u72ED\u3051\u308C\u3070\u3001\u305D\u306E\u5E45\u3092\u6700\u5C0F\u306E\u5E45\u306B\u3059\u308B\u3002\u5217\u3054\u3068\u306E `width.min` \u304C\u3042\u308C\u3070\u305D\u3061\u3089\u3092\u512A\u5148\u3059\u308B\u3002`mount` \u306F\u4ED6\u306E\u5024\u3092\u7121\u8996\u3057\u3066 `45` \u306B\u3057\u3001CLI \u306F\u4ED6\u306E\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
@@ -16216,6 +16222,9 @@ function isValidTable(value, file, issues) {
     );
     return false;
   }
+  if (!isValidPinDefault(value.pin_default, file, issues)) {
+    return false;
+  }
   const min = value.long_column_min;
   if (min !== void 0 && (typeof min !== "number" || !Number.isFinite(min) || min <= 0)) {
     issues.push(
@@ -16228,6 +16237,19 @@ function isValidTable(value, file, issues) {
     return false;
   }
   return true;
+}
+function isValidPinDefault(value, file, issues) {
+  if (value === void 0 || typeof value === "boolean") {
+    return true;
+  }
+  issues.push(
+    schemaIssue(
+      file,
+      "table.pin_default",
+      "`table.pin_default` \u306F `true` \u304B `false` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  );
+  return false;
 }
 function isValidAssets(value, file, issues) {
   if (!isRecord(value)) {
@@ -41044,7 +41066,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: localVersionOf("v0.14.0+develop.611eb32"),
+    version: localVersionOf("v0.14.0+develop.fa2609d"),
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

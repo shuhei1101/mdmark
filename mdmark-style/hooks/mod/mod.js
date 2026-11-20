@@ -17540,6 +17540,7 @@ function resolveTable(table2) {
   const valid = typeof requestedMin === "number" && Number.isFinite(requestedMin) && requestedMin > 0;
   return {
     pin: table2?.pin === "through" ? "through" : "each",
+    pinDefault: table2?.pin_default === true,
     longColumnMin: valid ? requestedMin : DEFAULT_LONG_COLUMN_MIN_EM
   };
 }
