@@ -13,7 +13,7 @@ export type MapRangeSource = {
 };
 /** 描ける図の種類 */
 export type MapKindName = "flowchart" | "sequenceDiagram" | "erDiagram" | "stateDiagram" | "classDiagram" | "architecture" | "C4Context" | "C4Container" | "C4Component" | "C4Dynamic" | "C4Deployment" | "mindmap" | "gantt" | "timeline" | "gitGraph" | "journey" | "block";
-/** Mermaid の 1 行目の最初の単語から図の種類を決める */
+/** Mermaid の front matter と `%%` で始まる行を飛ばした最初の単語から図の種類を決める */
 export declare const mapKindOf: (mermaid: string) => MapKindName | undefined;
 /** 範囲の外の map の図にする mermaid のコードブロックの中身 */
 export type PlainMapSource = {
@@ -21,8 +21,12 @@ export type PlainMapSource = {
     body: string;
     frontMatter: string | undefined;
     title: string | undefined;
+    /** Git グラフの最初のブランチの名前（`mermaidMainBranchOf`） */
+    mainBranchName: string | undefined;
 };
-/** mermaid のコードブロックのソースから、範囲の外の map の図にする中身を返す。front matter の `config`・`%%{` の行を持つか、map が描けない種類なら `undefined` */
+/** Mermaid のソースの front matter の `config.gitGraph.mainBranchName` と `%%{init}` の `gitGraph.mainBranchName` から、Git グラフの最初のブランチの名前を返却する。両方にあれば `%%{init}` を優先する */
+export declare const mermaidMainBranchOf: (source: string) => string | undefined;
+/** mermaid のコードブロックのソースから、範囲の外の map の図にする中身を返す。front matter と `%%{` で始まる設定の行は図に適用せず、map が描けない種類なら `undefined` */
 export declare const plainMapSourceOf: (source: string) => PlainMapSource | undefined;
 /** 範囲の mermaid のブロックと補足の数・図の種類・マーカーの引数だけを確かめる（Mermaid と補足の中身は読まない） */
 export declare const collectMapStructure: (range: MapRangeSource) => {

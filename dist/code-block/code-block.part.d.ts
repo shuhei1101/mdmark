@@ -49,6 +49,16 @@ export declare function renderCodeCopy(options: {
 export declare function renderCodeRaw(options: {
     pressed: boolean;
 }): string;
+/** 部品『コードブロック』の帯の中身（言語のラベル・ファイル名・タイトル・コピーのボタン）の HTML を返却する。言語が空ならラベルを出さず、`copyState` を省くとコピーのボタンを出さない。コードブロックと部品『ファイルツリー』が共通で使用する */
+export declare function renderCodeBar(options: {
+    language: string;
+    fileName: string;
+    title: string;
+    copyState: CodeCopyState | undefined;
+    raw: {
+        pressed: boolean;
+    } | undefined;
+}): string;
 /** コードブロックの HTML を返却する。行番号か行の種類を持つときは行ごとの `mdmark-code-line` に分ける。`bar` が `true`（既定）のときは、言語のラベル・タイトル・コピーのボタンを持つ帯を `pre` の前に配置して包み、`false` のときは `pre` だけを返却する */
 export declare function renderCodeBlock(options: {
     /** 情報文字列の言語（無ければ空） */

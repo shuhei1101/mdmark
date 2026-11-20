@@ -19,8 +19,9 @@ export declare function fileIconOf(name: string): FileIcon;
 export declare function folderOpenByDefault(depth: number, open: string | undefined): boolean;
 /** コピーのボタンの中身（アイコンと文言）の HTML を返却する */
 export declare function renderTreeCopyContent(state: TreeCopyState): string;
-/** ツリーの上に配置する帯（種類 `tree`・コピーのボタン・スクリーンリーダーの通知）の HTML を返却する */
+/** ツリーの上に配置する帯（記載した言語のラベル・コピーのボタン・スクリーンリーダーの通知）の HTML を返却する。中身は部品『コードブロック』の帯と共通 */
 export declare function renderTreeBar(options: {
+    language: string;
     copyState?: TreeCopyState;
 }): string;
 /** ファイルツリーの HTML を返却する。`render` は全てのフォルダを開いて出し、`interactive` のときは `mount` が付けた後の帯と開閉のボタンも描く */
@@ -41,4 +42,6 @@ export declare function renderTree(options: {
     copyFallback?: boolean;
     /** `aria-controls` の id の頭（既定 `mdmark-tree`） */
     id?: string;
+    /** 帯のラベルにする記載した言語（既定 `tree`。空ならラベルを出さない） */
+    language?: string;
 }): string;

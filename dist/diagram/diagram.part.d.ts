@@ -134,6 +134,8 @@ export declare function renderText(text: string, context: {
         terms: boolean;
     };
 }): string;
+/** Mermaid で指定した CSS の色のうち、属性と CSS 変数に入れてよい文字（色の名前・`#`・`rgb()` など）だけを返却する */
+export declare const safeCssColor: (value: string | undefined) => string | undefined;
 /** 説明を持つグループのタイトルの右のマーカー（説明が無ければ空） */
 export declare function groupInfo(options: {
     hint: string | undefined;

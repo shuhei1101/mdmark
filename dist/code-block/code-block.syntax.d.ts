@@ -2,10 +2,6 @@ import type { StateCore } from "markdown-it";
 import type { WarningItem } from "../extensions.ts";
 import type { MarkOptions } from "../render/mark-options.ts";
 import { type CodeLine } from "./code-block.part.ts";
-/** 罫線でフォルダ構成を記載した行。行頭の空白（`tree` コマンドが縦線の後ろに出す NBSP を含む）と縦線の後に、罫線の枝が続く */
-export declare const TREE_LINE_PATTERN: RegExp;
-/** この数以上の罫線の行を持つ言語が `tree` でないコードブロックに、罫線のフォルダ構成の記載の警告を出す */
-export declare const TREE_WARNING_MIN_LINES = 2;
 /** マーカーだけの行コメントの頭。長いものから照らす */
 export declare const LINE_COMMENT_HEADS: readonly string[];
 /** `code` のマーカーの設定を、タイトル・行番号の有無と最初の行の番号・強調する行・最初から畳む行・折り返すか・既定で元の Markdown を出すかに読み込む */
@@ -23,8 +19,6 @@ export declare function readCodeSpec(options: {
     folds: Set<number>;
     warnings: WarningItem[];
 };
-/** コードブロックの中身の、罫線でフォルダ構成を記載した行の数を返却する */
-export declare function countTreeLines(source: string): number;
 /** 行の文字から `measureIndents` でインデントのレベルを、`foldLinesOf` で畳む行の数を決めて行に付け、`folds` の行のうち畳める行に `folded` を付ける。畳めない行は当てずに警告にする */
 export declare function readFolds(options: {
     lines: CodeLine[];

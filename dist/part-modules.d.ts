@@ -9,7 +9,6 @@ export type PartLoaderName = PartName | "mermaid";
 /** map の部品のモジュール（`dist/map.js`）の構造 */
 export type MapPartModule = {
     attachMap: (root: HTMLElement, config: ResolvedConfig, hooks?: {
-        restoreMermaid?: (blocks: HTMLElement[]) => void;
         resolveIdLink?: ResolveIdLink;
     }) => () => void;
 };

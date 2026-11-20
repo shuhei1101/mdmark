@@ -25,9 +25,15 @@ export type MdmarkDiagramNode = {
 export type MdmarkNodeStyle = {
     label?: string | undefined;
     icon?: string | undefined;
-    shape?: "rounded" | "rect" | "pill" | "double" | undefined;
+    shape?: "rounded" | "rect" | "pill" | "double" | MdmarkMermaidShape | undefined;
     color?: string | undefined;
+    /** Mermaid の `style`・`classDef` の面・枠線・名前の文字の色（CSS の色のまま） */
+    fill?: string | undefined;
+    stroke?: string | undefined;
+    text?: string | undefined;
 };
+/** map の構成図のノードの、Mermaid の記法で指定する形状 */
+export type MdmarkMermaidShape = "lean-right" | "lean-left" | "trapezoid" | "trapezoid-alt" | "double-circle" | "doc";
 /** map の構成図の線の種類（模様・太さ・矢じり・色の名前） */
 export type MdmarkWireStyle = {
     dash?: "solid" | "dashed" | "dotted" | "dash-dot" | "long-dash" | undefined;
@@ -36,6 +42,14 @@ export type MdmarkWireStyle = {
     color?: string | undefined;
     /** 両端に矢じりを付けるか（`<-->`） */
     both?: boolean | undefined;
+    /** Mermaid の `linkStyle` の線と線のラベルの文字の色（CSS の色のまま） */
+    stroke?: string | undefined;
+    text?: string | undefined;
+    /** 線の端に付ける丸・×（矢じりの代わりに付ける） */
+    ends?: {
+        from?: "circle" | "cross";
+        to?: "circle" | "cross";
+    } | undefined;
 };
 /** map の構成図の線 */
 export type MdmarkDiagramWire = {
