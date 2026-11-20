@@ -19,12 +19,10 @@ terms:
 - id: marker
   name: マーカー
   description: '文書に記載する `<!-- 名前: 引数 -->` の書式の HTML コメント（引数の無いマーカーは `<!-- 名前 -->`）。名前は英小文字で始まり、英小文字・数字・`-` だけを持ち、引数は空白で区切る。コードブロックと行内のコードの中はマーカーとして扱わない。描いた本文には残らない'
-  aliases:
-  - 印
 - id: marker-slot
   name: マーカーの場所
   description: 外部ライブラリのマーカーを置き換えた要素。外部ライブラリのモジュールが描く先になる
-  aliases:
+  avoid:
   - 印の場所
 - id: library-table
   name: 対応表
@@ -47,22 +45,20 @@ terms:
 - id: layer
   name: レイヤー
   description: mdmark の CSS を入れる `@layer mdmark`。利用側がレイヤーの外に記載した CSS は、詳細度によらずレイヤーの中の mdmark の CSS に勝つ
-  aliases:
-  - 層
 - id: loading-block
   name: 読み込み中のブロック
   description: 外部ライブラリを読み込んでいる間、マーカーの場所に出す破線の枠。`図を読み込んでいます` と出し、図の高さを先に取る
-  aliases:
+  avoid:
   - 読み込み中の枠
 - id: notice-block
   name: 通知ブロック
   description: 外部ライブラリや拡張のモジュールを読み込めないマーカーの場所に出す枠。タイトルは `この図を表示できません`（図でないマーカーは `この箇所を表示できません`）で、本文に読み込めなかったマーカーの名前と修正方法を記載する
-  aliases:
+  avoid:
   - 知らせの枠
 - id: range-marker
   name: 範囲のマーカー
   description: '`<!-- 名前: 引数 -->` 〜 `<!-- /名前 -->` で本文を囲むマーカー。閉じのマーカーは `<!-- /名前 -->`。マーカーに対応しない表示ではマーカーが見えず、囲んだ Markdown がそのまま読み込める'
-  aliases:
+  avoid:
   - 範囲の印
 - id: syntax
   name: 記法
@@ -200,7 +196,7 @@ terms:
 - id: code-line-marker
   name: コードの行のマーカー
   description: コードブロックの行末の行コメントに記載する `[!code ++]`（追加した行）・`[!code --]`（削除した行）・`[!code highlight]`（強調）・`[!code focus]`（注目。ほかの行が薄く出る）・`[!code error]`（エラー）・`[!code warning]`（警告）。行を色と行頭の `+`・`-`・`×`・`!` で分け、マーカーと、マーカーだけを持つ行コメントの頭は画面に出さない。`[` の後ろに `\` を入れると打ち消し、`\` を削除した文字のまま出す
-  aliases:
+  avoid:
   - コードの行の印
 - id: line-fold
   name: 行の畳み
@@ -210,7 +206,7 @@ terms:
 - id: section-toggle
   name: セクションの開閉
   description: 見出し（h1〜h4）のセクションを、見出しから開閉すること。見出しの直後の `section` のマーカーで、閉じた状態で始められる。Shift を押しながら開閉すると入れ子のセクションもまとめて開閉し、右側の目次のボタンで文書の全てのセクションをまとめて開閉する
-  aliases:
+  avoid:
   - 節の開閉
 - id: side-toc
   name: 右側の目次
@@ -221,7 +217,7 @@ terms:
 - id: current-section
   name: 今いるセクション
   description: 右側の目次でハイライトする、今読んでいるセクション。画面の上端から高さの 25% の線より上にある最後の h1〜h3 の見出し。閉じたセクションと選ばれていないタブの中の見出しは数えず、スクロール・セクションの開閉・タブの切り替えのたびにもう一度決める
-  aliases:
+  avoid:
   - 今いる節
 - id: row-detail
   name: 行の詳細
@@ -235,7 +231,7 @@ terms:
 - id: syntax-warning
   name: 記載の警告
   description: 記法のマーカーや拡張の引数に読み込めない指定がある箇所に出す、タイトル `記載の警告` の枠。読み込めた指定で本文を描き、読み込めない指定と修正方法を記載する
-  aliases:
+  avoid:
   - 書き方の警告
 - id: doc-index
   name: 索引
@@ -324,8 +320,9 @@ terms:
   name: 設定を重ねて読み込む
   description: 端末の設定・上のフォルダの設定・近いフォルダの設定を、近い層ほど優先して 1 つの設定にすること。マップはキーごとに重ね、それ以外は後の層の値で置き換える
   aliases:
-  - 設定を重ねて読む
   - 重ねた設定
+  avoid:
+  - 設定を重ねて読む
 - id: css-template
   name: CSS のテンプレート
   description: 端末の設定のファイルと同じフォルダの `templates/css/` に配置し、説明とタグを付けて再利用する利用側の CSS。MCP の `list_templates`・`add_template`・`apply_template` で一覧・登録・配置し、配置した CSS を設定の `theme` から適用する
@@ -342,7 +339,7 @@ terms:
 - id: local-version
   name: 手元のバージョン
   description: 設定・索引・文書が合わせてある mdmark のバージョン。設定の `version` に `v{MAJOR}.{MINOR}.{PATCH}` の構造で記載し、develop の最新を参照しているときは `develop` を記載する。`mdmark upgrade` が、呼んだ CLI のバージョン（目標のバージョン）まで移行の手順を適用した後に、目標のバージョンへ書き換える
-  aliases:
+  avoid:
   - 手元の版
 - id: breaking-step
   name: 壊す手順
@@ -374,7 +371,7 @@ terms:
   name: マインドマップ
   description: map の範囲の `mindmap` から描く図。根を中央に配置し、字下げで決めた項目を、枝ごとの色の曲線で左右の外へ広げる
 - id: mindmap-branch
-  name: 枝
+  name: マインドマップの枝
   description: マインドマップの、根の子（1 レイヤー目の項目）とその子孫のまとまり。枝ごとに線と縁の色が分かれ、子を持つ項目は持ち手のボタンで開閉と中へ入るができる
 - id: axis-grid-diagram
   name: 軸と格子の配置の図
@@ -433,7 +430,7 @@ terms:
 - id: comment-marker
   name: コメントのマーカー
   description: コメントが付いた本文の文字を包むマーカー。本文の文字は変えず、押すと付いたコメントの吹き出しを開く
-  aliases:
+  avoid:
   - コメントの印
 - id: margin-marker
   name: 余白のマーカー
@@ -441,7 +438,7 @@ terms:
 - id: comment-store
   name: コメントの読み込みと保存の関数
   description: 利用側が記載する `MdmarkCommentStore`。コメントを読み込む `load` と保存する `save` を持ち、`mount` の `opts.commentStore` と `mountComments` の `opts.store` に指定する。mdmark はコメントを保存しない
-  aliases:
+  avoid:
   - コメントの読み書きの関数
 - id: orphan-comment
   name: 箇所が見つからないコメント
@@ -476,13 +473,13 @@ terms:
 - id: legend
   name: 凡例
   description: 図の下に並べる、定義に出るノードの種類・線の種類・系列と、図にある枠・層・交差・マーカー・下線の意味の一覧
-- id: decision-flowchart
-  name: 判定フローチャート
-  description: 質問の YES / NO で結果を決める図。map の構成図で、開始・質問・アクション・結果のノードを描く
+- id: decision-flowchart-diagram
+  name: 判定フローチャートの図
+  description: 質問の YES / NO で結果を決める図。map の構成図で、開始・質問・アクション・結果のノードを描く。knowledge の用語「判定フローチャート」が指す文書の図を、mdmark で描いたもの
 - id: guide
   name: ガイド
   description: Claude Code に参照させる mdmark の使用方法。`plugin/guide-index.yaml` の行が指す `docs/` のページで、dev-docs の配信元 `mdmark` の `docs` の行にタグ `topic:ガイド` を付けて配る。Claude Code は dev-docs の `search_docs` で参照する
-  aliases:
+  avoid:
   - 使い方集
 - id: plugin
   name: プラグイン
