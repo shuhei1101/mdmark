@@ -45,8 +45,11 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T04:10:46.760347+00:00'
   - process: データ設計
-    status: todo
+    status: skipped
     note: 用語集を alias_type の行で配信するための用語集の YAML の構造と置き場所、用語集.mark.md との関係を決める（要件.mark.md の未確定）
+    reason: 製品のデータの構造を変えない。用語集の YAML はリポジトリの文書で、既存のデータの設計書『エイリアスの元の行』『用語集の表』のままで要件を満たす。用語集の持ち方はドキュメント修正で決める
+    updated_by: planner
+    updated_at: '2026-11-20T04:15:30.960272+00:00'
   - process: インターフェース定義設計
     status: skipped
     reason: 操作の入出力を変えない

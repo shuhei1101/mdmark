@@ -5,7 +5,7 @@ docs:
     status: todo
   - page: docs/guide/用語集.mark.md
     new: false
-    change: 判定フローチャート『用語の登録』で登録すると決めた用語を追加する。用語集の YAML との関係はデータ設計で決める
+    change: 判定フローチャート『用語の登録』で登録すると決めた用語を追加する。用語の YAML との関係は要件の未確定のとおりドキュメント修正で決める
     status: todo
   - page: docs/architecture/index.yaml
     new: false
@@ -85,3 +85,6 @@ scope_out:
   - item: docs/mock/・docs/_theme/ の文書
     reason: 要望の対象（設計書・ガイド・PR ドキュメント）に含まれない
     plan: none
+  - item: mdmark に YAML から用語集の表を描く機能を追加する（要件の未確定の案 C）
+    reason: コードの設計と実装が要り、要望の対象（文書）に含まれない。案 A を採ったときの 2 か所の用語を 1 か所にする後続
+    plan: to_file
