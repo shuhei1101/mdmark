@@ -116,7 +116,7 @@ verification:
   date: '2026-10-31'
   detail: '[PoC: VS Code の Webview で jsDelivr の mdmark を描く](https://github.com/shuhei1101/mdmark/pull/70)で Webview の API（`window.createWebviewPanel`・`Webview.asWebviewUri`・`Webview.cspSource`・`Webview.postMessage`・`Webview.onDidReceiveMessage`）を動かした。
 
-    この PR で `@vscode/test-electron` 3.1.0 + `xvfb-run` を使用し、VS Code 1.141.0 と 1.143.1（stable）で次を確認した。
+    [VS Code で mdmark のプレビューを出す拡張機能を作る](https://github.com/shuhei1101/mdmark/pull/69) で `@vscode/test-electron` 3.1.0 + `xvfb-run` を使用し、VS Code 1.141.0 と 1.143.1（stable）で次を確認した。
 
     `ExtensionContext.extensionMode` が `ExtensionMode.Test`（`3`）。
 
