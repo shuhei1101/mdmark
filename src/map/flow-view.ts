@@ -442,7 +442,6 @@ const mountFlowFrame = (
   detachDiagrams: () => void;
   linkOwners: () => void;
 } => {
-  const none = () => undefined;
   const { modal } = context;
   if (modal) return mountModalFrame(modal, context.listItems);
   range.innerHTML = renderDiagramFrame(context.frame, context.body());
