@@ -1195,8 +1195,8 @@ scenarios:
       - name: 図を描くページ
         description: 正常シナリオと同じ
       - name: 計画した変更を持つ map の Markdown
-        description: flowchart の map の範囲を 1 つ持つ文書。補足の `changes` で、ノード 1 つと線 1 本に `added`、ノード 1 つに `changed`、ノード 1 つと線 1 本に `removed` を持つ
-        notes: '`changes` の値は `{"type": "{値}"}` のオブジェクトで記載する。`changes` に知らない値 `moved` を持つ ID を 1 つ持つ。種類の色 `green` を持つノードを `added` にする'
+        description: map の範囲を 2 つ持つ文書。1 つ目は flowchart で、補足の `changes` で、ノード 1 つと線 1 本に `added`、ノード 1 つに `changed`、ノード 1 つと線 1 本に `removed` を持つ。2 つ目は sequenceDiagram で、メッセージ `1` に `added` を持つ
+        notes: '`changes` の値は `{"type": "{値}"}` のオブジェクトで記載する。flowchart の `changes` に知らない値 `moved` を持つ ID を 1 つ持つ。種類の色 `green` を持つノードを `added` にし、補足の `layout` で `color` に `blue` を持つノードを `changed` にする'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -1221,7 +1221,7 @@ scenarios:
       - '`removed` のノードと線も配置に含まれ、ほかのノードと重ならない'
       - '`layout` の `color` か種類の色を持つノードも、枠線は変更の色で描かれ、種類のアイコンと名前の行は種類の色のまま'
       - '`changes` を描くのは、構成図の部品の上に描く種類（flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図）だけ。シーケンス図・マインドマップ・軸と格子の配置の図の補足が `changes` を持つときは、図の前の記載の警告に `map_invalid_value` が 1 件出て、色とバッジを付けない'
-      - 図の前の書き方の警告に、知らない値 `moved` の `map_invalid_value`（使用できる値の一覧を含む）が 1 件出て、そのノードは枠線の色とバッジが正常シナリオと同じ
+      - 1 つ目の図の前の記載の警告に、知らない値 `moved` の `map_invalid_value`（使用できる値の一覧を含む）が 1 件出て、そのノードは枠線の色とバッジが正常シナリオと同じ
     test: test_normal_when_planned_changes
   - name: 正常シナリオ（図を SVG・PNG に書き出す）
     setup:
@@ -1252,7 +1252,7 @@ scenarios:
       - パネルを開くと、拡大・全画面のボタンと並んで、スクリーンリーダー向けの名前「図を書き出す」を持つ書き出すボタンがある
       - SVG と PNG のファイル名が `{図の枠のタイトル}.svg`・`{図の枠のタイトル}.png`（タイトルが無い図は `図 {文書の中の map の番号}`）になる
       - 書き出した SVG は、閉じたグループの名前を持ち、閉じたグループの中のノードの名前を持たない。`width`・`height` は倍率と表示する位置に依らず、等倍の図の全体の大きさになる
-      - 書き出した SVG は、選択の強調・パネル・リサイズハンドル・ツールチップのマーカー・書き方の警告の要素を持たない
+      - 書き出した SVG は、選択の強調・パネル・リサイズハンドル・ツールチップのマーカー・記載の警告の要素を持たない
       - 書き出した SVG は外部の資源（外部への `href`・`url()`・CSS 変数の `var()`）を持たず、ノードの名前の文字・種類のアイコンの図形・ノードの枠線の色（ページで計算した値）を SVG の中に持つ
       - PNG の幅・高さは、書き出した SVG の `width`・`height` の 2 倍
       - Esc でメニューが閉じ、書き出すボタンへフォーカスが戻る
