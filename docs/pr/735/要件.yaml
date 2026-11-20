@@ -56,6 +56,11 @@ docs:
     new: false
     change: 設定の JSON Schema の変更に、移行の手順が要らない行を追加する（手順が要るとデータ設計で決めたときは `migrations/next/` に手順を配置する）
     status: todo
+  - page: docs/guide/用語集.mark.md
+    change: 用語「行見出し」の、横にスクロールしても左端に残る説明を、ピン止めしたときと `table.pin_default` に合わせて修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T07:16:06.346082+00:00'
 scope_out:
   - item: mdmark を読み込むアプリ（mindstella・dev-docs）の、表の既定のピン止めの変更への追従（設定で今の動きを選ぶか）
     reason: 別のリポジトリの変更で、この作業 PR の変更を前提にする。#711 の本文のとおり、完了後に後続に着手できる旨をコメントする
