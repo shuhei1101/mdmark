@@ -51,6 +51,108 @@ files:
   - path: integration/cli.ts
     description: 結合テストで CLI を子プロセスで実行し、終了コードと出力を受け取る処理を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:cli]
+  - path: fixtures/mermaid-syntax/C4Component.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が C4Component の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/C4Container.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が C4Container の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/C4Context.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が C4Context の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/C4Deployment.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が C4Deployment の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/C4Dynamic.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が C4Dynamic の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/architecture.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が architecture の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/block.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が block の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/classDiagram.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が classDiagram の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/erDiagram.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が erDiagram の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/flowchart.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が flowchart の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/gantt.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が gantt の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/gitGraph.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が gitGraph の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/journey.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が journey の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/mindmap.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が mindmap の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/sequenceDiagram.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が sequenceDiagram の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/stateDiagram.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が stateDiagram の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
+  - path: fixtures/mermaid-syntax/timeline.md
+    description: mermaid 12.3.0 の公式ドキュメントの、図の種類が timeline の記法の例をそのまま並べた見本。map の記法の mermaid 準拠の範囲を確かめる単体テストが読み込み、map の読み取りや採用する mermaid のバージョンを変えるときに参照する。
+    tags: [topic:map, tool:mermaid, topic:見本]
+    related:
+      - to: IF-472-35
+        type: see_also
   - path: fixtures/mermaid-svg/class.svg
     description: scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（class）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:図]
@@ -80,9 +182,6 @@ files:
     tags: [topic:ストーリー, tool:storybook, topic:図]
   - path: fixtures/mermaid-svg/flowchart-link.svg
     description: 'scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart-link）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに参照する。'
-    tags: [topic:ストーリー, tool:storybook, topic:図]
-  - path: fixtures/mermaid-svg/flowchart-styled.svg
-    description: 'scripts/mermaid-fixtures.ts が mermaid 12.3.0 で描いた、mermaid の図のストーリーの見本の SVG（flowchart-styled）。mermaid の図のストーリーや、mermaid のバージョンを変えるときに参照する。'
     tags: [topic:ストーリー, tool:storybook, topic:図]
   - path: integration/fixtures-plugin.ts
     description: 結合テストが使用する外部ライブラリと拡張のモジュールの代役を受け持つ。結合テストの準備や確認方法を変えるときに参照する。
@@ -2610,6 +2709,12 @@ files:
     related:
       - to: src/map/mindmap-view.ts
         type: tests
+  - path: unit/src/map/mermaid-style.test.ts
+    description: モジュール構成『mermaid-style.ts』の Mermaid の色の指定の読み取りと文字の色の決め方を確認する単体テスト。map の図に適用する色の読み取りを変えたときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:map, tool:mermaid]
+    related:
+      - to: MOD-747-1
+        type: see_also
   - path: unit/src/map/mindmap.test.ts
     description: 'src/map/mindmap.ts を確認する単体テスト。mindmap.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
     tags: [topic:単体テスト, tool:vitest]

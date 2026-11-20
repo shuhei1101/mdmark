@@ -117,6 +117,89 @@ functions:
         mock: なし
         expected: '`open` が無く、`wrap` が `false`'
     status: planned
+  - name: countTreeLines
+    title: 罫線のフォルダ構成の行を数える
+    container: src/tree/tree.syntax.ts
+    kind: 関数
+    scope: public
+    summary: コードブロックの中身を行に分け、`TREE_LINE_PATTERN` に該当する行の数を返却する
+    args:
+      - name: source
+        type: string
+        required: true
+        description: コードブロックの中身
+    returns:
+      type: number
+      description: 罫線のフォルダ構成の行の数
+    unit_tests:
+      - name: test_count_tree_lines
+        case: 正常
+        summary: 今の罫線と ASCII の罫線と縦線の後ろの罫線を数える
+        condition: '`mdmark/`・`├── src/`・`│   └── index.ts`・`└── README.md`・`|-- a`・`` `-- b ``・`|   |-- c`・`tree` コマンドの出力の `│` の後ろが NBSP 2 つと空白 1 つの `│   └── b`'
+        mock: なし
+        expected: '`7`'
+      - name: test_count_tree_lines_when_not_tree
+        case: 正常
+        summary: 行の途中の罫線と、罫線の後ろに空白の無い行は数えない
+        condition: '`a ├── b`・`├──b`・`-- コメント`・`const a = b || c;`'
+        mock: なし
+        expected: '`0`'
+    refs:
+      - IF-472-34#constraints[罫線のフォルダ構成のファイルツリー]
+    status: planned
+  - name: buildPlainFileTrees
+    title: 言語が tree でない罫線のコードブロックをファイルツリーにする
+    container: src/tree/tree.syntax.ts
+    kind: 関数
+    scope: internal
+    summary: コアルール。`code` と `tree` がオンのとき、罫線の行を `PLAIN_TREE_MIN_LINES` 以上持つ言語が `tree` でない `fence` を部品『ファイルツリー』にする
+    description: |-
+      map の範囲の組み立ての後、コードブロックの飾りの前に配置する（`mdmark_build_plain_file_trees`）。
+      残っている `fence` のうち、次の全てに当てはまるものを対象にする。
+
+      - 情報文字列の最初の単語が `PLAIN_TREE_EXCLUDED_LANGUAGES` に無い（`ts:app.ts` は `:` の前の `ts` で照らす）
+      - `MAP_SOURCE_META` を持たない
+      - `countTreeLines` が `PLAIN_TREE_MIN_LINES` 以上
+      - 直前のトークンが `code` のマーカーなら、`readCodeSpec` の `treeWarning` が `true`
+
+      対象を `parseTree` で読み込み、読み込めれば部品『ファイルツリー』（`source` は末尾の改行を除いた中身、`language` は `splitInfoString` の言語）の `ownBlock` に置き換える。
+      直前の `code` のマーカーのトークンは削除する（`tree_warning` のほかのキーはファイルツリーに当てない）。
+      読み込めなければ、`buildFileTrees` と同じ文言の警告を 1 つだけ前に差し込み、`fence` のまま残す（後の `buildCodeBlocks` が記載した言語のコードブロックにする）
+    args:
+      - name: state
+        type: StateCore
+        required: true
+        description: markdown-it の状態
+    side_effects: '`state.tokens` を書き換える'
+    callees:
+      - '#functions[countTreeLines]'
+      - '#functions[parseTree]'
+      - MOD-472-276#functions[readCodeSpec]
+      - MOD-472-276#functions[splitInfoString]
+      - MOD-472-213#functions[pushWarning]
+      - MOD-472-269#functions[renderTree]
+    unit_tests:
+      - name: test_build_plain_file_trees
+        case: 正常
+        summary: 罫線の行が 2 行以上の言語 text と言語なしのコードブロックをファイルツリーにする
+        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（罫線のフォルダ構成の言語が tree でないコードブロック）」の文書
+        mock: なし
+        expected: 1 つ目（言語 `text`）が `data-tree-language="text"`、2 つ目（言語なし）が `data-tree-language=""` の `<div class="mdmark-tree"`。3 つ目（1 行だけ）・4 つ目（`tree_warning` が `false`）は `fence` のまま。罫線の記載の警告と、4 つ目の前の `code` のマーカーの警告が無い
+      - name: test_build_plain_file_trees_when_unreadable
+        case: 異常
+        summary: 罫線を読み込めない行を持つ言語 text のコードブロック
+        condition: 3 行目が 2 階層深い言語 `text` の罫線のコードブロック
+        mock: なし
+        expected: 前に `3 行目` を含む警告が 1 つだけあり、`fence` のまま
+      - name: test_build_plain_file_trees_when_excluded
+        case: 正常
+        summary: mermaid・csv・map の範囲・code がオフの文書はファイルツリーにしない
+        condition: '罫線の行を 3 行持つ言語 `mermaid`・`csv` のコードブロックと、`MAP_SOURCE_META` を持つ `fence`、`<!-- features: {"code": false} -->` の文書の言語 `text` のコードブロック'
+        mock: なし
+        expected: どれも `fence` のままで、前に警告が無い
+    refs:
+      - IF-472-34#constraints[罫線のフォルダ構成のファイルツリー]
+    status: planned
 lead: '罫線のツリーの読み取りとファイルツリーのマーカーを受け持ち、ファイルツリーの記法を変えるときに参照する。'
 tags:
   - name: topic:ツリー
@@ -125,3 +208,28 @@ tags:
   - name: topic:構文
   - name: tool:markdown-it
   - name: action:読み取り
+constants:
+  - name: TREE_LINE_PATTERN
+    title: 罫線のフォルダ構成の行
+    container: src/tree/tree.syntax.ts
+    summary: 罫線でフォルダ構成を記載した行に該当する正規表現。行頭の空白（タブ・空白・`tree` コマンドが縦線の後ろに出す NBSP の U+00A0）と縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行
+    value: /^[\t  │|]*(?:├── |└── |\|-- |`-- )/u
+    refs:
+      - IF-472-34#constraints[罫線のフォルダ構成のファイルツリー]
+    status: planned
+  - name: PLAIN_TREE_MIN_LINES
+    title: ファイルツリーにする罫線の行の数
+    container: src/tree/tree.syntax.ts
+    summary: '`TREE_LINE_PATTERN` に該当する行がこの数以上ある言語が `tree` でないコードブロックをファイルツリーにする。1 行だけの罫線は説明の中の例としてコードブロックのまま描く'
+    value: '2'
+    refs:
+      - IF-472-34#constraints[罫線のフォルダ構成のファイルツリー]
+    status: planned
+  - name: PLAIN_TREE_EXCLUDED_LANGUAGES
+    title: 罫線をファイルツリーにしない言語
+    container: src/tree/tree.syntax.ts
+    summary: 罫線の行を持ってもファイルツリーにしないコードブロックの言語（情報文字列の最初の単語）。`mermaid`・`csv`。言語 `tree`・図の部品・埋め込んだ HTML・map の範囲のコードブロックは、先のコアルールが `fence` でなくしているか `MAP_SOURCE_META` を付けているため、ここに並べない
+    value: '["mermaid", "csv"]'
+    refs:
+      - IF-472-34#constraints[罫線のフォルダ構成のファイルツリー]
+    status: planned

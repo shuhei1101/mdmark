@@ -905,6 +905,28 @@ const MAP_FLOW_PLAIN = `flowchart LR
 `;
 
 /** 同じグループの同じ列に並ぶ 3 つのノードから、別のグループのノードへ 1 本ずつ線を引く構成図の見本 */
+/** 部品設計『mapの構成図』の状態 Styled の Mermaid（モック plain-mermaid-style の「style と classDef を持つ flowchart」） */
+const MAP_FLOW_STYLED = `flowchart LR
+  A[要望を受ける] --> B{対応するか}
+  B -->|する| C[計画へ記載する]
+  B -->|しない| D[理由を返却する]
+  B -->|保留| E[後で決める]
+  style A fill:#f9f,stroke:#c3c
+  classDef warn fill:#ffe08a,stroke:#b8860b
+  class D warn
+  E:::warn
+  linkStyle 1 stroke:#d33`;
+
+/** 部品設計『mapの構成図』の状態 WireEndsAndShapes の Mermaid */
+const MAP_FLOW_WIRE_ENDS = `flowchart LR
+  A[受付] --o B[確認]
+  A --x C[却下]
+  B ~~~ C
+  A ---->|長い線| G[保管]
+  L[/入力/] --> M[\\出力\\]
+  N[/台形\\] --> O(((終了)))
+  P@{ shape: doc, label: "文書" } --> L`;
+
 const MAP_FLOW_PARALLEL = `flowchart LR
   subgraph A [A]
     a1
@@ -1204,8 +1226,25 @@ const mapFlowStorySource = (
     wrapped: MAP_FLOW_WRAPPED,
     measured: MAP_FLOW_MEASURED,
     parallel: MAP_FLOW_PARALLEL,
+    styled: MAP_FLOW_STYLED,
+    "wire-ends": MAP_FLOW_WIRE_ENDS,
   };
   return sources[String(source)] ?? MAP_FLOW;
+};
+
+/** 構成図のストーリーの Mermaid の色（線の番号を記載順の線の ID に置き換える） */
+const mapFlowStoryStyles = (chart: ReturnType<typeof parseFlowchart>) => {
+  const ids = chart.edges.map((edge) => edge.id);
+  return {
+    nodes: chart.styles.nodes,
+    wires: Object.fromEntries(
+      Object.entries(chart.styles.wires).map(([index, style]) => [
+        ids[Number(index)] ?? index,
+        style,
+      ]),
+    ),
+    defaultWire: chart.styles.defaultWire,
+  };
 };
 
 /** 構成図のストーリーの補足の layout の color（計画した変更の見本では、変更の色が優先されることを見せるため mount に blue を足す） */
@@ -1518,8 +1557,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const collapsed = jsonList(args.collapsed);
     const { data } = parseMapData(MAP_DATA);
     const changes = jsonObject<Record<string, MapChange>>(args.changes);
+    const chart = parseFlowchart(mapFlowStorySource(args.source, changes));
     const placed = layoutMap(
-      parseFlowchart(mapFlowStorySource(args.source, changes)),
+      chart,
       { collapsed, entered },
       {
         overrides:
@@ -1541,13 +1581,12 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         kinds: MAP_CONFIG.kinds,
         lines: MAP_CONFIG.lines,
         // 範囲の外の純粋な Mermaid は補足を持たない
-        notes:
-          args.source === "plain"
-            ? {}
-            : {
-                ...noteTexts(data.notes),
-                ...jsonObject<Record<string, string>>(args.notes),
-              },
+        notes: ["plain", "styled", "wire-ends"].includes(String(args.source))
+          ? {}
+          : {
+              ...noteTexts(data.notes),
+              ...jsonObject<Record<string, string>>(args.notes),
+            },
         links: jsonObject<Record<string, string>>(args.links),
         hints: hintsOf(args.hints),
         collapsed,
@@ -1574,6 +1613,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
         dragging: undefined,
         id: "story-map",
         changes,
+        styles: mapFlowStoryStyles(chart),
       }),
       {
         width: layout.width,
@@ -2145,6 +2185,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       copyState: args.copyState as "idle" | "copied" | undefined,
       copyFallback: args.copyFallback === true,
       wrap: args.wrap === true,
+      ...(args.language === undefined
+        ? {}
+        : { language: String(args.language).replace(/^""$/, "") }),
     }),
   badge: (args) =>
     renderBadge({

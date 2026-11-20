@@ -130,9 +130,9 @@ functions:
     scope: internal
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; commentStore?: MdmarkCommentStore; docId?: string; isCurrent: () => boolean; warned: { missingStore: boolean }; config?: ResolvedConfig; restoreMermaid?: (blocks: HTMLElement[]) => void; resolveIdLink?: ResolveIdLink }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; commentStore?: MdmarkCommentStore; docId?: string; isCurrent: () => boolean; warned: { missingStore: boolean }; config?: ResolvedConfig; resolveIdLink?: ResolveIdLink }'
         required: true
-        description: 描いた要素・文書で決定した機能・`mount` の `commentStore` と `docId`・描いた文書がまだ今のものか・`mount` ごとに記録する、読み込みと保存の関数が無いことを出したか・既定を適用した設定（map の図が使用する）・map の図を mermaid の図に戻したときに呼ぶ関数（`attachMap` の `hooks.restoreMermaid` に指定する）・`mount` の `resolveIdLink`（`attachMap` の `hooks.resolveIdLink` に指定する）
+        description: 描いた要素・文書で決定した機能・`mount` の `commentStore` と `docId`・描いた文書がまだ今のものか・`mount` ごとに記録する、読み込みと保存の関数が無いことを出したか・既定を適用した設定（map の図が使用する）・`mount` の `resolveIdLink`（`attachMap` の `hooks.resolveIdLink` に指定する）
     returns:
       type: PartsHandle
       description: 付けた部品を削除する関数と、付けたコメントを再読み込みする・マーカーへ移る関数

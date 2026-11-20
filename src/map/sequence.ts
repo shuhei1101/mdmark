@@ -35,7 +35,13 @@ export const SEQ_ARROW_STYLES: Record<SequenceArrowName, SequenceArrowStyle> = {
   "->": { dotted: false, head: "none", both: false },
 };
 
-export type SequenceParticipant = { id: string; label: string; actor: boolean };
+export type SequenceParticipant = {
+  id: string;
+  label: string;
+  actor: boolean;
+  /** `@{ "type": … }` の参加者の種類（`boundary`・`control`・`entity`・`database`・`collections`・`queue`） */
+  type?: string;
+};
 
 export type SequenceMessage = {
   from: string;
@@ -44,6 +50,8 @@ export type SequenceMessage = {
   arrow: SequenceArrowName;
   /** 受け手を活性化する（+）・送り手の活性化を終える（-） */
   activation: "+" | "-" | undefined;
+  /** 矢印の端の `()`（中央の参加者へのメッセージ）が付いた側 */
+  central?: "from" | "to" | "both";
 };
 
 /** 複合フラグメントと rect。sections は else・and・option で分けた区間 */
@@ -98,7 +106,7 @@ const ARROW_RE = Object.keys(SEQ_ARROW_STYLES)
   .map((arrow) => arrow.replace(/[()]/g, "\\$&"))
   .join("|");
 const MESSAGE_RE = new RegExp(
-  `^(${SEQ_ID})\\s*(${ARROW_RE})\\s*([+-]?)(${SEQ_ID})\\s*:\\s*(.*)$`,
+  `^(${SEQ_ID})\\s*(\\(\\))?\\s*(${ARROW_RE})\\s*(\\(\\))?\\s*([+-]?)\\s*(${SEQ_ID})\\s*:\\s*(.*)$`,
 );
 const FRAGMENT_RE = /^(loop|alt|opt|par|critical|break|rect)\b\s*(.*)$/;
 const SECTION_RE = /^(else|and|option)\b\s*(.*)$/;
@@ -107,8 +115,27 @@ const NOTE_RE = new RegExp(
   "i",
 );
 const DECL_RE = new RegExp(
-  `^(?:create\\s+)?(participant|actor)\\s+(${SEQ_ID})(?:\\s+as\\s+(.+))?$`,
+  `^(?:create\\s+)?(participant|actor)\\s+(${SEQ_ID})(?:@\\{([^}]*)\\})?(?:\\s+as\\s+(.+))?$`,
 );
+
+/** 矢印の前後の `()` から、中央の参加者へのメッセージの側 */
+const centralOf = (
+  before: string | undefined,
+  after: string | undefined,
+): SequenceMessage["central"] => {
+  if (before && after) return "both";
+  if (before) return "from";
+  return after ? "to" : undefined;
+};
+
+/** `@{ "type": "…", "alias": "…" }` の中の値 */
+const declAttribute = (
+  body: string | undefined,
+  key: string,
+): string | undefined =>
+  body === undefined
+    ? undefined
+    : new RegExp(`["']?${key}["']?\\s*:\\s*["']([^"']*)["']`).exec(body)?.[1];
 const TOGGLE_RE = new RegExp(`^(activate|deactivate)\\s+(${SEQ_ID})$`);
 const IGNORED_RE = new RegExp(
   `^(destroy\\s+${SEQ_ID}|links?\\s+${SEQ_ID}\\s*:.*|title\\b.*|accTitle\\b.*|accDescr\\b.*)$`,
@@ -199,10 +226,14 @@ export const parseSequence = (source: string): Sequence => {
   const readDecl: LineReader = (text) => {
     const decl = DECL_RE.exec(text);
     if (!decl?.[1] || !decl[2]) return false;
+    const type = declAttribute(decl[3], "type");
     participants.set(decl[2], {
       id: decl[2],
-      label: decodeEntities(decl[3] ?? decl[2]),
+      label: decodeEntities(
+        decl[4] ?? declAttribute(decl[3], "alias") ?? decl[2],
+      ),
       actor: decl[1] === "actor",
+      ...(type === undefined ? {} : { type }),
     });
     box?.members.push(decl[2]);
     return true;
@@ -278,19 +309,21 @@ export const parseSequence = (source: string): Sequence => {
   /** メッセージの行なら、メッセージを足し、`+`・`-` の活性化を始める・終える */
   const readMessage: LineReader = (text, where) => {
     const message = MESSAGE_RE.exec(text);
-    if (!message?.[1] || !message[2] || !message[4]) return false;
+    if (!message?.[1] || !message[3] || !message[6]) return false;
     ensure(message[1]);
-    ensure(message[4]);
-    const activation = activationOf(message[3]);
+    ensure(message[6]);
+    const activation = activationOf(message[5]);
+    const central = centralOf(message[2], message[4]);
     messages.push({
       from: message[1],
-      to: message[4],
-      text: decodeEntities(message[5] ?? ""),
-      arrow: message[2] as SequenceArrowName,
+      to: message[6],
+      text: decodeEntities(message[7] ?? ""),
+      arrow: message[3] as SequenceArrowName,
       activation,
+      ...(central === undefined ? {} : { central }),
     });
     const at = messages.length - 1;
-    if (activation === "+") activate(message[4], at);
+    if (activation === "+") activate(message[6], at);
     if (activation === "-") deactivate(message[1], at, where);
     return true;
   };

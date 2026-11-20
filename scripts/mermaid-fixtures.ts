@@ -38,14 +38,6 @@ const LINKED_FIXTURE = {
   ].join("\n"),
 };
 
-/** モックに場面を持たない見本: `style` の行でノードの塗りを指定し、map の図から mermaid の図に戻した flowchart（部品設計『mermaid の図』の状態 `StyledFallback`） */
-const STYLED_FIXTURE = {
-  name: "flowchart-styled",
-  source: ["flowchart LR", "  A[受付] --> B[回答]", "  style A fill:#f9f"].join(
-    "\n",
-  ),
-};
-
 /** 暗い配色で描き、印刷のための明るい配色の SVG も記載する見本の名前 */
 const DARK_FIXTURE = "flowchart";
 
@@ -181,10 +173,6 @@ export const writeMermaidFixtures = async (options: {
     await write(
       LINKED_FIXTURE.name,
       (await draw(LINKED_FIXTURE.source, false)).screen,
-    );
-    await write(
-      STYLED_FIXTURE.name,
-      (await draw(STYLED_FIXTURE.source, false)).screen,
     );
   } finally {
     await browser.close();

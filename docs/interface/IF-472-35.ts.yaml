@@ -7510,7 +7510,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
       - name: mermaid のコードブロックを持つ Markdown
-        description: '言語 `mermaid` の flowchart（front matter の `title` を持つ）と sequenceDiagram（`actor` を持つ）のコードブロックを 1 つずつ持つ文書（どちらも `%%{init: {}}%%` の設定の行を持ち、範囲の外の map の図にしない。mermaid の図を確認するほかの流れも同じ）'
+        description: '言語 `mermaid` の flowchart（front matter の `title` を持つ）と sequenceDiagram（`actor` を持つ）のコードブロックを 1 つずつ持つ文書（文書の先頭に `<!-- features: {"map": false} -->` を持ち、範囲の外の map の図にしない。mermaid の図を確認するほかの流れも同じ）'
       - name: 設定
         description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
       - name: Mock
@@ -9283,15 +9283,17 @@ flows:
       - 記載の警告が無い
       - '`actor` の参加者の種類の行に人のアイコンの `svg` がある'
     test: test_normal_when_plain_mermaid_map
-  - name: 異常系（map が読み取れない行を持つ）
-    summary: map で同じ図にできない純粋な Mermaid は、警告を出さずに mermaid の図で描く
+  - name: 正常系（範囲の外の map の図の設定の行と見た目を指定する行）
+    summary: 設定の行・見た目を指定する行を持つ純粋な Mermaid も map の図で描き、style・classDef・linkStyle の色を適用する
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ
-      - name: 外観を指定する行を持つ Markdown
-        description: '`style A fill:#f9f` の行を持つ flowchart と、読み取れる行だけの flowchart のコードブロックを持つ文書'
+      - name: 設定の行・見た目を指定する行を持つ Markdown
+        description: '1 行目に `%%{init: {"theme": "forest"}}%%` を持つ flowchart、front matter に `config` を持つ flowchart、`style A fill:#ff99ff,stroke:#cc33cc`・`classDef warn fill:#ffe08a,stroke:#b8860b`・`class D warn`・`E:::warn`・`linkStyle 1 stroke:#dd3333` の行を持つ flowchart、項目の下に `::icon(fa fa-book)` の行と項目に `:::urgent` を持つ mindmap の、言語 `mermaid` のコードブロックを 4 つ持つ文書'
       - name: 設定
         description: '`opts.config.mermaid.url` に `/fixtures/mermaid/{名前}/mermaid.esm.min.mjs`'
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ。要求の件数を数える
     flow: |-
       <!-- map -->
 
@@ -9299,19 +9301,22 @@ flows:
       sequenceDiagram
         participant P as 利用側のページ
         participant M as mdmark
-        participant X as mermaid
         P->>M: mount(el, { markdown, config })
-        M->>M: 2 つを範囲の外の map の図にし、1 つ目を mermaid のコードブロックに戻す
-        M->>X: render(ソース)
-        X-->>M: SVG
-        M->>P: mermaid の図 1 つと map の図 1 つを描く
+        M->>M: 4 つを範囲の外の map の図にし、設定の行・::icon・classDef を持たない ::: を適用せずに読み取る
+        M->>M: style・classDef・linkStyle の色をノードと線に適用する
+        M->>P: map の図 4 つを描く
       ```
 
       <!-- /map -->
     expected:
-      - '`figure.mdmark-diagram[data-diagram="mermaid"]` が 1 つ、`figure.mdmark-diagram[data-diagram="map"]` が 1 つ'
+      - '`figure.mdmark-diagram[data-diagram="map"]` が 4 つで、`figure.mdmark-diagram[data-diagram="mermaid"]` が無く、mermaid への要求が 0 件'
+      - 1・2 つ目のノードの面の計算済みの色が、設定の行を持たない同じ flowchart の map の図と同じ
+      - 3 つ目のノード `A` の面が rgb(255, 153, 255)・枠線が rgb(204, 51, 204)、`D`・`E` の面が rgb(255, 224, 138)、どれも文字の色が rgb(0, 0, 0)。`B`・`C` は map の配色
+      - 3 つ目の 2 本目の線の `stroke` が rgb(221, 51, 51) で、ほかの線は map の配色
+      - 暗い配色に切り替えても、3 つ目の `A`・`D`・`E` の面と文字の色が変わらない
+      - 4 つ目は `::icon(...)`・`:::urgent` を持たない同じ mindmap と同じ項目で描かれる
       - 記載の警告が無い
-    test: test_error_when_plain_map_cannot_read
+    test: test_normal_when_plain_map_styled
   - name: 正常系（参加者の行を留める）
     summary: 範囲の外のシーケンス図の参加者の行を、文書をスクロールしたときも画面の上端（`--mdmark-sticky-top`）に留める
     setup:
@@ -10357,7 +10362,7 @@ flows:
     expected:
       - '`resolveIdLink` が `id:SC-1#scenarios[正常シナリオ]`・`id:SC-2`・`id:unknown` を受け取る'
       - '`受付`・`台帳` のノードが class `has-link` と、`href` が `https://docs.example.com/SC-1#scenarios[正常シナリオ]`・`https://docs.example.com/SC-2` の `a.mdmark-diagram-node-link` を持ち、`受付` を押すと `https://docs.example.com/SC-1#scenarios[正常シナリオ]` が開く'
-      - '`不明`・`予約` のノードは `a` 要素と `has-link` を持たない。範囲の外の map の図のため、`不明` の `id:unknown` は書き方の警告にしない（制約『範囲の外の map の図を mermaid の図に戻す』）'
+      - '`不明`・`予約` のノードは `a` 要素と `has-link` を持たない。範囲の外の map の図のため、`不明` の `id:unknown` は書き方の警告にしない（制約『範囲の外の map の図の設定の行と見た目を指定する行』）'
     test: test_normal_when_class_node_id_link_resolved
     refs:
       - SC-472-11#scenarios[正常シナリオ（click の行の URL でノードをリンクにする）]
@@ -10657,6 +10662,89 @@ flows:
     refs:
       - SC-472-55#scenarios[正常シナリオ（描いた結果の上でフロントマターの変更を色分けする）]
       - SC-472-55#scenarios[正常シナリオ（フロントマターを表示する文書で変更を色分けする）]
+  - name: 異常系（範囲の外の map の図が読み取れない行を持つ）
+    summary: GitHub の Mermaid でも読み取れない行を持つ純粋な Mermaid は、範囲の中と同じ記載の警告と、読み取れた部分の map の図を描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 読み取れない行を持つ Markdown
+        description: ノード `A`・`B` と線 `A --> B` の後ろに、読み取れない行 `A -> ->` を 1 行持つ flowchart の言語 `mermaid` のコードブロックを 1 つ持つ文書
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ。要求の件数を数える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: 読み取れない行を飛ばして範囲の外の map の図として読み取る
+        M->>P: 記載の警告と、読み取れた部分の map の図を描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - 図の枠の前に `mdmark-syntax-warning` があり、読み取れない行の行番号と行の文字を持つ
+      - '`figure.mdmark-diagram[data-diagram="map"]` が 1 つで、ノード `A`・`B` と `A` から `B` への線がある'
+      - mermaid への要求が 0 件
+    test: test_error_when_plain_map_cannot_read
+  - name: 正常系（flowchart の線の端・見えない線・線の長さ・形状の指定）
+    summary: 端に丸・×を付ける線・見えない線・長さを指定した線・形状の指定を持つ flowchart を、記載の警告を出さずに map の図で描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: flowchart の記法を持つ Markdown
+        description: '`flowchart TB` で、`A --o B`・`A --x C`・`D o--o E`・`F x--x G`・`H ~~~ I`・`J ---> K`・`L[/入力/]`・`M[\出力\]`・`N[/台形\]`・`O(((終了)))`・`P@{ shape: doc, label: "文書" }` を持つ言語 `mermaid` のコードブロックを map の範囲の外に 1 つ持つ文書'
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ。要求の件数を数える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>M: 線の端・見えない線・線の長さ・形状を読み取る
+        M->>P: map の図を描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - 記載の警告が無く、`figure.mdmark-diagram[data-diagram="map"]` が 1 つで、mermaid への要求が 0 件
+      - '`A`→`B` の線の `B` の側の端に丸の記号、`A`→`C` の線の `C` の側の端に×の記号があり、`D`–`E` の線は両端に丸、`F`–`G` の線は両端に×の記号がある'
+      - '`H` と `I` の間に線の要素が無く、`I` が `H` より後の層に配置される'
+      - '`J` と `K` の層の間隔が、`-->` でつないだ層の間隔より 1 層分広い'
+      - '`L`・`M`・`N`・`O`・`P` のノードが、それぞれ平行四辺形・逆向きの平行四辺形・台形・二重の円・文書の形状で描かれる'
+    test: test_normal_when_flowchart_mermaid_syntax
+  - name: 正常系（mermaid の公式の記法の例を map の図で描く）
+    summary: map が描く 17 種類それぞれの、mermaid の公式ドキュメントの記法の例を集めた見本を、記載の警告を出さずに map の図で描く
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 種類ごとの見本
+        description: '`tests/fixtures/mermaid-syntax/{図の種類}.md`（制約『map の記法の mermaid 準拠』）を種類ごとに 1 つずつ `mount` で描く'
+      - name: Mock
+        description: 正常系（mermaid のコードブロックを描く）と同じ。要求の件数を数える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown: 種類ごとの見本 })
+        M->>M: 見本の全てのコードブロックを範囲の外の map の図として読み取る
+        M->>P: map の図を描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - 17 種類のどの見本でも、記載の警告が 0 件
+      - gitGraph の見本のうち、front matter の `config.gitGraph.mainBranchName` を `MetroLine1` にした例は、最初のブランチの名前が `MetroLine1` で、`checkout MetroLine1` を記載の警告にしない
+      - 見本のコードブロックの数と同じ数の `figure.mdmark-diagram[data-diagram="map"]` があり、mermaid への要求が 0 件
+    test: test_normal_when_mermaid_syntax_samples
   - name: 正常系（描いた結果から描く）
     summary: 描いた結果の HTML を要素に入れ、Markdown から描いたときと同じ操作を付ける
     setup:
@@ -12009,7 +12097,8 @@ constraints:
       削除したブロックの中の要素は `data-source-line` と `id` を持たず、番号付きリストの削除した項目は番号を使用しない
     notes: 外観は確認ログのモックへの合意（左の余白の + / −）。色は `--mdmark-color-diff-add-bg`・`--mdmark-color-diff-del-bg`・`--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign`。削除したブロックはスクロールを合わせる先と見出しのアンカーにしない
   - item: ファイルツリーの開閉とコピー
-    constraint: '`tree` がオンのとき、`div.mdmark-tree` の上に種類 `tree` とコピーボタンの帯を配置し、子を持つフォルダの名前とアイコンを `aria-expanded`・`aria-controls` を持つボタンにする。`data-open` が数ならルートの深さを 0 として深さがその数より浅いフォルダを開き、`all` か無ければ全てのフォルダを開き、閉じたフォルダの入れ子の `ul` を `hidden="until-found"` にする。Shift を押しながらの開閉は入れ子のフォルダも同じ状態にする。コピーは `data-source` を記載し、記載できないときは表のコピーと同じパネルを出す'
+    constraint: '`tree` がオンのとき、`div.mdmark-tree` の上に、コードブロックの帯と同じ部品の帯（左端のラベルと右端のコピーボタン）を配置する。ラベルは、言語 `tree` のコードブロックは `tree`、`data-tree-language` を持つツリーはその言語で、`data-tree-language` が空の言語なしの罫線のツリーはラベルを出さない。子を持つフォルダの名前とアイコンを `aria-expanded`・`aria-controls` を持つボタンにする。`data-open` が数ならルートの深さを 0 として深さがその数より浅いフォルダを開き、`all` か無ければ全てのフォルダを開き、閉じたフォルダの入れ子の `ul` を `hidden="until-found"` にする。Shift を押しながらの開閉は入れ子のフォルダも同じ状態にする。コピーは `data-source` を記載し、記載できないときは表のコピーと同じパネルを出す'
+    notes: 確認ログ『言語が tree でない罫線を描いたファイルツリーの帯のラベル』。外観はモック `docs/mock/components/file-tree-plain-lines/`
   - item: 色のプリセット
     constraint: 色の名前ごとに、面の薄い色 `--mdmark-color-accent-{色}-bg` と文字の色 `--mdmark-color-accent-{色}-text` の CSS 変数を、選べるテーマのそれぞれの明るい配色と暗い配色で持つ（色の名前は インターフェース定義『文書をHTML文字列にする』の制約「色の名前」）。`data-color` を持つ強調した列のセルと行は面の薄い色、バッジは面の薄い色と文字の色、本文の文字の色の `mdmark-color` は文字の色と太字にする。強調した列の見出しのセルに下端の線、色を付けた行に上下の線を付ける。どの組も、文字と面のコントラストを 4.5:1 以上にする。印刷では選んだテーマの明るい配色の値で色を残す
     notes: 値は [デザイン方針](../design-policy.md)。利用側は層の外でこの変数を上書きできる（制約「テーマ」）
@@ -12479,10 +12568,16 @@ constraints:
       文書をスクロールして表示する枠の上端が、スクロールする場所の上端から `--mdmark-sticky-top` を加算した位置より上へ出たときは、その位置。表示する枠の下端がその位置に近づいたら、参加者の行を下端より下へ出さずに押し上げ、表示する枠と一緒にスクロールする場所の外へ出す。
       どちらの位置でも、参加者の行の背景は表示する枠の内側に収め、表示する枠の枠線とツールの行の線に重ねない。全画面のモーダルでは、表示する枠の上端だけに留める。
       留めた行の参加者の名前は、動かす前と同じ要素のままスクリーンリーダーが読み上げる
-  - item: 範囲の外の map の図を mermaid の図に戻す
+  - item: 範囲の外の map の図の設定の行と見た目を指定する行
     constraint: |-
-      `data-map-plain` を持つ範囲の外の map の図は、制約『map の書き方の警告』の項目のうち Mermaid の読み取れない行・閉じの無い `subgraph` と複合フラグメントが 1 つでもあるときと、map が無視する外観を指定する行（`classDef`・`style`・`linkStyle`・`cssClass`・flowchart の `class`）とノードの `:::` のクラスの指定・マインドマップの `::icon()` の行が 1 つでもあるとき、書き方の警告を出さず、map の図にせずに、中のソース（front matter を含む元の文字）を `data-mdmark-mermaid` を持つ mermaid のコードブロックに戻して、制約『mermaid の対象』「mermaid の読み込み」「mermaid の描き方」のとおり描く。
+      `data-map-plain` を持つ範囲の外の map の図は、mermaid の図に戻さない。
+      front matter の `config`・`%%{` で始まる設定の行・マインドマップの `::icon()` の行・`classDef` を持たないクラスへの `:::` は、図に適用せず、書き方の警告も出さない。ただし gitGraph の `config.gitGraph.mainBranchName`（`%%{init}` の同じキーを含む）は、最初のブランチの名前として読み取る（範囲の中の map の gitGraph の front matter と `%%{init}` も同じ）。
+      `style {ID}` と、`classDef {クラス}`（`class` の行・flowchart と状態遷移図の `:::`・classDiagram の `cssClass` で当てたもの）の `fill`・`stroke`・`color` を、ノードの面・枠線・文字の色に適用する。そのほかの指定（`stroke-width`・`stroke-dasharray`・`font-size`・`font-weight` など）は適用せず、記載の警告も出さない。同じノードに両方が当たるときは `style` を優先する。
+      `linkStyle {番号}`（`,` で区切った複数の番号と `default` を含む）の `stroke`・`color` を、記載順で 0 から数えたその番号の線と線のラベルの色に適用する。
+      `color` を持たず `fill` を持つノードの文字の色は、面の色に対するコントラスト比が高い方の `#000000` か `#ffffff` にし、明るい配色と暗い配色で変えない。
+      Mermaid の読み取れない行・閉じの無い `subgraph` と複合フラグメントは、範囲の中と同じく制約『map の書き方の警告』にして、読み取れた部分の map の図を描く。
       そのほかの書き方の警告の項目（設定の `map.kinds` に無いクラス・許可しないリンク先 など）は、範囲の外の map の図では警告を出さず、その要素を種類・リンクを持たないものとして map の図で描く
+    notes: 確認ログ『見た目を指定する行の色を map の図に適用するか』。外観はモック `docs/mock/components/plain-mermaid-style/`
   - item: 範囲の外の map の図に付く操作
     constraint: |-
       範囲の外の map の図と範囲の中の map の図は、次の表のとおりに操作を付ける。補足を前提にする操作だけが範囲の中に限られる。
@@ -12611,6 +12706,12 @@ constraints:
 
       もう一度押すと一覧を破棄して図の表示に戻し、図の倍率・位置・開閉は切り替える前のままにする。一覧の表示かどうかは保存しない
     decided_by: SC-472-8#scenarios[正常シナリオ（一覧の表示で読む）]
+  - item: map の記法の mermaid 準拠
+    constraint: |-
+      map が描く種類（文書をHTML文字列にする.ts の制約『map の範囲』）は、範囲の中と外のどちらも、mermaid が読み取れる行を全て読み取り、mermaid と同じ意味で描く。制約『map の書き方の警告』の読み取れない行にするのは、GitHub の Mermaid でも読み取れない行だけにする。
+      flowchart は、今の読み取りに加えて次を読み取る: 端に丸・×を付ける線（`--o`・`--x`・`o--o`・`x--x`。線の端に丸・×の記号を描く）、見えない線（`~~~`。配置に使用し、線は描かない）、長さを指定した線（`--->`・`-..->`・`===>` など。線の種類は同じで、配置で層をその分だけ離す）、形状の指定（`[/ /]`・`[\ \]`・`[/ \]`・`[\ /]`・`(((`　`)))` と `{ID}@{ shape: … }`）、`subgraph` の ID への `{ID}@{ view: collapsed }`（そのグループを閉じて始める）。
+      準拠の範囲は、mermaid の公式ドキュメント（この版で採用している mermaid の版のもの）の種類ごとの記法の例を、そのまま集めた見本 `tests/fixtures/mermaid-syntax/{図の種類}.md`（制約『map の範囲』の 17 種類。言語 `mermaid` のコードブロックを例の数だけ並べる）で定める。見本を map の図で描くと、記載の警告は 0 件になる。見本のうち、種類をまたぐ mermaid の設定（`%%{init}`・front matter の `config`）は制約『範囲の外の map の図の設定の行と見た目を指定する行』のとおり適用しない（gitGraph の `mainBranchName` は読み取る）
+    notes: 確認ログ『見た目を指定する行の色を map の図に適用するか』の「mermaid で書けるものは map でも同じ機能で描く」
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画

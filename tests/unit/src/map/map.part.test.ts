@@ -2449,3 +2449,114 @@ test("test_render_map_flow_when_changes", async () => {
     "mdmark-map-change",
   );
 });
+
+/** Mermaid から部品『mapの構成図』の引数を作る（`styles` を持つ） */
+async function mermaidFlowArgs(source: string) {
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
+  const chart = parseFlowchart(source);
+  const layout = layoutMap(
+    chart,
+    { collapsed: [], entered: undefined },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
+  );
+  const wireIds = chart.edges.map((edge) => edge.id);
+  const wires = Object.fromEntries(
+    Object.entries(chart.styles.wires).map(([index, style]) => [
+      wireIds[Number(index)],
+      style,
+    ]),
+  );
+  return {
+    layout,
+    kinds: CONFIG.kinds,
+    lines: CONFIG.lines,
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    packets: [],
+    dragging: undefined,
+    styles: { ...chart.styles, wires },
+  };
+}
+
+/** 部品設計『mapの構成図』の状態 Styled の Mermaid */
+const STYLED = [
+  "flowchart LR",
+  "  A[要望を受ける] --> B{対応するか}",
+  "  B -->|する| C[計画へ記載する]",
+  "  B -->|しない| D[理由を返却する]",
+  "  B -->|保留| E[後で決める]",
+  "  style A fill:#f9f,stroke:#c3c",
+  "  classDef warn fill:#ffe08a,stroke:#b8860b",
+  "  class D warn",
+  "  E:::warn",
+  "  linkStyle 1 stroke:#d33",
+].join("\n");
+
+/** ノードの開きのタグ */
+const nodeTag = (html: string, id: string) =>
+  matches(
+    html,
+    new RegExp(`<div class="[^"]*"[^>]*data-node="${id}"[^>]*>`),
+  )[0] ?? "";
+
+// style・classDef・linkStyle の色をノードと線に適用し、文字の色をコントラストで決める（正常系）
+test("test_render_map_flow_when_styles", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const args = await mermaidFlowArgs(STYLED);
+  // 実行
+  const { html } = renderMapFlow(args);
+  const changed = renderMapFlow({
+    ...args,
+    changes: { D: "changed" },
+  }).html;
+  // 検証
+  expect(nodeTag(html, "A")).toContain("--map-node-fill: #f9f");
+  expect(nodeTag(html, "A")).toContain("--map-node-stroke: #c3c");
+  expect(nodeTag(html, "A")).toContain("--map-node-text: #000000");
+  for (const id of ["D", "E"]) {
+    expect(nodeTag(html, id)).toContain("--map-node-fill: #ffe08a");
+    expect(nodeTag(html, id)).toContain("--map-node-text: #000000");
+  }
+  expect(html).toMatch(
+    /data-wire="B-&gt;C"[^>]*stroke: #d33|stroke: #d33[^>]*data-wire="B-&gt;C"/,
+  );
+  const changedD = nodeTag(changed, "D");
+  expect(changedD).toContain("--map-node-fill: #ffe08a");
+  expect(changedD).not.toContain("--map-node-stroke");
+});
+
+// 線の端の丸・×、見えない線、追加した形状を描く（正常系）
+test("test_render_map_flow_when_wire_ends_and_shapes", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const source = [
+    "flowchart LR",
+    "  A --o B",
+    "  A --x C",
+    "  H ~~~ I",
+    "  L[/入力/] --> M[\\出力\\]",
+    "  N[/台形\\] --> O(((終了)))",
+    '  P@{ shape: doc, label: "文書" }',
+  ].join("\n");
+  const args = await mermaidFlowArgs(source);
+  // 実行
+  const { html } = renderMapFlow(args);
+  // 検証
+  expect(html).toMatch(/data-wire="A-&gt;B"[^>]*marker-end="url\([^)]*circle/);
+  expect(html).toMatch(/data-wire="A-&gt;C"[^>]*marker-end="url\([^)]*cross/);
+  expect(html).not.toContain('data-wire="H-&gt;I"');
+  const shapes = ["L", "M", "N", "O", "P"].map(
+    (id) => nodeTag(html, id).match(/data-shape="([^"]+)"/)?.[1],
+  );
+  expect(shapes).toEqual([
+    "lean-right",
+    "lean-left",
+    "trapezoid",
+    "double-circle",
+    "doc",
+  ]);
+});

@@ -100,7 +100,7 @@ functions:
       3. 表・見出し・コード・1 行目が `[!種類]` の引用を対応する `kind` にし、それ以外と `parts` でオフの種類は元の行からマーカーを除いた `markdown` にし、各文字の返答の本文の行での位置を `columns` に持たせる。注意書きの中身は `> ` を除いて同じ手順で分け、行は返答の本文の頭から数える
       4. `parts.fold` が偽のときは `fold` を作らず、中身のブロックをその位置に並べる
       5. `steps` の範囲の最初の番号付きリストを、項目ごとのブロックの並びを持つ `steps` にする（`parts.steps` が偽なら番号付きリストの `markdown`）
-      6. 言語 `tree` のコードブロックを、ライブラリ本体の `parseTree` に注釈をそのまま返却する `renderNote`（`(note) => note`）を指定して解釈する。入れ子の `TreeNode` を行の順にたどり、各行の `rule` を階層と兄弟の有無から `│   `・`├── `・`└── ` で再作成する（ASCII の罫線も同じ文字で描く）。`parseTree` が行番号を返却するときと、字下げ（`│   `・`|   `・空白 4 つ）の後ろに罫線（`├── `・`└── `・`|-- `・`` `-- ``）が無い行があるときは、言語 `tree` の `code` にする（`parts.tree` が偽なら `code`）
+      6. 言語 `tree` のコードブロックと、ライブラリ本体の `countTreeLines` が `PLAIN_TREE_MIN_LINES` 以上の言語が `tree` でないコードブロック（言語が `PLAIN_TREE_EXCLUDED_LANGUAGES` のものと、直前の `code` のマーカーの `tree_warning` が `false` のものを除く）を、ライブラリ本体の `parseTree` に注釈をそのまま返却する `renderNote`（`(note) => note`）を指定して解釈する。入れ子の `TreeNode` を行の順にたどり、各行の `rule` を階層と兄弟の有無から `│   `・`├── `・`└── ` で再作成する（ASCII の罫線も同じ文字で描く）。`parseTree` が行番号を返却するときと、字下げ（`│   `・`|   `・空白 4 つ）の後ろに罫線（`├── `・`└── `・`|-- `・`` `-- ``）が無い行があるときは、記載した言語の `code` にする（`parts.tree` が偽なら `code`）
       7. `tabs`・`columns`・`cards`・`wide`・`view` の範囲を、区切りごとのブロックの並びを持つ `stack` にする。タブは範囲の中で最初に出る見出しの階層で区切りその文字を `title` に、段組みは `column` のマーカーで区切り、カードは項目を `タイトル — 説明` の箇条書きの `markdown` にする（`parts.stack` が偽ならマーカーを除いた中身をその位置に並べる）
       8. `parts.figure` が真のとき、`markdown` の本文と表のセルの `[文字](#fig-{ID})` のリンクの文字を、手順 2 で控えた `表 {番号}` に替える（控えに無い `id` は替えない）
     unit_tests:
@@ -206,6 +206,12 @@ functions:
         condition: ルートの行 `src/` の下に、注釈が `a < b & c` の行と、ASCII の罫線 `|-- ` と `` `-- `` の 2 行を持つ言語 `tree` のコードブロック
         mock: なし
         expected: '`tree` の注釈が `a < b & c` のままで、`rule` が空・`├── `・`└── `'
+      - name: test_split_blocks_when_plain_tree
+        case: 正常
+        summary: 罫線の行を 2 行以上持つ言語が tree でないコードブロックをファイルツリーにする
+        condition: '罫線の行を 3 行持つ言語 `text` のコードブロック、同じ中身の直前に `<!-- code: {"tree_warning": false} -->` を持つもの、罫線の行を 1 行だけ持つ言語 `text` のもの'
+        mock: なし
+        expected: 1 つ目が `tree`、2 つ目と 3 つ目が `lang` が `text` の `code`
     refs:
       - IF-472-45#constraints[描き換えるブロック]
       - IF-472-45#constraints[マーカー]

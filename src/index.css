@@ -2994,74 +2994,11 @@
       }
     }
 
-    /* 帯: 左端に種類の札、右端にコピーのボタン */
-    .mdmark-tree-bar {
-      display: flex;
-      gap: 0.5em;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 2rem;
-      padding-block: 0.15em;
-      padding-inline: 0.5em 0.35em;
+    /* 帯: 部品『コードブロック』の帯をツリーの面の上端に置く。枠と角はツリーの面が持つ */
+    > .mdmark-code-bar {
+      border: 0;
       border-block-end: 1px solid var(--mdmark-color-border);
-    }
-
-    /* 種類の札: コードブロックの言語のラベルと同じ小さな札 */
-    .mdmark-tree-kind {
-      padding: 0.1em 0.5em;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: calc(var(--mdmark-radius) - 2px);
-      background: var(--mdmark-color-surface);
-      color: var(--mdmark-color-muted);
-      font-family: var(--mdmark-font-mono);
-      font-size: 0.75rem;
-      line-height: 1.5;
-      user-select: none;
-    }
-
-    /* 帯の右の塊（コピーのボタンとスクリーンリーダーの通知） */
-    .mdmark-tree-meta {
-      display: inline-flex;
-      flex: none;
-      align-items: center;
-    }
-
-    /* コピーのボタン: 枠を持たない小さなボタン */
-    .mdmark-tree-copy {
-      display: inline-flex;
-      gap: 0.3em;
-      align-items: center;
-      min-height: 1.75rem;
-      padding: 0 0.5em;
-      border: 1px solid transparent;
-      border-radius: calc(var(--mdmark-radius) - 2px);
-      background: none;
-      color: var(--mdmark-color-muted);
-      font-family: var(--mdmark-font-body);
-      font-size: 0.75rem;
-      white-space: nowrap;
-      cursor: pointer;
-
-      .mdmark-diagram-icon {
-        width: 1.1em;
-        height: 1.1em;
-      }
-
-      &:hover {
-        border-color: var(--mdmark-color-border);
-        background: var(--mdmark-color-bg-opaque);
-        color: var(--mdmark-color-text);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--mdmark-color-link);
-        outline-offset: 1px;
-      }
-
-      /* コピーした: 追加した行と同じ緑で通知する */
-      &[data-state="copied"] {
-        color: var(--mdmark-color-diff-add-sign);
-      }
+      border-radius: 0;
     }
 
     /* 入れ子のリスト: 等幅の文字で並べ、長い名前と注釈は折り返さずに横へスクロールする */
@@ -4058,7 +3995,7 @@
       }
 
       /* ファイルツリー: 紙では押せない帯・コピーのパネル・開閉の山形を出さず、長い名前と注釈を折り返す */
-      :is(.mdmark-tree-bar, .mdmark-tree > .mdmark-copy-panel) {
+      :is(.mdmark-tree > .mdmark-code-bar, .mdmark-tree > .mdmark-copy-panel) {
         display: none;
       }
 
@@ -10385,6 +10322,63 @@
     color: var(--map-kind, var(--mdmark-color-muted));
   }
 
+  /* Mermaid の style・classDef の色: 面・枠線・名前の文字（明るい配色と暗い配色で変えない） */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node.map-kinded[style*="--map-node-fill"] {
+    background: var(--map-node-fill);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node.map-kinded[style*="--map-node-stroke"] {
+    border-color: var(--map-node-stroke);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node.map-kinded[style*="--map-node-text"]
+    :is(.mdmark-diagram-node-name, .mdmark-diagram-node-kind) {
+    color: var(--map-node-text);
+  }
+
+  /* Mermaid の記法の形状: 平行四辺形・台形は斜めの辺で切り、名前を内側に収める余白を取る */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node:is(
+    [data-shape="lean-right"],
+    [data-shape="lean-left"],
+    [data-shape="trapezoid"],
+    [data-shape="trapezoid-alt"]
+  ) {
+    padding-inline: 20px;
+    border-radius: 0;
+    /* 斜めの辺は枠線を切るため、面の色で形を見せる */
+    background: var(--map-node-fill, var(--mdmark-color-surface));
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="lean-right"] {
+    clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="lean-left"] {
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 100%, 14px 100%);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="trapezoid"] {
+    clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 100%, 0 100%);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="trapezoid-alt"] {
+    clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 14px 100%);
+  }
+  /* 二重の円: 丸い端の二重の枠 */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node[data-shape="double-circle"] {
+    border-style: double;
+    border-width: 4px;
+    border-radius: 999px;
+    padding-inline: 16px;
+  }
+  /* 文書: 下の辺を波打たせた形 */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-shape="doc"] {
+    border-radius: 2px 2px 50% 50% / 2px 2px 12px 12px;
+  }
+
   /* map の ER 図: テーブルの列の行（キー・名前・型・説明のボタン）と列の開閉のボタン */
   .mdmark-diagram[data-diagram="map"]
   .mdmark-diagram-node:has(> .map-er-columns) {
@@ -10681,6 +10675,21 @@
   }
   .mdmark-diagram[data-diagram="map"]
     .mdmark-diagram-node[data-shape="junction"]
+    > * {
+    display: none;
+  }
+  /* map の状態遷移図の並行の分岐と合流（fork・join）: 細い棒にし、名前と種類の行を出さない */
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-stage
+    > .mdmark-diagram-node[data-shape="fork"] {
+    min-height: 0;
+    padding: 0;
+    border-radius: 2px;
+    background: var(--mdmark-color-text);
+    border-color: var(--mdmark-color-text);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="fork"]
     > * {
     display: none;
   }
@@ -11477,6 +11486,18 @@
       fill: none;
     }
   }
+  /* ブロック図の Mermaid の style・classDef の色: 面・枠線・名前の文字 */
+  .mdmark-diagram[data-diagram="map"] .map-axis-item {
+    &[style*="--map-node-fill"] {
+      background: var(--map-node-fill);
+    }
+    &[style*="--map-node-stroke"] {
+      border-color: var(--map-node-stroke);
+    }
+    &[style*="--map-node-text"] .mdmark-diagram-node-name {
+      color: var(--map-node-text);
+    }
+  }
   /* ブロック図の形状: 四角・角の丸い四角・丸・円柱 */
   .mdmark-diagram[data-diagram="map"] .map-axis-item {
     &[data-shape="square"] {
@@ -11490,6 +11511,111 @@
     }
     &[data-shape="cylinder"] {
       border-radius: 50% / 30%;
+    }
+    &:is([data-shape="stadium"], [data-shape="double-circle"]) {
+      border-radius: 999px;
+    }
+    &[data-shape="double-circle"] {
+      border-style: double;
+      border-width: 4px;
+    }
+    &[data-shape="subroutine"] {
+      border-inline-width: 4px;
+      border-inline-style: double;
+    }
+    &[data-shape="hexagon"] {
+      clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
+    }
+    &[data-shape="rhombus"] {
+      clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    }
+    &[data-shape="flag"] {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%);
+    }
+    &[data-shape="lean-right"] {
+      clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+    }
+    &[data-shape="lean-left"] {
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 100%, 12px 100%);
+    }
+    &[data-shape="trapezoid"] {
+      clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 100%, 0 100%);
+    }
+    &[data-shape="trapezoid-alt"] {
+      clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 12px 100%);
+    }
+    /* ブロックの矢印: 向きの矢印の形に切る */
+    &[data-shape="arrow-right"] {
+      clip-path: polygon(
+        0 20%,
+        70% 20%,
+        70% 0,
+        100% 50%,
+        70% 100%,
+        70% 80%,
+        0 80%
+      );
+    }
+    &[data-shape="arrow-left"] {
+      clip-path: polygon(
+        100% 20%,
+        30% 20%,
+        30% 0,
+        0 50%,
+        30% 100%,
+        30% 80%,
+        100% 80%
+      );
+    }
+    &[data-shape="arrow-up"] {
+      clip-path: polygon(
+        20% 100%,
+        20% 30%,
+        0 30%,
+        50% 0,
+        100% 30%,
+        80% 30%,
+        80% 100%
+      );
+    }
+    &[data-shape="arrow-down"] {
+      clip-path: polygon(
+        20% 0,
+        20% 70%,
+        0 70%,
+        50% 100%,
+        100% 70%,
+        80% 70%,
+        80% 0
+      );
+    }
+    &[data-shape="arrow-x"] {
+      clip-path: polygon(
+        0 50%,
+        25% 0,
+        25% 25%,
+        75% 25%,
+        75% 0,
+        100% 50%,
+        75% 100%,
+        75% 75%,
+        25% 75%,
+        25% 100%
+      );
+    }
+    &[data-shape="arrow-y"] {
+      clip-path: polygon(
+        50% 0,
+        100% 25%,
+        75% 25%,
+        75% 75%,
+        100% 75%,
+        50% 100%,
+        0 75%,
+        25% 75%,
+        25% 25%,
+        0 25%
+      );
     }
   }
   /* section の見出しの行・枠と入れ子のブロックの枠。見出しに開閉と中へ入るボタンを置く */

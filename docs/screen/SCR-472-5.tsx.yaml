@@ -165,7 +165,7 @@ elements:
     kind: label
     io: 表示
     position: 返答
-    description: 言語 `tree` のコードブロック。罫線を薄い色、名前を本文の色で等幅のまま描き、注釈を同じ桁にそろえて薄い色で描く
+    description: '言語 `tree` のコードブロックと、罫線の行を 2 行以上持つ言語が `tree` でないコードブロック（直前の `<!-- code: {"tree_warning": false} -->` を持つものは除く）。罫線を薄い色、名前を本文の色で等幅のまま描き、注釈を同じ桁にそろえて薄い色で描く'
     visible_when: '`parts.tree` が `true` で、罫線を解釈できるとき'
     constraints: 罫線を解釈できないときは、コードブロック（`reply-code`）で描く
     refs:

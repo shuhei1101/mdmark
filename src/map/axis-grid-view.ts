@@ -366,9 +366,11 @@ const readAxisGridRange = (range: HTMLElement) => {
   const kind = (range.dataset.mapKind ?? "gantt") as AxisGridKind;
   return {
     index: Number(range.dataset.map ?? "1"),
+    // 範囲の外の図は front matter を除いた本文のため、範囲の `data-map-main-branch` を最初のブランチの名前にする
     grid: parseAxisGrid({
       kind,
       source: range.querySelector("code")?.textContent ?? "",
+      mainBranchName: range.dataset.mapMainBranch,
     }),
     data: parseMapData(
       range.querySelector(".mdmark-map-data")?.textContent ?? undefined,

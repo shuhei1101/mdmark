@@ -183,21 +183,22 @@ functions:
     container: src/map/structure.ts
     kind: 関数
     scope: internal
-    summary: mermaid のコードブロックのソースから、front matter（先頭の `---` で囲んだ行）と `%%` で始まるコメントの行を飛ばした最初の単語を `mapKindOf` で図の種類にし、範囲の外の map の図にする中身を返却する。front matter に `config` を持つか `%%{` で始まる行を持つとき、図の種類が map で描けないときは `undefined`
-    description: タイトルは `splitMermaidTitle` の `title`（front matter の `title`、無ければ `accTitle` の値）。`body` は front matter を除いたソース、`frontMatter` は除いた front matter の行（`---` を含む。無ければ `undefined`）。`dist/index.js` の `render` と CLI が使用する
+    summary: mermaid のコードブロックのソースから、front matter（先頭の `---` で囲んだ行）と `%%` で始まる行（`%%{` の設定の行を含む）を飛ばした最初の単語を `mapKindOf` で図の種類にし、範囲の外の map の図にする中身を返却する。図の種類が map で描けないときだけ `undefined`
+    description: タイトルは `splitMermaidTitle` の `title`（front matter の `title`、無ければ `accTitle` の値）。`body` は front matter と `%%{` で始まる設定の行を除いたソース、`frontMatter` は除いた front matter の行（`---` を含む。無ければ `undefined`）。front matter の `config` と `%%{` の行は図に当てない。ただし Git グラフの最初のブランチの名前はブランチの行の意味を変えるため、`mermaidMainBranchOf` の値を `mainBranchName` に返却する（外観を変えない）。`dist/index.js` の `render` と CLI が使用する
     args:
       - name: source
         type: string
         required: true
         description: mermaid のコードブロックのソース
     returns:
-      type: '{ kind: MapKindName; body: string; frontMatter: string | undefined; title: string | undefined } | undefined'
+      type: '{ kind: MapKindName; body: string; frontMatter: string | undefined; title: string | undefined; mainBranchName: string | undefined } | undefined'
       description: 範囲の外の map の図にする中身。しないときは `undefined`
     callees:
       - '#functions[mapKindOf]'
       - MOD-472-144#functions[splitMermaidTitle]
     refs:
       - IF-472-34#constraints[mermaid のコードブロック]
+      - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
     unit_tests:
       - name: test_plain_map_source_of
         case: 正常
@@ -213,17 +214,48 @@ functions:
         expected: '`kind` が `sequenceDiagram`、`title` が `注文`、`frontMatter` が `undefined`'
       - name: test_plain_map_source_of_when_config
         case: 正常
-        summary: 設定を持つと対象にしない
-        condition: 'front matter に `config:` を持つ flowchart と、1 行目が `%%{init: {"theme": "forest"}}%%` の flowchart'
+        summary: 設定を持っても範囲の外の map の図にし、設定の行を除く
+        condition: 'front matter に `config:` と `config.gitGraph.mainBranchName: MetroLine1` を持つ gitGraph と、1 行目が `%%{init: {"theme": "forest"}}%%` の flowchart'
         mock: なし
-        expected: どちらも `undefined`
+        expected: 1 つ目は `kind` が `gitGraph`、`mainBranchName` が `MetroLine1`。2 つ目は `kind` が `flowchart`、`body` が `%%{` の行を含まず `flowchart` から始まり、`mainBranchName` が `undefined`
       - name: test_plain_map_source_of_when_other_kind
         case: 正常
         summary: map が描けない種類
         condition: '`pie` と `xychart-beta` のソース'
         mock: なし
         expected: どちらも `undefined`
+      - name: test_plain_map_source_of_when_block
+        case: 正常
+        summary: 最初の単語が block のブロック図
+        condition: '`block\n  columns 3\n  a b c` と `block-beta\n  a b`'
+        mock: なし
+        expected: どちらも `kind` が `block`
 tags:
+  - name: mermaidMainBranchOf
+    title: Gitグラフの最初のブランチの名前を読み取る
+    kind: 関数
+    container: src/map/structure.ts
+    scope: public
+    summary: 'Mermaid のソースの front matter の `config.gitGraph.mainBranchName` と `%%{init: …}%%` の `gitGraph.mainBranchName` から、Git グラフの最初のブランチの名前を返却する'
+    description: '両方にあるときは `%%{init}` を優先する（mermaid と同じ）。front matter を YAML として、`%%{init}` の中を JSON として読み取れないときと、キーが無いときは `undefined`。`plainMapSourceOf` と、範囲の中の map の Git グラフの読み取り（`parseAxisGrid`）が使用する'
+    args:
+      - name: source
+        type: string
+        required: true
+        description: front matter と `%%{` の行を含む Mermaid のソース
+    returns:
+      type: string | undefined
+      description: 最初のブランチの名前
+    unit_tests:
+      - name: test_mermaid_main_branch_of
+        case: 正常
+        summary: front matter と %%{init} の mainBranchName を読み取る
+        condition: 'front matter に `config.gitGraph.mainBranchName: MetroLine1` を持つ gitGraph、1 行目が `%%{init: {"gitGraph": {"mainBranchName": "trunk"}}}%%` の gitGraph、両方を持つ gitGraph、どちらも持たない gitGraph'
+        mock: なし
+        expected: 順に `MetroLine1`・`trunk`・`%%{init}` の値・`undefined`
+    refs:
+      - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
+    status: planned
   - name: topic:map
     main: true
   - name: topic:図

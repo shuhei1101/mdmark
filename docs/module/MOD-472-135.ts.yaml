@@ -201,51 +201,44 @@ functions:
         condition: '`icon: no-such-icon`'
         mock: なし
         expected: 1 件で、キーが `map.kinds.store.icon`
-  - name: needsMermaidFallback
-    title: 範囲の外のmapの図をmermaidの図に戻すかを確認する
+  - name: collectPlainMapProblems
+    title: 範囲の外のmapの図の読み取れない行を集める
     container: src/map/check.ts
     kind: 関数
-    scope: internal
-    summary: '範囲の外の map の図（`data-map-plain`）を mermaid の図に戻すかを返却する'
+    scope: public
+    summary: '範囲の外の map の図の Mermaid から、図の種類の読み取りが返却する Mermaid の書き方の項目（読み取れない行・閉じの無い `subgraph` と複合フラグメント）だけを返却する'
     description: |-
-      図の種類の読み取りが返却する Mermaid の書き方の項目（読み取れない行・閉じの無い `subgraph` と複合フラグメント）が 1 つでもあるか、map が無視する外観の指定（`classDef`・`style`・`linkStyle`・`cssClass` の行、flowchart と状態遷移図の `class` の行、ノードの `:::` のクラスの指定、マインドマップの `::icon()` の行）が 1 つでもあれば `true`。
-      `collectMapProblems` と同じ図の種類ごとの読み取りで確認し、補足と設定は確認しない。
-      `dist/map.js` の `attachMap` と CLI の `usesMermaid` が同じ判定に使用する
+      種類ごとの ID の収集（`collectMapProblems` と同じ読み取り。`idLinks` は `skip`）の `problems` を返却する。許可しないリンク先・設定の `map.kinds` に無いクラス・補足の項目は返却しない。`attachMap` が `data-map-plain` の範囲の記載の警告にする
     args:
       - name: options
-        type: '{ kind: MapKindName; mermaid: string }'
+        type: '{ kind: MapKindName; mermaid: string; line: number | undefined }'
         required: true
-        description: 図の種類と、front matter を除いた Mermaid のソース
+        description: 図の種類と、front matter を除いた Mermaid のソースと、文書の中の Mermaid の開始の行
     returns:
-      type: boolean
-      description: mermaid の図に戻すか
+      type: MapProblem[]
+      description: Mermaid の書き方の項目（行を文書の行にずらしたもの）
     refs:
-      - IF-472-35#constraints[範囲の外の map の図を mermaid の図に戻す]
+      - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
     unit_tests:
-      - name: test_needs_mermaid_fallback
+      - name: test_collect_plain_map_problems_when_mermaid_samples
         case: 正常
-        summary: map が読み取れる図は戻さない
-        condition: 読み取れる行だけの flowchart と、`class 図面` の宣言を持つ classDiagram
+        summary: mermaid の公式の記法の例の見本は記載の警告が 0 件
+        condition: '`tests/fixtures/mermaid-syntax/{図の種類}.md`（インターフェース定義『文書を描く』の制約『map の記法の mermaid 準拠』の 17 種類。採用している mermaid の版の公式ドキュメントの例を言語 `mermaid` のコードブロックで並べたもの）の全てのコードブロックを、`plainMapSourceOf` の `kind`・`body` で呼ぶ'
         mock: なし
-        expected: どちらも `false`
-      - name: test_needs_mermaid_fallback_when_unreadable
+        expected: どのコードブロックも空
+      - name: test_collect_plain_map_problems
+        case: 異常
+        summary: 読み取れない行だけを返却し、クラスとリンク先は返却しない
+        condition: 読み取れない行 `A -> ->`・設定に無いクラス `:::warn`・`click B "javascript:alert(1)"` を持つ flowchart、`line` が 10
+        mock: なし
+        expected: '`map_invalid` が 1 件で `line` が読み取れない行の文書の行。`map_unknown_class` とリンク先の項目が無い'
+      - name: test_collect_plain_map_problems_when_style
         case: 正常
-        summary: 読み取れない行と閉じの無い subgraph で戻す
-        condition: '`A --o B` の行を持つ flowchart と、`end` の無い `subgraph` を持つ flowchart'
+        summary: 外観の指定と設定の行は項目にしない
+        condition: '`style A fill:#f9f`・`classDef warn fill:#ffe08a`・`class A warn`・`linkStyle 0 stroke:#d33`・`%%{init: {}}%%` を持つ flowchartと、`::icon(fa fa-book)` と `:::urgent` を持つ mindmap'
         mock: なし
-        expected: どちらも `true`
-      - name: test_needs_mermaid_fallback_when_style
-        case: 正常
-        summary: 外観の指定で戻す
-        condition: '`style A fill:#f9f` の flowchart、`A:::warn` の flowchart、`cssClass "図面" warn` の classDiagram、`class 待機 idle` の stateDiagram'
-        mock: なし
-        expected: どれも `true`
-      - name: test_needs_mermaid_fallback_when_mindmap
-        case: 正常
-        summary: マインドマップの外観の指定
-        condition: モックの `MINDMAP`（`::icon(fa fa-book)` と `:::urgent` を持つ）・`::icon()` の行だけを持つ mindmap・`MINDMAP_PLAIN`
-        mock: なし
-        expected: 前の 2 つが `true`、`MINDMAP_PLAIN` が `false`
+        expected: どちらも空
+    status: planned
 lead: 'map の記載の誤りの収集と設定の点検を受け持ち、map の記載の警告と点検のずれを変えるときに参照する。'
 tags:
   - name: topic:map

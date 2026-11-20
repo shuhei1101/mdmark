@@ -18,6 +18,7 @@ import {
   mapClassTextWidth,
   mapClosedGroupSize,
 } from "./map.part.ts";
+import { type MermaidStyles, readMermaidStyles } from "./mermaid-style.ts";
 import type { MapKind, MapProblem } from "./spec.ts";
 
 /** クラスのメンバー */
@@ -26,6 +27,10 @@ export type ClassMember = Omit<MapClassNode["members"][number], "lines">;
 /** クラス（`generic` は `~T~` の中身。`id` に含めない） */
 export type ClassItem = {
   id: string;
+  /** `class {ID}["{名前}"]` の名前（無ければ ID を名前にする） */
+  label?: string;
+  /** ロリポップ（`()--`・`--()`）の円で描くインターフェース */
+  interface?: boolean;
   generic: string | undefined;
   annotation: string | undefined;
   namespace: string | undefined;
@@ -48,17 +53,21 @@ export type ClassRelation = {
   label: string | undefined;
 };
 
-/** ノート（`id` は記載順の `note_{番号}`） */
-export type ClassNote = { id: string; of: string; text: string };
+/** ノート（`id` は記載順の `note_{番号}`。`of` を持たないノートは図のノート） */
+export type ClassNote = { id: string; of: string | undefined; text: string };
 
 /** parseClassDiagram の戻り値 */
 export type ClassDiagram = {
   classes: ClassItem[];
   namespaces: string[];
+  /** `namespace` の ID から、外の `namespace` の ID と名前 */
+  namespaceInfo?: Record<string, { parent: string | undefined; title: string }>;
   relations: ClassRelation[];
   notes: ClassNote[];
   /** `click`・`link` の行のクラスの ID からリンク先 */
   links: Record<string, string>;
+  /** `readMermaidStyles` が読み取ったクラスの色 */
+  styles: MermaidStyles;
   problems: MapProblem[];
 };
 
@@ -67,43 +76,50 @@ export const MAP_CLASS_KINDS = {
   "mdmark-class": { label: "クラス", shape: "rect" },
   "mdmark-class-annotated": { shape: "rect" },
   "mdmark-memo": { label: "ノート", shape: "rect" },
+  "mdmark-class-interface": { label: "インターフェース", shape: "pill" },
 } satisfies Record<string, MapKind>;
 
-/** 関係の記号ごとの、破線かと左右の端の形 */
-const RELATION_SYMBOLS: Record<
-  string,
-  { dashed: boolean; left?: ClassEndShape; right?: ClassEndShape }
-> = {
-  "<|--": { dashed: false, left: "triangle" },
-  "--|>": { dashed: false, right: "triangle" },
-  "*--": { dashed: false, left: "diamond-filled" },
-  "--*": { dashed: false, right: "diamond-filled" },
-  "o--": { dashed: false, left: "diamond-open" },
-  "--o": { dashed: false, right: "diamond-open" },
-  "-->": { dashed: false, right: "arrow" },
-  "<--": { dashed: false, left: "arrow" },
-  "..>": { dashed: true, right: "arrow" },
-  "<..": { dashed: true, left: "arrow" },
-  "..|>": { dashed: true, right: "triangle" },
-  "<|..": { dashed: true, left: "triangle" },
-  "--": { dashed: false },
-  "..": { dashed: true },
+/** 関係の左の端の記号の形（`()` はロリポップのインターフェース） */
+const LEFT_ENDS: Record<string, ClassEndShape | "lollipop"> = {
+  "<|": "triangle",
+  "*": "diamond-filled",
+  o: "diamond-open",
+  "<": "arrow",
+  "()": "lollipop",
 };
 
+/** 関係の右の端の記号の形 */
+const RIGHT_ENDS: Record<string, ClassEndShape | "lollipop"> = {
+  "|>": "triangle",
+  "*": "diamond-filled",
+  o: "diamond-open",
+  ">": "arrow",
+  "()": "lollipop",
+};
+
+/** 正規表現の文字を逃がす */
+const escapeRe = (text: string): string => text.replace(/[|*.()<>]/g, "\\$&");
+
+/** 関係の記号（左の端・線・右の端） */
+const SYMBOL = `(${Object.keys(LEFT_ENDS).map(escapeRe).join("|")})?(--|\\.\\.)(${Object.keys(RIGHT_ENDS).map(escapeRe).join("|")})?`;
+
+/** クラスの ID（バッククォートで囲んだ名前は、読む前に私用の文字の印へ置き換える） */
 const ID = "[A-Za-z0-9_\\u0080-\\uffff]+";
 const NAME = `(${ID})(?:~([^~]+)~)?`;
 const RELATION_RE = new RegExp(
-  `^${NAME}\\s+(?:"([^"]*)"\\s+)?(${Object.keys(RELATION_SYMBOLS)
-    .sort((a, b) => b.length - a.length)
-    .map((key) => key.replace(/[|*.]/g, "\\$&"))
-    .join("|")})\\s+(?:"([^"]*)"\\s+)?${NAME}(?:\\s*:\\s*(.+))?$`,
+  `^${NAME}\\s+(?:"([^"]*)"\\s+)?${SYMBOL}\\s+(?:"([^"]*)"\\s+)?${NAME}(?:\\s*:\\s*(.+))?$`,
 );
-const NAMESPACE_RE = new RegExp(`^namespace\\s+(${ID})\\s*\\{$`);
-const CLASS_OPEN_RE = new RegExp(`^class\\s+${NAME}\\s*\\{$`);
-const CLASS_RE = new RegExp(`^class\\s+${NAME}$`);
+const NAMESPACE_RE = /^namespace\s+([\w.\u0080-￿]+)(?:\["([^"]*)"\])?\s*\{$/;
+/** `class {ID}~{型}~["{名前}"]:::{クラス} <<{注釈}>>` の後ろの部分 */
+const CLASS_TAIL = `(?:\\["([^"]*)"\\])?(?::::[\\w-]+)?(?:\\s*<<(.+)>>)?`;
+const CLASS_OPEN_RE = new RegExp(`^class\\s+${NAME}${CLASS_TAIL}\\s*\\{$`);
+const CLASS_RE = new RegExp(`^class\\s+${NAME}${CLASS_TAIL}$`);
 const ANNOTATION_RE = new RegExp(`^<<(.+)>>\\s+(${ID})$`);
 const MEMBER_RE = new RegExp(`^(${ID})\\s*:\\s*(.+)$`);
-const NOTE_RE = new RegExp(`^note\\s+for\\s+(${ID})\\s+"([^"]*)"$`);
+const NOTE_RE = new RegExp(`^note\\s+(?:for\\s+(${ID})\\s+)?"([^"]*)"$`);
+/** バッククォートで囲んだクラス名の印 */
+const QUOTED_NAME_RE = /`([^`]+)`/g;
+const MARK_RE = /(\d+)/g;
 /** 読んで捨てる行 */
 /** `click {クラス} href "{URL}"`（`href` は省ける）と `link {クラス} "{URL}"` の行（後ろのツールチップと `_blank` などは読まない） */
 const LINK_RE = /^(click|link)\s+([^\s]+)\s+(?:href\s+)?"([^"]*)"/;
@@ -192,24 +208,36 @@ const parseMember = (text: string): ClassMember => {
 type ClassReading = {
   classes: Map<string, ClassItem>;
   namespaces: string[];
+  namespaceInfo: Record<string, { parent: string | undefined; title: string }>;
   relations: ClassRelation[];
   notes: ClassNote[];
-  space: { id: string; line: number } | undefined;
+  /** 開いている `namespace` の並び（外から） */
+  spaces: Array<{ id: string; line: number }>;
   open: { item: ClassItem; line: number } | undefined;
+  /** バッククォートで囲んだクラス名（印の番号から名前） */
+  quoted: string[];
 };
+
+/** 印をバッククォートで囲んだ元の名前に戻す */
+const restore = (reading: ClassReading, text: string): string =>
+  text.replace(
+    MARK_RE,
+    (_whole, at: string) => reading.quoted[Number(at)] ?? "",
+  );
 
 /** クラスを返却する（無ければ今の `namespace` の中に作る） */
 const ensureClass = (
   reading: ClassReading,
-  id: string,
+  raw: string,
   generic?: string,
 ): ClassItem => {
+  const id = restore(reading, raw);
   const found = reading.classes.get(id);
   const item = found ?? {
     id,
     generic: undefined,
     annotation: undefined,
-    namespace: reading.space?.id,
+    namespace: reading.spaces.at(-1)?.id,
     members: [],
   };
   if (!found) reading.classes.set(id, item);
@@ -233,21 +261,60 @@ const readInside = (reading: ClassReading, text: string): void => {
 /** 関係の行なら、関係を足す */
 const readRelation = (reading: ClassReading, text: string): boolean => {
   const match = RELATION_RE.exec(text);
-  if (!match?.[1] || !match[4] || !match[6]) return false;
-  const symbol = RELATION_SYMBOLS[match[4]] ?? { dashed: false };
-  const label = match[8]?.trim();
+  if (!match?.[1] || !match[5] || !match[8]) return false;
+  const left = LEFT_ENDS[match[4] ?? ""];
+  const right = RIGHT_ENDS[match[6] ?? ""];
+  const from = relationEnd(reading, {
+    name: match[1],
+    generic: match[2],
+    end: left,
+  });
+  const to = relationEnd(reading, {
+    name: match[8],
+    generic: match[9],
+    end: right,
+  });
+  const label = match[10]?.trim() ?? "";
   reading.relations.push({
     id: `r${reading.relations.length + 1}`,
-    from: ensureClass(reading, match[1], match[2]).id,
-    to: ensureClass(reading, match[6], match[7]).id,
+    from: from.id,
+    to: to.id,
     fromCardinality: match[3],
-    toCardinality: match[5],
-    fromEnd: symbol.left,
-    toEnd: symbol.right,
-    dashed: symbol.dashed,
-    label: label === "" ? undefined : label,
+    toCardinality: match[7],
+    fromEnd: endShape(left),
+    toEnd: endShape(right),
+    dashed: match[5] === "..",
+    label: label === "" ? undefined : restore(reading, label),
   });
   return true;
+};
+
+/** 関係の端のクラス（`()` の側のクラスは、ロリポップの円で描くインターフェースにする） */
+const relationEnd = (
+  reading: ClassReading,
+  side: {
+    name: string;
+    generic: string | undefined;
+    end: ClassEndShape | "lollipop" | undefined;
+  },
+): ClassItem => {
+  const item = ensureClass(reading, side.name, side.generic);
+  if (side.end === "lollipop") item.interface = true;
+  return item;
+};
+
+/** 端の形（ロリポップは端の形を持たない） */
+const endShape = (
+  end: ClassEndShape | "lollipop" | undefined,
+): ClassEndShape | undefined => (end === "lollipop" ? undefined : end);
+
+/** `class` の行の名前と注釈を当てる */
+const applyClassTail = (
+  item: ClassItem,
+  tail: { label: string | undefined; annotation: string | undefined },
+): void => {
+  if (tail.label !== undefined) item.label = tail.label;
+  if (tail.annotation !== undefined) item.annotation = tail.annotation;
 };
 
 /** 行の読み方（先に当たった読み方で読む） */
@@ -257,20 +324,30 @@ const READERS: Array<
   (reading, text, line) => {
     const match = NAMESPACE_RE.exec(text);
     if (!match?.[1]) return false;
-    reading.namespaces.push(match[1]);
-    reading.space = { id: match[1], line };
+    if (!reading.namespaces.includes(match[1]))
+      reading.namespaces.push(match[1]);
+    reading.namespaceInfo[match[1]] = {
+      parent: reading.spaces.at(-1)?.id,
+      title: match[2] ?? match[1],
+    };
+    reading.spaces.push({ id: match[1], line });
     return true;
   },
   (reading, text, line) => {
     const match = CLASS_OPEN_RE.exec(text);
     if (!match?.[1]) return false;
-    reading.open = { item: ensureClass(reading, match[1], match[2]), line };
+    const item = ensureClass(reading, match[1], match[2]);
+    applyClassTail(item, { label: match[3], annotation: match[4] });
+    reading.open = { item, line };
     return true;
   },
   (reading, text) => {
     const match = CLASS_RE.exec(text);
     if (!match?.[1]) return false;
-    ensureClass(reading, match[1], match[2]);
+    applyClassTail(ensureClass(reading, match[1], match[2]), {
+      label: match[3],
+      annotation: match[4],
+    });
     return true;
   },
   (reading, text) => {
@@ -281,11 +358,11 @@ const READERS: Array<
   },
   (reading, text) => {
     const match = NOTE_RE.exec(text);
-    if (!match?.[1] || match[2] === undefined) return false;
+    if (!match || match[2] === undefined) return false;
     reading.notes.push({
       id: `note_${reading.notes.length + 1}`,
-      of: match[1],
-      text: match[2],
+      of: match[1] === undefined ? undefined : restore(reading, match[1]),
+      text: match[2].replaceAll("\\n", "\n"),
     });
     return true;
   },
@@ -297,8 +374,8 @@ const READERS: Array<
     return true;
   },
   (reading, text) => {
-    if (text !== "}" || reading.space === undefined) return false;
-    reading.space = undefined;
+    if (text !== "}" || reading.spaces.length === 0) return false;
+    reading.spaces.pop();
     return true;
   },
 ];
@@ -309,9 +386,11 @@ const unclosedProblems = (reading: ClassReading): MapProblem[] => {
     ...(reading.open
       ? [{ kind: "クラス", id: reading.open.item.id, line: reading.open.line }]
       : []),
-    ...(reading.space
-      ? [{ kind: "namespace", id: reading.space.id, line: reading.space.line }]
-      : []),
+    ...reading.spaces.map((space) => ({
+      kind: "namespace",
+      id: space.id,
+      line: space.line,
+    })),
   ];
   return opened.map(
     (item): MapProblem => ({
@@ -327,15 +406,23 @@ export const parseClassDiagram = (source: string): ClassDiagram => {
   const reading: ClassReading = {
     classes: new Map(),
     namespaces: [],
+    namespaceInfo: {},
     relations: [],
     notes: [],
-    space: undefined,
+    spaces: [],
     open: undefined,
+    quoted: [],
   };
   const problems: MapProblem[] = [];
   const links: Record<string, string> = {};
-  for (const [line, raw] of source.split("\n").entries()) {
-    const text = raw.replace(/%%.*$/, "").trim();
+  for (const [line, raw] of joinQuotedNotes(source.split("\n")).entries()) {
+    const text = raw
+      .replace(/%%.*$/, "")
+      .trim()
+      .replace(QUOTED_NAME_RE, (_whole, name: string) => {
+        reading.quoted.push(name);
+        return `\ue000${reading.quoted.length - 1}\ue001`;
+      });
     if (line === 0 || text === "") continue;
     if (reading.open) {
       readInside(reading, text);
@@ -354,11 +441,33 @@ export const parseClassDiagram = (source: string): ClassDiagram => {
   return {
     classes: [...reading.classes.values()],
     namespaces: reading.namespaces,
+    namespaceInfo: reading.namespaceInfo,
     relations: reading.relations,
     notes: reading.notes,
     links,
+    styles: readMermaidStyles({
+      lines: source.split("\n").slice(1),
+      classTarget: "cssClass",
+    }),
     problems,
   };
+};
+
+/** 引用符を閉じずに次の行へ続く `note` の文を、閉じの行までつないだ 1 行にする（つないだ後の行は空にする） */
+const joinQuotedNotes = (lines: string[]): string[] => {
+  const out = [...lines];
+  for (let index = 0; index < out.length; index++) {
+    let text = out[index] ?? "";
+    if (!/^\s*note\b/.test(text)) continue;
+    let next = index + 1;
+    while ((text.match(/"/g) ?? []).length % 2 === 1 && next < out.length) {
+      text = `${text}\n${out[next]?.trim() ?? ""}`;
+      out[next] = "";
+      next += 1;
+    }
+    out[index] = text;
+  }
+  return out;
 };
 
 /** クラスをノード、`namespace` をグループ、関係を線、ノートを破線でつないだノードにした、左から右の構成図の入力 */
@@ -368,10 +477,17 @@ export const classToFlowchart = (diagram: ClassDiagram): Flowchart => {
   );
   const nodes: FlowNode[] = diagram.classes.map((item) => ({
     id: item.id,
-    label: item.generic === undefined ? item.id : `${item.id}<${item.generic}>`,
+    label:
+      item.generic === undefined
+        ? (item.label ?? item.id)
+        : `${item.label ?? item.id}<${item.generic}>`,
     shape: "rect",
     classes: [
-      item.annotation === undefined ? "mdmark-class" : "mdmark-class-annotated",
+      item.interface === true
+        ? "mdmark-class-interface"
+        : item.annotation === undefined
+          ? "mdmark-class"
+          : "mdmark-class-annotated",
     ],
     parent: item.namespace,
   }));
@@ -389,21 +505,22 @@ export const classToFlowchart = (diagram: ClassDiagram): Flowchart => {
       label: note.text,
       shape: "rect",
       classes: ["mdmark-memo"],
-      parent: namespaceOf.get(note.of),
+      parent: note.of === undefined ? undefined : namespaceOf.get(note.of),
     });
-    edges.push({
-      id: `n${index + 1}`,
-      from: note.of,
-      to: note.id,
-      arrow: "-.->",
-      both: false,
-      label: undefined,
-    });
+    if (note.of !== undefined)
+      edges.push({
+        id: `n${index + 1}`,
+        from: note.of,
+        to: note.id,
+        arrow: "-.->",
+        both: false,
+        label: undefined,
+      });
   });
   const groups: FlowGroup[] = diagram.namespaces.map((id) => ({
     id,
-    title: id,
-    parent: undefined,
+    title: diagram.namespaceInfo?.[id]?.title ?? id,
+    parent: diagram.namespaceInfo?.[id]?.parent,
     direction: "TB",
   }));
   return {
@@ -413,6 +530,7 @@ export const classToFlowchart = (diagram: ClassDiagram): Flowchart => {
     edges,
     links: { ...diagram.links },
     linkLines: {},
+    ...(diagram.styles === undefined ? {} : { styles: diagram.styles }),
     problems: diagram.problems,
   };
 };

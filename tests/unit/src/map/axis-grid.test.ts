@@ -167,3 +167,118 @@ test("test_axis_grid_item_of", async () => {
   expect(kindOf(git, "README を書く")).toBe("item");
   expect(kindOf(git, "feat")).toBe("branch");
 });
+
+// mermaid の公式の記法の例のガントチャートのタスクを読み取る（正常系）
+test("test_parse_axis_grid_when_mermaid_gantt", async () => {
+  // 準備
+  const { parseAxisGrid } = await loadAxisGrid();
+  const dates = [
+    "gantt",
+    "  dateFormat YYYY-MM-DD",
+    "  section A",
+    "  a1 task :a1, 2014-01-01, 30d",
+    "  another task :24d",
+    "  Completed task :crit, done, 2014-01-06,24h",
+    "  Future task :crit, 5d",
+    "  b task :b, 2014-02-01, 2d",
+    "  cherry :active, c, after b a1, 1d",
+    "  apple :ap, 2017-07-20, 1w",
+    "  Add to mermaid :until ap",
+  ].join("\n");
+  const times = [
+    "gantt",
+    "  dateFormat HH:mm",
+    "  Initial milestone : milestone, m1, 17:49, 2m",
+    "  Task A : 10m",
+  ].join("\n");
+  const numbers = [
+    "gantt",
+    "  dateFormat X",
+    "  section S",
+    "  71 : 0, 71",
+  ].join("\n");
+  // 実行
+  const grid = parseAxisGrid({ kind: "gantt", source: dates });
+  const timeGrid = parseAxisGrid({ kind: "gantt", source: times });
+  const numberGrid = parseAxisGrid({ kind: "gantt", source: numbers });
+  const item = (label: string) =>
+    grid.items.find((one) => one.label === label)?.detail;
+  // 検証
+  expect(grid.problems).toEqual([]);
+  expect(timeGrid.problems).toEqual([]);
+  expect(numberGrid.problems).toEqual([]);
+  expect(item("another task")).toMatchObject({ start: "2014-01-31" });
+  expect(item("Completed task")).toMatchObject({ tags: ["crit", "done"] });
+  expect(item("cherry")).toMatchObject({ start: "2014-02-03" });
+  expect(item("apple")).toMatchObject({
+    start: "2017-07-20",
+    end: "2017-07-27",
+  });
+  expect(timeGrid.items.find((one) => one.id === "m1")?.shape).toBe(
+    "milestone",
+  );
+  expect(numberGrid.items).toHaveLength(1);
+});
+
+// 最初のブランチの名前と block の形状・ブロックの矢印を読み取る（正常系）
+test("test_parse_axis_grid_when_mermaid_git_and_block", async () => {
+  // 準備
+  const { parseAxisGrid } = await loadAxisGrid();
+  const git = [
+    "gitGraph",
+    "  commit",
+    "  branch MetroLine2",
+    "  commit",
+    "  checkout MetroLine1",
+    "  merge MetroLine2",
+  ].join("\n");
+  const block = [
+    "block",
+    "  columns 3",
+    '  id1(["text"])',
+    '  blockArrowId<["Label"]>(right)',
+    "  space:2",
+    "  A B C",
+    "  classDef blue fill:#6e6ce6",
+    "  class A blue",
+  ].join("\n");
+  // 実行
+  const gitGrid = parseAxisGrid({
+    kind: "gitGraph",
+    source: git,
+    mainBranchName: "MetroLine1",
+  });
+  const blockGrid = parseAxisGrid({ kind: "block", source: block });
+  // 検証
+  expect(gitGrid.problems).toEqual([]);
+  expect(gitGrid.branches).toEqual(["MetroLine1", "MetroLine2"]);
+  expect(gitGrid.links.filter((link) => link.kind === "merge")).toHaveLength(1);
+  expect(blockGrid.problems).toEqual([]);
+  expect(blockGrid.items.find((one) => one.id === "id1")?.shape).toBe(
+    "stadium",
+  );
+  expect(blockGrid.items.find((one) => one.id === "blockArrowId")?.shape).toBe(
+    "arrow-right",
+  );
+  expect(blockGrid.styles.nodes.A?.fill).toBe("#6e6ce6");
+});
+
+// 範囲の中の Git グラフも %%{init} の mainBranchName を読み取る（正常系）
+test("test_parse_axis_grid_when_main_branch_in_range", async () => {
+  // 準備
+  const { parseAxisGrid } = await loadAxisGrid();
+  const source = [
+    '%%{init: {"gitGraph": {"mainBranchName": "MetroLine1"}}}%%',
+    "gitGraph",
+    "  commit",
+    "  branch MetroLine2",
+    "  commit",
+    "  checkout MetroLine1",
+    "  merge MetroLine2",
+  ].join("\n");
+  // 実行
+  const grid = parseAxisGrid({ kind: "gitGraph", source });
+  // 検証
+  expect(grid.problems).toEqual([]);
+  expect(grid.branches).toEqual(["MetroLine1", "MetroLine2"]);
+});

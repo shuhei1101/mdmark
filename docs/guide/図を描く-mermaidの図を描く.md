@@ -33,13 +33,17 @@ front matter の `title` が図の枠のタイトルになり、図の中には�
 `title` が無ければ `accTitle`、どちらも無ければ図の種類の名前（`フローチャート`・`シーケンス図` など）がタイトルになる。
 `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` は、map の範囲に入れなくても map の図で描く（機能 `map` がオフのときは mermaid の図で描く）。
 説明のツールチップ・案内・配置の上書きを付けるときは、[Mermaidと補足で図を描く](./図を描く-Mermaidと補足で図を描く.md) の map の範囲に入れて補足を記載する。
-次のどれかを持つコードブロックは、map の図にせず、警告を出さずに mermaid の図で描く。
+map の図は、mermaid が読み取れる行を全て読み取り、mermaid と同じ意味で描く。
+次の行を持つコードブロックも map の図で描く。
 
-- map が読み取れない行（`A --o B` など）
-- 外観を指定する行（`classDef`・`style`・`linkStyle`・`cssClass`・flowchart の `class`・mindmap の `::icon()`）とノードの `:::` のクラスの指定
-- `%%{` で始まる設定の行と、front matter の `config`
+| 行 | map の図での扱い |
+| --- | --- |
+| 外観を指定する行（`style`・`classDef`・`class`・`:::`・`cssClass`・`linkStyle`） | `fill`・`stroke`・`color` をノードの面・枠線・文字と線の色にする。`color` が無いノードの文字は、面に対して読みやすい黒か白にする。そのほかの指定（`stroke-width` など）は適用しない |
+| `%%{` で始まる設定の行と、front matter の `config` | 図に適用しない（gitGraph の `mainBranchName` だけは最初のブランチの名前として読み取る） |
+| mindmap の `::icon()` | 描かない |
+| mermaid でも読み取れない行 | その行を記載の警告にし、読み取れた部分を map の図で描く |
 
-`gantt`・`pie` など、ほかの種類は mermaid の図で描く。
+`pie`・`xychart-beta` など、map が描かない種類は mermaid の図で描く。
 シーケンス図の `actor` は、mdmark のほかの図と同じ人のアイコンで描く。
 記載方法の一覧は [mermaid のコードブロック](./記法.mark.md#mermaid-のコードブロック)。
 

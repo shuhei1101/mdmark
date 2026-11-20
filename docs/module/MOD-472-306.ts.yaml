@@ -288,6 +288,33 @@ functions:
         mock: なし
         expected: '`aria-pressed` が `false`・`true` で、どちらも見える文字が `Raw`、スクリーンリーダー向けの名前が `Raw（元の Markdown を表示）`'
     status: planned
+  - name: renderCodeBar
+    title: コードブロックの帯を描く
+    container: src/code-block/code-block.part.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『コードブロック』の帯（言語のラベル・ファイル名・タイトル・コピーのボタン）の中身の HTML を返却する。コードブロックと部品『ファイルツリー』が共通で使用する
+    description: |-
+      今の `wrapWithBar` が組み立てている帯の中身（`renderLanguageLabel` のラベル・タイトル・`renderCodeCopy` の `mdmark-code-meta` と、描いた結果を持つときの `renderCodeRaw`）をこの関数に移し、`wrapWithBar` はこの関数の戻り値を `.mdmark-code-bar` で包む。
+      `language` が空なら言語のラベルを出さない。`copyState` を省いたときはコピーのボタンを出さない
+    args:
+      - name: options
+        type: '{ language: string; fileName: string; title: string; copyState: CodeCopyState | undefined; raw: { pressed: boolean } | undefined }'
+        required: true
+        description: 言語・ファイル名・タイトル・コピーのボタンの状態・元の Markdown のボタンを出すか
+    returns:
+      type: string
+      description: 帯の中身の HTML（包む要素を含まない）
+    unit_tests:
+      - name: test_render_code_bar
+        case: 正常
+        summary: 言語のラベルとコピーのボタンを並べ、言語が空ならラベルを出さない
+        condition: '`language` が `text`・`copyState` が `idle` のものと、`language` が空・`copyState` が `idle` のもの'
+        mock: なし
+        expected: 1 つ目は `mdmark-code-lang-name` が `text` で `mdmark-code-copy` を持つ。2 つ目は `mdmark-code-lang` を持たず `mdmark-code-copy` だけを持つ
+    refs:
+      - IF-472-35#constraints[ファイルツリーの開閉とコピー]
+    status: planned
 lead: 'コードブロックとコードのコピーのボタンの HTML を受け持ち、コードブロックの外観を変えるときに参照する。'
 tags:
   - name: topic:部品

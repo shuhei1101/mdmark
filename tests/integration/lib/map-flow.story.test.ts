@@ -690,3 +690,127 @@ test("test_planned_changes", async () => {
     if (wire.id === "mount->legacy") expect(wire.dash).not.toBe("none");
   }
 });
+
+// style・classDef・linkStyle の色を適用した。ノード A の面と枠線が指定の色、D・E の面が classDef の色で文字が黒、2 本目の線が赤。ほかは map の配色（Styled）
+test("test_styled", async () => {
+  // 準備・実行
+  const page = await openMap("styled");
+  // 検証
+  const nodes = await page
+    .locator(".mdmark-diagram-stage .mdmark-diagram-node[data-node]")
+    .evaluateAll((elements) =>
+      Object.fromEntries(
+        elements.map((element) => {
+          const style = getComputedStyle(element);
+          const name = element.querySelector(".mdmark-diagram-node-name");
+          return [
+            element.getAttribute("data-node") ?? "",
+            {
+              fill: style.backgroundColor,
+              stroke: style.borderTopColor,
+              text: name ? getComputedStyle(name).color : "",
+            },
+          ];
+        }),
+      ),
+    );
+  expect(nodes.A).toEqual({
+    fill: "rgb(255, 153, 255)",
+    stroke: "rgb(204, 51, 204)",
+    text: "rgb(0, 0, 0)",
+  });
+  for (const id of ["D", "E"]) {
+    expect(nodes[id]?.fill).toBe("rgb(255, 224, 138)");
+    expect(nodes[id]?.stroke).toBe("rgb(184, 134, 11)");
+    expect(nodes[id]?.text).toBe("rgb(0, 0, 0)");
+  }
+  for (const id of ["B", "C"]) {
+    expect(nodes[id]?.fill).not.toBe("rgb(255, 153, 255)");
+    expect(nodes[id]?.fill).not.toBe("rgb(255, 224, 138)");
+  }
+  const strokes = await page
+    .locator(".mdmark-diagram-wires path.mdmark-diagram-wire[data-wire]")
+    .evaluateAll((paths) =>
+      Object.fromEntries(
+        paths.map((path) => [
+          path.getAttribute("data-wire") ?? "",
+          getComputedStyle(path).stroke,
+        ]),
+      ),
+    );
+  expect(strokes["B->C"]).toBe("rgb(221, 51, 51)");
+  expect(
+    Object.entries(strokes).filter(
+      ([, stroke]) => stroke === "rgb(221, 51, 51)",
+    ),
+  ).toHaveLength(1);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 端に丸・×を付けた線・見えない線でつないだノード・長さを指定した線と、平行四辺形・台形・二重の円・文書の形状のノード（WireEndsAndShapes）
+test("test_wire_ends_and_shapes", async () => {
+  // 準備・実行
+  const page = await openMap("wire-ends-and-shapes");
+  // 検証
+  const ends = await page
+    .locator(".mdmark-diagram-wires path.mdmark-diagram-wire[data-wire]")
+    .evaluateAll((paths) =>
+      Object.fromEntries(
+        paths.map((path) => {
+          const endOf = (name: string) => {
+            const id = /url\(#([^)]+)\)/.exec(
+              path.getAttribute(name) ?? "",
+            )?.[1];
+            return id === undefined
+              ? undefined
+              : (document.getElementById(id)?.getAttribute("data-end") ??
+                  "head");
+          };
+          return [
+            path.getAttribute("data-wire") ?? "",
+            { start: endOf("marker-start"), end: endOf("marker-end") },
+          ];
+        }),
+      ),
+    );
+  expect(ends["A->B"]?.end).toBe("circle");
+  expect(ends["A->C"]?.end).toBe("cross");
+  expect(ends["B->C"]).toBeUndefined();
+  await expect(
+    page.locator('.mdmark-diagram-stage [data-wire="B->C"]').count(),
+  ).resolves.toBe(0);
+  const shapes = await page
+    .locator(".mdmark-diagram-stage .mdmark-diagram-node[data-node]")
+    .evaluateAll((elements) =>
+      Object.fromEntries(
+        elements.map((element) => {
+          const rect = element.getBoundingClientRect();
+          const name = element
+            .querySelector(".mdmark-diagram-node-name")
+            ?.getBoundingClientRect();
+          return [
+            element.getAttribute("data-node") ?? "",
+            {
+              shape: element.getAttribute("data-shape"),
+              inside: name
+                ? name.left >= rect.left &&
+                  name.right <= rect.right &&
+                  name.top >= rect.top &&
+                  name.bottom <= rect.bottom
+                : false,
+            },
+          ];
+        }),
+      ),
+    );
+  expect(["L", "M", "N", "O", "P"].map((id) => shapes[id]?.shape)).toEqual([
+    "lean-right",
+    "lean-left",
+    "trapezoid",
+    "double-circle",
+    "doc",
+  ]);
+  for (const id of ["L", "M", "N", "O", "P"])
+    expect(shapes[id]?.inside).toBe(true);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

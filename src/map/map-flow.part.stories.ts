@@ -113,3 +113,15 @@ export const PlannedChanges: Story = {
       '{"user": "added", "user->mount": "added", "mount": "changed", "legacy": "removed", "mount->legacy": "removed"}',
   },
 };
+
+export const Styled: Story = {
+  name: "Styled",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "styled" },
+};
+
+export const WireEndsAndShapes: Story = {
+  name: "WireEndsAndShapes",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "wire-ends" },
+};

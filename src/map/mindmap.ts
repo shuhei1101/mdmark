@@ -1,3 +1,4 @@
+import { joinMarkdownStrings, plainMarkdownLabel } from "./flowchart.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** マインドマップの項目の形状 */
@@ -41,12 +42,12 @@ export type Mindmap = {
 
 /** 形状の記号（外側の記号から順に照らす）。1 つ目の組が ID、2 つ目の組が表示する文字 */
 const SHAPE_PATTERNS: ReadonlyArray<readonly [MindmapShape, RegExp]> = [
-  ["circle", /^(.*?)\(\((.+)\)\)$/],
-  ["bang", /^(.*?)\)\)(.+)\(\($/],
-  ["cloud", /^(.*?)\)(.+)\($/],
-  ["hexagon", /^(.*?)\{\{(.+)\}\}$/],
-  ["rounded", /^(.*?)\((.+)\)$/],
-  ["square", /^(.*?)\[(.+)\]$/],
+  ["circle", /^(.*?)\(\((.+)\)\)$/s],
+  ["bang", /^(.*?)\)\)(.+)\(\($/s],
+  ["cloud", /^(.*?)\)(.+)\($/s],
+  ["hexagon", /^(.*?)\{\{(.+)\}\}$/s],
+  ["rounded", /^(.*?)\((.+)\)$/s],
+  ["square", /^(.*?)\[(.+)\]$/s],
 ];
 
 /** 描かずに読み飛ばす行（`::icon()` と `:::` のクラス） */
@@ -54,8 +55,10 @@ const SKIPPED_LINE_RE = /^(::icon\(|:::)/;
 
 /** 行の文字を形状・ID・表示する文字にする */
 const readShape = (
-  text: string,
+  raw: string,
 ): { shape: MindmapShape; id: string | undefined; label: string } => {
+  // 後ろの `:::{クラス}` は色の指定のため、表示する文字に含めない
+  const text = raw.replace(/:::[\w\s-]+$/, "").trim();
   for (const [shape, pattern] of SHAPE_PATTERNS) {
     const match = pattern.exec(text);
     if (!match) continue;
@@ -63,11 +66,15 @@ const readShape = (
     return {
       shape,
       id: id === "" ? undefined : id,
-      label: (match[2] ?? "").trim(),
+      label: labelOf(match[2] ?? ""),
     };
   }
-  return { shape: "plain", id: undefined, label: text };
+  return { shape: "plain", id: undefined, label: labelOf(text) };
 };
+
+/** 表示する文字（引用符と Markdown の文字の記号を除く） */
+const labelOf = (text: string): string =>
+  plainMarkdownLabel(text.trim().replace(/^"([\s\S]*)"$/, "$1")).trim();
 
 /** 2 つ目の根の行の項目 */
 const secondRoot = (line: number, text: string): MapProblem => ({
@@ -146,7 +153,7 @@ export const parseMindmap = (source: string): Mindmap => {
     stack: [],
     rootIndent: undefined,
   };
-  source.split(/\r?\n/).forEach((raw, line) => {
+  joinMarkdownStrings(source.split(/\r?\n/)).forEach((raw, line) => {
     readItemLine(state, raw, line);
   });
   const { items, problems } = state;

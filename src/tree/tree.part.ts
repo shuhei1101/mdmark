@@ -1,3 +1,4 @@
+import { renderCodeBar } from "../code-block/code-block.part.ts";
 import { escapeHtml } from "../shared/escape.logic.ts";
 import { iconSvg } from "../shared/icons.part.ts";
 import { renderCopyPanel } from "../table/table.part.ts";
@@ -127,10 +128,18 @@ export function renderTreeCopyContent(state: TreeCopyState): string {
   return `${iconSvg(label.icon)}${label.text}`;
 }
 
-/** ツリーの上に配置する帯（種類 `tree`・コピーのボタン・スクリーンリーダーの通知）の HTML を返却する */
-export function renderTreeBar(options: { copyState?: TreeCopyState }): string {
-  const state = options.copyState ?? "idle";
-  return `<div class="mdmark-tree-bar"><span class="mdmark-tree-kind" aria-hidden="true">tree</span><span class="mdmark-tree-meta"><button class="mdmark-tree-copy" type="button" data-state="${state}">${renderTreeCopyContent(state)}</button><span class="mdmark-visually-hidden mdmark-tree-status" role="status"></span></span></div>`;
+/** ツリーの上に配置する帯（記載した言語のラベル・コピーのボタン・スクリーンリーダーの通知）の HTML を返却する。中身は部品『コードブロック』の帯と共通 */
+export function renderTreeBar(options: {
+  language: string;
+  copyState?: TreeCopyState;
+}): string {
+  return `<div class="mdmark-code-bar">${renderCodeBar({
+    language: options.language,
+    fileName: "",
+    title: "",
+    copyState: options.copyState ?? "idle",
+    raw: undefined,
+  })}</div>`;
 }
 
 /** 項目の描き方 */
@@ -198,6 +207,8 @@ export function renderTree(options: {
   copyFallback?: boolean;
   /** `aria-controls` の id の頭（既定 `mdmark-tree`） */
   id?: string;
+  /** 帯のラベルにする記載した言語（既定 `tree`。空ならラベルを出さない） */
+  language?: string;
 }): string {
   const {
     nodes,
@@ -207,24 +218,53 @@ export function renderTree(options: {
     copyState,
     copyFallback = false,
     id = "mdmark-tree",
+    language = "tree",
   } = options;
   const context: RenderContext = { interactive, open, id };
   const openAttribute =
     open === undefined ? "" : ` data-open="${escapeHtml(open)}"`;
-  const bar = interactive
-    ? renderTreeBar({ copyState: copyState ?? "idle" })
-    : "";
   const list = `<ul class="mdmark-tree-list" aria-label="ファイルツリー">${nodes
     .map((node, index) =>
       renderNode(node, context, { depth: 0, path: String(index) }),
     )
     .join("")}</ul>`;
-  const panel =
-    interactive && copyFallback
-      ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source })
-      : "";
+  const { bar, panel } = treeControls({
+    interactive,
+    language,
+    copyState,
+    copyFallback,
+    id,
+    source,
+  });
   const holderClass = options.wrap
     ? "mdmark-tree mdmark-tree-wrap"
     : "mdmark-tree";
-  return `<div class="${holderClass}"${openAttribute} data-source="${escapeHtml(source)}">${bar}${list}${panel}</div>`;
+  return `<div class="${holderClass}"${openAttribute}${treeLanguageAttribute(language)} data-source="${escapeHtml(source)}">${bar}${list}${panel}</div>`;
+}
+
+/** `mount` が付けた状態の帯と、クリップボードに書き込めなかったときのパネル（`interactive` でなければ空） */
+function treeControls(options: {
+  interactive: boolean;
+  language: string;
+  copyState: TreeCopyState | undefined;
+  copyFallback: boolean;
+  id: string;
+  source: string;
+}): { bar: string; panel: string } {
+  const { interactive, language, copyState, copyFallback, id, source } =
+    options;
+  if (!interactive) return { bar: "", panel: "" };
+  return {
+    bar: renderTreeBar({ language, copyState: copyState ?? "idle" }),
+    panel: copyFallback
+      ? renderCopyPanel({ id: `${id}-panel`, format: "tree", text: source })
+      : "",
+  };
+}
+
+/** 言語が tree でないファイルツリーの記載した言語の属性（空の言語は空の値） */
+function treeLanguageAttribute(language: string): string {
+  return language === "tree"
+    ? ""
+    : ` data-tree-language="${escapeHtml(language)}"`;
 }

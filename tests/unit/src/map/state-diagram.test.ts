@@ -58,3 +58,42 @@ test("test_state_to_flowchart", async () => {
   expect(edge("t2")).toBeUndefined();
   expect(chart.edges.filter((item) => item.id.startsWith("n"))).toHaveLength(1);
 });
+
+// mermaid の公式の記法の例の状態遷移図の行を読み取る（正常系）
+test("test_parse_state_diagram_when_mermaid_syntax", async () => {
+  // 準備
+  const { parseStateDiagram } = await loadState();
+  const source = [
+    "stateDiagram-v2",
+    "  s2 : This is a state description",
+    "  state fork_state <<fork>>",
+    "  [*] --> fork_state",
+    "  fork_state --> s2",
+    "  note right of s2",
+    "    Important information!",
+    "    second line.",
+    "  end note",
+    "  state Active {",
+    "    A --> B",
+    "    --",
+    "    C --> D",
+    "  }",
+    "  Crash:::bad --> [*]",
+    "  classDef bad fill:#f00,color:#fff",
+  ].join("\n");
+  // 実行
+  const diagram = parseStateDiagram(source);
+  const state = (id: string) => diagram.states.find((one) => one.id === id);
+  // 検証
+  expect(diagram.problems).toEqual([]);
+  expect(state("s2")?.label).toBe("This is a state description");
+  expect(diagram.notes.find((note) => note.of === "s2")?.text).toBe(
+    "Important information!\nsecond line.",
+  );
+  expect(state("fork_state")?.kind).toBe("fork");
+  const regions = diagram.composites.filter(
+    (composite) => composite.parent === "Active",
+  );
+  expect(regions).toHaveLength(2);
+  expect(diagram.styles.nodes.Crash).toEqual({ fill: "#f00", color: "#fff" });
+});

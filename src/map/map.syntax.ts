@@ -218,10 +218,14 @@ const plainMapTokens = (
     plain.frontMatter === undefined
       ? ""
       : ` data-map-front-matter="${escapeHtml(plain.frontMatter)}"`;
+  const mainBranch =
+    plain.mainBranchName === undefined
+      ? ""
+      : ` data-map-main-branch="${escapeHtml(plain.mainBranchName)}"`;
   return [
     ownBlock(
       state,
-      `<div class="mdmark-map" data-map="${draw.number}" data-map-kind="${plain.kind}" data-map-args="${args}" data-map-plain${front}${termsAttrOf(terms)}>`,
+      `<div class="mdmark-map" data-map="${draw.number}" data-map-kind="${plain.kind}" data-map-args="${args}" data-map-plain${front}${mainBranch}${termsAttrOf(terms)}>`,
       fence,
     ),
     fence,

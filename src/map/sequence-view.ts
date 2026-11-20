@@ -237,6 +237,17 @@ const participantAt = (node: EventTarget | null): string | undefined => {
   );
 };
 
+/** 参加者の `@{ "type": … }` の種類（設定の `map.kinds` に同じ名前が無いときの Lucide のアイコンと名前） */
+const PARTICIPANT_TYPE_KINDS: Record<string, { icon: string; label: string }> =
+  {
+    boundary: { icon: "panel-left", label: "boundary" },
+    control: { icon: "refresh-cw", label: "control" },
+    entity: { icon: "circle", label: "entity" },
+    database: { icon: "database", label: "database" },
+    collections: { icon: "layers", label: "collections" },
+    queue: { icon: "list", label: "queue" },
+  };
+
 /** 設定の `map.kinds.actor` が無いときの actor の種類（lucide の人のアイコンだけ） */
 const DEFAULT_ACTOR_KIND = { icon: "user" } as const;
 
@@ -280,7 +291,11 @@ export const attachMapSequence = (
   const kinds = Object.fromEntries(
     sequence.participants.map((item) => [
       item.id,
-      item.actor ? (config.map.kinds.actor ?? DEFAULT_ACTOR_KIND) : undefined,
+      item.actor
+        ? (config.map.kinds.actor ?? DEFAULT_ACTOR_KIND)
+        : item.type === undefined
+          ? undefined
+          : (config.map.kinds[item.type] ?? PARTICIPANT_TYPE_KINDS[item.type]),
     ]),
   );
   const frameId = `map-${index}`;

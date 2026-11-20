@@ -128,11 +128,11 @@ test("test_render_tree_when_interactive", async () => {
   });
   // 検証: 帯が一覧の前にあり、コピーのボタンが idle で種類 tree を持つ
   for (const html of [basic, levels]) {
-    const bar = html.indexOf("mdmark-tree-bar");
+    const bar = html.indexOf("mdmark-code-bar");
     expect(bar).toBeGreaterThan(-1);
     expect(bar).toBeLessThan(html.indexOf('<ul class="mdmark-tree-list"'));
     expect(html).toContain('aria-hidden="true">tree<');
-    expect(findTags(html, "mdmark-tree-copy")[0]).toContain(
+    expect(findTags(html, "mdmark-code-copy")[0]).toContain(
       'data-state="idle"',
     );
   }
@@ -211,20 +211,28 @@ test("test_render_tree_bar", async () => {
   // 準備
   const { renderTreeBar } = await loadTree();
   // 実行
-  const idle = renderTreeBar({});
-  const copied = renderTreeBar({ copyState: "copied" });
+  const idle = renderTreeBar({ language: "tree" });
+  const copied = renderTreeBar({ language: "text", copyState: "copied" });
+  const noLanguage = renderTreeBar({ language: "" });
   // 検証
   expect(idle).toContain(
-    '<button class="mdmark-tree-copy" type="button" data-state="idle">',
+    '<span class="mdmark-code-lang-name" aria-hidden="true">tree</span>',
+  );
+  expect(idle).toContain(
+    '<button class="mdmark-code-copy" type="button" data-state="idle">',
   );
   expect(idle).toContain("コピー");
   expect(idle).not.toContain("コピーしました");
+  expect(copied).toContain('aria-hidden="true">text</span>');
   expect(copied).toContain('data-state="copied"');
   expect(copied).toContain("コピーしました");
-  for (const html of [idle, copied]) {
-    expect(html.startsWith('<div class="mdmark-tree-bar"')).toBe(true);
-    expect(html).toContain('aria-hidden="true">tree<');
-    expect(html).toContain('role="status"');
+  expect(noLanguage).not.toContain("mdmark-code-lang");
+  for (const html of [idle, copied, noLanguage]) {
+    expect(html.startsWith('<div class="mdmark-code-bar"')).toBe(true);
+    expect(html).toContain(
+      'class="mdmark-visually-hidden mdmark-code-status" role="status"',
+    );
+    expect(html).not.toContain("mdmark-tree-bar");
   }
 });
 
@@ -273,4 +281,47 @@ test("test_render_tree_when_wrap", async () => {
   expect(holder(wrapped)).toContain("mdmark-tree-wrap");
   expect(holder(wrapped)).toContain('data-open="all"');
   expect(holder(unwrapped)).not.toContain("mdmark-tree-wrap");
+});
+
+// 言語が tree でない罫線のツリーに言語を持たせ、帯のラベルにする（正常系）
+test("test_render_tree_when_language", async () => {
+  // 準備
+  const { renderTree } = await loadTree();
+  const plainNodes = [
+    {
+      name: "mdmark/",
+      children: [
+        { name: "src/", children: [{ name: "index.ts" }] },
+        { name: "README.md" },
+      ],
+    },
+  ];
+  const asciiNodes = [
+    { name: "src/", children: [{ name: "index.ts" }, { name: "parts/" }] },
+  ];
+  // 実行
+  const text = renderTree({
+    nodes: plainNodes,
+    source: "mdmark/\n├── src/\n│   └── index.ts\n└── README.md",
+    interactive: true,
+    language: "text",
+  });
+  const none = renderTree({
+    nodes: asciiNodes,
+    source: "src/\n|-- index.ts\n`-- parts/",
+    interactive: true,
+    language: "",
+  });
+  const rendered = renderTree({
+    nodes: plainNodes,
+    source: "mdmark/",
+    language: "text",
+  });
+  // 検証
+  expect(text).toContain('data-tree-language="text"');
+  expect(text).toContain('aria-hidden="true">text</span>');
+  expect(none).toContain('data-tree-language=""');
+  expect(none).not.toContain("mdmark-code-lang");
+  expect(rendered).toContain('data-tree-language="text"');
+  expect(rendered).not.toContain("mdmark-code-bar");
 });

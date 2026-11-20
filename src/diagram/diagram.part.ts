@@ -311,6 +311,45 @@ const wireColor = (color: string | undefined): string =>
     ? "var(--mdmark-color-diagram-line)"
     : `var(--mdmark-color-accent-${color}-text, var(--mdmark-color-diagram-line))`;
 
+/** Mermaid で指定した CSS の色のうち、属性と CSS 変数に入れてよい文字（色の名前・`#`・`rgb()` など）だけを返却する */
+export const safeCssColor = (value: string | undefined): string | undefined =>
+  value !== undefined && /^[#\w(),.%\s-]+$/.test(value)
+    ? value.trim()
+    : undefined;
+
+/** 線の端の丸・×の `marker` */
+function endMarker(options: {
+  markerId: string;
+  end: "circle" | "cross";
+  color: string;
+}): string {
+  const { markerId, end, color } = options;
+  const shape =
+    end === "circle"
+      ? `<circle cx="4.5" cy="4.5" r="3.5" fill="var(--mdmark-color-bg)" stroke="${color}" stroke-width="1.5"></circle>`
+      : `<path d="M1.5,1.5 L7.5,7.5 M7.5,1.5 L1.5,7.5" fill="none" stroke="${color}" stroke-width="1.5"></path>`;
+  return `<marker id="${markerId}" class="mdmark-diagram-arrowhead" data-end="${end}" viewBox="0 0 9 9" refX="4.5" refY="4.5" markerWidth="${HEAD_SIZE}" markerHeight="${HEAD_SIZE}" markerUnits="userSpaceOnUse" orient="auto-start-reverse">${shape}</marker>`;
+}
+
+/** 線の端の丸・×の `marker` と、線に付ける端の属性 */
+function wireEnds(options: {
+  markerId: string;
+  ends: NonNullable<MdmarkWireStyle["ends"]>;
+  color: string;
+}): { defs: string; ends: string } {
+  const { markerId, ends, color } = options;
+  const markers: string[] = [];
+  let attributes = "";
+  for (const side of ["from", "to"] as const) {
+    const end = ends[side];
+    if (end === undefined) continue;
+    const id = `${markerId}-${side}-${end}`;
+    markers.push(endMarker({ markerId: id, end, color }));
+    attributes += ` marker-${side === "to" ? "end" : "start"}="url(#${id})"`;
+  }
+  return { defs: `<defs>${markers.join("")}</defs>`, ends: attributes };
+}
+
 /** 線の矢じりの `marker` と、線に付ける端の属性（矢じりが無ければ空） */
 function wireHead(options: {
   markerId: string;
@@ -342,16 +381,23 @@ function renderWire(options: {
   index: number;
 }): string {
   const { id, wireId, d, hit, custom, index } = options;
-  const color = wireColor(custom.color);
+  const stroke = safeCssColor(custom.stroke);
+  const color = stroke ?? wireColor(custom.color);
   const dash = MAP_DASHES[custom.dash ?? "solid"];
   const width = MAP_WIDTHS[custom.width ?? "normal"];
-  const { defs, ends } = wireHead({
-    markerId: `${id}-head-map-${index}`,
-    head: custom.head ?? "filled",
-    color,
-    both: custom.both,
-  });
-  const visible = `${defs}<path class="mdmark-diagram-wire" data-line="map" data-wire="${escapeHtml(wireId)}" d="${d}"${dash ? ` stroke-dasharray="${dash}"` : ""} stroke-width="${width}" style="stroke:${color}"${ends}></path>`;
+  const markerId = `${id}-head-map-${index}`;
+  const { defs, ends } =
+    custom.ends !== undefined && Object.keys(custom.ends).length > 0
+      ? wireEnds({ markerId, ends: custom.ends, color })
+      : wireHead({
+          markerId,
+          head: custom.head ?? "filled",
+          color,
+          both: custom.both,
+        });
+  const strokeStyle =
+    stroke === undefined ? `stroke:${color}` : `stroke: ${escapeHtml(stroke)}`;
+  const visible = `${defs}<path class="mdmark-diagram-wire" data-line="map" data-wire="${escapeHtml(wireId)}" d="${d}"${dash ? ` stroke-dasharray="${dash}"` : ""} stroke-width="${width}" style="${strokeStyle}"${ends}></path>`;
   const target = hit
     ? `<path class="mdmark-diagram-wire-hit" data-tip-owner="${escapeHtml(wireId)}" d="${d}"></path>`
     : "";
@@ -366,13 +412,20 @@ function renderLabel(options: {
   at: [number, number];
   tips: TipList;
   annotations?: DiagramAnnotation[] | undefined;
+  /** Mermaid の `linkStyle` の `color` */
+  text?: string | undefined;
 }): string {
   const { wireId, label, tip, at, tips, annotations } = options;
   const line = "map";
   if (label === undefined || label === "") {
     return "";
   }
-  const style = boxStyle({ x: at[0], y: at[1] });
+  const text = safeCssColor(options.text);
+  const style = boxStyle({
+    x: at[0],
+    y: at[1],
+    ...(text === undefined ? {} : { inset: `;color: ${escapeHtml(text)}` }),
+  });
   if (tip === undefined || tip === "") {
     return `<span class="mdmark-diagram-label" data-line="${line}" data-wire="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
   }
@@ -489,6 +542,19 @@ function kindColor(color: string | undefined): { data: string; tint: string } {
   };
 }
 
+/** Mermaid の `style`・`classDef` の面・枠線・文字の色の CSS 変数（`--map-node-fill`・`--map-node-stroke`・`--map-node-text`） */
+function mermaidColors(style: MdmarkNodeStyle): string {
+  const entries: Array<[string, string | undefined]> = [
+    ["--map-node-fill", safeCssColor(style.fill)],
+    ["--map-node-stroke", safeCssColor(style.stroke)],
+    ["--map-node-text", safeCssColor(style.text)],
+  ];
+  return entries
+    .filter((entry): entry is [string, string] => entry[1] !== undefined)
+    .map(([name, value]) => `;${name}: ${escapeHtml(value)}`)
+    .join("");
+}
+
 /** map の構成図のノード: 設定の種類の名前・アイコン・構造・色で描く。種類の行は名前もアイコンも無いときも高さを取る空の行にする */
 function renderStyledNode(options: {
   node: Pick<MdmarkDiagramNode, "id" | "name">;
@@ -506,7 +572,8 @@ function renderStyledNode(options: {
     style.label === undefined ? "" : `<span>${escapeHtml(style.label)}</span>`;
   const empty = icon === "" && label === "" ? " is-empty" : "";
   const color = kindColor(style.color);
-  return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color.data} data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: color.tint })}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
+  const painted = mermaidColors(style);
+  return `<div class="${classes} map-kinded" data-kind="map" data-shape="${style.shape ?? "rounded"}"${color.data} data-node="${escapeHtml(node.id)}"${boxStyle({ ...box, inset: color.tint + painted })}><span class="mdmark-diagram-node-kind${empty}">${icon}${label}</span><span class="mdmark-diagram-node-name">${name}</span>${sub}${link}${info}</div>`;
 }
 
 /** 説明を持つグループのタイトルの右のマーカー（説明が無ければ空） */
@@ -577,6 +644,7 @@ export function renderFlow(
         at: wire.labelAt ?? labelPosition(wire.points),
         tips,
         annotations: annotations?.items[wire.id],
+        text: wire.style.text,
       }),
     );
   }

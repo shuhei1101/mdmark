@@ -63,7 +63,7 @@ import { attachRowDetails } from "../table/row-detail.syntax.ts";
 import { decorateTables } from "../table/table.syntax.ts";
 import { linkTreeExamples } from "../table/table-tree.syntax.ts";
 import { buildTabs } from "../tabs/tabs.syntax.ts";
-import { buildFileTrees } from "../tree/tree.syntax.ts";
+import { buildFileTrees, buildPlainFileTrees } from "../tree/tree.syntax.ts";
 import { buildViews } from "../views/view.syntax.ts";
 import { expandIncludes } from "./includes.ts";
 import type { MarkOptions } from "./mark-options.ts";
@@ -403,6 +403,8 @@ export function createParser(): MarkdownItParser {
     ["mdmark_build_embedded_html", buildEmbeddedHtml],
     // 範囲の中の mermaid のブロックに印を付けるため、コードブロックの飾りより前に配置する
     ["mdmark_build_map_ranges", buildMapRanges],
+    // 範囲の外と中の mermaid・map の範囲を除いた後、コードブロックの飾りより前に、言語が tree でない罫線のコードブロックをファイルツリーにする
+    ["mdmark_build_plain_file_trees", buildPlainFileTrees],
     ["mdmark_build_code_blocks", buildCodeBlocks],
     ["mdmark_link_tree_examples", linkTreeExamples],
     ["mdmark_read_images", readImages],

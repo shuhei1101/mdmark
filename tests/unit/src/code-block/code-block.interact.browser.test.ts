@@ -194,3 +194,34 @@ test("test_attach_code_copy_when_folded", async () => {
   expect(writeText).toHaveBeenCalledWith(lines.join("\n"));
   expect(writeText.mock.calls[0]?.[0]).not.toContain("⋯");
 });
+
+// ファイルツリーの帯にはコピーのボタンを重ねない（正常系）
+test("test_attach_code_copy_when_file_tree", async () => {
+  // 準備
+  const { attachCodeCopy } = await loadCodeBlocks();
+  const treeBlock = [
+    "```text",
+    "src/",
+    "├── index.ts",
+    "└── parts/",
+    "```",
+    "",
+  ].join("\n");
+  const { root } = createRoot(`${treeBlock}\n${tsBlock(["const a = 1;"])}`);
+  const { attachFileTrees } = await import(
+    /* @vite-ignore */ new URL(
+      "../../../../src/tree/tree.interact.ts",
+      import.meta.url,
+    ).href
+  );
+  detachers.push(attachFileTrees(root));
+  // 実行
+  detachers.push(attachCodeCopy(root));
+  // 検証
+  expect(
+    root.querySelectorAll(".mdmark-tree > .mdmark-code-bar .mdmark-code-copy"),
+  ).toHaveLength(1);
+  expect(
+    root.querySelectorAll(".mdmark-code > .mdmark-code-bar .mdmark-code-copy"),
+  ).toHaveLength(1);
+});

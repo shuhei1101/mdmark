@@ -233,7 +233,7 @@ notes:
     | `schemas/` | 設定・索引・部品の JSON Schema | CDN と CLI |
     | `docs/` | 設計書（種類ごとのフォルダに `{ID}.yaml`）・公開ドキュメント（`guide/`）・PR ドキュメント（`pr/`）・モック（`mock/`）。公開範囲は各文書の `visibility` | `visibility` が `public` の文書を GitHub Pages で公開する（`_config.yml` の `exclude` で `internal` を除く） |
     | `migrations/` | バージョンごとの移行の手順とスクリプト（`v{バージョン}/`）、出していないバージョンの手順（`next/`）、移行の手順が要らないスキーマの変更の一覧（`no-steps.yaml`） | CLI の `upgrade` が `v{バージョン}/` を読み込む（`next/` と `no-steps.yaml` は配布物のビルドだけが読み込む） |
-    | `guide/` | ガイドの索引（`index.yaml`。本文は `docs/guide/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する |
+    | `plugin/guide-index.yaml` | ガイドの索引（`guides[]`。各行の `page` が `docs/guide/` のページを指す） | 配布物のビルドが検査し、Claude Code が dev-docs の配信元 `mdmark` からタグ `topic:ガイド` で絞って参照する |
     | `.claude-plugin/` | マーケットプレイスの定義（`marketplace.json`。`plugin/` と `mdmark-style/` を記載する） | `/plugin marketplace add shuhei1101/mdmark` |
     | `plugin/` | Claude Code のプラグインの定義（`plugin.json`・`.mcp.json`・`hooks/hooks.json`）と、配布物のビルドが記載するまとめたフック（`dist/` と同じ時期にだけ commit する。`hooks.json` に行を追加する PR では、その行が起動するまとめたフックも入れる） | プラグインのマーケットプレイスから Claude Code が入れる。`plugin.json` は `version` を持たず、develop の commit がプラグインの更新で届く |
     | `vscode/` | VS Code 拡張機能（独自の `package.json`。バージョンは develop の commit に打つ `vscode-v{バージョン}` のタグ） | GitHub Release に添えた .vsix と、タグのワークフローが公開する Visual Studio Marketplace（拡張機能の ID `ShuheiNishikawa.mdmark-vscode`・表示名 `mdmark for VS Code`） |

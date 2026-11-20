@@ -56,18 +56,25 @@ const KIND_OF_FIRST_WORD: Record<string, MapKindName> = {
   gitGraph: "gitGraph",
   journey: "journey",
   "block-beta": "block",
-};
-
-/** Mermaid の 1 行目の最初の単語から図の種類を決める */
-export const mapKindOf = (mermaid: string): MapKindName | undefined => {
-  const first = mermaid.trimStart().split(/\s/, 1)[0] ?? "";
-  return Object.hasOwn(KIND_OF_FIRST_WORD, first)
-    ? KIND_OF_FIRST_WORD[first]
-    : undefined;
+  block: "block",
 };
 
 /** ソースの先頭の front matter（`---` で囲んだ行） */
 const FRONT_MATTER_RE = /^---[ \t]*\r?\n([\s\S]*?)\r?\n---[ \t]*(?:\r?\n|$)/;
+
+/** Mermaid の front matter と `%%` で始まる行を飛ばした最初の単語から図の種類を決める */
+export const mapKindOf = (mermaid: string): MapKindName | undefined => {
+  const body = mermaid.replace(FRONT_MATTER_RE, "");
+  const line =
+    body
+      .split(/\r?\n/)
+      .map((text) => text.trim())
+      .find((text) => text !== "" && !text.startsWith("%%")) ?? "";
+  const first = line.split(/\s/, 1)[0] ?? "";
+  return Object.hasOwn(KIND_OF_FIRST_WORD, first)
+    ? KIND_OF_FIRST_WORD[first]
+    : undefined;
+};
 
 /** 範囲の外の map の図にする mermaid のコードブロックの中身 */
 export type PlainMapSource = {
@@ -75,25 +82,45 @@ export type PlainMapSource = {
   body: string;
   frontMatter: string | undefined;
   title: string | undefined;
+  /** Git グラフの最初のブランチの名前（`mermaidMainBranchOf`） */
+  mainBranchName: string | undefined;
 };
 
-/** mermaid のコードブロックのソースから、範囲の外の map の図にする中身を返す。front matter の `config`・`%%{` の行を持つか、map が描けない種類なら `undefined` */
+/** `%%{init: …}%%` の中の `"mainBranchName": "…"`（引用符は `"`・`'`） */
+const INIT_MAIN_BRANCH_RE =
+  /^%%\{\s*init\s*:[\s\S]*?["']mainBranchName["']\s*:\s*["']([^"']+)["']/m;
+
+/** front matter の `mainBranchName: …` */
+const FRONT_MAIN_BRANCH_RE =
+  /^\s*mainBranchName\s*:\s*["']?([^"'\r\n]+?)["']?\s*$/m;
+
+/** Mermaid のソースの front matter の `config.gitGraph.mainBranchName` と `%%{init}` の `gitGraph.mainBranchName` から、Git グラフの最初のブランチの名前を返却する。両方にあれば `%%{init}` を優先する */
+export const mermaidMainBranchOf = (source: string): string | undefined => {
+  const init = INIT_MAIN_BRANCH_RE.exec(source)?.[1];
+  if (init !== undefined) return init;
+  const front = FRONT_MATTER_RE.exec(source)?.[1];
+  if (front === undefined || !/^\s*gitGraph\s*:/m.test(front)) return undefined;
+  return FRONT_MAIN_BRANCH_RE.exec(front)?.[1];
+};
+
+/** mermaid のコードブロックのソースから、範囲の外の map の図にする中身を返す。front matter と `%%{` で始まる設定の行は図に適用せず、map が描けない種類なら `undefined` */
 export const plainMapSourceOf = (
   source: string,
 ): PlainMapSource | undefined => {
   const front = FRONT_MATTER_RE.exec(source);
-  if (front && /^config\s*:/m.test(front[1] ?? "")) return undefined;
-  const body = front ? source.slice(front[0].length) : source;
-  const lines = body.split(/\r?\n/).map((line) => line.trim());
-  if (lines.some((line) => line.startsWith("%%{"))) return undefined;
-  const first = lines.find((line) => line !== "" && !line.startsWith("%%"));
-  const kind = mapKindOf(first ?? "");
+  const rest = front ? source.slice(front[0].length) : source;
+  const body = rest
+    .split(/\r?\n/)
+    .filter((line) => !line.trim().startsWith("%%{"))
+    .join("\n");
+  const kind = mapKindOf(body);
   if (kind === undefined) return undefined;
   return {
     kind,
-    body,
+    body: body.replace(/^(?:[ \t]*\r?\n)+/, ""),
     frontMatter: front ? front[0].replace(/\r?\n$/, "") : undefined,
     title: splitMermaidTitle(source).title,
+    mainBranchName: mermaidMainBranchOf(source),
   };
 };
 

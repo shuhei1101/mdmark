@@ -1,0 +1,304 @@
+# 単体テスト作成の lint
+
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+tests/unit/src/tree/tree.syntax.test.ts:245:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+  
+    243 │ /** 言語と中身からコードブロックの行を作る */
+    244 │ const fence = (language: string, lines: string[]) => [
+  > 245 │   "```" + language,
+        │   ^^^^^^^^^^^^^^^^
+    246 │   ...lines,
+    247 │   "```",
+  
+  i Unsafe fix: Use a template literal.
+  
+    243 243 │   /** 言語と中身からコードブロックの行を作る */
+    244 244 │   const fence = (language: string, lines: string[]) => [
+    245     │ - ··"```"·+·language,
+        245 │ + ··`\`\`\`${language}`,
+    246 246 │     ...lines,
+    247 247 │     "```",
+  
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+tests/unit/src/code-block/code-block.interact.browser.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    200 200 │     // 準備
+    201 201 │     const { attachCodeCopy } = await loadCodeBlocks();
+    202     │ - ··const·treeBlock·=·["```text",·"src/",·"├──·index.ts",·"└──·parts/",·"```",·""].join(
+    203     │ - ····"\n",
+    204     │ - ··);
+        202 │ + ··const·treeBlock·=·[
+        203 │ + ····"```text",
+        204 │ + ····"src/",
+        205 │ + ····"├──·index.ts",
+        206 │ + ····"└──·parts/",
+        207 │ + ····"```",
+        208 │ + ····"",
+        209 │ + ··].join("\n");
+    205 210 │     const { root } = createRoot(`${treeBlock}\n${tsBlock(["const a = 1;"])}`);
+    206 211 │     const { attachFileTrees } = await import(
+  
+
+tests/unit/src/code-block/code-block.part.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    572 572 │   });
+    573 573 │   
+    574     │ - 
+  
+
+tests/unit/src/map/axis-grid.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    192 192 │       "  Task A : 10m",
+    193 193 │     ].join("\n");
+    194     │ - ··const·numbers·=·["gantt",·"··dateFormat·X",·"··section·S",·"··71·:·0,·71"].join(
+    195     │ - ····"\n",
+    196     │ - ··);
+        194 │ + ··const·numbers·=·[
+        195 │ + ····"gantt",
+        196 │ + ····"··dateFormat·X",
+        197 │ + ····"··section·S",
+        198 │ + ····"··71·:·0,·71",
+        199 │ + ··].join("\n");
+    197 200 │     // 実行
+    198 201 │     const grid = parseAxisGrid({ kind: "gantt", source: dates });
+  
+
+tests/unit/src/map/check.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    614 614 │         (source, index) => {
+    615 615 │           const plain = plainMapSourceOf(source);
+    616     │ - ········if·(plain·===·undefined)·return·[`${name}#${index·+·1}:·map·の図にならない`];
+        616 │ + ········if·(plain·===·undefined)
+        617 │ + ··········return·[`${name}#${index·+·1}:·map·の図にならない`];
+    617 618 │           return collectPlainMapProblems({
+    618 619 │             kind: plain.kind,
+  
+
+tests/unit/src/map/er.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    164 164 │     // 検証
+    165 165 │     expect(diagram.problems).toEqual([]);
+    166     │ - ··expect(diagram.tables.map((table)·=>·table.name)).toContain(
+    167     │ - ····"This·❤·Unicode",
+    168     │ - ··);
+        166 │ + ··expect(diagram.tables.map((table)·=>·table.name)).toContain("This·❤·Unicode");
+    169 167 │     const allows = diagram.relations.find(
+    170 168 │       (relation) => relation.label === "allows",
+  
+
+tests/unit/src/map/flow-view.browser.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    869 869 │     expect(wire?.style.stroke).toBe("rgb(221, 51, 51)");
+    870 870 │     expect(
+    871     │ - ····root.querySelector('[data-group="g"]')?.classList.contains("map-closed-group"),
+        871 │ + ····root
+        872 │ + ······.querySelector('[data-group="g"]')
+        873 │ + ······?.classList.contains("map-closed-group"),
+    872 874 │     ).toBe(true);
+    873 875 │   });
+  
+
+tests/unit/src/map/map.part.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    2455 2455 │   /** ノードの開きのタグ */
+    2456 2456 │   const nodeTag = (html: string, id: string) =>
+    2457      │ - ··matches(html,·new·RegExp(`<div·class="[^"]*"[^>]*data-node="${id}"[^>]*>`))[0]·??
+    2458      │ - ··"";
+         2457 │ + ··matches(
+         2458 │ + ····html,
+         2459 │ + ····new·RegExp(`<div·class="[^"]*"[^>]*data-node="${id}"[^>]*>`),
+         2460 │ + ··)[0]·??·"";
+    2459 2461 │   
+    2460 2462 │   // style・classDef・linkStyle の色をノードと線に適用し、文字の色をコントラストで決める（正常系）
+    ········· │ 
+    2477 2479 │       expect(nodeTag(html, id)).toContain("--map-node-text: #000000");
+    2478 2480 │     }
+    2479      │ - ··expect(html).toMatch(/data-wire="B->C"[^>]*stroke:·#d33|stroke:·#d33[^>]*data-wire="B->C"/);
+         2481 │ + ··expect(html).toMatch(
+         2482 │ + ····/data-wire="B->C"[^>]*stroke:·#d33|stroke:·#d33[^>]*data-wire="B->C"/,
+         2483 │ + ··);
+    2480 2484 │     const changedD = nodeTag(changed, "D");
+    2481 2485 │     expect(changedD).toContain("--map-node-fill: #ffe08a");
+  
+
+tests/unit/src/tree/tree.interact.browser.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    113 113 │     // 検証
+    114 114 │     const tree = treeOf(root);
+    115     │ - ··expect(tree.querySelector(":scope·>·.mdmark-code-bar")?.textContent).toContain("tree");
+        115 │ + ··expect(
+        116 │ + ····tree.querySelector(":scope·>·.mdmark-code-bar")?.textContent,
+        117 │ + ··).toContain("tree");
+    116 118 │     expect(expandedOf(tree, ["mdmark/", "src/"])).toEqual(["true", "true"]);
+    117 119 │     expect(nestedListOf(toggleOf(tree, "src/")).hasAttribute("hidden")).toBe(
+  
+
+tests/unit/src/tree/tree.part.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    216 216 │     const noLanguage = renderTreeBar({ language: "" });
+    217 217 │     // 検証
+    218     │ - ··expect(idle).toContain('<span·class="mdmark-code-lang-name"·aria-hidden="true">tree</span>');
+        218 │ + ··expect(idle).toContain(
+        219 │ + ····'<span·class="mdmark-code-lang-name"·aria-hidden="true">tree</span>',
+        220 │ + ··);
+    219 221 │     expect(idle).toContain(
+    220 222 │       '<button class="mdmark-code-copy" type="button" data-state="idle">',
+    ······· │ 
+    228 230 │     for (const html of [idle, copied, noLanguage]) {
+    229 231 │       expect(html.startsWith('<div class="mdmark-code-bar"')).toBe(true);
+    230     │ - ····expect(html).toContain('class="mdmark-visually-hidden·mdmark-code-status"·role="status"');
+        232 │ + ····expect(html).toContain(
+        233 │ + ······'class="mdmark-visually-hidden·mdmark-code-status"·role="status"',
+        234 │ + ····);
+    231 235 │       expect(html).not.toContain("mdmark-tree-bar");
+    232 236 │     }
+  
+
+tests/unit/src/tree/tree.syntax.test.ts format ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Formatter would have printed the following content:
+  
+    239 239 │   
+    240 240 │   /** 1 行目と同じ罫線の index.ts の行を、上の行より 2 階層深くした行 */
+    241     │ - const·PLAIN_TOO_DEEP·=·["mdmark/",·"├──·src/",·"│···│···└──·index.ts",·"└──·README.md"];
+        241 │ + const·PLAIN_TOO_DEEP·=·[
+        242 │ + ··"mdmark/",
+        243 │ + ··"├──·src/",
+        244 │ + ··"│···│···└──·index.ts",
+        245 │ + ··"└──·README.md",
+        246 │ + ];
+    242 247 │   
+    243 248 │   /** 言語と中身からコードブロックの行を作る */
+    ······· │ 
+    294 299 │       "<!-- map -->",
+    295 300 │       "",
+    296     │ - ····...fence("mermaid",·["flowchart·LR",·...PLAIN_TREE.map((line)·=>·`%%·${line}`),·"··A·-->·B"]),
+        301 │ + ····...fence("mermaid",·[
+        302 │ + ······"flowchart·LR",
+        303 │ + ······...PLAIN_TREE.map((line)·=>·`%%·${line}`),
+        304 │ + ······"··A·-->·B",
+        305 │ + ····]),
+    297 306 │       "<!-- /map -->",
+    298 307 │       "",
+  
+
+Checked 979 files in 1313ms. No fixes applied.
+Found 10 errors.
+Found 1 warning.
+Found 1 info.
+check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  × Some errors were emitted while running checks.
+  
+
+
+> lint:eslint
+> node scripts/eslint.ts
+
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 323 packages, and audited 324 packages in 8s
+
+138 packages are looking for funding
+  run `npm fund` for details
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues (including breaking changes), run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/code-block/code-block.part.test.ts(550,11): error TS2339: Property 'renderCodeBar' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/src/code-block/code-block.part")'.
+tests/unit/src/map/architecture.test.ts(82,18): error TS2339: Property 'aligns' does not exist on type 'ArchitectureDiagram'.
+tests/unit/src/map/axis-grid.test.ts(246,5): error TS2353: Object literal may only specify known properties, and 'mainBranchName' does not exist in type '{ kind: AxisGridKind; source: string; }'.
+tests/unit/src/map/axis-grid.test.ts(260,20): error TS2339: Property 'styles' does not exist on type 'AxisGrid'.
+tests/unit/src/map/check.test.ts(546,11): error TS2339: Property 'collectPlainMapProblems' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/src/map/check")'.
+tests/unit/src/map/check.test.ts(560,24): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/check.test.ts(567,11): error TS2339: Property 'collectPlainMapProblems' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/src/map/check")'.
+tests/unit/src/map/check.test.ts(608,11): error TS2339: Property 'collectPlainMapProblems' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/src/map/check")'.
+tests/unit/src/map/check.test.ts(621,17): error TS7006: Parameter 'problem' implicitly has an 'any' type.
+tests/unit/src/map/class-diagram.test.ts(403,26): error TS2339: Property 'label' does not exist on type 'ClassItem'.
+tests/unit/src/map/class-diagram.test.ts(409,23): error TS2339: Property 'interface' does not exist on type 'ClassItem'.
+tests/unit/src/map/class-diagram.test.ts(412,18): error TS2339: Property 'styles' does not exist on type 'ClassDiagram'.
+tests/unit/src/map/class-diagram.test.ts(413,18): error TS2339: Property 'styles' does not exist on type 'ClassDiagram'.
+tests/unit/src/map/er.test.ts(178,62): error TS2339: Property 'label' does not exist on type 'ErTable'.
+tests/unit/src/map/er.test.ts(181,18): error TS2339: Property 'groups' does not exist on type 'ErDiagram'.
+tests/unit/src/map/er.test.ts(181,31): error TS7006: Parameter 'group' implicitly has an 'any' type.
+tests/unit/src/map/er.test.ts(184,18): error TS2339: Property 'styles' does not exist on type 'ErDiagram'.
+tests/unit/src/map/er.test.ts(185,18): error TS2339: Property 'styles' does not exist on type 'ErDiagram'.
+tests/unit/src/map/flowchart.test.ts(281,24): error TS2339: Property 'ends' does not exist on type 'FlowEdge'.
+tests/unit/src/map/flowchart.test.ts(282,24): error TS2339: Property 'ends' does not exist on type 'FlowEdge'.
+tests/unit/src/map/flowchart.test.ts(283,24): error TS2339: Property 'ends' does not exist on type 'FlowEdge'.
+tests/unit/src/map/flowchart.test.ts(284,24): error TS2339: Property 'ends' does not exist on type 'FlowEdge'.
+tests/unit/src/map/flowchart.test.ts(285,24): error TS2339: Property 'invisible' does not exist on type 'FlowEdge'.
+tests/unit/src/map/flowchart.test.ts(311,16): error TS2339: Property 'styles' does not exist on type 'Flowchart'.
+tests/unit/src/map/flowchart.test.ts(312,16): error TS2339: Property 'styles' does not exist on type 'Flowchart'.
+tests/unit/src/map/flowchart.test.ts(313,16): error TS2339: Property 'styles' does not exist on type 'Flowchart'.
+tests/unit/src/map/flowchart.test.ts(314,16): error TS2339: Property 'styles' does not exist on type 'Flowchart'.
+tests/unit/src/map/map.part.test.ts(2422,26): error TS2339: Property 'styles' does not exist on type 'Flowchart'.
+tests/unit/src/map/map.part.test.ts(2437,24): error TS2339: Property 'styles' does not exist on type 'Flowchart'.
+tests/unit/src/map/mermaid-style.test.ts(4,39): error TS2307: Cannot find module '../../../../src/map/mermaid-style.ts' or its corresponding type declarations.
+tests/unit/src/map/sequence.test.ts(146,29): error TS2339: Property 'type' does not exist on type 'SequenceParticipant'.
+tests/unit/src/map/sequence.test.ts(147,32): error TS2339: Property 'central' does not exist on type 'SequenceMessage'.
+tests/unit/src/map/state-diagram.test.ts(98,18): error TS2339: Property 'styles' does not exist on type 'StateDiagram'.
+tests/unit/src/map/structure.test.ts(158,22): error TS2339: Property 'mainBranchName' does not exist on type 'PlainMapSource'.
+tests/unit/src/map/structure.test.ts(162,20): error TS2339: Property 'mainBranchName' does not exist on type 'PlainMapSource'.
+tests/unit/src/map/structure.test.ts(180,11): error TS2339: Property 'mermaidMainBranchOf' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/src/map/structure")'.
+tests/unit/src/tree/tree.part.test.ts(214,32): error TS2353: Object literal may only specify known properties, and 'language' does not exist in type '{ copyState?: TreeCopyState | undefined; }'.
+tests/unit/src/tree/tree.part.test.ts(215,34): error TS2353: Object literal may only specify known properties, and 'language' does not exist in type '{ copyState?: TreeCopyState | undefined; }'.
+tests/unit/src/tree/tree.part.test.ts(216,38): error TS2353: Object literal may only specify known properties, and 'language' does not exist in type '{ copyState?: TreeCopyState | undefined; }'.
+tests/unit/src/tree/tree.part.test.ts(303,5): error TS2353: Object literal may only specify known properties, and 'language' does not exist in type '{ nodes: TreeNode[]; source: string; open?: string | undefined; interactive?: boolean | undefined; wrap?: boolean | undefined; copyState?: TreeCopyState | undefined; copyFallback?: boolean | undefined; id?: string | undefined; }'.
+tests/unit/src/tree/tree.part.test.ts(309,5): error TS2353: Object literal may only specify known properties, and 'language' does not exist in type '{ nodes: TreeNode[]; source: string; open?: string | undefined; interactive?: boolean | undefined; wrap?: boolean | undefined; copyState?: TreeCopyState | undefined; copyFallback?: boolean | undefined; id?: string | undefined; }'.
+tests/unit/src/tree/tree.part.test.ts(314,5): error TS2353: Object literal may only specify known properties, and 'language' does not exist in type '{ nodes: TreeNode[]; source: string; open?: string | undefined; interactive?: boolean | undefined; wrap?: boolean | undefined; copyState?: TreeCopyState | undefined; copyFallback?: boolean | undefined; id?: string | undefined; }'.
+tests/unit/src/tree/tree.syntax.test.ts(207,11): error TS2339: Property 'countTreeLines' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/src/tree/tree.syntax")'.
+tests/unit/src/tree/tree.syntax.test.ts(227,11): error TS2339: Property 'countTreeLines' does not exist on type 'typeof import("/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map/src/tree/tree.syntax")'.
+
+> mdmark-vscode@0.2.0 typecheck
+> tsc --noEmit
+
+exit=1
+
+# Biome の 10 件は npx biome check --write tests/ で直した（直した後は info 1 件だけ）
+$ npx biome check tests/
+
+Checked 484 files in 815ms. No fixes applied.
+Found 1 info.
+
+# 型検査の違反は、実装の無いこと（未実装の関数・型のプロパティ）によるもので、単体テスト作成では残す

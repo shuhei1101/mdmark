@@ -11,10 +11,11 @@ import {
   type MapStateLoop,
   type MapStateShape,
 } from "./map.part.ts";
+import { type MermaidStyles, readMermaidStyles } from "./mermaid-style.ts";
 import type { MapProblem } from "./spec.ts";
 
-/** 状態の種類（開始・終了は `[*]`、分岐は `<<choice>>`） */
-export type StateKind = "state" | "start" | "end" | "choice";
+/** 状態の種類（開始・終了は `[*]`、分岐は `<<choice>>`、並行の分岐と合流は `<<fork>>`・`<<join>>`） */
+export type StateKind = "state" | "start" | "end" | "choice" | "fork";
 
 /** 状態（parent は入れ子の状態の ID） */
 export type StateNode = {
@@ -55,6 +56,8 @@ export type StateDiagram = {
   composites: StateComposite[];
   transitions: StateTransition[];
   notes: StateNote[];
+  /** `readMermaidStyles` が読み取った状態の色 */
+  styles: MermaidStyles;
   problems: MapProblem[];
 };
 
@@ -64,15 +67,21 @@ export const STATE_NOTE_CLASS = "note";
 const ID = "[A-Za-z0-9_\\u0080-\\uffff]+";
 const DIRECTION_RE = /^direction\s+(TB|TD|BT|LR|RL)$/;
 const ALIAS_RE = new RegExp(`^state\\s+"([^"]+)"\\s+as\\s+(${ID})$`);
-const CHOICE_RE = new RegExp(`^state\\s+(${ID})\\s+<<choice>>$`);
+const CHOICE_RE = new RegExp(`^state\\s+(${ID})\\s+<<(choice|fork|join)>>$`);
 const OPEN_RE = new RegExp(`^state\\s+(?:"([^"]+)"\\s+as\\s+)?(${ID})\\s*\\{$`);
 const NOTE_RE = new RegExp(
   `^note\\s+(left|right)\\s+of\\s+(${ID})\\s*:\\s*(.+)$`,
 );
-const DECLARE_RE = new RegExp(`^(${ID})$`);
+/** 状態の後ろの `:::{クラス}`（色は `readMermaidStyles` が読む） */
+const CLASS_SUFFIX = "(?::::[\\w-]+)?";
+const DECLARE_RE = new RegExp(`^(${ID})${CLASS_SUFFIX}$`);
 const MOVE_RE = new RegExp(
-  `^(\\[\\*\\]|${ID})\\s*-->\\s*(\\[\\*\\]|${ID})(?:\\s*:\\s*(.+))?$`,
+  `^(\\[\\*\\]|${ID})${CLASS_SUFFIX}\\s*-->\\s*(\\[\\*\\]|${ID})${CLASS_SUFFIX}(?:\\s*:\\s*(.+))?$`,
 );
+/** 状態の説明（`{ID} : {説明}`） */
+const DESCRIPTION_RE = new RegExp(`^(${ID})${CLASS_SUFFIX}\\s*:\\s*(.+)$`);
+/** 複数行のノートの開き（`note left of {ID}`） */
+const NOTE_OPEN_RE = new RegExp(`^note\\s+(left|right)\\s+of\\s+(${ID})$`);
 /** 読んで捨てる行 */
 const IGNORED_RE = /^(classDef|class|style|accTitle|accDescr|title)\b/;
 
@@ -86,6 +95,37 @@ const unreadable = (line: number, raw: string): MapProblem => ({
   message: `${line + 1} 行目 \`${raw.trim()}\` を読めません。Mermaid の stateDiagram-v2 の記法（\`{状態} --> {状態} : {ラベル}\` など）で記載してください。`,
 });
 
+/** 複数行のノートの 1 行を足す。`end note` なら閉じて `undefined` を返却する */
+const continueNote = (note: StateNote, raw: string): StateNote | undefined => {
+  const text = raw.trim();
+  if (text === "end note") return undefined;
+  note.text = note.text === "" ? text : `${note.text}\n${text}`;
+  return note;
+};
+
+/** 閉じの無い入れ子の状態の項目 */
+const unclosedComposite = (open: {
+  composite: StateComposite;
+  line: number;
+}): MapProblem => ({
+  kind: "map_invalid",
+  line: open.line,
+  message: `入れ子の状態 \`${open.composite.id}\` の \`{\` に対応する \`}\` がありません。入れ子の状態の最後の行の後に \`}\` を記載してください。`,
+});
+
+/** 状態の説明を、状態の名前と入れ子の状態のタイトルにする */
+const applyDescriptions = (
+  descriptions: Map<string, string>,
+  target: { states: Map<string, StateNode>; composites: StateComposite[] },
+): void => {
+  for (const [id, description] of descriptions) {
+    const state = target.states.get(id);
+    if (state) state.label = description;
+    const composite = target.composites.find((item) => item.id === id);
+    if (composite) composite.title = description;
+  }
+};
+
 /** `stateDiagram-v2`・`stateDiagram` の Mermaid を、状態・入れ子の状態・遷移・注記と読めない行の項目に読む */
 export const parseStateDiagram = (source: string): StateDiagram => {
   const states = new Map<string, StateNode>();
@@ -93,9 +133,21 @@ export const parseStateDiagram = (source: string): StateDiagram => {
   const transitions: StateTransition[] = [];
   const notes: StateNote[] = [];
   const problems: MapProblem[] = [];
-  const stack: Array<{ composite: StateComposite; line: number }> = [];
+  const stack: Array<{
+    composite: StateComposite;
+    line: number;
+    /** 並行の区切り `--` で作った、今のまとまり */
+    region: StateComposite | undefined;
+    regions: number;
+  }> = [];
+  const descriptions = new Map<string, string>();
+  /** 読んでいる途中の複数行のノート */
+  let openNote: StateNote | undefined;
   let direction: Direction = "TB";
-  const scope = () => stack.at(-1)?.composite.id;
+  const scope = () => {
+    const top = stack.at(-1);
+    return top?.region?.id ?? top?.composite.id;
+  };
   const ensure = (id: string): StateNode => {
     const found = states.get(id);
     if (found) return found;
@@ -135,7 +187,7 @@ export const parseStateDiagram = (source: string): StateDiagram => {
   const readChoice = (text: string): boolean => {
     const choice = CHOICE_RE.exec(text);
     if (!choice?.[1]) return false;
-    ensure(choice[1]).kind = "choice";
+    ensure(choice[1]).kind = choice[2] === "choice" ? "choice" : "fork";
     return true;
   };
   /** 入れ子の状態を開く行なら、入れ子の状態を足す */
@@ -149,7 +201,61 @@ export const parseStateDiagram = (source: string): StateDiagram => {
       direction: undefined,
     };
     composites.push(composite);
-    stack.push({ composite, line });
+    stack.push({ composite, line, region: undefined, regions: 0 });
+    return true;
+  };
+  /** 並行の区切り `--` なら、入れ子の状態の中を名前の無いまとまりに分ける */
+  const readRegion = (text: string): boolean => {
+    const top = stack.at(-1);
+    if (text !== "--" || !top) return false;
+    const parent = top.composite.id;
+    const addRegion = (): StateComposite => {
+      top.regions += 1;
+      const region: StateComposite = {
+        id: `${parent}__region${top.regions}`,
+        title: "",
+        parent,
+        direction: undefined,
+      };
+      composites.push(region);
+      return region;
+    };
+    if (top.region === undefined) {
+      // 区切りの前の状態と入れ子の状態を、1 つ目のまとまりへ移す
+      const first = addRegion();
+      for (const state of states.values())
+        if (state.parent === parent) state.parent = first.id;
+      for (const composite of composites)
+        if (composite.parent === parent && composite !== first)
+          composite.parent = first.id;
+    }
+    top.region = addRegion();
+    return true;
+  };
+  /** 状態の説明の行なら、説明を状態の名前にする */
+  const readDescription = (text: string): boolean => {
+    const found = DESCRIPTION_RE.exec(text);
+    if (!found?.[1] || !found[2]) return false;
+    ensure(found[1]);
+    const before = descriptions.get(found[1]);
+    const description = found[2].trim();
+    descriptions.set(
+      found[1],
+      before === undefined ? description : `${before}\n${description}`,
+    );
+    return true;
+  };
+  /** 複数行のノートを開く */
+  const readNoteOpen = (text: string): boolean => {
+    const found = NOTE_OPEN_RE.exec(text);
+    if (!found?.[1] || !found[2]) return false;
+    openNote = {
+      id: `n${notes.length + 1}`,
+      of: found[2],
+      side: found[1] === "left" ? "left" : "right",
+      text: "",
+    };
+    notes.push(openNote);
     return true;
   };
   /** 注記の行なら、注記を足す */
@@ -190,6 +296,8 @@ export const parseStateDiagram = (source: string): StateDiagram => {
     readAlias,
     readChoice,
     readOpen,
+    readRegion,
+    readNoteOpen,
     (text, line, raw) => {
       if (text !== "}") return false;
       if (!stack.pop()) problems.push(unreadable(line, raw));
@@ -197,28 +305,32 @@ export const parseStateDiagram = (source: string): StateDiagram => {
     },
     readNote,
     readMove,
+    readDescription,
     readDeclare,
   ];
   for (const [line, raw] of source.split("\n").entries()) {
+    if (openNote) {
+      openNote = continueNote(openNote, raw);
+      continue;
+    }
     const text = raw.replace(/%%.*$/, "").trim();
     if (line === 0 || text === "" || IGNORED_RE.test(text)) continue;
     if (!readers.some((read) => read(text, line, raw)))
       problems.push(unreadable(line, raw));
   }
-  for (const open of stack) {
-    problems.push({
-      kind: "map_invalid",
-      line: open.line,
-      message: `入れ子の状態 \`${open.composite.id}\` の \`{\` に対応する \`}\` がありません。入れ子の状態の最後の行の後に \`}\` を記載してください。`,
-    });
-  }
+  problems.push(...stack.map(unclosedComposite));
   const compositeIds = new Set(composites.map((item) => item.id));
+  applyDescriptions(descriptions, { states, composites });
   return {
     direction,
     states: [...states.values()].filter((item) => !compositeIds.has(item.id)),
     composites,
     transitions,
     notes,
+    styles: readMermaidStyles({
+      lines: source.split("\n").slice(1),
+      classTarget: "class",
+    }),
     problems,
   };
 };
@@ -300,6 +412,7 @@ export const stateToFlowchart = (
       edges,
       links: {},
       linkLines: {},
+      styles: diagram.styles,
       problems: diagram.problems,
     },
     loops,
@@ -328,6 +441,11 @@ export const statePartInputs = (
       shapes[node.id] = kind;
       overrides[node.id] = {
         size: { w: MAP_STATE.choice, h: MAP_STATE.choice },
+      };
+    } else if (kind === "fork") {
+      shapes[node.id] = kind;
+      overrides[node.id] = {
+        size: { w: MAP_STATE.forkWidth, h: MAP_STATE.forkHeight },
       };
     } else if (kind === STATE_NOTE_CLASS) shapes[node.id] = "note";
   }

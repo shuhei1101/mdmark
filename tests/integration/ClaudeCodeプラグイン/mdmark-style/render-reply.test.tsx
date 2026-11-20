@@ -382,6 +382,21 @@ test("test_normal_when_document_parts", async ($, on) => {
     expect(texts).not.toContain(raw);
   }
   await ui.unmount();
+  // 実行: 言語の無い罫線のコードブロック
+  const plain = await mountReply($, {
+    text: [
+      "```",
+      "mdmark/",
+      "├── src/ # ソース",
+      "└── README.md # 説明",
+      "```",
+    ].join("\n"),
+  });
+  const plainTree = await plain.drawn();
+  // 検証: 言語 tree のコードブロックと同じく、注釈を薄い色の Text で描き、`#` を含まない
+  expect(textProps(plainTree, "ソース").dimColor).toBe(true);
+  expect(allTexts(plainTree).join("\n")).not.toContain("# ソース");
+  await plain.unmount();
 });
 
 // 行の詳細の Button を押す（正常系）

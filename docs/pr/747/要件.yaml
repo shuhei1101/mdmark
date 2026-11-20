@@ -1,0 +1,80 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: changed
+    detail: 言語が tree でない罫線のフォルダ構成もファイルツリーに描き、ファイルツリーの帯をコードブロックの帯と同じ見た目にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: run_only
+    detail: コードブロックの帯をファイルツリーと共通にすると、コードブロックの帯のラベルとコピーのボタンの描かれ方を壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-11.yaml
+    impact: changed
+    detail: テーマの指定・map が読めない行・見た目を指定する行を持つ mermaid のコードブロックも map の図にし、map が描けない種類の描き方を決め直す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-52.yaml
+    impact: changed
+    detail: 言語が tree でない罫線のコードブロックを点検しても、罫線を読み取れればずれが出ず、読み取れない行だけをファイルツリーの警告で受け取る
+    depends_on:
+      - docs/scenario/SC-472-20.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-97.yaml
+    impact: changed
+    detail: mdmark-style でも、言語が tree でない罫線のコードブロックを Web と同じくファイルツリーで描く
+    depends_on:
+      - docs/scenario/SC-472-20.yaml
+docs:
+  - page: docs/architecture/ARCH-472-1.yaml
+    new: false
+    change: notes.フォルダ役割 の表の guide/ の行を、plugin/guide-index.yaml（guides[]）を指す記述へ修正する（#741）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: ファイルツリーの記法に、言語が tree でない罫線のコードブロックもファイルツリーになることと tree_warning の意味を記載し、mermaid のコードブロックの描かれ方を合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
+  - page: docs/guide/記載する-本文を部品で組む.mark.md
+    new: false
+    change: ファイルツリーの書き方に、言語を指定しない罫線もファイルツリーになることを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: テーマの指定・見た目を指定する行を持つ mermaid のコードブロックも map の図になることと、map が描けない種類の描かれ方を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 用語「ファイルツリー」「mermaid の図」の意味を、言語 tree 以外の罫線と map が描けない種類に合わせて修正する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:45:42.004616+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    change: 範囲の外のコードブロックも読み取れない行を記載の警告にし、mermaid の図に戻さないことを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T13:48:06.805823+00:00'
+scope_out:
+  - item: ファイルツリーのファイルとフォルダの種類ごとのアイコンと色（#739 の本文の 3 つ目）
+    reason: 'develop の src/tree/tree.part.ts の fileIconOf と src/index.css の --mdmark-color-file-* で #137 により入っている。利用者がアイコンを確認できなかったのは言語が tree でなくコードブロックのまま描かれたためで、罫線の検知で解消する'
+    plan: none
+  - item: mermaid 以外の部品で、同じものを描く処理が 2 つある箇所の統一（#738 の本文の「ほかの部品にも当てはめる」）
+    reason: '#738 の対象は mermaid だけで、ほかの部品の処理の重なりは洗い出していない。今回の作業 PR がマージされなくても成り立つ'
+    plan: '#748'
+  - item: map の図の文字の書体・大きさ・太さを mermaid の図に近づける
+    reason: モックの確認で利用者が出した新しい要望で、map の全ての図に当たる外観の変更。今回の作業 PR がマージされなくても成り立つ（利用者が別の Issue への切り出しを許可）
+    plan: '#766'
+  - item: map の図で同じ辺から出る線の出る位置と線どうしの間隔
+    reason: モックの確認で利用者が出した新しい要望で、map の線の配置の計算の改善。今回の作業 PR がマージされなくても成り立つ（利用者が別の Issue への切り出しを許可）
+    plan: '#767'
+  - item: map のマインドマップの項目の枠線・短い名前の折り返し・文字の大きさと太さ・フォーカスの操作
+    reason: モックの確認で利用者が出した新しい要望で、マインドマップの描き方の改善。今回の作業 PR がマージされなくても成り立つ（利用者が別の Issue への切り出しを許可）
+    plan: '#765'

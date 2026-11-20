@@ -193,6 +193,7 @@ const erIds = (
     found.edgeIds.add(relation.id);
   }
   for (const id of Object.keys(data.groups)) found.ids.add(id);
+  for (const group of er.groups ?? []) found.ids.add(group.id);
   return found;
 };
 
@@ -678,47 +679,18 @@ export const checkMapConfig = (
   return issues;
 };
 
-/** map が読み捨てる見た目を指定する行（どの種類にも当たる） */
-const STYLE_LINE_RE = /^(classDef|style|linkStyle|cssClass)\b/;
-
-/** flowchart と状態遷移図でクラスを当てる `class` の行 */
-const CLASS_LINE_RE = /^class\s/;
-
-/** ノードの `:::` のクラスの指定 */
-const CLASS_SHORTHAND_RE = /:::[\w-]/;
-
-/** マインドマップの `::icon()` の行 */
-const ICON_LINE_RE = /^::icon\(/;
-
-/** 範囲の外の map の図を mermaid の図に戻すか（map が読めない行か、読み捨てる見た目の指定を持つ） */
-export const needsMermaidFallback = (options: {
+/** 範囲の外の map の図の Mermaid から、図の種類の読み取りが返却する Mermaid の書き方の項目（読み取れない行・閉じの無い `subgraph` と複合フラグメント）だけを返却する。許可しないリンク先・設定の `map.kinds` に無いクラス・補足の項目は返却しない */
+export const collectPlainMapProblems = (options: {
   kind: MapKindName;
   mermaid: string;
-}): boolean => {
-  const { kind, mermaid } = options;
-  const lines = mermaid
-    .split(/\r?\n/)
-    .map((line) => line.trim())
-    .filter((line) => line !== "" && !line.startsWith("%%"));
-  const classLine = kind === "flowchart" || kind === "stateDiagram";
-  if (
-    lines.some(
-      (line) =>
-        STYLE_LINE_RE.test(line) ||
-        CLASS_SHORTHAND_RE.test(line) ||
-        (kind === "mindmap" && ICON_LINE_RE.test(line)) ||
-        (classLine && CLASS_LINE_RE.test(line)),
-    )
-  ) {
-    return true;
-  }
+  line: number | undefined;
+}): MapProblem[] => {
+  const { kind, mermaid, line } = options;
   const { data } = parseMapData(undefined);
-  return (
-    mermaidIdsOf(kind, {
-      mermaid,
-      line: undefined,
-      data,
-      idLinks: { mode: "skip" },
-    }).problems.length > 0
-  );
+  return mermaidIdsOf(kind, {
+    mermaid,
+    line,
+    data,
+    idLinks: { mode: "skip" },
+  }).problems;
 };

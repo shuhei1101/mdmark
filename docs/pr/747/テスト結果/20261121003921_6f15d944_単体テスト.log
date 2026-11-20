@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-render-plain-tree-and-mermaid-map
+
+
+ Test Files  330 passed (330)
+      Tests  2766 passed (2766)
+   Start at  00:39:22
+   Duration  25.79s (worker 82%, tests 13%, import 5%)
+

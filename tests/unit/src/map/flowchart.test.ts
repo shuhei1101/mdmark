@@ -223,3 +223,93 @@ test("test_map_link_problems_when_id_links", async () => {
   expect(skipped.allowed).toEqual({});
   expect(skipped.problems).toEqual([]);
 });
+
+// mermaid の形状の記法を読み取る（正常系）
+test("test_parse_flowchart_when_mermaid_shapes", async () => {
+  // 準備
+  const { parseFlowchart } = await loadFlowchart();
+  const source = [
+    "flowchart TB",
+    "  L[/入力/]",
+    "  M[\\出力\\]",
+    "  N[/台形\\]",
+    "  O(((終了)))",
+    '  P@{ shape: doc, label: "文書" }',
+    '  Q@{ shape: cyl, label: "DB" }',
+    '  R@{ icon: "fa:user", form: "square", label: "User", pos: "t", h: 60 }',
+    '  S["`太字 **cat**`"]',
+  ].join("\n");
+  // 実行
+  const chart = parseFlowchart(source);
+  // 検証
+  expect(chart.problems).toEqual([]);
+  expect(chart.nodes.map((node) => node.shape)).toEqual([
+    "lean-right",
+    "lean-left",
+    "trapezoid",
+    "double-circle",
+    "doc",
+    "cylinder",
+    "rect",
+    "rect",
+  ]);
+  expect(chart.nodes.find((node) => node.id === "P")?.label).toBe("文書");
+  expect(chart.nodes.find((node) => node.id === "R")?.label).toBe("User");
+});
+
+// 線の端・見えない線・線の長さ・線の属性の行を読み取る（正常系）
+test("test_parse_flowchart_when_mermaid_edges", async () => {
+  // 準備
+  const { parseFlowchart } = await loadFlowchart();
+  const source = [
+    "flowchart LR",
+    "  A --o B",
+    "  A --x C",
+    "  D o--o E",
+    "  F x--x G",
+    "  H ~~~ I",
+    "  J ---->|No| K",
+    "  J -- No ----> L",
+    "  M e1@--> N",
+    "  e1@{ animate: true }",
+  ].join("\n");
+  // 実行
+  const chart = parseFlowchart(source);
+  const edge = (id: string) => chart.edges.find((item) => item.id === id);
+  // 検証
+  expect(chart.problems).toEqual([]);
+  expect(edge("A->B")?.ends).toEqual({ to: "circle" });
+  expect(edge("A->C")?.ends).toEqual({ to: "cross" });
+  expect(edge("D->E")?.ends).toEqual({ from: "circle", to: "circle" });
+  expect(edge("F->G")?.ends).toEqual({ from: "cross", to: "cross" });
+  expect(edge("H->I")?.invisible).toBe(true);
+  expect(edge("J->K")).toMatchObject({ length: 3, label: "No" });
+  expect(edge("J->L")).toMatchObject({ length: 3, label: "No" });
+  expect(edge("e1")).toBeDefined();
+});
+
+// style・classDef・class・:::・linkStyle を styles に読み取る（正常系）
+test("test_parse_flowchart_when_styles", async () => {
+  // 準備
+  const { parseFlowchart } = await loadFlowchart();
+  const source = [
+    "flowchart LR",
+    "  A[要望を受ける] --> B{対応するか}",
+    "  B -->|する| C[計画へ記載する]",
+    "  B -->|しない| D[理由を返却する]",
+    "  B -->|保留| E[後で決める]",
+    "  style A fill:#f9f,stroke:#c3c",
+    "  classDef warn fill:#ffe08a,stroke:#b8860b",
+    "  class D warn",
+    "  E:::warn",
+    "  linkStyle 1 stroke:#d33",
+  ].join("\n");
+  // 実行
+  const chart = parseFlowchart(source);
+  // 検証
+  expect(chart.problems).toEqual([]);
+  expect(chart.styles.nodes.A).toEqual({ fill: "#f9f", stroke: "#c3c" });
+  expect(chart.styles.nodes.D).toEqual({ fill: "#ffe08a", stroke: "#b8860b" });
+  expect(chart.styles.nodes.E).toEqual({ fill: "#ffe08a", stroke: "#b8860b" });
+  expect(chart.styles.wires[1]).toEqual({ stroke: "#d33" });
+});

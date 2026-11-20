@@ -176,31 +176,32 @@ test("test_attach_map_when_plain", async () => {
 });
 
 // 見た目の指定を持つ図を mermaid のコードブロックに戻す（正常系）
-test("test_attach_map_when_plain_fallback", async () => {
+test("test_attach_map_when_plain_styled", async () => {
   // 準備
   const { attachMap } = await loadMap();
   const { resolveConfig } = await loadConfig();
   const root = createRootFromHtml(
     renderDoc(
-      "```mermaid\n---\ntitle: 受付\n---\nflowchart LR\n  A --> B\n  style A fill:#f9f\n```\n\n```mermaid\nflowchart LR\n  C --> D\n```\n",
+      '```mermaid\n%%{init: {"theme": "forest"}}%%\nflowchart LR\n  A --> B\n  style A fill:#f9f\n```\n\n```mermaid\nflowchart LR\n  C[受付]:::warn --> D\n  C -> ->\n```\n',
     ).html,
   );
-  const restored: HTMLElement[][] = [];
   // 実行
-  detachers.push(
-    attachMap(root, resolveConfig({ config: { map: CONFIG } }), {
-      restoreMermaid: (blocks) => restored.push(blocks),
-    }),
-  );
+  detachers.push(attachMap(root, resolveConfig({ config: { map: CONFIG } })));
   // 検証
-  const blocks = root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]");
-  expect(blocks).toHaveLength(1);
-  const code = blocks[0]?.querySelector("code")?.textContent ?? "";
-  expect(code.startsWith("---")).toBe(true);
-  expect(code).toContain("style A fill:#f9f");
-  expect(restored).toHaveLength(1);
-  expect(restored[0]).toEqual([blocks[0]]);
-  expect(root.querySelectorAll("figure.mdmark-diagram")).toHaveLength(1);
+  expect(root.querySelectorAll("[data-mdmark-mermaid]")).toHaveLength(0);
+  const ranges = [...root.querySelectorAll<HTMLElement>("div.mdmark-map")];
+  expect(ranges).toHaveLength(2);
+  for (const range of ranges) {
+    expect(
+      range.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+    ).toHaveLength(1);
+  }
+  const nodeA = ranges[0]?.querySelector<HTMLElement>('[data-node="A"]');
+  expect(nodeA?.style.getPropertyValue("--map-node-fill").trim()).toBe("#f9f");
+  expect(ranges[0]?.querySelector(".mdmark-syntax-warning")).toBeNull();
+  const warning = ranges[1]?.querySelector(".mdmark-syntax-warning");
+  expect(warning?.textContent).toContain("C -> ->");
+  expect(warning?.textContent).not.toContain("warn");
 });
 
 // マインドマップ（正常系）
@@ -214,13 +215,15 @@ test("test_attach_map_when_mindmap", async () => {
   );
   // 検証
   const figures = root.querySelectorAll("figure.mdmark-diagram");
-  expect(figures).toHaveLength(1);
-  expect(
-    figures[0]?.querySelectorAll(".map-mindmap-item").length,
-  ).toBeGreaterThan(0);
-  const blocks = root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]");
-  expect(blocks).toHaveLength(1);
-  expect(blocks[0]?.querySelector("code")?.textContent).toContain("::icon");
+  expect(figures).toHaveLength(2);
+  for (const figure of figures) {
+    expect(figure.querySelectorAll(".map-mindmap-item").length).toBeGreaterThan(
+      0,
+    );
+  }
+  expect(figures[1]?.textContent).not.toContain("::icon");
+  expect(root.querySelectorAll("[data-mdmark-mermaid]")).toHaveLength(0);
+  expect(root.querySelector(".mdmark-syntax-warning")).toBeNull();
 });
 
 // 軸と格子の配置の図（正常系）
@@ -245,17 +248,18 @@ test("test_attach_map_when_axis_grid", async () => {
       'figure.mdmark-diagram[data-diagram="map"]',
     ),
   ];
-  expect(figures).toHaveLength(5);
+  expect(figures).toHaveLength(6);
   expect(
     figures.map(
       (figure) =>
         figure.closest<HTMLElement>(".mdmark-map")?.dataset.mapKind ??
         figure.dataset.mapKind,
     ),
-  ).toEqual(["gantt", "timeline", "gitGraph", "journey", "block"]);
-  const blocks = root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]");
-  expect(blocks).toHaveLength(1);
-  expect(blocks[0]?.querySelector("code")?.textContent).toContain("四日");
+  ).toEqual(["gantt", "timeline", "gitGraph", "journey", "block", "gantt"]);
+  expect(root.querySelectorAll("[data-mdmark-mermaid]")).toHaveLength(0);
+  const plain = figures[5]?.closest<HTMLElement>(".mdmark-map");
+  const warning = plain?.querySelector(".mdmark-syntax-warning");
+  expect(warning?.textContent).toContain("四日");
 });
 
 // id: のノードのリンク先（正常系）

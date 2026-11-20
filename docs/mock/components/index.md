@@ -49,6 +49,7 @@
 | [map-dim-contrast](./map-dim-contrast/index.html) | map の図で薄くした要素の文字のコントラスト（案 A・B の薄め方・C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダーク） |
 | [map-c4-kinds](./map-c4-kinds/index.html) | map の C4 のコンテナ図・コンポーネント図・動的図・配置図（種類と技術の行・Container_Boundary・関係の番号・配置先のノードの実線の枠と開閉と中へ入る・読めない行・狭い幅） |
 | [markdown-export](./markdown-export/index.html) | Markdown のコピーとエクスポートのボタン（右側の目次の頭に 2 つのボタンを配置する案と 1 つのメニューのボタンの案、ボタンの状態、コピーした後とコピーできなかったときの表示） |
+| [file-tree-plain-lines](./file-tree-plain-lines/index.html) | 言語が tree でない罫線のフォルダ構成のコードブロックを、今の描き方（記載の警告とコードブロック）と案（帯をコードブロックと共通にしたファイルツリー）で並べた見本（言語 text・言語なし・罫線の行が 1 行だけ・読み取れない行・ファイルツリーにしない指定） |
 | [markdown-preview](./markdown-preview/index.html) | 言語 markdown・md のコードブロックの、既定の描いた結果と帯の Raw のボタンで出す元の Markdown（押す前・ホバー・フォーカス・押した後、言語・タイトル・マーカーで既定を元の Markdown にしたブロック・コピー・機能をオフにした文書・狭い幅の見え方） |
 | [map-axis-grid](./map-axis-grid/index.html) | map の軸と格子の配置の図（ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の配置・section と入れ子のブロックの開閉と中へ入る・選択と強調・再生・補足の layout と書き方の警告・範囲の外のコードブロック・読めない行・狭い幅） |
 | [map-export-list](./map-export-list/index.html) | map の図のパネルの書き出すボタンと SVG・PNG のメニュー、一覧の表示のボタンと構成図・シーケンス図の入れ子の一覧、一覧の表示のボタンを持たない図、狭い幅 |
@@ -58,6 +59,7 @@
 | [map-kinds](./map-kinds/index.html) | map の図で使えるノードの種類・線の種類・グループ・データの点の一覧と、使う場面の例 |
 | [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |
 | [mermaid-diagram](./mermaid-diagram/index.html) | 言語 mermaid のコードブロックを図の枠に入れて描いた図（front matter の title のタイトル・タイトルが無いときの図の種類の名前・actor のアイコンの案・種類ごとの見本）と、mermaid を読み込めない通知ブロック・記法を解釈できない記載の警告・機能をオフにしたコードブロック |
+| [plain-mermaid-style](./plain-mermaid-style/index.html) | mermaid のライブラリへ戻している mermaid のコードブロック（`style`・`classDef`・`%%{init}`・端に丸を付ける線・`::icon`・`:::`）を、今の描き方（mermaid の図）と案 A（map の図。指定を適用しない）・案 B（`style`・`classDef` の色を適用する）で並べた見本 |
 | [plain-mermaid](./plain-mermaid/index.html) | map の範囲の外の mermaid のコードブロックを、今の描き方（mermaid の図）と案 A（補足の無い map の図）で並べた flowchart・sequenceDiagram・classDiagram と、map が描けない種類の gantt |
 | [plain-table](./plain-table/index.html) | マーカーの無い表（既定の種類）を、今の機能（ピン止め・列の幅の変更）と案（並べ替えを加え、押したピンを色の付いた塗りにする）で並べた 3 行の表とはみ出す表、`data`・`plain` の種類 |
 | [notice](./notice/index.html) | 外部ライブラリを読み込めない箇所に出す通知ブロックと、読み込み中のマーカーの場所、VS Code のプレビューで再生できない動画・音声の通知ブロック |

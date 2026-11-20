@@ -118,3 +118,34 @@ test("test_parse_sequence_when_entity", async () => {
   expect(sequence.messages[0]?.text).toBe("a; b");
   expect(sequence.fragments[0]?.label).toBe('"x"');
 });
+
+// mermaid の公式の記法の例のシーケンス図の行を読み取る（正常系）
+test("test_parse_sequence_when_mermaid_syntax", async () => {
+  // 準備
+  const { parseSequence } = await loadSequence();
+  const source = [
+    "sequenceDiagram",
+    '  participant API@{ "type": "boundary", "alias": "Internal Name" } as External Name',
+    '  actor DB@{ "type": "database" }',
+    "  participant Alice",
+    "  participant John",
+    "  Alice->>()John: Hello",
+    "  Alice ->>+ John: Did you want to go?",
+    "  John -->>- Alice: Yeah!",
+  ].join("\n");
+  // 実行
+  const sequence = parseSequence(source);
+  const participant = (id: string) =>
+    sequence.participants.find((one) => one.id === id);
+  // 検証
+  expect(sequence.problems).toEqual([]);
+  expect(participant("API")).toMatchObject({
+    label: "External Name",
+    type: "boundary",
+  });
+  expect(participant("DB")?.type).toBe("database");
+  expect(sequence.messages[0]?.central).toBe("to");
+  expect(
+    sequence.activations.filter((activation) => activation.id === "John"),
+  ).toHaveLength(1);
+});

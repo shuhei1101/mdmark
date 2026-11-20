@@ -1968,6 +1968,30 @@ files:
     visibility: internal
     description: 'モック『716』の外観: Claude Code のターミナル版の画面の本文の部品（行の詳細・ステップ・ファイルツリー・バッジ・文字の色・蛍光ペン・キー・図表の番号）の規則。このモックの外観を変えるときに参照する。'
     tags: [topic:モック, tool:css]
+  - path: refs/747/index.md
+    visibility: internal
+    description: '#747（罫線のコードブロックをファイルツリーで描き、mermaid のライブラリへ戻すコードブロックを map で描く）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/747/assets/tree-plain.js
+    visibility: internal
+    description: '#747 のモックの見本: 言語が tree でない罫線のコードブロックを、今の描き方と、言語 tree に書き換えて帯をコードブロックの帯と同じクラスに組み替えたファイルツリーで並べ、配布物の mount で描く処理。このモックの中身を変えるときに参照する。'
+    tags: [topic:モック, topic:ファイルツリー]
+  - path: refs/747/assets/plain-mermaid-style.js
+    visibility: internal
+    description: '#747 のモックの見本: 設定の行・外観を指定する行を持つ mermaid のコードブロックを、今の描き方（mermaid の図）と、指定を除いて補足の無い map の範囲で描いた案 A・案 B で並べ、案 B のノードに style・classDef の色を適用する処理。このモックの中身を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/747/assets/mock.css
+    visibility: internal
+    description: '#747 のモックだけの規則: 帯をコードブロックと共通にしたファイルツリーの帯の枠線と、案 B の map のノードの塗りと枠線。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, tool:css]
+  - path: components/file-tree-plain-lines/index.html
+    visibility: internal
+    description: '部品『file-tree-plain-lines』のモック: 言語が tree でない罫線のフォルダ構成のコードブロックの、今の描き方（記載の警告とコードブロック）と案（帯をコードブロックと共通にしたファイルツリー）の言語 text・言語なし・罫線の行が 1 行だけ・読み取れない行・ファイルツリーにしない指定。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:ファイルツリー]
+  - path: components/plain-mermaid-style/index.html
+    visibility: internal
+    description: '部品『plain-mermaid-style』のモック: mermaid のライブラリへ戻している mermaid のコードブロック（style・classDef・%%{init}・端に丸を付ける線・::icon・:::）の、今の描き方（mermaid の図）と案 A（map の図。指定を適用しない）・案 B（style・classDef・::: の色をノードに、linkStyle の色を線に適用し、文字の色を塗りとのコントラストで決める）と、front matter の config・明るい配色と暗い配色の切り替え。部品の外観や状態を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166
   reviewed: []

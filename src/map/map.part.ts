@@ -2,6 +2,7 @@ import type {
   MdmarkDiagramNode,
   MdmarkDiagramWire,
   MdmarkFlowDefinition,
+  MdmarkMermaidShape,
 } from "../diagram/definition.ts";
 import {
   createTips,
@@ -12,6 +13,7 @@ import {
   ownerIdAttribute,
   renderFlow,
   renderText,
+  safeCssColor,
   type TermLookup,
   type TipList,
 } from "../diagram/diagram.part.ts";
@@ -34,6 +36,11 @@ import {
 } from "./axis-grid-layout.ts";
 import type { MapChange } from "./data.ts";
 import { MAP_LAYOUT, type MapLayout } from "./layout.ts";
+import {
+  type MermaidNodeStyle,
+  type MermaidWireStyle,
+  textColorOn,
+} from "./mermaid-style.ts";
 import type { Mindmap, MindmapItem } from "./mindmap.ts";
 import type { MindmapLayout, MindmapPlacement } from "./mindmap-layout.ts";
 import { MINDMAP_LAYOUT } from "./mindmap-layout.ts";
@@ -168,10 +175,25 @@ export type MapFlowArgs = {
   keep?: { nodes: string[]; wires: string[] } | undefined;
   /** 補足の changes のノード・グループ・線の ID ごとの計画した変更 */
   changes?: Record<string, MapChange> | undefined;
+  /** Mermaid の `style`・`classDef`・`linkStyle` の色（線はその線の ID から） */
+  styles?: MapMermaidStyles | undefined;
+};
+
+/** renderMapFlow に渡す Mermaid の色（`readMermaidStyles` の戻り値の、線の番号を線の ID に置き換えたもの） */
+export type MapMermaidStyles = {
+  nodes: Record<string, MermaidNodeStyle>;
+  wires: Record<string, MermaidWireStyle>;
+  defaultWire?: MermaidWireStyle | undefined;
 };
 
 /** 状態遷移図のノードの形状（`junction` はアーキテクチャ図の分岐点） */
-export type MapStateShape = "start" | "end" | "choice" | "note" | "junction";
+export type MapStateShape =
+  | "start"
+  | "end"
+  | "choice"
+  | "note"
+  | "junction"
+  | "fork";
 
 /** ノードの中へ入れる HTML（`head` は種類の行の末尾、`body` はノードの末尾） */
 export type MapNodePart = { head: string; body: string; tips: string };
@@ -183,6 +205,7 @@ const STATE_SHAPE_NAMES = {
   choice: "分岐",
   note: "ノート",
   junction: "分岐点",
+  fork: "並行の分岐と合流",
 } satisfies Record<MapStateShape, string>;
 
 /** html の index から始まる要素の、対応する閉じタグの位置（無ければ -1） */
@@ -521,18 +544,40 @@ const flowNode = (args: MapFlowArgs, node: MapNode): MdmarkDiagramNode => {
   };
 };
 
+/** Mermaid の面・枠線・文字の色（`color` が無く `fill` があるときの文字は `textColorOn`。`changed` なら枠線を持たせない） */
+const mermaidPaint = (
+  painted: MermaidNodeStyle | undefined,
+  changed: boolean,
+): { fill?: string; stroke?: string; text?: string } => {
+  if (painted === undefined) return {};
+  const text =
+    painted.color ??
+    (painted.fill === undefined ? undefined : textColorOn(painted.fill));
+  return {
+    ...(painted.fill === undefined ? {} : { fill: painted.fill }),
+    ...(painted.stroke === undefined || changed
+      ? {}
+      : { stroke: painted.stroke }),
+    ...(text === undefined ? {} : { text }),
+  };
+};
+
 /** ノードの種類の行・アイコン・形状・色 */
 const flowNodeStyle = (
   args: MapFlowArgs,
   node: MapNode,
 ): MdmarkDiagramNode["style"] => {
-  const kind = kindOf(args.kinds, node.classes);
+  const kind = kindOf(args.kinds, node.classes) ?? {};
+  const note = args.shapes?.[node.id] === "note";
+  // 計画した変更を持つノードは、変更の色の枠線を優先する
+  const changed = args.changes?.[node.id] !== undefined;
   return {
-    label:
-      args.shapes?.[node.id] === "note" ? STATE_SHAPE_NAMES.note : kind?.label,
-    icon: kind?.icon,
-    shape: kind?.shape,
-    color: args.colors?.[node.id] ?? kind?.color,
+    label: note ? STATE_SHAPE_NAMES.note : kind.label,
+    icon: kind.icon,
+    // layoutMap は map の種類の形状に無い Mermaid の形状だけを持たせる
+    shape: (node.shape as MdmarkMermaidShape | undefined) ?? kind.shape,
+    color: args.colors?.[node.id] ?? kind.color,
+    ...mermaidPaint(args.styles?.nodes[node.id], changed),
   };
 };
 
@@ -553,7 +598,23 @@ const flowWire = (args: MapFlowArgs, wire: MapWire): MdmarkDiagramWire => {
       ...line,
       color: args.colors?.[wire.id] ?? line.color,
       both: wire.both ?? false,
+      ...(wire.ends === undefined ? {} : { ends: wire.ends }),
+      ...wirePaint(args, wire.id),
     },
+  };
+};
+
+/** 線の Mermaid の色（`linkStyle {番号}` を `linkStyle default` に重ねる。計画した変更を持つ線は変更の色を優先する） */
+const wirePaint = (
+  args: MapFlowArgs,
+  id: string,
+): { stroke?: string; text?: string } => {
+  const paint = { ...args.styles?.defaultWire, ...args.styles?.wires[id] };
+  return {
+    ...(paint.stroke === undefined || args.changes?.[id] !== undefined
+      ? {}
+      : { stroke: paint.stroke }),
+    ...(paint.color === undefined ? {} : { text: paint.color }),
   };
 };
 
@@ -1449,6 +1510,21 @@ const seqMessageGeometry = (
   };
 };
 
+/** 中央の参加者へのメッセージ（`->>()`・`()->>`）の端の小さな円 */
+const seqCentral = (
+  item: SequenceMessage,
+  geometry: { y: number; self: boolean; start: number; end: number },
+  dim: string,
+): string => {
+  if (item.central === undefined || geometry.self) return "";
+  const at = (x: number) =>
+    `<circle class="map-seq-central${dim}" cx="${x}" cy="${geometry.y}" r="4" fill="var(--mdmark-color-bg)" stroke="var(--mdmark-color-diagram-line)" stroke-width="1.5"></circle>`;
+  return (
+    (item.central === "to" ? "" : at(geometry.start)) +
+    (item.central === "from" ? "" : at(geometry.end))
+  );
+};
+
 /** メッセージの線の矢じりの属性 */
 const seqArrowHeads = (id: string, style: SequenceArrowStyle): string => {
   const head =
@@ -1505,7 +1581,7 @@ const renderSeqMessage = (
   const noteOwner = seqNoteOwner(context, { message, item, noteTips });
   const { d } = geometry;
   return {
-    wire: `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${seqArrowHeads(context.id, style)}></path><path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
+    wire: `<path class="mdmark-diagram-wire${dim}" data-line="map" data-message="${message}" d="${d}"${style.dotted ? ' stroke-dasharray="6 4"' : ""} stroke-width="1.5" style="stroke:var(--mdmark-color-diagram-line)"${seqArrowHeads(context.id, style)}></path>${seqCentral(item, geometry, dim)}<path class="map-wire-hit" data-message="${message}"${noteOwner} d="${d}"></path>`,
     label: seqMessageLabel(context, { message, item, geometry, dim }),
     // 選んだ参加者のメッセージと再生している今のメッセージの線に、データの印を送り手から受け手へ流す
     packet:
@@ -2281,7 +2357,14 @@ export const renderMapState = (args: MapStateLoopArgs): string => {
 };
 
 /** 部品『mapの状態遷移図』のノードの寸法（px）。`loopSpace` は同じ状態への遷移を持つ状態の上に空ける高さ */
-export const MAP_STATE = { point: 32, choice: 40, loopSpace: 56 } as const;
+export const MAP_STATE = {
+  point: 32,
+  choice: 40,
+  loopSpace: 56,
+  /** 並行の分岐と合流（`<<fork>>`・`<<join>>`）の細い棒の幅と高さ */
+  forkWidth: 72,
+  forkHeight: 10,
+} as const;
 
 /** 部品『mapの状態遷移図』の同じ状態への遷移（`node` は状態の ID） */
 export type MapStateLoop = {
@@ -3664,6 +3747,16 @@ const axisGridStyle = (
   const own = context.args.colors[placed.stateKey];
   const color = colorVar(own ?? placed.color);
   const fill = colorVar(own ?? placed.color, "bg");
+  // ブロック図の Mermaid の `style`・`classDef` の色（ID を持つ項目だけ）
+  const item = context.args.grid.items.find(
+    (one) => one.stateKey === placed.stateKey,
+  );
+  const paint = mermaidPaint(
+    item?.id === undefined
+      ? undefined
+      : context.args.grid.styles?.nodes[item.id],
+    false,
+  );
   return [
     `left:${placed.x}px`,
     `top:${placed.y}px`,
@@ -3671,6 +3764,16 @@ const axisGridStyle = (
     `height:${placed.height}px`,
     color === undefined ? "" : `--map-axis-color:${color}`,
     fill === undefined ? "" : `--map-axis-fill:${fill}`,
+    ...(
+      [
+        ["--map-node-fill", paint.fill],
+        ["--map-node-stroke", paint.stroke],
+        ["--map-node-text", paint.text],
+      ] as const
+    ).flatMap(([name, value]) => {
+      const safe = safeCssColor(value);
+      return safe === undefined ? [] : [`${name}: ${escapeHtml(safe)}`];
+    }),
   ]
     .filter((entry) => entry !== "")
     .join(";");

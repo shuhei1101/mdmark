@@ -857,32 +857,3 @@ test("test_finish_mermaid_node_links_when_not_allowed", async () => {
     "n1",
   ]);
 });
-
-// 指定したコードブロックだけを図にする（正常系）
-test("test_attach_mermaid_when_blocks_given", async () => {
-  // 準備
-  const { attachMermaid } = await loadMermaid();
-  const root = createMermaidRoot([FLOWCHART, GANTT]);
-  const blocks = [
-    ...root.querySelectorAll<HTMLElement>("[data-mdmark-mermaid]"),
-  ];
-  // 実行
-  const handle = attachMermaid({
-    ...attachOptions(root),
-    blocks: [blocks[1] as HTMLElement],
-  });
-  detachers.push(handle.detach);
-  await handle.ready;
-  // 検証
-  const figures = root.querySelectorAll(
-    'figure.mdmark-diagram[data-diagram="mermaid"]',
-  );
-  expect(figures).toHaveLength(1);
-  expect(blocks[0]?.isConnected).toBe(true);
-  expect(blocks[0]?.hidden).toBe(false);
-  expect(
-    (blocks[0] as HTMLElement).compareDocumentPosition(
-      figures[0] as HTMLElement,
-    ) & Node.DOCUMENT_POSITION_FOLLOWING,
-  ).toBeTruthy();
-});

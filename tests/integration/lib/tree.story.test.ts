@@ -55,7 +55,7 @@ test("test_basic", async () => {
   await expect(list.getAttribute("aria-label")).resolves.toBe("ファイルツリー");
   await expect(list.locator("li.mdmark-tree-folder").count()).resolves.toBe(2);
   await expect(list.locator("li.mdmark-tree-file").count()).resolves.toBe(2);
-  await expect(page.locator(".mdmark-tree-bar").count()).resolves.toBe(0);
+  await expect(page.locator(".mdmark-code-bar").count()).resolves.toBe(0);
   await expect(page.locator("#storybook-root button").count()).resolves.toBe(0);
   await expect(nameVisible(page, "index.ts")).resolves.toBe(true);
   const icons = await iconsOf(page);
@@ -69,11 +69,15 @@ test("test_interactive", async () => {
   // 準備・実行
   const page = await open("interactive");
   // 検証
-  await expect(page.locator(".mdmark-tree-kind").innerText()).resolves.toBe(
-    "tree",
-  );
   await expect(
-    page.locator("button.mdmark-tree-copy").innerText(),
+    page
+      .locator(".mdmark-tree > .mdmark-code-bar .mdmark-code-lang-name")
+      .innerText(),
+  ).resolves.toBe("tree");
+  await expect(
+    page
+      .locator(".mdmark-tree > .mdmark-code-bar button.mdmark-code-copy")
+      .innerText(),
   ).resolves.toBe("コピー");
   await expect(expandedStates(page)).resolves.toEqual(["true", "true"]);
   await expect(nameVisible(page, "index.ts")).resolves.toBe(true);
@@ -251,7 +255,7 @@ test("test_copied", async () => {
   // 準備・実行
   const page = await open("copied");
   // 検証
-  const button = page.locator("button.mdmark-tree-copy");
+  const button = page.locator("button.mdmark-code-copy");
   await expect(button.getAttribute("data-state")).resolves.toBe("copied");
   await expect(button.innerText()).resolves.toBe("コピーしました");
   await expect(button.locator("svg").count()).resolves.toBe(1);
@@ -310,4 +314,94 @@ test("test_wrap", async () => {
   expect(result.name[1]).toBeCloseTo(result.name[0] ?? 0, 0);
   expect(result.note[0]).toBeCloseTo(result.name[0] ?? 0, 0);
   await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+/** ツリーの帯の高さ・余白・背景と、コピーのボタンの帯の右端からの位置 */
+function treeBarLayout(page: Page) {
+  return page.locator(".mdmark-tree > .mdmark-code-bar").evaluate((bar) => {
+    const rect = bar.getBoundingClientRect();
+    const copy = bar
+      .querySelector(".mdmark-code-copy")
+      ?.getBoundingClientRect();
+    const style = getComputedStyle(bar);
+    return {
+      height: rect.height,
+      padding: `${style.paddingTop} ${style.paddingRight} ${style.paddingBottom} ${style.paddingLeft}`,
+      background: style.backgroundColor,
+      copyRight: copy ? Math.round(rect.right - copy.right) : undefined,
+    };
+  });
+}
+
+/** コードブロックの帯の高さ・余白・背景と、コピーのボタンの帯の右端からの位置 */
+async function codeBarLayout(): Promise<
+  Awaited<ReturnType<typeof treeBarLayout>>
+> {
+  const page = await holder.openStory("parts-codeblock--language-label");
+  return page.locator(".mdmark-code > .mdmark-code-bar").evaluate((bar) => {
+    const rect = bar.getBoundingClientRect();
+    const copy = bar
+      .querySelector(".mdmark-code-copy")
+      ?.getBoundingClientRect();
+    const style = getComputedStyle(bar);
+    return {
+      height: rect.height,
+      padding: `${style.paddingTop} ${style.paddingRight} ${style.paddingBottom} ${style.paddingLeft}`,
+      background: style.backgroundColor,
+      copyRight: copy ? Math.round(rect.right - copy.right) : undefined,
+    };
+  });
+}
+
+// 言語 text のコードブロックの罫線から描いた。帯の左端のラベルが text で、帯の高さ・余白・背景・コピーボタンの位置がコードブロックの帯と同じ（PlainLanguage）
+test("test_plain_language", async () => {
+  // 準備・実行
+  const code = await codeBarLayout();
+  const page = await open("plain-language");
+  // 検証
+  await expect(
+    page.locator("div.mdmark-tree").getAttribute("data-tree-language"),
+  ).resolves.toBe("text");
+  await expect(
+    page
+      .locator(".mdmark-tree > .mdmark-code-bar .mdmark-code-lang-name")
+      .innerText(),
+  ).resolves.toBe("text");
+  await expect(
+    page
+      .locator(".mdmark-tree > .mdmark-code-bar button.mdmark-code-copy")
+      .innerText(),
+  ).resolves.toBe("コピー");
+  const tree = await treeBarLayout(page);
+  expect(tree.height).toBeCloseTo(code.height, 0);
+  expect(tree.padding).toBe(code.padding);
+  expect(tree.background).toBe(code.background);
+  expect(tree.copyRight).toBe(code.copyRight);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 言語の無いコードブロックの ASCII の罫線から描いた。帯にラベルが無く、右端にコピーボタンだけを持つ（PlainNoLanguage）
+test("test_plain_no_language", async () => {
+  // 準備・実行
+  const page = await open("plain-no-language");
+  // 検証
+  await expect(
+    page.locator("div.mdmark-tree").getAttribute("data-tree-language"),
+  ).resolves.toBe("");
+  await expect(
+    page.locator(".mdmark-tree > .mdmark-code-bar .mdmark-code-lang").count(),
+  ).resolves.toBe(0);
+  await expect(
+    page
+      .locator(".mdmark-tree > .mdmark-code-bar button.mdmark-code-copy")
+      .innerText(),
+  ).resolves.toBe("コピー");
+  const names = await page.locator(".mdmark-tree-name").allInnerTexts();
+  expect(names.map((name) => name.trim())).toEqual([
+    "src/",
+    "index.ts",
+    "parts/",
+  ]);
+  const layout = await treeBarLayout(page);
+  expect(layout.copyRight).toBeLessThan(16);
 });

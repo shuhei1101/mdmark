@@ -51,7 +51,7 @@ functions:
       type: ArchitectureDiagram
       description: 読み取り結果
     process: |-
-      1. 行ごとに、`group {ID}[({アイコン})][{名前}] [in {ID}]`・`service {ID}[({アイコン})][{名前}] [in {ID}]`・`junction {ID} [in {ID}]`・線の行（`{ID}[{group}]:{辺} [<]--[>] {辺}:{ID}[{group}]`）・`%%`・空の行に分けて読み取る
+      1. 行ごとに、`group {ID}[({アイコン})][{名前}] [in {ID}]`・`service {ID}[({アイコン})][{名前}] [in {ID}]`・`junction {ID} [in {ID}]`・線の行（`{ID}[{group}]:{辺} [<]--[>] {辺}:{ID}[{group}]`）・`%%`・空の行に分けて読み取る。mermaid と同じく、`align row {ID} …`・`align column {ID} …`（並べた ID を配置で同じ行・列にそろえる）と、接頭辞を持つアイコンの名前（`logos:aws-lambda` など。描けないアイコンは種類のアイコンを持たないノードで描き、項目にしない）も読み取る
          - 読み取れない行と、5 つのほかのアイコン・無い group を指す `in` は `map_invalid` の項目にする
     unit_tests:
       - name: test_parse_architecture
@@ -66,6 +66,12 @@ functions:
         condition: 線の行 `web:X --> L:cdn`
         mock: なし
         expected: '`map_invalid` が 1 件で行番号を含む'
+      - name: test_parse_architecture_when_mermaid_syntax
+        case: 正常
+        summary: mermaid の公式の記法の例の align と接頭辞のアイコンを読み取る
+        condition: '`group api(logos:aws-lambda)[API]`・`service db(logos:aws-aurora)[Database] in api`・`service s1(server)[S1]`・`align row db s1` を持つアーキテクチャ図'
+        mock: なし
+        expected: '`problems` が空。`db` の親が `api` で種類のアイコンを持たず、`aligns` に `{ axis: "row", ids: ["db", "s1"] }` がある'
   - name: architectureToFlowchart
     title: アーキテクチャ図を構成図の入力にする
     kind: 関数

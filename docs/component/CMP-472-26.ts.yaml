@@ -189,7 +189,40 @@ states:
         value: 'true'
       - name: wrap
         value: 'true'
-lead: 言語 `tree` のコードブロックに罫線で記載したフォルダ構成を、フォルダとファイルの入れ子のツリーにする。`render` は全ての項目を開いて出し、`mount` が種類とコピーボタンの帯とフォルダの開閉を付ける。
+  - name: PlainLanguage
+    description: 言語 `text` のコードブロックの罫線から描いた。帯の左端のラベルが `text` で、帯の高さ・余白・背景・コピーボタンの位置がコードブロックの帯と同じ
+    args:
+      - name: nodes
+        value: '[{"name":"mdmark/","children":[{"name":"src/","children":[{"name":"index.ts"}]},{"name":"README.md"}]}]'
+      - name: source
+        value: |-
+          mdmark/
+          ├── src/
+          │   └── index.ts
+          └── README.md
+      - name: interactive
+        value: 'true'
+      - name: language
+        value: text
+    notes:
+      定義: モック `docs/mock/components/file-tree-plain-lines/` の「言語 text の罫線」
+  - name: PlainNoLanguage
+    description: 言語の無いコードブロックの ASCII の罫線から描いた。帯にラベルが無く、右端にコピーボタンだけを持つ
+    args:
+      - name: nodes
+        value: '[{"name":"src/","children":[{"name":"index.ts"},{"name":"parts/"}]}]'
+      - name: source
+        value: |-
+          src/
+          |-- index.ts
+          `-- parts/
+      - name: interactive
+        value: 'true'
+      - name: language
+        value: '""'
+    notes:
+      定義: モック `docs/mock/components/file-tree-plain-lines/` の「言語なしの ASCII の罫線」
+lead: 言語 `tree` のコードブロックと、罫線の行を 2 行以上持つ言語が `tree` でないコードブロックに罫線で記載したフォルダ構成を、フォルダとファイルの入れ子のツリーにする。`render` は全ての項目を開いて出し、`mount` がコードブロックと同じ部品の帯（記載した言語のラベルとコピーボタン）とフォルダの開閉を付ける。
 args:
   - name: nodes
     type: オブジェクトの配列
@@ -211,7 +244,7 @@ args:
     type: 真偽値
     required: false
     default: 'false'
-    description: '`mount` が付けた状態にするか。`true` のとき、ツリーの上に種類 `tree` とコピーボタンの帯を配置し、子を持つフォルダの名前とアイコンを開閉のボタンにし、`open` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にする'
+    description: '`mount` が付けた状態にするか。`true` のとき、ツリーの上に部品設計『コードブロック』の帯と同じ部品の帯（`language` のラベルとコピーボタン）を配置し、子を持つフォルダの名前とアイコンを開閉のボタンにし、`open` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にする'
     status: planned
   - name: copyState
     type: 列挙
@@ -233,6 +266,11 @@ args:
     required: false
     default: 'false'
     description: '`<!-- tree: {"wrap": true} -->` を持つか。`true` のとき `div.mdmark-tree` に class `mdmark-tree-wrap` を付け、長い名前をアイコンの右の名前の列の中で折り返し、注釈を名前の下の行に名前の頭から出す。罫線と入れ子の位置は `false` と同じ'
+  - name: language
+    type: 文字列
+    required: false
+    default: '`tree`'
+    description: 帯の左端のラベルにする言語。言語 `tree` のコードブロックは `tree`、言語が `tree` でない罫線のコードブロックは記載した言語（`data-tree-language`）にする。空のとき（言語なしの罫線）はラベルを出さない
 css_properties:
   - name: --mdmark-color-muted
     syntax: <color>

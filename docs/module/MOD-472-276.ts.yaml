@@ -29,22 +29,6 @@ constants:
     refs:
       - IF-472-35#constraints[色分けの対象]
     status: planned
-  - name: TREE_LINE_PATTERN
-    title: 罫線のフォルダ構成の行
-    container: src/code-block/code-block.syntax.ts
-    summary: 罫線でフォルダ構成を記載した行に該当する正規表現。行頭の空白（タブ・空白・`tree` コマンドが縦線の後ろに出す NBSP の U+00A0）と縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行。`tree` 2.1.1 の出力を `od -c` で測り、縦線の後ろが NBSP 2 つと空白 1 つであることを確認した
-    value: '/^[\t \u00A0│|]*(?:├── |└── |\|-- |`-- )/u'
-    refs:
-      - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
-    status: planned
-  - name: TREE_WARNING_MIN_LINES
-    title: 罫線の記載の警告を出す行の数
-    container: src/code-block/code-block.syntax.ts
-    summary: '`TREE_LINE_PATTERN` に該当する行がこの数以上あるコードブロックに、罫線のフォルダ構成の記載の警告を出す。1 行だけの罫線は説明の中の例として許可する'
-    value: '2'
-    refs:
-      - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
-    status: planned
   - name: MARKDOWN_LANGUAGES
     title: 描いた結果を出す言語
     container: src/code-block/code-block.syntax.ts
@@ -69,7 +53,7 @@ functions:
       | `fold` | 最初から畳む行 |
       | `wrap` | 折り返すか |
       | `raw` | 既定で元の Markdown を出すか（`true` だけを出す指定にし、ほかは `false`） |
-      | `tree_warning` | 罫線のフォルダ構成の記載の警告を出すか（`false` だけを止める指定にし、ほかは `true`） |
+      | `tree_warning` | 言語が `tree` でない罫線のフォルダ構成をファイルツリーで描くか（`false` だけを描かない指定にし、ほかは `true`） |
 
       `highlight`・`fold` の要素は行の番号か行の範囲（`from`〜`to`。`to` を省くと `from` の 1 行）で、`lines.start` から数えた行の番号として読み取り、コードブロックの行に無い番号と `from` より小さい `to` は適用せずに警告にする
     args:
@@ -79,7 +63,7 @@ functions:
         description: '`options` はマーカーの設定、`lineCount` はマーカーを削除した後のコードブロックの行の数'
     returns:
       type: '{ title: string; lineNumbers: boolean; lineStart: number; highlights: Set<number>; folds: Set<number>; wrap: boolean; raw: boolean; treeWarning: boolean; warnings: WarningItem[] }'
-      description: タイトル（無ければ空）・行番号を出すか・最初の行の番号・強調する行と最初から畳む行の位置（1 から）・折り返すか・既定で元の Markdown を出すか・罫線のフォルダ構成の記載の警告を出すか・読み込めなかった指定
+      description: タイトル（無ければ空）・行番号を出すか・最初の行の番号・強調する行と最初から畳む行の位置（1 から）・折り返すか・既定で元の Markdown を出すか・言語が `tree` でない罫線のフォルダ構成をファイルツリーで描くか・読み込めなかった指定
     unit_tests:
       - name: test_read_code_spec
         case: 正常
@@ -113,7 +97,7 @@ functions:
         expected: 1 つ目は `wrap` が `true`、2 つ目は `wrap` が `false` で `lineNumbers` が `false`。どちらも `warnings` が空
       - name: test_read_code_spec_when_tree_warning
         case: 正常
-        summary: tree_warning の false だけで罫線の記載の警告を止める
+        summary: tree_warning の false だけでファイルツリーにしない
         condition: '`{"tree_warning": false}`・`{"tree_warning": true}`・`{}`、`lineCount` が 3'
         mock: なし
         expected: '`treeWarning` が順に `false`・`true`・`true`。どれも `warnings` が空'
@@ -123,36 +107,6 @@ functions:
         condition: '`{ raw: true }`・`{ raw: false }`・`{}` の 3 つの設定'
         mock: なし
         expected: '`raw` が `true`・`false`・`false`'
-  - name: countTreeLines
-    title: 罫線のフォルダ構成の行を数える
-    container: src/code-block/code-block.syntax.ts
-    kind: 関数
-    scope: internal
-    summary: コードブロックの中身を行に分け、`TREE_LINE_PATTERN` に該当する行の数を返却する
-    args:
-      - name: source
-        type: string
-        required: true
-        description: コードブロックの中身
-    returns:
-      type: number
-      description: 罫線のフォルダ構成の行の数
-    unit_tests:
-      - name: test_count_tree_lines
-        case: 正常
-        summary: 今の罫線と ASCII の罫線と縦線の後ろの罫線を数える
-        condition: '`mdmark/`・`├── src/`・`│   └── index.ts`・`└── README.md`・`|-- a`・`` `-- b ``・`|   |-- c`・`tree` コマンドの出力の `│` の後ろが NBSP 2 つと空白 1 つの `│\u00A0\u00A0 └── b`'
-        mock: なし
-        expected: '`7`'
-      - name: test_count_tree_lines_when_not_tree
-        case: 正常
-        summary: 行の途中の罫線と、罫線の後ろに空白の無い行は数えない
-        condition: '`a ├── b`・`├──b`・`-- コメント`・`const a = b || c;`'
-        mock: なし
-        expected: '`0`'
-    refs:
-      - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
-    status: planned
   - name: readLineMarks
     title: コードの行のマーカーを読み込む
     container: src/code-block/code-block.syntax.ts
@@ -224,9 +178,9 @@ functions:
 
       - `readCodeSpec` と `readLineMarks` と `readFolds` の読み込めない指定は、コードブロックの前
       - 後ろが `fence` でない `code` のマーカーの場所（`code` がオンのときだけ）
-      - `code` がオンで、mermaid のコードブロックでなく、`readCodeSpec` の `treeWarning` が `true` のコードブロックのうち、`countTreeLines` が `TREE_WARNING_MIN_LINES` 以上のものの前。罫線のフォルダ構成の記載の警告で、文言は画面設計『文書』の記載の警告の文言（言語が空なら `言語の無いコードブロックに`）
 
       言語 `tree`・図の部品・埋め込んだ HTML のコードブロックは、先のコアルールが最初の単語との一致で `fence` でなくしているため該当しない。
+      罫線のフォルダ構成を持つ言語が `tree` でないコードブロックも、先のコアルールがファイルツリーにしているため該当しない。
       `tree:src` のように `:ファイル名` を付けたものはここで普通のコードブロックとして描く
     args:
       - name: state
@@ -242,20 +196,7 @@ functions:
       - '#functions[syntaxLanguageOf]'
       - '#functions[splitInfoString]'
       - '#functions[readFolds]'
-      - '#functions[countTreeLines]'
     unit_tests:
-      - name: test_build_code_blocks_when_tree_lines
-        case: 異常
-        summary: 罫線の行が 2 行以上の言語が tree でないコードブロックの前に罫線の記載の警告を差し込む
-        condition: インターフェース定義『文書をHTML文字列にする』の「正常系（罫線のフォルダ構成の言語が tree でないコードブロック）」の文書
-        mock: なし
-        expected: 1 つ目（言語 `text`）と 2 つ目（言語なし）の前に罫線の記載の警告があり、本文がそれぞれ `言語 text のコードブロックに、`・`言語の無いコードブロックに、` で始まる。3 つ目（1 行だけ）・4 つ目（`tree_warning` が `false`）の前には無く、6 つ目の前には `tree_warning` の値の警告と罫線の記載の警告の 2 つがある。どのコードブロックも記載した言語の部品のまま
-      - name: test_build_code_blocks_when_tree_lines_in_mermaid
-        case: 正常
-        summary: mermaid のコードブロックと code がオフの文書には罫線の記載の警告を出さない
-        condition: '罫線の行を 3 行持つ言語 `mermaid` のコードブロックと、`<!-- features: {"code": false} -->` の文書の罫線の行を 3 行持つ言語 `text` のコードブロック'
-        mock: なし
-        expected: どちらの前にも記載の警告が無い
       - name: test_build_code_blocks
         case: 正常
         summary: マーカーと行のマーカーを持つコードブロックも何も持たないコードブロックも帯を持つ部品にする

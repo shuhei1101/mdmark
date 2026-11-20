@@ -102,7 +102,7 @@ functions:
       description: 読み取り結果
     process: |-
       1. 1 行目（`mindmap`）・空の行・`%%` で始まる行・`::icon(` で始まる行・`:::` で始まる行を飛ばす（`::icon()` と `:::` は描かず、書き方の警告にもしない）
-      2. 最初の項目の行を根にする。根より浅いか同じ字下げの行は `map_invalid` の項目（行番号・行の文字・根を 1 つにする修正方法）にしてスキップする
+      2. `"`　`"` の Markdown の文字と引用符で囲んだ文字が閉じる前に改行した行は、閉じる行までを 1 つの項目の文字につなぐ（改行を名前の改行にする）。最初の項目の行を根にする。根より浅いか同じ字下げの行は `map_invalid` の項目（行番号・行の文字・根を 1 つにする修正方法）にしてスキップする
       3. 行の文字を、外側の記号から `(( ))`・`)) ((`・`) (`・`{{ }}`・`( )`・`[ ]` の順に照らして形状と内側の文字にし、記号の前の文字を `id` にする。どれにも一致しなければ `plain` で行の文字を `label` にする
       4. 直前までの項目のうち、字下げがその行より浅い最も近い項目を親にする（親より浅く戻る行は、その深さの直前の項目の兄弟になる）
       5. ID を持たない項目の `label` を数え、2 つ以上の `label` を `ambiguous` に入れ、その項目の `stateKey` を `n{order}` にする
@@ -131,6 +131,12 @@ functions:
         condition: 根の子 A（字下げ 4）と A の子 B（字下げ 8）の後に、字下げ 6 の C
         mock: なし
         expected: C の親が A で B の兄弟になる。`problems` が空
+      - name: test_parse_mindmap_when_markdown_string
+        case: 正常
+        summary: 改行を持つ Markdown の文字を 1 つの項目にする
+        condition: '根が `id1["`**Root** with` で次の行が `a second line`、その次が ``Unicode works too: 🤓`"]`` の mindmap'
+        mock: なし
+        expected: '`problems` が空で、根の名前が 3 行（`Root with`・`a second line`・`Unicode works too: 🤓`）'
     refs:
       - IF-472-35#constraints[map のマインドマップ]
   - name: mindmapItemOf

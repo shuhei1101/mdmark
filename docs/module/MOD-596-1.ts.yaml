@@ -51,7 +51,7 @@ functions:
       type: ClassDiagram
       description: 読み取り結果
     process: |-
-      1. 行ごとに、`namespace {ID} {`・`class {ID}[~T~] {`（`}` までをメンバーの区間）・`class {ID}`・`<<{注釈}>> {ID}`・区間の中の `<<{注釈}>>`・`{ID} : {メンバー}`・`note for {ID} "{文}"`・関係の行（`{元} ["{多重度}"] {記号} ["{多重度}"] {先} [: {ラベル}]`）・`}`・`%%`・空の行に分けて読み取る
+      1. 行ごとに、`namespace {ID} {`・`class {ID}[~T~] {`（`}` までをメンバーの区間）・`class {ID}`・`<<{注釈}>> {ID}`・区間の中の `<<{注釈}>>`・`{ID} : {メンバー}`・`note for {ID} "{文}"`・関係の行（`{元} ["{多重度}"] {記号} ["{多重度}"] {先} [: {ラベル}]`）・`}`・`%%`・空の行に分けて読み取る。mermaid と同じく、クラスを指さない `note "{文}"`（図のノート）・`note` の引用符で囲んだ複数行の文・`class {ID}["{名前}"]`・バッククォートで囲んだクラス名（空白と記号を含む）・`class {ID} <<{注釈}>>`・`class {ID}:::{クラス}`（後ろに `{` を続けた区間を含む）・`namespace {ID}["{名前}"] {` と `.` を含む名前・入れ子の `namespace`・両向きの関係（`<|--|>`・`<|..|>`・`*--*` など両端に記号を持つもの）・ロリポップのインターフェース（`()--`・`--()`。名前だけのインターフェースの円のノードにする）・`classDef`・`cssClass`・`style`（`readMermaidStyles` で `styles` に入れる）・`click`・`link`・`callback`・`direction`
       2. メンバーは、先頭の `+`・`-`・`#`・`~` を可視性、末尾の `$` を静的、`*` を抽象、`(` を持てばメソッドにする。属性の名前（`name`）は、最初の空白か `:` の前まで（`+対応: dict` は `対応`）。可視性を解除した残りの `~` は左から順に、直後が `~`・`,`・空白・`)`・文字列の終わりで閉じを待つ開きがある `~` を `>`、それ以外を開きにして、組になった開きを `<` にした文字を `text` にする（組にならない開きは `~` のまま。`name` は置き換えない）
       3. 関係の記号（`<|--`・`--|>`・`*--`・`--*`・`o--`・`--o`・`-->`・`<--`・`..>`・`<..`・`..|>`・`<|..`・`--`・`..`）を、記号の側の端の形と `..` の破線にする
          - 読み取れない行・閉じの無いクラスと `namespace` は `map_invalid` の項目（行番号・行の文字・修正方法）にする
@@ -86,6 +86,12 @@ functions:
         condition: '`+時間範囲(期間) tuple~int, int~`・`+対応: dict~str, list~int~~`・`+一覧: list~dict~str, int~~`・`+孤立: x~y` のメンバーを持つクラス'
         mock: なし
         expected: '`text` が順に `時間範囲(期間) tuple<int, int>`・`対応: dict<str, list<int>>`・`一覧: list<dict<str, int>>`・`孤立: x~y` で、`name` が `時間範囲`・`対応`・`一覧`・`孤立`'
+      - name: test_parse_class_diagram_when_mermaid_syntax
+        case: 正常
+        summary: mermaid の公式の記法の例のクラス図の行を読み取る
+        condition: '`note "From Duck till Zebra"`・`class Animal["Animal with a label"]`・`` class `Car Class` ``・`Animal <|--|> Zebra`・`bar ()-- foo`・`namespace Company.Engineering { namespace Backend { class A } }`・`class Shape <<interface>>`・`class Animal:::pink {`・`classDef pink fill:#f9f`・`cssClass "Car" pink` を持つクラス図'
+        mock: なし
+        expected: '`problems` が空。`Animal` の名前が `Animal with a label`、`Car Class` のクラスがあり、`Animal`–`Zebra` の線が両端に三角を持ち、`bar` がインターフェースのノード、`A` の親が `Backend`、`Shape` の注釈が `interface`、`styles.nodes.Animal` と `styles.nodes.Car` の `fill` が `#f9f`'
     refs:
       - IF-472-35#constraints[map のクラス図]
   - name: classToFlowchart

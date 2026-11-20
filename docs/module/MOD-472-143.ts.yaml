@@ -52,9 +52,9 @@ functions:
     side_effects: '`root` の中の mermaid のコードブロックに `hidden` を付けて前後に要素を配置する。mermaid の `initialize` を呼ぶ。読み込めないモジュールを `console.error` に出す。祖先の `class` を `MutationObserver` で、OS の配色を `matchMedia("(prefers-color-scheme: dark)")` の `change` で確認する'
     args:
       - name: options
-        type: '{ root: HTMLElement; scope: HTMLElement; config: ResolvedConfig; mountId: number; isCurrent: () => boolean; modules: Map<string, Promise<{ default?: unknown }>>; placement: TooltipPlacement; importModule?: SyntaxImport; blocks?: HTMLElement[] }'
+        type: '{ root: HTMLElement; scope: HTMLElement; config: ResolvedConfig; mountId: number; isCurrent: () => boolean; modules: Map<string, Promise<{ default?: unknown }>>; placement: TooltipPlacement; importModule?: SyntaxImport }'
         required: true
-        description: '`root` は描いた要素（本文の列）、`scope` は描く先の要素（`mount` の `el`。明暗の class を持つ）、`config` はこの描画の設定（`mermaid` を使用する）、`mountId` は `mount` の通し番号（`render` の `id` に使用する）、`isCurrent` は描いた文書がまだ今のものか、`modules` は `mount` ごとに 1 つの読み込んだモジュールの記録、`placement` は図のツールチップを先に出す側、`importModule` はモジュールを読み込む関数（既定 `(url) => import(url)`）、`blocks` は図にするコードブロック（省くと `root` の中の全ての `[data-mdmark-mermaid]`。map の図から戻したコードブロックだけを描くときに指定する）'
+        description: '`root` は描いた要素（本文の列）、`scope` は描く先の要素（`mount` の `el`。明暗の class を持つ）、`config` はこの描画の設定（`mermaid` を使用する）、`mountId` は `mount` の通し番号（`render` の `id` に使用する）、`isCurrent` は描いた文書がまだ今のものか、`modules` は `mount` ごとに 1 つの読み込んだモジュールの記録、`placement` は図のツールチップを先に出す側、`importModule` はモジュールを読み込む関数（既定 `(url) => import(url)`）'
     returns:
       type: '{ ready: Promise<void>; detach: () => void }'
       description: '`ready` は全ての対象を図か通知ブロックか記載の警告にし終えたら解決する（失敗しても拒否しない）。`detach` は監視と付けた図の操作を削除する'
@@ -147,12 +147,6 @@ functions:
         condition: 幅 1000px の描く先に、ノード 2 つの flowchart の mermaid のコードブロック
         mock: mermaid のモジュール
         expected: '`.mdmark-diagram-sizer` の幅が表示する枠より狭く、表示する枠の左端からの空きと右端までの空きの差が 2px 以内'
-      - name: test_attach_mermaid_when_blocks_given
-        case: 正常
-        summary: 指定したコードブロックだけを図にする
-        condition: '`[data-mdmark-mermaid]` のコードブロック 2 つを持つ要素で、`blocks` に 2 つ目だけを指定する'
-        mock: mermaid のモジュール（`render` が固定の SVG を返却する）
-        expected: 図の枠が 1 つで 2 つ目の場所にあり、1 つ目は `hidden` を持たないコードブロックのまま
       - name: test_attach_mermaid_when_loader_set
         case: 正常
         summary: 関数で指定した mermaid で描き、URL もまとめたモジュールも読み込まない

@@ -418,13 +418,13 @@ scenarios:
     expected:
       - flowchart・classDiagram・mindmap（map の図）と pie（mermaid の図）の図の枠のタイトルが、それぞれ「フローチャート」「クラス図」「マインドマップ」「円グラフ」
     test: test_normal_when_untitled
-  - name: 異常シナリオ（map が読み取れない行を持つ）
+  - name: 正常シナリオ（設定の行・外観を指定する行を持つ）
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-      - name: map が読み取れない行を持つ mermaid のコードブロックの Markdown
+      - name: 設定の行・外観を指定する行を持つ mermaid のコードブロックの Markdown
         description: map の範囲の外に、言語 `mermaid` の flowchart のコードブロックを 4 つと、mindmap のコードブロックを 2 つ持つ文書
-        notes: '1 つ目は map が読み取れない行（`A --o B`）を持ち、2 つ目は 1 行目に `%%{init: {"theme": "forest"}}%%` を持ち、3 つ目は map が読み取れる行だけを持ち、4 つ目はノードの塗りを指定する `style A fill:#f9f` の行を持つ。5 つ目（mindmap）は項目の下に `::icon(fa fa-book)` の行を持ち、6 つ目（mindmap）は項目に `:::urgent` を持つ'
+        notes: '1 つ目は端に丸を付ける線（`A --o B`）を持ち、2 つ目は 1 行目に `%%{init: {"theme": "forest"}}%%` を持ち、3 つ目は front matter に `config` を持ち、4 つ目はノードの塗りを指定する `style A fill:#f9f` の行を持つ。5 つ目（mindmap）は項目の下に `::icon(fa fa-book)` の行を持ち、6 つ目（mindmap）は項目に `:::urgent` を持つ'
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -435,22 +435,23 @@ scenarios:
         actor U as 読者
         participant P as 利用側のページ
         participant M as mdmark
-        participant X as mermaid
         P->>M: 設定と Markdown を指定して描かせる
-        M->>M: 2 つ目は設定の行を持つので mermaid の対象にし、1・3・4・5・6 つ目を範囲の外の map の図にする
-        M->>M: 1 つ目は map が読み取れない行、4・5・6 つ目は外観を指定する行を持つので mermaid の対象に戻す
-        M->>X: 本体を要求
-        X-->>M: 本体
-        M-->>P: 1・2・4・5・6 つ目は mermaid の図、3 つ目は map の図を描く
+        M->>M: 6 つのコードブロックを、補足の無い map の範囲として読み取る
+        M->>M: 設定の行とテーマの指定は適用せず、style の塗りと線の色をノードに適用する
+        M-->>P: mermaid を読み込まずに、図の枠に入れた map の図を描く
         P-->>U: 文書を表示
       ```
 
       <!-- /map -->
     expected:
-      - 1・2・4・5・6 つ目の場所に mermaid の図があり、3 つ目の場所に map の図がある。4 つ目のノード A の塗りは `style` の行で指定した色
-      - どの図の前にも書き方の警告が無い
-      - mermaid の本体への要求が 1 件
-    test: test_error_when_map_cannot_read
+      - 6 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない
+      - mermaid への要求が 0 件
+      - 1 つ目の A から B への線は、B の側の端が丸で描かれる
+      - 2・3 つ目のノードの色は、設定の行を持たない同じ flowchart の map の図と同じ（テーマの指定を適用しない）
+      - 4 つ目のノード A の塗りは `style` の行で指定した色で、ほかのノードは map の配色
+      - 5・6 つ目は、`::icon(...)`・`:::urgent` を持たない同じ mindmap と同じ項目と枝のマインドマップで描かれる
+      - どの図の前にも記載の警告が無い
+    test: test_normal_when_mermaid_config_and_style
   - name: 正常シナリオ（軸と格子の配置の種類のコードブロックだけを持つ）
     setup:
       - name: mdmark を読み込むページ
@@ -506,6 +507,34 @@ scenarios:
       - mermaid への要求が 0 件
       - 4 つのコードブロックの場所に、それぞれ map の図の枠があり、コードブロックの文字が出ていない。同じ Mermaid を補足の無い map の範囲で囲んだ文書と同じ要素・境界・配置先のノード・関係で描かれる
     test: test_normal_when_only_c4_kinds
+  - name: 異常シナリオ（map が読み取れない行を持つ）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: map が読み取れない行を持つ mermaid のコードブロックの Markdown
+        description: map の範囲の外に、GitHub の Mermaid でも読み取れない行を 1 行持つ言語 `mermaid` の flowchart のコードブロックを 1 つ持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: 読み取れない行を飛ばして、補足の無い map の範囲として読み取る
+        M-->>P: 記載の警告と、読み取れた部分の map の図を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - 図の枠の上に、読み取れない行を指す記載の警告がある（map の範囲の中の読み取れない行と同じ内容）
+      - 読み取れた部分のノードと線で map の図が描かれている
+      - mermaid への要求が 0 件
+    test: test_error_when_map_cannot_read
 tags:
   - name: tool:mermaid
     main: true

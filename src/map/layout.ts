@@ -1,5 +1,11 @@
 import type { MapSide } from "./data.ts";
-import type { Direction, FlowArrow, Flowchart } from "./flowchart.ts";
+import type {
+  Direction,
+  FlowArrow,
+  Flowchart,
+  FlowEnd,
+  FlowShape,
+} from "./flowchart.ts";
 
 /** 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさ（px）・行の高さの倍率・余白（px）。`padRight` は map のノードが右上の i と開閉の山形の分だけ右に空ける幅、`padPill` は種類の形状が `pill` のノードの左の余白、`border` はノードの枠線の幅。CSS を修正したときは合わせて修正する */
 export const LABEL_METRICS = {
@@ -126,7 +132,19 @@ export type PlacedNode = Rect & {
   label?: string;
   /** Mermaid のクラス（設定の map.kinds を引く） */
   classes?: string[];
+  /** Mermaid の記法で指定した、map の種類の形状に無い形状（`[/ /]`・`(((`　`)))`・`@{ shape: doc }` など） */
+  shape?: FlowShape;
 };
+
+/** map の種類の形状に無く、ノードの形状として描く Mermaid の形状 */
+export const MERMAID_ONLY_SHAPES: readonly FlowShape[] = [
+  "lean-right",
+  "lean-left",
+  "trapezoid",
+  "trapezoid-alt",
+  "double-circle",
+  "doc",
+];
 /** 配置したグループ。閉じたグループは collapsed が true の 1 つのノードの大きさ */
 export type PlacedGroup = Rect & {
   id: string;
@@ -149,6 +167,8 @@ export type PlacedWire = {
   arrow?: FlowArrow;
   /** 両向きの矢印か */
   both?: boolean;
+  /** 線の端に付ける丸・×（`--o`・`x--x` など） */
+  ends?: { from?: FlowEnd; to?: FlowEnd };
 };
 
 /** layoutMap の戻り値 */
@@ -533,24 +553,29 @@ const buildView = (
 
 type Local = { item: ViewItem; x: number; y: number };
 
+/** 段を決める線（元・先と、2 段以上離す線の長さ） */
+type RankLink = [from: string, to: string, length?: number];
+
 /** 閉路の戻りの線を外した線（深さ優先でたどった順） */
 const forwardLinksOf = (
   ids: string[],
-  links: Array<[string, string]>,
-): Array<[string, string]> => {
-  const out = new Map(ids.map((id) => [id, [] as string[]]));
-  for (const [from, to] of links) {
-    out.get(from)?.push(to);
+  links: Array<RankLink>,
+): Array<RankLink> => {
+  const out = new Map(
+    ids.map((id) => [id, [] as Array<{ to: string; length?: number }>]),
+  );
+  for (const [from, to, length] of links) {
+    out.get(from)?.push(length === undefined ? { to } : { to, length });
   }
   const state = new Map<string, "open" | "done">();
-  const forward: Array<[string, string]> = [];
+  const forward: Array<RankLink> = [];
   const visit = (id: string): void => {
     state.set(id, "open");
-    for (const next of out.get(id) ?? []) {
+    for (const { to: next, length } of out.get(id) ?? []) {
       if (state.get(next) === "open") {
         continue;
       }
-      forward.push([id, next]);
+      forward.push(length === undefined ? [id, next] : [id, next, length]);
       if (!state.has(next)) {
         visit(next);
       }
@@ -568,14 +593,14 @@ const forwardLinksOf = (
 /** 有向グラフの段を、閉路の戻りの線を外した最長路で決める */
 const assignRanks = (
   ids: string[],
-  links: Array<[string, string]>,
+  links: Array<RankLink>,
 ): Map<string, number> => {
   const forward = forwardLinksOf(ids, links);
   const rank = new Map(ids.map((id) => [id, 0]));
   for (let pass = 0; pass < ids.length; pass++) {
     let changed = false;
-    for (const [from, to] of forward) {
-      const next = (rank.get(from) ?? 0) + 1;
+    for (const [from, to, length] of forward) {
+      const next = (rank.get(from) ?? 0) + (length ?? 1);
       if (next > (rank.get(to) ?? 0)) {
         rank.set(to, next);
         changed = true;
@@ -590,7 +615,7 @@ const assignRanks = (
 
 /** 箱を配置するときに引く値 */
 type BoxContext = {
-  links: Array<[string, string]>;
+  links: Array<RankLink>;
   overrides: Record<string, MapOverride>;
   /** 箱の ID ごとの、箱の中身の配置 */
   placed: Map<string, Local[]>;
@@ -599,10 +624,7 @@ type BoxContext = {
 };
 
 /** 子孫の線を、箱の直下の子どうしの線に持ち上げる */
-const liftLinks = (
-  box: ViewBox,
-  links: Array<[string, string]>,
-): Array<[string, string]> => {
+const liftLinks = (box: ViewBox, links: Array<RankLink>): Array<RankLink> => {
   const owner = new Map<string, string>();
   const collect = (item: ViewItem, top: string): void => {
     owner.set(item.id, top);
@@ -615,12 +637,17 @@ const liftLinks = (
   for (const child of box.children) {
     collect(child, child.id);
   }
-  const lifted: Array<[string, string]> = [];
-  for (const [from, to] of links) {
+  const lifted: Array<RankLink> = [];
+  for (const [from, to, length] of links) {
     const a = owner.get(from);
     const b = owner.get(to);
     if (a !== undefined && b !== undefined && a !== b) {
-      lifted.push([a, b]);
+      // 線の長さは、直下の子どうしの線のときだけ段の差にする
+      lifted.push(
+        length !== undefined && a === from && b === to
+          ? [a, b, length]
+          : [a, b],
+      );
     }
   }
   return lifted;
@@ -630,7 +657,7 @@ const liftLinks = (
 const rankRows = (
   ids: string[],
   context: {
-    lifted: Array<[string, string]>;
+    lifted: Array<RankLink>;
     overrides: Record<string, MapOverride>;
   },
 ): string[][] => {
@@ -655,7 +682,7 @@ const rankRows = (
 const orderRows = (
   rows: string[][],
   context: {
-    lifted: Array<[string, string]>;
+    lifted: Array<RankLink>;
     overrides: Record<string, MapOverride>;
   },
 ): void => {
@@ -1413,6 +1440,8 @@ const simplifyPoints = (
 /** 線を引くときに引く値 */
 type RouteContext = {
   leaves: InnerLeaf[];
+  /** 線の端にできる開いたグループ（Mermaid の `subgraph` を指す線は、グループの枠につなぐ） */
+  groupEnds: Map<string, InnerLeaf>;
   overrides: Record<string, MapOverride>;
   vias: Map<string, Array<[number, number]>>;
   grid: Grid;
@@ -1476,8 +1505,11 @@ const foreignPortsOf = (
 /** 線 1 本を引く */
 const routeEdge = (context: RouteContext, edge: ViewWire): PlacedWire => {
   const { leaves, overrides, grid } = context;
-  const source = leaves.find((leaf) => leaf.id === edge.from) as InnerLeaf;
-  const target = leaves.find((leaf) => leaf.id === edge.to) as InnerLeaf;
+  const endOf = (id: string): InnerLeaf =>
+    leaves.find((leaf) => leaf.id === id) ??
+    (context.groupEnds.get(id) as InnerLeaf);
+  const source = endOf(edge.from);
+  const target = endOf(edge.to);
   const cells = cellsOf(grid, {
     from: context.ancestorsOf.get(edge.from) ?? [],
     to: context.ancestorsOf.get(edge.to) ?? [],
@@ -1577,12 +1609,32 @@ const routeEdges = (
     ...reserved.map((rect) => ({ ...rect, leaf: true })),
   ];
   const grid = gridOf(rects, vias);
+  const groupEnds = new Map(
+    boxes.map((box): [string, InnerLeaf] => [
+      box.id,
+      {
+        ...box,
+        lines: [],
+        faded: false,
+        ancestors: (box as Partial<InnerLeaf>).ancestors ?? [],
+        collapsed: false,
+        title: "",
+      },
+    ]),
+  );
   const context: RouteContext = {
     leaves,
+    groupEnds,
     overrides,
     vias,
     grid,
-    ancestorsOf: new Map(leaves.map((leaf) => [leaf.id, leaf.ancestors])),
+    ancestorsOf: new Map([
+      ...[...groupEnds.values()].map((end): [string, string[]] => [
+        end.id,
+        end.ancestors,
+      ]),
+      ...leaves.map((leaf): [string, string[]] => [leaf.id, leaf.ancestors]),
+    ]),
     used: {
       right: new Uint8Array(grid.nx * grid.ny),
       down: new Uint8Array(grid.nx * grid.ny),
@@ -1614,11 +1666,17 @@ export const layoutMap = (
     measureText,
   });
   // 段を決める処理で使わない線（閉じたグループへまとめた線は使う）を除く
+  const edgeById = new Map(chart.edges.map((edge) => [edge.id, edge]));
   const links = edges
     .filter(
       (edge) => edge.merged !== undefined || !overrides[edge.id]?.rankless,
     )
-    .map((edge): [string, string] => [edge.from, edge.to]);
+    .map((edge): RankLink => {
+      const length = edgeById.get(edge.id)?.length;
+      return length === undefined
+        ? [edge.from, edge.to]
+        : [edge.from, edge.to, length];
+    });
   const placed = new Map<string, Local[]>();
   layoutBox(root, { links, overrides, placed, spread });
   const leaves: InnerLeaf[] = [];
@@ -1673,25 +1731,31 @@ export const layoutMap = (
   };
   const margin = MAP_LAYOUT.margin;
   walk(root, { ox: margin, oy: margin, ancestors: [] });
-  const edgeById = new Map(chart.edges.map((edge) => [edge.id, edge]));
   const nodeById = new Map(chart.nodes.map((node) => [node.id, node]));
-  const wires = routeEdges(leaves, boxes, { edges, overrides, reserved }).map(
-    (wire) => {
-      const first = wire.merged?.[0];
-      const source =
-        edgeById.get(wire.id) ??
-        (first === undefined
-          ? undefined
-          : chart.edges.find(
-              (edge) => edge.from === first.from && edge.to === first.to,
-            ));
-      return {
-        ...wire,
-        arrow: source?.arrow ?? "-->",
-        both: source?.both ?? false,
-      };
-    },
+  // 見えない線（`~~~`）は段と並びにだけ使用し、経路を引かない
+  const shown = edges.filter(
+    (edge) => edge.merged !== undefined || !edgeById.get(edge.id)?.invisible,
   );
+  const wires = routeEdges(leaves, boxes, {
+    edges: shown,
+    overrides,
+    reserved,
+  }).map((wire) => {
+    const first = wire.merged?.[0];
+    const source =
+      edgeById.get(wire.id) ??
+      (first === undefined
+        ? undefined
+        : chart.edges.find(
+            (edge) => edge.from === first.from && edge.to === first.to,
+          ));
+    return {
+      ...wire,
+      arrow: source?.arrow ?? "-->",
+      both: source?.both ?? false,
+      ...(source?.ends === undefined ? {} : { ends: source.ends }),
+    };
+  });
   const nodes: PlacedNode[] = [];
   const groups: PlacedGroup[] = [...boxes];
   const groupParent = new Map(
@@ -1719,12 +1783,17 @@ export const layoutMap = (
         faded: node.faded,
         count: countIn(node.id),
       });
-    else
+    else {
+      const shape = nodeById.get(node.id)?.shape;
       nodes.push({
         ...node,
         label: title,
         classes: nodeById.get(node.id)?.classes ?? [],
+        ...(shape !== undefined && MERMAID_ONLY_SHAPES.includes(shape)
+          ? { shape }
+          : {}),
       });
+    }
   }
   return {
     width: root.w + margin * 2,

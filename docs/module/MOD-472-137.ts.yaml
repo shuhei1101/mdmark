@@ -32,6 +32,12 @@ data_models:
       - name: linkLines
         type: Record<string, number>
         description: '`click` の行のノードの ID から、ソースの行（0 から）'
+      - name: styles
+        type: MermaidStyles
+        description: '`readMermaidStyles` が読み取ったノードと線の色（ノードの ID と線の ID から `{ fill, stroke, color }`）'
+      - name: collapsed
+        type: string[]
+        description: '`{ID}@{ view: collapsed }` で閉じて始めるグループの ID'
 functions:
   - name: parseFlowchart
     title: flowchartを読み取る
@@ -51,8 +57,13 @@ functions:
       description: 読み取り結果
     process: |-
       1. 1 行目の `flowchart`・`graph` と向きを読み取る
-      2. 2 行目からを行ごとに、`subgraph`・`end`・`direction`・`classDef`・`class`・`style`・`linkStyle`・`click`・`%%` の行と、ノードと線の文に分けて読み取る（`classDef`・`style`・`linkStyle` は読み取って捨てる。`click` は `click {ID} "{リンク先}"`（後ろの `"{ツールチップ}"`・`_blank` などは捨てる）を `links` に入れ、`href` を省いた形とコールバックの関数を指す形は読み取って捨てる）
-      3. ノードと線の文は、ノード・矢印・ノードの並び（`&` と連なりを含む）を左から読み取り、ノードは最初に出たときのラベルと形状、`:::クラス` は `classes` に追加する
+      2. 2 行目からを行ごとに、`subgraph`・`end`・`direction`・`classDef`・`class`・`style`・`linkStyle`・`click`・`%%` の行と、ノードと線の文に分けて読み取る（`click` は `click {ID} "{リンク先}"`（後ろの `"{ツールチップ}"`・`_blank` などは捨てる）を `links` に入れ、`href` を省いた形とコールバックの関数を指す形は読み取って捨てる）
+      3. ノードと線の文は、ノード・矢印・ノードの並び（`&` と連なりを含む）を左から読み取り、ノードは最初に出たときのラベルと形状、`:::クラス` は `classes` に追加する。mermaid と同じく次も読み取る
+               - 形状: `(((`　`)))`（`double-circle`）・`[/ /]`（`lean-right`）・`[\ \]`（`lean-left`）・`[/ \]`（`trapezoid`）・`[\ /]`（`trapezoid-alt`）と、`{ID}@{ shape: …, label: … }`（形状の名前と別名は `FLOW_SHAPE_NAMES` で引く。`icon:`・`img:` を持つものは `label` の矩形にし、アイコンと画像を描かない。`form`・`pos`・`h`・`constraint` は読み捨てる）
+               - ラベル: 引用符で囲んだラベル（閉じの記号を含んでよい）と、`"`　`"` の Markdown の文字（改行を持ち、次の行へ続いてよい。太字と斜体を描き、改行を名前の改行にする）
+               - 線: 端に丸・×を付ける線（`--o`・`--x`・`o--o`・`x--x` とその破線・太線。`ends` に入れる）・見えない線（`~~~`。`invisible`）・長さを指定した線（`---->`・`-...->`・`====>` など。記号の数から `length` を数え、線の種類は長さ 1 の線と同じにする。ラベルを持つ `-- 文 ---->` を含む）・線の ID への属性の行（`{ID}@{ animate: … }`・`animation`・`curve`・`step` は読み捨てる）
+               - `{ID}@{ view: collapsed }`（`subgraph` の ID ならそのグループを閉じて始める。補足の `layout` の `collapsed` と同じ扱い）
+               - `classDef`・`class`・`:::`・`style`・`linkStyle` は `readMermaidStyles` で `styles` に入れる
          - 読み取れない行は `map_invalid` の項目（行・行の文字・`->` なら `-->` にする修正方法）にして次の行へ進む
       4. ノードのラベル（`<br>` を改行にした後）・線のラベル・`subgraph` のタイトルを、`decodeEntities` で文字の参照から戻す
       5. 閉じの無い `subgraph` を `map_invalid` の項目にし、最後の行で閉じたものとして扱う
@@ -105,6 +116,26 @@ functions:
         condition: '`subgraph g` の後に `end` が無い'
         mock: なし
         expected: '`problems` に `g` を含む `map_invalid` が 1 件で、`g` のグループがある'
+      - name: test_parse_flowchart_when_mermaid_shapes
+        case: 正常
+        summary: mermaid の形状の記法を読み取る
+        condition: '`L[/入力/]`・`M[\出力\]`・`N[/台形\]`・`O(((終了)))`・`P@{ shape: doc, label: "文書" }`・`Q@{ shape: cyl, label: "DB" }`・`R@{ icon: "fa:user", form: "square", label: "User", pos: "t", h: 60 }`・`S["`太字 **cat**`"]`'
+        mock: なし
+        expected: '`problems` が空。`shape` が順に `lean-right`・`lean-left`・`trapezoid`・`double-circle`・`doc`・`cylinder`・`rect`・`rect`、`P` のラベルが `文書`、`R` のラベルが `User`'
+      - name: test_parse_flowchart_when_mermaid_edges
+        case: 正常
+        summary: 線の端・見えない線・線の長さ・線の属性の行を読み取る
+        condition: '`A --o B`・`A --x C`・`D o--o E`・`F x--x G`・`H ~~~ I`・`J ---->|No| K`・`J -- No ----> L`・`e1@{ animate: true }` と `e1@-->` の線'
+        mock: なし
+        expected: '`problems` が空。`A->B` の `ends` が `{ to: "circle" }`、`A->C` が `{ to: "cross" }`、`D->E` が両端 `circle`、`F->G` が両端 `cross`、`H->I` が `invisible`、`J->K` と `J->L` の `length` が 3 でラベルが `No`'
+      - name: test_parse_flowchart_when_styles
+        case: 正常
+        summary: style・classDef・class・:::・linkStyle を styles に読み取る
+        condition: モック `docs/mock/components/plain-mermaid-style/` の「style と classDef を持つ flowchart」の Mermaid
+        mock: なし
+        expected: '`styles.nodes` が `A`（`#f9f`・`#c3c`）・`D`・`E`（`#ffe08a`・`#b8860b`）、`styles.wires` が 2 本目の線の ID の `stroke` `#d33`。`problems` が空'
+    callees:
+      - MOD-747-1#functions[readMermaidStyles]
   - name: decodeEntities
     title: 文字の参照を文字に戻す
     kind: 関数
