@@ -1,0 +1,89 @@
+/* #772 のモックだけの規則: 配布物の CSS の上に、案ごとの見た目を重ねる */
+
+/* カタログの並び: 案ごとに状態の見出しと図を縦に並べる */
+.map-catalog {
+  box-sizing: border-box;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 16px;
+
+  & h2 {
+    margin: 48px 0 8px;
+    font-size: 24px;
+  }
+  & h3 {
+    margin: 32px 0 4px;
+    font-size: 18px;
+  }
+  & p.state-note {
+    margin: 0 0 8px;
+    color: var(--mdmark-color-muted);
+    font-size: 13px;
+  }
+}
+.narrow {
+  max-width: 390px;
+}
+
+/* map の図の文字（#766）案 A: 名前 13px・種類の行と線のラベル 11px、どれも太字にしない */
+.text-a .mdmark-diagram[data-diagram="map"] {
+  & .mdmark-diagram-node-name {
+    font-size: 13px;
+    font-weight: 400;
+  }
+  & .mdmark-diagram-node-kind {
+    font-size: 11px;
+    font-weight: 400;
+  }
+  & .mdmark-diagram-label {
+    font-size: 11px;
+    font-weight: 400;
+  }
+}
+
+/* 案 B: 名前 13px の中くらいの太さ（500）・種類の行 11px の 500・線のラベル 11px */
+.text-b .mdmark-diagram[data-diagram="map"] {
+  & .mdmark-diagram-node-name {
+    font-size: 13px;
+    font-weight: 500;
+  }
+  & .mdmark-diagram-node-kind {
+    font-size: 11px;
+    font-weight: 500;
+  }
+  & .mdmark-diagram-label {
+    font-size: 11px;
+    font-weight: 400;
+  }
+}
+
+/* マインドマップの項目（#765）: 形状の指定の無い項目にも枠線、短い名前を折り返さない、文字を構成図の案 A と同じにする */
+.mind-a .mdmark-diagram[data-diagram="map"] {
+  & .map-mindmap-item {
+    font-size: 13px;
+    font-weight: 400;
+    overflow-wrap: break-word;
+    word-break: keep-all;
+  }
+  & .map-mindmap-root {
+    font-size: 15px;
+    font-weight: 600;
+  }
+  & .map-mindmap-item[data-shape="plain"] {
+    border: 1px solid var(--node-color);
+    border-radius: 6px;
+    background: var(--mdmark-color-bg-opaque);
+  }
+  /* 押せる範囲を示す: ポインターを重ねた項目の面に枝の色をうっすら敷く */
+  & .map-mindmap-item:hover {
+    background: color-mix(in srgb, var(--node-color) 10%, var(--mdmark-color-bg-opaque));
+  }
+  /* 選んだ項目: 外側の枠線に加え、面に枝の色を敷く */
+  & .map-mindmap-item[data-selected] {
+    background: color-mix(in srgb, var(--node-color) 18%, var(--mdmark-color-bg-opaque));
+  }
+  /* 名前の文字の上も押して選べる */
+  & .map-mindmap-item .mdmark-diagram-node-name {
+    cursor: pointer;
+  }
+}
