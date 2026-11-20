@@ -349,6 +349,12 @@ styles:
       - class_name: .mdmark-map-change
         target: 計画した変更のバッジ
         value: ノード・グループの右上に枠線をまたいで重ねる高さ 18px・角丸 9px・文字 11px の札。枠線と文字は変更の色で、`data-change="removed"` は破線。一覧の項目では名前の後ろに並べる。値はモックの `map740-badges`・`map740-badge` から取る
+      - class_name: .mdmark-map .map-er-toggle・.map-class-toggle・.map-er-note
+        target: ER 図・クラス図の開閉のボタンと列の説明のボタン
+        value: 開閉のボタンは枠線と背景を持たず、構成図のグループの開閉と同じ下向きの山形のアイコンだけをテーブル名・クラス名の 1 行（36px）の右端に置き、閉じたら右向きにする。列の説明のボタンは丸を持たない 14px の線の i のアイコンを `--mdmark-color-muted` で出し、列の行の高さの中央に置く。値はモック `docs/mock/refs/763/assets/mock.css` の `one-row-head`・`note-a` から取る
+      - class_name: .mdmark-map .map-group-resize・.map-group-bar.is-left・.is-right・.is-bottom
+        target: グループの大きさを変える角のボタンと、動かす縁の帯
+        value: '角のボタンはグループの右下に 24px 四方で配置し、`cursor: nwse-resize`・`touch-action: none`、見た目は 16px の斜線、フォーカスの枠を持つ。縁の帯は左・右・下の枠線に沿って配置し、`cursor: move`（右下の角は角のボタンに譲る）。値はモック `docs/mock/refs/763/assets/mock.css` の `mock-group-corner`・`mock-group-edge` から取る'
       - class_name: .mdmark-diagram-export
         target: 書き出すボタンの開く要素
         value: 表示する枠の中で書き出すボタンの下に絶対配置する、枠線・角丸 8px・影を持つ縦並びのボタンの並び（最小の幅 120px・高さ 32px）と、その下の `role="status"` の文。`hidden` のときは出さない。値はモックの `map740-export-menu` から取る（popover の規則は写さない）

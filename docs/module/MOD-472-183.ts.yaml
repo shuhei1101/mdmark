@@ -180,12 +180,6 @@ functions:
         condition: '`attachModal` を記録する関数にして全画面のボタンを押し、閉じるボタンを押す'
         mock: '`attachModal`（呼び出しと、返す解除の関数の呼び出しを記録）'
         expected: '`attachModal` がモーダルの中の図と元の図で 1 回呼ばれ、閉じた後に解除の関数が 1 回呼ばれる'
-      - name: test_open_diagram_dialog_when_attach_modal
-        case: 正常
-        summary: 複製した図に部品の操作を付け直し、閉じたら解除する
-        condition: '`attachModal` を記録する関数にして全画面のボタンを押し、閉じるボタンを押す'
-        mock: '`attachModal`（呼び出しと、返す解除の関数の呼び出しを記録）'
-        expected: '`attachModal` がモーダルの中の図と元の図で 1 回呼ばれ、閉じた後に解除の関数が 1 回呼ばれる'
       - name: test_open_diagram_dialog_when_tip_open
         case: 正常
         summary: ツールチップを開いている間の Esc は何度でもツールチップだけを閉じる

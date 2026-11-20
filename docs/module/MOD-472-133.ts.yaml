@@ -326,6 +326,18 @@ functions:
         condition: '`mount->marker` に `{ direction: both, color: orange, shape: square }`、`marker->data` に `{ direction: forward }` の印'
         mock: なし
         expected: '`mount->marker` の印は四角でオレンジの塗りを持ち、逆向き（`keyPoints="1;0"`）を含む両方向へ流れる。`marker->data` の印は丸で線の色、逆向きを含まない。どの印も `animateMotion` を `repeatCount="indefinite"` で持つ'
+      - name: test_render_map_flow_when_packets_backward
+        case: 正常
+        summary: 逆向きのデータの印
+        condition: '`marker->data` に `{ direction: backward }` の印'
+        mock: なし
+        expected: '`marker->data` の印が `keyPoints="1;0"` だけを持ち、先から元へ流れる'
+      - name: test_render_map_flow_when_group_resize
+        case: 正常
+        summary: グループの角のボタンと縁の帯
+        condition: グループ `page` を持つ構成図
+        mock: なし
+        expected: '`page` に `aria-label="pageの大きさを変える"` の角のボタン（24px 四方）と、左・右・下の縁の帯（`.map-group-bar`）がある'
       - name: test_render_map_flow_when_unknown_color
         case: 異常
         summary: 知らない色の名前
@@ -603,7 +615,7 @@ functions:
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 部品設計『mapのER図』のテーブルのノードの中身。列ごとにキー・名前・型・説明のボタンの行（テーブル名の行の下 `MAP_ER.head` から `MAP_ER.row` の高さで並べる）と、テーブル名の行の列の開閉のボタン（`data-node-toggle`）を描く
+    summary: 部品設計『mapのER図』のテーブルのノードの中身。列ごとにキー・名前・型・説明のボタンの行（テーブル名の行の下 `MAP_ER.head`（36px。テーブル名の行を 1 行にする）から `MAP_ER.row` の高さで並べる）と、テーブル名の行の右端の列の開閉のボタン（`data-node-toggle`。枠線の無い下向きの山形のアイコンだけを持ち、列の数を出さない）を描く。説明のボタンは丸を持たない 14px の i のアイコンで、行の高さの中央に置く
     scope: public
     args:
       - name: table
@@ -625,7 +637,7 @@ functions:
         summary: 列を閉じた
         condition: '`collapsed: true`'
         mock: なし
-        expected: 列の行が無く、開閉のボタンの文字が `列 8`
+        expected: 列の行が無く、開閉のボタンが文字を持たず、山形のアイコンだけを持って `aria-expanded="false"`
       - name: test_render_map_er_when_annotations
         case: 正常
         summary: 説明を持たず注記だけを持つ列に、ボタンと注記の区分を出す
@@ -711,7 +723,7 @@ functions:
     role: 処理
     summary: '部品設計『mapのクラス図』のクラスのノードの中身。属性とメソッドの区画とメンバーの行を描く'
     description: |-
-      属性とメソッドの区画（`role="list"`。区切り線で分ける）に、可視性・名前と型・説明のボタンの行（`role="listitem"`。静的は下線、抽象は斜体）を、行ごとに `MAP_CLASS.row` と折り返す行の数（`lines`）の残り × `MAP_CLASS.line` の高さで並べ（メソッドの区画の上端は、属性の行の高さの和で決める）、名前の行にメンバーの開閉のボタン（`data-node-toggle`）を描く
+      属性とメソッドの区画（`role="list"`。区切り線で分ける）に、可視性・名前と型・説明のボタンの行（`role="listitem"`。静的は下線、抽象は斜体）を、行ごとに `MAP_CLASS.row` と折り返す行の数（`lines`）の残り × `MAP_CLASS.line` の高さで並べ（メソッドの区画の上端は、属性の行の高さの和で決める）、名前の行（`MAP_CLASS.head` の 36px の 1 行。種類の文字を同じ行の右端に置く）にメンバーの開閉のボタン（`data-node-toggle`。枠線の無い下向きの山形のアイコンだけを持ち、メンバーの数を出さない）を描く
     scope: public
     args:
       - name: item
@@ -733,7 +745,7 @@ functions:
         summary: メンバーを閉じた
         condition: '`collapsed: true`'
         mock: なし
-        expected: 区画が無く、開閉のボタンの文字が `メンバー 3`
+        expected: 区画が無く、開閉のボタンが文字を持たず、山形のアイコンだけを持って `aria-expanded="false"`
   - name: renderMapClassEnds
     title: クラス図の端の形と多重度のHTML
     kind: 関数
