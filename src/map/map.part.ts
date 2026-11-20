@@ -13,6 +13,7 @@ import {
   ownerIdAttribute,
   renderFlow,
   renderText,
+  safeCssColor,
   type TermLookup,
   type TipList,
 } from "../diagram/diagram.part.ts";
@@ -3727,6 +3728,17 @@ const axisGridStyle = (
   const own = context.args.colors[placed.stateKey];
   const color = colorVar(own ?? placed.color);
   const fill = colorVar(own ?? placed.color, "bg");
+  // ブロック図の Mermaid の `style`・`classDef` の色（ID を持つ項目だけ）
+  const item = context.args.grid.items.find(
+    (one) => one.stateKey === placed.stateKey,
+  );
+  const painted =
+    item?.id === undefined
+      ? undefined
+      : context.args.grid.styles?.nodes[item.id];
+  const text =
+    painted?.color ??
+    (painted?.fill === undefined ? undefined : textColorOn(painted.fill));
   return [
     `left:${placed.x}px`,
     `top:${placed.y}px`,
@@ -3734,6 +3746,16 @@ const axisGridStyle = (
     `height:${placed.height}px`,
     color === undefined ? "" : `--map-axis-color:${color}`,
     fill === undefined ? "" : `--map-axis-fill:${fill}`,
+    ...(
+      [
+        ["--map-node-fill", painted?.fill],
+        ["--map-node-stroke", painted?.stroke],
+        ["--map-node-text", text],
+      ] as const
+    ).flatMap(([name, value]) => {
+      const safe = safeCssColor(value);
+      return safe === undefined ? [] : [`${name}: ${escapeHtml(safe)}`];
+    }),
   ]
     .filter((entry) => entry !== "")
     .join(";");

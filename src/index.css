@@ -11400,6 +11400,18 @@
       fill: none;
     }
   }
+  /* ブロック図の Mermaid の style・classDef の色: 面・枠線・名前の文字 */
+  .mdmark-diagram[data-diagram="map"] .map-axis-item {
+    &[style*="--map-node-fill"] {
+      background: var(--map-node-fill);
+    }
+    &[style*="--map-node-stroke"] {
+      border-color: var(--map-node-stroke);
+    }
+    &[style*="--map-node-text"] .mdmark-diagram-node-name {
+      color: var(--map-node-text);
+    }
+  }
   /* ブロック図の形状: 四角・角の丸い四角・丸・円柱 */
   .mdmark-diagram[data-diagram="map"] .map-axis-item {
     &[data-shape="square"] {
@@ -11413,6 +11425,111 @@
     }
     &[data-shape="cylinder"] {
       border-radius: 50% / 30%;
+    }
+    &:is([data-shape="stadium"], [data-shape="double-circle"]) {
+      border-radius: 999px;
+    }
+    &[data-shape="double-circle"] {
+      border-style: double;
+      border-width: 4px;
+    }
+    &[data-shape="subroutine"] {
+      border-inline-width: 4px;
+      border-inline-style: double;
+    }
+    &[data-shape="hexagon"] {
+      clip-path: polygon(10% 0, 90% 0, 100% 50%, 90% 100%, 10% 100%, 0 50%);
+    }
+    &[data-shape="rhombus"] {
+      clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+    }
+    &[data-shape="flag"] {
+      clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 12px 50%);
+    }
+    &[data-shape="lean-right"] {
+      clip-path: polygon(12px 0, 100% 0, calc(100% - 12px) 100%, 0 100%);
+    }
+    &[data-shape="lean-left"] {
+      clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 100%, 12px 100%);
+    }
+    &[data-shape="trapezoid"] {
+      clip-path: polygon(12px 0, calc(100% - 12px) 0, 100% 100%, 0 100%);
+    }
+    &[data-shape="trapezoid-alt"] {
+      clip-path: polygon(0 0, 100% 0, calc(100% - 12px) 100%, 12px 100%);
+    }
+    /* ブロックの矢印: 向きの矢印の形に切る */
+    &[data-shape="arrow-right"] {
+      clip-path: polygon(
+        0 20%,
+        70% 20%,
+        70% 0,
+        100% 50%,
+        70% 100%,
+        70% 80%,
+        0 80%
+      );
+    }
+    &[data-shape="arrow-left"] {
+      clip-path: polygon(
+        100% 20%,
+        30% 20%,
+        30% 0,
+        0 50%,
+        30% 100%,
+        30% 80%,
+        100% 80%
+      );
+    }
+    &[data-shape="arrow-up"] {
+      clip-path: polygon(
+        20% 100%,
+        20% 30%,
+        0 30%,
+        50% 0,
+        100% 30%,
+        80% 30%,
+        80% 100%
+      );
+    }
+    &[data-shape="arrow-down"] {
+      clip-path: polygon(
+        20% 0,
+        20% 70%,
+        0 70%,
+        50% 100%,
+        100% 70%,
+        80% 70%,
+        80% 0
+      );
+    }
+    &[data-shape="arrow-x"] {
+      clip-path: polygon(
+        0 50%,
+        25% 0,
+        25% 25%,
+        75% 25%,
+        75% 0,
+        100% 50%,
+        75% 100%,
+        75% 75%,
+        25% 75%,
+        25% 100%
+      );
+    }
+    &[data-shape="arrow-y"] {
+      clip-path: polygon(
+        50% 0,
+        100% 25%,
+        75% 25%,
+        75% 75%,
+        100% 75%,
+        50% 100%,
+        0 75%,
+        25% 75%,
+        25% 25%,
+        0 25%
+      );
     }
   }
   /* section の見出しの行・枠と入れ子のブロックの枠。見出しに開閉と中へ入るボタンを置く */
