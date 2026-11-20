@@ -498,6 +498,40 @@ scenarios:
       - 用語集の文書の本文の `入口の文書` に破線の下線が付き、ツールチップの「関連文書」に `はじめに` と `mdmark の入口` が出る
       - 外への要求が 0 件
     test: test_normal_when_frontmatter_metadata
+  - name: 正常シナリオ（索引に無い文書がフロントマターを持つ）
+    setup:
+      - name: 索引に無い文書を含む文書群
+        description: 正常シナリオの文書 3 つと索引に、索引に無く先頭のフロントマターに `title`（`補足`）・`aliases`（`補足の文書`）を持つ文書 `notes.md` を加え、入口の文書の本文に `補足の文書` を記載したもの
+      - name: build の設定
+        description: '`include` が 4 つに該当する。そのほかは正常シナリオと同じ'
+      - name: Mock
+        description: 外部ライブラリは相対パスの手元のモジュール
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant M as mdmark
+        participant F as build.out
+        W->>C: mdmark build
+        C->>C: 設定・索引・include の文書を読み込む
+        C->>M: collectReferences（索引・文書）
+        M->>M: 索引に無い notes.md を、先頭のフロントマターのメタデータで索引の文書に加える
+        M-->>C: 参照の表
+        C->>F: 4 つの文書を埋めた HTML を書き込む
+        C-->>W: 出力のパス・入れた文書の数・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0 で、入れた文書の数が 4
+      - 文書の一覧に `notes.md` が `補足` のタイトルで並ぶ
+      - 入口の文書の本文の `補足の文書` に破線の下線が付き、ツールチップの「関連文書」に `補足` が出る
+      - '`notes.md` を開くと、末尾の関連文書に入口の文書が出る'
+      - 外への要求が 0 件
+    test: test_normal_when_frontmatter_unindexed_document
 lead: 文書の作成者が設定の `build` で対象を決めて `mdmark build` を実行し、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる。
 primary_actor: 文書の作成者
 trigger: 文書の作成者が、複数の文書を行き来できる構造でサーバー無しで配りたくなる
