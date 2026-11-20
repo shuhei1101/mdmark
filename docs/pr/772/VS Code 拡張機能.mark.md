@@ -171,6 +171,10 @@
 | `vscode/src/export/export.ts` | R7 | `vscode/tests/integration/export.test.ts`（TP-472-1 の補足「VS Code 拡張機能」のコマンドで実行） | IF-472-15 は `test_file` を持たない。VS Code 拡張機能の結合テストの `export.test.ts` で確認する |
 | `vscode/src/export/html.ts` | R7 | `vscode/tests/integration/export.test.ts`（TP-472-1 の補足「VS Code 拡張機能」のコマンドで実行） | IF-472-15 は `test_file` を持たない。VS Code 拡張機能の結合テストの `export.test.ts` で確認する |
 | `vscode/tests/integration/export.test.ts` | R2 | `vscode/tests/integration/export.test.ts`（TP-472-1 の補足「VS Code 拡張機能」のコマンドで実行） | - |
+| `docs/pr/772/テスト結果/20261121051438_50836326_lint.log` | R7 | なし（結合テストが読み込まない） | - |
+| `docs/pr/772/テスト結果/20261121051438_50836326_単体テスト.log` | R7 | なし（結合テストが読み込まない） | - |
+| `docs/pr/772/テスト結果/20261121051438_50836326_結合テスト.log` | R7 | なし（結合テストが読み込まない） | - |
+| `docs/pr/772/テスト結果/20261121051438_50836326_結合テスト_VSCode.log` | R7 | なし（結合テストが読み込まない） | - |
 
 <!-- /table -->
 
