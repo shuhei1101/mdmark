@@ -94,7 +94,7 @@ constants:
       `docs` の要素の `title` は任意。
 
       `normalizeIndex` がこれで検査する
-    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: true }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "doc_tags", required: false }, related: { type: "doc_related", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } } }'
+    value: '{ root: { schema: { type: "integer", required: true }, docs: { type: "array", required: true }, terms: { type: "array", required: false } }, doc: { id: { type: "string", required: true }, path: { type: "string", required: true }, title: { type: "string", required: false }, description: { type: "string", required: false }, aliases: { type: "string[]", required: false }, tags: { type: "doc_tags", required: false }, related: { type: "doc_related", required: false } }, term: { id: { type: "string", required: true }, term: { type: "string", required: true }, meaning: { type: "string", required: true }, aliases: { type: "string[]", required: false }, avoid: { type: "string[]", required: false } } }'
     refs:
       - ER-472-6#
   - name: RELATION_TYPES
