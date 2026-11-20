@@ -184,7 +184,7 @@ flows:
         W->>C: mdmark check
         C->>M: 索引・文書
         M-->>C: []
-        C->>C: 文書のマーカーの引数を描く処理と同じ読み取りで読む
+        C->>C: 文書のマーカーの引数を描く処理と同じ読み取りで読み取る
         C-->>W: legacy_mark の行・終了コード 1
       ```
 
@@ -815,12 +815,12 @@ flows:
     test: test_normal_when_text_legacy_mark
     refs:
       - SC-472-52#scenarios[正常シナリオ（今の書き方のマーカーがある）]
-  - name: 正常系（文字列に JSON として読めない引数がある）
-    summary: 文字列の JSON として読めない引数と値の `-->` で閉じた引数を、`syntax_warning` のずれにして終了コード 1 で終わる
+  - name: 正常系（文字列に JSON として読み取れない引数がある）
+    summary: 文字列の JSON として読み取れない引数と値の `-->` で閉じた引数を、`syntax_warning` のずれにして終了コード 1 で終わる
     setup:
       - name: 作業のフォルダ
         description: 正常系（文字列の記法を点検する）と同じ
-      - name: 読めない引数を持つ文字列
+      - name: 読み取れない引数を持つ文字列
         description: '1 行目に `<!-- code: {"title": "app.ts",} -->` と 3 行のコードブロック、7 行目に `<!-- details: {"title": "a --\u003e b"} -->` と段落と `<!-- /details -->`、11 行目に `<!-- details: {"title": "a --> b"} -->` と段落と `<!-- /details -->` を持つ Markdown'
       - name: Mock
         description: 正常系と同じ
@@ -839,7 +839,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 1
-      - '`-:1: syntax_warning:` で始まり、JSON として読めない位置と理由を含む行がある'
+      - '`-:1: syntax_warning:` で始まり、JSON として読み取れない位置と理由を含む行がある'
       - '`-:11: syntax_warning:` で始まり、値の `-->` でコメントが閉じることと `--\u003e` での記載方法を含む行がある'
       - '`-:7:` で始まる行が無い'
     test: test_normal_when_text_mark_args_not_json
@@ -900,7 +900,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 1
-      - '`docs/a.mark.md:10:` で始まる行に、`map_unknown_ref` が 3 つ（内容に `notes.注文.幽霊`・`notes.r3`・`groups.記録.tables` の「支払い」）と、`map_invalid_value` が 1 つ（内容に、分類の ID `明細` がテーブル名と同じで、分類の ID を付け直す修正方法）ある'
+      - '`docs/a.mark.md:10:` で始まる行に、`map_unknown_ref` が 3 つ（内容に `notes.注文.幽霊`・`notes.r3`・`groups.記録.tables` の「支払い」）と、`map_invalid_value` が 1 つ（内容に、分類の ID `明細` がテーブル名と同じで、分類の ID を再付与する修正方法）ある'
       - '`docs/a.mark.md:27:` で始まる行に、`map_unknown_ref` が 1 つ（内容に `notes.t2` と、遷移の ID を記載順の `t{番号}` にする修正方法）ある'
       - 最後の行が `ずれ 5 件`
       - 設定・索引・文書が変わっていない
@@ -1176,7 +1176,7 @@ response:
     notes: ファイルは設定ファイルのあるフォルダからの相対パス（`--text` のときは `-`、設定ファイルが無いときは今のフォルダからの相対パス）。`--text`・`--file` のときの並びは、場所の行の順（同じ行は描いたときの警告の順で、`unknown_mark`・`legacy_mark`・`unknown_mark_arg`・`mark_option_unapplied` は警告の後ろ）。並びは設定の `schema` → `unknown_color_theme` → `unknown_color_scheme` → `no_documents` → `checkIndex` が返却した並び → エイリアスのずれ（`buildAliases` が返却した並び。`alias_no_files`・`alias_unreadable` は読み込んだ行の順にその場所へ配置する） → `unknown_mark`・`legacy_mark`・`unknown_mark_arg`・`mark_option_unapplied`・`mark_option_invalid`（どれも文書のパスと行の順） → `missing_file` → `include_target_missing`・`include_circular`（どちらも文書のパスと行の順） → 図の点検のずれ（どれも文書のパスの順、同じ文書の中は行の順） → `plain_md_with_marks`（文書のパスの順）
   - name: 種類
     type: '''schema'' | ''unknown_color_theme'' | ''unknown_color_scheme'' | ''no_documents'' | ''missing_doc'' | ''orphan_doc'' | ''broken_ref'' | ''untyped_related'' | ''one_sided_change_together'' | ''related_link_overlap'' | ''missed_change_together'' | ''duplicate_term'' | ''avoided_term'' | ''alias_no_files'' | ''alias_unreadable'' | ''duplicate_alias_row_id'' | ''alias_records_missing'' | ''alias_field_missing'' | ''alias_unknown_type'' | ''alias_required_empty'' | ''duplicate_alias_id'' | ''unknown_mark'' | ''missing_file'' | ''include_target_missing'' | ''include_circular'' | ''diagram_invalid'' | ''retired_diagram'' | ''syntax_warning'' | ''unknown_mark_arg'' | ''legacy_mark'' | ''mark_option_unapplied'' | ''mark_option_invalid'' | ''plain_md_with_marks'''
-    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に該当しないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`unknown_color_scheme` は設定の `colorScheme` が `light`・`dark`・`auto` のどれでもない、`no_documents` は `build.include` に該当する文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に該当するファイルが 0 件、`alias_unreadable` は `paths` に該当したファイルを YAML として読み込めない、`unknown_mark` は文書の本文に知っているマーカーのどれにも該当しないマーカーがある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`include_target_missing` は include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダの外を指す、`include_circular` は include の取り込みが循環する、`diagram_invalid` は図の部品の定義を読み込めないか構造が合わない、`retired_diagram` は文書に廃止した `flow`・`sequence` の範囲がある、`syntax_warning` は `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち `unknown_mark`・`diagram_invalid`・`retired_diagram` に該当しないもの（include の取り込み先が無い警告を除く）、`unknown_mark_arg` はマーカーの JSON のオブジェクトに、描くときに警告を配置せずに無視する知らないキーがある、`legacy_mark` はマーカーの引数が今の書き方（JSON のオブジェクトでない）、`mark_option_unapplied` は `enabled` を `false` にした機能の列の設定がある、`mark_option_invalid` は点検する文書のマーカーの引数が JSON として読めないか、型・選べる値・必須に合わない、`plain_md_with_marks` は拡張子が純粋な `.md` の文書が mdmark の記法を含む。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
+    description: '`schema` は設定か索引が Schema に合わない（`build.glossary`・`build.entry` が `include` に該当しないもの・`aliases` の行の Schema のずれを含む）、`unknown_color_theme` は設定の `colorTheme` が mdmark に入っているテーマの名前のどれでもない、`unknown_color_scheme` は設定の `colorScheme` が `light`・`dark`・`auto` のどれでもない、`no_documents` は `build.include` に該当する文書が 0 件、`alias_no_files` は `aliases` の行の `paths` に該当するファイルが 0 件、`alias_unreadable` は `paths` に該当したファイルを YAML として読み込めない、`unknown_mark` は文書の本文に知っているマーカーのどれにも該当しないマーカーがある、`missing_file` は文書が指す画像・動画・音声・添付のファイルが文書からの相対パスにもアセットのルートにも無い、`include_target_missing` は include のマーカーが指すファイル・見出し・行の範囲が無いか、設定ファイルのフォルダの外を指す、`include_circular` は include の取り込みが循環する、`diagram_invalid` は図の部品の定義を読み込めないか構造が合わない、`retired_diagram` は文書に廃止した `flow`・`sequence` の範囲がある、`syntax_warning` は `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち `unknown_mark`・`diagram_invalid`・`retired_diagram` に該当しないもの（include の取り込み先が無い警告を除く）、`unknown_mark_arg` はマーカーの JSON のオブジェクトに、描くときに警告を配置せずに無視する知らないキーがある、`legacy_mark` はマーカーの引数が今の書き方（JSON のオブジェクトでない）、`mark_option_unapplied` は `enabled` を `false` にした機能の列の設定がある、`mark_option_invalid` は点検する文書のマーカーの引数が JSON として読み取れないか、型・選べる値・必須に合わない、`plain_md_with_marks` は拡張子が純粋な `.md` の文書が mdmark の記法を含む。`duplicate_alias_row_id`〜`duplicate_alias_id` はインターフェース定義『エイリアスを作る』の `kind`、ほかはインターフェース定義『索引を点検する』の `kind`'
   - name: 終了コード
     type: 0 | 1
     description: ずれが 0 件なら 0、ずれがあるか点検できないときは 1
@@ -1234,7 +1234,7 @@ constraints:
   - item: 点検する文書
     constraint: 索引の点検に指定する文書（設定に `index` があるとき）と、`build` の対象の文書（設定に `build` があるとき）を合わせ、同じファイルは 1 回だけ点検する。どちらも無い設定では知らないマーカーを点検しない
   - item: 変わった文書
-    constraint: '`--base` を指定したときだけ、設定ファイルのフォルダで `--base` と HEAD の merge-base を引き、merge-base から作業ツリーまでに変わったファイルと、git が管理していない新しいファイル（無視するファイルを除く）を、索引のファイルからの相対パスにして `checkIndex` の `changedPaths` に指定する。設定に `index` が無いときは `--base` を使用しない'
+    constraint: '`--base` を指定したときだけ、設定ファイルのフォルダで `--base` と HEAD の merge-base を引き、merge-base から作業ツリーまでに変わったファイルと、git が管理していない新規のファイル（無視するファイルを除く）を、索引のファイルからの相対パスにして `checkIndex` の `changedPaths` に指定する。設定に `index` が無いときは `--base` を使用しない'
     decided_by: IF-472-37#constraints[修正漏れ]
   - item: エイリアスの点検
     constraint: 設定に `aliases` があるときだけ行う。Schema に合う行だけを使用し、行の `paths` を設定ファイルのフォルダから参照して YAML として読み込み、`buildAliases` に指定して返った `problems` をそのまま出す。`enabled` が `false` の行は読み込まない。`paths` に該当するファイルが 0 件の行は `alias_no_files`、YAML として読み込めないファイルは `alias_unreadable` のずれにする
@@ -1265,7 +1265,7 @@ constraints:
 
       知らないマーカーの警告は `unknown_mark`、図の部品の定義の警告は `diagram_invalid`、廃止した図の範囲の警告は `retired_diagram`、注記の定義の無い参照は `annotation_undefined`、参照されていない注記の定義は `annotation_unused`、同じ ID の 2 つ目以降の注記の定義は `annotation_duplicate`、そのほかは `syntax_warning` にする。
 
-      マーカーの引数は制約「マーカーの設定の点検」のとおり点検し、JSON として読めない引数と型・選べる値・必須に合わない値は、描いたときの記載の警告として `syntax_warning` のずれにする。
+      マーカーの引数は制約「マーカーの設定の点検」のとおり点検し、JSON として読み取れない引数と型・選べる値・必須に合わない値は、描いたときの記載の警告として `syntax_warning` のずれにする。
 
       include のマーカーの取り込み先が無い警告（ファイル・見出し・行の範囲）は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` が確認する）。
 
@@ -1273,7 +1273,7 @@ constraints:
 
       点検はブラウザを使用しない'
   - item: マーカーの設定の点検
-    constraint: '点検する文書ごと（`--text`・`--file` のときは指定した Markdown）に、記法のマーカー（`map`・`map-data` を除く。map のマーカーは制約「map の点検」の種類で点検する）の引数を、描く処理と同じ読み取り（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの書式」）で読み、マーカーごとの JSON Schema（ER 図『マーカーの設定の共通の決まり』から辿るマーカーごとの ER 図と同じ内容）で検証する。
+    constraint: '点検する文書ごと（`--text`・`--file` のときは指定した Markdown）に、記法のマーカー（`map`・`map-data` を除く。map のマーカーは制約「map の点検」の種類で点検する）の引数を、描く処理と同じ読み取り（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの書式」）で読み取り、マーカーごとの JSON Schema（ER 図『マーカーの設定の共通の決まり』から辿るマーカーごとの ER 図と同じ内容）で検証する。
 
       拡張のマーカーと設定の `libraries` のマーカーは、今の書き方の `legacy_mark` だけを点検し、キーと値は検証しない（拡張の検査は `registerExtension` の `schema` で、描くときだけ行う）。
 
@@ -1283,7 +1283,7 @@ constraints:
 
       `enabled` を `false` にした機能の列の設定は 1 つにつき 1 件の `mark_option_unapplied` のずれにし、内容に適用しない列の設定のパスと、機能を削除するか列の設定を削除する修正方法を記載する。
 
-      点検する文書の、JSON として読めない引数と型・選べる値・必須に合わない値は 1 つにつき 1 件の `mark_option_invalid` のずれにし、内容は描いたときの記載の警告の本文と同じ文にする（`--text`・`--file` のときは `syntax_warning`）。
+      点検する文書の、JSON として読み取れない引数と型・選べる値・必須に合わない値は 1 つにつき 1 件の `mark_option_invalid` のずれにし、内容は描いたときの記載の警告の本文と同じ文にする（`--text`・`--file` のときは `syntax_warning`）。
 
       ファイル・場所は制約「知らないマーカーの点検」と同じ（`--text`・`--file` のときは制約「記法の点検の場所」）。
 
@@ -1295,7 +1295,7 @@ constraints:
   - item: map の点検
     constraint: '制約「点検する文書」の文書ごとに、map の範囲を文書をHTML文字列にする.ts の制約「map の範囲」と同じ読み込み方で読み込み、制約「map の書き方の誤り」の項目を 1 つにつき 1 件のずれにする。
 
-      Mermaid の読めない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID（軸と格子の配置の図は、どの項目の ID・表示する文字・commit の記載順の `c{番号}`・section の名前にも一致しないキー）は `map_unknown_ref`、マインドマップと軸と格子の配置の図で ID を持たない 2 つ以上の項目が同じ文字を持つか 2 つ以上の section が同じ名前を持ち、補足のキーと印の `focus` がその文字・名前のものは `map_ambiguous_ref`（内容に、その項目に ID を記載して ID で指すか、section の名前を分ける修正の方法）、補足の `notes.{ID}.annotations` が指す定義の無い注記の ID は `annotation_undefined`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、印の廃止したキー `play`・`interval` は `map_retired_key`（内容に廃止したキーと `mdmark upgrade` で削除できる旨）、補足のスキーマに合わない値・マインドマップと軸と格子の配置の図に適用しない `layout` のキー（`color`・`collapsed` のほか）・許可しないノードのリンク先・HTML コメントの中にそのまま記載した `--` を含む値（JSON の Unicode エスケープで記載した `--` は含めない）・JSON として読めない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。
+      Mermaid の読み取れない行・閉じの無いブロック・範囲の中の mermaid のブロックと補足の数の誤り・描けない図の種類は `map_invalid`、補足が指す Mermaid に無いノード・線・グループの ID（軸と格子の配置の図は、どの項目の ID・表示する文字・commit の記載順の `c{番号}`・section の名前にも一致しないキー）は `map_unknown_ref`、マインドマップと軸と格子の配置の図で ID を持たない 2 つ以上の項目が同じ文字を持つか 2 つ以上の section が同じ名前を持ち、補足のキーと印の `focus` がその文字・名前のものは `map_ambiguous_ref`（内容に、その項目に ID を記載して ID で指すか、section の名前を分ける修正の方法）、補足の `notes.{ID}.annotations` が指す定義の無い注記の ID は `annotation_undefined`、補足の知らないキーと印の JSON のオブジェクトの知らないキーは `map_unknown_key`、印の廃止したキー `play`・`interval` は `map_retired_key`（内容に廃止したキーと `mdmark upgrade` で削除できる旨）、補足のスキーマに合わない値・マインドマップと軸と格子の配置の図に適用しない `layout` のキー（`color`・`collapsed` のほか）・許可しないノードのリンク先・HTML コメントの中にそのまま記載した `--` を含む値（JSON の Unicode エスケープで記載した `--` は含めない）・JSON として読み取れない印の引数・型の合わない印の値は `map_invalid_value`、Mermaid のクラスが設定の `map.kinds` に無いノードは `map_unknown_class`、補足の `layout` の `line` の名前が設定の `map.lines` に無い線は `map_unknown_line` にする（設定に `map` が無いときも同じ）。
 
       ファイルは文書の相対パス、場所は Mermaid の行は文書の行、補足の箇所は補足の中の行を文書の行へ置き換えた行、そのほかは map の開きのマーカーの行の番号（1 から）。
 

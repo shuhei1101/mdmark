@@ -1,7 +1,7 @@
 id: IF-472-45
 visibility: internal
 title: 返答を共通スタイルで描く
-lead: Claude Code が返答のブロックを描く前に、返答の Markdown をブロックに分け、表・注意書き・見出し・コードブロック・開閉の範囲と、行の詳細・ステップなどの本文の部品を mdmark の共通スタイルの部品の木で描き、mdmark のマーカーを描き方に使用して画面から消す。段落・箇条書きは Claude Code の Markdown 部品に任せ、描けないときは Claude Code の元の描画に任せる。
+lead: Claude Code が返答のブロックを描く前に、返答の Markdown をブロックに分け、表・注意書き・見出し・コードブロック・開閉の範囲と、行の詳細・ステップなどの本文の部品を mdmark の共通スタイルの部品の木で描き、mdmark のマーカーを描き方に使用して画面から削除する。段落・箇条書きは Claude Code の Markdown 部品に任せ、描けないときは Claude Code の元の描画に任せる。
 entry:
   kind: trigger
   value: 'Claude Code の mod の `ui.render`（`component`: `AssistantMessage`）のフック'
@@ -9,7 +9,7 @@ callers:
   - SC-472-97#
   - SC-472-98#
 idempotent: true
-side_effects: なし（画面に描く部品の木を返却するだけで、保存される返答の本文は変えない）。用語集を読めないときだけ Claude Code のデバッグログに 1 行を出す
+side_effects: なし（画面に描く部品の木を返却するだけで、保存される返答の本文は変えない）。用語集を読み取れないときだけ Claude Code のデバッグログに 1 行を出す
 request:
   - name: e.props.text
     type: string
@@ -41,7 +41,7 @@ request:
     type: CFG-472-4 のキー
     required: false
     location: argument
-    description: '`$.env.get("MDMARK_STYLE_CONFIG")` か既定のパスから `$.fs.read` で読む設定'
+    description: '`$.env.get("MDMARK_STYLE_CONFIG")` か既定のパスから `$.fs.read` で読み取る設定'
     default: なし（全てのキーを既定値にする）
 request_example: |-
   ```json
@@ -62,16 +62,16 @@ response_example: |-
 exceptions:
   - name: なし（正常終了）
     condition: 部品の木か `next(e)` の戻り値を返却する
-  - name: なし（設定ファイルを読めない）
-    condition: '`MDMARK_STYLE_CONFIG` か既定のパスの設定ファイルがあるが、YAML として読めない'
+  - name: なし（設定ファイルを読み取れない）
+    condition: '`MDMARK_STYLE_CONFIG` か既定のパスの設定ファイルがあるが、YAML として読み取れない'
     notes: 部品の木を作らずに `next(e)` の戻り値を返却し、`$.ui.log` でデバッグログに mod の名前と理由を出す（外部ライブラリ LIB-472-1 の制限「mod のフックの例外」）
 constraints:
   - item: 描き換える条件
     constraint: '`enabled` が `true` で、`targets` に `assistant` があるときだけ描き換える。そうでなければ `next(e)` を返却する'
   - item: 描き換えるブロック
-    constraint: '表・注意書き（`> [!NOTE]` などの 5 種）・見出し（`#`〜`######`）・コードブロック・開閉の範囲（`<!-- details: タイトル -->`〜`<!-- /details -->`・`<!-- section: closed -->` の付いた見出しの節・`closed` の注意書き）・行の詳細（`<!-- row-detail -->`）・ステップ（`<!-- steps -->`）・ファイルツリー（言語 `tree` のコードブロック）・縦に並べる範囲（`<!-- tabs -->`・`<!-- columns -->`・`<!-- cards -->`・`<!-- wide -->`・`<!-- view -->`）・言語 `csv` のコードブロック・番号を付けた表（`<!-- fig -->`）。行内の記法（`badge:`・`[文字]{color=色}`・`==文字==`・`kbd:`）は、引用を除くブロックの中で描き換える。`parts` でオフにした種類と、ほかのブロック（段落・箇条書き・引用）は、そのブロックの Markdown を `Markdown` 部品に渡して Claude Code の標準の描き方で描く'
+    constraint: '表・注意書き（`> [!NOTE]` などの 5 種）・見出し（`#`〜`######`）・コードブロック・開閉の範囲（`<!-- details: タイトル -->`〜`<!-- /details -->`・`<!-- section: closed -->` の付いた見出しのセクション・`closed` の注意書き）・行の詳細（`<!-- row-detail -->`）・ステップ（`<!-- steps -->`）・ファイルツリー（言語 `tree` のコードブロック）・縦に並べる範囲（`<!-- tabs -->`・`<!-- columns -->`・`<!-- cards -->`・`<!-- wide -->`・`<!-- view -->`）・言語 `csv` のコードブロック・番号を付けた表（`<!-- fig -->`）。行内の記法（`badge:`・`[文字]{color=色}`・`==文字==`・`kbd:`）は、引用を除くブロックの中で描き換える。`parts` でオフにした種類と、ほかのブロック（段落・箇条書き・引用）は、そのブロックの Markdown を `Markdown` 部品に指定して Claude Code の標準の描き方で描く'
   - item: マーカー
-    constraint: 単独の行のマーカーと行内のマーカーを描かない。行内のマーカーを消した後の前後の文字は 1 つの空白でつなぐ。`table` の `kind`・`code` の `title`・`lines`・`highlight`・`row-detail` の `at`・`fig` の `id` を描き方に使用し、知らないマーカー・引数は描かずに無視する
+    constraint: 単独の行のマーカーと行内のマーカーを描かない。行内のマーカーを削除した後の前後の文字は 1 つの空白でつなぐ。`table` の `kind`・`code` の `title`・`lines`・`highlight`・`row-detail` の `at`・`fig` の `id` を描き方に使用し、知らないマーカー・引数は描かずに無視する
   - item: 描かないブロック
     constraint: 図（言語 `mermaid` のコードブロック・`map` の範囲）と埋め込んだ HTML（`html` の範囲）はコードブロックとして描く
   - item: 表
@@ -83,7 +83,7 @@ constraints:
   - item: コードブロック
     constraint: 背景の面（Box の `backgroundColor`）の中に `Code` 部品で言語の色分けつきで描き、右上に言語のラベルを薄い色で描く。`code` のマーカーの `title` はコードの上の行、`lines` は行番号、`highlight` と行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` は行の色で描き、行末のマーカーの文字は描かない。コードの上の行の右端にコピーの Button を描き、押すと `$.ui.copy` でマーカーを除いたコードを写す
   - item: 開閉の範囲
-    constraint: 閉じた範囲は Button（ラベル `▸ {タイトル}`）だけを描き、押すと開閉の状態を反転して `$.ui.invalidate("ui.render")` で描き直す。開いた範囲は Button（ラベル `▾ {タイトル}`）の下に中身を描く。開閉の状態は `requestId`・ブロックの本文（`e.props.text`）のハッシュ・範囲の順番を鍵にして（1 つの返答の複数のブロックが同じ `requestId` を持っても鍵が重ならない） mod のモジュールの中に持ち、Claude Code を閉じると消える
+    constraint: 閉じた範囲は Button（ラベル `▸ {タイトル}`）だけを描き、押すと開閉の状態を反転して `$.ui.invalidate("ui.render")` で再描画する。開いた範囲は Button（ラベル `▾ {タイトル}`）の下に中身を描く。開閉の状態は `requestId`・ブロックの本文（`e.props.text`）のハッシュ・範囲の順番を鍵にして（1 つの返答の複数のブロックが同じ `requestId` を持っても鍵が重ならない） mod のモジュールの中に持ち、Claude Code を閉じると消える
   - item: 色
     constraint: 見出し・注意書きの種類・用語の下線・罫線・色の名前（`blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`）の文字色と背景色の色は、共通スタイルの定義のモジュールの値を使用する
   - item: 部品の木の上限
@@ -91,10 +91,10 @@ constraints:
     decided_by: LIB-472-1#
   - item: 用語のマーカー
     constraint: インターフェース定義『発言の用語にマーカーを付ける』の制約「用語の照合」「下線」「カード」「脚注」と同じ規則で、返答の段落・箇条書き・注意書きの中の用語にも付ける。用語のマーカーを付けた段落・箇条書きは `Markdown` 部品に任せず、同じ描き方（太字・行内のコード・リンク）を Text で描く
-  - item: 読み直し
-    constraint: 設定ファイルと用語集は呼ばれるたびに `$.fs.read` で読み直す
+  - item: 再読み込みし
+    constraint: 設定ファイルと用語集は呼ばれるたびに `$.fs.read` で再読み込みする
   - item: 行の詳細
-    constraint: 直前の表の `at` 番目の行（見出しの行を除いて 1 から数える）の先頭のセルに Button（閉じているとき `[ ▸ ]`、開いているとき `[ ▾ ]`）を描き、押すと開閉の状態を反転して `$.ui.invalidate("ui.render")` で描き直す。開いた行の下に、全ての列をまたぐ 1 つのセルで詳細の中身を 2 桁字下げして描く。描いた直後は閉じる。開閉の状態の鍵と持ち方は制約「開閉の範囲」と同じ。`at` が表の行の数を超えるときと直前が表でないときは、詳細の中身を表の後ろに本文として描く
+    constraint: 直前の表の `at` 番目の行（見出しの行を除いて 1 から数える）の先頭のセルに Button（閉じているとき `[ ▸ ]`、開いているとき `[ ▾ ]`）を描き、押すと開閉の状態を反転して `$.ui.invalidate("ui.render")` で再描画する。開いた行の下に、全ての列をまたぐ 1 つのセルで詳細の中身を 2 桁字下げして描く。描いた直後は閉じる。開閉の状態の鍵と持ち方は制約「開閉の範囲」と同じ。`at` が表の行の数を超えるときと直前が表でないときは、詳細の中身を表の後ろに本文として描く
   - item: ステップ
     constraint: 範囲の最初の番号付きリストの項目ごとに、見出しの色の太字の番号と項目の中身を横に並べ、項目の間に罫線の色の `│` を 1 行描く。項目の中身は段落・箇条書きと同じ描き方にし、入れ子の番号付きリストはステップにしない。番号付きリストが無い範囲は中身をそのまま描く
   - item: ファイルツリー
@@ -106,13 +106,13 @@ constraints:
   - item: 図と表の番号
     constraint: '`fig` のマーカーの直後の表の上に、返答のブロックの頭から数えた通し番号の `表 {番号}` を薄い色で描く。画像・ギャラリーに付けた `fig` は描かずに無視する。本文の `#fig-{ID}` へのリンクの文字はその表の `表 {番号}` に替える'
   - item: 部品のオン・オフ
-    constraint: '`parts` の `row_detail`・`steps`・`tree`・`inline`・`stack`・`figure` が `false` のとき、その部品の飾りだけを外し、マーカーの行は描かない。`row_detail` は開閉の Button を描かず、詳細の中身を表の後ろに `Markdown` 部品で描く。`steps` は番号付きリストを `Markdown` 部品で描く。`tree` は言語 `tree` のコードブロックを制約「コードブロック」のとおりに描く（`parts.code` が `false` なら `Markdown` 部品）。`inline` は行内の記法を記載した文字のまま描く。`stack` は縦に並べる範囲のタブ名の見出し・字下げ・カードの箇条書きを作らず、言語 `csv` のコードブロックを表にしない。`figure` は `表 {番号}` を描かず、リンクの文字を替えない。範囲の中のブロックと、番号を付けた表そのものは、それぞれの部品のオン・オフのとおりに描く'
+    constraint: '`parts` の `row_detail`・`steps`・`tree`・`inline`・`stack`・`figure` が `false` のとき、その部品の飾りだけを解除し、マーカーの行は描かない。`row_detail` は開閉の Button を描かず、詳細の中身を表の後ろに `Markdown` 部品で描く。`steps` は番号付きリストを `Markdown` 部品で描く。`tree` は言語 `tree` のコードブロックを制約「コードブロック」のとおりに描く（`parts.code` が `false` なら `Markdown` 部品）。`inline` は行内の記法を記載した文字のまま描く。`stack` は縦に並べる範囲のタブ名の見出し・字下げ・カードの箇条書きを作らず、言語 `csv` のコードブロックを表にしない。`figure` は `表 {番号}` を描かず、リンクの文字を替えない。範囲の中のブロックと、番号を付けた表そのものは、それぞれの部品のオン・オフのとおりに描く'
 flows:
   - name: 正常系
-    summary: 既定の設定で、表・注意書き・見出し・コードブロックを共通スタイルで描き、マーカーを消す
+    summary: 既定の設定で、表・注意書き・見出し・コードブロックを共通スタイルで描き、マーカーを削除する
     setup:
       - name: Mock
-        description: Claude Code の代わりに `claude-code/testing` の `$.ui.mount` で `AssistantMessage` を `terminal` に描く。テストの `on("fs.read")` で設定ファイルが無いと返す
+        description: Claude Code の代わりに `claude-code/testing` の `$.ui.mount` で `AssistantMessage` を `terminal` に描く。テストの `on("fs.read")` で設定ファイルが無いと返却する
       - name: 固定の返答
         description: '見出し・太字と行内のコードを含む段落・箇条書き・行内と単独の行のマーカー・`<!-- table: {"kind": "data"} -->` を付けた表・マーカーの無い表・`> [!NOTE]` の注意書き・言語 `ts` のコードブロックを持つ Markdown'
     flow: |-
@@ -124,7 +124,7 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（AssistantMessage・本文）
-        M->>F: 設定ファイルを読む
+        M->>F: 設定ファイルを読み込む
         F-->>M: 無い
         M->>M: 本文をブロックに分け、マーカーを描き方に使用する
         M-->>C: 共通スタイルの部品の木
@@ -145,7 +145,7 @@ flows:
     summary: '`parts.table` が `false` のとき、表だけ Markdown 部品に任せる'
     setup:
       - name: Mock
-        description: '正常系と同じ。`on("fs.read")` で `global.parts.table: false` の設定ファイルを返す'
+        description: '正常系と同じ。`on("fs.read")` で `global.parts.table: false` の設定ファイルを返却する'
       - name: 固定の返答
         description: 正常系と同じ
     flow: |-
@@ -157,14 +157,14 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（AssistantMessage・本文）
-        M->>F: 設定ファイルを読む
+        M->>F: 設定ファイルを読み込む
         F-->>M: parts.table: false
         M-->>C: 表だけ Markdown 部品の部品の木
       ```
 
       <!-- /map -->
     expected:
-      - 表のブロックが、マーカーの行を除いた表の Markdown を渡した `Markdown` 部品で描かれる
+      - 表のブロックが、マーカーの行を除いた表の Markdown を指定した `Markdown` 部品で描かれる
       - 注意書き・見出し・コードブロックは正常系と同じ部品で描かれる
     test: test_normal_when_part_disabled
     refs:
@@ -173,7 +173,7 @@ flows:
     summary: '`targets` に `assistant` が無いとき、`next(e)` を返却する'
     setup:
       - name: Mock
-        description: '正常系と同じ。`on("fs.read")` で `global.targets: [user]` の設定ファイルを返す'
+        description: '正常系と同じ。`on("fs.read")` で `global.targets: [user]` の設定ファイルを返却する'
       - name: 固定の返答
         description: 正常系と同じ
     flow: |-
@@ -185,7 +185,7 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（AssistantMessage・本文）
-        M->>F: 設定ファイルを読む
+        M->>F: 設定ファイルを読み込む
         F-->>M: targets: [user]
         M-->>C: next(e) の戻り値
       ```
@@ -224,7 +224,7 @@ flows:
     summary: '`code` のマーカーと行末のマーカーで、タイトル・行番号・行の色を描き、コピーの Button でコードを写す'
     setup:
       - name: Mock
-        description: 正常系と同じ。テストの `on("ui.copy")` で写した文字を受け取る
+        description: 正常系と同じ。テストの `on("ui.copy")` でコピーした文字を受け取る
       - name: 飾りのあるコード
         description: '`<!-- code: title=a.ts lines -->` の直後に、行末に `// [!code ++]` を持つ行を含む言語 `ts` のコードブロックを持つ返答'
     flow: |-
@@ -297,11 +297,11 @@ flows:
     expected:
       - 戻り値が `next(e)` の戻り値と同じ
     test: test_normal_when_tree_over_limit
-  - name: 異常系（用語集を読めない・なし）
-    summary: '`glossary` のファイルを読めないとき、用語のマーカーだけを付けずに描き、デバッグログに理由を出す'
+  - name: 異常系（用語集を読み取れない・なし）
+    summary: '`glossary` のファイルを読み取れないとき、用語のマーカーだけを付けずに描き、デバッグログに理由を出す'
     setup:
       - name: Mock
-        description: '正常系と同じ。`on("fs.read")` で `global.glossary: missing.yaml` の設定ファイルを返し、`missing.yaml` は無いと返す'
+        description: '正常系と同じ。`on("fs.read")` で `global.glossary: missing.yaml` の設定ファイルを返却し、`missing.yaml` は無いと返却する'
       - name: 固定の返答
         description: 正常系と同じ
     flow: |-
@@ -313,7 +313,7 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（AssistantMessage・本文）
-        M->>F: 設定ファイルと用語集を読む
+        M->>F: 設定ファイルと用語集を読み取る
         F-->>M: 用語集が無い
         M->>C: $.ui.log（to: debug）
         M-->>C: 用語のマーカーの無い共通スタイルの部品の木
@@ -326,11 +326,11 @@ flows:
     test: test_error_when_glossary_unreadable
     refs:
       - SC-472-98#scenarios[異常シナリオ（用語集の設定ファイルを読めない）]
-  - name: 異常系（設定ファイルを読めない・なし）
-    summary: 設定ファイルを YAML として読めないとき、`next(e)` を返却して Claude Code の元の描画に任せ、デバッグログに理由を出す
+  - name: 異常系（設定ファイルを読み取れない・なし）
+    summary: 設定ファイルを YAML として読み取れないとき、`next(e)` を返却して Claude Code の元の描画に任せ、デバッグログに理由を出す
     setup:
       - name: Mock
-        description: 正常系と同じ。`on("fs.read")` で YAML として読めない設定ファイルを返す
+        description: 正常系と同じ。`on("fs.read")` で YAML として読み取れない設定ファイルを返却する
       - name: 固定の返答
         description: 正常系と同じ
     flow: |-
@@ -342,8 +342,8 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（AssistantMessage・本文）
-        M->>F: 設定ファイルを読む
-        F-->>M: YAML として読めない
+        M->>F: 設定ファイルを読み込む
+        F-->>M: YAML として読み取れない
         M->>C: $.ui.log（to: debug）
         M-->>C: next(e) の戻り値
       ```
@@ -356,7 +356,7 @@ flows:
     refs:
       - SC-472-97#scenarios[異常シナリオ（設定ファイルを読めない）]
   - name: 正常系（本文の部品）
-    summary: 行の詳細・ステップ・ファイルツリー・行内の記法・縦に並べる範囲・図と表の番号を共通スタイルで描き、マーカーと記法の文字を消す
+    summary: 行の詳細・ステップ・ファイルツリー・行内の記法・縦に並べる範囲・図と表の番号を共通スタイルで描き、マーカーと記法の文字を削除する
     setup:
       - name: Mock
         description: 正常系と同じ
@@ -418,10 +418,10 @@ flows:
     refs:
       - SC-472-97#scenarios[正常シナリオ（本文の部品）]
   - name: 正常系（本文の部品をオフにしている）
-    summary: '`parts.steps` と `parts.figure` が `false` のとき、ステップの範囲だけ Markdown 部品に任せ、中の行内の記法は描き換える。番号を付けた表は表の部品のまま `表 1` だけを外す'
+    summary: '`parts.steps` と `parts.figure` が `false` のとき、ステップの範囲だけ Markdown 部品に任せ、中の行内の記法は描き換える。番号を付けた表は表の部品のまま `表 1` だけを解除する'
     setup:
       - name: Mock
-        description: '正常系と同じ。`on("fs.read")` で `global.parts.steps: false`・`global.parts.figure: false` の設定ファイルを返す'
+        description: '正常系と同じ。`on("fs.read")` で `global.parts.steps: false`・`global.parts.figure: false` の設定ファイルを返却する'
       - name: 本文の部品の返答
         description: 正常系（本文の部品）と同じ
     flow: |-
@@ -433,14 +433,14 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（AssistantMessage・本文）
-        M->>F: 設定ファイルを読む
+        M->>F: 設定ファイルを読み込む
         F-->>M: parts.steps・figure: false
         M-->>C: ステップだけ Markdown 部品の部品の木
       ```
 
       <!-- /map -->
     expected:
-      - ステップの範囲が、マーカーの行を除いた番号付きリストの Markdown を渡した `Markdown` 部品で描かれる
+      - ステップの範囲が、マーカーの行を除いた番号付きリストの Markdown を指定した `Markdown` 部品で描かれる
       - そのほかの本文の部品は正常系（本文の部品）と同じ部品で描かれる
       - 番号を付けた表は正常系（本文の部品）と同じ罫線の Box で描かれ、上に `表 1` の Text が無い
     test: test_normal_when_document_part_disabled
@@ -459,7 +459,7 @@ flows:
         participant C as Claude Code
         participant M as mdmark-style
         C->>M: ui.render（AssistantMessage・本文）
-        M->>M: 罫線の階層を読めない
+        M->>M: 罫線の階層を読み取れない
         M-->>C: コードブロックの部品の部品の木
       ```
 

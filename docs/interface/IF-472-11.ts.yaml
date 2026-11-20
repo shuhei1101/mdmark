@@ -60,7 +60,7 @@ flows:
       - '`settings.exists` が `true`、`settings.version` が端末の設定の `version`、`settings.target_version` がプラグインのビルドで埋めた mdmark のバージョン'
       - '`server.session` が `mdmark-test`、`server.session_exists` と `server.listening` が `true`'
     test: test_normal_when_already_set_up
-  - name: 正常系（systemd --user が使えない）
+  - name: 正常系（systemd --user が使用できない）
     summary: '`PATH` に `systemctl` が無いことと、`auto` が tmux になることを返却する'
     setup:
       - name: 一時の端末
@@ -194,7 +194,7 @@ response:
     description: '`PATH` に tmux がある'
   - name: systemd.available
     type: boolean
-    description: systemd --user が使える（`PATH` に `systemctl` があり、`systemctl --user is-system-running` の標準出力が `running`・`degraded`・`starting` のどれか）
+    description: systemd --user が使用できる（`PATH` に `systemctl` があり、`systemctl --user is-system-running` の標準出力が `running`・`degraded`・`starting` のどれか）
   - name: launcher.setting
     type: '"auto" | "systemd" | "tmux"'
     description: 端末の設定の `serve.launcher`、無ければ `auto`
@@ -209,10 +209,10 @@ response:
     description: unit のファイルのパス（`${XDG_CONFIG_HOME:-~/.config}/systemd/user/{unit の名前}.service`）
   - name: server.unit_active
     type: boolean
-    description: '`systemctl --user is-active` が `active`。systemd --user が使えなければ `false`'
+    description: '`systemctl --user is-active` が `active`。systemd --user が使用できなければ `false`'
   - name: server.unit_enabled
     type: boolean
-    description: '`systemctl --user is-enabled` が `enabled`。systemd --user が使えなければ `false`'
+    description: '`systemctl --user is-enabled` が `enabled`。systemd --user が使用できなければ `false`'
   - name: state.dir
     type: string
     description: 状態の配置場所

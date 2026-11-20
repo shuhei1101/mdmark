@@ -43,7 +43,7 @@ exceptions:
     notes: 記録を変えずに同期で投げる
   - name: なし（読み込みの失敗）
     condition: '`loader` が拒否するか、返却したモジュールが部品の関数を export していないか（`mermaid` は既定の export が `initialize`・`render` を持たないか）、指定しなかった部品の隣の URL を作れない'
-    notes: '`setPartModuleLoader` は投げない。部品を使用する `mount` は `console.error` に部品の名前と元のエラーを出して描画を続け、`mountView`・`mountComments` は戻り値の Promise を拒否する。`mermaid` を読み込めないときは、インターフェース定義『文書を描く』の mermaid を読み込めないときと同じく描き、`mermaid.url` へ要求し直さない'
+    notes: '`setPartModuleLoader` は投げない。部品を使用する `mount` は `console.error` に部品の名前と元のエラーを出して描画を続け、`mountView`・`mountComments` は戻り値の Promise を拒否する。`mermaid` を読み込めないときは、インターフェース定義『文書を描く』の mermaid を読み込めないときと同じく描き、`mermaid.url` へ再要求しない'
 constraints:
   - item: 呼ぶ時期
     constraint: 部品を使用する `mount`・`mountView`・`mountComments` を呼ぶ前に呼ぶ

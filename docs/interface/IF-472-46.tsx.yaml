@@ -8,7 +8,7 @@ entry:
 callers:
   - SC-472-98#
 idempotent: true
-side_effects: なし（保存される発言の本文は変えない）。用語集を読めないときだけ Claude Code のデバッグログに 1 行を出す
+side_effects: なし（保存される発言の本文は変えない）。用語集を読み取れないときだけ Claude Code のデバッグログに 1 行を出す
 request:
   - name: e.props.text
     type: string
@@ -29,19 +29,19 @@ request:
     type: CFG-472-4 のキー
     required: false
     location: argument
-    description: '`$.env.get("MDMARK_STYLE_CONFIG")` か既定のパスから `$.fs.read` で読む設定'
+    description: '`$.env.get("MDMARK_STYLE_CONFIG")` か既定のパスから `$.fs.read` で読み取る設定'
     default: なし（全てのキーを既定値にする）
   - name: mdmark.config.yaml
     type: CFG-472-3 のキー
     required: false
     location: argument
-    description: 設定 `glossary` が指す設定ファイルと、その `index` の索引・`aliases` の行が指すファイル・用語集の表を持つ文書。`$.fs.read` で読む
+    description: 設定 `glossary` が指す設定ファイルと、その `index` の索引・`aliases` の行が指すファイル・用語集の表を持つ文書。`$.fs.read` で読み取る
     default: なし（用語のマーカーを付けない）
   - name: settings.json の theme
     type: string
     required: false
     location: argument
-    description: '`$.settings.read()` で読む Claude Code の配色。背景の帯とカードの背景の色を決める'
+    description: '`$.settings.read()` で読み取る Claude Code の配色。背景の帯とカードの背景の色を決める'
     default: なし（`dark` として扱う）
 request_example: |-
   ```json
@@ -63,8 +63,8 @@ response_example: |-
 exceptions:
   - name: なし（正常終了）
     condition: 部品の木か `next(e)` の戻り値を返却する
-  - name: なし（設定ファイルを読めない）
-    condition: 設定ファイルがあるが、YAML として読めない
+  - name: なし（設定ファイルを読み取れない）
+    condition: 設定ファイルがあるが、YAML として読み取れない
     notes: 部品の木を作らずに `next(e)` の戻り値を返却し、`$.ui.log` でデバッグログに mod の名前と理由を出す（外部ライブラリ LIB-472-1 の制限「mod のフックの例外」）
 constraints:
   - item: 描き換える条件
@@ -76,20 +76,20 @@ constraints:
   - item: 下線
     constraint: メッセージごとに、用語の最初の出現だけに下線を付ける。見出し・表・コード（行内のコードを含む）・リンクの中には付けない。下線の色は共通スタイルの用語の下線の色
   - item: カード
-    constraint: '`parts.hover_card` が `true` のとき、用語を含む行の keyed Box の中に、`position: "absolute"`・`top: 1`・`left: 0`・`display: "none"`・`hover: { display: "flex" }` の Box を置き、用語の名前（太字）と意味を描く。カードは罫線（`round`）と背景色で後ろの行を隠し、幅は 48 桁と行の幅の短い方で折り返す。行に用語が複数あるときは用語ごとに keyed Box を分け、乗せた用語のカードだけを開く'
+    constraint: '`parts.hover_card` が `true` のとき、用語を含む行の keyed Box の中に、`position: "absolute"`・`top: 1`・`left: 0`・`display: "none"`・`hover: { display: "flex" }` の Box を配置し、用語の名前（太字）と意味を描く。カードは罫線（`round`）と背景色で後ろの行を隠し、幅は 48 桁と行の幅の短い方で折り返す。行に用語が複数あるときは用語ごとに keyed Box を分け、乗せた用語のカードだけを開く'
   - item: 脚注
     constraint: '`parts.footnote` が `true` のとき、下線の用語の後ろに出た順の番号 `[n]` を薄い色で付け、本文の後ろに `[n] {名前}: {意味}` の行を薄い色で並べる'
   - item: 背景の帯
     constraint: 発言の Box の `backgroundColor` を、Claude Code の標準の発言の帯と同じ色にする。色は `$.settings.read()` の `theme` が `light` で始まるときは明るい配色、それ以外は暗い配色の値（暗い配色は `#3a3a3a`。256 色の 237 と同じ色）を、共通スタイルの定義に 16 進で持ち、そこから取る。行頭の `❯` とその色も標準の発言と同じにする
-    notes: '`next(e)` の戻り値は中を読めない参照（`{type: "engine"}`）で、標準の発言の Text だけを書き換えられないため、帯ごと自分で描く。明るい配色の値は、Claude Code の配布物の明るいテーマの `userMessageBackground` から取る（外部ライブラリ LIB-472-1 の制限「標準の発言の背景の色」）'
-  - item: 読み直し
-    constraint: 設定ファイルと用語集は呼ばれるたびに `$.fs.read` で読み直す
+    notes: '`next(e)` の戻り値は中を読み取れない参照（`{type: "engine"}`）で、標準の発言の Text だけを書き換えられないため、帯ごと自分で描く。明るい配色の値は、Claude Code の配布物の明るいテーマの `userMessageBackground` から取る（外部ライブラリ LIB-472-1 の制限「標準の発言の背景の色」）'
+  - item: 再読み込みし
+    constraint: 設定ファイルと用語集は呼ばれるたびに `$.fs.read` で再読み込みする
 flows:
   - name: 正常系
     summary: 索引・エイリアス・用語集の表の 3 つの用語に下線・カード・脚注を付け、背景の帯で描く
     setup:
       - name: Mock
-        description: 'Claude Code の代わりに `claude-code/testing` の `$.ui.mount` で `UserMessage` を `terminal` に描く。テストの `on("fs.read")` で設定ファイル・`mdmark.config.yaml`・用語集の表の文書を返し、`on("settings.read")` で `theme: dark` を返す'
+        description: 'Claude Code の代わりに `claude-code/testing` の `$.ui.mount` で `UserMessage` を `terminal` に描く。テストの `on("fs.read")` で設定ファイル・`mdmark.config.yaml`・用語集の表の文書を返却し、`on("settings.read")` で `theme: dark` を返却する'
       - name: 用語を持つ mdmark.config.yaml
         description: 索引の `terms[]` に `WS`、`aliases` に `mdmark`、用語集の表に `エイリアス` を持つ
       - name: 発言
@@ -103,7 +103,7 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（UserMessage・本文）
-        M->>F: 設定ファイル・mdmark.config.yaml・用語集を読む
+        M->>F: 設定ファイル・mdmark.config.yaml・用語集を読み取る
         F-->>M: 用語の辞書
         M->>M: 本文の用語を照合する
         M-->>C: 背景の帯の中に下線・カード・脚注を持つ部品の木
@@ -122,7 +122,7 @@ flows:
     summary: '`glossary` が無いとき、`next(e)` を返却する'
     setup:
       - name: Mock
-        description: 正常系と同じ。`on("fs.read")` で設定ファイルが無いと返す
+        description: 正常系と同じ。`on("fs.read")` で設定ファイルが無いと返却する
       - name: 発言
         description: 正常系と同じ
     flow: |-
@@ -134,7 +134,7 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（UserMessage・本文）
-        M->>F: 設定ファイルを読む
+        M->>F: 設定ファイルを読み込む
         F-->>M: 無い
         M-->>C: next(e) の戻り値
       ```
@@ -192,11 +192,11 @@ flows:
     expected:
       - 戻り値が `next(e)` の戻り値と同じ
     test: test_normal_when_no_term
-  - name: 異常系（用語集を読めない・なし）
-    summary: '`glossary` のファイルを読めないとき、`next(e)` を返却し、デバッグログに理由を出す'
+  - name: 異常系（用語集を読み取れない・なし）
+    summary: '`glossary` のファイルを読み取れないとき、`next(e)` を返却し、デバッグログに理由を出す'
     setup:
       - name: Mock
-        description: '正常系と同じ。`global.glossary: missing.yaml` の設定ファイルを返し、`missing.yaml` は無いと返す'
+        description: '正常系と同じ。`global.glossary: missing.yaml` の設定ファイルを返却し、`missing.yaml` は無いと返却する'
       - name: 発言
         description: 正常系と同じ
     flow: |-
@@ -208,7 +208,7 @@ flows:
         participant M as mdmark-style
         participant F as ファイル
         C->>M: ui.render（UserMessage・本文）
-        M->>F: 用語集を読む
+        M->>F: 用語集を読み取る
         F-->>M: 無い
         M->>C: $.ui.log（to: debug）
         M-->>C: next(e) の戻り値
