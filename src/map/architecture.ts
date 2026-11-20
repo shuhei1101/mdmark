@@ -33,6 +33,8 @@ export type ArchitectureDiagram = {
   groups: ArchGroup[];
   services: ArchService[];
   edges: ArchEdge[];
+  /** `align row|column {ID} …` で同じ段か同じ列にそろえる ID */
+  aligns: Array<{ axis: "row" | "column"; ids: string[] }>;
   problems: MapProblem[];
 };
 
@@ -60,8 +62,9 @@ export const MAP_ARCH_KINDS: Record<string, MapKind> = {
 const ID = "[A-Za-z0-9_\\u0080-\\uffff-]+";
 const SIDES = { L: "left", R: "right", T: "top", B: "bottom" } as const;
 const ITEM_RE = new RegExp(
-  `^(group|service)\\s+(${ID})(?:\\((\\w+)\\))?\\[([^\\]]*)\\](?:\\s+in\\s+(${ID}))?$`,
+  `^(group|service)\\s+(${ID})(?:\\(([\\w:-]+)\\))?\\[([^\\]]*)\\](?:\\s+in\\s+(${ID}))?$`,
 );
+const ALIGN_RE = new RegExp(`^align\\s+(row|column)((?:\\s+${ID})+)$`);
 const JUNCTION_RE = new RegExp(`^junction\\s+(${ID})(?:\\s+in\\s+(${ID}))?$`);
 const EDGE_RE = new RegExp(
   `^(${ID})(\\{group\\})?:([LRTB])\\s*(<?)--(>?)\\s*([LRTB]):(${ID})(\\{group\\})?$`,
@@ -105,7 +108,8 @@ const readItem = (
   const match = ITEM_RE.exec(context.text);
   if (!match?.[1] || !match[2]) return false;
   const icon = iconOf(match[3]);
-  if (match[3] !== undefined && icon === undefined)
+  // `logos:aws-lambda` などの外部のアイコン集の名前は、アイコンを描かずに読む
+  if (match[3] !== undefined && icon === undefined && !match[3].includes(":"))
     diagram.problems.push(
       invalid(context.line, iconText(context.line, match[3])),
     );
@@ -168,6 +172,7 @@ export const parseArchitecture = (source: string): ArchitectureDiagram => {
     groups: [],
     services: [],
     edges: [],
+    aligns: [],
     problems: [],
   };
   const lines = new Map<string, number>();
@@ -176,7 +181,13 @@ export const parseArchitecture = (source: string): ArchitectureDiagram => {
     if (line === 0 || text === "" || IGNORED_RE.test(text)) continue;
     const count = diagram.groups.length + diagram.services.length;
     const junction = JUNCTION_RE.exec(text);
-    if (junction?.[1])
+    const align = ALIGN_RE.exec(text);
+    if (align?.[1] && align[2])
+      diagram.aligns.push({
+        axis: align[1] === "row" ? "row" : "column",
+        ids: align[2].trim().split(/\s+/),
+      });
+    else if (junction?.[1])
       diagram.services.push({
         id: junction[1],
         icon: undefined,
@@ -261,6 +272,21 @@ export const architectureToFlowchart = (
       both: false,
       label: undefined,
     };
+  });
+  // `align column` は同じ段（左から右の図の同じ列）、`align row` は段の中の同じ並びにそろえる
+  diagram.aligns.forEach((align, index) => {
+    const [first, ...rest] = align.ids;
+    if (first === undefined) return;
+    for (const id of rest)
+      overrides[id] =
+        align.axis === "column"
+          ? { ...overrides[id], align: first }
+          : { ...overrides[id], order: overrides[id]?.order ?? order + index };
+    if (align.axis === "row")
+      overrides[first] = {
+        ...overrides[first],
+        order: overrides[first]?.order ?? order + index,
+      };
   });
   return {
     chart: {
