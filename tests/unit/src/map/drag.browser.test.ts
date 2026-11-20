@@ -272,7 +272,17 @@ test("test_start_drag_when_cancelled", async () => {
 
 /** グループ page の中のノード A の配置（右のノード B を置くかは引数で決める） */
 function groupLayout(right: number | undefined) {
-  const node = (id: string, x: number, y: number, ancestors: string[]) => ({
+  const node = ({
+    id,
+    x,
+    y,
+    ancestors,
+  }: {
+    id: string;
+    x: number;
+    y: number;
+    ancestors: string[];
+  }) => ({
     id,
     x,
     y,
@@ -286,8 +296,10 @@ function groupLayout(right: number | undefined) {
     width: 600,
     height: 400,
     nodes: [
-      node("A", 48, 84, ["page"]),
-      ...(right === undefined ? [] : [node("B", 192 + right, 24, [])]),
+      node({ id: "A", x: 48, y: 84, ancestors: ["page"] }),
+      ...(right === undefined
+        ? []
+        : [node({ id: "B", x: 192 + right, y: 24, ancestors: [] })]),
     ],
     groups: [
       {
@@ -319,7 +331,8 @@ async function setUpGroup(selector: string) {
       event: event as PointerEvent,
       layout: groupLayout(undefined),
       state: STATE,
-      onMove: (state) => moves.push(state as unknown as Record<string, unknown>),
+      onMove: (state) =>
+        moves.push(state as unknown as Record<string, unknown>),
       onClick: () => undefined,
     });
   });
