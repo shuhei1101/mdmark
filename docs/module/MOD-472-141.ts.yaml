@@ -275,19 +275,19 @@ functions:
       - name: test_layout_map_when_name_fits_with_right_padding
         case: 正常
         summary: 右の余白を加えた幅で 1 行に収まる名前
-        condition: 名前が「データベース」（全角 6 文字・見積もりの幅 84px）のノード 1 つ
+        condition: 名前が「データベース層」（全角 7 文字・見積もりの幅 91px）のノード 1 つ
         mock: なし
-        expected: そのノードの `w` が 125（84 + 10 + 28 + 1.5 × 2）、`h` が `leafHeight(1)`、`lines` が 1 行
+        expected: そのノードの `w` が 132（91 + 10 + 28 + 1.5 × 2）、`h` が `leafHeight(1)`、`lines` が 1 行
       - name: test_layout_map_when_name_wraps_with_right_padding
         case: 正常
         summary: 右の余白を除いた幅で折り返す名前
-        condition: '名前が全角 14 文字（見積もりの幅 196px）のノード 1 つと `nodeFit: height`'
+        condition: '名前が全角 14 文字（見積もりの幅 182px）のノード 1 つと `nodeFit: height`'
         mock: なし
         expected: そのノードの `w` が 220、`lines` が 2 行（220 - 41 = 179px で折り返す）、`h` が `leafHeight(2)`
       - name: test_layout_map_when_width_with_right_padding
         case: 正常
         summary: 幅を指定したノードの折り返し
-        condition: '名前が全角 12 文字（見積もりの幅 168px）のノードに上書きの `width: 200`'
+        condition: '名前が全角 13 文字（見積もりの幅 169px）のノードに上書きの `width: 200`'
         mock: なし
         expected: そのノードの `w` が 200、`lines` が 2 行（200 - 41 = 159px で折り返す）、`h` が `leafHeight(2)`
       - name: test_layout_map_when_measured_text_width
@@ -305,9 +305,9 @@ functions:
       - name: test_layout_map_when_pill_padding
         case: 正常
         summary: pill の左の余白
-        condition: '名前が「利用側のページ」（全角 7 文字・見積もりの幅 98px）のノードに `padLeft: 16` の上書き、`measureText` は `estimateTextWidth`'
+        condition: '名前が「利用側のページ」（全角 7 文字・見積もりの幅 91px）のノードに `padLeft: 16` の上書き、`measureText` は `estimateTextWidth`'
         mock: なし
-        expected: そのノードの `w` が 145（98 + 16 + 28 + 1.5 × 2）、`lines` が 1 行
+        expected: そのノードの `w` が 138（91 + 16 + 28 + 1.5 × 2）、`lines` が 1 行
       - name: test_layout_map_when_wire_to_group
         case: 正常
         summary: subgraph を指す線をグループの枠につなぐ
@@ -537,7 +537,7 @@ functions:
         summary: 行の数の高さ
         condition: 行の数 1 と 2
         mock: なし
-        expected: 1 行が 63、2 行が 83（`ceil((11 + 2 × 14) × 1.4) + 6 × 2 + 16`）
+        expected: 1 行が 62、2 行が 80（`ceil((11 + 2 × 13) × 1.4) + 6 × 2 + 16`）
   - name: estimateTextWidth
     title: 名前の幅を見積もる
     kind: 関数
@@ -560,7 +560,7 @@ functions:
         summary: 全角と半角の見積もり
         condition: 「文書の Markdown」
         mock: なし
-        expected: 117.6（全角 3 文字 × 14 + 半角 9 文字 × 8.4）
+        expected: 109.2（全角 3 文字 × 13 + 半角 9 文字 × 7.8）
   - name: spreadWireEnds
     title: 同じ辺の線の端を並べる
     kind: 関数
