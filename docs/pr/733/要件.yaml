@@ -1,0 +1,31 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 文書の作成者がマーカーの引数 mode で図の見せ方（入れ子のグループ・層の帯）を選べるようにする（追加すると決めた場合）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: following
+    detail: 層の帯で描いた図でも、グループの中へ入る・開閉で辿って読めることを追随して記載する（追加すると決めた場合）
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: following
+    detail: mode に知らない値を記載したときのずれを、点検の一覧に追随して載せる（追加すると決めた場合）
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+docs:
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: map のマーカーの引数に mode と値（boxes・layers）を追加する（追加すると決めた場合）
+    status: todo
+  - page: docs/guide/コアコンセプト-図を自動配置して辿る仕組み.md
+    new: false
+    change: map の引数の役割に、見せ方を切り替える mode を追加する（追加すると決めた場合）
+    status: todo
+scope_out:
+  - item: mode の値 list（一覧の表示）
+    reason: 'A-35 の No 17（一覧の表示）に当たり、追加するかを #471 で決める'
+    plan: '#471'
