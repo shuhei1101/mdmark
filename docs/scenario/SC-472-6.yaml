@@ -19,7 +19,7 @@ scenarios:
         participant BR as 既定のブラウザ
         W->>ED: mdmark: HTML に書き出す
         ED->>EX: mdmark.exportHtml
-        EX->>EX: 決めたバージョンの配布物を読み込んで mount で描く HTML を組む
+        EX->>EX: 決めたバージョンの配布物で本文を描き、描いた HTML と純粋な Markdown を埋めて mount で起動する HTML を組む
         EX->>EX: Markdown と同じフォルダに書き出す
         EX-->>W: 書き出したパスと「ブラウザで開く」の通知
         W->>EX: 通知の「ブラウザで開く」を押す
@@ -33,6 +33,7 @@ scenarios:
       - 通知に書き出したパスと「ブラウザで開く」が出る
       - ブラウザで開く代役に、書き出した HTML の URL が渡る
       - 書き出した HTML をブラウザで開くと、プレビューと同じ見出し・表・注意書き・map の構成図が描かれる
+      - 書き出した HTML に、開いている Markdown のマーカー（`<!-- map -->` など）と生の Markdown の記法の文字列が含まれず、開いたときは埋めた描いた HTML から描かれる。右側の目次の「Markdown でコピー」は埋めた純粋な Markdown をコピーする
     test: test_normal
   - name: 正常シナリオ（ブラウザで開く）
     setup:
