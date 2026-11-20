@@ -519,6 +519,57 @@ const edgeOnlyProblems = (item: {
     }));
 };
 
+/** 補足の changes を描く図の種類 */
+export const MAP_CHANGE_KINDS: readonly MapKindName[] = [
+  "flowchart",
+  "erDiagram",
+  "stateDiagram",
+  "classDiagram",
+  "architecture",
+  "C4Context",
+  "C4Container",
+  "C4Component",
+  "C4Dynamic",
+  "C4Deployment",
+];
+
+/** changes を使用できる図の種類の名前（記載の警告の文） */
+const CHANGE_KIND_NAMES =
+  "flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図";
+
+/** 補足の changes の ID が列・メンバーを指すか（ER 図の `{テーブル}.{列}`・クラス図の `{クラス名}.{メンバー名}`） */
+const isMemberKey = (kind: MapKindName, id: string, found: MermaidIds) =>
+  (kind === "erDiagram" || kind === "classDiagram") &&
+  id.includes(".") &&
+  found.ids.has(id) &&
+  !found.tables.has(id);
+
+/** 補足の changes の誤り（使用できない図の種類・列とメンバーのキー・無い ID） */
+const changeProblems = (context: DataContext): MapProblem[] => {
+  const { kind, found, data, lineOf, ref } = context;
+  const ids = Object.keys(data.changes);
+  if (ids.length === 0) return [];
+  if (!MAP_CHANGE_KINDS.includes(kind))
+    return [
+      {
+        kind: "map_invalid_value",
+        line: lineOf("changes"),
+        message: `補足の \`changes\` は、この図の種類では使用できません。使用できるのは ${CHANGE_KIND_NAMES} です。`,
+      },
+    ];
+  const out: MapProblem[] = [];
+  for (const id of ids) {
+    if (isMemberKey(kind, id, found))
+      out.push({
+        kind: "map_invalid_value",
+        line: lineOf(`changes.${id}`),
+        message: `補足の \`changes.${id}\` は列・メンバーを指しています。\`changes\` はノード・グループ・線の ID で記載してください。`,
+      });
+    else ref(`changes.${id}`, id);
+  }
+  return out;
+};
+
 /** 補足と Mermaid の中身・設定まで含めて、範囲の書き方の誤りを全て集める。`range.annotationIds` を指定すると、定義の無い注記の参照も確かめる */
 export const collectMapProblems = (
   range: MapRangeSource & { annotationIds?: ReadonlySet<string> | undefined },
@@ -592,6 +643,7 @@ export const collectMapProblems = (
     for (const id of step.edges ?? []) ref(`walkthroughs[${index}].edges`, id);
     ref(`walkthroughs[${index}].enter`, step.enter);
   });
+  problems.push(...changeProblems(context));
   checkLayout(context);
   problems.push(...colorLayoutKindProblems(context, structure.args.args.focus));
   problems.push(...found.linkProblems);

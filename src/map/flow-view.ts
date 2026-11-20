@@ -13,7 +13,13 @@ import {
   type BandStep,
   createFollow,
 } from "./band.ts";
-import { type MapData, type MapStep, noteTexts, parseMapData } from "./data.ts";
+import {
+  type MapChange,
+  type MapData,
+  type MapStep,
+  noteTexts,
+  parseMapData,
+} from "./data.ts";
 import {
   applyWireShifts,
   KEY_MOVE_PX,
@@ -35,6 +41,7 @@ import {
   type MeasureText,
   separateWires,
 } from "./layout.ts";
+import { attachMapList, flowListItems } from "./list.ts";
 import {
   type MapFlowArgs,
   type MapPacketMark,
@@ -633,6 +640,37 @@ const visibleTargetOf = (
   return { nodes: [...new Set(target.nodes.map(visible))], wires };
 };
 
+/** 補足の changes のうち、図のノード・グループ・線の ID を指すものだけを残す（列・メンバーと無い ID を除く） */
+const changesOf = (
+  chart: Flowchart,
+  data: MapData,
+): Record<string, MapChange> => {
+  const ids = new Set([
+    ...chart.nodes.map((node) => node.id),
+    ...chart.groups.map((group) => group.id),
+    ...chart.edges.map((edge) => edge.id),
+  ]);
+  return Object.fromEntries(
+    Object.entries(data.changes)
+      .filter(([id]) => ids.has(id))
+      .map(([id, change]) => [id, change.type]),
+  );
+};
+
+/** ノードの Mermaid のクラスから、設定の map.kinds の種類の名前を返却する（無ければ undefined） */
+const kindLabelOf = (
+  chart: Flowchart,
+  target: { id: string; kinds: Record<string, MapKind> },
+): string | undefined => {
+  const classes =
+    chart.nodes.find((node) => node.id === target.id)?.classes ?? [];
+  for (const name of classes) {
+    const kind = target.kinds[name];
+    if (kind !== undefined) return kind.label ?? name;
+  }
+  return undefined;
+};
+
 /** 構成図を読み取り、状態を読んで配置し、描いて測った大きさで配置し直し、操作を付ける */
 export const attachMapFlow = (
   range: HTMLElement,
@@ -675,6 +713,7 @@ export const attachMapFlow = (
   }).allowed;
   const wireLines = layoutValues(data, "line");
   const colors = layoutValues(data, "color");
+  const changes = changesOf(chart, data);
   const sizes: Record<string, { w: number; h: number }> = {};
   const measurer = textMeasurerOf(range);
   const { measureText } = measurer;
@@ -767,6 +806,7 @@ export const attachMapFlow = (
       id: frameId,
       terms,
       collapsedTag: extension?.collapsedTag,
+      changes,
     });
     return {
       html: part.html,
@@ -784,10 +824,23 @@ export const attachMapFlow = (
       // 等倍より縮めず、収まらない分は図の枠の中で横にスクロールする
       fitMin: 1,
       tools: tools(),
+      exportable: true,
+      listable: true,
       id: frameId,
     },
     body(),
   );
+  const detachList = attachMapList(range, {
+    label: () =>
+      `${range.querySelector(".mdmark-diagram-title")?.textContent ?? ""}の一覧`,
+    items: () =>
+      flowListItems({
+        chart,
+        notes,
+        changes,
+        kindLabel: (id) => kindLabelOf(chart, { id, kinds }),
+      }),
+  });
   linkAnnotationOwners(range);
   const figure = range.querySelector<HTMLElement>("figure") as HTMLElement;
   const detachDiagrams = attachDiagrams({
@@ -1274,6 +1327,7 @@ export const attachMapFlow = (
     resumeFollow: follower.resume,
     destroy: () => {
       destroyed = true;
+      detachList();
       band?.destroy();
       follower.destroy();
       resizeObserver?.disconnect();
