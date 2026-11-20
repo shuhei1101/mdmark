@@ -1,5 +1,6 @@
 import { basename, dirname, extname, resolve } from "node:path";
 import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
+import type { MdmarkRendered } from "../../../src/mount.ts";
 import type { PreviewConfig } from "../config.ts";
 import { escapeHtml } from "../escape.ts";
 
@@ -70,10 +71,12 @@ document.fonts.ready.then(() => {
 setTimeout(print, PRINT_WAIT_MS);
 `;
 
-/** 書き出す HTML を組む。`<base>`・そのバージョンの `index.css` の `<link>`・本文と設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで `mount` を呼ぶ `<script type="module">` を持つ。`aliases` があるときは JSON に埋めて `mount` の `opts.aliases` に指定する。`print` が `true` のときだけ印刷を待つ処理を追加する */
+/** 書き出す HTML を組む。`<base>`・そのバージョンの `index.css` の `<link>`・描いた結果・純粋な Markdown・設定の JSON の `<script type="application/json">`・`importMap` が空でないときの `<script type="importmap">`・`index.js` を読み込んで `mount` を呼ぶ `<script type="module">` を持つ。`aliases` があるときは JSON に埋めて `mount` の `opts.aliases` に指定する。`print` が `true` のときだけ印刷を待つ処理を追加する */
 export function buildExportHtml(options: {
-  /** 全文 */
-  markdown: string;
+  /** 配布物の `renderForMount` で描いた結果（元の Markdown は受け取らない） */
+  rendered: MdmarkRendered;
+  /** 配布物の `renderForMount` が作った純粋な Markdown */
+  pureMarkdown: string;
   /** 設定（相対パスの `libraries`・`html-scripts.url` は `data:` の URL にした値） */
   config: PreviewConfig;
   /** Markdown のファイル名 */
@@ -96,7 +99,8 @@ export function buildExportHtml(options: {
   aliases?: MdmarkAlias[] | undefined;
 }): string {
   const data = escapeScriptJson({
-    markdown: options.markdown,
+    rendered: options.rendered,
+    pureMarkdown: options.pureMarkdown,
     config: options.config,
     // `file:` のページは `file:` のモジュールを読み込まないため、`data:` の URL にして読み込む
     extensions: options.extensions.map(moduleDataUrl),
@@ -129,7 +133,7 @@ ${themeStyle}${importMap}</head>
 import { mount${options.extensions.length === 0 ? "" : ", registerExtension"} } from ${escapeScriptJson(options.distJs)};
 const main = document.querySelector("main");
 const data = JSON.parse(document.getElementById("mdmark-data").textContent);${register}
-mount(main, { markdown: data.markdown, config: data.config${options.aliases === undefined ? "" : ", aliases: data.aliases"} });${options.print ? PRINT_SCRIPT : ""}
+mount(main, { rendered: data.rendered, pureMarkdown: data.pureMarkdown, config: data.config${options.aliases === undefined ? "" : ", aliases: data.aliases"} });${options.print ? PRINT_SCRIPT : ""}
 </script>
 </body>
 </html>

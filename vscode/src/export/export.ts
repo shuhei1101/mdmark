@@ -12,6 +12,7 @@ import { applyColorTheme, isFile, loadConfig } from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
 import { bundleExtensions } from "../extensions-bundle.ts";
 import { distUrl } from "../preview/html.ts";
+import { readIncludes } from "../preview/includes.ts";
 import { readSettings } from "../settings.ts";
 import {
   decideVersion,
@@ -19,6 +20,7 @@ import {
   TAGS_TIMEOUT_MS,
 } from "../version.ts";
 import { baseDirOf } from "../workspace.ts";
+import { loadDistRenderer } from "./dist.ts";
 import { embedLocalLibraries, embedLocalSyntax } from "./embed.ts";
 import { buildExportHtml, resolveExportPath } from "./html.ts";
 import { writeFileAtomically } from "./write.ts";
@@ -194,8 +196,11 @@ async function readExportConfig(options: {
   extensions: string[];
   importMap: Record<string, string>;
   aliases: MdmarkAlias[] | undefined;
+  /** 取り込む文書を読み込む根のフォルダ（プレビューと同じく、近い設定ファイルのフォルダ。無ければ Markdown のフォルダ） */
+  includeRoot: string;
 }> {
   const { document, configPath, deps } = options;
+  const markdownDir = dirname(document.uri.fsPath);
   const load = await loadExportConfig({ document, configPath, log: deps.log });
   if (load === undefined) {
     return {
@@ -204,6 +209,7 @@ async function readExportConfig(options: {
       extensions: [],
       importMap: {},
       aliases: undefined,
+      includeRoot: markdownDir,
     };
   }
   const { config, importMap } = await embedExportLibraries({
@@ -217,6 +223,8 @@ async function readExportConfig(options: {
     extensions: await bundleExportExtensions(load.extensions, deps),
     importMap,
     aliases: load.aliases,
+    includeRoot:
+      load.nearest === undefined ? markdownDir : dirname(load.nearest),
   };
 }
 
@@ -264,7 +272,7 @@ export async function exportMarkdown(options: {
     config: exported.config,
     colorTheme: settings.colorTheme,
   });
-  // 書き出す先を決め、全文（保存していない書き換えを含む）で HTML を組んで記載する
+  // 書き出す先を決め、全文（保存していない書き換えを含む）を描いた結果と純粋な Markdown で HTML を組んで記載する
   const markdownPath = document.uri.fsPath;
   const path = resolveExportPath({
     markdownPath,
@@ -272,8 +280,46 @@ export async function exportMarkdown(options: {
     workspaceDir: baseDirOf(document.uri),
   });
   const markdown = document.getText();
-  const html = buildExportHtml({
+  // 決めたバージョンの配布物の描く処理で、全文を描いた結果と純粋な Markdown にする
+  const renderer = await loadDistRenderer({
+    version: decision.version,
+    storageDir: deps.context.globalStorageUri.fsPath,
+    distBase: deps.distBase,
+  });
+  if (renderer.kind === "unavailable") {
+    log.error("配布物を取得できない", decision.version, renderer.reason);
+    await window.showErrorMessage(
+      `HTML を書き出せませんでした。mdmark ${decision.version} の配布物を取得できません（${renderer.reason}）。ネットワークにつながっているかを確認してから、もう一度実行してください。`,
+    );
+    return undefined;
+  }
+  if (renderer.kind === "unsupported") {
+    log.error("描いた HTML から起動できないバージョン", decision.version);
+    await window.showErrorMessage(
+      `HTML を書き出せませんでした。mdmark ${decision.version} はこの書き出しに対応していません。設定 mdmark.version を latest か、より新しいバージョンに修正してください。`,
+    );
+    return undefined;
+  }
+  const { includes } = await readIncludes({
+    markdownPath,
     markdown,
+    root: exported.includeRoot,
+    readFile: async (target) => {
+      try {
+        return await readFile(target, "utf8");
+      } catch {
+        return undefined;
+      }
+    },
+  });
+  const { rendered, pureMarkdown } = await renderer.renderForMount(markdown, {
+    config,
+    includes,
+    ...(exported.aliases === undefined ? {} : { aliases: exported.aliases }),
+  });
+  const html = buildExportHtml({
+    rendered,
+    pureMarkdown,
     config,
     title: exportTitle({ markdownPath, markdown }),
     distJs: distUrl({
