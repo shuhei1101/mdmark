@@ -27,5 +27,17 @@ export declare function readGlossaryTable(options: {
     entries: MdmarkGlossaryEntry[];
     warning?: string;
 };
+/** `env.aliases` のうち `alias_type` が `term` で `row` が `alias_row` のエイリアスから、用語・別名・使用しない言い方・意味・詳細の列の表のトークンと記載の警告を作る */
+export declare function aliasGlossaryTokens(options: {
+    /** マーカーの設定 */
+    options: MarkOptions;
+    /** マーカーの文字 */
+    mark: string;
+    /** markdown-it のコアの状態 */
+    state: StateCore;
+}): {
+    tokens: Token[];
+    warning?: string;
+};
 /** `glossary` のマーカーの範囲を取り除き、中の表を普通の表として残し、読み込んだ用語を `env.ownGlossary` に追加する（行番号は `env.glossaryLines` に同じ並びで追加する） */
 export declare function glossaryRule(state: StateCore): void;
