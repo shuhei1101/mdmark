@@ -1,13 +1,13 @@
 id: DATA-472-11
 visibility: internal
 title: 'データ: 文書'
-lead: 索引に記載した文書 1 つのメタデータ。
+lead: 索引に記載した文書 1 つのメタデータ。`title`・`description`・`aliases`・`tags` は文書の先頭のフロントマターの同じキーでも記載でき、索引に無いキーをフロントマターの値で補う（両方にあるときは索引の値を使用する）。索引に無い文書も、フロントマターに `title` を持てば索引の文書として扱う。
 datastore: YAML
 fields:
 - key: id
   title: ID
   type: string
-  description: 文書の ID。索引の `docs` の中で一意
+  description: 文書の ID。索引の `docs` の中で一意。索引に無くフロントマターで加えた文書は `path` と同じ値にする（フロントマターの `id` は参照しない）
   required: true
   example: arch
   unique: 全体
@@ -21,23 +21,23 @@ fields:
 - key: title
   title: タイトル
   type: string
-  description: 文書のタイトル。関連文書のリンクの文字に出す
-  required: true
+  description: 文書のタイトル。関連文書のリンクの文字に出す。索引に無ければフロントマターの `title`、どちらにも無ければ本文の最初の h1、無ければ拡張子を落としたファイル名
+  required: false
   example: アーキテクチャ
 - key: description
   title: 概要
   type: string
-  description: 1 文の概要。ツールチップの関連文書に出す
+  description: 1 文の概要。ツールチップの関連文書に出す。索引に無ければフロントマターの `description`
   example: 全体の構成と依存の向き
 - key: aliases
   title: 別名
   type: array
-  description: 本文での呼び名。本文に出たら、その単語のツールチップの関連文書にこの文書を出し、被参照にも数える
+  description: 本文での呼び名。本文に出たら、その単語のツールチップの関連文書にこの文書を出し、被参照にも数える。索引に無ければフロントマターの `aliases`
   example: '[構成図]'
 - key: tags
   title: タグ
   type: array
-  description: タグ。要素はタグの名前の文字列か、`name`（必須・空でない文字列）と `main`（主題のタグか。任意・既定 `false`）を持つオブジェクト
+  description: タグ。要素はタグの名前の文字列か、`name`（必須・空でない文字列）と `main`（主題のタグか。任意・既定 `false`）を持つオブジェクト。索引に無ければフロントマターの `tags`
   example: '[設計, {name: topic:mcp, main: true}]'
 - key: related
   title: 関連する文書
