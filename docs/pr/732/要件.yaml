@@ -11,6 +11,9 @@ scope_out:
   - item: ピン止めした列の用語のツールチップが見出し行の下に隠れる事象
     reason: 要望に含まれない（ツールチップの重なりで、列の幅の計測と別の事象）
     plan: '#729'
+  - item: src/shared/text.interact.ts の visibleText・cellValue が、脚注・注記のツールチップ（.mdmark-fn-tip）の定義の文字を並べ替え・絞り込み・コピーの値に含める
+    reason: セルの値に見えていない脚注の定義の文字が入る不具合（reviewer が対象外の逸脱として報告）。要望は列の幅の計測だけで、並べ替え・絞り込み・コピーの値は含まない
+    plan: '#734'
 docs:
   - page: docs/component/CMP-472-61.ts.yaml
     new: false
