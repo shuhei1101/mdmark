@@ -128,7 +128,7 @@ const luminance = (hex) => {
 /** 塗りに対してコントラスト比の高い方の文字の色（黒か白） */
 const textOn = (fill) => {
   const l = luminance(fill);
-  return (l + 0.05) / 0.05 >= 1.05 / (l + 0.05) ? "#111111" : "#ffffff";
+  return (l + 0.05) / 0.05 >= 1.05 / (l + 0.05) ? "#000000" : "#ffffff";
 };
 
 const applyPlanB = (root) => {

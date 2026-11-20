@@ -18,3 +18,17 @@
 .mock-styled-node.mdmark-diagram-node * {
   color: var(--mock-node-text);
 }
+
+/* 配色の切り替えのボタン: 共有の操作列のリンクと同じ見た目にし、ブラウザの既定のボタンの背景を外す */
+button.mock-bar-item {
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
+/* 選んでいる配色のボタン: 共有の操作列の今の案と同じく背景を反転して示す */
+.mock-bar-item[aria-pressed="true"] {
+  border-color: #ffffff;
+  background: #ffffff;
+  color: #2d2a3d;
+}
