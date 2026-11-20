@@ -183,3 +183,24 @@ test("test_hide_rendered_html_keeps_id_references", async () => {
   expect(hidden).toContain('href="mdmark-intro.md#mdmark"');
   expect(hidden).toContain('aria-label="mdmark の紹介"');
 });
+
+// 範囲の CSS の style 要素の中は CSS として名前を置き換え、範囲のスクリプトの template の中のコードは置き換えない（正常系）
+test("test_hide_rendered_html_with_range_style", async () => {
+  // 準備
+  const { hideRenderedHtml } = await loadTraces();
+  const html = [
+    '<div class="mdmark-html" data-html-scope="0">',
+    '<style class="mdmark-html-style">.mdmark-html[data-html-scope="0"] .box{color:var(--mdmark-fg)}</style>',
+    '<div class="box">mdmark</div>',
+    '<template class="mdmark-html-script" data-lang="ts">root.querySelector(".mdmark-x")</template>',
+    "</div>",
+  ].join("");
+  // 実行
+  const hidden = hideRenderedHtml(html);
+  // 検証
+  expect(hidden).toContain(
+    '<style class="zq-html-style">.zq-html[data-html-scope="0"] .box{color:var(--zq-fg)}</style>',
+  );
+  expect(hidden).toContain('<div class="box">mdmark</div>');
+  expect(hidden).toContain('root.querySelector(".mdmark-x")</template>');
+});
