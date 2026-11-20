@@ -17,3 +17,15 @@ confirmations:
     approver: shuhei1101
     commit: 97792b8e091cd0be12a1a6a9c4c5f6374295769f
     thread: https://github.com/shuhei1101/mdmark/pull/772#discussion_r4645399620
+  - topic: '通知の文面: VS Code の書き出しで配布物を取得できない（notify-dist-unavailable）'
+    decision: SCR-472-1 の文面で進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 8706ac9e19ddb229686a50384825ab6dfbc34419
+    thread: https://github.com/shuhei1101/mdmark/pull/772#discussion_r4645728161
+  - topic: '通知の文面: 描いた HTML から起動できないバージョン（notify-version-unsupported）'
+    decision: SCR-472-1 の文面で進める（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 8706ac9e19ddb229686a50384825ab6dfbc34419
+    thread: https://github.com/shuhei1101/mdmark/pull/772#discussion_r4645729044
