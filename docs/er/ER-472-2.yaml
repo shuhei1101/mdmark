@@ -269,7 +269,7 @@ tables:
         check: '`added`・`changed`・`removed`'
         description: '`added` は差分の追加の色、`changed` は色の名前 `orange`、`removed` は差分の削除の色の破線と取り消し線の名前で描き、変更の名前のバッジを付ける。`removed` のノード・線も配置に含める'
         example: added
-        notes: キーと記載の警告は `trust` と同じ
+        notes: キーと記載の警告は `trust` と同じ。変更の色は、同じ ID の `layout` の `color` と設定の `map.kinds` の種類の色より優先して枠線と線に適用する。種類のアイコンと名前の行の色は種類の色のまま
 refs:
   - IF-472-34#constraints[map の範囲]
   - MOD-472-139#data_models[MapData]
