@@ -9,7 +9,9 @@ import {
   sep,
 } from "node:path";
 import { parse } from "yaml";
+import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import { normalizePath } from "../knowledge/paths.ts";
+import { resolveDocTitle } from "../knowledge/references.ts";
 import type { BuildConfig, LoadedConfig } from "./config.ts";
 import { CliError } from "./errors.ts";
 
@@ -108,37 +110,31 @@ export async function readIndexWithDocuments(loaded: LoadedConfig): Promise<
   return { indexFile, indexDir, raw, documents };
 }
 
-/** 本文の最初の h1 の文字（コードブロックの中は読み込まない）。無ければ `undefined` */
-function firstHeading(markdown: string): string | undefined {
-  let fence: string | undefined;
-  for (const line of markdown.split("\n")) {
-    const fenceMatch = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
-    if (fenceMatch?.[1]) {
-      const marker = fenceMatch[1].charAt(0);
-      fence =
-        fence === undefined ? marker : fence === marker ? undefined : fence;
-      continue;
-    }
-    if (fence !== undefined) {
-      continue;
-    }
-    const heading = /^ {0,3}#\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
-    if (heading?.[1]) {
-      return heading[1];
-    }
-  }
-  return undefined;
-}
-
-/** 文書のタイトルを決める: 索引の `title`、無ければ本文の最初の h1、無ければ拡張子を落としたファイル名 */
+/** 文書のタイトルを決める: `resolveDocTitle` に委ね、索引の `title`、無ければフロントマターの `title`、無ければ本文の最初の h1 の文字、無ければ拡張子を落としたファイル名 */
 export function documentTitle(doc: {
   path: string;
   markdown: string;
   indexTitle?: string | undefined;
+  frontmatterTitle?: string | undefined;
 }): string {
-  return (
-    doc.indexTitle ??
-    firstHeading(doc.markdown) ??
-    basename(normalizePath(doc.path), extname(doc.path))
-  );
+  return resolveDocTitle(doc);
+}
+
+/** 各文書の先頭のフロントマターの中身を YAML として解析した値の表。フロントマターを持たない文書と、解析できない文書は入れない */
+export function readFrontmatterValues(
+  markdowns: Record<string, string>,
+): Record<string, unknown> {
+  const values: Record<string, unknown> = {};
+  for (const [path, markdown] of Object.entries(markdowns)) {
+    const { content } = splitFrontmatter(markdown);
+    if (content === undefined) {
+      continue;
+    }
+    try {
+      values[path] = parse(content);
+    } catch {
+      // 解析できないフロントマターは、無いものとして扱う
+    }
+  }
+  return values;
 }

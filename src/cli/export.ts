@@ -16,13 +16,18 @@ import { normalizePath } from "../knowledge/paths.ts";
 import {
   collectReferences,
   type MdmarkReferences,
+  readFrontmatterMetadata,
 } from "../knowledge/references.ts";
 import { usedLibraryMarks } from "../render/used.ts";
 import { loadAliases } from "./aliases.ts";
 import { copyMedia } from "./assets.ts";
 import { collectMarkNames } from "./check.ts";
 import { type LoadedConfig, requireConfig } from "./config.ts";
-import { documentTitle, readIndexWithDocuments } from "./documents.ts";
+import {
+  documentTitle,
+  readFrontmatterValues,
+  readIndexWithDocuments,
+} from "./documents.ts";
 import {
   bundleViewer,
   cacheFetchText,
@@ -136,8 +141,6 @@ async function prepareReferences(
   const baseDir = info ? info.indexDir : loaded.dir;
   const indexPathOf = (path: string): string =>
     toPosix(relative(baseDir, join(loaded.dir, path)));
-  const byPath = (path: string) =>
-    index?.docs.find((doc) => normalizePath(doc.path) === indexPathOf(path));
 
   // 参照の表に指定する索引と文書: 索引が無くても `build.glossary` の用語集の表を全ての文書で有効にしるため、追加する
   const referenceDocs = [...(index?.docs ?? [])];
@@ -150,7 +153,13 @@ async function prepareReferences(
           index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
           documents,
           config: { features: loaded.config.features ?? {} },
+          ...(info ? { frontmatter: readFrontmatterValues(documents) } : {}),
         });
+  // 文書の `id`・タイトルは、フロントマターで補った参照の表の文書から引く
+  const byPath = (path: string) =>
+    (references?.docs ?? index?.docs)?.find(
+      (doc) => normalizePath(doc.path) === indexPathOf(path),
+    );
   return {
     index,
     references,
@@ -585,6 +594,9 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
           path: doc.path,
           markdown,
           indexTitle: refs.titleOf(doc.path),
+          frontmatterTitle: readFrontmatterMetadata(
+            readFrontmatterValues({ [doc.path]: markdown })[doc.path],
+          ).title,
         }),
         markdown,
         docId: refs.docIdOf(doc.path),
