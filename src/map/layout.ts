@@ -2111,12 +2111,18 @@ const moveEnd = (
   return head ? result : result.reverse();
 };
 
-/** 同じノードの同じ辺の同じ点に出入りする 2 本以上の線の端を、向こう側の点の並びの順に wireGap 間隔で辺に沿って並べる（辺に収まらないときは辺の長さを等分する） */
-export const spreadWireEnds = (layout: MapLayout): MapLayout["wires"] => {
-  const wires = layout.wires.map((wire) => ({
-    ...wire,
-    points: wire.points.map((point): [number, number] => [point[0], point[1]]),
-  }));
+/** 線の端の向こう側の点（3 つ目の点、無ければもう片方の端） */
+const farPointOf = (
+  points: Array<[number, number]>,
+  head: boolean,
+): [number, number] => {
+  if (points.length >= 3)
+    return (head ? points[2] : points.at(-3)) as [number, number];
+  return (head ? points.at(-1) : points[0]) as [number, number];
+};
+
+/** 線の両端を、端の点と辺の向きごとに集める */
+const wireEndGroups = (wires: PlacedWire[]): WireEnd[][] => {
   const groups = new Map<string, WireEnd[]>();
   wires.forEach(({ points }, wire) => {
     if (points.length < 2) return;
@@ -2126,41 +2132,55 @@ export const spreadWireEnds = (layout: MapLayout): MapLayout["wires"] => {
       if (end[0] === next[0] && end[1] === next[1]) continue;
       // 端の区間が縦なら横の辺（x に沿って並べる）、横なら縦の辺
       const axis: 0 | 1 = end[0] === next[0] ? 0 : 1;
-      const far = (
-        points.length >= 3
-          ? head
-            ? points[2]
-            : points.at(-3)
-          : head
-            ? points.at(-1)
-            : points[0]
-      ) as [number, number];
+      const order = farPointOf(points, head)[axis];
       const key = `${Math.round(end[0])},${Math.round(end[1])}:${axis}`;
       groups.set(key, [
         ...(groups.get(key) ?? []),
-        { wire, head, axis, order: far[axis] },
+        { wire, head, axis, order },
       ]);
     }
   });
-  for (const ends of groups.values()) {
+  return [...groups.values()];
+};
+
+/** 並べた端の位置。`wireGap` の間隔が辺に収まらないときは、辺の長さを端の数で等分した位置 */
+const endTargetOf = (context: {
+  origin: number;
+  span: { start: number; length: number } | undefined;
+  index: number;
+  count: number;
+}): number => {
+  const { origin, span, index, count } = context;
+  const gap = MAP_LAYOUT.wireGap;
+  if (span !== undefined && gap * count > span.length)
+    return span.start + (span.length * (index + 0.5)) / count;
+  return origin + (index - (count - 1) / 2) * gap;
+};
+
+/** 同じノードの同じ辺の同じ点に出入りする 2 本以上の線の端を、向こう側の点の並びの順に wireGap 間隔で辺に沿って並べる（辺に収まらないときは辺の長さを等分する） */
+export const spreadWireEnds = (layout: MapLayout): MapLayout["wires"] => {
+  const wires = layout.wires.map((wire) => ({
+    ...wire,
+    points: wire.points.map((point): [number, number] => [point[0], point[1]]),
+  }));
+  for (const ends of wireEndGroups(wires)) {
     if (ends.length < 2) continue;
     const sorted = [...ends].sort((a, b) => a.order - b.order);
-    const { axis, wire: firstWire, head: firstHead } = sorted[0] as WireEnd;
-    const points = (wires[firstWire] as PlacedWire).points;
-    const origin = (firstHead ? points[0] : points.at(-1)) as [number, number];
-    const span = sideSpanOf(layout.nodes, origin, axis);
-    const count = sorted.length;
-    const gap = MAP_LAYOUT.wireGap;
+    const first = sorted[0] as WireEnd;
+    const points = (wires[first.wire] as PlacedWire).points;
+    const origin = (first.head ? points[0] : points.at(-1)) as [number, number];
+    const span = sideSpanOf(layout.nodes, origin, first.axis);
     sorted.forEach((end, index) => {
-      const target =
-        span !== undefined && gap * count > span.length
-          ? span.start + (span.length * (index + 0.5)) / count
-          : origin[axis] + (index - (count - 1) / 2) * gap;
       const wire = wires[end.wire] as PlacedWire;
-      wire.points = moveEnd(wire.points as Array<[number, number]>, {
+      wire.points = moveEnd(wire.points, {
         head: end.head,
-        axis,
-        target,
+        axis: end.axis,
+        target: endTargetOf({
+          origin: origin[first.axis],
+          span,
+          index,
+          count: sorted.length,
+        }),
       });
     });
   }
