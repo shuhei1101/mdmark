@@ -11,4 +11,10 @@
 .mock-styled-node.mdmark-diagram-node {
   border-color: var(--mock-node-stroke);
   background: var(--mock-node-fill);
+  color: var(--mock-node-text);
+}
+
+/* 案 B: 文字の色を、color: の指定か塗りとのコントラストで決めた色にする */
+.mock-styled-node.mdmark-diagram-node * {
+  color: var(--mock-node-text);
 }

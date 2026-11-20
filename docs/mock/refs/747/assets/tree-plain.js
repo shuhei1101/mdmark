@@ -82,7 +82,7 @@ const relabelBroken = (root) => {
   if (!pre) return;
   pre.setAttribute("aria-label", "コード: text");
   const label = pre.parentElement?.querySelector(".mdmark-code-lang-name");
-  if (label) label.textContent = "text";
+  if (label && label.textContent !== "text") label.textContent = "text";
   for (const warning of root.querySelectorAll(".mdmark-syntax-warning")) {
     if (
       warning.textContent.includes("言語 tree のコードブロックに、罫線のフォルダ構成があります")

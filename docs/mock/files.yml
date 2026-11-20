@@ -1938,7 +1938,7 @@ files:
     tags: [topic:モック, topic:ファイルツリー]
   - path: components/plain-mermaid-style/index.html
     visibility: internal
-    description: '部品『plain-mermaid-style』のモック: mermaid のライブラリへ戻している mermaid のコードブロック（style・classDef・%%{init}・端に丸を付ける線・::icon・:::）の、今の描き方（mermaid の図）と案 A（map の図。指定を適用しない）・案 B（style・classDef の色を適用する）。部品の外観や状態を決めるときに参照する。'
+    description: '部品『plain-mermaid-style』のモック: mermaid のライブラリへ戻している mermaid のコードブロック（style・classDef・%%{init}・端に丸を付ける線・::icon・:::）の、今の描き方（mermaid の図）と案 A（map の図。指定を適用しない）・案 B（style・classDef・::: の色をノードに、linkStyle の色を線に適用し、文字の色を塗りとのコントラストで決める）と、front matter の config・明るい配色と暗い配色の切り替え。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:図]
 checkpoint:
   commit: c8628addc2098383b1d95215547ac435a55ac166
