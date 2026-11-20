@@ -18,7 +18,7 @@ notes:
     ├── clipboard.interact.ts    # クリップボードへ書き込む（表・行の URL・コードブロック・ファイルツリーが使用する）
     ├── part-states.interact.ts  # 読者が開閉した部品の開閉を再描画しをまたいで記録する
     ├── scroller.interact.ts     # 要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタン・差分のミニマップ・タブの位置の保持が使用する）
-    ├── text.interact.ts         # 用語のツールチップの文字を除いた要素の文字 visibleText と、表のセルの値 cellValue（表・セクション・右側の目次・ビューが使用する）
+    ├── text.interact.ts         # 用語のツールチップと脚注・注記の参照を除いた要素の文字 visibleText と、表のセルの値 cellValue（表・セクション・右側の目次・ビューが使用する）
     ├── zoom.interact.ts         # 図とライトボックスが共有する拡大・縮小・移動
     ├── collapse.logic.ts        # 表・タブ・ステップの折り畳みの指定（collapse）の読み取り
     ├── colors.logic.ts          # 色の名前の COLOR_NAMES と isColorName

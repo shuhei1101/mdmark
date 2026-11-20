@@ -10546,6 +10546,46 @@ flows:
     test: test_normal_when_column_width_ignores_hidden_tips
     refs:
       - SC-472-73#scenarios[正常シナリオ（列の幅を中身から決める）]
+  - name: 正常系（脚注を含むセルの並べ替え・絞り込み・コピー）
+    summary: 脚注の参照を持つセルの値を、脚注の参照（番号・スクリーンリーダー用の文字・ツールチップ）を除いた文字にして、並べ替え・絞り込み・コピーに使用する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 脚注を含む表の Markdown
+        description: '`<!-- table: {"kind": "data", "features": {"copy": {}}, "columns": {"用語": {"filter": {}}}} -->` 〜 `<!-- /table -->` で、列 `用語`・`値` に `承認[^1]`/`1`・`確認`/`2`・`確認[^2]`/`3` の 3 行を持つ表を囲んだ文書。脚注 1 の定義は `あとで差し戻す`、脚注 2 の定義は `いまは保留する`'
+      - name: Mock
+        description: '`navigator.clipboard.writeText` を、指定した文字を記録して解決する関数に差し替える'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 脚注の参照を持つ表を描く
+        P->>M: 用語の列の見出しを押す
+        M->>P: 脚注の参照を除いたセルの値で降順に並べ替える
+        P->>M: 表をコピーを押し、Markdown の表を押す
+        M->>P: 脚注の参照を除いたセルの値で Markdown の表を記載する
+        P->>M: 用語の列の絞り込みのボタンを押す
+        M->>P: 脚注の参照を除いたセルの値を候補に出す
+        P->>M: 候補の確認を選ぶ
+        M->>P: 用語が確認の行だけを出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 描いた直後、`承認` と 3 行目の `確認` の後ろに脚注の参照がある
+      - 見出しを押した後、`値` の列が上から `1`・`2`・`3`
+      - '`navigator.clipboard.writeText` が `| 用語 | 値 |\n| --- | --- |\n| 承認 | 1 |\n| 確認 | 2 |\n| 確認 | 3 |` で 1 回呼ばれる'
+      - 絞り込みのドロワーの候補が `承認`・`確認` の 2 つで、どの候補も `脚注`・脚注の番号・定義の文字を含まない
+      - 候補の `確認` を選んだ後、表に出ている行が `値` が `2`・`3` の 2 行
+    test: test_normal_when_table_values_ignore_footnotes
+    refs:
+      - SC-472-73#scenarios[正常シナリオ]
+      - SC-472-73#scenarios[正常シナリオ（列の値を選んで絞り込む）]
+      - SC-472-73#scenarios[正常シナリオ（表を Markdown でコピーする）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。

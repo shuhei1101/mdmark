@@ -24,6 +24,22 @@ test("test_visible_text", async () => {
   expect(cell?.innerHTML).toBe(before);
 });
 
+// 脚注・注記の参照の番号・スクリーンリーダー用の文字・ツールチップを除く（正常系）
+test("test_visible_text_when_footnote_ref", async () => {
+  // 準備
+  const { visibleText } = await loadText();
+  const root = createRootFromHtml(
+    '<table><tbody><tr><td>確認<sup class="mdmark-fn-ref"><a class="mdmark-fn-link"><span class="mdmark-visually-hidden">脚注 </span>1</a><span class="mdmark-fn-tip">脚注定義</span></sup></td><td>承認<sup class="mdmark-fn-ref mdmark-note-ref"><a class="mdmark-fn-link"><span class="mdmark-visually-hidden">注記 </span>1</a><span class="mdmark-fn-tip">注記定義</span></sup></td></tr></tbody></table>',
+  );
+  const cells = [...root.querySelectorAll("td")];
+  const before = cells.map((cell) => cell.innerHTML);
+  // 実行
+  const texts = cells.map((cell) => visibleText(cell));
+  // 検証
+  expect(texts).toEqual(["確認", "承認"]);
+  expect(cells.map((cell) => cell.innerHTML)).toEqual(before);
+});
+
 // data-value を優先し、無ければ見える文字を読み込む（正常系）
 test("test_cell_value", async () => {
   // 準備
