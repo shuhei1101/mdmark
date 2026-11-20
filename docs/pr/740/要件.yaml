@@ -1,0 +1,25 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 追加すると決めた項目（確信度のマーカー・計画した変更）を補足に記載して図に出す流れを追加する。何も追加しないと決めた場合は none にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 書き出し・一覧の表示を追加すると決めた場合、図の枠のパネルから図を SVG・PNG に書き出す流れと、一覧の表示に切り替えて読む流れを追加する。追加しない場合は none にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: following
+    detail: 読者が図を辿って読む流れに、追加すると決めた項目の確認を追随させる
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+      - docs/scenario/SC-472-42.yaml
+scope_out:
+  - item: map の範囲の外の mermaid のコードブロックを map で描き、mermaid のライブラリで描く経路をなくすこと
+    reason: No 13〜17 の追加とは別の要望で、同じ内容の open の Issue がある
+    plan: '#738'
+  - item: 文書を純粋な Markdown に書き出すときの map の変換
+    reason: No 16 は図を SVG・PNG に書き出す操作で、文書の Markdown への書き出し（SC-472-101）とは書き出す対象が別
+    plan: '#313'
