@@ -135,7 +135,7 @@ states:
       - name: filterValues
         value: '[{"column":1,"text":"存在しない"}]'
   - name: DefaultOverflow
-    description: 既定の種類で幅からはみ出す表。各列に並べ替えとピン止めのボタンが出て、先頭の列を既定で留め、見出し行が上端に留まる。押した先頭の列のピンは枠線と背景色を持たず、リンクの色で塗ったピンになる
+    description: 既定の種類で幅からはみ出す表。各列に並べ替えとピン止めのボタンが出て、先頭の列を留め（設定の `table.pin_default` が `true` のときの描いた直後の状態）、見出し行が上端に留まる。押した先頭の列のピンは枠線と背景色を持たず、リンクの色で塗ったピンになる
     args:
       - name: features
         value: '["sort","pin"]'
@@ -1223,7 +1223,7 @@ args:
     required: false
     default: '`[]`'
     enabled_when: '`overflow` が `true` のとき'
-    description: 留める列の位置（小さい順。空は留めない）。`pinMode` が `each` なら列ごとに、その列より左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて留め、`through` なら先頭から最も右の列までを左端に留める。`rowHeader` を持つ表で省いたときは行見出しの全ての列。`mount` は描いた直後に `data-pin` の列（無ければ行見出しの列、行見出しも無ければ先頭の列。`through` はその最も右の列まで）にする
+    description: 留める列の位置（小さい順。空は留めない）。`pinMode` が `each` なら列ごとに、その列より左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて留め、`through` なら先頭から最も右の列までを左端に留める。`rowHeader` を持つ表で省いたときは行見出しの全ての列。`mount` は描いた直後に `data-pin` の列（無ければ、設定の `table.pin_default` が `true` のときだけ行見出しの列、行見出しも無ければ先頭の列。`false`（既定）は空。`through` はその最も右の列まで）にする
   - name: unpinned
     type: 整数の配列
     required: false
