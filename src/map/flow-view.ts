@@ -30,6 +30,7 @@ import {
   resizeByKey,
   startDrag,
 } from "./drag.ts";
+import { attachMapExport } from "./export.ts";
 import {
   type Flowchart,
   mapLinkProblems,
@@ -395,6 +396,35 @@ const flowSourceOf = (
 ): { index: number; chart: Flowchart; data: MapData } =>
   context.modal ?? readFlowRange(range, context.extension);
 
+/** 全画面のモーダルに複製した図に、一覧の表示と書き出すボタンを付け直す */
+const mountModalFrame = (
+  modal: ModalFlow,
+  listItems: Parameters<typeof attachMapList>[1]["items"],
+): {
+  figure: HTMLElement;
+  detachList: () => void;
+  detachDiagrams: () => void;
+  linkOwners: () => void;
+} => {
+  const { figure } = modal;
+  const title = () =>
+    figure.querySelector(".mdmark-diagram-title")?.textContent ?? undefined;
+  const detachList = attachMapList(figure, {
+    label: () => `${title() ?? ""}の一覧`,
+    items: listItems,
+  });
+  const detachExport = attachMapExport(figure, { index: modal.index, title });
+  return {
+    figure,
+    detachList: () => {
+      detachList();
+      detachExport();
+    },
+    detachDiagrams: () => undefined,
+    linkOwners: () => undefined,
+  };
+};
+
 /** 図の枠を描いて一覧の表示と拡大・縮小・全画面を付ける。全画面のモーダルに付け直すときは、複製した図をそのまま使う */
 const mountFlowFrame = (
   range: HTMLElement,
@@ -413,13 +443,8 @@ const mountFlowFrame = (
   linkOwners: () => void;
 } => {
   const none = () => undefined;
-  if (context.modal)
-    return {
-      figure: context.modal.figure,
-      detachList: none,
-      detachDiagrams: none,
-      linkOwners: none,
-    };
+  const { modal } = context;
+  if (modal) return mountModalFrame(modal, context.listItems);
   range.innerHTML = renderDiagramFrame(context.frame, context.body());
   const detachList = attachMapList(range, {
     label: () =>

@@ -318,7 +318,13 @@ export function openDiagramDialog(options: {
   dialog.append(modalFigure);
   host.append(dialog);
   dialog.showModal();
-  const tips = attachDiagramTips({ figure: modalFigure, placement });
+  let tips = attachDiagramTips({ figure: modalFigure, placement });
+  // 部品が中身を描き直したとき（map の図の操作）は、ツールチップをもう一度付ける
+  const onRedraw = (): void => {
+    tips.detach();
+    tips = attachDiagramTips({ figure: modalFigure, placement });
+  };
+  modalFigure.addEventListener(DIAGRAM_REDRAW_EVENT, onRedraw);
   const detachView = attachView(modalFigure, {
     modal: true,
     onPanStart: () => tips.closeOpen(),
@@ -342,6 +348,7 @@ export function openDiagramDialog(options: {
   dialog.addEventListener(
     "close",
     () => {
+      modalFigure.removeEventListener(DIAGRAM_REDRAW_EVENT, onRedraw);
       tips.detach();
       detachView();
       detachModal?.();
