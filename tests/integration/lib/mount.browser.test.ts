@@ -23582,18 +23582,75 @@ test("test_normal_when_map_fullscreen", async () => {
   expect(modal.querySelector('.map-closed-group[data-group="read"]')).not.toBe(
     null,
   );
-  // 実行: ノードを選んだまま、図の中にフォーカスして Esc を 2 回押す
-  if (!mapNode(modal, "route").classList.contains("is-selected"))
-    pressMap(kind());
+  // 実行・検証: 一覧の表示のボタンで一覧に替わり、もう一度押すと図に戻る
+  const more = find<HTMLButtonElement>(modal, '[data-tool="more"]');
+  if (more.getAttribute("aria-expanded") !== "true")
+    await userEvent.click(more);
+  const list = find<HTMLButtonElement>(modal, '[data-tool="list"]');
+  await userEvent.click(list);
+  expect(list.getAttribute("aria-pressed")).toBe("true");
+  expect(
+    modal.querySelector('.mdmark-diagram-viewport [role="tree"]'),
+  ).not.toBeNull();
+  await userEvent.click(list);
+  expect(find<HTMLElement>(modal, ".mdmark-diagram-sizer").hidden).toBe(false);
+  // 実行・検証: 書き出すボタンで「SVG」「PNG」の要素が開く
+  const exporter = await openMapExport(modal);
+  expect(find<HTMLElement>(modal, ".mdmark-diagram-export").hidden).toBe(false);
+  await userEvent.click(exporter);
+  // 実行・検証: 案内の帯の手順を進め、図の空いた場所を押して止める
+  pressArrow(modal, 1);
+  expect(bandStep(modal)).toBe(1);
+  pressBlank(modal);
+  expect(bandStep(modal)).toBe(0);
+  // 実行・検証: グループのタイトルを押して中へ入る
+  find<HTMLElement>(
+    modal,
+    '.map-group[data-group="place"] .map-group-title',
+  ).click();
+  expect(modal.querySelector(".map-group-title.is-current")?.textContent).toBe(
+    "配置",
+  );
+  // 実行: ノードを選び、ツールチップを開いて Esc を 4 回押す
+  pressMap(kind());
   expect(mapNode(modal, "route").classList.contains("is-selected")).toBe(true);
+  const info = find<HTMLElement>(
+    modal,
+    ".mdmark-diagram-info[aria-describedby]",
+  );
+  info.focus();
+  const tip = () =>
+    document.getElementById(info.getAttribute("aria-describedby") ?? "");
+  await vi.waitFor(() => expect(tip()?.hidden).toBe(false));
+  await userEvent.keyboard("{Escape}");
+  // 検証: 1 回目はツールチップだけを閉じる
+  expect(tip()?.hidden).toBe(true);
+  expect(mapNode(modal, "route").classList.contains("is-selected")).toBe(true);
+  expect(dialog.open).toBe(true);
   find<HTMLElement>(modal, ".mdmark-diagram-viewport").focus();
   await userEvent.keyboard("{Escape}");
-  // 検証: 1 回目は選択を解き、モーダルは開いたまま
+  // 検証: 2 回目は選択を解き、中へ入ったまま
   expect(mapNode(modal, "route").classList.contains("is-selected")).toBe(false);
+  expect(modal.querySelector(".map-group-title.is-current")).not.toBeNull();
   expect(dialog.open).toBe(true);
   await userEvent.keyboard("{Escape}");
-  // 検証: 2 回目でモーダルを閉じ、変えた位置・大きさ・開閉を元の図へ反映する（選択とクエリ文字列は反映しない）
+  // 検証: 3 回目は 1 つ外のグループ（mdmark）へ戻り、4 回目で全体へ戻る
+  expect(modal.querySelector(".map-group-title.is-current")?.textContent).toBe(
+    "mdmark",
+  );
+  await userEvent.keyboard("{Escape}");
+  expect(modal.querySelector(".map-group-title.is-current")).toBeNull();
+  expect(dialog.open).toBe(true);
+  // 実行: もう一度中へ入り、中へ入ったまま閉じるボタンで閉じる
+  find<HTMLElement>(
+    modal,
+    '.map-group[data-group="place"] .map-group-title',
+  ).click();
+  expect(modal.querySelector(".map-group-title.is-current")).not.toBeNull();
+  find<HTMLButtonElement>(modal, '[data-tool="close"]').click();
+  // 検証: モーダルを閉じ、変えた位置・大きさ・開閉を元の図へ反映する（選択・中へ入った状態・クエリ文字列は反映しない）
   await vi.waitFor(() => expect(el.querySelector("dialog")).toBeNull());
+  expect(flow().querySelector(".map-group-title.is-current")).toBeNull();
   expect(nodeAt(flow(), "route").y).toBe(route.y + 40);
   expect(groupRect(flow(), "store").h).toBe(store.h + 24);
   expect(
