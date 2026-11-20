@@ -43,7 +43,10 @@ const readColors = (text: string): MermaidNodeStyle => {
     const at = part.indexOf(":");
     if (at < 0) continue;
     const key = part.slice(0, at).trim();
-    const value = part.slice(at + 1).trim().replaceAll("\\,", ",");
+    const value = part
+      .slice(at + 1)
+      .trim()
+      .replaceAll("\\,", ",");
     if ((COLOR_KEYS as readonly string[]).includes(key) && value !== "")
       out[key as (typeof COLOR_KEYS)[number]] = value;
   }
