@@ -5047,7 +5047,7 @@ test("test_normal_when_glossary_alias_row", async () => {
   expect(findTags(html, "<table")).toHaveLength(1);
   const table = html.slice(html.indexOf("<table"), html.indexOf("</table>"));
   const headings = [...table.matchAll(/<th[^>]*>([\s\S]*?)<\/th>/g)].map(
-    (match) => plainText(match[1] ?? ""),
+    (match) => plainText(match[1] ?? "").trim(),
   );
   expect(headings).toEqual([
     "用語",

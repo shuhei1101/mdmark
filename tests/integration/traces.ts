@@ -117,12 +117,14 @@ export type TraceReport = {
   outside: number;
   /** 埋め込みの JSON の、利用者が記載した値の項目を除く値の `mdmark` の数 */
   generated: number;
-  /** 埋め込みの Markdown の `<mdmark-`・`--mdmark-`・`class` の値の `mdmark-` の数 */
+  /** 埋め込みの描いた本文の HTML の `<mdmark-`・`--mdmark-`・`class` の値の `mdmark-` の数 */
   markdownNames: number;
   /** HTML の文字列の `<!--` の数 */
   comments: number;
-  /** 埋め込みの Markdown */
+  /** 埋め込みの描いた本文の HTML（文書の並びでつなぐ） */
   markdown: string;
+  /** 埋め込みの純粋な Markdown（文書の並びでつなぐ） */
+  pureMarkdown: string;
 };
 
 /** 隠した HTML の中身を、別名の `#zq-payload` から取り出して数える */
@@ -135,7 +137,7 @@ export function reportTraces(html: string): TraceReport {
     throw new Error("#zq-payload が無い");
   }
   const payload = JSON.parse(match[2]) as Record<string, unknown> & {
-    docs: Array<{ markdown: string }>;
+    docs: Array<{ rendered: { html: string }; pureMarkdown: string }>;
   };
   const {
     index: _index,
@@ -151,7 +153,7 @@ export function reportTraces(html: string): TraceReport {
     .replace(match[0], "")
     .replace(/<title>[\s\S]*?<\/title>/, "")
     .replace(/"[^"]*__mdmarkOpened[^"]*"/g, "");
-  const markdown = docs.map((doc) => doc.markdown).join("\n");
+  const markdown = docs.map((doc) => doc.rendered.html).join("\n");
   const count = (text: string, pattern: RegExp) =>
     (text.match(pattern) ?? []).length;
   return {
@@ -163,6 +165,7 @@ export function reportTraces(html: string): TraceReport {
     ),
     comments: count(outside, /<!--/g),
     markdown,
+    pureMarkdown: docs.map((doc) => doc.pureMarkdown).join("\n"),
   };
 }
 

@@ -23499,7 +23499,7 @@ test("test_normal_when_rendered", async () => {
   // 検証
   const content = (el: HTMLElement) =>
     (el.querySelector(".mdmark-content")?.innerHTML ?? "")
-      .replaceAll(/(mdmark-(?:table|tabs))-\d+/g, "$1-n")
+      .replaceAll(/(mdmark-(?:table|tabs|term))-\d+/g, "$1-n")
       .replace(/<div[^>]*data-mdmark-slot[\s\S]*$/, "");
   expect(content(fromRendered)).toBe(content(fromMarkdown));
   find<HTMLButtonElement>(fromRendered, "thead th button.mdmark-sort").click();
