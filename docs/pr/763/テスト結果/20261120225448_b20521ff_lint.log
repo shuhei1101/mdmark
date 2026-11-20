@@ -1,3 +1,5 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+
 $ npm run lint
 
 > lint
@@ -9,7 +11,7 @@ plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━
     Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
   
 
-Checked 978 files in 971ms. No fixes applied.
+Checked 978 files in 1193ms. No fixes applied.
 Found 1 warning.
 
 $ npm run lint:eslint
