@@ -136,7 +136,7 @@ functions:
     container: src/cli/traces.ts
     kind: 関数
     scope: internal
-    summary: 埋める本文の HTML の要素名・属性名・`class`・`id`・`data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`・`for`・`headers` の属性の値・`style` の属性の CSS 変数の名前・`mdmark-asset:` の `mdmark` を別名へ置き換え、HTML のコメントを削除する
+    summary: 埋める本文の HTML の要素名・属性名・`class`・`id`・`data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby`・`aria-details`・`aria-controls`・`aria-labelledby`・`aria-owns`・`aria-flowto`・`aria-activedescendant`・`aria-errormessage`。`aria-label` などの文字の `aria-*` は置き換えない）・`for`・`headers` の属性の値・`style` の属性の CSS 変数の名前・`mdmark-asset:` の `mdmark` を別名へ置き換え、HTML のコメントを削除する
     description: テキストのノードと、文書の中の `id` を指すもののほかの `href`・`src`・`alt`・`title` の属性の値は置き換えない。DOM に頼らず、タグの字句を読み取って置き換える（書き出しは Node で動く）
     args:
       - name: html
