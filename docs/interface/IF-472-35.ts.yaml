@@ -10928,6 +10928,15 @@ request:
     description: '`render` の `opts.resolveIdLink` と同じ。本文のリンクに加えて、map の構成図の `click` のノードのリンク（制約『map のノードのリンク』）と、クラス図の `click`・`link` のクラスのリンク（制約『map のクラス図』）にも適用する。例外を投げたときも URL を返却しなかったものとして扱い（本文のリンクは `href` を落とし、map のノードは書き方の警告にする）、描画を続ける'
     notes: '確認ログ『map の flowchart の click の id: をどこで URL に変えるか』'
     example: (ref) => `https://docs.example.com/${ref.slice(3)}`
+  - name: opts.config.table.pin_default
+    type: boolean
+    required: false
+    default: '`false`'
+    location: argument
+    description: 幅からはみ出す表を描いた直後に、`data-pin` の無い表で行見出しの列（行見出しも無ければ先頭の列）を留めるか。`false` は `data-pin` の列だけを留め、その列が無ければどの列も留めない。`true` でも `data-unpin` の列は留めない。留める動きは `opts.config.table.pin` に従う
+    constraints: 真偽値でない値は無視して `false` にする
+    example: 'true'
+    notes: '`mdmark.config.yaml` の `table.pin_default` と同じ値。`table` がオフのときは使用しない'
 request_example: |-
   ```json
   {
