@@ -73,7 +73,7 @@ docs:
 scope_out:
   - item: mdmark を読み込むアプリ（mindstella・dev-docs）の、表の既定のピン止めの変更への追従（設定で今の動きを選ぶか）
     reason: 別のリポジトリの変更で、この作業 PR の変更を前提にする。#711 の本文のとおり、完了後に後続に着手できる旨をコメントする
-    plan: to_file
+    plan: shuhei1101/mindstella#639
   - item: knowledge の規約『表し方の優先順位』の「はみ出す表は先頭の列をピン止めし」を、`columns.{列名}.pinned` で留める記載方法に合わせるか
     reason: 別のリポジトリの規約で、この作業 PR の既定の変更を前提にする。規約を変えるかはレビューで確定する
-    plan: to_file
+    plan: shuhei1101/knowledge#519
