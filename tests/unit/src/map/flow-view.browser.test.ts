@@ -1,4 +1,5 @@
 import { afterEach, expect, onTestFinished, test, vi } from "vitest";
+import { FOCUS_MS } from "../../../../src/map/band.ts";
 import {
   addStyles,
   createRootFromHtml,
@@ -199,10 +200,12 @@ test("test_attach_map_flow_when_walk_keeps_zoom", async () => {
     root.querySelector('[data-tool="fit"]')?.textContent ?? "";
   const tool = (name: string) =>
     root.querySelector<HTMLButtonElement>(`[data-tool="${name}"]`);
-  const walk = () => {
+  // 手順へ移った後、図を移す時間（FOCUS_MS）より長く待ってから倍率の文字を読む
+  const walk = async () => {
     const texts: string[] = [];
     for (const index of [0, 2, 0]) {
       root.querySelectorAll<HTMLElement>(".map-band-seg")[index]?.click();
+      await new Promise((resolve) => setTimeout(resolve, FOCUS_MS + 100));
       texts.push(zoomText());
     }
     return texts;
@@ -210,9 +213,9 @@ test("test_attach_map_flow_when_walk_keeps_zoom", async () => {
   for (let i = 0; i < 5; i++) tool("in")?.click();
   const zoomed = zoomText();
   // 実行
-  const zoomedTexts = walk();
+  const zoomedTexts = await walk();
   tool("fit")?.click();
-  const fitTexts = walk();
+  const fitTexts = await walk();
   // 検証
   expect(zoomed).not.toBe("100%");
   expect(zoomedTexts).toEqual([zoomed, zoomed, zoomed]);
