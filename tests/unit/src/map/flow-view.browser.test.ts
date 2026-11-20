@@ -241,7 +241,7 @@ test("test_attach_map_flow_when_follow", async () => {
   if (!zoom) {
     throw new Error("拡大・縮小が付いていない");
   }
-  const focusRect = vi.spyOn(zoom, "focusRect").mockImplementation(() => {});
+  const centerRect = vi.spyOn(zoom, "centerRect").mockImplementation(() => {});
   // 実行
   handle.follow(["mount", "marker"]);
   viewport.dispatchEvent(new WheelEvent("wheel", { deltaY: 100 }));
@@ -249,7 +249,7 @@ test("test_attach_map_flow_when_follow", async () => {
   handle.resumeFollow();
   handle.follow(["mount", "marker"]);
   // 検証
-  expect(focusRect).toHaveBeenCalledTimes(2);
+  expect(centerRect).toHaveBeenCalledTimes(2);
 });
 
 // 指の押下ではノードを動かさず、受け取りを残さない（正常系）
