@@ -135,7 +135,7 @@ states:
       - name: filterValues
         value: '[{"column":1,"text":"存在しない"}]'
   - name: DefaultOverflow
-    description: 既定の種類で幅からはみ出す表。各列に並べ替えとピン止めのボタンが出て、先頭の列を既定で留め、見出し行が上端に留まる。押した先頭の列のピンは枠線と背景色を持たず、リンクの色で塗ったピンになる
+    description: 既定の種類で幅からはみ出す表。各列に並べ替えとピン止めのボタンが出て、先頭の列を留め（設定の `table.pin_default` が `true` のときの描いた直後の状態）、見出し行が上端に留まる。押した先頭の列のピンは枠線と背景色を持たず、リンクの色で塗ったピンになる
     args:
       - name: features
         value: '["sort","pin"]'
@@ -1174,6 +1174,17 @@ states:
         value: '[1]'
       - name: widths
         value: '[{"column":1,"width":110}]'
+  - name: OverflowUnpinned
+    description: 既定の種類で幅からはみ出す表の、設定の `table.pin_default` が既定の `false` のときの描いた直後の状態。各列に並べ替えとピン止めのボタンが出て、どの列も留めず、全てのピン止めのボタンが押していない状態（`aria-pressed` が `false`）。ポインターを乗せられる端末では、押していないボタンを見出しにポインターかフォーカスがある間だけ見せる
+    args:
+      - name: features
+        value: '["sort","pin"]'
+      - name: columns
+        value: '["文書","行数","表","図","Chrome","Edge","Firefox","Safari","iOS Safari","Android Chrome"]'
+      - name: rows
+        value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
+      - name: overflow
+        value: 'true'
 lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決定した並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、どの種類の表も、表がスクロールする場所（ページか、表を囲む縦にスクロールする区画）に残っている間はスクロールしてもその上端に留め、集計の行をその下端に留める。列ごとに中身の量から折り返すかと列の幅を決め、全ての列の最小の幅が収まらない表は表の中で横にスクロールさせる。
 args:
   - name: kind
@@ -1223,7 +1234,7 @@ args:
     required: false
     default: '`[]`'
     enabled_when: '`overflow` が `true` のとき'
-    description: 留める列の位置（小さい順。空は留めない）。`pinMode` が `each` なら列ごとに、その列より左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて留め、`through` なら先頭から最も右の列までを左端に留める。`rowHeader` を持つ表で省いたときは行見出しの全ての列。`mount` は描いた直後に `data-pin` の列（無ければ行見出しの列、行見出しも無ければ先頭の列。`through` はその最も右の列まで）にする
+    description: 留める列の位置（小さい順。空は留めない）。`pinMode` が `each` なら列ごとに、その列より左で留めた列の幅の合計を `left`、右で留めた列の幅の合計を `right` に入れて留め、`through` なら先頭から最も右の列までを左端に留める。`rowHeader` を持つ表で省いたときは行見出しの全ての列。`mount` は描いた直後に `data-pin` の列（無ければ、設定の `table.pin_default` が `true` のときだけ行見出しの列、行見出しも無ければ先頭の列。`false`（既定）は空。`through` はその最も右の列まで）にする
   - name: unpinned
     type: 整数の配列
     required: false

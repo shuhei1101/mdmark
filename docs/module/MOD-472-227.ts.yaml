@@ -31,9 +31,9 @@ functions:
       `partStates` を指定したときは、`attachSections`・`attachTables`・`attachCodeFolds`・`attachFileTrees`・`attachDiagrams` にも指定し、`attachDetailsStates` を呼ぶ
     args:
       - name: options
-        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; pinMode?: TablePinMode; longColumnMin?: number; onColumnsChange?: (event: MdmarkColumnsChange) => void; sectionStates?: SectionStates; partStates?: PartStates; revealHash?: boolean; followHash?: boolean }'
+        type: '{ root: HTMLElement; features: Record<string, boolean>; placement: TooltipPlacement; diagramPlacement: TooltipPlacement; pinMode?: TablePinMode; pinDefault?: boolean; longColumnMin?: number; onColumnsChange?: (event: MdmarkColumnsChange) => void; sectionStates?: SectionStates; partStates?: PartStates; revealHash?: boolean; followHash?: boolean }'
         required: true
-        description: 描いた要素と文書で決定した機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する表のピン止めの動き（既定を適用した設定の `table.pin`。既定 `each`）と長文の列の最小の幅（既定を適用した設定の `table.longColumnMin`）と列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）と、`attachSections` に `states` として指定するセクションの開閉の記録（`SectionStates` は `src/section/section.interact.ts` から型だけを読み込む）と、部品の開閉の記録（`partStates`。`PartStates` は `src/shared/part-states.interact.ts` から型だけを読み込む。省くと記録しない）と、付けたときに URL の `#ID` で開くか（`revealHash`。既定 `true`）と、URL の `#ID` を追うか（`followHash`。`attachSections`・`attachTables`・`attachTabs` に指定する。既定 `true`）
+        description: 描いた要素と文書で決定した機能のオン・オフと、既定を適用した設定のツールチップを出す場所（本文の `placement` と図の `diagramPlacement`）と、`attachTables` に指定する表のピン止めの動き（既定を適用した設定の `table.pin`。既定 `each`）と描いた直後に既定の列を留めるか（既定を適用した設定の `table.pinDefault`。既定 `false`）と長文の列の最小の幅（既定を適用した設定の `table.longColumnMin`）と列の表示の通知（`mount` の `opts.onColumnsChange`。`MdmarkColumnsChange` は `src/mount.ts` から型だけを読み込む）と、`attachSections` に `states` として指定するセクションの開閉の記録（`SectionStates` は `src/section/section.interact.ts` から型だけを読み込む）と、部品の開閉の記録（`partStates`。`PartStates` は `src/shared/part-states.interact.ts` から型だけを読み込む。省くと記録しない）と、付けたときに URL の `#ID` で開くか（`revealHash`。既定 `true`）と、URL の `#ID` を追うか（`followHash`。`attachSections`・`attachTables`・`attachTabs` に指定する。既定 `true`）
     returns:
       type: () => void
       description: 付けた操作を削除する関数

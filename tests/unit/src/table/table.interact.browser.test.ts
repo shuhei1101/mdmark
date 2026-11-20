@@ -821,7 +821,7 @@ test("test_attach_tables_when_pinned", async () => {
   );
   // 留める 1・3 列目が見えている範囲に収まる幅
   root.style.width = "800px";
-  detachers.push(attachTables(root));
+  detachers.push(attachTables(root, { pinDefault: true }));
   const [wide, narrow] = [
     ...root.querySelectorAll<HTMLElement>(".mdmark-table"),
   ];
@@ -1781,7 +1781,7 @@ test("test_attach_tables_when_row_header_pinned", async () => {
   // 行見出しの 2 列が見えている範囲に収まる幅
   setRootWidth(root, 800);
   // 実行
-  detachers.push(attachTables(root));
+  detachers.push(attachTables(root, { pinDefault: true }));
   // 検証: 1・2 列目のピン止めが押した状態で、行見出しの全ての列を留める
   const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
   await vi.waitFor(() => {
@@ -1907,7 +1907,7 @@ test("test_attach_tables_when_pinned_exceed_visible_width", async () => {
   const { attachTables } = await loadTables();
   const { root } = createRoot(evenTable());
   setRootWidth(root, 390);
-  detachers.push(attachTables(root));
+  detachers.push(attachTables(root, { pinDefault: true }));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
   const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
@@ -2024,7 +2024,7 @@ test("test_attach_tables_when_resized_with_unpinned", async () => {
     ].join("\n"),
   );
   setRootWidth(root, 390);
-  detachers.push(attachTables(root));
+  detachers.push(attachTables(root, { pinDefault: true }));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
   const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
@@ -2097,7 +2097,7 @@ test("test_attach_tables_when_pinned_under_merged_header", async () => {
   );
   // 留める名前と既定の列が見えている範囲に収まる幅
   setRootWidth(root, 1000);
-  detachers.push(attachTables(root));
+  detachers.push(attachTables(root, { pinDefault: true }));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   if (!table) {
     throw new Error("表が無い");
@@ -2132,17 +2132,76 @@ test("test_initial_pinned_columns", async () => {
   const { initialPinnedColumns } = await loadLogic();
   // 実行・検証
   expect(
-    initialPinnedColumns({ pin: [0, 2], rowHeadCount: 0, mode: "each" }),
+    initialPinnedColumns({
+      pin: [0, 2],
+      rowHeadCount: 0,
+      mode: "each",
+      pinDefault: true,
+    }),
   ).toEqual([0, 2]);
   expect(
-    initialPinnedColumns({ pin: [], rowHeadCount: 2, mode: "each" }),
+    initialPinnedColumns({
+      pin: [],
+      rowHeadCount: 2,
+      mode: "each",
+      pinDefault: true,
+    }),
   ).toEqual([0, 1]);
   expect(
-    initialPinnedColumns({ pin: [], rowHeadCount: 0, mode: "each" }),
+    initialPinnedColumns({
+      pin: [],
+      rowHeadCount: 0,
+      mode: "each",
+      pinDefault: true,
+    }),
   ).toEqual([0]);
   expect(
-    initialPinnedColumns({ pin: [2], rowHeadCount: 0, mode: "through" }),
+    initialPinnedColumns({
+      pin: [2],
+      rowHeadCount: 0,
+      mode: "through",
+      pinDefault: true,
+    }),
   ).toEqual([0, 1, 2]);
+});
+
+// pinDefault が false なら pin の列だけを留め、pin が無ければ空にする（正常系）
+test("test_initial_pinned_columns_when_not_pin_default", async () => {
+  // 準備
+  const { initialPinnedColumns } = await loadLogic();
+  // 実行・検証
+  expect(
+    initialPinnedColumns({
+      pin: [],
+      rowHeadCount: 2,
+      mode: "each",
+      pinDefault: false,
+    }),
+  ).toEqual([]);
+  expect(
+    initialPinnedColumns({
+      pin: [],
+      rowHeadCount: 0,
+      mode: "through",
+      pinDefault: false,
+    }),
+  ).toEqual([]);
+  expect(
+    initialPinnedColumns({
+      pin: [1],
+      rowHeadCount: 0,
+      mode: "each",
+      pinDefault: false,
+    }),
+  ).toEqual([1]);
+  expect(
+    initialPinnedColumns({
+      pin: [1],
+      rowHeadCount: 0,
+      mode: "through",
+      pinDefault: false,
+    }),
+  ).toEqual([0, 1]);
 });
 
 // each は押した列だけを出し入れし、through は押した列までにするか解除する（正常系）
@@ -2633,7 +2692,7 @@ test("test_attach_tables_when_column_resized", async () => {
     ].join("\n"),
   );
   setRootWidth(root, 320);
-  detachers.push(attachTables(root));
+  detachers.push(attachTables(root, { pinDefault: true }));
   const table = root.querySelector<HTMLElement>(".mdmark-table");
   const scroll = root.querySelector<HTMLElement>(".mdmark-table-scroll");
   const pins = root.querySelectorAll<HTMLButtonElement>("button.mdmark-pin");
@@ -2703,7 +2762,7 @@ test("test_attach_tables_when_auto_width", async () => {
   );
   setRootWidth(root, 390);
   // 実行
-  detachers.push(attachTables(root));
+  detachers.push(attachTables(root, { pinDefault: true }));
   // 検証
   const wrapper = root.querySelector<HTMLElement>(".mdmark-table");
   const table = wrapper?.querySelector("table");

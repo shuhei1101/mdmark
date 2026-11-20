@@ -99,3 +99,7 @@ entries:
     schema: mdmark.index.schema.json
     sha256: 36ba07893b1540fb58d310654dd1ddb1d740c6c06af3dfe2d102b9be0ec535a8
     reason: 文書の title を省いてよいキーにしただけで、古い索引もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: 8d0d9bb41a7e1558dbce38c177f180757020c1d462a22f8d6302ebb6ad8aa025
+    reason: table に省いてよい真偽値の pin_default を足しただけで、古い設定もそのまま新しい Schema に合う

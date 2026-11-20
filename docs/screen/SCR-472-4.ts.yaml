@@ -91,7 +91,7 @@ elements:
       - name: rowColors
         value: マーカーの `rows.colors` の `column` と `value`・`at` から決めた本文の行ごとの色（複数の要素が該当する行は後ろの要素の色）
       - name: pinned
-        value: '`pin` の表で幅からはみ出す間は、マーカーの `columns.{列名}.pinned` の `true` の列の位置（無ければ行見出しの列、行見出しも無ければ先頭の列。`pinned` の `false` の列は除く。`pinMode` が `through` ならその最も右の列までの全ての列）。押したピン止めのボタンで変わる'
+        value: '`pin` の表で幅からはみ出す間は、マーカーの `columns.{列名}.pinned` の `true` の列の位置（無ければ、設定の `table.pin_default` が `true` のときだけ行見出しの列、行見出しも無ければ先頭の列。`false`（既定）は空。`pinned` の `false` の列は除く。`pinMode` が `through` ならその最も右の列までの全ての列）。押したピン止めのボタンで変わる'
       - name: unpinned
         value: '`pinned` のうち、左から順に幅を加算して表の見えている幅を超える列の位置（`mount` が表の幅・列の幅・ピン止め・列の表示と並びが変わるたびに再計算する）'
       - name: noSort
@@ -141,7 +141,7 @@ elements:
     kind: details
     position: 本文の先頭
     description: 文書の先頭の YAML のフロントマターを、見出し `フロントマター` の閉じた折りたたみに言語 `yaml` のコードブロックで出す（部品『フロントマター』）。印刷の機能がオンのとき、印刷の前に開き、印刷の後にもう一度閉じる
-    visible_when: 文書の先頭にフロントマターがあり、機能 `frontmatter` がオンのとき（既定はオフで、オフのときはフロントマターを描かない）
+    visible_when: 文書の先頭にフロントマターがあり、機能 `frontmatter` がオンのとき（既定はオフで、オフのときはフロントマターを描かない）。描いた文書のブロックの色分けでは、オフでも前と後のフロントマターが違うときだけ、変更・削除したフロントマターを開いた状態で差分のブロックに包んで出す（オンのときは既にある表示を包む。docs/interface/IF-472-35.ts の制約「フロントマターの色分け」）
     initial_state: 活性
     action: '`summary` を押すと開閉する（ブラウザの振る舞い）'
   - name: タスクのチェックボックス

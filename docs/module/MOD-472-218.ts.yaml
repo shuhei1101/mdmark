@@ -432,12 +432,12 @@ functions:
     kind: 関数
     scope: internal
     summary: '`data-pin` の位置・行見出しの列の数・ピン止めの動きから、描いた直後に留める列の位置を小さい順に返却する'
-    description: 留める元の列は `pin` があればその列、無ければ行見出しの全ての列（行見出しも無ければ先頭の列）から `unpin` の列を除いたもの。`each` はそのまま、`through` は先頭からその最も右の列までの全ての列にする
+    description: 留める元の列は `pin` があればその列、無ければ `pinDefault` が true のときだけ行見出しの全ての列（行見出しも無ければ先頭の列）から `unpin` の列を除いたもので、`pinDefault` が false なら空。`each` はそのまま、`through` は先頭からその最も右の列までの全ての列にする
     args:
       - name: options
-        type: '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] }'
+        type: '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; pinDefault: boolean; unpin?: number[] }'
         required: true
-        description: '`data-pin` の位置（無ければ空）、`th scope="row"` の行見出しの列の数、ピン止めの動き、`data-unpin` の位置（既定で留める列から除く。無ければ空）'
+        description: '`data-pin` の位置（無ければ空）、`th scope="row"` の行見出しの列の数、ピン止めの動き、`data-pin` が無いときに既定の列を留めるか（設定の `table.pin_default`）、`data-unpin` の位置（既定で留める列から除く。無ければ空）'
     returns:
       type: number[]
       description: 留める列の位置
@@ -445,9 +445,15 @@ functions:
       - name: test_initial_pinned_columns
         case: 正常
         summary: pin・行見出し・先頭の列の順に決め、through は最も右の列まで広げる
-        condition: '`{ pin: [0, 2], rowHeadCount: 0, mode: each }`・`{ pin: [], rowHeadCount: 2, mode: each }`・`{ pin: [], rowHeadCount: 0, mode: each }`・`{ pin: [2], rowHeadCount: 0, mode: through }`'
+        condition: '`{ pin: [0, 2], rowHeadCount: 0, mode: each, pinDefault: true }`・`{ pin: [], rowHeadCount: 2, mode: each, pinDefault: true }`・`{ pin: [], rowHeadCount: 0, mode: each, pinDefault: true }`・`{ pin: [2], rowHeadCount: 0, mode: through, pinDefault: true }`'
         mock: なし
         expected: '`[0, 2]`・`[0, 1]`・`[0]`・`[0, 1, 2]`'
+      - name: test_initial_pinned_columns_when_not_pin_default
+        case: 正常
+        summary: pinDefault が false なら pin の列だけを留め、pin が無ければ空にする
+        condition: '`{ pin: [], rowHeadCount: 2, mode: each, pinDefault: false }`・`{ pin: [], rowHeadCount: 0, mode: through, pinDefault: false }`・`{ pin: [1], rowHeadCount: 0, mode: each, pinDefault: false }`・`{ pin: [1], rowHeadCount: 0, mode: through, pinDefault: false }`'
+        mock: なし
+        expected: '`[]`・`[]`・`[1]`・`[0, 1]`'
     status: planned
   - name: togglePinnedColumn
     title: 押した列で留める列を切り替える
