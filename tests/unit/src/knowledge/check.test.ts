@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { DEFAULT_FEATURES } from "../../../../src/config.ts";
+import type { MdmarkIndex } from "../../../../src/knowledge/index-shape.ts";
 import { parseDocument } from "../../../../src/knowledge/references.ts";
 import {
   AVOID_GLOSSARY_DOCUMENT,
@@ -827,7 +828,7 @@ test("test_check_index_when_frontmatter_unindexed_document", async () => {
 test("test_find_frontmatter_mismatches", async () => {
   // 準備
   const { findFrontmatterMismatches } = await loadCheck();
-  const index = {
+  const index: MdmarkIndex = {
     schema: 2,
     docs: [
       { id: "guide", path: "guide.md", title: "使用方法", tags: ["手順"] },
@@ -858,7 +859,7 @@ test("test_find_frontmatter_mismatches", async () => {
 test("test_find_frontmatter_mismatches_when_order_differs", async () => {
   // 準備
   const { findFrontmatterMismatches } = await loadCheck();
-  const index = {
+  const index: MdmarkIndex = {
     schema: 2,
     docs: [
       {
