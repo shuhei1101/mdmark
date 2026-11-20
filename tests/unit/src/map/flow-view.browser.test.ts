@@ -430,10 +430,13 @@ test("test_attach_map_flow_when_crowded", async () => {
       wires: Array<{ id: string }>;
     }
   )?.wires[0]?.id;
-  const hit = root.querySelector(
-    `.map-wire-hit[data-wire="${CSS.escape(first ?? "")}"]`,
+  const band = root.querySelector(
+    `.map-wire-hit[data-wire="${CSS.escape(first ?? "")}"] .map-wire-hit-segment`,
   );
-  expect(hit?.getAttribute("d")).toBe("M3 3L3 7");
+  // 印の点の区間（3,3）〜（3,7）を幅 14px で囲む帯
+  expect(
+    ["x", "y", "width", "height"].map((name) => band?.getAttribute(name)),
+  ).toEqual(["-4", "-4", "14", "18"]);
 });
 
 /** 絶対配置でない子要素 */
