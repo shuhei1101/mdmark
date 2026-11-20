@@ -260,9 +260,11 @@ const pillPaddings = (
 ): Record<string, MapOverride> =>
   Object.fromEntries(
     chart.nodes
-      .filter((node) =>
-        node.classes.some((name) => kinds[name]?.shape === "pill"),
-      )
+      .filter((node) => {
+        // 描く側と同じく、map.kinds にある最初のクラスの種類の形状で決める
+        const name = node.classes.find((item) => item in kinds);
+        return name !== undefined && kinds[name]?.shape === "pill";
+      })
       .map((node) => [node.id, { padLeft: LABEL_METRICS.padPill }]),
   );
 
