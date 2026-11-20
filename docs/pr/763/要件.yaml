@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
     impact: changed
-    detail: ER 図・クラス図のテーブルの開閉のボタンをほかの開閉と同じ見た目にし、閉じたときは閉じたことを示すアイコンだけにする。ER 図の関連の線で 1 対多の向き（どちらが多い側か）が分かるようにする。グループの角をドラッグして大きさを変えられるようにする
+    detail: ER 図の関連の線で、データの印を多い側のテーブルから少ない側のテーブルへ流し、どちらが多い側かを分かるようにする。グループの角をドラッグして大きさを変えられるようにする
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
@@ -11,10 +11,14 @@ use_cases:
     depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-87.yaml
-    impact: following
-    detail: 図を辿って読む流れは変わらず、単一 UC『Mermaidと補足で図を描く』の変更に記述だけ追随する
-    depends_on:
-      - docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: 図を辿って読む流れは変わらず、単一 UC の変更が複合 UC の記述に及ばない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-39.yaml
+    impact: changed
+    detail: ER 図のテーブル・クラス図のクラスを閉じたときに列・メンバーの数を出さず、開閉のボタンをグループの開閉と同じ山形だけにする
+    depends_on: []
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
