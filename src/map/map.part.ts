@@ -2,6 +2,7 @@ import type {
   MdmarkDiagramNode,
   MdmarkDiagramWire,
   MdmarkFlowDefinition,
+  MdmarkMermaidShape,
 } from "../diagram/definition.ts";
 import {
   createTips,
@@ -34,6 +35,11 @@ import {
 } from "./axis-grid-layout.ts";
 import type { MapChange } from "./data.ts";
 import { MAP_LAYOUT, type MapLayout } from "./layout.ts";
+import {
+  type MermaidNodeStyle,
+  type MermaidWireStyle,
+  textColorOn,
+} from "./mermaid-style.ts";
 import type { Mindmap, MindmapItem } from "./mindmap.ts";
 import type { MindmapLayout, MindmapPlacement } from "./mindmap-layout.ts";
 import { MINDMAP_LAYOUT } from "./mindmap-layout.ts";
@@ -168,6 +174,15 @@ export type MapFlowArgs = {
   keep?: { nodes: string[]; wires: string[] } | undefined;
   /** 補足の changes のノード・グループ・線の ID ごとの計画した変更 */
   changes?: Record<string, MapChange> | undefined;
+  /** Mermaid の `style`・`classDef`・`linkStyle` の色（線はその線の ID から） */
+  styles?: MapMermaidStyles | undefined;
+};
+
+/** renderMapFlow に渡す Mermaid の色（`readMermaidStyles` の戻り値の、線の番号を線の ID に置き換えたもの） */
+export type MapMermaidStyles = {
+  nodes: Record<string, MermaidNodeStyle>;
+  wires: Record<string, MermaidWireStyle>;
+  defaultWire?: MermaidWireStyle | undefined;
 };
 
 /** 状態遷移図のノードの形状（`junction` はアーキテクチャ図の分岐点） */
@@ -527,12 +542,23 @@ const flowNodeStyle = (
   node: MapNode,
 ): MdmarkDiagramNode["style"] => {
   const kind = kindOf(args.kinds, node.classes);
+  const painted = args.styles?.nodes[node.id];
+  // 計画した変更を持つノードは、変更の色の枠線を優先する
+  const stroke =
+    args.changes?.[node.id] === undefined ? painted?.stroke : undefined;
+  const text =
+    painted?.color ??
+    (painted?.fill === undefined ? undefined : textColorOn(painted.fill));
   return {
     label:
       args.shapes?.[node.id] === "note" ? STATE_SHAPE_NAMES.note : kind?.label,
     icon: kind?.icon,
-    shape: kind?.shape,
+    // layoutMap は map の種類の形状に無い Mermaid の形状だけを持たせる
+    shape: (node.shape as MdmarkMermaidShape | undefined) ?? kind?.shape,
     color: args.colors?.[node.id] ?? kind?.color,
+    ...(painted?.fill === undefined ? {} : { fill: painted.fill }),
+    ...(stroke === undefined ? {} : { stroke }),
+    ...(text === undefined ? {} : { text }),
   };
 };
 
@@ -553,7 +579,23 @@ const flowWire = (args: MapFlowArgs, wire: MapWire): MdmarkDiagramWire => {
       ...line,
       color: args.colors?.[wire.id] ?? line.color,
       both: wire.both ?? false,
+      ...(wire.ends === undefined ? {} : { ends: wire.ends }),
+      ...wirePaint(args, wire.id),
     },
+  };
+};
+
+/** 線の Mermaid の色（`linkStyle {番号}` を `linkStyle default` に重ねる。計画した変更を持つ線は変更の色を優先する） */
+const wirePaint = (
+  args: MapFlowArgs,
+  id: string,
+): { stroke?: string; text?: string } => {
+  const paint = { ...args.styles?.defaultWire, ...args.styles?.wires[id] };
+  return {
+    ...(paint.stroke === undefined || args.changes?.[id] !== undefined
+      ? {}
+      : { stroke: paint.stroke }),
+    ...(paint.color === undefined ? {} : { text: paint.color }),
   };
 };
 

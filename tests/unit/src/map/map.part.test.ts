@@ -2479,7 +2479,7 @@ test("test_render_map_flow_when_styles", async () => {
     expect(nodeTag(html, id)).toContain("--map-node-text: #000000");
   }
   expect(html).toMatch(
-    /data-wire="B->C"[^>]*stroke: #d33|stroke: #d33[^>]*data-wire="B->C"/,
+    /data-wire="B-&gt;C"[^>]*stroke: #d33|stroke: #d33[^>]*data-wire="B-&gt;C"/,
   );
   const changedD = nodeTag(changed, "D");
   expect(changedD).toContain("--map-node-fill: #ffe08a");
@@ -2503,9 +2503,9 @@ test("test_render_map_flow_when_wire_ends_and_shapes", async () => {
   // 実行
   const { html } = renderMapFlow(args);
   // 検証
-  expect(html).toMatch(/data-wire="A->B"[^>]*marker-end="url\([^)]*circle/);
-  expect(html).toMatch(/data-wire="A->C"[^>]*marker-end="url\([^)]*cross/);
-  expect(html).not.toContain('data-wire="H->I"');
+  expect(html).toMatch(/data-wire="A-&gt;B"[^>]*marker-end="url\([^)]*circle/);
+  expect(html).toMatch(/data-wire="A-&gt;C"[^>]*marker-end="url\([^)]*cross/);
+  expect(html).not.toContain('data-wire="H-&gt;I"');
   const shapes = ["L", "M", "N", "O", "P"].map(
     (id) => nodeTag(html, id).match(/data-shape="([^"]+)"/)?.[1],
   );

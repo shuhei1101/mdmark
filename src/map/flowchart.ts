@@ -75,10 +75,10 @@ export type Flowchart = {
   links: Record<string, string>;
   /** `click` の行のノードの ID から、ソースの行（0 から） */
   linkLines: Record<string, number>;
-  /** `readMermaidStyles` が読み取ったノードと線の色 */
-  styles: MermaidStyles;
-  /** `{ID}@{ view: collapsed }` で閉じて始めるグループの ID */
-  collapsed: string[];
+  /** `readMermaidStyles` が読み取ったノードと線の色（flowchart の読み取りだけが持つ） */
+  styles?: MermaidStyles;
+  /** `{ID}@{ view: collapsed }` で閉じて始めるグループの ID（flowchart の読み取りだけが持つ） */
+  collapsed?: string[];
   problems: MapProblem[];
 };
 

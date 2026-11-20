@@ -10322,6 +10322,61 @@
     color: var(--map-kind, var(--mdmark-color-muted));
   }
 
+  /* Mermaid の style・classDef の色: 面・枠線・名前の文字（明るい配色と暗い配色で変えない） */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node.map-kinded[style*="--map-node-fill"] {
+    background: var(--map-node-fill);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node.map-kinded[style*="--map-node-stroke"] {
+    border-color: var(--map-node-stroke);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node.map-kinded[style*="--map-node-text"]
+    :is(.mdmark-diagram-node-name, .mdmark-diagram-node-kind) {
+    color: var(--map-node-text);
+  }
+
+  /* Mermaid の記法の形状: 平行四辺形・台形は斜めの辺で切り、名前を内側に収める余白を取る */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node:is(
+    [data-shape="lean-right"],
+    [data-shape="lean-left"],
+    [data-shape="trapezoid"],
+    [data-shape="trapezoid-alt"]
+  ) {
+    padding-inline: 20px;
+    border-radius: 0;
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="lean-right"] {
+    clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="lean-left"] {
+    clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 100%, 14px 100%);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="trapezoid"] {
+    clip-path: polygon(14px 0, calc(100% - 14px) 0, 100% 100%, 0 100%);
+  }
+  .mdmark-diagram[data-diagram="map"]
+    .mdmark-diagram-node[data-shape="trapezoid-alt"] {
+    clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 14px 100%);
+  }
+  /* 二重の円: 丸い端の二重の枠 */
+  .mdmark-diagram[data-diagram="map"]
+  .mdmark-diagram-node[data-shape="double-circle"] {
+    border-style: double;
+    border-width: 4px;
+    border-radius: 999px;
+    padding-inline: 16px;
+  }
+  /* 文書: 下の辺を波打たせた形 */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node[data-shape="doc"] {
+    border-radius: 2px 2px 50% 50% / 2px 2px 12px 12px;
+  }
+
   /* map の ER 図: テーブルの列の行（キー・名前・型・説明のボタン）と列の開閉のボタン */
   .mdmark-diagram[data-diagram="map"]
   .mdmark-diagram-node:has(> .map-er-columns) {
