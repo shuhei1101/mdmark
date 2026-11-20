@@ -16,7 +16,7 @@ tasks:
     updated_at: '2026-11-20T06:25:14.165821+00:00'
   - process: PoC 検証
     status: skipped
-    reason: 推奨の案の項目は補足のキーと図の枠の操作の追加で、未検証の技術機構に依存しない。依存する項目を追加すると決めた場合は todo に戻す
+    reason: No 16 の書き出しは、HTML のノードと SVG の線を重ねた map の図をブラウザだけで SVG・PNG にする未検証の機構に依存する。追加するかをユーザーが決める前に検証しない。追加すると決まったら todo に戻す
     updated_by: planner
     updated_at: '2026-11-20T06:25:14.165821+00:00'
   - process: 複合ユースケース設計
@@ -36,8 +36,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T06:25:14.165821+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: 最初に項目ごとに追加するか（要件.mark.md の案 A・B・C）をユーザーへ確認する
+    updated_by: planner
+    updated_at: '2026-11-20T06:34:49.481804+00:00'
   - process: モック作成
     status: todo
     note: 追加すると決めた項目の見え方（確信度のマーカー・計画した変更・書き出しのボタン・一覧の表示）のモックを作る。何も追加しない場合は skipped にする
