@@ -828,7 +828,9 @@ test("test_attach_map_flow_when_list", async () => {
     ?.click();
   // 実行
   const list = root.querySelector<HTMLButtonElement>('[data-tool="list"]');
-  const exporter = root.querySelector<HTMLButtonElement>('[data-tool="export"]');
+  const exporter = root.querySelector<HTMLButtonElement>(
+    '[data-tool="export"]',
+  );
   // 検証
   expect(list?.getAttribute("aria-pressed")).toBe("false");
   expect(exporter?.getAttribute("aria-expanded")).toBe("false");

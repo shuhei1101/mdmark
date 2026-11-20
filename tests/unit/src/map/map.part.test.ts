@@ -2391,16 +2391,18 @@ test("test_render_map_flow_when_changes", async () => {
   expect(findTag(user, "mdmark-diagram-node-hit")).toMatch(
     /aria-label="利用側のページ、追加"/,
   );
-  expect(findTag(outerHtml(html, 'data-node="mount"'), 'data-node="mount"')).toContain(
-    "map-change-changed",
-  );
-  expect(findTag(outerHtml(html, 'data-node="frame"'), 'data-node="frame"')).toContain(
-    "map-change-removed",
-  );
+  expect(
+    findTag(outerHtml(html, 'data-node="mount"'), 'data-node="mount"'),
+  ).toContain("map-change-changed");
+  expect(
+    findTag(outerHtml(html, 'data-node="frame"'), 'data-node="frame"'),
+  ).toContain("map-change-removed");
   const wires = findTags(html, 'class="mdmark-diagram-wire').filter((tag) =>
     tag.includes('data-wire="mount-&gt;marker"'),
   );
   expect(wires.length).toBeGreaterThan(0);
   for (const wire of wires) expect(wire).toContain("map-change-removed");
-  expect(outerHtml(html, 'data-node="data"')).not.toContain("mdmark-map-change");
+  expect(outerHtml(html, 'data-node="data"')).not.toContain(
+    "mdmark-map-change",
+  );
 });

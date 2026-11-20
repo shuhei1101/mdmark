@@ -704,9 +704,9 @@ test("test_render_diagram_frame_when_exportable", async () => {
   expect(findTag(inside, 'data-export="svg"')).toBeTruthy();
   expect(findTag(inside, 'data-export="png"')).toBeTruthy();
   expect(findTag(inside, 'role="status"')).toBeTruthy();
-  expect(renderDiagramFrame({ ...frame, exportable: false }, BODY)).not.toContain(
-    'data-tool="export"',
-  );
+  expect(
+    renderDiagramFrame({ ...frame, exportable: false }, BODY),
+  ).not.toContain('data-tool="export"');
 });
 
 // 一覧の表示のボタン（正常系）
@@ -736,7 +736,7 @@ test("test_render_diagram_frame_when_listable", async () => {
   expect(button).toContain('aria-label="一覧で表示"');
   expect(button).toContain('aria-pressed="true"');
   expect(findTag(html, "mdmark-diagram-sizer")).toContain("hidden");
-  expect(
-    renderDiagramFrame({ ...frame, listable: false }, BODY),
-  ).not.toContain('data-tool="list"');
+  expect(renderDiagramFrame({ ...frame, listable: false }, BODY)).not.toContain(
+    'data-tool="list"',
+  );
 });

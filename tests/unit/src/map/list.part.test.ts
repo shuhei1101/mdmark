@@ -18,7 +18,12 @@ const FLOW_ITEMS = [
     kind: "グループ",
     out: [],
     children: [
-      { id: "mount", name: "mount", kind: "処理", out: ["→ マーカーの読み取り"] },
+      {
+        id: "mount",
+        name: "mount",
+        kind: "処理",
+        out: ["→ マーカーの読み取り"],
+      },
       {
         id: "read",
         name: "記法の読み取り",
@@ -60,7 +65,13 @@ const CHANGE_ITEMS = [
         change: "changed" as const,
         out: [],
       },
-      { id: "cache", name: "キャッシュ", kind: "保存先", change: "added" as const, out: [] },
+      {
+        id: "cache",
+        name: "キャッシュ",
+        kind: "保存先",
+        change: "added" as const,
+        out: [],
+      },
       {
         id: "legacy",
         name: "旧版の読み取り",
@@ -77,7 +88,10 @@ test("test_render_map_list", async () => {
   // 準備
   const { renderMapList } = await loadList();
   // 実行
-  const html = renderMapList({ label: "「全体の構成」の一覧", items: FLOW_ITEMS });
+  const html = renderMapList({
+    label: "「全体の構成」の一覧",
+    items: FLOW_ITEMS,
+  });
   // 検証
   const tree = findTag(html, 'role="tree"');
   expect(tree).toContain('aria-label="「全体の構成」の一覧"');
@@ -102,7 +116,10 @@ test("test_render_map_list_when_changes", async () => {
   // 準備
   const { renderMapList } = await loadList();
   // 実行
-  const html = renderMapList({ label: "「計画した変更」の一覧", items: CHANGE_ITEMS });
+  const html = renderMapList({
+    label: "「計画した変更」の一覧",
+    items: CHANGE_ITEMS,
+  });
   // 検証
   const removed = findTag(html, 'data-id="legacy"');
   expect(removed).toContain('data-change="removed"');

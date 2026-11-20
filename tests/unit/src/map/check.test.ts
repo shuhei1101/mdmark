@@ -577,7 +577,7 @@ test("test_collect_map_problems_when_changes", async () => {
   // 準備
   const { collectMapProblems } = await loadCheck();
   const er =
-    "erDiagram\n  注文 {\n    int id PK\n  }\n  明細 {\n    int id PK\n  }\n  注文 ||--|{ 明細 : \"含む\"\n";
+    'erDiagram\n  注文 {\n    int id PK\n  }\n  明細 {\n    int id PK\n  }\n  注文 ||--|{ 明細 : "含む"\n';
   // 実行
   const flow = collectMapProblems(
     range(FLOW, '{"version": 1, "changes": {"ghost": {"type": "added"}}}'),

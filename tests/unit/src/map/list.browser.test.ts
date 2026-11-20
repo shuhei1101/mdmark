@@ -76,11 +76,16 @@ test("test_attach_map_list", async () => {
   };
   button.click();
   // 検証
-  expect(opened).toEqual({ pressed: "true", tree: true, hidden: true, focused: true });
+  expect(opened).toEqual({
+    pressed: "true",
+    tree: true,
+    hidden: true,
+    focused: true,
+  });
   expect(range.querySelector('[role="tree"]')).toBeNull();
-  expect(range.querySelector<HTMLElement>(".mdmark-diagram-sizer")?.hidden).toBe(
-    false,
-  );
+  expect(
+    range.querySelector<HTMLElement>(".mdmark-diagram-sizer")?.hidden,
+  ).toBe(false);
   expect(range.querySelector(".mdmark-diagram-zoom")?.textContent).toBe(zoom);
   expect(viewport.scrollLeft).toBe(left);
 });
@@ -103,9 +108,9 @@ test("test_attach_map_list_when_keyboard", async () => {
   group.focus();
   press(group, "ArrowLeft");
   expect(group.getAttribute("aria-expanded")).toBe("false");
-  expect(
-    visibleItems(range).some((item) => item.dataset.id === "mount"),
-  ).toBe(false);
+  expect(visibleItems(range).some((item) => item.dataset.id === "mount")).toBe(
+    false,
+  );
   press(group, "ArrowRight");
   expect(group.getAttribute("aria-expanded")).toBe("true");
   press(group, "End");
@@ -133,16 +138,15 @@ test("test_flow_list_items", async () => {
     },
   });
   // 検証
-  const lib = items.find((item) => item.id === "lib");
-  expect(lib?.children?.map((item) => item.id)).toContain("read");
-  const user = items.find((item) => item.id === "user");
-  expect(user?.out).toEqual(["→ mount（設定と Markdown）"]);
-  const mount = lib?.children?.find((item) => item.id === "mount");
-  expect(mount?.change).toBe("changed");
-  const read = lib?.children?.find((item) => item.id === "read");
-  expect(read?.children?.find((item) => item.id === "data")?.note).toBe(
-    "補足のキーと値を点検する",
-  );
+  type Item = (typeof items)[number];
+  const pick = (list: Item[] | undefined, id: string): Item | undefined =>
+    (list ?? []).find((item) => item.id === id);
+  const lib = pick(items, "lib");
+  const read = pick(lib?.children, "read");
+  expect(read).toBeDefined();
+  expect(pick(items, "user")?.out).toEqual(["→ mount（設定と Markdown）"]);
+  expect(pick(lib?.children, "mount")?.change).toBe("changed");
+  expect(pick(read?.children, "data")?.note).toBe("補足のキーと値を点検する");
 });
 
 // 記載順のメッセージ（正常系）

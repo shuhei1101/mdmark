@@ -48,11 +48,11 @@ async function setUp(data = DATA, args = '{"title": "全体の構成"}') {
 /** 保存の `a` の `click` を受け取り、押された `download` を記録する */
 const captureDownloads = (): string[] => {
   const names: string[] = [];
-  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(
-    function (this: HTMLAnchorElement) {
-      names.push(this.download);
-    },
-  );
+  vi.spyOn(HTMLAnchorElement.prototype, "click").mockImplementation(function (
+    this: HTMLAnchorElement,
+  ) {
+    names.push(this.download);
+  });
   return names;
 };
 
@@ -101,15 +101,11 @@ test("test_export_map_svg", async () => {
     .querySelector<HTMLButtonElement>('button[aria-label="データを閉じる"]')
     ?.click();
   root
-    .querySelector<HTMLElement>(
-      '[data-node="mount"] .mdmark-diagram-node-hit',
-    )
+    .querySelector<HTMLElement>('[data-node="mount"] .mdmark-diagram-node-hit')
     ?.click();
   const width = stage.offsetWidth;
   const height = stage.offsetHeight;
-  root
-    .querySelector<HTMLButtonElement>('button[aria-label="拡大"]')
-    ?.click();
+  root.querySelector<HTMLButtonElement>('button[aria-label="拡大"]')?.click();
   const fresh = root.querySelector<HTMLElement>(
     ".mdmark-diagram-stage",
   ) as HTMLElement;
@@ -170,10 +166,12 @@ test("test_export_map_svg_when_inherited_color", async () => {
   document.body.append(holder);
   const copied = holder.querySelectorAll<HTMLElement>("foreignObject *");
   const names = [...copied].filter(
-    (element) => element.textContent === name.textContent && element.children.length === 0,
+    (element) =>
+      element.textContent === name.textContent && element.children.length === 0,
   );
   const kinds = [...copied].filter(
-    (element) => element.textContent === kind.textContent && element.children.length === 0,
+    (element) =>
+      element.textContent === kind.textContent && element.children.length === 0,
   );
   // 検証
   expect(names.length).toBeGreaterThan(0);
@@ -218,7 +216,9 @@ test("test_attach_map_export", async () => {
   const { attachMapExport } = await loadExport();
   const { range } = await setUp();
   const downloads = captureDownloads();
-  detachers.push(attachMapExport(range, { index: 1, title: () => "全体の構成" }));
+  detachers.push(
+    attachMapExport(range, { index: 1, title: () => "全体の構成" }),
+  );
   const button = range.querySelector<HTMLButtonElement>(
     '[data-tool="export"]',
   ) as HTMLButtonElement;
@@ -240,7 +240,9 @@ test("test_attach_map_export_when_escape", async () => {
   // 準備
   const { attachMapExport } = await loadExport();
   const { range } = await setUp();
-  detachers.push(attachMapExport(range, { index: 1, title: () => "全体の構成" }));
+  detachers.push(
+    attachMapExport(range, { index: 1, title: () => "全体の構成" }),
+  );
   const button = range.querySelector<HTMLButtonElement>(
     '[data-tool="export"]',
   ) as HTMLButtonElement;
@@ -250,7 +252,9 @@ test("test_attach_map_export_when_escape", async () => {
   ) as HTMLButtonElement;
   svg.focus();
   // 実行
-  svg.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
+  svg.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
   // 検証
   expect(
     range.querySelector<HTMLElement>(".mdmark-diagram-export")?.hidden,
@@ -267,7 +271,9 @@ test("test_attach_map_export_when_png_unavailable", async () => {
   vi.spyOn(HTMLCanvasElement.prototype, "toBlob").mockImplementation(
     (callback: BlobCallback) => callback(null),
   );
-  detachers.push(attachMapExport(range, { index: 1, title: () => "全体の構成" }));
+  detachers.push(
+    attachMapExport(range, { index: 1, title: () => "全体の構成" }),
+  );
   range.querySelector<HTMLButtonElement>('[data-tool="export"]')?.click();
   const status = () =>
     range.querySelector<HTMLElement>('.mdmark-diagram-export [role="status"]')
