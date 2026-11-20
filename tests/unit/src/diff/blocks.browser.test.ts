@@ -582,6 +582,14 @@ test("test_color_diff_blocks_when_frontmatter_changed", async () => {
   expect(deletedFirst?.getAttribute("data-kind")).toBe("del");
   expect(deletedFirst?.textContent).toContain("title: A");
   expect(deletedFirst?.textContent).not.toContain("段落 P");
+  for (const result of [changed, deleted]) {
+    expect(result.querySelectorAll(".mdmark-diff-block")).toHaveLength(1);
+    const paragraph = [...result.querySelectorAll("p")].find((p) =>
+      p.textContent?.includes("段落 P"),
+    );
+    expect(paragraph).toBeDefined();
+    expect(paragraph?.closest(".mdmark-diff-block")).toBeNull();
+  }
 });
 
 // フロントマターが同じとき、機能 frontmatter がオフなら折りたたみを取り除き、オンなら色を適用せずに残す（正常系）
