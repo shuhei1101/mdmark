@@ -131,6 +131,76 @@ states:
         value: 'true'
     notes:
       定義: 全体が収まる倍率が 1 の図で描く（`zoom` は定義の大きさを 1 とする値のため）
+  - name: MapExportOpen
+    description: 種類 `map` でパネルを開き、書き出すボタンを押した。全画面のボタンの隣の書き出すボタンが `aria-expanded="true"` で、その下に「SVG」「PNG」の 2 つのボタンの要素が表示する枠の中に重なる
+    args:
+      - name: kind
+        value: map
+      - name: legend
+        value: "'[]'"
+      - name: wide
+        value: "'true'"
+      - name: panelOpen
+        value: 'true'
+      - name: exportable
+        value: 'true'
+      - name: exportOpen
+        value: 'true'
+      - name: listable
+        value: 'true'
+    notes:
+      定義: 部品設計『mapの構成図』の Default。モック `docs/mock/components/map-export-list/` の「メニューを開いた状態」と同じ見た目（モックは popover で開くが、この部品は絶対配置の要素で開く）
+  - name: MapListView
+    description: 種類 `map` で一覧の表示のボタンを押した。ボタンが `aria-pressed="true"` で、表示する枠の中に部品『mapの一覧』の Flow が出て、最初の項目がパネルの下から始まる
+    args:
+      - name: kind
+        value: map
+      - name: legend
+        value: "'[]'"
+      - name: wide
+        value: "'true'"
+      - name: exportable
+        value: 'true'
+      - name: listable
+        value: 'true'
+      - name: listView
+        value: 'true'
+    notes:
+      定義: 部品設計『mapの一覧』の Flow を表示する枠に差し込む
+  - name: MapListViewNarrow
+    description: 幅 390px の置き場所で一覧の表示にした。計画した変更のバッジを持つ最初の項目がパネルと重ならない
+    args:
+      - name: kind
+        value: map
+      - name: legend
+        value: "'[]'"
+      - name: wide
+        value: "'true'"
+      - name: exportable
+        value: 'true'
+      - name: listable
+        value: 'true'
+      - name: listView
+        value: 'true'
+    notes:
+      定義: 部品設計『mapの一覧』の WithChanges を差し込む
+  - name: MapNoList
+    description: 種類 `map` のガントチャートでパネルを開いた。書き出すボタンがあり、一覧の表示のボタンが無い
+    args:
+      - name: kind
+        value: map
+      - name: legend
+        value: "'[]'"
+      - name: wide
+        value: "'true'"
+      - name: panelOpen
+        value: 'true'
+      - name: exportable
+        value: 'true'
+      - name: listable
+        value: 'false'
+    notes:
+      定義: 部品設計『mapの軸と格子の配置の図』のガントチャート
 lead: |-
   図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、表示する枠の右上に重ねたボタンのパネルと、拡大・縮小・移動・ピンチ・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
   パネルと表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方（図の枠の幅が 30rem 未満のとき 1.5rem）、パネルの余白は 0.125rem。
@@ -189,6 +259,32 @@ args:
     type: オブジェクトの配列
     default: '[]'
     description: パネルの先頭に並べるボタン（`{ name, label, disabled }`。`name` はアイコン、`label` はスクリーンリーダー向けの名前と `title`）。`panelOpen` が `true` のときだけ出し、外へ戻るは `disabled` が `false` の間は畳んだパネルにも出す。種類 `map` は、構成図では外へ戻る・全て開く・全て閉じる・配置と選択を元に戻す、シーケンス図では外へ戻る・全て開く・全て閉じる・参加者の並び順と選択を元に戻す
+  - name: exportable
+    type: 真偽値
+    required: false
+    default: "'false'"
+    status: planned
+    description: パネルの全画面のボタンの隣に書き出すボタン（lucide の `download`）を配置するか。種類 `map` は `true`
+  - name: exportOpen
+    type: 真偽値
+    required: false
+    default: "'false'"
+    status: planned
+    enabled_when: '`exportable` が `true` のとき'
+    description: 書き出すボタンの下の「SVG」「PNG」の 2 つのボタンの要素（`div.mdmark-diagram-export`）を表示しているか。表示する枠の中に絶対配置し、表示・非表示を `hidden` で切り替える（Popover API は使用しない）。書き出すボタンの `aria-expanded` に入れる
+  - name: listable
+    type: 真偽値
+    required: false
+    default: "'false'"
+    status: planned
+    description: パネルの `tools` の先頭に一覧の表示のボタン（lucide の `list-tree`）を配置するか。種類 `map` の構成図の部品の上に描く図とシーケンス図は `true`、マインドマップと軸と格子の配置の図は `false`
+  - name: listView
+    type: 真偽値
+    required: false
+    default: "'false'"
+    status: planned
+    enabled_when: '`listable` が `true` のとき'
+    description: 表示する枠の中を図から一覧（部品『mapの一覧』）に替えているか。一覧の表示のボタンの `aria-pressed` に入れ、`true` のときは図を `hidden` にする。倍率・位置・開閉は保ち、一覧の上の余白をパネルの高さ分とる
 slots:
   - name: default
     description: 表示する枠の中に配置する図の本体
@@ -197,6 +293,10 @@ slots:
       - CMP-472-6#
       - CMP-472-5#
       - CMP-472-4#
+  - name: list
+    description: '`listView` が `true` のとき、図の代わりに表示する枠の中に配置する一覧'
+    accepts:
+      - CMP-740-1#
 events:
   - name: 拡大・縮小する
     when: 拡大・縮小・倍率のボタンを押すか、表示する枠にフォーカスして `+`・`-`・`0` を押す
@@ -222,6 +322,14 @@ events:
     when: 開閉のボタンを押す
     value: '`panelOpen`（開閉のボタンの `aria-expanded`）'
     description: '`mount` が `panelOpen` を切り替え、開閉のボタンのスクリーンリーダー向けの名前を書き換える'
+  - name: 書き出す
+    when: 書き出すボタンを押して「SVG」か「PNG」のボタンを押す
+    value: 書き出す形式（`data-export` の `svg`・`png`）
+    description: '`mount` がインターフェース定義の制約『map の図の書き出し』のとおり、今の開閉のまま等倍の図の全体を SVG か 2 倍の PNG にして保存させ、要素を閉じる。Esc・要素の外側のクリック・もう一度の書き出すボタンでも閉じ、Esc のときは書き出すボタンへフォーカスを戻す'
+  - name: 一覧の表示を切り替える
+    when: 一覧の表示のボタンを押す
+    value: '`listView`（一覧の表示のボタンの `aria-pressed`）'
+    description: '`mount` が `true` にしたときは部品『mapの一覧』を作って表示する枠に入れ、`false` にしたときは一覧を破棄して図を表示する。図の倍率・位置・開閉は保ち、状態は保存しない'
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -241,6 +349,8 @@ accessibility:
   - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の構造（等幅の数字）で出し、スクリーンリーダー向けの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
   - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に配置する枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
+  - 書き出すボタンはアイコンだけで、スクリーンリーダー向けの名前を `図を書き出す` にし、`aria-expanded` と、開く要素を指す `aria-controls` を持つ（`aria-haspopup` は付けない）。開く要素の 2 つのボタンは文字「SVG」「PNG」を持ち、Tab で移る
+  - 一覧の表示のボタンはアイコンだけで、スクリーンリーダー向けの名前を `一覧で表示` にし、`aria-pressed` で切り替えた状態を伝える
 status: planned
 test_file: tests/integration/lib/diagram-frame.story.test.ts
 tags:

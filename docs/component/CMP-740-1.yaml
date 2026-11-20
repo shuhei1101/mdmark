@@ -1,0 +1,104 @@
+id: CMP-740-1
+visibility: internal
+title: mapの一覧
+lead: map の構成図の部品の上に描く図とシーケンス図を、図の代わりに表示する枠の中に出す `role="tree"` の一覧。構成図はグループとノードの入れ子、シーケンス図はメッセージの記載順の並びにする。
+implementation: src/map/list.part.ts#renderMapList
+story: Parts/MapList
+status: planned
+test_file: tests/integration/lib/map-list.story.test.ts
+args:
+  - name: label
+    type: 文字列
+    required: true
+    description: 一覧のスクリーンリーダー向けの名前（`「{図の題名}」の一覧`）
+  - name: items
+    type: オブジェクトの配列
+    required: true
+    description: '一覧の項目。Mermaid の記載順に並べる。構成図はグループを `children` を持つ項目、ノードを項目にした入れ子で、シーケンス図は `name` が「{送信元} → {送信先}: {メッセージ}」の項目だけの並び'
+  - name: items[].name
+    type: 文字列
+    required: true
+    description: ノード・グループの名前か、メッセージの項目の文字
+  - name: items[].kind
+    type: 文字列
+    required: false
+    default: なし（種類を出さない）
+    description: 種類の名前（設定の `map.kinds` の `label`。グループは `グループ`）
+  - name: items[].note
+    type: 文字列
+    required: false
+    default: なし
+    description: 補足の `notes` の説明
+  - name: items[].out
+    type: 配列
+    required: false
+    default: '[]'
+    description: 出る線の文字（「→ {相手の名前}」と、ラベルがあれば「（{ラベル}）」）。名前の行の下に 1 行ずつ並べる
+  - name: items[].change
+    type: 列挙
+    required: false
+    default: なし
+    choices: '`added`・`changed`・`removed`'
+    description: 計画した変更。名前の後ろに図と同じ変更のバッジを配置し、`removed` は名前に 2px の取り消し線を引く
+  - name: items[].children
+    type: オブジェクトの配列
+    required: false
+    default: なし（子を持たない項目）
+    description: グループの中の項目（`items` と同じ構造）
+  - name: collapsed
+    type: 配列
+    required: false
+    default: '[]'
+    description: 閉じた子を持つ項目の名前。`aria-expanded="false"` にし、子の項目を隠す
+  - name: focused
+    type: 文字列
+    required: false
+    default: 最初の項目
+    description: '`tabindex="0"` を持たせる項目の名前（ほかの項目は `tabindex="-1"`）'
+states:
+  - name: Flow
+    description: 構成図の一覧。外部のノードと、「mdmark」グループの中の入れ子の「記法の読み取り」グループ。ノードの項目は名前・種類・説明・出る線を持つ
+    notes:
+      定義: モック `docs/mock/components/map-export-list/` の「一覧の表示（構成図）」の `FLOW_ITEMS`
+  - name: WithChanges
+    description: 計画した変更を持つ構成図の一覧。「mount」に「変更」、「キャッシュ」に「追加」のバッジがあり、「旧版の読み取り」は名前に取り消し線と「削除」の破線のバッジがある
+    notes:
+      定義: モック `docs/mock/components/map-export-list/` の「一覧の表示（計画した変更を持つ構成図）」
+  - name: Sequence
+    description: 'シーケンス図の一覧。メッセージ 4 つを記載順に「{送信元} → {送信先}: {メッセージ}」で並べ、子を持つ項目が無い'
+    notes:
+      定義: モック `docs/mock/components/map-export-list/` の「一覧の表示（シーケンス図）」
+  - name: GroupCollapsed
+    description: 「記法の読み取り」を閉じた。その項目が `aria-expanded="false"` で、中の 2 つのノードの項目が隠れる
+    args:
+      - name: collapsed
+        value: '["記法の読み取り"]'
+      - name: focused
+        value: 記法の読み取り
+  - name: Narrow
+    description: 幅 390px。項目の名前・バッジ・種類が折り返し、横にはみ出さない
+    notes:
+      定義: WithChanges と同じ
+events:
+  - name: 項目を移る
+    when: 項目にフォーカスして ↑・↓・Home・End を押す
+    value: 移った先の項目（`focused`）
+    description: '`mount` が隠れていない項目の並びで前後・先頭・末尾の項目へ `tabindex="0"` とフォーカスを移す'
+  - name: 開閉する
+    when: 子を持つ項目で →・← を押すか、項目の山形を押す
+    value: 項目の名前と `aria-expanded`
+    description: '`mount` が → で開き（開いていれば最初の子へ移る）、← で閉じる（閉じていれば親へ移る）。図のグループの開閉とは別で、保存しない'
+uses:
+  - component: CMP-472-8#
+    how: 子を持つ項目の開閉の山形
+accessibility:
+  - 一覧は `role="tree"` と `aria-label`（`label`）を持ち、項目は `role="treeitem"`・`aria-level`、子を持つ項目は `aria-expanded` と子の `role="group"` を持つ
+  - フォーカスは 1 つの項目にだけ `tabindex="0"` を持たせ（roving tabindex）、フォーカスの枠を項目の行に見せる
+  - 項目のスクリーンリーダー向けの名前は「{名前}、{変更の名前}、{種類}、{説明}、出る線 {数} 本」の順（持たないものは飛ばす）。変更のバッジは色だけで伝えず文字を持ち、`removed` は破線の枠線
+  - 一覧の項目は見出しの要素を使用せず、文書の目次に出ない
+refs:
+  - IF-472-35#constraints[map の一覧の表示]
+tags:
+  - name: topic:map
+  - name: topic:一覧
+  - name: topic:アクセシビリティ
