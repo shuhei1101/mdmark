@@ -2132,16 +2132,36 @@ test("test_initial_pinned_columns", async () => {
   const { initialPinnedColumns } = await loadLogic();
   // 実行・検証
   expect(
-    initialPinnedColumns({ pin: [0, 2], rowHeadCount: 0, mode: "each", pinDefault: true }),
+    initialPinnedColumns({
+      pin: [0, 2],
+      rowHeadCount: 0,
+      mode: "each",
+      pinDefault: true,
+    }),
   ).toEqual([0, 2]);
   expect(
-    initialPinnedColumns({ pin: [], rowHeadCount: 2, mode: "each", pinDefault: true }),
+    initialPinnedColumns({
+      pin: [],
+      rowHeadCount: 2,
+      mode: "each",
+      pinDefault: true,
+    }),
   ).toEqual([0, 1]);
   expect(
-    initialPinnedColumns({ pin: [], rowHeadCount: 0, mode: "each", pinDefault: true }),
+    initialPinnedColumns({
+      pin: [],
+      rowHeadCount: 0,
+      mode: "each",
+      pinDefault: true,
+    }),
   ).toEqual([0]);
   expect(
-    initialPinnedColumns({ pin: [2], rowHeadCount: 0, mode: "through", pinDefault: true }),
+    initialPinnedColumns({
+      pin: [2],
+      rowHeadCount: 0,
+      mode: "through",
+      pinDefault: true,
+    }),
   ).toEqual([0, 1, 2]);
 });
 
