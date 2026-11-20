@@ -619,3 +619,74 @@ test("test_wrapped_name", async () => {
   expect(second.lines).toBe(1);
   expect(second.fits).toBe(true);
 });
+
+// 補足の changes を持つ構成図は、追加・変更・削除を色・破線・取り消し線・バッジで示す（PlannedChanges）
+test("test_planned_changes", async () => {
+  // 準備・実行
+  const page = await openMap("planned-changes");
+  // 検証
+  const added = await resolveColorIn(
+    page,
+    ".mdmark-diagram",
+    "var(--mdmark-color-diff-add-sign)",
+  );
+  const removed = await resolveColorIn(
+    page,
+    ".mdmark-diagram",
+    "var(--mdmark-color-diff-del-sign)",
+  );
+  const orange = await resolveColorIn(
+    page,
+    ".mdmark-diagram",
+    "var(--mdmark-color-accent-orange-text)",
+  );
+  const green = await resolveColorIn(
+    page,
+    ".mdmark-diagram",
+    "var(--mdmark-color-accent-green-text)",
+  );
+  const node = (id: string) =>
+    page.locator(`.mdmark-diagram-node[data-node="${id}"]`);
+  const style = (id: string) =>
+    node(id).evaluate((element) => {
+      const name = element.querySelector(".mdmark-diagram-node-name");
+      const kind = element.querySelector(".mdmark-diagram-node-kind svg");
+      return {
+        border: getComputedStyle(element).borderTopColor,
+        borderStyle: getComputedStyle(element).borderTopStyle,
+        decoration: name ? getComputedStyle(name).textDecorationLine : "",
+        kindColor: kind ? getComputedStyle(kind).color : "",
+        badge:
+          element.querySelector(":scope > .mdmark-map-change")?.textContent ??
+          "",
+      };
+    });
+  const user = await style("user");
+  expect(user.border).toBe(added);
+  expect(user.kindColor).toBe(green);
+  expect(user.badge).toBe("追加");
+  const mount = await style("mount");
+  expect(mount.border).toBe(orange);
+  expect(mount.badge).toBe("変更");
+  const legacy = await style("legacy");
+  expect(legacy.border).toBe(removed);
+  expect(legacy.borderStyle).toBe("dashed");
+  expect(legacy.decoration).toContain("line-through");
+  expect(legacy.badge).toBe("削除");
+  const wires = await page
+    .locator(
+      '.mdmark-diagram-wires path:is([data-wire="user->mount"], [data-wire="mount->legacy"])',
+    )
+    .evaluateAll((paths) =>
+      paths.map((path) => ({
+        id: path.getAttribute("data-wire"),
+        stroke: getComputedStyle(path).stroke,
+        dash: getComputedStyle(path).strokeDasharray,
+      })),
+    );
+  expect(wires.length).toBeGreaterThan(1);
+  for (const wire of wires) {
+    expect(wire.stroke).toBe(wire.id === "user->mount" ? added : removed);
+    if (wire.id === "mount->legacy") expect(wire.dash).not.toBe("none");
+  }
+});
