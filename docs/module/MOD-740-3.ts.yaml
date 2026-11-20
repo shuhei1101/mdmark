@@ -1,0 +1,97 @@
+id: MOD-740-3
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / list.ts
+lead: map の図から一覧の項目を作る処理と、一覧の表示の切り替えとキー操作を受け持ち、一覧の表示の操作を変えるときに参照する。
+functions:
+  - name: flowListItems
+    title: 構成図の一覧の項目を作る
+    kind: 関数
+    container: src/map/list.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    scope: internal
+    summary: 構成図の部品の上に描く図の読み取った図から、グループを子を持つ項目、ノードを項目にした入れ子の `MapListItem[]` を Mermaid の記載順で作る
+    args:
+      - name: input
+        type: '{ chart: MapFlowChart; notes: Record<string, string>; changes: Record<string, "added" | "changed" | "removed">; kindLabel: (node: string) => string | undefined }'
+        required: true
+        description: 読み取った図・補足の説明・計画した変更・ノードの種類の名前を返却する関数
+    returns:
+      type: MapListItem[]
+      description: 一覧の項目。出る線は「→ {相手の名前}」と、ラベルがあれば「（{ラベル}）」
+    unit_tests:
+      - name: test_flow_list_items
+        case: 正常
+        summary: 入れ子と出る線
+        condition: モックの `FLOW`（入れ子の `subgraph` 2 つ）と `notes`・`changes`
+        mock: なし
+        expected: 「mdmark」の子に「記法の読み取り」があり、「利用側のページ」の `out` が `["→ mount（設定と Markdown）"]`、`changes` のノードが `change` を持つ
+  - name: sequenceListItems
+    title: シーケンス図の一覧の項目を作る
+    kind: 関数
+    container: src/map/list.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    scope: internal
+    summary: '読み取ったシーケンス図のメッセージを記載順に「{送信元} → {送信先}: {メッセージ}」の `MapListItem`（`id` はメッセージの番号）にする'
+    args:
+      - name: sequence
+        type: MapSequence
+        required: true
+        description: '`parseSequence` の読み取ったシーケンス図'
+    returns:
+      type: MapListItem[]
+      description: メッセージの項目
+    unit_tests:
+      - name: test_sequence_list_items
+        case: 正常
+        summary: 記載順のメッセージ
+        condition: 参加者 3 つ・メッセージ 4 つ（同じ文のメッセージ 2 つを含む）
+        mock: なし
+        expected: 4 項目で、`id` が `1`〜`4`、同じ文の 2 つの `id` が異なる
+  - name: attachMapList
+    title: 一覧の表示の操作を付ける
+    kind: 関数
+    container: src/map/list.ts
+    usecase: Mermaidと補足で図を描く
+    role: 操作
+    scope: internal
+    summary: 図の枠の一覧の表示のボタンで、表示する枠の中を図と `renderMapList` の一覧で切り替え、一覧のキー操作を付けて、片付ける関数を返却する
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`'
+      - name: options
+        type: '{ items: () => MapListItem[]; label: () => string }'
+        required: true
+        description: 押したときの図から項目を作る関数と、一覧のスクリーンリーダー向けの名前を返却する関数
+    returns:
+      type: () => void
+      description: 付けた受け取りを解除し、一覧を破棄する関数
+    side_effects: 図の `hidden` とボタンの `aria-pressed` を書き換え、表示する枠に一覧を入れる・取り除く
+    process: |-
+      1. 一覧の表示のボタン（`[data-tool="list"]`）を押すと、`aria-pressed` が `false` なら `renderMapList` の一覧を表示する枠に入れて図を `hidden` にし、最初の項目へフォーカスを移す。`true` なら一覧を取り除いて図を表示する（倍率・位置・開閉は触らない）
+      2. 一覧の項目で ↑・↓・Home・End は隠れていない項目の並びで `tabindex="0"` とフォーカスを移す
+      3. → は閉じた項目を開き、開いた項目では最初の子へ移る。← は開いた項目を閉じ、閉じた項目や子を持たない項目では親へ移る。山形を押しても開閉する
+      4. 一覧の状態は保存しない
+    unit_tests:
+      - name: test_attach_map_list
+        case: 正常
+        summary: 切り替えと戻し
+        condition: 構成図の範囲でボタンを 2 回押す
+        mock: なし（Chromium）
+        expected: 1 回目で `aria-pressed="true"`・一覧があり図が `hidden`・最初の項目にフォーカス、2 回目で一覧が無く図が表示され、図の倍率と `scrollLeft` が 1 回目の前と同じ
+      - name: test_attach_map_list_when_keyboard
+        case: 正常
+        summary: キー操作
+        condition: 一覧で ↓・←・→・End を押す
+        mock: なし（Chromium）
+        expected: ↓ で 2 つ目の項目へ移り、グループで ← を押すと `aria-expanded="false"` で子が隠れ、→ で開き、End で最後の隠れていない項目へ移る。`tabindex="0"` は常に 1 つ
+refs:
+  - IF-472-35#constraints[map の一覧の表示]
+  - CMP-740-1#
+tags:
+  - name: topic:map
+  - name: topic:一覧
+  - name: topic:アクセシビリティ

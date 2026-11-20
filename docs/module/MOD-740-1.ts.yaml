@@ -1,0 +1,160 @@
+id: MOD-740-1
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / export.ts
+lead: map の図の SVG・PNG への書き出しと、パネルの書き出すボタンの開閉を受け持ち、図の書き出し方を変えるときに参照する。
+functions:
+  - name: mapExportFileName
+    title: 書き出すファイル名を決める
+    kind: 関数
+    container: src/map/export.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    scope: internal
+    summary: '図の枠のタイトル（無ければ `図 {図の番号}`）に拡張子を付け、ファイル名に使用できない文字 `\ / : * ? " < > |` を `_` にする'
+    args:
+      - name: options
+        type: '{ title: string | undefined; index: number; format: "svg" | "png" }'
+        required: true
+        description: 図の枠のタイトル、文書の中の map の番号（1 から）、形式
+    returns:
+      type: string
+      description: ファイル名
+    unit_tests:
+      - name: test_map_export_file_name
+        case: 正常
+        summary: タイトルと拡張子
+        condition: '`{ title: "全体の構成", index: 1, format: "png" }`'
+        mock: なし
+        expected: '`全体の構成.png`'
+      - name: test_map_export_file_name_when_no_title
+        case: 正常
+        summary: タイトルが無い
+        condition: '`{ title: undefined, index: 2, format: "svg" }`'
+        mock: なし
+        expected: '`図 2.svg`'
+      - name: test_map_export_file_name_when_forbidden_chars
+        case: 正常
+        summary: 使用できない文字
+        condition: タイトル `a/b:c?`
+        mock: なし
+        expected: '`a_b_c_.svg`'
+  - name: exportMapSvg
+    title: 図を SVG の文字にする
+    kind: 関数
+    container: src/map/export.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    scope: internal
+    summary: 表示する枠の中の図の要素（`.mdmark-diagram-stage`）を複製し、計算したスタイルを書き写した DOM を `foreignObject` に入れた、外部の資源を持たない SVG の文字を返却する
+    args:
+      - name: stage
+        type: HTMLElement
+        required: true
+        description: 倍率を含まない等倍の図の要素
+    returns:
+      type: '{ svg: string; width: number; height: number }'
+      description: SVG の文字と、等倍の図の全体の幅・高さ（px）
+    process: |-
+      1. `stage` の大きさを倍率を含まない等倍で求める
+      2. `stage` を複製し、元の要素と複製の要素を同じ順で対応させる
+      3. 選択の強調（`data-selected` とその強調の class）を複製から除き、パネル・リサイズハンドル・ツールチップとそのマーカー・記載の警告・当たり判定（`.map-wire-hit`・`.mdmark-diagram-node-hit`）・データの印・`display: none` の要素を除く
+      4. 残った要素ごとに、元の要素の `getComputedStyle` のうち、同じ要素名の既定のスタイル（文書の外に作った同じ要素名の要素の計算したスタイル）と異なるプロパティだけを複製の `style` 属性へ書き写す。`::before`・`::after` の `content` が `none` でない要素は、疑似要素の計算したスタイルを書き写した `span` を先頭・末尾に入れる
+      5. 全ての要素から `class` と、値に `var(` を持つ属性を除く
+      6. 図の枠の背景の計算した色の `rect` と、XHTML の名前空間を付けて `XMLSerializer` で文字にした複製を入れた `foreignObject` を、`width`・`height` を等倍の大きさにした `svg` で包む
+    unit_tests:
+      - name: test_export_map_svg
+        case: 正常
+        summary: 外部の資源を持たない SVG
+        condition: グループを 1 つ閉じ、ノードを 1 つ選んだ構成図を倍率 150% で描いた `stage`
+        mock: なし（Chromium）
+        expected: '`width`・`height` が倍率 100% の図の大きさで、`href="http`・`url(`・`var(`・`class=` を含まず、閉じたグループの名前を含みその中のノードの名前を含まず、`data-selected` と当たり判定を含まない'
+      - name: test_export_map_svg_when_pseudo_element
+        case: 正常
+        summary: 疑似要素で描いた表示
+        condition: '`::after` で文字を描く要素を持つ `stage`'
+        mock: なし（Chromium）
+        expected: SVG が `::after` の文字を持つ `span` を含む
+  - name: exportMapPng
+    title: SVG を 2 倍の PNG にする
+    kind: 関数
+    container: src/map/export.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    scope: internal
+    is_async: true
+    summary: SVG を `data:` の URL の画像にして、`devicePixelRatio` に依らず幅・高さが 2 倍の canvas に描き、PNG の Blob を返却する。作れなければ `null`
+    args:
+      - name: image
+        type: '{ svg: string; width: number; height: number }'
+        required: true
+        description: '`exportMapSvg` の戻り値'
+    returns:
+      type: Promise<Blob | null>
+      description: PNG の Blob。`getContext` が `null`・`toBlob` が `null`・画像の読み込みか描画が例外のときは `null`
+    unit_tests:
+      - name: test_export_map_png
+        case: 正常
+        summary: 2 倍の PNG
+        condition: 幅 300・高さ 200 の SVG
+        mock: なし（Chromium）
+        expected: Blob の `type` が `image/png` で、画像の幅・高さが 600・400
+      - name: test_export_map_png_when_to_blob_null
+        case: 異常
+        summary: toBlob が null を渡す
+        condition: 同じ SVG
+        mock: '`HTMLCanvasElement.prototype.toBlob` を `null` を渡す関数に差し替える'
+        expected: '`null` を返し、例外を投げない'
+  - name: attachMapExport
+    title: 書き出すボタンの操作を付ける
+    kind: 関数
+    container: src/map/export.ts
+    usecase: Mermaidと補足で図を描く
+    role: 操作
+    scope: internal
+    summary: 範囲の図の枠の書き出すボタンに、「SVG」「PNG」の要素の開閉と保存を付け、片付ける関数を返却する
+    description: 図の枠は描き直すたびに作り直されるため、イベントは範囲に委譲で付ける。Popover API は使用しない
+    args:
+      - name: range
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-map`'
+      - name: options
+        type: '{ index: number; title: () => string | undefined }'
+        required: true
+        description: 文書の中の map の番号と、今の図の枠のタイトルを返却する関数
+    returns:
+      type: () => void
+      description: 付けた受け取りを解除する関数
+    side_effects: 書き出すボタンの `aria-expanded` と要素の `hidden` を書き換え、ブラウザにファイルを保存させる
+    process: |-
+      1. 書き出すボタン（`[data-tool="export"]`）を押すと、要素（`div.mdmark-diagram-export`）の `hidden` とボタンの `aria-expanded` を切り替える
+      2. 要素の「SVG」（`data-export="svg"`）を押すと `exportMapSvg` の文字を Blob にして保存させ、要素を閉じる
+      3. 「PNG」を押すと `exportMapPng` を待ち、Blob があれば保存させて閉じ、`null` なら要素を開いたままその中の `role="status"` に「この大きさの図は PNG にできません。SVG で書き出してください。」を入れる
+      4. 保存は `URL.createObjectURL` の URL と `mapExportFileName` の名前を `download` に持つ `a` を押し、URL を `URL.revokeObjectURL` で解放する
+      5. Esc・要素とボタンの外側の `pointerdown` で閉じ、Esc のときは書き出すボタンへフォーカスを戻す
+    unit_tests:
+      - name: test_attach_map_export
+        case: 正常
+        summary: 開閉と SVG の保存
+        condition: 書き出すボタンを押し、SVG を押す
+        mock: '`a` の `click` を受け取る（Chromium）'
+        expected: 押した後 `aria-expanded="true"`、SVG の後は保存の `a` の `download` が `全体の構成.svg` で、要素が `hidden`
+      - name: test_attach_map_export_when_escape
+        case: 正常
+        summary: Esc で閉じる
+        condition: 開いて Esc
+        mock: なし（Chromium）
+        expected: 要素が `hidden` で、書き出すボタンにフォーカスがある
+      - name: test_attach_map_export_when_png_unavailable
+        case: 異常
+        summary: PNG にできない
+        condition: 開いて PNG を押す
+        mock: '`HTMLCanvasElement.prototype.toBlob` を `null` を渡す関数に差し替える'
+        expected: 保存の `a` が押されず、要素が開いたまま `role="status"` に PNG にできない旨の文がある
+refs:
+  - IF-472-35#constraints[map の図の書き出し]
+  - CMP-472-39#
+tags:
+  - name: topic:map
+  - name: topic:書き出し
+  - name: tool:svg
