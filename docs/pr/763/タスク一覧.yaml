@@ -43,7 +43,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T12:42:24.487177+00:00'
   - process: データ設計
-    status: todo
+    status: skipped
+    reason: 変えたグループの大きさは、ノードの移動と同じく図の状態（state.ts が sessionStorage に保つもの。モジュール構成 MOD-472-129 が定める）に持たせ、map のマーカーの設定（DATA-472-24・ER-477-18）・補足（ER-472-2）・設定の構造は変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-20T12:49:12.951278+00:00'
   - process: インターフェース定義設計
     status: todo
   - process: 部品設計
