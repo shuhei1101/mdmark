@@ -141,6 +141,7 @@ documents:
       ref: design-schemas/v8.4.0
     metadata:
       name: title
+      description: lead
       visibility: visibility
   - id: external_api
     title: 外部 API
