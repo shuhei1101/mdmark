@@ -626,29 +626,33 @@ test("test_attach_comments_when_table_cell_selected", async () => {
     throw new Error("表が無い");
   }
   for (const target of [cell, header]) {
-    // 実行
-    select(target, 0, 2);
-    await vi.waitFor(() => expect(visibleButton()).toBeDefined());
-    // 検証
-    const button = visibleButton();
-    expect(button?.parentElement?.tagName).not.toBe("TR");
-    expect(table.nextElementSibling).toBe(button);
-    expect(rowChildren(table)).toEqual([
-      ["TH", "TH"],
-      ["TD", "TD"],
-    ]);
-    const selected = window
-      .getSelection()
-      ?.getRangeAt(0)
-      .getBoundingClientRect();
-    expect(Number.parseFloat(button?.style.top ?? "")).toBeGreaterThanOrEqual(
-      selected?.bottom ?? Number.NaN,
-    );
-    window.getSelection()?.removeAllRanges();
-    document.dispatchEvent(new Event("selectionchange"));
-    await vi.waitFor(() => expect(visibleButton()).toBeUndefined());
+    // 実行・検証
+    await expectButtonAfterTable(table, target);
   }
 });
+
+/** セルの文字を選び、ボタンが表の直後にあり、行の子がセルだけで、選んだ文字の下に出ることを確認してから選びを解く */
+async function expectButtonAfterTable(
+  table: HTMLTableElement,
+  target: HTMLTableCellElement,
+): Promise<void> {
+  select(target, 0, 2);
+  await vi.waitFor(() => expect(visibleButton()).toBeDefined());
+  const button = visibleButton();
+  expect(button?.parentElement?.tagName).not.toBe("TR");
+  expect(table.nextElementSibling).toBe(button);
+  expect(rowChildren(table)).toEqual([
+    ["TH", "TH"],
+    ["TD", "TD"],
+  ]);
+  const selected = window.getSelection()?.getRangeAt(0).getBoundingClientRect();
+  expect(Number.parseFloat(button?.style.top ?? "")).toBeGreaterThanOrEqual(
+    selected?.bottom ?? Number.NaN,
+  );
+  window.getSelection()?.removeAllRanges();
+  document.dispatchEvent(new Event("selectionchange"));
+  await vi.waitFor(() => expect(visibleButton()).toBeUndefined());
+}
 
 // root が表の中の要素でも、ボタンを表の直後に配置し、detach で削除する（正常系）
 test("test_attach_comments_when_root_in_table", async () => {
