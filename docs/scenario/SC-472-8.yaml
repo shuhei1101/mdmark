@@ -1190,8 +1190,145 @@ scenarios:
       - 説明を持つ要素にツールチップのマーカーがあり、フォーカスかポインターで補足の説明が出る。補足の `notes` のキー・`layout` の指定・ドラッグ・案内は、正常シナリオ（C4 図）と同じ規則で当たる
       - mermaid のライブラリへの要求が 0 件
     test: test_normal_when_c4_other_kinds
+  - name: 正常シナリオ（確信度を示す）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 確信度を持つ map の Markdown
+        description: flowchart の map の範囲を 1 つ持つ文書。補足の `trust` で、ノード 4 つに `confirmed`・`inferred`・`hypothesis`・`unsourced` を 1 つずつ、グループ 1 つと線 1 本に `inferred` を持つ
+        notes: '`trust` を持たないノードと線を 1 つずつ持つ。`trust` に無い ID 1 つと、知らない値 `guess` を持つ ID 1 つを持つ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 補足に trust を持つ Markdown を指定して描かせる
+        M->>M: trust の ID と値を点検する
+        M-->>P: 確信度の名前を付けたノード・グループ・線と、書き方の警告
+        P-->>U: 文書を表示
+        U->>M: 確信度を持つ線にポインターを当てる
+        M-->>U: ツールチップの先頭に確信度の名前を出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`trust` を持つノードとグループのタイトルの右上に、確信度の名前（確認済み・推測・仮説・出典なし）のバッジがある'
+      - '`trust` を持つ線は線のラベルの後ろに確信度の名前のバッジがあり、ポインターを当てるとツールチップの先頭の行に「確信度: 推測」が出る'
+      - '`trust` を持たないノードと線にはバッジが無く、描き方は正常シナリオと同じ'
+      - バッジはスクリーンリーダーで「確信度 {名前}」と読み上げられる
+      - 図の前の書き方の警告に、`trust` の無い ID（`map_unknown_ref`）と知らない値 `guess`（`map_invalid_value`。使用できる値の一覧を含む）が 1 件ずつ出て、その 2 つにはバッジが付かない
+    test: test_normal_when_trust
+  - name: 正常シナリオ（計画した変更を示す）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 計画した変更を持つ map の Markdown
+        description: flowchart の map の範囲を 1 つ持つ文書。補足の `changes` で、ノード 1 つと線 1 本に `added`、ノード 1 つに `changed`、ノード 1 つと線 1 本に `removed` を持つ
+        notes: '`changes` に知らない値 `moved` を持つ ID を 1 つ持つ。同じ図に正常シナリオ（確信度を示す）の `trust` も持つ'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 補足に changes を持つ Markdown を指定して描かせる
+        M->>M: changes の ID と値を点検する
+        M-->>P: 追加・変更・削除の色とバッジを付けたノードと線
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`added` のノードと線は差分の追加の色の枠線と線で描かれ、ノードに「追加」のバッジがある'
+      - '`changed` のノードは差分の変更の色の枠線で描かれ、「変更」のバッジがある'
+      - '`removed` のノードは差分の削除の色の破線の枠線と取り消し線の名前で描かれ、「削除」のバッジがある。`removed` の線は削除の色の破線で描かれる'
+      - '`removed` のノードと線も配置に含まれ、ほかのノードと重ならない'
+      - 確信度のバッジと変更のバッジを両方持つノードは、2 つのバッジが重ならずに並ぶ
+      - 図の前の書き方の警告に、知らない値 `moved` の `map_invalid_value`（使用できる値の一覧を含む）が 1 件出て、そのノードは変更の色で描かれない
+    test: test_normal_when_planned_changes
+  - name: 正常シナリオ（図を SVG・PNG に書き出す）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 構成図の map を持つ Markdown
+        description: 正常シナリオと同じ文書。グループを 1 つ閉じ、ノードを 1 つ選んだ状態にする
+      - name: Mock
+        description: 正常シナリオと同じ。ブラウザのダウンロードを受け取るように用意する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        participant B as ブラウザ
+        U->>D: 右上のパネルを開いて書き出すボタンを押す
+        D-->>U: SVG と PNG の項目のメニュー
+        U->>D: SVG を選ぶ
+        D->>B: 今の見せ方の図の全体を SVG のファイルにして保存させる
+        U->>D: 書き出すボタンを押して PNG を選ぶ
+        D->>B: 同じ図を PNG のファイルにして保存させる
+      ```
+
+      <!-- /map -->
+    expected:
+      - パネルを開くと、拡大・全画面のボタンと並んで、スクリーンリーダー向けの名前「図を書き出す」を持つ書き出すボタンがある
+      - SVG と PNG のファイル名が `{図の枠のタイトル}.svg`・`{図の枠のタイトル}.png`（タイトルが無い図は `図 {文書の中の map の番号}`）になる
+      - 書き出した図は、閉じたグループを閉じたまま、倍率と表示する位置に依らず図の全体を等倍で含み、選択の強調・パネル・リサイズハンドル・ツールチップのマーカー・書き方の警告を含まない
+      - 書き出した SVG は単独で開いても、ページで描いた図と同じ色・文字・アイコンで描かれる
+      - PNG は図の大きさの 2 倍の画素数で、ページで描いた図と同じ見た目になる
+      - Esc でメニューが閉じ、書き出すボタンへフォーカスが戻る
+    test: test_normal_when_exported
+  - name: 正常シナリオ（一覧の表示で読む）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 構成図の map を持つ Markdown
+        description: 正常シナリオと同じ文書と、同じ文書の 2 つ目の map の範囲に正常シナリオ（シーケンス図）の sequenceDiagram を持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        U->>D: 構成図のパネルを開いて一覧の表示のボタンを押す
+        D-->>U: グループとノードの入れ子の一覧
+        U->>D: 一覧にフォーカスして ↓・→・← を押す
+        D-->>U: 項目を移り、グループの項目を開閉する
+        U->>D: シーケンス図の一覧の表示のボタンを押す
+        D-->>U: メッセージを記載順に並べた一覧
+        U->>D: 構成図の一覧の表示のボタンをもう一度押す
+        D-->>U: 図の表示に戻す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 一覧の表示のボタンはスクリーンリーダー向けの名前「一覧で表示」と `aria-pressed` を持ち、押すと表示する枠の中が図から一覧に替わる
+      - 構成図の一覧は、グループを子を持つ項目、ノードを項目にした入れ子の一覧で、ノードの項目は名前・種類の名前・補足の `notes` の説明と、出る線（「→ {相手の名前}」と線のラベル）を持つ
+      - ↑・↓ で項目を移り、→ でグループの項目を開き、← で閉じる。項目はスクリーンリーダーで名前・種類・説明・出る線の数の順に読み上げられる
+      - 'シーケンス図の一覧は、メッセージを記載順に「{送信元} → {送信先}: {メッセージ}」の項目で並べる'
+      - 一覧の表示は文書の目次に見出しを追加しない
+      - もう一度押すと図の表示に戻り、図の倍率・位置・開閉は一覧に切り替える前と同じ
+    test: test_normal_when_list
 tags:
   - name: topic:map
     main: true
   - name: tool:mermaid
   - name: topic:図
+  - name: topic:書き出し
+  - name: tool:svg
+  - name: topic:一覧
+  - name: topic:アクセシビリティ
+  - name: topic:差分
