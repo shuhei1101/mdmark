@@ -96,6 +96,53 @@ functions:
         condition: '`設計/arch.md` から `api.md`・`使い方/guide.md`・`設計/b.md`、`undefined` から `api.md`'
         mock: なし
         expected: '`../api.md`・`../使い方/guide.md`・`b.md`・`api.md`'
+  - name: normalizePath
+    title: パスをそろえる
+    container: src/knowledge/paths.ts
+    kind: 関数
+    scope: internal
+    summary: '`.` と空の要素を除き、`/` で区切ったパスにそろえる（`./a//b.md` → `a/b.md`）'
+    args:
+      - name: path
+        type: string
+        required: true
+        description: '`/` 区切りのパス'
+    returns:
+      type: string
+      description: そろえたパス
+    unit_tests:
+      - name: test_normalize_path
+        case: 正常
+        summary: '`.` と空の要素を除く'
+        condition: '`./a//b.md`・`a/./b.md`・`a.md`'
+        mock: なし
+        expected: どれも `a/b.md` か `a.md`
+  - name: fileTitle
+    title: ファイル名のタイトルを作る
+    container: src/knowledge/paths.ts
+    kind: 関数
+    scope: internal
+    summary: パスのファイル名から最後の拡張子を除いたものを返却する（`使い方/guide.md` → `guide`）
+    description: '`resolveDocTitle`・`renderDocument` の `title` の無い文書の補いと、被参照の一覧・ツールチップ・`collectMatches` の参照先のタイトルの既定に使用する。先頭が `.` だけのファイル名は拡張子を除かない'
+    args:
+      - name: path
+        type: string
+        required: true
+        description: 文書のパス
+    returns:
+      type: string
+      description: 拡張子を除いたファイル名
+    callees:
+      - '#functions[normalizePath]'
+    refs:
+      - DATA-472-11#fields[title]
+    unit_tests:
+      - name: test_file_title
+        case: 正常
+        summary: フォルダと最後の拡張子を除く
+        condition: '`使い方/guide.md`・`a.mark.md`・`.env`・`README`'
+        mock: なし
+        expected: '`guide`・`a.mark`・`.env`・`README`'
 lead: '索引のパスの正規化・リンクの解決・相対パスの作成を受け持ち、索引のパスの扱いを変えるときに参照する。'
 tags:
   - name: topic:索引

@@ -1,0 +1,10 @@
+/* #735 の既定の表の見本: 実装と同じく、ポインターを乗せられる端末では押していないピン止めを見出しにポインターかフォーカスがある間だけ見せる */
+@media (hover: hover) {
+  [data-mock-table283="735-default-unpinned"] thead th .mdmark-pin[aria-pressed="false"] {
+    opacity: 0;
+  }
+
+  [data-mock-table283="735-default-unpinned"] thead th:is(:hover, :focus-within) .mdmark-pin {
+    opacity: 1;
+  }
+}

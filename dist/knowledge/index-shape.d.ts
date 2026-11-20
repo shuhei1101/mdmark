@@ -36,8 +36,8 @@ export type MdmarkIndexDoc = {
     id: string;
     /** 文書のパス。索引のファイルのあるフォルダからの相対パス */
     path: string;
-    /** 文書のタイトル */
-    title: string;
+    /** 文書のタイトル。無いときはフロントマターの `title`・本文の最初の h1・拡張子を除いたファイル名で補う */
+    title?: string;
     /** 1 文の概要 */
     description?: string;
     /** 本文での呼び名 */

@@ -83,5 +83,7 @@ export declare function collectMatches(input: {
     config?: MdmarkConfig;
     /** エイリアス。使用できないもの（`env` を含む）は除いて照合する */
     aliases?: MdmarkAlias[];
+    /** 文書のパスから、解析したフロントマターの値を参照する表 */
+    frontmatter?: Record<string, unknown> | undefined;
 }): MdmarkMatches;
 export {};

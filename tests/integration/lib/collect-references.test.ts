@@ -7,6 +7,7 @@ type Built = {
   collectReferences: (input: {
     index: MdmarkIndex;
     documents: Record<string, string>;
+    frontmatter?: Record<string, unknown>;
   }) => MdmarkReferences;
 };
 
@@ -181,4 +182,68 @@ test("test_normal_when_frontmatter", async () => {
   // 検証
   expect(references.backlinks.api).not.toContain("guide");
   expect(references.backlinks.arch).toEqual(["api"]);
+});
+
+// 索引に無いキーをフロントマターの値で補い、索引に無くフロントマターに title を持つ文書を加える（正常系）
+test("test_normal_when_frontmatter_metadata", async () => {
+  // 準備
+  const { collectReferences } = await loadBuilt();
+  const index = {
+    ...INDEX,
+    docs: [
+      { id: "arch", path: "設計/arch.md" },
+      ...INDEX.docs.filter((doc) => doc.id !== "arch"),
+    ],
+  } as MdmarkIndex;
+  const documents: Record<string, string> = {
+    "設計/arch.md": [
+      "---",
+      "title: アーキテクチャ",
+      "aliases: [構成図]",
+      "---",
+      "",
+      "公開関数を使用する。",
+    ].join("\n"),
+    "api.md": "# API\n",
+    "使い方/guide.md": [
+      "---",
+      "aliases: 使い方",
+      "---",
+      "",
+      "構成図を参照する。",
+    ].join("\n"),
+    "note.md": ["---", "title: メモ", "---", "", "[構成](設計/arch.md)"].join(
+      "\n",
+    ),
+    "draft.md": "[構成](設計/arch.md)",
+  };
+  const frontmatter = {
+    "設計/arch.md": { title: "アーキテクチャ", aliases: ["構成図"] },
+    "使い方/guide.md": { aliases: "使い方" },
+    "note.md": { title: "メモ" },
+  };
+  const indexBefore = structuredClone(index);
+  const documentsBefore = structuredClone(documents);
+  // 実行
+  const references = collectReferences({ index, documents, frontmatter });
+  // 検証
+  expect(references.docs?.[0]).toEqual({
+    id: "arch",
+    path: "設計/arch.md",
+    title: "アーキテクチャ",
+    aliases: ["構成図"],
+  });
+  expect(
+    references.docs?.find((doc) => doc.id === "guide")?.aliases,
+  ).toBeUndefined();
+  expect(references.docs?.at(-1)).toEqual({
+    id: "note.md",
+    path: "note.md",
+    title: "メモ",
+  });
+  expect(references.docs?.some((doc) => doc.id === "draft.md")).toBe(false);
+  expect(references.backlinks.arch).toEqual(["api", "guide", "note.md"]);
+  expect(Object.keys(references.backlinks)).not.toContain("draft.md");
+  expect(index).toEqual(indexBefore);
+  expect(documents).toEqual(documentsBefore);
 });

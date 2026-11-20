@@ -31408,10 +31408,10 @@ __export(dist_exports3, {
   Tokenizer: () => Tokenizer,
   createDocumentStream: () => createDocumentStream,
   getFeed: () => getFeed,
-  parseDocument: () => parseDocument,
+  parseDocument: () => parseDocument2,
   parseFeed: () => parseFeed
 });
-function parseDocument(data, options) {
+function parseDocument2(data, options) {
   const handler = new DomHandler(void 0, options);
   new Parser(handler, options).end(data);
   return handler.root;
@@ -31421,7 +31421,7 @@ function createDocumentStream(callback, options, elementCallback) {
   return new Parser(handler, options);
 }
 function parseFeed(feed, options = parseFeedDefaultOptions) {
-  return getFeed(parseDocument(feed, options).children);
+  return getFeed(parseDocument2(feed, options).children);
 }
 var parseFeedDefaultOptions;
 var init_dist6 = __esm({
@@ -62735,6 +62735,11 @@ var SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 function normalizePath(path) {
   return path.split("/").filter((segment) => segment !== "" && segment !== ".").join("/");
 }
+function fileTitle(path) {
+  const name = normalizePath(path).split("/").at(-1) ?? "";
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(0, dot) : name;
+}
 function directoryOf(path) {
   return normalizePath(path).split("/").filter(Boolean).slice(0, -1);
 }
@@ -63092,7 +63097,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.0a45dad";
+  return "v0.14.0+develop.fa2609d";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -63407,6 +63412,7 @@ function resolveTable(table2) {
   const valid = typeof requestedMin === "number" && Number.isFinite(requestedMin) && requestedMin > 0;
   return {
     pin: table2?.pin === "through" ? "through" : "each",
+    pinDefault: table2?.pin_default === true,
     longColumnMin: valid ? requestedMin : DEFAULT_LONG_COLUMN_MIN_EM
   };
 }
@@ -63820,6 +63826,9 @@ function isValidTable(value, file, issues) {
     );
     return false;
   }
+  if (!isValidPinDefault(value.pin_default, file, issues)) {
+    return false;
+  }
   const min = value.long_column_min;
   if (min !== void 0 && (typeof min !== "number" || !Number.isFinite(min) || min <= 0)) {
     issues.push(
@@ -63832,6 +63841,19 @@ function isValidTable(value, file, issues) {
     return false;
   }
   return true;
+}
+function isValidPinDefault(value, file, issues) {
+  if (value === void 0 || typeof value === "boolean") {
+    return true;
+  }
+  issues.push(
+    schemaIssue(
+      file,
+      "table.pin_default",
+      "`table.pin_default` \u306F `true` \u304B `false` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    )
+  );
+  return false;
 }
 function isValidAssets(value, file, issues) {
   if (!isRecord3(value)) {
@@ -64406,209 +64428,37 @@ async function requireConfig(cwd, explicit) {
 
 // src/cli/documents.ts
 import { glob, readFile as readFile2 } from "node:fs/promises";
-import {
-  basename as basename2,
-  dirname as dirname3,
-  extname,
-  join as join3,
-  relative as relative2,
-  resolve as resolve3,
-  sep as sep2
-} from "node:path";
+import { dirname as dirname3, extname, join as join3, relative as relative2, resolve as resolve4, sep as sep2 } from "node:path";
 import { parse as parse4 } from "yaml";
-var MARKDOWN_EXTENSION = ".md";
-function toPosix(path) {
-  return path.split(sep2).join("/");
-}
-async function globFiles(options) {
-  const found = [];
-  for await (const entry of glob(options.pattern, {
-    cwd: options.cwd,
-    exclude: options.exclude,
-    withFileTypes: true
-  })) {
-    if (entry.isFile()) {
-      found.push(
-        toPosix(relative2(options.cwd, join3(entry.parentPath, entry.name)))
-      );
-    }
-  }
-  return found.sort();
-}
-async function collectBuildDocuments(dir, build6) {
-  const seen = /* @__PURE__ */ new Set();
-  for (const pattern of build6.include) {
-    const files = await globFiles({
-      cwd: dir,
-      pattern,
-      exclude: build6.exclude ?? []
-    });
-    for (const file of files) {
-      if (extname(file) === MARKDOWN_EXTENSION) {
-        seen.add(file);
-      }
-    }
-  }
-  return [...seen];
-}
-async function readIndexWithDocuments(loaded) {
-  const index = loaded.config.index;
-  if (index === void 0) {
-    return void 0;
-  }
-  const indexPath = resolve3(loaded.dir, index);
-  const indexFile = toPosix(relative2(loaded.dir, indexPath));
-  let raw;
-  try {
-    raw = parse4(await readFile2(indexPath, "utf8"));
-  } catch (error2) {
-    const reason = error2 instanceof Error ? error2.message.split("\n")[0] : String(error2);
-    throw new CliError(
-      `\u7D22\u5F15 ${indexFile} \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u8A2D\u5B9A\u306E index \u306E\u30D1\u30B9\u3092\u4FEE\u6B63\u3059\u308B\u304B\u3001\u7D22\u5F15\u3092\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  const indexDir = dirname3(indexPath);
-  const indexDirFromConfig = toPosix(relative2(loaded.dir, indexDir));
-  const files = await globFiles({
-    cwd: loaded.dir,
-    pattern: indexDirFromConfig === "" ? `**/*${MARKDOWN_EXTENSION}` : `${indexDirFromConfig}/**/*${MARKDOWN_EXTENSION}`,
-    exclude: loaded.config.build?.exclude ?? []
-  });
-  const documents = {};
-  for (const file of files) {
-    const key = toPosix(relative2(indexDir, join3(loaded.dir, file)));
-    documents[key] = await readFile2(join3(loaded.dir, file), "utf8");
-  }
-  return { indexFile, indexDir, raw, documents };
-}
-function firstHeading(markdown) {
-  let fence2;
-  for (const line of markdown.split("\n")) {
-    const fenceMatch = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
-    if (fenceMatch?.[1]) {
-      const marker = fenceMatch[1].charAt(0);
-      fence2 = fence2 === void 0 ? marker : fence2 === marker ? void 0 : fence2;
-      continue;
-    }
-    if (fence2 !== void 0) {
-      continue;
-    }
-    const heading2 = /^ {0,3}#\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
-    if (heading2?.[1]) {
-      return heading2[1];
-    }
-  }
-  return void 0;
-}
-function documentTitle(doc) {
-  return doc.indexTitle ?? firstHeading(doc.markdown) ?? basename2(normalizePath(doc.path), extname(doc.path));
-}
 
-// src/cli/embed.ts
-import { readFile as readFile4 } from "node:fs/promises";
-import { dirname as dirname6, extname as extname4 } from "node:path";
-import { build as build2, transform as transform2 } from "esbuild";
-
-// src/bundle-module.ts
-import { readFile as readFile3 } from "node:fs/promises";
-import { dirname as dirname4, extname as extname2, isAbsolute as isAbsolute2, resolve as resolve4 } from "node:path";
-var BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
-var URL_NAMESPACE = "http-url";
-var LOCAL_NAMESPACE = "local";
-var HTTP_PATTERN2 = /^https?:\/\//i;
-var PATH_PATTERN = /^(?:\.{1,2}[\\/]|[\\/]|[A-Za-z]:[\\/])/;
-var TS_LOADERS = {
-  ".ts": "ts",
-  ".mts": "ts",
-  ".cts": "ts",
-  ".tsx": "tsx"
-};
-var fetchByUrl = async (url2) => {
-  const response = await fetch(url2);
-  if (!response.ok) {
-    throw new Error(`${url2} \u306F ${response.status} \u3092\u8FD4\u5374\u3057\u307E\u3057\u305F`);
-  }
-  return response.text();
-};
-function urlPlugin(fetchText) {
-  return {
-    name: URL_NAMESPACE,
-    setup(pluginBuild) {
-      pluginBuild.onResolve({ filter: HTTP_PATTERN2 }, (args) => ({
-        path: args.path,
-        namespace: URL_NAMESPACE
-      }));
-      pluginBuild.onResolve(
-        { filter: /.*/, namespace: URL_NAMESPACE },
-        (args) => ({
-          path: new URL(args.path, args.importer).href,
-          namespace: URL_NAMESPACE
-        })
-      );
-      pluginBuild.onLoad(
-        { filter: /.*/, namespace: URL_NAMESPACE },
-        async (args) => ({
-          contents: await fetchText(args.path),
-          loader: "js"
-        })
-      );
-    }
+// src/frontmatter/frontmatter.logic.ts
+var OPEN_LINE = /^---[ \t]*$/;
+var CLOSE_LINE = /^(?:---|\.\.\.)[ \t]*$/;
+var BOM = "\uFEFF";
+var blankOut = (text2) => text2.replace(/[^\r\n]/g, " ");
+var splitFrontmatter = (markdown) => {
+  const none = {
+    body: markdown,
+    content: void 0,
+    endLine: void 0
   };
-}
-var localPlugin = {
-  name: LOCAL_NAMESPACE,
-  setup(pluginBuild) {
-    pluginBuild.onResolve({ filter: PATH_PATTERN }, (args) => ({
-      path: args.kind === "entry-point" || isAbsolute2(args.path) ? args.path : resolve4(args.resolveDir, args.path),
-      namespace: LOCAL_NAMESPACE
-    }));
-    pluginBuild.onLoad(
-      { filter: /.*/, namespace: LOCAL_NAMESPACE },
-      async (args) => ({
-        contents: await readFile3(args.path, "utf8"),
-        loader: TS_LOADERS[extname2(args.path)] ?? "js",
-        resolveDir: dirname4(args.path)
-      })
-    );
+  const text2 = markdown.startsWith(BOM) ? markdown.slice(BOM.length) : markdown;
+  const lines = text2.split("\n");
+  const stripCr = (line) => line.replace(/\r$/, "");
+  if (!OPEN_LINE.test(stripCr(lines[0] ?? ""))) {
+    return none;
   }
+  const endLine = lines.findIndex(
+    (line, index) => index > 0 && CLOSE_LINE.test(stripCr(line))
+  );
+  if (endLine < 0) {
+    return none;
+  }
+  const content = lines.slice(1, endLine).map(stripCr).join("\n");
+  const rangeLength = markdown.length - text2.length + lines.slice(0, endLine + 1).join("\n").length;
+  const body = blankOut(markdown.slice(0, rangeLength)) + markdown.slice(rangeLength);
+  return { body, content, endLine };
 };
-async function bundleModule(entry, baseDir, deps) {
-  const { fetchText, build: build6 } = deps;
-  try {
-    const result = await build6({
-      absWorkingDir: baseDir,
-      entryPoints: [HTTP_PATTERN2.test(entry) ? entry : resolve4(baseDir, entry)],
-      bundle: true,
-      format: "esm",
-      platform: "browser",
-      target: BROWSER_TARGETS,
-      minify: true,
-      write: false,
-      outfile: "bundle.js",
-      plugins: [urlPlugin(fetchText ?? fetchByUrl), localPlugin],
-      logLevel: "silent"
-    });
-    const code2 = result.outputFiles?.[0]?.text;
-    if (code2 === void 0) {
-      return { error: `${entry}: \u307E\u3068\u3081\u305F\u7D50\u679C\u304C\u3042\u308A\u307E\u305B\u3093` };
-    }
-    return { code: code2 };
-  } catch (error2) {
-    const reason = error2 instanceof Error ? error2.message.split("\n")[0] : String(error2);
-    return { error: `${entry}: ${reason}` };
-  }
-}
-function cacheFetchText(fetchText = fetchByUrl) {
-  const cache = /* @__PURE__ */ new Map();
-  return (url2) => {
-    let pending = cache.get(url2);
-    if (!pending) {
-      pending = fetchText(url2);
-      cache.set(url2, pending);
-    }
-    return pending;
-  };
-}
 
 // node_modules/mdurl/index.mjs
 var mdurl_exports = {};
@@ -69214,28 +69064,6 @@ _defineProperty(MarkdownIt, "ParserInline", ParserInline);
 _defineProperty(MarkdownIt, "StateInline", StateInline);
 var MarkdownItCallable = callable(MarkdownIt);
 
-// src/shared/escape.logic.ts
-function escapeHtml2(text2) {
-  return text2.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
-}
-
-// src/shared/syntax-warning.part.ts
-var WARNING_TITLE = "\u8A18\u8F09\u306E\u8B66\u544A";
-function renderInline(text2) {
-  return text2.split("`").map(
-    (part, index) => index % 2 === 1 ? `<code>${escapeHtml2(part)}</code>` : escapeHtml2(part)
-  ).join("");
-}
-function renderSyntaxWarning(options) {
-  const { mark = "", message, items = [], id } = options;
-  const markHtml = mark ? `<code>${escapeHtml2(mark)}</code>` : "";
-  const list3 = items.length ? `<ul>${items.map(
-    (item) => `<li>${item.label ? `<code>${escapeHtml2(item.label)}</code>: ` : ""}${renderInline(item.message)}</li>`
-  ).join("")}</ul>` : "";
-  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
-  return `<div class="mdmark-syntax-warning" role="note"${idAttribute}><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list3}</div>`;
-}
-
 // src/diagram/definition.ts
 var RETIRED_DIAGRAM_DIRECTIVES = [
   "flow",
@@ -69790,6 +69618,11 @@ function resolveFeatures2(options) {
   return features;
 }
 
+// src/shared/escape.logic.ts
+function escapeHtml2(text2) {
+  return text2.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+}
+
 // src/shared/embed.part.ts
 var LOADING_TEXT = "\u56F3\u3092\u8AAD\u307F\u8FBC\u3093\u3067\u3044\u307E\u3059";
 function renderEmbed(options) {
@@ -69808,6 +69641,163 @@ function markOwn(html, nonce) {
 }
 function splitSlots(html) {
   return html.split(SLOT_MARKER);
+}
+
+// src/shared/syntax-warning.part.ts
+var WARNING_TITLE = "\u8A18\u8F09\u306E\u8B66\u544A";
+function renderInline(text2) {
+  return text2.split("`").map(
+    (part, index) => index % 2 === 1 ? `<code>${escapeHtml2(part)}</code>` : escapeHtml2(part)
+  ).join("");
+}
+function renderSyntaxWarning(options) {
+  const { mark = "", message, items = [], id } = options;
+  const markHtml = mark ? `<code>${escapeHtml2(mark)}</code>` : "";
+  const list3 = items.length ? `<ul>${items.map(
+    (item) => `<li>${item.label ? `<code>${escapeHtml2(item.label)}</code>: ` : ""}${renderInline(item.message)}</li>`
+  ).join("")}</ul>` : "";
+  const idAttribute = id === void 0 ? "" : ` id="${escapeHtml2(id)}"`;
+  return `<div class="mdmark-syntax-warning" role="note"${idAttribute}><p class="mdmark-syntax-warning-title">${WARNING_TITLE}</p><p>${markHtml}${renderInline(message)}</p>${list3}</div>`;
+}
+
+// src/shared/tokens.syntax.ts
+function envOf(state) {
+  return state.env;
+}
+function featureOn(state, name) {
+  return envOf(state).features[name] === true;
+}
+function ownBlock(state, html, source) {
+  const token = new state.Token("html_block", "", 0);
+  token.block = true;
+  if (source?.map) {
+    token.map = [...source.map];
+  }
+  token.content = markOwn(html, envOf(state).nonce);
+  return token;
+}
+var TAB_BOUNDARY_KEY = "tabBoundary";
+function tabBoundaryBlock(options) {
+  const token = ownBlock(options.state, options.html, options.source);
+  token.meta = { [TAB_BOUNDARY_KEY]: options.boundary };
+  return token;
+}
+function tabBoundaryOf(token) {
+  const meta2 = token?.meta;
+  return token?.type === "html_block" ? meta2?.[TAB_BOUNDARY_KEY] : void 0;
+}
+function markOf(token) {
+  return token?.type === MARK_TOKEN ? token.meta : void 0;
+}
+function findClose(tokens, openIndex, name) {
+  const level = tokens[openIndex]?.level;
+  for (let index = openIndex + 1; index < tokens.length; index++) {
+    const token = tokens[index];
+    const mark = markOf(token);
+    if (mark?.closing && mark.name === name && token?.level === level) {
+      return index;
+    }
+  }
+  return -1;
+}
+function findNestedClose(tokens, openIndex) {
+  const open2 = tokens[openIndex];
+  for (let index = openIndex + 1; index < tokens.length; index++) {
+    const token = tokens[index];
+    if (token?.nesting === -1 && token.level === open2?.level && token.type === open2?.type.replace("_open", "_close")) {
+      return index;
+    }
+  }
+  return -1;
+}
+function textOf(token) {
+  return (token.children ?? []).filter((child) => child.type === "text" || child.type === "code_inline").map((child) => child.content).join("");
+}
+
+// src/shared/syntax-warning.syntax.ts
+function plainMessage(warning) {
+  const strip = (text2) => text2.replaceAll("`", "");
+  return [
+    `${warning.mark ?? ""}${strip(warning.message)}`,
+    ...(warning.items ?? []).map(
+      (item) => `${item.label ? `${item.label}: ` : ""}${strip(item.message)}`
+    )
+  ].join(" ");
+}
+function makeWarningToken(state, warning, source) {
+  const { kind = "syntax_warning", includeTarget, ...view } = warning;
+  delete view.line;
+  const line = warning.line ?? source?.map?.[0];
+  const token = ownBlock(state, renderSyntaxWarning(view));
+  const meta2 = {
+    kind,
+    message: plainMessage(warning),
+    ...line === void 0 ? {} : { line },
+    ...includeTarget ? { includeTarget } : {}
+  };
+  token.meta = { ...token.meta ?? {}, warning: meta2 };
+  return token;
+}
+function pushWarning(state, index, warning) {
+  const { source, ...rest2 } = warning;
+  state.tokens.splice(index, 0, makeWarningToken(state, rest2, source));
+}
+function warningBlock(state, warning, source) {
+  return makeWarningToken(state, warning, source);
+}
+function warningLine(tokens, index, meta2) {
+  if (meta2.line !== void 0) {
+    return meta2.line;
+  }
+  const after = tokens.slice(index + 1).find((other) => other.map);
+  if (after?.map) {
+    return after.map[0];
+  }
+  const before = tokens.slice(0, index).reverse().find((other) => other.map);
+  return before?.map ? before.map[1] - 1 : 0;
+}
+function collectWarningsRule(state) {
+  const warnings = [];
+  state.tokens.forEach((token, index) => {
+    const metas = [
+      ...token.meta?.warning ? [token.meta.warning] : [],
+      ...token.meta?.warnings ?? []
+    ];
+    for (const meta2 of metas) {
+      warnings.push({
+        line: warningLine(state.tokens, index, meta2) + 1,
+        kind: meta2.kind,
+        message: meta2.message,
+        ...meta2.includeTarget ? { includeTarget: true } : {}
+      });
+    }
+  });
+  const env = envOf(state);
+  for (const note of env.markNotes) {
+    const at = warnings.findIndex((warning) => warning.line > note.line);
+    const item = {
+      line: note.line,
+      kind: note.kind,
+      message: note.message
+    };
+    if (at < 0) {
+      warnings.push(item);
+    } else {
+      warnings.splice(at, 0, item);
+    }
+  }
+  env.warnings = warnings;
+}
+function recordMarkNotes(env, options) {
+  for (const note of options.notes) {
+    env.markNotes.push({ ...note, line: options.line });
+  }
+}
+function unclosedWarning(mark) {
+  return {
+    mark: mark.raw,
+    message: `\u306E\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC \`<!-- /${mark.name} -->\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u7D42\u308F\u308A\u306B\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30DE\u30FC\u30AB\u30FC\u304B\u3089\u6587\u66F8\u306E\u7D42\u308F\u308A\u307E\u3067\u3092\u7BC4\u56F2\u306B\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+  };
 }
 
 // src/shared/collapse.logic.ts
@@ -74791,7 +74781,7 @@ var MARK_SCHEMAS = {
   wide: withCommon(wide_schema_default)
 };
 var REMOVED = /* @__PURE__ */ Symbol("removed");
-var resolve5 = (node2, root2) => {
+var resolve3 = (node2, root2) => {
   if (node2.$ref === void 0) {
     return node2;
   }
@@ -74802,7 +74792,7 @@ var resolve5 = (node2, root2) => {
       `\u30DE\u30FC\u30AB\u30FC\u306E JSON Schema \u306E $ref \u3092\u89E3\u3051\u307E\u305B\u3093: ${node2.$ref}`
     );
   }
-  return resolve5(target, root2);
+  return resolve3(target, root2);
 };
 var childPath = (path, key) => typeof key === "number" ? `${path}[${key}]` : path === "" ? key : `${path}.${key}`;
 var show = (value) => JSON.stringify(value);
@@ -74832,7 +74822,7 @@ var exampleOfType = (resolved, root2) => {
   }
 };
 var exampleOf = (node2, root2) => {
-  const resolved = resolve5(node2, root2);
+  const resolved = resolve3(node2, root2);
   if (resolved.anyOf?.[0]) {
     return exampleOf(resolved.anyOf[0], root2);
   }
@@ -74871,7 +74861,7 @@ var expectedOfType = (resolved) => {
   }
 };
 var expectedOf = (node2, root2) => {
-  const resolved = resolve5(node2, root2);
+  const resolved = resolve3(node2, root2);
   if (resolved.anyOf) {
     return resolved.anyOf.map((item) => expectedOf(item, root2)).join("\u304B\u3001");
   }
@@ -74902,7 +74892,7 @@ var matchesType2 = (type, value) => {
 };
 var mismatchMessage = (node2, at) => {
   const { root: root2, value, path } = at;
-  const resolved = resolve5(node2, root2);
+  const resolved = resolve3(node2, root2);
   if (resolved.enum && matchesType2(resolved.type, value)) {
     const values = resolved.enum.map((item) => `\`${showChoice(item)}\``).join("\u30FB");
     return `\u306E \`${path}\` \u306E \`${showChoice(value)}\` \u306F\u9078\u3079\u308B\u5024\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u9078\u3079\u308B\u5024\u306F ${values} \u3067\u3059\u3002\u3053\u306E\u8A2D\u5B9A\u3092\u5F53\u3066\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`;
@@ -74932,7 +74922,7 @@ var checkAnyOf = (node2, context) => {
 };
 var check = (node2, at) => {
   const { root: root2, value, path } = at;
-  const resolved = resolve5(node2, root2);
+  const resolved = resolve3(node2, root2);
   if (resolved.anyOf) {
     return checkAnyOf(node2, { alternatives: resolved.anyOf, at });
   }
@@ -75027,7 +75017,7 @@ var validateMarkOptions = (options) => {
   if (schema === void 0) {
     return { options: options.options, problems: [], unknownKeys: [] };
   }
-  const result = checkObject(resolve5(schema, schema), {
+  const result = checkObject(resolve3(schema, schema), {
     root: schema,
     value: options.options,
     path: ""
@@ -75048,14 +75038,14 @@ var validateMarkOptions = (options) => {
   };
 };
 var segmentSchemaOf = (node2, context) => {
-  const resolved = resolve5(node2, context.schema);
+  const resolved = resolve3(node2, context.schema);
   const child = resolved.properties?.[context.segment] ?? (typeof resolved.additionalProperties === "object" ? resolved.additionalProperties : resolved.items);
   return child?.items && !child.properties ? child.items : child;
 };
 var usableKeysAt = (schema, path) => {
   const segments = path.split(/\.|\[\d+\]/).filter(Boolean);
   segments.pop();
-  let node2 = resolve5(schema, schema);
+  let node2 = resolve3(schema, schema);
   for (const segment of segments) {
     if (node2 === void 0) {
       return [];
@@ -75065,7 +75055,7 @@ var usableKeysAt = (schema, path) => {
   if (node2 === void 0) {
     return [];
   }
-  const resolved = resolve5(node2, schema);
+  const resolved = resolve3(node2, schema);
   return Object.keys(resolved.properties ?? {});
 };
 var COLUMN_FEATURES2 = {
@@ -75660,143 +75650,1493 @@ function dropMarks(state) {
   state.tokens = state.tokens.filter((token) => token.type !== MARK_TOKEN);
 }
 
-// src/shared/tokens.syntax.ts
-function envOf(state) {
-  return state.env;
+// src/knowledge/aliases.ts
+var ALIAS_TYPES = [
+  "term",
+  "doc",
+  "command",
+  "url",
+  "skill",
+  "tool",
+  "path",
+  "env",
+  "avoid"
+];
+var ALIAS_KEYS = [
+  "id",
+  "name",
+  "aliases",
+  "description",
+  "related",
+  "command",
+  "cwd",
+  "url",
+  "avoid",
+  "skill",
+  "tool",
+  "path",
+  "port",
+  "replacement"
+];
+var ALIAS_REQUIRED_KEYS = {
+  term: ["description"],
+  doc: ["description"],
+  command: ["command"],
+  url: ["url"],
+  skill: ["skill"],
+  tool: ["tool"],
+  path: ["path"],
+  avoid: ["replacement"],
+  env: []
+};
+var ALIAS_KEY_LABELS = {
+  id: "ID",
+  name: "\u540D\u524D",
+  description: "\u8AAC\u660E",
+  command: "\u30B3\u30DE\u30F3\u30C9",
+  url: "URL",
+  skill: "\u30B9\u30AD\u30EB\u540D",
+  tool: "\u30C4\u30FC\u30EB\u540D",
+  path: "\u30D1\u30B9",
+  replacement: "\u7F6E\u304D\u63DB\u3048\u5148"
+};
+var LIST_KEYS = /* @__PURE__ */ new Set(["aliases", "avoid", "related"]);
+var DEFAULT_CONFIG_FILE = "mdmark.config.yaml";
+function isRecord4(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
-function featureOn(state, name) {
-  return envOf(state).features[name] === true;
+function isFilled(value) {
+  return typeof value === "string" && value !== "";
 }
-function ownBlock(state, html, source) {
-  const token = new state.Token("html_block", "", 0);
-  token.block = true;
-  if (source?.map) {
-    token.map = [...source.map];
+function toText(value) {
+  if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
+    return void 0;
   }
-  token.content = markOwn(html, envOf(state).nonce);
-  return token;
+  const text2 = String(value).trim();
+  return text2 === "" ? void 0 : text2;
 }
-var TAB_BOUNDARY_KEY = "tabBoundary";
-function tabBoundaryBlock(options) {
-  const token = ownBlock(options.state, options.html, options.source);
-  token.meta = { [TAB_BOUNDARY_KEY]: options.boundary };
-  return token;
+function toList(value) {
+  if (typeof value === "string") {
+    const text2 = value.trim();
+    return text2 === "" ? void 0 : [text2];
+  }
+  if (Array.isArray(value)) {
+    return value.filter((item) => typeof item === "string").map((item) => item.trim()).filter((item) => item !== "");
+  }
+  return void 0;
 }
-function tabBoundaryOf(token) {
-  const meta2 = token?.meta;
-  return token?.type === "html_block" ? meta2?.[TAB_BOUNDARY_KEY] : void 0;
+function readColumn(record2, column) {
+  let current = record2;
+  for (const part of column.split(".")) {
+    if (!isRecord4(current) || !Object.hasOwn(current, part)) {
+      return { found: false, value: void 0 };
+    }
+    current = current[part];
+  }
+  return { found: true, value: current };
 }
-function markOf(token) {
-  return token?.type === MARK_TOKEN ? token.meta : void 0;
+function readAliasKey(options) {
+  const { record: record2, column, key } = options;
+  if (isFilled(column)) {
+    const read = readColumn(record2, column);
+    return read.found ? { present: true, raw: read.value } : { present: false, missing: column };
+  }
+  return Object.hasOwn(record2, key) ? { present: true, raw: record2[key] } : { present: false };
 }
-function findClose(tokens, openIndex, name) {
-  const level = tokens[openIndex]?.level;
-  for (let index = openIndex + 1; index < tokens.length; index++) {
-    const token = tokens[index];
-    const mark = markOf(token);
-    if (mark?.closing && mark.name === name && token?.level === level) {
-      return index;
+function toAliasValue(key, raw) {
+  return LIST_KEYS.has(key) ? toList(raw) : toText(raw);
+}
+function nameOf(options) {
+  const { record: record2, bodyFile, fallbackName } = options;
+  const bodyPath = bodyFile === void 0 ? void 0 : toText(readColumn(record2, bodyFile).value);
+  return bodyPath === void 0 ? fallbackName : baseName(bodyPath);
+}
+function readAliasRecord(options) {
+  const { record: record2, metadata, bodyFile, fallbackName } = options;
+  const values = {};
+  const missing = [];
+  for (const key of ALIAS_KEYS) {
+    const read = readAliasKey({ record: record2, column: metadata[key], key });
+    if (read.missing !== void 0) {
+      missing.push({ key, field: read.missing });
+    }
+    const value = read.present ? toAliasValue(key, read.raw) : void 0;
+    if (value !== void 0) {
+      values[key] = value;
     }
   }
-  return -1;
-}
-function findNestedClose(tokens, openIndex) {
-  const open2 = tokens[openIndex];
-  for (let index = openIndex + 1; index < tokens.length; index++) {
-    const token = tokens[index];
-    if (token?.nesting === -1 && token.level === open2?.level && token.type === open2?.type.replace("_open", "_close")) {
-      return index;
+  if (values.name === void 0) {
+    const name = nameOf({ record: record2, bodyFile, fallbackName });
+    if (name !== "") {
+      values.name = name;
     }
   }
-  return -1;
+  return { values, missing };
 }
-function textOf(token) {
-  return (token.children ?? []).filter((child) => child.type === "text" || child.type === "code_inline").map((child) => child.content).join("");
+function checkAliasFields(options) {
+  const { aliasType, values } = options;
+  const keys = [
+    "id",
+    "name",
+    ...ALIAS_REQUIRED_KEYS[aliasType]
+  ].filter((key) => !isFilled(values[key]));
+  if (aliasType === "env" && !isFilled(values.url) && !isFilled(values.port)) {
+    keys.push("url");
+  }
+  return keys.length === 0 ? void 0 : { kind: "alias_required_empty", keys };
 }
-
-// src/shared/syntax-warning.syntax.ts
-function plainMessage(warning) {
-  const strip = (text2) => text2.replaceAll("`", "");
-  return [
-    `${warning.mark ?? ""}${strip(warning.message)}`,
-    ...(warning.items ?? []).map(
-      (item) => `${item.label ? `${item.label}: ` : ""}${strip(item.message)}`
-    )
-  ].join(" ");
+function usableType(item, seen) {
+  const type = ALIAS_TYPES.find((candidate) => candidate === item.alias_type);
+  if (type === void 0 || type === "env") {
+    return void 0;
+  }
+  if (!isFilled(item.id) || !isFilled(item.name) || seen.has(item.id)) {
+    return void 0;
+  }
+  return ALIAS_REQUIRED_KEYS[type].every((key) => isFilled(item[key])) ? type : void 0;
 }
-function makeWarningToken(state, warning, source) {
-  const { kind = "syntax_warning", includeTarget, ...view } = warning;
-  delete view.line;
-  const line = warning.line ?? source?.map?.[0];
-  const token = ownBlock(state, renderSyntaxWarning(view));
-  const meta2 = {
-    kind,
-    message: plainMessage(warning),
-    ...line === void 0 ? {} : { line },
-    ...includeTarget ? { includeTarget } : {}
+function toUsableAlias(item, type) {
+  const list3 = (value) => Array.isArray(value) ? value.filter(isFilled) : [];
+  const alias = {
+    alias_type: type,
+    id: item.id,
+    name: item.name,
+    aliases: list3(item.aliases),
+    avoid: list3(item.avoid)
   };
-  token.meta = { ...token.meta ?? {}, warning: meta2 };
-  return token;
-}
-function pushWarning(state, index, warning) {
-  const { source, ...rest2 } = warning;
-  state.tokens.splice(index, 0, makeWarningToken(state, rest2, source));
-}
-function warningBlock(state, warning, source) {
-  return makeWarningToken(state, warning, source);
-}
-function warningLine(tokens, index, meta2) {
-  if (meta2.line !== void 0) {
-    return meta2.line;
+  for (const key of [
+    "description",
+    "command",
+    "cwd",
+    "url",
+    "skill",
+    "tool",
+    "path",
+    "replacement"
+  ]) {
+    const value = item[key];
+    if (typeof value === "string") {
+      alias[key] = value;
+    }
   }
-  const after = tokens.slice(index + 1).find((other) => other.map);
-  if (after?.map) {
-    return after.map[0];
+  if (Array.isArray(item.related)) {
+    alias.related = list3(item.related);
   }
-  const before = tokens.slice(0, index).reverse().find((other) => other.map);
-  return before?.map ? before.map[1] - 1 : 0;
+  return alias;
 }
-function collectWarningsRule(state) {
-  const warnings = [];
-  state.tokens.forEach((token, index) => {
-    const metas = [
-      ...token.meta?.warning ? [token.meta.warning] : [],
-      ...token.meta?.warnings ?? []
-    ];
-    for (const meta2 of metas) {
-      warnings.push({
-        line: warningLine(state.tokens, index, meta2) + 1,
-        kind: meta2.kind,
-        message: meta2.message,
-        ...meta2.includeTarget ? { includeTarget: true } : {}
-      });
+function usableAliases(aliases) {
+  const seen = /* @__PURE__ */ new Set();
+  const usable = [];
+  for (const item of aliases) {
+    const type = isRecord4(item) ? usableType(item, seen) : void 0;
+    if (!isRecord4(item) || type === void 0) {
+      continue;
+    }
+    const row2 = item;
+    seen.add(row2.id);
+    usable.push(toUsableAlias(row2, type));
+  }
+  return usable;
+}
+function toAlias(values, aliasType) {
+  const text2 = (key) => typeof values[key] === "string" ? values[key] : void 0;
+  const list3 = (key) => Array.isArray(values[key]) ? values[key] : void 0;
+  const alias = {
+    alias_type: aliasType,
+    id: values.id,
+    name: values.name,
+    aliases: list3("aliases") ?? []
+  };
+  for (const key of [
+    "description",
+    "command",
+    "cwd",
+    "url",
+    "skill",
+    "tool",
+    "path",
+    "replacement"
+  ]) {
+    const value = text2(key);
+    if (value !== void 0) {
+      alias[key] = value;
+    }
+  }
+  const related = list3("related");
+  if (related !== void 0) {
+    alias.related = related;
+  }
+  const avoid = list3("avoid");
+  if (avoid !== void 0) {
+    alias.avoid = avoid;
+  }
+  return alias;
+}
+function baseName(path) {
+  const name = path.split("/").pop() ?? path;
+  const dot = name.lastIndexOf(".");
+  return dot > 0 ? name.slice(0, dot) : name;
+}
+function joinWhere(recordPath, key) {
+  return recordPath === "" ? key : `${recordPath}.${key}`;
+}
+function columnOf(row2, key) {
+  const column = row2.metadata[key];
+  return isFilled(column) ? column : key;
+}
+function isEnabledRow(row2) {
+  return isRecord4(row2) && isFilled(row2.id) && Array.isArray(row2.paths) && typeof row2.alias_type === "string" && row2.enabled !== false;
+}
+function acceptRow(build6, row2, rowPosition) {
+  if (!isEnabledRow(row2)) {
+    return void 0;
+  }
+  if (build6.rowIds.has(row2.id)) {
+    build6.problems.push({
+      file: build6.configFile,
+      where: `aliases[${rowPosition}].id`,
+      kind: "duplicate_alias_row_id",
+      message: `\u884C\u306E \`id\` \`${row2.id}\` \u304C\u524D\u306E\u884C\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  build6.rowIds.add(row2.id);
+  const aliasType = ALIAS_TYPES.find(
+    (candidate) => candidate === row2.alias_type
+  );
+  if (aliasType === void 0) {
+    build6.problems.push({
+      file: build6.configFile,
+      where: `aliases[${rowPosition}].alias_type`,
+      kind: "alias_unknown_type",
+      message: `\`alias_type\` \u306E \`${row2.alias_type}\` \u306F\u7A2E\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\`term\`\u30FB\`doc\`\u30FB\`command\`\u30FB\`url\`\u30FB\`skill\`\u30FB\`tool\`\u30FB\`path\`\u30FB\`env\`\u30FB\`avoid\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  return {
+    id: row2.id,
+    aliasType,
+    metadata: isRecord4(row2.metadata) ? row2.metadata : {},
+    recordsKey: isFilled(row2.records) ? row2.records : void 0,
+    bodyFile: isFilled(row2.body_file) ? row2.body_file : void 0
+  };
+}
+function recordsOf(build6, row2, source) {
+  const { recordsKey } = row2;
+  if (recordsKey === void 0) {
+    return [{ record: source.data, path: "" }];
+  }
+  const list3 = isRecord4(source.data) ? source.data[recordsKey] : void 0;
+  if (!Array.isArray(list3)) {
+    build6.problems.push({
+      file: source.path,
+      where: "",
+      kind: "alias_records_missing",
+      message: `\`${recordsKey}\` \u306E\u914D\u5217\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30D5\u30A1\u30A4\u30EB\u306B \`${recordsKey}\` \u306E\u914D\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`records\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return void 0;
+  }
+  return list3.map((record2, position) => ({
+    record: record2,
+    path: `${recordsKey}[${position}]`
+  }));
+}
+function pushRequiredProblems(build6, row2, at) {
+  const { source, path, keys } = at;
+  const head = path === "" ? `\`${source.path}\`` : `\`${source.path}\` \u306E \`${path}\``;
+  for (const key of keys) {
+    const column = columnOf(row2, key);
+    const sentence = key === "url" && row2.aliasType === "env" ? `${head} \u306E \`url\` \u3068 \`port\` \u304C\u4E21\u65B9\u7A7A\u3067\u3059\u3002URL \u304B\u30DD\u30FC\u30C8\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : `${head} \u306E \`${column}\` \u304C\u7A7A\u3067\u3059\u3002${ALIAS_KEY_LABELS[key] ?? key}\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+    build6.problems.push({
+      file: source.path,
+      where: joinWhere(path, column),
+      kind: "alias_required_empty",
+      message: sentence
+    });
+  }
+}
+function takeRecord(build6, row2, at) {
+  const { source, record: record2, path } = at;
+  const fallbackName = row2.recordsKey === void 0 ? baseName(source.path) : toText(record2.id) ?? "";
+  const { values, missing } = readAliasRecord({
+    record: record2,
+    metadata: row2.metadata,
+    bodyFile: row2.bodyFile,
+    fallbackName
+  });
+  for (const { key, field } of missing) {
+    build6.problems.push({
+      file: source.path,
+      where: joinWhere(path, field),
+      kind: "alias_field_missing",
+      message: `\`metadata.${key}\` \u304C\u6307\u3059\u5217 \`${field}\` \u304C\u30EC\u30B3\u30FC\u30C9\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`metadata.${key}\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+  }
+  if (missing.length > 0) {
+    return;
+  }
+  const checked = checkAliasFields({ aliasType: row2.aliasType, values });
+  if (checked !== void 0) {
+    pushRequiredProblems(build6, row2, { source, path, keys: checked.keys });
+    return;
+  }
+  const id = values.id;
+  if (build6.aliasIds.has(id)) {
+    build6.problems.push({
+      file: source.path,
+      where: joinWhere(path, columnOf(row2, "id")),
+      kind: "duplicate_alias_id",
+      message: `\u30A8\u30A4\u30EA\u30A2\u30B9\u306E \`id\` \`${id}\` \u304C\u524D\u306E\u30A8\u30A4\u30EA\u30A2\u30B9\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
+    });
+    return;
+  }
+  build6.aliasIds.add(id);
+  if (row2.aliasType !== "env") {
+    build6.aliases.push(toAlias(values, row2.aliasType));
+  }
+}
+function buildAliases(input) {
+  const { rows, sources, configFile = DEFAULT_CONFIG_FILE } = input;
+  const build6 = {
+    aliases: [],
+    problems: [],
+    rowIds: /* @__PURE__ */ new Set(),
+    aliasIds: /* @__PURE__ */ new Set(),
+    configFile
+  };
+  rows.forEach((item, rowPosition) => {
+    const row2 = acceptRow(build6, item, rowPosition);
+    if (!row2) {
+      return;
+    }
+    for (const source of sources.filter((entry) => entry.rowId === row2.id)) {
+      for (const { record: record2, path } of recordsOf(build6, row2, source) ?? []) {
+        if (isRecord4(record2)) {
+          takeRecord(build6, row2, { source, record: record2, path });
+        }
+      }
     }
   });
-  const env = envOf(state);
-  for (const note of env.markNotes) {
-    const at = warnings.findIndex((warning) => warning.line > note.line);
-    const item = {
-      line: note.line,
-      kind: note.kind,
-      message: note.message
-    };
-    if (at < 0) {
-      warnings.push(item);
-    } else {
-      warnings.splice(at, 0, item);
+  return { aliases: build6.aliases, problems: build6.problems };
+}
+
+// src/knowledge/dictionary.ts
+var segmenter;
+var FALLBACK_WORD = /[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+|[\s\S]/gu;
+function normalizeWord(word) {
+  return word.normalize("NFKC").toLowerCase().trim();
+}
+function addTerm(maps2, words, value) {
+  const { id, meaning, alias } = value;
+  for (const word of words) {
+    const key = normalizeWord(word);
+    if (key === "") {
+      continue;
+    }
+    if (alias === void 0 && !maps2.plainTerms.has(key)) {
+      maps2.plainTerms.set(key, { id, meaning });
+    }
+    if (!maps2.terms.has(key)) {
+      maps2.terms.set(key, value);
+      maps2.written.set(key, word);
     }
   }
-  env.warnings = warnings;
 }
-function recordMarkNotes(env, options) {
-  for (const note of options.notes) {
-    env.markNotes.push({ ...note, line: options.line });
+function addAvoided(maps2, words, value) {
+  for (const word of words) {
+    const key = normalizeWord(word);
+    if (key !== "" && !maps2.terms.has(key) && !maps2.avoided.has(key)) {
+      maps2.avoided.set(key, value);
+      maps2.written.set(key, word);
+    }
   }
 }
-function unclosedWarning(mark) {
+var glossaryId = (entry) => `glossary:${entry.docId}:${entry.term}`;
+function docOrder(index) {
+  return (id) => {
+    const position = index?.docs.findIndex((doc) => doc.id === id) ?? -1;
+    return position === -1 ? Number.MAX_SAFE_INTEGER : position;
+  };
+}
+function addAllTerms(maps2, sources) {
+  const { index, usable, ownGlossary, others } = sources;
+  for (const term of index?.terms ?? []) {
+    addTerm(maps2, [term.term, ...term.aliases ?? []], {
+      id: term.id,
+      meaning: term.meaning
+    });
+  }
+  for (const alias of usable) {
+    if (alias.alias_type !== "avoid") {
+      addTerm(maps2, [alias.name, ...alias.aliases], {
+        id: `alias:${alias.id}`,
+        meaning: alias.description ?? "",
+        alias
+      });
+    }
+  }
+  for (const entry of [...ownGlossary, ...others]) {
+    addTerm(maps2, [entry.term, ...entry.aliases], {
+      id: glossaryId(entry),
+      meaning: entry.meaning
+    });
+  }
+}
+function addAliasAvoided(maps2, usable) {
+  for (const alias of usable) {
+    if (alias.alias_type === "avoid") {
+      addAvoided(maps2, [alias.name, ...alias.aliases], {
+        id: `alias:${alias.id}`,
+        term: alias.replacement ?? "",
+        alias
+      });
+    } else if (alias.alias_type === "term") {
+      addAvoided(maps2, alias.avoid ?? [], {
+        id: `alias:${alias.id}`,
+        term: alias.name,
+        meaning: alias.description ?? "",
+        alias
+      });
+    }
+  }
+}
+function addAllAvoided(maps2, sources) {
+  const { index, usable, tables } = sources;
+  for (const term of index?.terms ?? []) {
+    addAvoided(maps2, term.avoid ?? [], {
+      id: term.id,
+      term: term.term,
+      meaning: term.meaning
+    });
+  }
+  addAliasAvoided(maps2, usable);
+  const sorted = [...tables].sort((a, b) => a.position - b.position);
+  for (const { entry } of sorted) {
+    addAvoided(maps2, entry.avoid ?? [], {
+      id: glossaryId(entry),
+      term: entry.term,
+      meaning: entry.meaning
+    });
+  }
+}
+function addDocAliases(maps2, index, docId) {
+  for (const doc of index?.docs ?? []) {
+    if (doc.id === docId) {
+      continue;
+    }
+    for (const alias of doc.aliases ?? []) {
+      const key = normalizeWord(alias);
+      if (key === "") {
+        continue;
+      }
+      maps2.docs.set(key, [...maps2.docs.get(key) ?? [], doc]);
+      if (!maps2.written.has(key)) {
+        maps2.written.set(key, alias);
+      }
+    }
+  }
+}
+function addGlossary(maps2, sources) {
+  const { index, docId, ownGlossary, references, usable } = sources;
+  const order = docOrder(index);
+  const others = (references?.glossary ?? []).filter((entry) => docId === void 0 || entry.docId !== docId).sort((a, b) => order(a.docId) - order(b.docId));
+  addAllTerms(maps2, { index, usable, ownGlossary, others });
+  const ownPosition = docId !== void 0 && order(docId) !== Number.MAX_SAFE_INTEGER ? order(docId) : -1;
+  addAllAvoided(maps2, {
+    index,
+    usable,
+    tables: [
+      ...ownGlossary.map((entry) => ({ entry, position: ownPosition })),
+      ...others.map((entry) => ({ entry, position: order(entry.docId) }))
+    ]
+  });
+}
+function buildDictionary(options) {
+  const { index, docId, ownGlossary, references, features } = options;
+  const usable = usableAliases(options.aliases ?? []);
+  const maps2 = {
+    terms: /* @__PURE__ */ new Map(),
+    plainTerms: /* @__PURE__ */ new Map(),
+    docs: /* @__PURE__ */ new Map(),
+    avoided: /* @__PURE__ */ new Map(),
+    written: /* @__PURE__ */ new Map()
+  };
+  if (features.glossary !== false) {
+    addGlossary(maps2, { index, docId, ownGlossary, references, usable });
+  }
+  if (features.backlinks !== false) {
+    addDocAliases(maps2, index, docId);
+  }
+  const words = [.../* @__PURE__ */ new Set([...maps2.terms.keys(), ...maps2.docs.keys()])].sort(
+    (a, b) => b.length - a.length
+  );
+  const { terms, docs, avoided, written, plainTerms } = maps2;
   return {
-    mark: mark.raw,
-    message: `\u306E\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC \`<!-- /${mark.name} -->\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u7BC4\u56F2\u306E\u7D42\u308F\u308A\u306B\u9589\u3058\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u30DE\u30FC\u30AB\u30FC\u304B\u3089\u6587\u66F8\u306E\u7D42\u308F\u308A\u307E\u3067\u3092\u7BC4\u56F2\u306B\u3057\u3066\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+    words,
+    terms,
+    docs,
+    avoided,
+    written,
+    term: (word) => plainTerms.get(normalizeWord(word))
+  };
+}
+function wordStarts(text2) {
+  if (typeof Intl.Segmenter !== "undefined") {
+    segmenter ??= new Intl.Segmenter("ja", { granularity: "word" });
+    return [...segmenter.segment(text2)].map((segment) => segment.index);
+  }
+  return [...text2.matchAll(FALLBACK_WORD)].map((match) => match.index);
+}
+function findWords(text2, words) {
+  const passed = /* @__PURE__ */ new Map();
+  for (const word of words) {
+    const key = normalizeWord(word);
+    if (key !== "" && !passed.has(key)) {
+      passed.set(key, word);
+    }
+  }
+  const longestFirst = [...passed.keys()].sort((a, b) => b.length - a.length);
+  const starts = wordStarts(text2);
+  const folded = starts.map(
+    (start, position) => text2.slice(start, starts[position + 1] ?? text2.length).normalize("NFKC").toLowerCase()
+  );
+  const normalized = folded.join("");
+  const originals = /* @__PURE__ */ new Map([[normalized.length, text2.length]]);
+  const heads = [];
+  let head = 0;
+  starts.forEach((start, position) => {
+    heads.push(head);
+    originals.set(head, start);
+    head += folded[position].length;
+  });
+  const found = [];
+  let skipTo = 0;
+  starts.forEach((start, position) => {
+    if (start < skipTo) {
+      return;
+    }
+    const from = heads[position];
+    const key = longestFirst.find(
+      (candidate) => normalized.startsWith(candidate, from) && originals.has(from + candidate.length)
+    );
+    if (key !== void 0) {
+      const end = originals.get(from + key.length);
+      found.push({ start, end, word: passed.get(key) });
+      skipTo = end;
+    }
+  });
+  return found;
+}
+function forEachInline(tokens, callback) {
+  let section = 0;
+  let inHeading = false;
+  for (const token of tokens) {
+    if (token.type === "heading_open") {
+      inHeading = true;
+      if (/^h[234]$/.test(token.tag)) {
+        section += 1;
+      }
+    } else if (token.type === "heading_close") {
+      inHeading = false;
+    } else if (token.type === "inline" && !inHeading) {
+      callback(token, section);
+    }
+  }
+}
+function matchableChildren(inline2) {
+  const positions = [];
+  let linkDepth = 0;
+  (inline2.children ?? []).forEach((child, position) => {
+    if (child.type === "link_open") {
+      linkDepth += 1;
+    } else if (child.type === "link_close") {
+      linkDepth -= 1;
+    } else if (child.type === "text" && linkDepth === 0 && child.meta?.mdmarkNoTerms !== true) {
+      positions.push(position);
+    }
+  });
+  return positions;
+}
+
+// src/knowledge/glossary.syntax.ts
+var ALIAS_SEPARATOR = /[、,]/;
+function splitCell(cell) {
+  return cell.split(ALIAS_SEPARATOR).map((word) => word.trim()).filter(Boolean);
+}
+function readStructure(reader, token) {
+  switch (token.type) {
+    case "table_open":
+      reader.table = { columns: [], rows: [] };
+      reader.tables.push(reader.table);
+      return true;
+    case "thead_open":
+      reader.inHead = true;
+      return true;
+    case "thead_close":
+      reader.inHead = false;
+      return true;
+    case "tr_open":
+      if (!reader.inHead) {
+        reader.row = { cells: [], line: (token.map?.[0] ?? 0) + 1 };
+        reader.table?.rows.push(reader.row);
+      }
+      return true;
+    default:
+      return false;
+  }
+}
+function readCell(reader, token, inline2) {
+  if (token.type !== "th_open" && token.type !== "td_open") {
+    return;
+  }
+  const text2 = inline2 ? textOf(inline2).trim() : "";
+  if (token.type === "th_open") {
+    reader.table?.columns.push(text2);
+  } else {
+    reader.row?.cells.push(text2);
+  }
+}
+function readTables(tokens) {
+  const reader = {
+    tables: [],
+    table: void 0,
+    inHead: false,
+    row: void 0
+  };
+  for (const [position, token] of tokens.entries()) {
+    if (!readStructure(reader, token)) {
+      readCell(reader, token, tokens[position + 1]);
+    }
+  }
+  return reader.tables;
+}
+function unknownColumnMessage(argName, name, columns) {
+  const list3 = columns.map((column) => `\`${column}\``).join("\u30FB");
+  return `\u306E \`${argName}.column\` \u306E\u5217 \`${name}\` \u304C\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${list3} \u3067\u3059\u3002\u5217\u540D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u8868\u304B\u3089\u306F\u7528\u8A9E\u3092\u5165\u308C\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`;
+}
+var GLOSSARY_COLUMNS = [
+  ["term", true],
+  ["meaning", true],
+  ["aliases", false],
+  ["avoid", false]
+];
+function columnPositions(spec, columns) {
+  const positions = {};
+  let problem;
+  for (const [argName, required2] of GLOSSARY_COLUMNS) {
+    const name = spec[argName]?.column;
+    if (typeof name !== "string" || name === "") {
+      if (required2) {
+        problem ??= "";
+      }
+      continue;
+    }
+    const position = columns.indexOf(name);
+    if (position === -1) {
+      problem ??= unknownColumnMessage(argName, name, columns);
+    } else {
+      positions[argName] = position;
+    }
+  }
+  return problem === void 0 ? { positions } : { problem };
+}
+function tableRows(table2, positions, docId) {
+  const cellOf = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
+  return table2.rows.flatMap((row2) => {
+    const term = cellOf(row2.cells, "term");
+    const meaning = cellOf(row2.cells, "meaning");
+    if (term === "" || meaning === "") {
+      return [];
+    }
+    return [
+      {
+        entry: {
+          term,
+          aliases: splitCell(cellOf(row2.cells, "aliases")),
+          meaning,
+          docId,
+          avoid: splitCell(cellOf(row2.cells, "avoid"))
+        },
+        line: row2.line
+      }
+    ];
+  });
+}
+function readGlossaryRows(options) {
+  const { options: spec, tokens, docId } = options;
+  const rows = [];
+  let warning;
+  for (const table2 of readTables(tokens)) {
+    const read = columnPositions(spec, table2.columns);
+    if ("problem" in read) {
+      if (read.problem !== "") {
+        warning ??= read.problem;
+      }
+      continue;
+    }
+    rows.push(...tableRows(table2, read.positions, docId));
+  }
+  return warning === void 0 ? { rows } : { rows, warning };
+}
+function collectGlossary(state, range) {
+  const env = envOf(state);
+  const { token, mark, tokens, closed } = range;
+  const { rows, warning } = readGlossaryRows({
+    options: mark.options,
+    tokens,
+    docId: env.docId ?? ""
+  });
+  const out = [];
+  if (!closed) {
+    out.push(warningBlock(state, unclosedWarning(mark), token));
+  }
+  if (warning !== void 0) {
+    out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
+  }
+  for (const row2 of rows) {
+    env.ownGlossary.push(row2.entry);
+    env.glossaryLines?.push(row2.line);
+  }
+  for (const inline2 of tokens) {
+    for (const child of inline2.children ?? []) {
+      child.meta = { ...child.meta, mdmarkNoTerms: true };
+    }
+  }
+  return out;
+}
+function glossaryRule(state) {
+  const enabled = featureOn(state, "glossary");
+  const tokens = state.tokens;
+  const out = [];
+  for (let position = 0; position < tokens.length; position++) {
+    const token = tokens[position];
+    const mark = markOf(token);
+    if (!token || mark?.name !== "glossary") {
+      if (token) {
+        out.push(token);
+      }
+      continue;
+    }
+    if (mark.closing) {
+      continue;
+    }
+    const close = findClose(tokens, position, "glossary");
+    const end = close === -1 ? tokens.length : close;
+    const range = tokens.slice(position + 1, end);
+    if (enabled) {
+      out.push(
+        ...collectGlossary(state, {
+          token,
+          mark,
+          tokens: range,
+          closed: close !== -1
+        })
+      );
+    }
+    out.push(...range);
+    position = end;
+  }
+  state.tokens = out;
+}
+
+// src/knowledge/index-shape.ts
+var RELATION_TYPES = [
+  "requires",
+  "references",
+  "replaces",
+  "part_of",
+  "change_together"
+];
+var INDEX_SHAPE = {
+  root: {
+    schema: { type: "integer", required: true },
+    docs: { type: "array", required: true },
+    terms: { type: "array", required: false }
+  },
+  doc: {
+    id: { type: "string", required: true },
+    path: { type: "string", required: true },
+    title: { type: "string", required: false },
+    description: { type: "string", required: false },
+    aliases: { type: "string[]", required: false },
+    tags: { type: "doc_tags", required: false },
+    related: { type: "doc_related", required: false }
+  },
+  term: {
+    id: { type: "string", required: true },
+    term: { type: "string", required: true },
+    meaning: { type: "string", required: true },
+    aliases: { type: "string[]", required: false },
+    avoid: { type: "string[]", required: false }
+  }
+};
+var DOC_TAG_SHAPE = {
+  name: { type: "string", required: true },
+  main: { type: "boolean", required: false }
+};
+var DOC_RELATED_SHAPE = {
+  to: { type: "string", required: true },
+  type: { type: "string", required: true },
+  when: { type: "string", required: true },
+  paths: { type: "string[]", required: false }
+};
+var EMPTY_ALLOWED = /* @__PURE__ */ new Set(["description"]);
+var CURRENT_SCHEMA = 2;
+function isRecord5(value) {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+function checkString(key, value) {
+  if (typeof value !== "string") {
+    return `${key} \u306F\u6587\u5B57\u5217\u306B\u3057\u307E\u3059`;
+  }
+  return value === "" && !EMPTY_ALLOWED.has(key) ? `${key} \u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093` : void 0;
+}
+function checkType(key, value, shape) {
+  if (shape.type === "integer") {
+    return Number.isInteger(value) ? void 0 : `${key} \u306F\u6574\u6570\u306B\u3057\u307E\u3059`;
+  }
+  if (shape.type === "array") {
+    return Array.isArray(value) ? void 0 : `${key} \u306F\u4E26\u3073\u306B\u3057\u307E\u3059`;
+  }
+  if (shape.type === "boolean") {
+    return typeof value === "boolean" ? void 0 : `${key} \u306F\u771F\u507D\u5024\u306B\u3057\u307E\u3059`;
+  }
+  if (shape.type === "string") {
+    return checkString(key, value);
+  }
+  const ok = Array.isArray(value) && value.every((item) => typeof item === "string" && item !== "");
+  return ok ? void 0 : `${key} \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u306E\u4E26\u3073\u306B\u3057\u307E\u3059`;
+}
+function checkDocTags(options) {
+  const { value, where, problems } = options;
+  if (!Array.isArray(value)) {
+    problems.push({ where, message: "tags \u306F\u4E26\u3073\u306B\u3057\u307E\u3059" });
+    return false;
+  }
+  let valid = true;
+  value.forEach((tag, position) => {
+    const tagWhere = `${where}[${position}]`;
+    if (typeof tag === "string") {
+      if (tag === "") {
+        problems.push({
+          where: tagWhere,
+          message: "tags \u306E\u8981\u7D20\u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093"
+        });
+        valid = false;
+      }
+      return;
+    }
+    if (!isRecord5(tag)) {
+      problems.push({
+        where: tagWhere,
+        message: "tags \u306E\u8981\u7D20\u306F\u30BF\u30B0\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u304B\u3001name \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059"
+      });
+      valid = false;
+      return;
+    }
+    if (!checkItem({ item: tag, shape: DOC_TAG_SHAPE, where: tagWhere, problems })) {
+      valid = false;
+    }
+  });
+  return valid;
+}
+function checkDocRelated(options) {
+  const { value, where, problems } = options;
+  if (!Array.isArray(value)) {
+    problems.push({ where, message: "related \u306F\u4E26\u3073\u306B\u3057\u307E\u3059" });
+    return false;
+  }
+  let valid = true;
+  value.forEach((related, position) => {
+    const relatedWhere = `${where}[${position}]`;
+    if (typeof related === "string") {
+      if (related === "") {
+        problems.push({
+          where: relatedWhere,
+          message: "related \u306E\u8981\u7D20\u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093"
+        });
+        valid = false;
+      }
+      return;
+    }
+    if (!isRecord5(related)) {
+      problems.push({
+        where: relatedWhere,
+        message: "related \u306E\u8981\u7D20\u306F\u6587\u66F8\u306E id \u306E\u6587\u5B57\u5217\u304B\u3001to\u30FBtype\u30FBwhen \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059"
+      });
+      valid = false;
+      return;
+    }
+    if (!checkItem({
+      item: related,
+      shape: DOC_RELATED_SHAPE,
+      where: relatedWhere,
+      problems
+    })) {
+      valid = false;
+    }
+    const { type } = related;
+    if (typeof type === "string" && type !== "" && !RELATION_TYPES.includes(type)) {
+      problems.push({
+        where: `${relatedWhere}.type`,
+        message: `type \u306F ${RELATION_TYPES.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u307E\u3059`
+      });
+      valid = false;
+    }
+  });
+  return valid;
+}
+function checkKey(options) {
+  const { value, key, shape, where, problems } = options;
+  if (value === void 0) {
+    if (shape.required) {
+      problems.push({ where, message: `${key} \u304C\u3042\u308A\u307E\u305B\u3093` });
+    }
+    return !shape.required;
+  }
+  if (shape.type === "doc_tags") {
+    return checkDocTags({ value, where, problems });
+  }
+  if (shape.type === "doc_related") {
+    return checkDocRelated({ value, where, problems });
+  }
+  const message = checkType(key, value, shape);
+  if (message) {
+    problems.push({ where, message });
+  }
+  return message === void 0;
+}
+function checkItem(options) {
+  const { item, shape, where, problems } = options;
+  if (!isRecord5(item)) {
+    problems.push({ where, message: `${where} \u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059` });
+    return false;
+  }
+  let valid = true;
+  for (const [key, keyShape] of Object.entries(shape)) {
+    const checked = checkKey({
+      value: item[key],
+      key,
+      shape: keyShape,
+      where: `${where}.${key}`,
+      problems
+    });
+    valid = checked && valid;
+  }
+  for (const key of Object.keys(item)) {
+    if (!Object.hasOwn(shape, key)) {
+      problems.push({
+        where: `${where}.${key}`,
+        message: `${key} \u306F\u7D22\u5F15\u306B\u8A18\u8F09\u3067\u304D\u306A\u3044\u30AD\u30FC\u3067\u3059`
+      });
+      valid = false;
+    }
+  }
+  return valid;
+}
+function checkList(options) {
+  const { list: list3, name, shape, unique, problems } = options;
+  const seen = new Map(
+    unique.map((key) => [key, /* @__PURE__ */ new Set()])
+  );
+  const items = [];
+  list3.forEach((item, position) => {
+    const where = `${name}[${position}]`;
+    if (!checkItem({ item, shape, where, problems })) {
+      return;
+    }
+    const record2 = item;
+    const duplicated = unique.filter((key) => seen.get(key)?.has(record2[key]));
+    for (const key of duplicated) {
+      problems.push({
+        where: `${where}.${key}`,
+        message: `${key} \u304C\u5148\u306E\u8981\u7D20\u3068\u91CD\u306A\u3063\u3066\u3044\u307E\u3059`
+      });
+    }
+    if (duplicated.length) {
+      return;
+    }
+    for (const key of unique) {
+      seen.get(key)?.add(record2[key]);
+    }
+    items.push(item);
+  });
+  return items;
+}
+function normalizeIndex(value) {
+  const problems = [];
+  const index = { schema: CURRENT_SCHEMA, docs: [] };
+  if (!isRecord5(value)) {
+    problems.push({ where: "", message: "\u7D22\u5F15\u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059" });
+    return { index, problems };
+  }
+  if (value.schema !== CURRENT_SCHEMA && Number.isInteger(value.schema)) {
+    problems.push({
+      where: "schema",
+      message: `schema \u306F ${CURRENT_SCHEMA} \u306B\u3057\u307E\u3059\u3002\u53E4\u3044\u30D0\u30FC\u30B8\u30E7\u30F3\u306E\u7D22\u5F15\u306F mdmark upgrade \u3067\u79FB\u3057\u3066\u304F\u3060\u3055\u3044`
+    });
+  }
+  const root2 = [];
+  checkItem({
+    item: { ...value, docs: [], terms: [] },
+    shape: INDEX_SHAPE.root,
+    where: "",
+    problems: root2
+  });
+  for (const problem of root2) {
+    const key = problem.where.slice(1);
+    if (key !== "docs" && key !== "terms") {
+      problems.push({ where: key, message: problem.message });
+    }
+  }
+  index.docs = checkTop({
+    list: value.docs,
+    name: "docs",
+    shape: INDEX_SHAPE.doc,
+    unique: ["id", "path"],
+    required: true,
+    problems
+  });
+  if (value.terms !== void 0) {
+    index.terms = checkTop({
+      list: value.terms,
+      name: "terms",
+      shape: INDEX_SHAPE.term,
+      unique: ["id"],
+      required: false,
+      problems
+    });
+  }
+  return { index, problems };
+}
+function checkTop(options) {
+  const { list: list3, name, required: required2, problems } = options;
+  if (list3 === void 0) {
+    if (required2) {
+      problems.push({ where: name, message: `${name} \u304C\u3042\u308A\u307E\u305B\u3093` });
+    }
+    return [];
+  }
+  if (!Array.isArray(list3)) {
+    problems.push({ where: name, message: `${name} \u306F\u4E26\u3073\u306B\u3057\u307E\u3059` });
+    return [];
+  }
+  return checkList({ ...options, list: list3 });
+}
+function readRelated(item) {
+  if (typeof item === "string") {
+    return { to: item, type: null, when: null };
+  }
+  return item.paths === void 0 ? { to: item.to, type: item.type, when: item.when } : { to: item.to, type: item.type, when: item.when, paths: item.paths };
+}
+
+// src/knowledge/references.ts
+var FRONTMATTER_KEYS = ["title", "description", "aliases", "tags"];
+function isFilledString(value) {
+  return typeof value === "string" && value !== "";
+}
+function readFrontmatterMetadata(value) {
+  if (typeof value !== "object" || value === null || Array.isArray(value)) {
+    return {};
+  }
+  const record2 = value;
+  const metadata = {};
+  if (isFilledString(record2.title)) {
+    metadata.title = record2.title;
+  }
+  if (isFilledString(record2.description)) {
+    metadata.description = record2.description;
+  }
+  const { aliases, tags } = record2;
+  if (Array.isArray(aliases) && aliases.every(isFilledString)) {
+    metadata.aliases = aliases;
+  }
+  if (Array.isArray(tags) && normalizeIndex({ schema: 2, docs: [{ id: "_", path: "_", tags }] }).problems.length === 0) {
+    metadata.tags = tags;
+  }
+  return metadata;
+}
+function firstHeading(markdown) {
+  let fence2;
+  for (const line of splitFrontmatter(markdown).body.split("\n")) {
+    const fenceMatch = /^\s{0,3}(`{3,}|~{3,})/.exec(line);
+    if (fenceMatch?.[1]) {
+      const marker = fenceMatch[1].charAt(0);
+      fence2 = fence2 === void 0 ? marker : fence2 === marker ? void 0 : fence2;
+      continue;
+    }
+    if (fence2 !== void 0) {
+      continue;
+    }
+    const heading2 = /^ {0,3}#\s+(.+?)(?:\s+#+)?\s*$/.exec(line);
+    if (heading2?.[1]) {
+      return heading2[1];
+    }
+  }
+  return void 0;
+}
+function resolveDocTitle(doc) {
+  return doc.indexTitle ?? doc.frontmatterTitle ?? firstHeading(doc.markdown) ?? fileTitle(doc.path);
+}
+function supplementIndexDocs(input) {
+  const bodies = new Map(
+    Object.entries(input.documents).map(([path, body]) => [
+      normalizePath(path),
+      body
+    ])
+  );
+  const metadata = new Map(
+    Object.entries(input.frontmatter ?? {}).map(([path, value]) => [
+      normalizePath(path),
+      readFrontmatterMetadata(value)
+    ])
+  );
+  const docs = input.index.docs.map((doc) => {
+    const path = normalizePath(doc.path);
+    const found = metadata.get(path) ?? {};
+    const filled = { ...doc };
+    for (const key of FRONTMATTER_KEYS) {
+      if (filled[key] === void 0 && found[key] !== void 0) {
+        Object.assign(filled, { [key]: found[key] });
+      }
+    }
+    filled.title ??= resolveDocTitle({
+      path: doc.path,
+      markdown: bodies.get(path) ?? ""
+    });
+    return filled;
+  });
+  const indexedPaths = new Set(docs.map((doc) => normalizePath(doc.path)));
+  const ids = new Set(docs.map((doc) => doc.id));
+  const added = /* @__PURE__ */ new Set();
+  for (const path of bodies.keys()) {
+    const found = metadata.get(path);
+    if (found?.title === void 0 || indexedPaths.has(path) || ids.has(path)) {
+      continue;
+    }
+    docs.push({ id: path, path, ...found, title: found.title });
+    added.add(path);
+  }
+  return { docs, added, metadata };
+}
+var parser;
+function parseDocument(options) {
+  if (!parser) {
+    parser = new MarkdownItCallable({ html: true });
+    parser.core.ruler.push("mdmark_take_marks", takeMarks);
+    parser.core.ruler.push("mdmark_resolve_features", resolveDocumentFeatures);
+    parser.core.ruler.push("mdmark_glossary", glossaryRule);
+  }
+  const env = {
+    libraries: {},
+    defaults: options.defaults,
+    featureOptions: [],
+    markNotes: [],
+    features: {},
+    headings: [],
+    nonce: "",
+    docId: options.docId,
+    ownGlossary: [],
+    glossaryLines: []
+  };
+  const tokens = parser.parse(splitFrontmatter(options.body).body, env);
+  const glossary = env.ownGlossary.map((entry, position) => ({
+    entry,
+    line: env.glossaryLines?.[position] ?? 0
+  }));
+  return { tokens, features: env.features, glossary };
+}
+function linkedPaths(doc, tokens) {
+  const paths = /* @__PURE__ */ new Set();
+  for (const token of tokens) {
+    for (const child of token.children ?? []) {
+      const href = child.type === "link_open" ? child.attrGet("href") : null;
+      const path = typeof href === "string" ? resolveLink(doc.path, href) : void 0;
+      if (path !== void 0) {
+        paths.add(path);
+      }
+    }
+  }
+  return paths;
+}
+function matchedAliases(tokens, aliases) {
+  const matched = /* @__PURE__ */ new Set();
+  if (aliases.length === 0) {
+    return matched;
+  }
+  forEachInline(tokens, (inline2) => {
+    for (const position of matchableChildren(inline2)) {
+      const content = inline2.children?.[position]?.content ?? "";
+      for (const found of findWords(content, aliases)) {
+        matched.add(found.word);
+      }
+    }
+  });
+  return matched;
+}
+function aliasOwnersOf(scanned) {
+  const aliasOwners = /* @__PURE__ */ new Map();
+  for (const { doc } of scanned) {
+    for (const alias of doc.aliases ?? []) {
+      const key = normalizeWord(alias);
+      aliasOwners.set(key, [...aliasOwners.get(key) ?? [], doc]);
+    }
+  }
+  return aliasOwners;
+}
+function targetsOf(source, lookup) {
+  const { byPath, byId, aliasOwners } = lookup;
+  const tokens = source.parsed?.tokens ?? [];
+  const found = [
+    ...(source.doc.related ?? []).map((item) => byId.get(readRelated(item).to)),
+    ...[...linkedPaths(source.doc, tokens)].map((path) => byPath.get(path)),
+    ...[...matchedAliases(tokens, [...aliasOwners.keys()])].flatMap(
+      (word) => aliasOwners.get(word) ?? []
+    )
+  ];
+  return new Set(
+    found.filter((target) => target !== void 0)
+  );
+}
+function collectReferences(input) {
+  const normalized = normalizeIndex(input.index).index;
+  const { docs } = supplementIndexDocs({
+    index: normalized,
+    documents: input.documents,
+    frontmatter: input.frontmatter
+  });
+  const index = { ...normalized, docs };
+  const defaults = resolveConfig({ config: input.config }).features;
+  const bodies = new Map(
+    Object.entries(input.documents).map(([path, body]) => [
+      normalizePath(path),
+      body
+    ])
+  );
+  const scanned = index.docs.map((doc) => {
+    const body = bodies.get(normalizePath(doc.path));
+    return {
+      doc,
+      parsed: body === void 0 ? void 0 : parseDocument({ body, docId: doc.id, defaults })
+    };
+  });
+  const featureOn3 = (item, name) => (item.parsed?.features ?? defaults)[name] !== false;
+  const lookup = {
+    byPath: new Map(index.docs.map((doc) => [normalizePath(doc.path), doc])),
+    byId: new Map(index.docs.map((doc) => [doc.id, doc])),
+    aliasOwners: aliasOwnersOf(scanned)
+  };
+  const receives = (target) => {
+    const targetItem = scanned.find((item) => item.doc === target);
+    return targetItem !== void 0 && featureOn3(targetItem, "backlinks");
+  };
+  const referenced = new Map(
+    index.docs.map((doc) => [doc.id, /* @__PURE__ */ new Set()])
+  );
+  for (const source of scanned.filter((item) => featureOn3(item, "backlinks"))) {
+    for (const target of targetsOf(source, lookup)) {
+      if (target !== source.doc && receives(target)) {
+        referenced.get(target.id)?.add(source.doc.id);
+      }
+    }
+  }
+  const backlinks = {};
+  for (const [id, sources] of referenced) {
+    backlinks[id] = [...sources];
+  }
+  const glossary = scanned.flatMap(
+    (item) => (item.parsed?.glossary ?? []).map((row2) => row2.entry)
+  );
+  return { backlinks, glossary, docs };
+}
+
+// src/cli/documents.ts
+var MARKDOWN_EXTENSION = ".md";
+function toPosix(path) {
+  return path.split(sep2).join("/");
+}
+async function globFiles(options) {
+  const found = [];
+  for await (const entry of glob(options.pattern, {
+    cwd: options.cwd,
+    exclude: options.exclude,
+    withFileTypes: true
+  })) {
+    if (entry.isFile()) {
+      found.push(
+        toPosix(relative2(options.cwd, join3(entry.parentPath, entry.name)))
+      );
+    }
+  }
+  return found.sort();
+}
+async function collectBuildDocuments(dir, build6) {
+  const seen = /* @__PURE__ */ new Set();
+  for (const pattern of build6.include) {
+    const files = await globFiles({
+      cwd: dir,
+      pattern,
+      exclude: build6.exclude ?? []
+    });
+    for (const file of files) {
+      if (extname(file) === MARKDOWN_EXTENSION) {
+        seen.add(file);
+      }
+    }
+  }
+  return [...seen];
+}
+async function readIndexWithDocuments(loaded) {
+  const index = loaded.config.index;
+  if (index === void 0) {
+    return void 0;
+  }
+  const indexPath = resolve4(loaded.dir, index);
+  const indexFile = toPosix(relative2(loaded.dir, indexPath));
+  let raw;
+  try {
+    raw = parse4(await readFile2(indexPath, "utf8"));
+  } catch (error2) {
+    const reason = error2 instanceof Error ? error2.message.split("\n")[0] : String(error2);
+    throw new CliError(
+      `\u7D22\u5F15 ${indexFile} \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002\u8A2D\u5B9A\u306E index \u306E\u30D1\u30B9\u3092\u4FEE\u6B63\u3059\u308B\u304B\u3001\u7D22\u5F15\u3092\u914D\u7F6E\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  const indexDir = dirname3(indexPath);
+  const indexDirFromConfig = toPosix(relative2(loaded.dir, indexDir));
+  const files = await globFiles({
+    cwd: loaded.dir,
+    pattern: indexDirFromConfig === "" ? `**/*${MARKDOWN_EXTENSION}` : `${indexDirFromConfig}/**/*${MARKDOWN_EXTENSION}`,
+    exclude: loaded.config.build?.exclude ?? []
+  });
+  const documents = {};
+  for (const file of files) {
+    const key = toPosix(relative2(indexDir, join3(loaded.dir, file)));
+    documents[key] = await readFile2(join3(loaded.dir, file), "utf8");
+  }
+  return { indexFile, indexDir, raw, documents };
+}
+function documentTitle(doc) {
+  return resolveDocTitle(doc);
+}
+function readFrontmatterValues(markdowns) {
+  const values = {};
+  for (const [path, markdown] of Object.entries(markdowns)) {
+    const { content } = splitFrontmatter(markdown);
+    if (content === void 0) {
+      continue;
+    }
+    try {
+      values[path] = parse4(content);
+    } catch {
+    }
+  }
+  return values;
+}
+
+// src/cli/embed.ts
+import { readFile as readFile4 } from "node:fs/promises";
+import { dirname as dirname6, extname as extname4 } from "node:path";
+import { build as build2, transform as transform2 } from "esbuild";
+
+// src/bundle-module.ts
+import { readFile as readFile3 } from "node:fs/promises";
+import { dirname as dirname4, extname as extname2, isAbsolute as isAbsolute2, resolve as resolve5 } from "node:path";
+var BROWSER_TARGETS = ["chrome99", "firefox98", "safari16.4"];
+var URL_NAMESPACE = "http-url";
+var LOCAL_NAMESPACE = "local";
+var HTTP_PATTERN2 = /^https?:\/\//i;
+var PATH_PATTERN = /^(?:\.{1,2}[\\/]|[\\/]|[A-Za-z]:[\\/])/;
+var TS_LOADERS = {
+  ".ts": "ts",
+  ".mts": "ts",
+  ".cts": "ts",
+  ".tsx": "tsx"
+};
+var fetchByUrl = async (url2) => {
+  const response = await fetch(url2);
+  if (!response.ok) {
+    throw new Error(`${url2} \u306F ${response.status} \u3092\u8FD4\u5374\u3057\u307E\u3057\u305F`);
+  }
+  return response.text();
+};
+function urlPlugin(fetchText) {
+  return {
+    name: URL_NAMESPACE,
+    setup(pluginBuild) {
+      pluginBuild.onResolve({ filter: HTTP_PATTERN2 }, (args) => ({
+        path: args.path,
+        namespace: URL_NAMESPACE
+      }));
+      pluginBuild.onResolve(
+        { filter: /.*/, namespace: URL_NAMESPACE },
+        (args) => ({
+          path: new URL(args.path, args.importer).href,
+          namespace: URL_NAMESPACE
+        })
+      );
+      pluginBuild.onLoad(
+        { filter: /.*/, namespace: URL_NAMESPACE },
+        async (args) => ({
+          contents: await fetchText(args.path),
+          loader: "js"
+        })
+      );
+    }
+  };
+}
+var localPlugin = {
+  name: LOCAL_NAMESPACE,
+  setup(pluginBuild) {
+    pluginBuild.onResolve({ filter: PATH_PATTERN }, (args) => ({
+      path: args.kind === "entry-point" || isAbsolute2(args.path) ? args.path : resolve5(args.resolveDir, args.path),
+      namespace: LOCAL_NAMESPACE
+    }));
+    pluginBuild.onLoad(
+      { filter: /.*/, namespace: LOCAL_NAMESPACE },
+      async (args) => ({
+        contents: await readFile3(args.path, "utf8"),
+        loader: TS_LOADERS[extname2(args.path)] ?? "js",
+        resolveDir: dirname4(args.path)
+      })
+    );
+  }
+};
+async function bundleModule(entry, baseDir, deps) {
+  const { fetchText, build: build6 } = deps;
+  try {
+    const result = await build6({
+      absWorkingDir: baseDir,
+      entryPoints: [HTTP_PATTERN2.test(entry) ? entry : resolve5(baseDir, entry)],
+      bundle: true,
+      format: "esm",
+      platform: "browser",
+      target: BROWSER_TARGETS,
+      minify: true,
+      write: false,
+      outfile: "bundle.js",
+      plugins: [urlPlugin(fetchText ?? fetchByUrl), localPlugin],
+      logLevel: "silent"
+    });
+    const code2 = result.outputFiles?.[0]?.text;
+    if (code2 === void 0) {
+      return { error: `${entry}: \u307E\u3068\u3081\u305F\u7D50\u679C\u304C\u3042\u308A\u307E\u305B\u3093` };
+    }
+    return { code: code2 };
+  } catch (error2) {
+    const reason = error2 instanceof Error ? error2.message.split("\n")[0] : String(error2);
+    return { error: `${entry}: ${reason}` };
+  }
+}
+function cacheFetchText(fetchText = fetchByUrl) {
+  const cache = /* @__PURE__ */ new Map();
+  return (url2) => {
+    let pending = cache.get(url2);
+    if (!pending) {
+      pending = fetchText(url2);
+      cache.set(url2, pending);
+    }
+    return pending;
   };
 }
 
@@ -76243,326 +77583,6 @@ function buildImageFigures(state) {
     index += 2;
   }
   state.tokens = out;
-}
-
-// src/frontmatter/frontmatter.logic.ts
-var OPEN_LINE = /^---[ \t]*$/;
-var CLOSE_LINE = /^(?:---|\.\.\.)[ \t]*$/;
-var BOM = "\uFEFF";
-var blankOut = (text2) => text2.replace(/[^\r\n]/g, " ");
-var splitFrontmatter = (markdown) => {
-  const none = {
-    body: markdown,
-    content: void 0,
-    endLine: void 0
-  };
-  const text2 = markdown.startsWith(BOM) ? markdown.slice(BOM.length) : markdown;
-  const lines = text2.split("\n");
-  const stripCr = (line) => line.replace(/\r$/, "");
-  if (!OPEN_LINE.test(stripCr(lines[0] ?? ""))) {
-    return none;
-  }
-  const endLine = lines.findIndex(
-    (line, index) => index > 0 && CLOSE_LINE.test(stripCr(line))
-  );
-  if (endLine < 0) {
-    return none;
-  }
-  const content = lines.slice(1, endLine).map(stripCr).join("\n");
-  const rangeLength = markdown.length - text2.length + lines.slice(0, endLine + 1).join("\n").length;
-  const body = blankOut(markdown.slice(0, rangeLength)) + markdown.slice(rangeLength);
-  return { body, content, endLine };
-};
-
-// src/knowledge/index-shape.ts
-var RELATION_TYPES = [
-  "requires",
-  "references",
-  "replaces",
-  "part_of",
-  "change_together"
-];
-var INDEX_SHAPE = {
-  root: {
-    schema: { type: "integer", required: true },
-    docs: { type: "array", required: true },
-    terms: { type: "array", required: false }
-  },
-  doc: {
-    id: { type: "string", required: true },
-    path: { type: "string", required: true },
-    title: { type: "string", required: true },
-    description: { type: "string", required: false },
-    aliases: { type: "string[]", required: false },
-    tags: { type: "doc_tags", required: false },
-    related: { type: "doc_related", required: false }
-  },
-  term: {
-    id: { type: "string", required: true },
-    term: { type: "string", required: true },
-    meaning: { type: "string", required: true },
-    aliases: { type: "string[]", required: false },
-    avoid: { type: "string[]", required: false }
-  }
-};
-var DOC_TAG_SHAPE = {
-  name: { type: "string", required: true },
-  main: { type: "boolean", required: false }
-};
-var DOC_RELATED_SHAPE = {
-  to: { type: "string", required: true },
-  type: { type: "string", required: true },
-  when: { type: "string", required: true },
-  paths: { type: "string[]", required: false }
-};
-var EMPTY_ALLOWED = /* @__PURE__ */ new Set(["description"]);
-var CURRENT_SCHEMA = 2;
-function isRecord4(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-function checkString(key, value) {
-  if (typeof value !== "string") {
-    return `${key} \u306F\u6587\u5B57\u5217\u306B\u3057\u307E\u3059`;
-  }
-  return value === "" && !EMPTY_ALLOWED.has(key) ? `${key} \u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093` : void 0;
-}
-function checkType(key, value, shape) {
-  if (shape.type === "integer") {
-    return Number.isInteger(value) ? void 0 : `${key} \u306F\u6574\u6570\u306B\u3057\u307E\u3059`;
-  }
-  if (shape.type === "array") {
-    return Array.isArray(value) ? void 0 : `${key} \u306F\u4E26\u3073\u306B\u3057\u307E\u3059`;
-  }
-  if (shape.type === "boolean") {
-    return typeof value === "boolean" ? void 0 : `${key} \u306F\u771F\u507D\u5024\u306B\u3057\u307E\u3059`;
-  }
-  if (shape.type === "string") {
-    return checkString(key, value);
-  }
-  const ok = Array.isArray(value) && value.every((item) => typeof item === "string" && item !== "");
-  return ok ? void 0 : `${key} \u306F\u7A7A\u3067\u306A\u3044\u6587\u5B57\u5217\u306E\u4E26\u3073\u306B\u3057\u307E\u3059`;
-}
-function checkDocTags(options) {
-  const { value, where, problems } = options;
-  if (!Array.isArray(value)) {
-    problems.push({ where, message: "tags \u306F\u4E26\u3073\u306B\u3057\u307E\u3059" });
-    return false;
-  }
-  let valid = true;
-  value.forEach((tag, position) => {
-    const tagWhere = `${where}[${position}]`;
-    if (typeof tag === "string") {
-      if (tag === "") {
-        problems.push({
-          where: tagWhere,
-          message: "tags \u306E\u8981\u7D20\u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093"
-        });
-        valid = false;
-      }
-      return;
-    }
-    if (!isRecord4(tag)) {
-      problems.push({
-        where: tagWhere,
-        message: "tags \u306E\u8981\u7D20\u306F\u30BF\u30B0\u306E\u540D\u524D\u306E\u6587\u5B57\u5217\u304B\u3001name \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059"
-      });
-      valid = false;
-      return;
-    }
-    if (!checkItem({ item: tag, shape: DOC_TAG_SHAPE, where: tagWhere, problems })) {
-      valid = false;
-    }
-  });
-  return valid;
-}
-function checkDocRelated(options) {
-  const { value, where, problems } = options;
-  if (!Array.isArray(value)) {
-    problems.push({ where, message: "related \u306F\u4E26\u3073\u306B\u3057\u307E\u3059" });
-    return false;
-  }
-  let valid = true;
-  value.forEach((related, position) => {
-    const relatedWhere = `${where}[${position}]`;
-    if (typeof related === "string") {
-      if (related === "") {
-        problems.push({
-          where: relatedWhere,
-          message: "related \u306E\u8981\u7D20\u306F\u7A7A\u306B\u3067\u304D\u307E\u305B\u3093"
-        });
-        valid = false;
-      }
-      return;
-    }
-    if (!isRecord4(related)) {
-      problems.push({
-        where: relatedWhere,
-        message: "related \u306E\u8981\u7D20\u306F\u6587\u66F8\u306E id \u306E\u6587\u5B57\u5217\u304B\u3001to\u30FBtype\u30FBwhen \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059"
-      });
-      valid = false;
-      return;
-    }
-    if (!checkItem({
-      item: related,
-      shape: DOC_RELATED_SHAPE,
-      where: relatedWhere,
-      problems
-    })) {
-      valid = false;
-    }
-    const { type } = related;
-    if (typeof type === "string" && type !== "" && !RELATION_TYPES.includes(type)) {
-      problems.push({
-        where: `${relatedWhere}.type`,
-        message: `type \u306F ${RELATION_TYPES.join("\u30FB")} \u306E\u3069\u308C\u304B\u306B\u3057\u307E\u3059`
-      });
-      valid = false;
-    }
-  });
-  return valid;
-}
-function checkKey(options) {
-  const { value, key, shape, where, problems } = options;
-  if (value === void 0) {
-    if (shape.required) {
-      problems.push({ where, message: `${key} \u304C\u3042\u308A\u307E\u305B\u3093` });
-    }
-    return !shape.required;
-  }
-  if (shape.type === "doc_tags") {
-    return checkDocTags({ value, where, problems });
-  }
-  if (shape.type === "doc_related") {
-    return checkDocRelated({ value, where, problems });
-  }
-  const message = checkType(key, value, shape);
-  if (message) {
-    problems.push({ where, message });
-  }
-  return message === void 0;
-}
-function checkItem(options) {
-  const { item, shape, where, problems } = options;
-  if (!isRecord4(item)) {
-    problems.push({ where, message: `${where} \u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059` });
-    return false;
-  }
-  let valid = true;
-  for (const [key, keyShape] of Object.entries(shape)) {
-    const checked = checkKey({
-      value: item[key],
-      key,
-      shape: keyShape,
-      where: `${where}.${key}`,
-      problems
-    });
-    valid = checked && valid;
-  }
-  for (const key of Object.keys(item)) {
-    if (!Object.hasOwn(shape, key)) {
-      problems.push({
-        where: `${where}.${key}`,
-        message: `${key} \u306F\u7D22\u5F15\u306B\u8A18\u8F09\u3067\u304D\u306A\u3044\u30AD\u30FC\u3067\u3059`
-      });
-      valid = false;
-    }
-  }
-  return valid;
-}
-function checkList(options) {
-  const { list: list3, name, shape, unique, problems } = options;
-  const seen = new Map(
-    unique.map((key) => [key, /* @__PURE__ */ new Set()])
-  );
-  const items = [];
-  list3.forEach((item, position) => {
-    const where = `${name}[${position}]`;
-    if (!checkItem({ item, shape, where, problems })) {
-      return;
-    }
-    const record2 = item;
-    const duplicated = unique.filter((key) => seen.get(key)?.has(record2[key]));
-    for (const key of duplicated) {
-      problems.push({
-        where: `${where}.${key}`,
-        message: `${key} \u304C\u5148\u306E\u8981\u7D20\u3068\u91CD\u306A\u3063\u3066\u3044\u307E\u3059`
-      });
-    }
-    if (duplicated.length) {
-      return;
-    }
-    for (const key of unique) {
-      seen.get(key)?.add(record2[key]);
-    }
-    items.push(item);
-  });
-  return items;
-}
-function normalizeIndex(value) {
-  const problems = [];
-  const index = { schema: CURRENT_SCHEMA, docs: [] };
-  if (!isRecord4(value)) {
-    problems.push({ where: "", message: "\u7D22\u5F15\u306F\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8\u306B\u3057\u307E\u3059" });
-    return { index, problems };
-  }
-  if (value.schema !== CURRENT_SCHEMA && Number.isInteger(value.schema)) {
-    problems.push({
-      where: "schema",
-      message: `schema \u306F ${CURRENT_SCHEMA} \u306B\u3057\u307E\u3059\u3002\u53E4\u3044\u30D0\u30FC\u30B8\u30E7\u30F3\u306E\u7D22\u5F15\u306F mdmark upgrade \u3067\u79FB\u3057\u3066\u304F\u3060\u3055\u3044`
-    });
-  }
-  const root2 = [];
-  checkItem({
-    item: { ...value, docs: [], terms: [] },
-    shape: INDEX_SHAPE.root,
-    where: "",
-    problems: root2
-  });
-  for (const problem of root2) {
-    const key = problem.where.slice(1);
-    if (key !== "docs" && key !== "terms") {
-      problems.push({ where: key, message: problem.message });
-    }
-  }
-  index.docs = checkTop({
-    list: value.docs,
-    name: "docs",
-    shape: INDEX_SHAPE.doc,
-    unique: ["id", "path"],
-    required: true,
-    problems
-  });
-  if (value.terms !== void 0) {
-    index.terms = checkTop({
-      list: value.terms,
-      name: "terms",
-      shape: INDEX_SHAPE.term,
-      unique: ["id"],
-      required: false,
-      problems
-    });
-  }
-  return { index, problems };
-}
-function checkTop(options) {
-  const { list: list3, name, required: required2, problems } = options;
-  if (list3 === void 0) {
-    if (required2) {
-      problems.push({ where: name, message: `${name} \u304C\u3042\u308A\u307E\u305B\u3093` });
-    }
-    return [];
-  }
-  if (!Array.isArray(list3)) {
-    problems.push({ where: name, message: `${name} \u306F\u4E26\u3073\u306B\u3057\u307E\u3059` });
-    return [];
-  }
-  return checkList({ ...options, list: list3 });
-}
-function readRelated(item) {
-  if (typeof item === "string") {
-    return { to: item, type: null, when: null };
-  }
-  return item.paths === void 0 ? { to: item.to, type: item.type, when: item.when } : { to: item.to, type: item.type, when: item.when, paths: item.paths };
 }
 
 // src/callout/callout.part.ts
@@ -78009,614 +79029,6 @@ function useAnnotations(parser5) {
     }
     return renderReference2(parser5, token, env);
   };
-}
-
-// src/knowledge/aliases.ts
-var ALIAS_TYPES = [
-  "term",
-  "doc",
-  "command",
-  "url",
-  "skill",
-  "tool",
-  "path",
-  "env",
-  "avoid"
-];
-var ALIAS_KEYS = [
-  "id",
-  "name",
-  "aliases",
-  "description",
-  "related",
-  "command",
-  "cwd",
-  "url",
-  "avoid",
-  "skill",
-  "tool",
-  "path",
-  "port",
-  "replacement"
-];
-var ALIAS_REQUIRED_KEYS = {
-  term: ["description"],
-  doc: ["description"],
-  command: ["command"],
-  url: ["url"],
-  skill: ["skill"],
-  tool: ["tool"],
-  path: ["path"],
-  avoid: ["replacement"],
-  env: []
-};
-var ALIAS_KEY_LABELS = {
-  id: "ID",
-  name: "\u540D\u524D",
-  description: "\u8AAC\u660E",
-  command: "\u30B3\u30DE\u30F3\u30C9",
-  url: "URL",
-  skill: "\u30B9\u30AD\u30EB\u540D",
-  tool: "\u30C4\u30FC\u30EB\u540D",
-  path: "\u30D1\u30B9",
-  replacement: "\u7F6E\u304D\u63DB\u3048\u5148"
-};
-var LIST_KEYS = /* @__PURE__ */ new Set(["aliases", "avoid", "related"]);
-var DEFAULT_CONFIG_FILE = "mdmark.config.yaml";
-function isRecord5(value) {
-  return typeof value === "object" && value !== null && !Array.isArray(value);
-}
-function isFilled(value) {
-  return typeof value === "string" && value !== "";
-}
-function toText(value) {
-  if (typeof value !== "string" && typeof value !== "number" && typeof value !== "boolean") {
-    return void 0;
-  }
-  const text2 = String(value).trim();
-  return text2 === "" ? void 0 : text2;
-}
-function toList(value) {
-  if (typeof value === "string") {
-    const text2 = value.trim();
-    return text2 === "" ? void 0 : [text2];
-  }
-  if (Array.isArray(value)) {
-    return value.filter((item) => typeof item === "string").map((item) => item.trim()).filter((item) => item !== "");
-  }
-  return void 0;
-}
-function readColumn(record2, column) {
-  let current = record2;
-  for (const part of column.split(".")) {
-    if (!isRecord5(current) || !Object.hasOwn(current, part)) {
-      return { found: false, value: void 0 };
-    }
-    current = current[part];
-  }
-  return { found: true, value: current };
-}
-function readAliasKey(options) {
-  const { record: record2, column, key } = options;
-  if (isFilled(column)) {
-    const read = readColumn(record2, column);
-    return read.found ? { present: true, raw: read.value } : { present: false, missing: column };
-  }
-  return Object.hasOwn(record2, key) ? { present: true, raw: record2[key] } : { present: false };
-}
-function toAliasValue(key, raw) {
-  return LIST_KEYS.has(key) ? toList(raw) : toText(raw);
-}
-function nameOf(options) {
-  const { record: record2, bodyFile, fallbackName } = options;
-  const bodyPath = bodyFile === void 0 ? void 0 : toText(readColumn(record2, bodyFile).value);
-  return bodyPath === void 0 ? fallbackName : baseName(bodyPath);
-}
-function readAliasRecord(options) {
-  const { record: record2, metadata, bodyFile, fallbackName } = options;
-  const values = {};
-  const missing = [];
-  for (const key of ALIAS_KEYS) {
-    const read = readAliasKey({ record: record2, column: metadata[key], key });
-    if (read.missing !== void 0) {
-      missing.push({ key, field: read.missing });
-    }
-    const value = read.present ? toAliasValue(key, read.raw) : void 0;
-    if (value !== void 0) {
-      values[key] = value;
-    }
-  }
-  if (values.name === void 0) {
-    const name = nameOf({ record: record2, bodyFile, fallbackName });
-    if (name !== "") {
-      values.name = name;
-    }
-  }
-  return { values, missing };
-}
-function checkAliasFields(options) {
-  const { aliasType, values } = options;
-  const keys = [
-    "id",
-    "name",
-    ...ALIAS_REQUIRED_KEYS[aliasType]
-  ].filter((key) => !isFilled(values[key]));
-  if (aliasType === "env" && !isFilled(values.url) && !isFilled(values.port)) {
-    keys.push("url");
-  }
-  return keys.length === 0 ? void 0 : { kind: "alias_required_empty", keys };
-}
-function usableType(item, seen) {
-  const type = ALIAS_TYPES.find((candidate) => candidate === item.alias_type);
-  if (type === void 0 || type === "env") {
-    return void 0;
-  }
-  if (!isFilled(item.id) || !isFilled(item.name) || seen.has(item.id)) {
-    return void 0;
-  }
-  return ALIAS_REQUIRED_KEYS[type].every((key) => isFilled(item[key])) ? type : void 0;
-}
-function toUsableAlias(item, type) {
-  const list3 = (value) => Array.isArray(value) ? value.filter(isFilled) : [];
-  const alias = {
-    alias_type: type,
-    id: item.id,
-    name: item.name,
-    aliases: list3(item.aliases),
-    avoid: list3(item.avoid)
-  };
-  for (const key of [
-    "description",
-    "command",
-    "cwd",
-    "url",
-    "skill",
-    "tool",
-    "path",
-    "replacement"
-  ]) {
-    const value = item[key];
-    if (typeof value === "string") {
-      alias[key] = value;
-    }
-  }
-  if (Array.isArray(item.related)) {
-    alias.related = list3(item.related);
-  }
-  return alias;
-}
-function usableAliases(aliases) {
-  const seen = /* @__PURE__ */ new Set();
-  const usable = [];
-  for (const item of aliases) {
-    const type = isRecord5(item) ? usableType(item, seen) : void 0;
-    if (!isRecord5(item) || type === void 0) {
-      continue;
-    }
-    const row2 = item;
-    seen.add(row2.id);
-    usable.push(toUsableAlias(row2, type));
-  }
-  return usable;
-}
-function toAlias(values, aliasType) {
-  const text2 = (key) => typeof values[key] === "string" ? values[key] : void 0;
-  const list3 = (key) => Array.isArray(values[key]) ? values[key] : void 0;
-  const alias = {
-    alias_type: aliasType,
-    id: values.id,
-    name: values.name,
-    aliases: list3("aliases") ?? []
-  };
-  for (const key of [
-    "description",
-    "command",
-    "cwd",
-    "url",
-    "skill",
-    "tool",
-    "path",
-    "replacement"
-  ]) {
-    const value = text2(key);
-    if (value !== void 0) {
-      alias[key] = value;
-    }
-  }
-  const related = list3("related");
-  if (related !== void 0) {
-    alias.related = related;
-  }
-  const avoid = list3("avoid");
-  if (avoid !== void 0) {
-    alias.avoid = avoid;
-  }
-  return alias;
-}
-function baseName(path) {
-  const name = path.split("/").pop() ?? path;
-  const dot = name.lastIndexOf(".");
-  return dot > 0 ? name.slice(0, dot) : name;
-}
-function joinWhere(recordPath, key) {
-  return recordPath === "" ? key : `${recordPath}.${key}`;
-}
-function columnOf(row2, key) {
-  const column = row2.metadata[key];
-  return isFilled(column) ? column : key;
-}
-function isEnabledRow(row2) {
-  return isRecord5(row2) && isFilled(row2.id) && Array.isArray(row2.paths) && typeof row2.alias_type === "string" && row2.enabled !== false;
-}
-function acceptRow(build6, row2, rowPosition) {
-  if (!isEnabledRow(row2)) {
-    return void 0;
-  }
-  if (build6.rowIds.has(row2.id)) {
-    build6.problems.push({
-      file: build6.configFile,
-      where: `aliases[${rowPosition}].id`,
-      kind: "duplicate_alias_row_id",
-      message: `\u884C\u306E \`id\` \`${row2.id}\` \u304C\u524D\u306E\u884C\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return void 0;
-  }
-  build6.rowIds.add(row2.id);
-  const aliasType = ALIAS_TYPES.find(
-    (candidate) => candidate === row2.alias_type
-  );
-  if (aliasType === void 0) {
-    build6.problems.push({
-      file: build6.configFile,
-      where: `aliases[${rowPosition}].alias_type`,
-      kind: "alias_unknown_type",
-      message: `\`alias_type\` \u306E \`${row2.alias_type}\` \u306F\u7A2E\u985E\u306B\u3042\u308A\u307E\u305B\u3093\u3002\`term\`\u30FB\`doc\`\u30FB\`command\`\u30FB\`url\`\u30FB\`skill\`\u30FB\`tool\`\u30FB\`path\`\u30FB\`env\`\u30FB\`avoid\` \u306E\u3069\u308C\u304B\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return void 0;
-  }
-  return {
-    id: row2.id,
-    aliasType,
-    metadata: isRecord5(row2.metadata) ? row2.metadata : {},
-    recordsKey: isFilled(row2.records) ? row2.records : void 0,
-    bodyFile: isFilled(row2.body_file) ? row2.body_file : void 0
-  };
-}
-function recordsOf(build6, row2, source) {
-  const { recordsKey } = row2;
-  if (recordsKey === void 0) {
-    return [{ record: source.data, path: "" }];
-  }
-  const list3 = isRecord5(source.data) ? source.data[recordsKey] : void 0;
-  if (!Array.isArray(list3)) {
-    build6.problems.push({
-      file: source.path,
-      where: "",
-      kind: "alias_records_missing",
-      message: `\`${recordsKey}\` \u306E\u914D\u5217\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u30D5\u30A1\u30A4\u30EB\u306B \`${recordsKey}\` \u306E\u914D\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`records\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return void 0;
-  }
-  return list3.map((record2, position) => ({
-    record: record2,
-    path: `${recordsKey}[${position}]`
-  }));
-}
-function pushRequiredProblems(build6, row2, at) {
-  const { source, path, keys } = at;
-  const head = path === "" ? `\`${source.path}\`` : `\`${source.path}\` \u306E \`${path}\``;
-  for (const key of keys) {
-    const column = columnOf(row2, key);
-    const sentence = key === "url" && row2.aliasType === "env" ? `${head} \u306E \`url\` \u3068 \`port\` \u304C\u4E21\u65B9\u7A7A\u3067\u3059\u3002URL \u304B\u30DD\u30FC\u30C8\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002` : `${head} \u306E \`${column}\` \u304C\u7A7A\u3067\u3059\u3002${ALIAS_KEY_LABELS[key] ?? key}\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-    build6.problems.push({
-      file: source.path,
-      where: joinWhere(path, column),
-      kind: "alias_required_empty",
-      message: sentence
-    });
-  }
-}
-function takeRecord(build6, row2, at) {
-  const { source, record: record2, path } = at;
-  const fallbackName = row2.recordsKey === void 0 ? baseName(source.path) : toText(record2.id) ?? "";
-  const { values, missing } = readAliasRecord({
-    record: record2,
-    metadata: row2.metadata,
-    bodyFile: row2.bodyFile,
-    fallbackName
-  });
-  for (const { key, field } of missing) {
-    build6.problems.push({
-      file: source.path,
-      where: joinWhere(path, field),
-      kind: "alias_field_missing",
-      message: `\`metadata.${key}\` \u304C\u6307\u3059\u5217 \`${field}\` \u304C\u30EC\u30B3\u30FC\u30C9\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u5217\u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`metadata.${key}\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-  }
-  if (missing.length > 0) {
-    return;
-  }
-  const checked = checkAliasFields({ aliasType: row2.aliasType, values });
-  if (checked !== void 0) {
-    pushRequiredProblems(build6, row2, { source, path, keys: checked.keys });
-    return;
-  }
-  const id = values.id;
-  if (build6.aliasIds.has(id)) {
-    build6.problems.push({
-      file: source.path,
-      where: joinWhere(path, columnOf(row2, "id")),
-      kind: "duplicate_alias_id",
-      message: `\u30A8\u30A4\u30EA\u30A2\u30B9\u306E \`id\` \`${id}\` \u304C\u524D\u306E\u30A8\u30A4\u30EA\u30A2\u30B9\u3068\u540C\u3058\u3067\u3059\u3002\`id\` \u3092\u5909\u3048\u3066\u304F\u3060\u3055\u3044\u3002`
-    });
-    return;
-  }
-  build6.aliasIds.add(id);
-  if (row2.aliasType !== "env") {
-    build6.aliases.push(toAlias(values, row2.aliasType));
-  }
-}
-function buildAliases(input) {
-  const { rows, sources, configFile = DEFAULT_CONFIG_FILE } = input;
-  const build6 = {
-    aliases: [],
-    problems: [],
-    rowIds: /* @__PURE__ */ new Set(),
-    aliasIds: /* @__PURE__ */ new Set(),
-    configFile
-  };
-  rows.forEach((item, rowPosition) => {
-    const row2 = acceptRow(build6, item, rowPosition);
-    if (!row2) {
-      return;
-    }
-    for (const source of sources.filter((entry) => entry.rowId === row2.id)) {
-      for (const { record: record2, path } of recordsOf(build6, row2, source) ?? []) {
-        if (isRecord5(record2)) {
-          takeRecord(build6, row2, { source, record: record2, path });
-        }
-      }
-    }
-  });
-  return { aliases: build6.aliases, problems: build6.problems };
-}
-
-// src/knowledge/dictionary.ts
-var segmenter;
-var FALLBACK_WORD = /[A-Za-z0-9Ａ-Ｚａ-ｚ０-９]+|[\s\S]/gu;
-function normalizeWord(word) {
-  return word.normalize("NFKC").toLowerCase().trim();
-}
-function addTerm(maps2, words, value) {
-  const { id, meaning, alias } = value;
-  for (const word of words) {
-    const key = normalizeWord(word);
-    if (key === "") {
-      continue;
-    }
-    if (alias === void 0 && !maps2.plainTerms.has(key)) {
-      maps2.plainTerms.set(key, { id, meaning });
-    }
-    if (!maps2.terms.has(key)) {
-      maps2.terms.set(key, value);
-      maps2.written.set(key, word);
-    }
-  }
-}
-function addAvoided(maps2, words, value) {
-  for (const word of words) {
-    const key = normalizeWord(word);
-    if (key !== "" && !maps2.terms.has(key) && !maps2.avoided.has(key)) {
-      maps2.avoided.set(key, value);
-      maps2.written.set(key, word);
-    }
-  }
-}
-var glossaryId = (entry) => `glossary:${entry.docId}:${entry.term}`;
-function docOrder(index) {
-  return (id) => {
-    const position = index?.docs.findIndex((doc) => doc.id === id) ?? -1;
-    return position === -1 ? Number.MAX_SAFE_INTEGER : position;
-  };
-}
-function addAllTerms(maps2, sources) {
-  const { index, usable, ownGlossary, others } = sources;
-  for (const term of index?.terms ?? []) {
-    addTerm(maps2, [term.term, ...term.aliases ?? []], {
-      id: term.id,
-      meaning: term.meaning
-    });
-  }
-  for (const alias of usable) {
-    if (alias.alias_type !== "avoid") {
-      addTerm(maps2, [alias.name, ...alias.aliases], {
-        id: `alias:${alias.id}`,
-        meaning: alias.description ?? "",
-        alias
-      });
-    }
-  }
-  for (const entry of [...ownGlossary, ...others]) {
-    addTerm(maps2, [entry.term, ...entry.aliases], {
-      id: glossaryId(entry),
-      meaning: entry.meaning
-    });
-  }
-}
-function addAliasAvoided(maps2, usable) {
-  for (const alias of usable) {
-    if (alias.alias_type === "avoid") {
-      addAvoided(maps2, [alias.name, ...alias.aliases], {
-        id: `alias:${alias.id}`,
-        term: alias.replacement ?? "",
-        alias
-      });
-    } else if (alias.alias_type === "term") {
-      addAvoided(maps2, alias.avoid ?? [], {
-        id: `alias:${alias.id}`,
-        term: alias.name,
-        meaning: alias.description ?? "",
-        alias
-      });
-    }
-  }
-}
-function addAllAvoided(maps2, sources) {
-  const { index, usable, tables } = sources;
-  for (const term of index?.terms ?? []) {
-    addAvoided(maps2, term.avoid ?? [], {
-      id: term.id,
-      term: term.term,
-      meaning: term.meaning
-    });
-  }
-  addAliasAvoided(maps2, usable);
-  const sorted = [...tables].sort((a, b) => a.position - b.position);
-  for (const { entry } of sorted) {
-    addAvoided(maps2, entry.avoid ?? [], {
-      id: glossaryId(entry),
-      term: entry.term,
-      meaning: entry.meaning
-    });
-  }
-}
-function addDocAliases(maps2, index, docId) {
-  for (const doc of index?.docs ?? []) {
-    if (doc.id === docId) {
-      continue;
-    }
-    for (const alias of doc.aliases ?? []) {
-      const key = normalizeWord(alias);
-      if (key === "") {
-        continue;
-      }
-      maps2.docs.set(key, [...maps2.docs.get(key) ?? [], doc]);
-      if (!maps2.written.has(key)) {
-        maps2.written.set(key, alias);
-      }
-    }
-  }
-}
-function addGlossary(maps2, sources) {
-  const { index, docId, ownGlossary, references, usable } = sources;
-  const order = docOrder(index);
-  const others = (references?.glossary ?? []).filter((entry) => docId === void 0 || entry.docId !== docId).sort((a, b) => order(a.docId) - order(b.docId));
-  addAllTerms(maps2, { index, usable, ownGlossary, others });
-  const ownPosition = docId !== void 0 && order(docId) !== Number.MAX_SAFE_INTEGER ? order(docId) : -1;
-  addAllAvoided(maps2, {
-    index,
-    usable,
-    tables: [
-      ...ownGlossary.map((entry) => ({ entry, position: ownPosition })),
-      ...others.map((entry) => ({ entry, position: order(entry.docId) }))
-    ]
-  });
-}
-function buildDictionary(options) {
-  const { index, docId, ownGlossary, references, features } = options;
-  const usable = usableAliases(options.aliases ?? []);
-  const maps2 = {
-    terms: /* @__PURE__ */ new Map(),
-    plainTerms: /* @__PURE__ */ new Map(),
-    docs: /* @__PURE__ */ new Map(),
-    avoided: /* @__PURE__ */ new Map(),
-    written: /* @__PURE__ */ new Map()
-  };
-  if (features.glossary !== false) {
-    addGlossary(maps2, { index, docId, ownGlossary, references, usable });
-  }
-  if (features.backlinks !== false) {
-    addDocAliases(maps2, index, docId);
-  }
-  const words = [.../* @__PURE__ */ new Set([...maps2.terms.keys(), ...maps2.docs.keys()])].sort(
-    (a, b) => b.length - a.length
-  );
-  const { terms, docs, avoided, written, plainTerms } = maps2;
-  return {
-    words,
-    terms,
-    docs,
-    avoided,
-    written,
-    term: (word) => plainTerms.get(normalizeWord(word))
-  };
-}
-function wordStarts(text2) {
-  if (typeof Intl.Segmenter !== "undefined") {
-    segmenter ??= new Intl.Segmenter("ja", { granularity: "word" });
-    return [...segmenter.segment(text2)].map((segment) => segment.index);
-  }
-  return [...text2.matchAll(FALLBACK_WORD)].map((match) => match.index);
-}
-function findWords(text2, words) {
-  const passed = /* @__PURE__ */ new Map();
-  for (const word of words) {
-    const key = normalizeWord(word);
-    if (key !== "" && !passed.has(key)) {
-      passed.set(key, word);
-    }
-  }
-  const longestFirst = [...passed.keys()].sort((a, b) => b.length - a.length);
-  const starts = wordStarts(text2);
-  const folded = starts.map(
-    (start, position) => text2.slice(start, starts[position + 1] ?? text2.length).normalize("NFKC").toLowerCase()
-  );
-  const normalized = folded.join("");
-  const originals = /* @__PURE__ */ new Map([[normalized.length, text2.length]]);
-  const heads = [];
-  let head = 0;
-  starts.forEach((start, position) => {
-    heads.push(head);
-    originals.set(head, start);
-    head += folded[position].length;
-  });
-  const found = [];
-  let skipTo = 0;
-  starts.forEach((start, position) => {
-    if (start < skipTo) {
-      return;
-    }
-    const from = heads[position];
-    const key = longestFirst.find(
-      (candidate) => normalized.startsWith(candidate, from) && originals.has(from + candidate.length)
-    );
-    if (key !== void 0) {
-      const end = originals.get(from + key.length);
-      found.push({ start, end, word: passed.get(key) });
-      skipTo = end;
-    }
-  });
-  return found;
-}
-function forEachInline(tokens, callback) {
-  let section = 0;
-  let inHeading = false;
-  for (const token of tokens) {
-    if (token.type === "heading_open") {
-      inHeading = true;
-      if (/^h[234]$/.test(token.tag)) {
-        section += 1;
-      }
-    } else if (token.type === "heading_close") {
-      inHeading = false;
-    } else if (token.type === "inline" && !inHeading) {
-      callback(token, section);
-    }
-  }
-}
-function matchableChildren(inline2) {
-  const positions = [];
-  let linkDepth = 0;
-  (inline2.children ?? []).forEach((child, position) => {
-    if (child.type === "link_open") {
-      linkDepth += 1;
-    } else if (child.type === "link_close") {
-      linkDepth -= 1;
-    } else if (child.type === "text" && linkDepth === 0 && child.meta?.mdmarkNoTerms !== true) {
-      positions.push(position);
-    }
-  });
-  return positions;
 }
 
 // src/mermaid-source.ts
@@ -81204,7 +81616,7 @@ function meaningTip(found, term, context) {
     id: nextTipId(),
     meaning: activeTerm?.meaning ?? "",
     docs: docs.map((doc) => ({
-      title: doc.title,
+      title: doc.title ?? fileTitle(doc.path),
       href: relativeHref(ownPath, doc.path),
       ...doc.description === void 0 ? {} : { description: doc.description }
     }))
@@ -82545,194 +82957,13 @@ function backlinksRule(state) {
   ).map((doc) => doc.id);
   const ownPath = index.docs.find((doc) => doc.id === docId)?.path;
   const docs = [...new Set(ids)].filter((id) => id !== docId).flatMap((id) => index.docs.filter((doc) => doc.id === id)).map((doc) => ({
-    title: doc.title,
+    title: doc.title ?? fileTitle(doc.path),
     href: relativeHref(ownPath, doc.path)
   }));
   const html = renderBacklinks({ id: TITLE_ID, docs });
   if (html !== "") {
     state.tokens.push(ownBlock(state, html));
   }
-}
-
-// src/knowledge/glossary.syntax.ts
-var ALIAS_SEPARATOR = /[、,]/;
-function splitCell(cell) {
-  return cell.split(ALIAS_SEPARATOR).map((word) => word.trim()).filter(Boolean);
-}
-function readStructure(reader, token) {
-  switch (token.type) {
-    case "table_open":
-      reader.table = { columns: [], rows: [] };
-      reader.tables.push(reader.table);
-      return true;
-    case "thead_open":
-      reader.inHead = true;
-      return true;
-    case "thead_close":
-      reader.inHead = false;
-      return true;
-    case "tr_open":
-      if (!reader.inHead) {
-        reader.row = { cells: [], line: (token.map?.[0] ?? 0) + 1 };
-        reader.table?.rows.push(reader.row);
-      }
-      return true;
-    default:
-      return false;
-  }
-}
-function readCell(reader, token, inline2) {
-  if (token.type !== "th_open" && token.type !== "td_open") {
-    return;
-  }
-  const text2 = inline2 ? textOf(inline2).trim() : "";
-  if (token.type === "th_open") {
-    reader.table?.columns.push(text2);
-  } else {
-    reader.row?.cells.push(text2);
-  }
-}
-function readTables(tokens) {
-  const reader = {
-    tables: [],
-    table: void 0,
-    inHead: false,
-    row: void 0
-  };
-  for (const [position, token] of tokens.entries()) {
-    if (!readStructure(reader, token)) {
-      readCell(reader, token, tokens[position + 1]);
-    }
-  }
-  return reader.tables;
-}
-function unknownColumnMessage(argName, name, columns) {
-  const list3 = columns.map((column) => `\`${column}\``).join("\u30FB");
-  return `\u306E \`${argName}.column\` \u306E\u5217 \`${name}\` \u304C\u8868\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8868\u306E\u5217\u306F ${list3} \u3067\u3059\u3002\u5217\u540D\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u3053\u306E\u8868\u304B\u3089\u306F\u7528\u8A9E\u3092\u5165\u308C\u305A\u306B\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`;
-}
-var GLOSSARY_COLUMNS = [
-  ["term", true],
-  ["meaning", true],
-  ["aliases", false],
-  ["avoid", false]
-];
-function columnPositions(spec, columns) {
-  const positions = {};
-  let problem;
-  for (const [argName, required2] of GLOSSARY_COLUMNS) {
-    const name = spec[argName]?.column;
-    if (typeof name !== "string" || name === "") {
-      if (required2) {
-        problem ??= "";
-      }
-      continue;
-    }
-    const position = columns.indexOf(name);
-    if (position === -1) {
-      problem ??= unknownColumnMessage(argName, name, columns);
-    } else {
-      positions[argName] = position;
-    }
-  }
-  return problem === void 0 ? { positions } : { problem };
-}
-function tableRows(table2, positions, docId) {
-  const cellOf = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
-  return table2.rows.flatMap((row2) => {
-    const term = cellOf(row2.cells, "term");
-    const meaning = cellOf(row2.cells, "meaning");
-    if (term === "" || meaning === "") {
-      return [];
-    }
-    return [
-      {
-        entry: {
-          term,
-          aliases: splitCell(cellOf(row2.cells, "aliases")),
-          meaning,
-          docId,
-          avoid: splitCell(cellOf(row2.cells, "avoid"))
-        },
-        line: row2.line
-      }
-    ];
-  });
-}
-function readGlossaryRows(options) {
-  const { options: spec, tokens, docId } = options;
-  const rows = [];
-  let warning;
-  for (const table2 of readTables(tokens)) {
-    const read = columnPositions(spec, table2.columns);
-    if ("problem" in read) {
-      if (read.problem !== "") {
-        warning ??= read.problem;
-      }
-      continue;
-    }
-    rows.push(...tableRows(table2, read.positions, docId));
-  }
-  return warning === void 0 ? { rows } : { rows, warning };
-}
-function collectGlossary(state, range) {
-  const env = envOf(state);
-  const { token, mark, tokens, closed } = range;
-  const { rows, warning } = readGlossaryRows({
-    options: mark.options,
-    tokens,
-    docId: env.docId ?? ""
-  });
-  const out = [];
-  if (!closed) {
-    out.push(warningBlock(state, unclosedWarning(mark), token));
-  }
-  if (warning !== void 0) {
-    out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
-  }
-  for (const row2 of rows) {
-    env.ownGlossary.push(row2.entry);
-    env.glossaryLines?.push(row2.line);
-  }
-  for (const inline2 of tokens) {
-    for (const child of inline2.children ?? []) {
-      child.meta = { ...child.meta, mdmarkNoTerms: true };
-    }
-  }
-  return out;
-}
-function glossaryRule(state) {
-  const enabled = featureOn(state, "glossary");
-  const tokens = state.tokens;
-  const out = [];
-  for (let position = 0; position < tokens.length; position++) {
-    const token = tokens[position];
-    const mark = markOf(token);
-    if (!token || mark?.name !== "glossary") {
-      if (token) {
-        out.push(token);
-      }
-      continue;
-    }
-    if (mark.closing) {
-      continue;
-    }
-    const close = findClose(tokens, position, "glossary");
-    const end = close === -1 ? tokens.length : close;
-    const range = tokens.slice(position + 1, end);
-    if (enabled) {
-      out.push(
-        ...collectGlossary(state, {
-          token,
-          mark,
-          tokens: range,
-          closed: close !== -1
-        })
-      );
-    }
-    out.push(...range);
-    position = end;
-  }
-  state.tokens = out;
 }
 
 // src/layout/details.syntax.ts
@@ -84702,10 +84933,23 @@ function createNonce() {
     ""
   );
 }
-var parser;
+var parser2;
+function indexOf(value, references) {
+  const normalized = value === void 0 ? void 0 : normalizeIndex(value).index;
+  const docs = references?.docs ?? normalized?.docs;
+  if (docs === void 0) {
+    return void 0;
+  }
+  return {
+    ...normalized ?? { schema: 2 },
+    docs: docs.map(
+      (doc) => doc.title === void 0 ? { ...doc, title: fileTitle(doc.path) } : doc
+    )
+  };
+}
 function renderDocument(options) {
-  parser ??= createParser();
-  const index = options.index === void 0 ? void 0 : normalizeIndex(options.index).index;
+  parser2 ??= createParser();
+  const index = indexOf(options.index, options.references);
   const docId = index?.docs.some((doc) => doc.id === options.docId) ? options.docId : void 0;
   const env = {
     libraries: options.config.libraries,
@@ -84731,7 +84975,7 @@ function renderDocument(options) {
   if (content !== void 0 && endLine !== void 0) {
     env.frontmatter = { content, endLine };
   }
-  const html = sanitize(parser.render(body, env), env.nonce);
+  const html = sanitize(parser2.render(body, env), env.nonce);
   return { html, ...renderedOf(env) };
 }
 function renderedOf(env) {
@@ -87787,7 +88031,7 @@ function usedSyntaxLanguages(options) {
 // src/cli/assets.ts
 import { copyFile, mkdir, stat as stat2 } from "node:fs/promises";
 import {
-  basename as basename3,
+  basename as basename2,
   dirname as dirname5,
   extname as extname3,
   isAbsolute as isAbsolute3,
@@ -87951,7 +88195,7 @@ function copyTargetOf(file, baseDir, used) {
     return toPosix2(inside);
   }
   const extension = extname3(file);
-  const stem = basename3(file, extension);
+  const stem = basename2(file, extension);
   let name = `external/${stem}${extension}`;
   for (let count = 1; used.has(name); count += 1) {
     name = `external/${stem}-${count}${extension}`;
@@ -87980,7 +88224,7 @@ async function copyOnce(options) {
 }
 async function copyMedia(options) {
   const { markdown, docFile, assetsRoot, baseDir, out, copied } = options;
-  const filesName = `${basename3(out, extname3(out))}_files`;
+  const filesName = `${basename2(out, extname3(out))}_files`;
   const filesDir = join4(dirname5(out), filesName);
   const warnings = [];
   const replacements = [];
@@ -88494,7 +88738,7 @@ function findOutsideLinks(markdown, docPath, paths) {
 // src/cli/export.ts
 import { mkdir as mkdir2, readFile as readFile9, stat as stat4, writeFile } from "node:fs/promises";
 import {
-  basename as basename8,
+  basename as basename7,
   dirname as dirname9,
   extname as extname5,
   join as join7,
@@ -88504,135 +88748,9 @@ import {
 } from "node:path";
 import { build as build4 } from "esbuild";
 
-// src/knowledge/references.ts
-var parser2;
-function parseDocument2(options) {
-  if (!parser2) {
-    parser2 = new MarkdownItCallable({ html: true });
-    parser2.core.ruler.push("mdmark_take_marks", takeMarks);
-    parser2.core.ruler.push("mdmark_resolve_features", resolveDocumentFeatures);
-    parser2.core.ruler.push("mdmark_glossary", glossaryRule);
-  }
-  const env = {
-    libraries: {},
-    defaults: options.defaults,
-    featureOptions: [],
-    markNotes: [],
-    features: {},
-    headings: [],
-    nonce: "",
-    docId: options.docId,
-    ownGlossary: [],
-    glossaryLines: []
-  };
-  const tokens = parser2.parse(splitFrontmatter(options.body).body, env);
-  const glossary = env.ownGlossary.map((entry, position) => ({
-    entry,
-    line: env.glossaryLines?.[position] ?? 0
-  }));
-  return { tokens, features: env.features, glossary };
-}
-function linkedPaths(doc, tokens) {
-  const paths = /* @__PURE__ */ new Set();
-  for (const token of tokens) {
-    for (const child of token.children ?? []) {
-      const href = child.type === "link_open" ? child.attrGet("href") : null;
-      const path = typeof href === "string" ? resolveLink(doc.path, href) : void 0;
-      if (path !== void 0) {
-        paths.add(path);
-      }
-    }
-  }
-  return paths;
-}
-function matchedAliases(tokens, aliases) {
-  const matched = /* @__PURE__ */ new Set();
-  if (aliases.length === 0) {
-    return matched;
-  }
-  forEachInline(tokens, (inline2) => {
-    for (const position of matchableChildren(inline2)) {
-      const content = inline2.children?.[position]?.content ?? "";
-      for (const found of findWords(content, aliases)) {
-        matched.add(found.word);
-      }
-    }
-  });
-  return matched;
-}
-function aliasOwnersOf(scanned) {
-  const aliasOwners = /* @__PURE__ */ new Map();
-  for (const { doc } of scanned) {
-    for (const alias of doc.aliases ?? []) {
-      const key = normalizeWord(alias);
-      aliasOwners.set(key, [...aliasOwners.get(key) ?? [], doc]);
-    }
-  }
-  return aliasOwners;
-}
-function targetsOf(source, lookup) {
-  const { byPath, byId, aliasOwners } = lookup;
-  const tokens = source.parsed?.tokens ?? [];
-  const found = [
-    ...(source.doc.related ?? []).map((item) => byId.get(readRelated(item).to)),
-    ...[...linkedPaths(source.doc, tokens)].map((path) => byPath.get(path)),
-    ...[...matchedAliases(tokens, [...aliasOwners.keys()])].flatMap(
-      (word) => aliasOwners.get(word) ?? []
-    )
-  ];
-  return new Set(
-    found.filter((target) => target !== void 0)
-  );
-}
-function collectReferences(input) {
-  const { index } = normalizeIndex(input.index);
-  const defaults = resolveConfig({ config: input.config }).features;
-  const bodies = new Map(
-    Object.entries(input.documents).map(([path, body]) => [
-      normalizePath(path),
-      body
-    ])
-  );
-  const scanned = index.docs.map((doc) => {
-    const body = bodies.get(normalizePath(doc.path));
-    return {
-      doc,
-      parsed: body === void 0 ? void 0 : parseDocument2({ body, docId: doc.id, defaults })
-    };
-  });
-  const featureOn3 = (item, name) => (item.parsed?.features ?? defaults)[name] !== false;
-  const lookup = {
-    byPath: new Map(index.docs.map((doc) => [normalizePath(doc.path), doc])),
-    byId: new Map(index.docs.map((doc) => [doc.id, doc])),
-    aliasOwners: aliasOwnersOf(scanned)
-  };
-  const receives = (target) => {
-    const targetItem = scanned.find((item) => item.doc === target);
-    return targetItem !== void 0 && featureOn3(targetItem, "backlinks");
-  };
-  const referenced = new Map(
-    index.docs.map((doc) => [doc.id, /* @__PURE__ */ new Set()])
-  );
-  for (const source of scanned.filter((item) => featureOn3(item, "backlinks"))) {
-    for (const target of targetsOf(source, lookup)) {
-      if (target !== source.doc && receives(target)) {
-        referenced.get(target.id)?.add(source.doc.id);
-      }
-    }
-  }
-  const backlinks = {};
-  for (const [id, sources] of referenced) {
-    backlinks[id] = [...sources];
-  }
-  const glossary = scanned.flatMap(
-    (item) => (item.parsed?.glossary ?? []).map((row2) => row2.entry)
-  );
-  return { backlinks, glossary };
-}
-
 // src/cli/aliases.ts
 import { readFile as readFile5 } from "node:fs/promises";
-import { basename as basename4, join as join5 } from "node:path";
+import { basename as basename3, join as join5 } from "node:path";
 import { parse as parse5, YAMLParseError as YAMLParseError3 } from "yaml";
 function isRecord7(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
@@ -88677,7 +88795,7 @@ async function loadAliases(loaded) {
   if (rows === void 0) {
     return { aliases: void 0, issues: [], files: [] };
   }
-  const configName = basename4(loaded.path);
+  const configName = basename3(loaded.path);
   const readIssues = [];
   const sources = [];
   const rowIds = /* @__PURE__ */ new Set();
@@ -88722,7 +88840,7 @@ async function loadAliases(loaded) {
 // src/cli/check.ts
 import { readFile as readFile8, stat as stat3 } from "node:fs/promises";
 import { homedir as homedir2 } from "node:os";
-import { basename as basename7, dirname as dirname8, join as join6, relative as relative7, resolve as resolve10, sep as sep7 } from "node:path";
+import { basename as basename6, dirname as dirname8, join as join6, relative as relative7, resolve as resolve10, sep as sep7 } from "node:path";
 import { build as build3 } from "esbuild";
 
 // src/knowledge/check.ts
@@ -88898,6 +89016,53 @@ function findMissedChangeTogether(options) {
   }
   return issues;
 }
+var COMPARED_KEYS = ["title", "description", "aliases", "tags"];
+function comparableOf(key, value) {
+  if (typeof value === "string") {
+    return /* @__PURE__ */ new Set([value]);
+  }
+  if (key === "tags") {
+    return new Set(
+      value.map(
+        (tag) => typeof tag === "string" ? `${tag}\0false` : `${tag.name}\0${tag.main === true}`
+      )
+    );
+  }
+  return new Set(value);
+}
+function describeValue(value) {
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+function findFrontmatterMismatches(options) {
+  const { index, metadata, indexFile } = options;
+  const positionOf = options.positionOf ?? ((doc) => index.docs.indexOf(doc));
+  return index.docs.flatMap((doc) => {
+    const found = metadata.get(normalizePath(doc.path));
+    if (found === void 0) {
+      return [];
+    }
+    return COMPARED_KEYS.flatMap((key) => {
+      const indexValue = doc[key];
+      const frontmatterValue = found[key];
+      if (indexValue === void 0 || frontmatterValue === void 0) {
+        return [];
+      }
+      const a = comparableOf(key, indexValue);
+      const b = comparableOf(key, frontmatterValue);
+      if (a.size === b.size && [...a].every((item) => b.has(item))) {
+        return [];
+      }
+      return [
+        {
+          file: indexFile,
+          where: `docs[${positionOf(doc)}].${key}`,
+          kind: "frontmatter_mismatch",
+          message: `\u7D22\u5F15\u306E ${key}\uFF08${describeValue(indexValue)}\uFF09\u3068 ${doc.path} \u306E\u30D5\u30ED\u30F3\u30C8\u30DE\u30BF\u30FC\u306E ${key}\uFF08${describeValue(frontmatterValue)}\uFF09\u304C\u9055\u3044\u307E\u3059\u3002\u3069\u3061\u3089\u304B\u306B\u5408\u308F\u305B\u3066\u304F\u3060\u3055\u3044\u3002`
+        }
+      ];
+    });
+  });
+}
 function findDocIssues(options) {
   const { index, documents, indexFile, positionOf } = options;
   const ids = new Set(index.docs.map((doc) => doc.id));
@@ -88949,7 +89114,7 @@ function parseIndexedDocs(index, documents) {
       {
         doc,
         path: entry.path,
-        parsed: parseDocument2({
+        parsed: parseDocument({
           body: entry.body,
           docId: doc.id,
           defaults: { ...DEFAULT_FEATURES }
@@ -88992,7 +89157,7 @@ function collectGlossary2(parsedDocs, into) {
 }
 function checkIndex(input) {
   const indexFile = input.indexFile ?? DEFAULT_INDEX_FILE;
-  const { index, problems } = normalizeIndex(input.index);
+  const { index: normalized, problems } = normalizeIndex(input.index);
   const schema = problems.map((problem) => ({
     file: indexFile,
     where: problem.where,
@@ -89002,8 +89167,18 @@ function checkIndex(input) {
   if (problems.some((problem) => problem.where === "")) {
     return schema;
   }
+  const supplemented = supplementIndexDocs({
+    index: normalized,
+    documents: input.documents,
+    frontmatter: input.frontmatter
+  });
+  const index = { ...normalized, docs: supplemented.docs };
   const raw = input.index;
-  const positionOf = (doc) => Array.isArray(raw.docs) ? raw.docs.indexOf(doc) : -1;
+  const rawPositionOf = (doc) => Array.isArray(raw.docs) ? raw.docs.indexOf(doc) : -1;
+  const positionOf = (doc) => {
+    const original = normalized.docs[supplemented.docs.indexOf(doc)];
+    return original === void 0 ? -1 : rawPositionOf(original);
+  };
   const documents = new Map(
     Object.entries(input.documents).map(([path, body]) => [
       normalizePath(path),
@@ -89036,6 +89211,12 @@ function checkIndex(input) {
     ...broken,
     ...findRelatedIssues({ index, links, indexFile, positionOf }),
     ...changed,
+    ...findFrontmatterMismatches({
+      index: normalized,
+      metadata: supplemented.metadata,
+      indexFile,
+      positionOf: rawPositionOf
+    }),
     ...duplicateTerms(sites),
     ...avoided
   ];
@@ -89106,7 +89287,7 @@ async function changedPathsSince(options) {
 // src/cli/includes.ts
 import { readFile as readFile6 } from "node:fs/promises";
 import {
-  basename as basename5,
+  basename as basename4,
   dirname as dirname7,
   isAbsolute as isAbsolute4,
   relative as relative5,
@@ -89270,7 +89451,7 @@ var collectIncludes = async (options) => {
     text: markdown,
     from: "",
     offset: 0,
-    chain: [basename5(docPath)]
+    chain: [basename4(docPath)]
   });
   return { includes, problems };
 };
@@ -89306,7 +89487,7 @@ var formatCheckIssue = (issue2) => {
 
 // src/cli/markdown-check.ts
 import { readFile as readFile7 } from "node:fs/promises";
-import { basename as basename6, relative as relative6, resolve as resolve9, sep as sep6 } from "node:path";
+import { basename as basename5, relative as relative6, resolve as resolve9, sep as sep6 } from "node:path";
 import {
   isMap,
   isScalar,
@@ -89405,7 +89586,7 @@ function stepKeyPath(options) {
 }
 async function readYamlKey(options) {
   const { path, key } = options;
-  const name = basename6(path);
+  const name = basename5(path);
   const { document: document3, lineCounter } = await readYamlDocument(path, name);
   if (!KEY_PATH_PATTERN.test(key)) {
     throw new CliError(
@@ -89453,7 +89634,7 @@ async function readConfigIfAny(cwd, config3) {
     throw error2;
   }
   const read = await loadConfig(path);
-  const { config: validated } = validateConfig(read.raw, basename6(path));
+  const { config: validated } = validateConfig(read.raw, basename5(path));
   return { path, dir: read.dir, config: validated };
 }
 async function readMarkdownSource(options, loaded) {
@@ -89496,7 +89677,7 @@ async function checkMarkdownSource(options) {
   const loaded = await readConfigIfAny(cwd, options.config);
   const config3 = loaded?.config ?? {};
   const { markdown, file, lineOf } = await readMarkdownSource(options, loaded);
-  const directives = loaded ? (await loadExtensionDirectives(loaded, basename6(loaded.path), importCode)).directives : /* @__PURE__ */ new Set();
+  const directives = loaded ? (await loadExtensionDirectives(loaded, basename5(loaded.path), importCode)).directives : /* @__PURE__ */ new Set();
   const document3 = [{ path: file, markdown }];
   const warnings = markdownWarnings({ markdown, config: config3, file });
   const maps2 = checkMaps(document3, resolveConfig({ config: config3 }));
@@ -89644,6 +89825,7 @@ async function checkIndexFile(loaded, base) {
     index: read.raw,
     documents: read.documents,
     indexFile: read.indexFile,
+    frontmatter: readFrontmatterValues(read.documents),
     ...changedPaths !== void 0 && { changedPaths }
   }).map((issue2) => ({
     ...issue2,
@@ -89853,7 +90035,7 @@ function checkPlainMarkdown(documents, known) {
     if (mark === void 0) {
       continue;
     }
-    const renamed = `${basename7(document3.path).replace(/\.md$/, "")}${MARK_MARKDOWN_SUFFIX}`;
+    const renamed = `${basename6(document3.path).replace(/\.md$/, "")}${MARK_MARKDOWN_SUFFIX}`;
     issues.push({
       file: document3.path,
       where: String(mark.line),
@@ -90101,7 +90283,7 @@ async function collectCheckIssues(path, options = {}) {
     ...issue2,
     file: shown(issue2.file)
   }));
-  const file = basename7(path);
+  const file = basename6(path);
   const config3 = relativizeConfigPaths({
     config: layered.config,
     dir: dirname8(path)
@@ -90274,21 +90456,37 @@ function addGlossaryDocs(options, target) {
     }
   });
 }
+function referencesOf(options) {
+  const { index, documents, loaded, withFrontmatter } = options;
+  if (index.docs.length === 0) {
+    return void 0;
+  }
+  return collectReferences({
+    index,
+    documents,
+    config: { features: loaded.config.features ?? {} },
+    ...withFrontmatter && { frontmatter: readFrontmatterValues(documents) }
+  });
+}
 async function prepareReferences(options) {
   const { loaded } = options;
   const info = await readIndexWithDocuments(loaded);
   const index = info ? normalizeIndex(info.raw).index : void 0;
   const baseDir = info ? info.indexDir : loaded.dir;
   const indexPathOf = (path) => toPosix4(relative8(baseDir, join7(loaded.dir, path)));
-  const byPath = (path) => index?.docs.find((doc) => normalizePath(doc.path) === indexPathOf(path));
   const referenceDocs = [...index?.docs ?? []];
   const documents = { ...info?.documents };
   addGlossaryDocs(options, { referenceDocs, documents, indexPathOf });
-  const references = referenceDocs.length === 0 ? void 0 : collectReferences({
+  const references = referencesOf({
     index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
     documents,
-    config: { features: loaded.config.features ?? {} }
+    loaded,
+    // フロントマターは索引があるときだけ解析して補う
+    withFrontmatter: info !== void 0
   });
+  const byPath = (path) => (references?.docs ?? index?.docs)?.find(
+    (doc) => normalizePath(doc.path) === indexPathOf(path)
+  );
   return {
     index,
     references,
@@ -90311,7 +90509,7 @@ async function bundleSyntax(options) {
       return moduleSource(`${folder}${path}`, loaded.dir);
     }
     warnings.push(
-      `${basename8(loaded.path)}: \u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA \`${folder}${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`syntax.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      `${basename7(loaded.path)}: \u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA \`${folder}${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`syntax.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
     return void 0;
   };
@@ -90341,7 +90539,7 @@ async function resolveAssetsRoot(loaded, warnings) {
   } catch {
   }
   warnings.push(
-    `${basename8(loaded.path)}: \`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${root2}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u3060\u3051\u3067\u63A2\u3057\u307E\u3059\u3002`
+    `${basename7(loaded.path)}: \`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${root2}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u3060\u3051\u3067\u63A2\u3057\u307E\u3059\u3002`
   );
   return void 0;
 }
@@ -90404,7 +90602,7 @@ async function readIncludes(options) {
 }
 async function bundleLibraries(options) {
   const { loaded, urls, markdowns, fetchText, warnings } = options;
-  const configName = basename8(loaded.path);
+  const configName = basename7(loaded.path);
   const bundled = /* @__PURE__ */ new Map();
   const modules = {};
   for (const mark of usedLibraryMarks(markdowns, urls)) {
@@ -90432,7 +90630,7 @@ async function bundleLibraries(options) {
 }
 async function bundleExtensions(options) {
   const { loaded, fetchText, warnings } = options;
-  const configName = basename8(loaded.path);
+  const configName = basename7(loaded.path);
   const extensions2 = [];
   for (const path of loaded.config.extensions ?? []) {
     const result = await bundleModule(path, loaded.dir, { fetchText, build: build4 });
@@ -90458,7 +90656,7 @@ async function readThemeCss(loaded, warnings) {
     return await readFile9(resolve11(loaded.dir, theme), "utf8");
   } catch (error2) {
     warnings.push(
-      `${basename8(loaded.path)}: \u5229\u7528\u5074\u306E CSS \`${theme}\` \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      `${basename7(loaded.path)}: \u5229\u7528\u5074\u306E CSS \`${theme}\` \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
     return void 0;
   }
@@ -90474,14 +90672,14 @@ async function bundleMermaid(options) {
     return moduleSource(url2, loaded.dir);
   }
   warnings.push(
-    `${basename8(loaded.path)}: mermaid \`${url2}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`mermaid.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    `${basename7(loaded.path)}: mermaid \`${url2}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`mermaid.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
   );
   return void 0;
 }
 function colorThemeWarnings(loaded) {
   const colorTheme = loaded.config.colorTheme;
   return colorTheme === void 0 || COLOR_THEMES.some((t) => t === colorTheme) ? [] : [
-    `${basename8(loaded.path)}: \u4E0D\u660E\u306A\u30C6\u30FC\u30DE\u540D ${colorTheme} \u3067\u3059\u3002\u65E2\u5B9A\u306E ${DEFAULT_COLOR_THEME} \u3067\u63CF\u753B\u3057\u307E\u3059\u3002`
+    `${basename7(loaded.path)}: \u4E0D\u660E\u306A\u30C6\u30FC\u30DE\u540D ${colorTheme} \u3067\u3059\u3002\u65E2\u5B9A\u306E ${DEFAULT_COLOR_THEME} \u3067\u63CF\u753B\u3057\u307E\u3059\u3002`
   ];
 }
 function payloadConfig(config3, libraryNames) {
@@ -90613,7 +90811,10 @@ async function prepareEmbeds(options) {
         title: documentTitle({
           path: doc.path,
           markdown,
-          indexTitle: refs.titleOf(doc.path)
+          indexTitle: refs.titleOf(doc.path),
+          frontmatterTitle: readFrontmatterMetadata(
+            readFrontmatterValues({ [doc.path]: markdown })[doc.path]
+          ).title
         }),
         markdown,
         docId: refs.docIdOf(doc.path),
@@ -90705,7 +90906,7 @@ async function exportDocument(options) {
     );
   }
   const path = normalizePath(toPosix4(relative8(loaded.dir, docFile)));
-  const outFile = options.out ? resolve11(cwd, options.out) : join7(dirname9(docFile), `${basename8(docFile, extname5(docFile))}.html`);
+  const outFile = options.out ? resolve11(cwd, options.out) : join7(dirname9(docFile), `${basename7(docFile, extname5(docFile))}.html`);
   const display = options.out ?? toPosix4(relative8(cwd, outFile));
   const fetchText = cacheFetchText();
   const hide2 = options.keepTraces !== true;
@@ -90866,7 +91067,7 @@ async function runBuild(options, io) {
 
 // src/cli/export-markdown.ts
 import { mkdir as mkdir3, readFile as readFile11, rm, stat as stat5, writeFile as writeFile2 } from "node:fs/promises";
-import { basename as basename9, dirname as dirname10, join as join9, relative as relative10, resolve as resolve14, sep as sep9 } from "node:path";
+import { basename as basename8, dirname as dirname10, join as join9, relative as relative10, resolve as resolve14, sep as sep9 } from "node:path";
 import { build as build5 } from "esbuild";
 
 // src/markdown/pure-blocks.logic.ts
@@ -92074,7 +92275,7 @@ async function htmlToSvg(options) {
 }
 async function figureToSvg(options) {
   const { figure, css, baseDir } = options;
-  const document3 = parseDocument(figure.html);
+  const document3 = parseDocument2(figure.html);
   if (figure.kind === "html") {
     return htmlToSvg({ root: document3, css, baseDir });
   }
@@ -92097,7 +92298,7 @@ function reasonOf2(error2) {
   return (error2 instanceof Error ? error2.message : String(error2)).split("\n")[0] ?? "";
 }
 function markdownOutDir(file) {
-  const name = basename9(file).replace(DOCUMENT_EXTENSION_PATTERN, "");
+  const name = basename8(file).replace(DOCUMENT_EXTENSION_PATTERN, "");
   return { name, dir: join9(dirname10(file), `${name}-markdown`) };
 }
 function figureLines(figure, name) {
@@ -93259,7 +93460,7 @@ function createLinePrompter(options) {
 // src/cli/upgrade.ts
 import { glob as glob2, readFile as readFile17, stat as stat9, writeFile as writeFile7 } from "node:fs/promises";
 import { homedir as homedir5 } from "node:os";
-import { basename as basename10, dirname as dirname15, join as join16, relative as relative14, resolve as resolve17, sep as sep10 } from "node:path";
+import { basename as basename9, dirname as dirname15, join as join16, relative as relative14, resolve as resolve17, sep as sep10 } from "node:path";
 import { isMap as isMap3, parse as parse12, parseDocument as parseDocument5 } from "yaml";
 
 // src/cli/backup.ts
@@ -93877,7 +94078,7 @@ async function writeConfigVersion(configPath, version2) {
     doc.contents.items.unshift(doc.createPair("version", version2));
   } else {
     throw new CliError(
-      `${basename10(configPath)} \u304C\u30AD\u30FC\u3068\u5024\u306E\u69CB\u9020\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E\u30AD\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      `${basename9(configPath)} \u304C\u30AD\u30FC\u3068\u5024\u306E\u69CB\u9020\u3067\u306F\u3042\u308A\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E\u30AD\u30FC\u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
   await writeFile7(configPath, doc.toString({ flowCollectionPadding: false }));
@@ -93973,7 +94174,7 @@ async function existingIndex(dir, index) {
 async function createTarget(options) {
   const { configPath, raw } = options;
   const dir = dirname15(configPath);
-  const file = basename10(configPath);
+  const file = basename9(configPath);
   const { config: config3 } = validateConfig(raw, file);
   return {
     configPath,
@@ -94047,7 +94248,7 @@ async function askValues(options) {
 }
 async function collectSettingsIssues(path) {
   const { raw } = await loadConfig(path);
-  const file = basename10(path);
+  const file = basename9(path);
   return [
     ...validateConfig(raw, file).issues,
     ...validateSettingsKeys(raw, file)

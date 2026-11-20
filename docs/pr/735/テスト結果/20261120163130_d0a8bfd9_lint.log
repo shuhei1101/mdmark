@@ -1,0 +1,41 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 970 files in 1138ms. No fixes applied.
+Found 1 warning.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/config-files.test.ts(697,30): error TS2339: Property 'pin_default' does not exist on type '{ pin?: string | undefined; long_column_min?: unknown; }'.
+tests/unit/src/config.test.ts(277,49): error TS2339: Property 'pinDefault' does not exist on type '{ pin: TablePinMode; longColumnMin: number; }'.
+tests/unit/src/diff/blocks.browser.test.ts(549,5): error TS2353: Object literal may only specify known properties, and 'frontmatter' does not exist in type '{ before: Side; after: Side; segmenter: Segmenter | undefined; engine?: DiffEngine | undefined; }'.
+tests/unit/src/table/table.interact.browser.test.ts(2139,7): error TS2353: Object literal may only specify known properties, and 'pinDefault' does not exist in type '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] | undefined; }'.
+tests/unit/src/table/table.interact.browser.test.ts(2147,7): error TS2353: Object literal may only specify known properties, and 'pinDefault' does not exist in type '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] | undefined; }'.
+tests/unit/src/table/table.interact.browser.test.ts(2155,7): error TS2353: Object literal may only specify known properties, and 'pinDefault' does not exist in type '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] | undefined; }'.
+tests/unit/src/table/table.interact.browser.test.ts(2163,7): error TS2353: Object literal may only specify known properties, and 'pinDefault' does not exist in type '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] | undefined; }'.
+tests/unit/src/table/table.interact.browser.test.ts(2178,7): error TS2353: Object literal may only specify known properties, and 'pinDefault' does not exist in type '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] | undefined; }'.
+tests/unit/src/table/table.interact.browser.test.ts(2186,7): error TS2353: Object literal may only specify known properties, and 'pinDefault' does not exist in type '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] | undefined; }'.
+tests/unit/src/table/table.interact.browser.test.ts(2194,7): error TS2353: Object literal may only specify known properties, and 'pinDefault' does not exist in type '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] | undefined; }'.
+tests/unit/src/table/table.interact.browser.test.ts(2202,7): error TS2353: Object literal may only specify known properties, and 'pinDefault' does not exist in type '{ pin: number[]; rowHeadCount: number; mode: TablePinMode; unpin?: number[] | undefined; }'.
+
+> mdmark-vscode@0.2.0 typecheck
+> tsc --noEmit
+
+exit=1
+
+## 残した違反
+
+- tsc の型検査の 12 件は、単体テストが使う pinDefault・pin_default・frontmatter が実装の型にまだ無いことによるもので、実装で解消する（単体テスト作成で残してよい違反）

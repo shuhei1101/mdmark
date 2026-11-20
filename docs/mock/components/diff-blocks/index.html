@@ -19,6 +19,8 @@
   <link rel="stylesheet" href="../../refs/69/assets/preview.css">
   <!-- 描いた文書の上の差分の色分け（#196 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/196/assets/diff-preview.css">
+  <!-- フロントマターの表示の規則（#422 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/422/assets/frontmatter.css">
   <!-- カタログの並べ方 -->
   <link rel="stylesheet" href="./style.css">
   <!-- VS Code のテーマの切り替え（モックだけの仕組み） -->
@@ -268,6 +270,85 @@ git push origin v0.7.0</code></pre>
   <span class="mdmark-diff-block-label">追加</span>
   <p>配信は <a href="#">https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.7.0/dist/index.js?cache-busting-query-string-for-long-url-check</a> を開いて確認します。ファイルが返らないときは、jsDelivr の配信の反映を数分待ってから、もう一度開いてください。</p>
 </div>
+          </article>
+        </div>
+      </section>
+
+      <!-- #735 フロントマターの変更: 示し方の案 A・B・C を、機能 frontmatter のオフ（既定）とオンで並べる。マーカーは採用済みの左の余白の記号 -->
+      <section aria-labelledby="state-735-fm-off-change">
+        <h2 class="catalog-label" id="state-735-fm-off-change">フロントマターの変更・機能 frontmatter がオフ（既定）</h2>
+        <p class="catalog-case">案 A・案 C: 本文の先頭に、後のリビジョンのフロントマターを追加の色で差し込む</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <details class="mdmark-collapsible mdmark-frontmatter" open><summary>フロントマター</summary><pre><code class="language-yaml">title: リリースの手順（v0.15）
+tags: [リリース, 手順]</code></pre></details>
+</div>
+<h1>リリースの手順</h1>
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+          </article>
+        </div>
+        <p class="catalog-case">案 B: 何も出さない（機能 frontmatter がオンのときだけ示す）</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<h1>リリースの手順</h1>
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-735-fm-off-del">
+        <h2 class="catalog-label" id="state-735-fm-off-del">フロントマターの削除・機能 frontmatter がオフ（既定）</h2>
+        <p class="catalog-case">案 A・案 C: 本文の先頭に、前のリビジョンのフロントマターを削除の色で差し込む</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<div class="mdmark-diff-block" data-kind="del">
+  <span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span>
+  <details class="mdmark-collapsible mdmark-frontmatter" open><summary>フロントマター</summary><pre><code class="language-yaml">title: リリースの手順（v0.15）
+tags: [リリース, 手順]</code></pre></details>
+</div>
+<h1>リリースの手順</h1>
+<p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-735-fm-on-change">
+        <h2 class="catalog-label" id="state-735-fm-on-change">フロントマターの変更・機能 frontmatter がオン</h2>
+        <p class="catalog-case">案 A: 既にあるフロントマターの表示に加えて、差分のブロックを差し込む（2 つ出る）</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <details class="mdmark-collapsible mdmark-frontmatter" open><summary>フロントマター</summary><pre><code class="language-yaml">title: リリースの手順（v0.15）
+tags: [リリース, 手順]</code></pre></details>
+</div>
+<details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre><code class="language-yaml">title: リリースの手順（v0.15）
+tags: [リリース, 手順]</code></pre></details>
+<h1>リリースの手順</h1>
+          </article>
+        </div>
+        <p class="catalog-case">案 B・案 C: 既にあるフロントマターの表示を追加の色で示す（1 つだけ出る）</p>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <details class="mdmark-collapsible mdmark-frontmatter"><summary>フロントマター</summary><pre><code class="language-yaml">title: リリースの手順（v0.15）
+tags: [リリース, 手順]</code></pre></details>
+</div>
+<h1>リリースの手順</h1>
+          </article>
+        </div>
+      </section>
+      <section aria-labelledby="state-735-fm-long">
+        <h2 class="catalog-label" id="state-735-fm-long">長い値のフロントマターの変更・機能 frontmatter がオフ（案 A・案 C）</h2>
+        <div class="preview">
+          <article class="mdmark" data-diff-marker="sign">
+<div class="mdmark-diff-block" data-kind="add">
+  <span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span>
+  <details class="mdmark-collapsible mdmark-frontmatter" open><summary>フロントマター</summary><pre><code class="language-yaml">title: タグを打ってから jsDelivr の配信に配布物が届き、利用側のページで新規のバージョンを読み込めるようになるまでの手順
+source: https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.15.0/dist/index.js?cache-busting-query-string-for-long-url-check</code></pre></details>
+</div>
+<h1>リリースの手順</h1>
           </article>
         </div>
       </section>

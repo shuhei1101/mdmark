@@ -582,6 +582,32 @@ scenarios:
       - HTML に、class `mdmark`・`--mdmark-version`・`#mdmark-payload` の要素が残る
       - file:// で開くと、正常シナリオ（mdmark を使用していることを隠す）と同じ表示の文書が描かれる
     test: test_normal_when_traces_kept
+  - name: 正常シナリオ（フロントマターのタイトル）
+    setup:
+      - name: フロントマターを持つ文書
+        description: 先頭のフロントマターに `title`（`配布の手順`）を持ち、本文の最初の h1 が `はじめに` の文書 1 つと、索引を持たない設定
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor W as 文書の作成者
+        participant C as mdmark CLI
+        participant F as 出力の HTML
+        W->>C: mdmark export 文書のパス（出力を指定）
+        C->>C: 文書の先頭のフロントマターの title を、ページのタイトルにする
+        C->>F: HTML を書き込む
+        C-->>W: 出力のパス・終了コード 0
+      ```
+
+      <!-- /map -->
+    expected:
+      - 終了コードが 0 で、指定した出力に HTML が 1 つある
+      - 書き出した HTML の `title` 要素が `配布の手順`
+      - file:// で開くと、本文の先頭にフロントマターの中身が描かれていない
+    test: test_normal_when_frontmatter_title
 lead: 文書の作成者が `mdmark export` で Markdown を 1 つ、配布物・利用側の CSS・外部ライブラリのモジュール・画像を埋めた 1 枚の HTML に書き出し、読者は file:// で開いて外を読み込まずに読み込む。
 primary_actor: 文書の作成者
 stakeholders:
@@ -601,3 +627,4 @@ tags:
     main: true
   - name: tool:html
   - name: topic:cli
+  - name: topic:フロントマター

@@ -1,349 +1,484 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/knowledge-files.schema.yaml
 files:
   - path: コアコンセプト-文書を描く仕組み.md
+    id: guide-concept-rendering
     name: 文書を描く仕組み
     visibility: public
     category: はじめに
     description: Markdown と設定を指定してから描かれるまでの流れと、テーマの層・機能のオン・オフの優先順を説明し、描かれた結果が想定と違う理由を調べるときに参照する。
     tags: [topic:仕組み, action:描画, topic:テーマ, topic:機能フラグ, topic:設定]
   - path: コアコンセプト-共通の定義と固有の定義.md
+    id: guide-concept-common-and-local
     name: 共通の定義と固有の定義
     visibility: public
     category: はじめに
     description: 基盤の部品と CSS、利用側に固有の部品と CSS の層と該当する範囲を説明し、利用側の部品や CSS がどこまで効くかを確認するときに参照する。
     tags: [topic:仕組み, topic:部品, topic:css, topic:層]
   - path: コアコンセプト-索引と被参照.md
+    id: guide-concept-index-and-backlinks
     name: 索引と被参照
     visibility: public
     category: はじめに
-    description: 索引を正にして被参照を描くときに算出し、ずれを点検で見つける仕組みを説明し、索引と被参照の関係を確認するときに参照する。
+    description: 索引を優先し、被参照を描くときに算出し、ずれを点検で見つける仕組みを説明し、索引と被参照の関係を確認するときに参照する。
     tags: [topic:仕組み, topic:索引, topic:被参照, action:点検]
   - path: コアコンセプト-1枚にまとめる仕組み.md
+    id: guide-concept-bundle
     name: 1枚にまとめる仕組み
     visibility: public
     category: はじめに
     description: 文書を集めて参照の表を作り、配布物・CSS・外部ライブラリ・画像と一緒に 1 枚の HTML に埋める流れを説明し、まとめた HTML の中身を確認するときに参照する。
     tags: [topic:仕組み, topic:書き出し, action:まとめ, tool:html]
   - path: コアコンセプト-設定を重ねて読み込む仕組み.mark.md
+    id: guide-concept-layered-config
     name: 設定を重ねて読み込む仕組み
     visibility: public
     category: はじめに
     description: 端末の設定と上のフォルダの設定ファイルを重ねる順・切り替え・相対パスの基準・優先の順番を説明し、設定がどこから読み込まれるかを確認するときに参照する。
     tags: [topic:仕組み, topic:設定, action:読み込み]
   - path: コアコンセプト-バージョンを上げる仕組み.md
+    id: guide-concept-upgrade
     name: バージョンを上げる仕組み
+    aliases: [版を上げる仕組み]
     visibility: public
     category: はじめに
     description: バージョンごとの移行の手順を順に適用し、コピーから戻し、点検してからバージョンを書き換える流れを説明し、移行の結果を確認するときに参照する。
     tags: [topic:仕組み, topic:バージョン, topic:移行, action:点検]
   - path: コアコンセプト-図を自動配置して辿る仕組み.md
+    id: guide-concept-map
     name: 図を自動配置して辿る仕組み
     visibility: public
     category: はじめに
     description: map の引数・Mermaid・補足の役割の分け方と、入れ子の自動配置・上書き・中へ入る操作の流れを説明し、map の図の配置の理由を確認するときに参照する。
     tags: [topic:仕組み, topic:図, topic:map, action:配置]
   - path: コアコンセプト-差分を表示する仕組み.md
+    id: guide-concept-diff
     name: 差分を表示する仕組み
     visibility: public
     category: はじめに
     description: 取り出し元から 2 つのリビジョンの本文を受け、行と文字を比べて描く流れと、描いた文書のブロックの色分けを説明し、差分の表示を確認するときに参照する。
     tags: [topic:仕組み, topic:差分, topic:リビジョン]
   - path: コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
+    id: guide-concept-claude-code
     name: ClaudeCodeに使用方法を提供する仕組み
+    aliases: [ClaudeCodeに使い方を渡す仕組み]
     visibility: public
     category: はじめに
     description: ガイドを dev-docs で必要な分だけ参照させ、CLI と同じ処理を MCP のツールで呼ぶ流れを説明し、Claude Code への渡し方を確認するときに参照する。
     tags: [topic:仕組み, topic:ガイド, tool:claude-code, tool:mcp]
   - path: 変更履歴.mark.md
+    id: guide-changelog
     name: 変更履歴
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: はじめに
     description: バージョンごとの変更の一覧を持ち、バージョンを上げる前に変更を確認するときに参照する。
     tags: [topic:履歴, topic:バージョン]
   - path: 導入-配布物を読み込む.md
+    id: guide-install-load-dist
     name: 配布物を読み込む
     visibility: public
     category: 使用方法
     description: develop かバージョンのタグを指定した URL で JavaScript と CSS を読み込む手順を説明し、利用側のページへ mdmark を組み込むときに参照する。
     tags: [topic:セットアップ手順, topic:配布物, action:読み込み]
   - path: 導入-文書を描く.md
+    id: guide-install-mount
     name: 文書を描く
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: 使用方法
     description: 配布物を読み込んだページで `mount` を呼び、要素の中に Markdown を描く手順を説明し、利用側のページで文書を描くときに参照する。
     tags: [topic:セットアップ手順, topic:api, action:描画]
   - path: 導入-バージョンを上げる.md
+    id: guide-install-upgrade
     name: バージョンを上げる
+    aliases: [版を上げる]
     visibility: public
     category: 使用方法
     description: '`mdmark upgrade` で移行の手順を適用し、設定・索引・文書を新しいバージョンに合わせる手順を説明し、mdmark のバージョンを上げるときに参照する。'
     tags: [topic:セットアップ手順, topic:バージョン, topic:移行, topic:cli]
   - path: 導入-差分を表示する.md
+    id: guide-install-diff
     name: 差分を表示する
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: 使用方法
     description: '`mount` の `diffSource` に取り出し元を指定して文書の 2 つのリビジョンの差分を出す手順を説明し、利用側のページで差分を出すときに参照する。'
     tags: [topic:セットアップ手順, topic:差分, topic:リビジョン]
   - path: 記載する-表に機能を付ける.md
+    id: guide-write-tables
     name: 表に機能を付ける
     visibility: public
     category: 使用方法
     description: 表をマーカーで囲み、種類と機能を選ぶ手順を説明し、表に並べ替え・絞り込みなどの機能を付けるときに参照する。
     tags: [topic:テーブル, topic:マーカー, topic:構文, topic:ガイド]
   - path: 記載する-本文を部品で組む.mark.md
+    id: guide-write-components
     name: 本文を部品で組む
     visibility: public
     category: 使用方法
     description: 注意書き・タブ・ステップ・ファイルツリー・バッジ・脚注・目次・セクションの開閉などを記載する手順を説明し、本文を部品で組むときに参照する。
     tags: [topic:部品, topic:構文, topic:注意書き, topic:タブ, topic:ツリー, topic:ガイド]
   - path: 記載する-索引と用語集を記載する.mark.md
+    id: guide-write-glossary
     name: 索引と用語集を記載する
     visibility: public
     category: 使用方法
     description: 索引に文書と用語を記載し、表から用語集に用語を入れる手順を説明し、索引や用語集を作るときに参照する。
     tags: [topic:索引, topic:用語, topic:構文, topic:ガイド]
   - path: 記載する-色で強調する.md
+    id: guide-write-colors
     name: 色で強調する
     visibility: public
     category: 使用方法
     description: 色の名前の一覧と、決め手の 1 文だけに色を付ける使用方法を説明し、表・バッジ・本文の文字に色を付けるときに参照する。
     tags: [topic:色, topic:構文, topic:ガイド]
   - path: 記載する-画像と動画を配置する.md
+    id: guide-write-media
     name: 画像と動画を配置する
+    aliases: [画像と動画を置く]
     visibility: public
     category: 使用方法
     description: 画像の属性・キャプション・ライトボックス・ギャラリー・動画・GIF・音声・アセットの配置場所の手順を説明し、画像や動画を文書に配置するときに参照する。
     tags: [topic:画像, topic:動画, topic:音声, topic:構文, topic:ガイド]
   - path: 記載する-図と表に番号を付ける.md
+    id: guide-write-figure-numbers
     name: 図と表に番号を付ける
     visibility: public
     category: 使用方法
     description: '`fig` のマーカーと、番号を出すリンクの記載方法を説明し、図と表に番号を付けて本文から参照するときに参照する。'
     tags: [topic:図表の番号, topic:マーカー, topic:構文, topic:ガイド]
   - path: 記載する-ビューとコメントを使用する.mark.md
+    id: guide-write-view-and-comments
     name: ビューとコメントを使用する
+    aliases: [ビューとコメントを使う]
     visibility: public
     category: 使用方法
     description: ビューのマーカーの記載方法・ボードと表形式の切り替え・列の絞り込み・コメントを付ける手順を説明し、文書にビューやコメントを付けるときに参照する。
     tags: [topic:ビュー, topic:コメント, topic:構文, topic:ガイド]
   - path: 記載する-文書の記載方法.md
+    id: guide-write-writing
     name: 文書の記載方法
+    aliases: [文書の書き方]
     visibility: public
     category: 使用方法
     description: 人が読む資料の表し方と文の決まりを説明し、mdmark で資料を記載する前に参照する。
     tags: [topic:文章, topic:表し方, topic:ガイド]
   - path: 図を描く-図を描く.md
+    id: guide-diagram-draw
     name: 図を描く
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: 使用方法
     description: HTML の用途と、部品の定義を記載してフロー図・シーケンス図・グラフ・ER 図を描く手順を説明し、文書に図を描くときに参照する。
     tags: [topic:図, topic:部品, topic:ガイド, action:描画]
   - path: 図を描く-操作できる部品を作る.md
+    id: guide-diagram-interactive-parts
     name: 操作できる部品を作る
     visibility: public
     category: 使用方法
     description: スライダー・グラフ・今の値をコピーするボタンの部品の定義を記載する手順を説明し、文書に操作できる部品を置くときに参照する。
     tags: [topic:部品, topic:図, topic:ガイド, action:操作]
   - path: 図を描く-Mermaidと補足で図を描く.md
+    id: guide-diagram-map
     name: Mermaidと補足で図を描く
     visibility: public
     category: 使用方法
     description: map のマーカー・Mermaid のブロック・補足の記載方法と、配置と色の上書き・案内・再生の書き方を説明し、map の図を描くときに参照する。
     tags: [topic:map, topic:図, tool:mermaid, topic:ガイド]
   - path: 図を描く-mermaidの図を描く.md
+    id: guide-diagram-mermaid
     name: mermaidの図を描く
     visibility: public
     category: 使用方法
     description: mermaid のコードブロックを記載して mdmark の外観の図にし、テーマを変える手順を説明し、mermaid の図を描くときに参照する。
     tags: [tool:mermaid, topic:図, topic:テーマ, topic:ガイド]
   - path: 図を描く-コードブロックのHTMLを描く.md
+    id: guide-diagram-code-html
     name: コードブロックのHTMLを描く
     visibility: public
     category: 使用方法
     description: コードブロックの HTML を描かせるマーカー・チャートの custom element の配置方法・`data-hint` の記載方法を説明し、文書に HTML を埋め込むときに参照する。
     tags: [tool:html, topic:図, topic:ヒント, topic:ガイド]
   - path: 図を描く-描いた図を確認する.mark.md
+    id: guide-diagram-verify
     name: 描いた図を確認する
+    aliases: [描いた図を確かめる]
     visibility: public
     category: 使用方法
     description: 配置した部品を Playwright で動かし、スクリーンショットを撮って確認する手順を説明し、描いた図の崩れを確かめるときに参照する。
     tags: [topic:図, tool:playwright, topic:ガイド, action:点検]
   - path: 図を描く-固有の部品とCSSを適用する.md
+    id: guide-diagram-local-parts
     name: 固有の部品とCSSを適用する
+    aliases: [固有の部品とCSSを当てる]
     visibility: public
     category: 使用方法
     description: 利用側に固有の部品と CSS を、その場所の文書にだけ適用する手順を説明し、利用側の部品や CSS を足すときに参照する。
     tags: [topic:部品, topic:css, topic:図, topic:ガイド]
   - path: 図を描く-見本.mark.md
+    id: guide-diagram-samples
     name: 見本
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: 使用方法
     description: フロー図・シーケンス図・グラフ・操作できる部品を組み合わせた見本の文書を持ち、図の書き方の例を確認するときに参照する。
     tags: [topic:図, topic:部品, topic:見本, topic:ガイド]
   - path: カスタマイズ-テーマを上書きする.md
+    id: guide-customize-theme
     name: テーマを上書きする
     visibility: public
     category: 使用方法
     description: CSS 変数と層の外の CSS で描いた文書の外観を変える手順を説明し、利用側でテーマを変えるときに参照する。
     tags: [topic:テーマ, topic:css, topic:カスタマイズ]
   - path: カスタマイズ-機能をオン・オフする.md
+    id: guide-customize-features
     name: 機能をオン・オフする
     visibility: public
     category: 使用方法
     description: 設定の `features` と文書のマーカーで機能のオン・オフを切り替える手順を説明し、利用側で機能を絞るときに参照する。
     tags: [topic:機能フラグ, topic:設定, topic:カスタマイズ]
   - path: カスタマイズ-拡張を登録する.md
+    id: guide-customize-extensions
     name: 拡張を登録する
     visibility: public
     category: 使用方法
     description: '`registerExtension` でマーカーを追加し、TypeScript から JavaScript へ変換して配る手順を説明し、利用側でマーカーを足すときに参照する。'
     tags: [topic:拡張, topic:マーカー, topic:カスタマイズ, topic:ガイド, action:登録]
   - path: カスタマイズ-部品をJavaScriptから使用する.mark.md
+    id: guide-customize-parts-js
     name: 部品をJavaScriptから使用する
+    aliases: [部品をJavaScriptから使う]
     visibility: public
     category: 使用方法
     description: 利用側のページと拡張から部品を描く関数を呼ぶ手順と、コメントの読み込みと保存の関数の指定方法を説明し、JavaScript から部品を使うときに参照する。
     tags: [topic:部品, topic:api, topic:コメント, topic:カスタマイズ]
   - path: カスタマイズ-印刷する.mark.md
+    id: guide-customize-print
     name: 印刷する
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: 使用方法
     description: 印刷・PDF にしたときの文書の見え方を説明し、文書を印刷・PDF にするときに参照する。
     tags: [topic:印刷, topic:pdf, topic:カスタマイズ]
   - path: 書き出す-雛形を配置する.md
+    id: guide-export-init
     name: 雛形を配置する
+    aliases: [雛形を置く]
     visibility: public
     category: 使用方法
     description: '`mdmark init` で設定・`theme.css`・索引・拡張のビルドの雛形を配置する手順を説明し、書き出しの準備をするときに参照する。'
     tags: [topic:cli, topic:テンプレート, topic:書き出し, action:配置]
   - path: 書き出す-文書を書き出す.mark.md
+    id: guide-export-export
     name: 文書を書き出す
     visibility: public
     category: 使用方法
     description: '`mdmark export` で 1 文書を 1 枚の HTML に書き出す手順を説明し、文書を配るための HTML を作るときに参照する。'
     tags: [topic:cli, topic:書き出し, tool:html, action:書き出し]
   - path: 書き出す-文書を1枚にまとめる.md
+    id: guide-export-build
     name: 文書を1枚にまとめる
     visibility: public
     category: 使用方法
     description: 設定の `build` を記載し、`mdmark build` で複数の文書を 1 枚の HTML にまとめる手順を説明し、複数の文書をまとめて配るときに参照する。
     tags: [topic:cli, topic:書き出し, tool:html, action:まとめ]
   - path: 書き出す-点検する.mark.md
+    id: guide-export-check
     name: 点検する
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: 使用方法
     description: '`mdmark check` で設定と索引を点検し、ずれを修正する手順を説明し、書き出す前に設定と索引を確かめるときに参照する。'
     tags: [topic:cli, topic:検査, topic:索引, action:点検]
   - path: VSCodeで確認する-プレビューを開く.md
+    id: guide-vscode-preview
     name: プレビューを開く
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: 使用方法
     description: VS Code の拡張機能を入れ、Markdown の横にプレビューを出してバージョン・設定ファイル・配色・スクロールを整える手順を説明し、VS Code で文書を確認するときに参照する。
     tags: [tool:vscode, topic:プレビュー, topic:設定]
   - path: VSCodeで確認する-差分をプレビューで確認する.md
+    id: guide-vscode-diff
     name: 差分をプレビューで確認する
+    aliases: [差分をプレビューで見る]
     visibility: public
     category: 使用方法
     description: VS Code の差分ビューの Markdown の変更を、mdmark のプレビューで追加・削除の色分けにして確認する手順を説明し、変更を描いた形で確認するときに参照する。
     tags: [tool:vscode, topic:プレビュー, topic:差分]
   - path: VSCodeで確認する-HTMLとPDFにする.md
+    id: guide-vscode-html-pdf
     name: HTMLとPDFにする
     visibility: public
     category: 使用方法
     description: VS Code で開いている Markdown を HTML に書き出し、ブラウザで開き、PDF に印刷する手順を説明し、VS Code から文書を配るときに参照する。
     tags: [tool:vscode, topic:書き出し, topic:印刷, tool:html]
   - path: ClaudeCodeで使用する-プラグインを入れる.mark.md
+    id: guide-claude-code-plugin
     name: プラグインを入れる
     visibility: public
     category: 使用方法
     description: マーケットプレイスを追加してプラグインを入れ、次のセッションからツールとガイドへの動線を受け取る手順を説明し、Claude Code に mdmark を入れるときに参照する。
     tags: [tool:claude-code, topic:プラグイン, topic:セットアップ]
   - path: ClaudeCodeで使用する-画面を共通スタイルで描く.md
+    id: guide-claude-code-style
     name: 画面を共通スタイルで描く
     visibility: public
     category: 使用方法
     description: mod のプラグイン mdmark-style を入れ、Claude Code の返答と発言を mdmark の共通スタイルで描く手順と描き換えるものを説明し、Claude Code の画面に mdmark の外観を適用するときに参照する。
     tags: [tool:claude-code, topic:プラグイン, topic:スタイル, topic:用語]
   - path: ClaudeCodeで使用する-セットアップする.mark.md
+    id: guide-claude-code-setup
     name: セットアップする
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: 使用方法
     description: プラグインのスキルで端末の設定・常駐サーバー・文書のフォルダの設定を項目ごとに確認しながら用意する手順を説明し、Claude Code から mdmark を使い始めるときに参照する。
     tags: [tool:claude-code, topic:スキル, topic:セットアップ, topic:設定]
   - path: ClaudeCodeで使用する-MCPサーバーを起動する.mark.md
+    id: guide-claude-code-server
     name: MCPサーバーを起動する
     visibility: public
     category: 使用方法
     description: MCP の常駐サーバーを起動・停止し、待ち受けているポートを確認する手順を説明し、MCP のツールにつながらないときに参照する。
     tags: [tool:mcp, topic:サーバー, tool:claude-code, action:起動]
   - path: ClaudeCodeで使用する-MCPのツールを使用する.md
+    id: guide-claude-code-mcp-tools
     name: MCPのツールを使用する
+    aliases: [MCPのツールを使う]
     visibility: public
     category: 使用方法
     description: ガイドを dev-docs で参照させ、文書の書き出し・まとめ・点検を Claude Code から呼ぶ手順を説明し、Claude Code に文書を書き出させるときに参照する。
     tags: [tool:mcp, tool:claude-code, topic:ガイド, topic:書き出し]
   - path: API.mark.md
+    id: guide-reference-api
     name: API
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: リファレンス
     description: 公開関数と CSS 変数の一覧を持ち、関数や CSS 変数の名前と引数を確認するときに参照する。
     tags: [topic:リファレンス, topic:api, topic:css]
   - path: CLI.mark.md
+    id: guide-reference-cli
     name: CLI
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: リファレンス
     description: CLI のコマンド・引数・出力・終了コードの一覧を持ち、コマンドの引数や終了コードを確認するときに参照する。
     tags: [topic:リファレンス, topic:cli]
   - path: VSCode拡張機能.mark.md
+    id: guide-reference-vscode
     name: VSCode拡張機能
     visibility: public
     category: リファレンス
     description: VS Code 拡張機能のコマンド・既定のショートカット・設定の一覧を持ち、拡張機能の設定やショートカットを確認するときに参照する。
     tags: [topic:リファレンス, tool:vscode, topic:設定]
   - path: MCP.mark.md
+    id: guide-reference-mcp
     name: MCP
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: リファレンス
     description: MCP のツールの名前・引数・戻り値・エラーの一覧を持ち、MCP のツールの呼び方を確認するときに参照する。
     tags: [topic:リファレンス, tool:mcp]
   - path: 記法.mark.md
+    id: guide-reference-syntax
     name: 記法
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: リファレンス
     description: マーカーと記法の記載方法・引数・対応しない表示での見え方の一覧を持ち、記法の書き方を名前から確認するときに参照する。
     tags: [topic:リファレンス, topic:構文, topic:マーカー]
   - path: HTMLの記載方法.mark.md
+    id: guide-reference-html
     name: HTMLの記載方法
+    aliases: [HTMLの書き方]
     visibility: public
     category: リファレンス
     description: AI が HTML を作るときの記載方法の決まりを持ち、文書に埋め込む HTML を AI に作らせるときに参照する。
     tags: [topic:リファレンス, tool:html, topic:ガイド]
   - path: 構成図の決まり.mark.md
+    id: guide-reference-architecture-diagram
     name: 構成図の決まり
     visibility: public
     category: リファレンス
     description: 構成図の外観の決まり（入れ子と層・タイトル・ノード・線・交差・ツールチップ・操作）を持ち、構成図を描く・確認するときに参照する。
     tags: [topic:リファレンス, topic:図, topic:構成図]
   - path: フローチャートの決まり.md
+    id: guide-reference-flowchart
     name: フローチャートの決まり
     visibility: public
     category: リファレンス
     description: 処理の順番を描くフローチャートの外観の決まり（時系列・ループの帯・分岐）を持ち、フローチャートを描く・確認するときに参照する。
     tags: [topic:リファレンス, topic:フローチャート, topic:図]
   - path: 設定.mark.md
+    id: guide-reference-config
     name: 設定
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: リファレンス
     description: 設定のキーと既定の一覧を持ち、設定のキーの意味と既定の値を確認するときに参照する。
     tags: [topic:リファレンス, topic:設定]
   - path: 索引.mark.md
+    id: guide-reference-index
     name: 索引
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: リファレンス
     description: 索引のキー・型・必須・既定と点検が返却するずれの種類の一覧を持ち、索引のキーや点検の結果を確認するときに参照する。
     tags: [topic:リファレンス, topic:索引, action:点検]
   - path: 用語集.mark.md
+    id: guide-reference-glossary
     name: 用語集
+    inject_when:
+      field: text
+      op: contains
+      values: [mdmark]
     visibility: public
     category: リファレンス
     description: マーカー・記法・テーマ・機能などの用語の意味の一覧を持ち、ガイドに出てくる用語の意味を確認するときに参照する。

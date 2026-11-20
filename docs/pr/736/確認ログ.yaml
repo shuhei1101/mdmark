@@ -1,0 +1,13 @@
+confirmations:
+  - topic: フロントマターから参照するキー
+    decision: 索引の文書のキーのうち title・description・aliases・tags を参照し、id・path・related は参照しない（推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b0ddf80e679cfec4343b40a95cee81900d3074d9
+    thread: https://github.com/shuhei1101/mdmark/pull/736#discussion_r4638796524
+  - topic: 索引とフロントマターの両方に値があるときの優先と「索引が正」の変更
+    decision: 索引の値を優先し、フロントマターは索引に無いキーと索引に無い文書を補う。両方に違う値があれば点検がずれとして通知する。「索引が正」は「索引を優先する」に書き換え、索引の docs[].title を任意にする（推奨案 C）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b0ddf80e679cfec4343b40a95cee81900d3074d9
+    thread: https://github.com/shuhei1101/mdmark/pull/736#discussion_r4638797456

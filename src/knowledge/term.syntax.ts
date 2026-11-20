@@ -10,7 +10,7 @@ import {
   forEachInline,
   matchableChildren,
 } from "./dictionary.ts";
-import { relativeHref } from "./paths.ts";
+import { fileTitle, relativeHref } from "./paths.ts";
 import { renderTermTip } from "./term-tip.part.ts";
 
 /** 用語のツールチップの `id` の頭 */
@@ -114,7 +114,7 @@ function meaningTip(
     id: nextTipId(),
     meaning: activeTerm?.meaning ?? "",
     docs: docs.map((doc) => ({
-      title: doc.title,
+      title: doc.title ?? fileTitle(doc.path),
       href: relativeHref(ownPath, doc.path),
       ...(doc.description === undefined
         ? {}

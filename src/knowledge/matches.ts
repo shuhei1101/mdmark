@@ -18,9 +18,13 @@ import {
   normalizeWord,
 } from "./dictionary.ts";
 import { type MdmarkIndex, normalizeIndex } from "./index-shape.ts";
-import { normalizePath } from "./paths.ts";
+import { fileTitle, normalizePath } from "./paths.ts";
 import { alignText, inlineOffsets, maskEmbeddedHtml } from "./positions.ts";
-import { type MdmarkGlossaryEntry, parseDocument } from "./references.ts";
+import {
+  type MdmarkGlossaryEntry,
+  parseDocument,
+  supplementIndexDocs,
+} from "./references.ts";
 
 /** `collectMatches` が返却する参照先 1 つ */
 export type MdmarkMatchTarget = {
@@ -727,7 +731,7 @@ function referencedOf(options: {
       (target): MdmarkMatchTarget => ({
         kind: "doc",
         id: target.id,
-        title: target.title,
+        title: target.title ?? fileTitle(target.path),
         ...(target.description === undefined
           ? {}
           : { description: target.description }),
@@ -808,8 +812,19 @@ export function collectMatches(input: {
   config?: MdmarkConfig;
   /** エイリアス。使用できないもの（`env` を含む）は除いて照合する */
   aliases?: MdmarkAlias[];
+  /** 文書のパスから、解析したフロントマターの値を参照する表 */
+  frontmatter?: Record<string, unknown> | undefined;
 }): MdmarkMatches {
-  const { index } = normalizeIndex(input.index);
+  // 索引の文書をフロントマターの値で補った並びを、索引の `docs` の代わりに使用する
+  const normalized = normalizeIndex(input.index).index;
+  const index: MdmarkIndex = {
+    ...normalized,
+    docs: supplementIndexDocs({
+      index: normalized,
+      documents: input.documents,
+      frontmatter: input.frontmatter,
+    }).docs,
+  };
   const defaults = resolveConfig({ config: input.config }).features;
   const bodies = new Map(
     Object.entries(input.documents).map(([path, body]) => [

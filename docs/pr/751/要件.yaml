@@ -1,0 +1,26 @@
+docs:
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: 「ビルド・生成」の effects の配布ファイルの上限 688KB を、非機能要件 NFR-472-1 の NFR-1 と scripts/build.ts と同じ 712KB にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T08:00:46.649429+00:00'
+  - page: docs/guide/files.yml
+    new: false
+    change: 全ての行に id を記載し、判定フローチャート『エイリアスの登録』と判定表『エイリアスを登録しない条件』で登録すると判定した別名を aliases に、照合条件を記載すると判定したページに inject_when を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T08:00:46.649429+00:00'
+  - page: project-index.yaml
+    new: false
+    change: 'id: docs の行に alias_type: doc を付け、nav のガイドのページの page を docs/{id} に書き換える'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T08:00:46.649429+00:00'
+scope_out:
+  - item: 過去の PR ドキュメント（docs/pr/633・docs/pr/700・docs/pr/731）に残る 688KB の記述
+    reason: その PR の時点の計画と経緯の記録で、今の上限を定める設計書ではない
+    plan: none
+  - item: docs/mock/files.yml など、docs/guide/files.yml とは別の管理用の YAML の行へのエイリアスの登録
+    reason: 要望は公開ドキュメント（ガイドのページ）の照合で、他の管理用の YAML を含まない
+    plan: none

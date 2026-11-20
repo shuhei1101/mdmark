@@ -14,7 +14,12 @@ import {
   readRelated,
 } from "./index-shape.ts";
 import { normalizePath } from "./paths.ts";
-import { linkedPaths, parseDocument } from "./references.ts";
+import {
+  type FrontmatterMetadata,
+  linkedPaths,
+  parseDocument,
+  supplementIndexDocs,
+} from "./references.ts";
 
 /** `checkIndex` が返却するずれ 1 件 */
 export type MdmarkIndexIssue = {
@@ -32,6 +37,7 @@ export type MdmarkIndexIssue = {
     | "one_sided_change_together"
     | "related_link_overlap"
     | "missed_change_together"
+    | "frontmatter_mismatch"
     | "duplicate_term"
     | "avoided_term";
   /** ずれの内容と修正方法 */
@@ -284,6 +290,76 @@ export function findMissedChangeTogether(options: {
   return issues;
 }
 
+/** フロントマターと比べるキー（比べる順） */
+const COMPARED_KEYS = ["title", "description", "aliases", "tags"] as const;
+
+/** 比べるキーの値を、並びの違いを除いて比べられる文字列の集合にする */
+function comparableOf(
+  key: (typeof COMPARED_KEYS)[number],
+  value: NonNullable<FrontmatterMetadata[(typeof COMPARED_KEYS)[number]]>,
+): Set<string> {
+  if (typeof value === "string") {
+    return new Set([value]);
+  }
+  if (key === "tags") {
+    return new Set(
+      (value as NonNullable<FrontmatterMetadata["tags"]>).map((tag) =>
+        typeof tag === "string"
+          ? `${tag}\0false`
+          : `${tag.name}\0${tag.main === true}`,
+      ),
+    );
+  }
+  return new Set(value as string[]);
+}
+
+/** 比べるキーの値を、ずれの `message` に記載する文字列にする */
+function describeValue(value: unknown): string {
+  return typeof value === "string" ? value : JSON.stringify(value);
+}
+
+/** 索引の文書とフロントマターの両方に使用できる値があり、値の違うキーごとに `frontmatter_mismatch` を返却する。並びは索引の `docs` の順、文書の中は `title`・`description`・`aliases`・`tags` の順 */
+export function findFrontmatterMismatches(options: {
+  /** `normalizeIndex` で検査した索引 */
+  index: MdmarkIndex;
+  /** 正規化した文書のパスから、`supplementIndexDocs` で取り出したメタデータ */
+  metadata: Map<string, FrontmatterMetadata>;
+  /** ずれの `file` に出す索引のファイルの名前 */
+  indexFile: string;
+  /** `where` に出す文書の位置。省くと `index.docs` の位置 */
+  positionOf?: (doc: MdmarkIndexDoc) => number;
+}): MdmarkIndexIssue[] {
+  const { index, metadata, indexFile } = options;
+  const positionOf =
+    options.positionOf ?? ((doc: MdmarkIndexDoc) => index.docs.indexOf(doc));
+  return index.docs.flatMap((doc) => {
+    const found = metadata.get(normalizePath(doc.path));
+    if (found === undefined) {
+      return [];
+    }
+    return COMPARED_KEYS.flatMap((key) => {
+      const indexValue = doc[key];
+      const frontmatterValue = found[key];
+      if (indexValue === undefined || frontmatterValue === undefined) {
+        return [];
+      }
+      const a = comparableOf(key, indexValue);
+      const b = comparableOf(key, frontmatterValue);
+      if (a.size === b.size && [...a].every((item) => b.has(item))) {
+        return [];
+      }
+      return [
+        {
+          file: indexFile,
+          where: `docs[${positionOf(doc)}].${key}`,
+          kind: "frontmatter_mismatch" as const,
+          message: `索引の ${key}（${describeValue(indexValue)}）と ${doc.path} のフロントマターの ${key}（${describeValue(frontmatterValue)}）が違います。どちらかに合わせてください。`,
+        },
+      ];
+    });
+  });
+}
+
 /** 読み込んだ文書（正規化したパスから、記載したパスと本文） */
 type DocumentEntries = Map<string, { path: string; body: string }>;
 
@@ -423,7 +499,7 @@ function collectGlossary(
   }
 }
 
-/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返却する */
+/** 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`frontmatter_mismatch`・`duplicate_term`・`avoided_term` のずれをこの順で返却する */
 export function checkIndex(input: {
   /** 索引の値（構造を確認する前のもの） */
   index: unknown;
@@ -433,9 +509,11 @@ export function checkIndex(input: {
   indexFile?: string;
   /** 比べる基準から変わった文書のパス。指定したときだけ `change_together` の修正漏れを確認する */
   changedPaths?: string[];
+  /** 文書のパスから、解析したフロントマターの値を参照する表。指定したときだけ索引の文書を補い、`frontmatter_mismatch` を確認する */
+  frontmatter?: Record<string, unknown> | undefined;
 }): MdmarkIndexIssue[] {
   const indexFile = input.indexFile ?? DEFAULT_INDEX_FILE;
-  const { index, problems } = normalizeIndex(input.index);
+  const { index: normalized, problems } = normalizeIndex(input.index);
   const schema: MdmarkIndexIssue[] = problems.map((problem) => ({
     file: indexFile,
     where: problem.where,
@@ -447,10 +525,21 @@ export function checkIndex(input: {
     return schema;
   }
 
-  // 検査で除かれる前の `docs` の並びでの位置を、ずれの場所に使用する
+  // 索引の文書をフロントマターの値で補い、加えた文書も索引の文書として照合する
+  const supplemented = supplementIndexDocs({
+    index: normalized,
+    documents: input.documents,
+    frontmatter: input.frontmatter,
+  });
+  const index: MdmarkIndex = { ...normalized, docs: supplemented.docs };
+  // 検査で除かれる前の `docs` の並びでの位置を、ずれの場所に使用する（補った文書は元の文書の位置）
   const raw = input.index as { docs?: unknown; terms?: unknown[] };
-  const positionOf = (doc: MdmarkIndexDoc): number =>
+  const rawPositionOf = (doc: MdmarkIndexDoc): number =>
     Array.isArray(raw.docs) ? raw.docs.indexOf(doc) : -1;
+  const positionOf = (doc: MdmarkIndexDoc): number => {
+    const original = normalized.docs[supplemented.docs.indexOf(doc)];
+    return original === undefined ? -1 : rawPositionOf(original);
+  };
   const documents: DocumentEntries = new Map(
     Object.entries(input.documents).map(([path, body]) => [
       normalizePath(path),
@@ -489,6 +578,12 @@ export function checkIndex(input: {
     ...broken,
     ...findRelatedIssues({ index, links, indexFile, positionOf }),
     ...changed,
+    ...findFrontmatterMismatches({
+      index: normalized,
+      metadata: supplemented.metadata,
+      indexFile,
+      positionOf: rawPositionOf,
+    }),
     ...duplicateTerms(sites),
     ...avoided,
   ];

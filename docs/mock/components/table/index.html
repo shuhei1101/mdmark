@@ -50,6 +50,8 @@
   <link rel="stylesheet" href="../../refs/151/assets/table-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/225/assets/collapse-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
+  <!-- #735 の既定の表の見本の押していないピン止めの見せ方（実装と同じ） -->
+  <link rel="stylesheet" href="../../refs/735/assets/table.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 表の見本の定義と組み立て（モックだけの仕組み。syntax.js より先に組み立てる） -->
   <script src="../../refs/151/assets/samples.js" defer></script>
@@ -62,6 +64,8 @@
   <script src="../../refs/151/assets/table.js" defer></script>
   <!-- 既定のピン止め・-pin・pin=・wide=・check= の見本の定義と操作（#283。syntax.js の後に読み込む） -->
   <script src="../../refs/283/assets/table-samples.js" defer></script>
+  <!-- はみ出す表の既定（どの列も留めない）の見本の定義（#735。#283 の table-pin.js が描く） -->
+  <script src="../../refs/735/assets/table-samples.js" defer></script>
   <script src="../../refs/283/assets/table-pin.js" defer></script>
   <!-- 押した列だけを留めるピン止めと、押した列までを留めるピン止めの見本の定義と操作（#438） -->
   <script src="../../refs/438/assets/table-samples.js" defer></script>
@@ -1198,12 +1202,21 @@
         </article>
       </section>
 
-      <!-- #283 既定のピン止め: 表が幅からはみ出すとき、先頭の列を最初から留める。ボタンをもう一度押すと解除する -->
+      <!-- 設定で既定の列を留める指定をした表: 表が幅からはみ出すとき、先頭の列を最初から留める。ボタンをもう一度押すと解除する -->
       <section aria-labelledby="state-283-default-pin">
-        <h2 class="catalog-label" id="state-283-default-pin">はみ出す表は先頭の列を既定でピン止めする</h2>
+        <h2 class="catalog-label" id="state-283-default-pin">設定で既定の列を留める指定をした表（描いた直後に先頭の列を留める。ボタンをもう一度押すと解除する）</h2>
         <article class="mdmark">
           <!-- [data-mock-table283]: table-pin.js が table-samples.js の同じ名前の定義から表を描く -->
           <div data-mock-table283="default-pin"></div>
+        </article>
+      </section>
+
+      <!-- #735 既定: 表が幅からはみ出しても、描いた直後はどの列も留めない。ピン止めのボタンは出し、押した列を留める -->
+      <section aria-labelledby="state-735-default-unpinned">
+        <h2 class="catalog-label" id="state-735-default-unpinned">はみ出す表の既定（描いた直後はどの列も留めず、全てのピン止めのボタンを押していない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table283]: #283 の table-pin.js が #735 の table-samples.js の同じ名前の定義から表を描く -->
+          <div data-mock-table283="735-default-unpinned"></div>
         </article>
       </section>
 
