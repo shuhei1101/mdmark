@@ -2062,7 +2062,7 @@ elements:
     component: CMP-472-18#
     position: 描く先の要素 > コードブロック > 帯の下
     description: 言語 `markdown`・`md` のコードブロックの中身を、外の文書と同じ設定で描いた結果（`div.mdmark-code-preview`）。右側の目次・先頭へ戻る・Markdown のコピーとエクスポート・被参照・コメント・印刷の処理は中に付けず、中の見出しは外の文書の右側の目次に入れない。印刷では、印刷した時点で出している側をそのまま出す
-    visible_when: 言語が `markdown` か `md` のコードブロックで、Raw のボタンを押していないとき
+    visible_when: 言語が `markdown` か `md` のコードブロックで、Raw のボタンが押した状態（`aria-pressed="true"`）でないとき
     refs:
       - IF-472-35#constraints[言語 markdown のコードブロックの描いた結果]
     status: planned
