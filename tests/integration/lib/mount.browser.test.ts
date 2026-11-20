@@ -16475,6 +16475,44 @@ function mapScale(figure: Element): number {
   return Number(/scale\(([\d.]+)\)/.exec(stage.style.transform)?.[1] ?? 1);
 }
 
+/** 表示する枠で拡大のキーを `times` 回押す */
+function pressZoomIn(viewport: HTMLElement, times: number): void {
+  for (let i = 0; i < times; i += 1)
+    viewport.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "+", bubbles: true }),
+    );
+}
+
+/** ノードを囲む矩形の中心と、表示する枠の中心の差（px）。図の端で移せない向きは除く */
+function mapCenterGaps(figure: Element, ids: string[]): number[] {
+  const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
+  const boxes = ids.map((id) => mapNode(figure, id).getBoundingClientRect());
+  const view = viewport.getBoundingClientRect();
+  const axes = [
+    {
+      rect:
+        (Math.min(...boxes.map((box) => box.left)) +
+          Math.max(...boxes.map((box) => box.right))) /
+        2,
+      frame: view.left + viewport.clientLeft + viewport.clientWidth / 2,
+      scroll: viewport.scrollLeft,
+      max: viewport.scrollWidth - viewport.clientWidth,
+    },
+    {
+      rect:
+        (Math.min(...boxes.map((box) => box.top)) +
+          Math.max(...boxes.map((box) => box.bottom))) /
+        2,
+      frame: view.top + viewport.clientTop + viewport.clientHeight / 2,
+      scroll: viewport.scrollTop,
+      max: viewport.scrollHeight - viewport.clientHeight,
+    },
+  ];
+  return axes
+    .filter((axis) => axis.scroll > 0 && axis.scroll < axis.max - 1)
+    .map((axis) => Math.abs(axis.rect - axis.frame));
+}
+
 /** ノードの矩形が、図の枠の表示する枠に収まっているか */
 function mapNodesShown(figure: Element, ids: string[]): boolean {
   const view = find<HTMLElement>(
@@ -16898,10 +16936,7 @@ test("test_normal_when_map_walkthrough_played", async () => {
     expect(bandStep(figure())).toBe(1);
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
     // 実行: 拡大のキーを 5 回押して 100% より大きくし、手順 2 へ移る
-    for (let i = 0; i < 5; i += 1)
-      viewport().dispatchEvent(
-        new KeyboardEvent("keydown", { key: "+", bubbles: true }),
-      );
+    pressZoomIn(viewport(), 5);
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
     const zoomed = zoomText(figure());
     expect(zoomed).not.toBe("100%");
@@ -16909,31 +16944,8 @@ test("test_normal_when_map_walkthrough_played", async () => {
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
     // 検証: 倍率のボタンの文字は変わらず、強調するノードを囲む矩形の中心が表示する枠の中心へ移る（図の端で移せない向きを除く）
     expect(zoomText(figure())).toBe(zoomed);
-    const boxes = ["doc", "index", "data"].map((id) =>
-      mapNode(figure(), id).getBoundingClientRect(),
-    );
-    const view = viewport().getBoundingClientRect();
-    const centers = [
-      [
-        (Math.min(...boxes.map((box) => box.left)) +
-          Math.max(...boxes.map((box) => box.right))) /
-          2,
-        view.left + viewport().clientLeft + viewport().clientWidth / 2,
-        viewport().scrollLeft,
-        viewport().scrollWidth - viewport().clientWidth,
-      ],
-      [
-        (Math.min(...boxes.map((box) => box.top)) +
-          Math.max(...boxes.map((box) => box.bottom))) /
-          2,
-        view.top + viewport().clientTop + viewport().clientHeight / 2,
-        viewport().scrollTop,
-        viewport().scrollHeight - viewport().clientHeight,
-      ],
-    ];
-    for (const [rect, frame, scroll, max] of centers)
-      if ((scroll ?? 0) > 0 && (scroll ?? 0) < (max ?? 0) - 1)
-        expect(Math.abs((rect ?? 0) - (frame ?? 0))).toBeLessThanOrEqual(1);
+    for (const gap of mapCenterGaps(figure(), ["doc", "index", "data"]))
+      expect(gap).toBeLessThanOrEqual(1);
     expect([window.scrollX, window.scrollY]).toEqual(page);
     // 実行・検証: 移す途中で読者が図の枠をキーで動かすと、次にボタンを押すまで移さない
     pressSegment(figure(), 1);

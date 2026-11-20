@@ -591,24 +591,24 @@ test("test_wrap", async () => {
 /** Raw のボタン・描いた結果・pre の表示と、ボタンの位置と色 */
 function previewState(page: Awaited<ReturnType<typeof holder.openStory>>) {
   return page.evaluate(() => {
-    const raw = document.querySelector<HTMLElement>(".mdmark-code-raw");
-    const copy = document.querySelector<HTMLElement>(".mdmark-code-copy");
-    const preview = document.querySelector<HTMLElement>(".mdmark-code-preview");
-    const pre = document.querySelector<HTMLElement>(".mdmark-code > pre");
-    const shown = (element: HTMLElement | null) =>
-      element !== null && getComputedStyle(element).display !== "none";
+    const pick = (selector: string) =>
+      document.querySelector(selector) as HTMLElement;
+    const raw = pick(".mdmark-code-raw");
+    const preview = pick(".mdmark-code-preview");
+    const shown = (element: HTMLElement) =>
+      getComputedStyle(element).display !== "none";
     return {
-      pressed: raw?.getAttribute("aria-pressed"),
-      type: raw?.getAttribute("type"),
-      text: raw?.textContent,
+      pressed: raw.getAttribute("aria-pressed"),
+      type: raw.getAttribute("type"),
+      text: raw.textContent,
       rawLeftOfCopy:
-        (raw?.getBoundingClientRect().right ?? 0) <=
-        (copy?.getBoundingClientRect().left ?? 0),
-      color: raw ? getComputedStyle(raw).color : "",
-      background: raw ? getComputedStyle(raw).backgroundColor : "",
+        raw.getBoundingClientRect().right <=
+        pick(".mdmark-code-copy").getBoundingClientRect().left,
+      color: getComputedStyle(raw).color,
+      background: getComputedStyle(raw).backgroundColor,
       previewShown: shown(preview),
-      preShown: shown(pre),
-      heading: preview?.querySelector("h1")?.textContent ?? "",
+      preShown: shown(pick(".mdmark-code > pre")),
+      heading: preview.querySelector("h1")?.textContent,
     };
   });
 }
