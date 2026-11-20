@@ -66,7 +66,8 @@
   position: absolute;
   top: 0;
   left: 10px;
-  right: 34px;
+  /* 名前の要素は文字の幅だけにし、ノードの押せる範囲を隠さない */
+  max-width: calc(100% - 44px);
   height: 36px;
   display: flex;
   align-items: center;
