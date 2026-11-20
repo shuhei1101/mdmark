@@ -128,7 +128,7 @@ classes:
             summary: 設定が変わったら destroy してから もう一度 mount し、スクロールの位置を保つ
             condition: '`config` が `{}` の `render` の後、`scrollTop` を 200 にして `config` が `{ features: { callout: false } }` の `render`'
             mock: mdmark を代役にする
-            expected: '`destroy` の後に `mount` が新しい `config` で呼ばれ、`scrollTop` が 200'
+            expected: '`destroy` の後に `mount` が変更後の `config` で呼ばれ、`scrollTop` が 200'
           - name: test_render_when_aliases_changed
             case: 正常
             summary: aliases が変わったら destroy してから もう一度 mount し、mount に aliases を指定する
