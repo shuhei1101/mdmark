@@ -60,7 +60,7 @@ scenarios:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
       - name: 読み込めない行を持つファイルツリーの Markdown
-        description: 上の行より 2 階層深い項目を持つ言語 `tree` のコードブロックの文書
+        description: 上の行より 2 階層深い項目を持つ言語 `tree` のコードブロックと、同じ罫線を記載した言語 `text` のコードブロックを持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -79,8 +79,8 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - コードブロックの上に、読み込めない行の行番号を記載した記載の警告がある
-      - コードブロックが元の罫線の文字のまま出ている
+      - 2 つのコードブロックの上に、それぞれ読み込めない行の行番号を記載した記載の警告がある
+      - 2 つのコードブロックが、元の罫線の文字のまま記載した言語（`tree`・`text`）のコードブロックで出ている
     test: test_error_when_tree_line_invalid
   - name: 異常シナリオ（番号付きリストの無いステップの範囲）
     setup:
