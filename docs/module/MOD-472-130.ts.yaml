@@ -282,13 +282,19 @@ functions:
         summary: 描くフォントで測った名前の幅で配置する
         condition: 「文書の Markdown」のノード（`:::step`）と、設定の `map.kinds` で形状が `pill` の種類の「利用側のページ」のノードを持つ範囲を描く
         mock: なし
-        expected: どちらのノードも名前が 1 行（名前の要素の高さが 14px × 1.35 以下）で、ノードの幅が名前の要素の幅に左右の余白（「文書の Markdown」は 10px・28px、「利用側のページ」は 16px・28px）と枠線 3px を加えた幅から 1px 以内
+        expected: どちらのノードも名前が 1 行（名前の文字の範囲の高さが 14px × 1.35 以下）で、ノードの幅が名前の文字の範囲の幅（名前の要素はノードの幅に伸びるため、文字の範囲で測る）に左右の余白（「文書の Markdown」は 10px・28px、「利用側のページ」は 16px・28px）と枠線 3px を加えた幅から 1px 以内
       - name: test_attach_map_flow_when_fonts_ready
         case: 正常
         summary: 書体を読み込み終えた後に測り直す
         condition: '`document.fonts.ready` を未解決の Promise に差し替えて範囲を描き、名前の幅を測る canvas の `measureText` が返す幅を広げてから `ready` を解決する。別の範囲は `destroy` してから `ready` を解決する'
         mock: '`document.fonts.ready`・`CanvasRenderingContext2D.prototype.measureText`'
         expected: '`ready` の後に、ノードの幅が広げた幅で配置し直した幅になる。`destroy` した範囲は描き直されない'
+      - name: test_attach_map_flow_when_first_kind_not_pill
+        case: 正常
+        summary: 最初の種類が pill でないノードは pill の左の余白で見積もらない
+        condition: 種類 `step`（形状 `rounded`）・`outside`（形状 `pill`）の順に持つ「利用側のページ」のノードを持つ範囲を描く
+        mock: なし
+        expected: ノードの幅が、名前の文字の範囲の幅に左の余白 10px・右の余白 28px・枠線 3px を加えた幅から 1px 以内
 lead: 'map の構成図の描画と、選んだノードの線と経路の強調を受け持ち、構成図の描画と操作を変えるときに参照する。'
 tags:
   - name: topic:map
