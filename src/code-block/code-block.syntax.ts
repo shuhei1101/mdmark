@@ -452,19 +452,26 @@ function fenceKind(
   const isMermaid = token.info.trim().split(/\s+/)[0] === "mermaid";
   const mapSource = token.meta?.[MAP_SOURCE_META] === true;
   const mermaid = mermaidOn && isMermaid && !mapSource;
+  // 部品の帯を持ち、mermaid の図・map の図の元でないコードブロック
+  const plain = codeOn && !isMermaid && !mapSource;
   return {
     language,
     fileName,
     mermaid,
-    markdown:
-      codeOn &&
-      !isMermaid &&
-      !mapSource &&
-      MARKDOWN_LANGUAGES.includes(language.toLowerCase()),
+    markdown: plain && MARKDOWN_LANGUAGES.includes(language.toLowerCase()),
     syntax: syntaxOn && !mermaid ? syntaxLanguageOf(language) : undefined,
-    checkTree: codeOn && !isMermaid && !mapSource && target.treeWarning,
+    checkTree: plain && target.treeWarning,
   };
 }
+
+/** `code` のマーカーを持たないコードブロックの指定 */
+const NO_CODE_SPEC = {
+  title: "",
+  lineNumbers: false,
+  lineStart: 1,
+  wrap: false,
+  raw: false,
+} as const;
 
 /** 部品『コードブロック』のトークン */
 function codeBlockToken(
@@ -477,18 +484,19 @@ function codeBlockToken(
     bar: boolean;
   },
 ): Token {
-  const { token, kind, lines, spec, bar } = block;
+  const { token, kind, lines, bar } = block;
+  const spec = block.spec ?? NO_CODE_SPEC;
   return ownBlock(
     state,
     renderCodeBlock({
       language: kind.language,
       fileName: kind.fileName,
-      title: spec?.title ?? "",
-      lineNumbers: spec?.lineNumbers ?? false,
-      lineStart: spec?.lineStart ?? 1,
-      wrap: spec?.wrap ?? false,
+      title: spec.title,
+      lineNumbers: spec.lineNumbers,
+      lineStart: spec.lineStart,
+      wrap: spec.wrap,
       markdown: kind.markdown,
-      raw: kind.markdown && (spec?.raw ?? false),
+      raw: kind.markdown && spec.raw,
       lines,
       syntax: kind.syntax,
       mermaid: kind.mermaid,

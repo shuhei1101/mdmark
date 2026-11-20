@@ -1,3 +1,7 @@
+import {
+  attachCodePreviews,
+  PREVIEW_CUT_FEATURES,
+} from "./code-block/code-preview.interact.ts";
 import { checkCommentStore, type MdmarkCommentStore } from "./comments/spec.ts";
 import {
   applyPageSettings,
@@ -25,10 +29,6 @@ import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { embeddedLibraries, loadLibraries } from "./libraries.ts";
 import { toPureMarkdown } from "./markdown/pure-markdown.ts";
-import {
-  attachCodePreviews,
-  PREVIEW_CUT_FEATURES,
-} from "./code-block/code-preview.interact.ts";
 import { attachMermaid } from "./mermaid.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
 import { attachPrint } from "./print.ts";
