@@ -616,8 +616,11 @@ const MEASURED_FLOW = `flowchart LR
   doc["文書の Markdown"]:::step
   user(["利用側のページ"]):::outside
   short["abcd"]:::step
+  both["利用側のページ"]:::step
+  class both outside
   doc --> user
   user --> short
+  short --> both
 `;
 
 /** 描いた文書の CSS を当てて、名前の幅を測る構成図を描いて付ける */
@@ -640,13 +643,16 @@ async function setUpMeasured() {
   return { root, handle };
 }
 
-/** 描いたノードの幅と、名前の要素の幅と高さ */
+/** 描いたノードの幅と、名前の文字の幅と高さ */
 const nodeBox = (root: HTMLElement, id: string) => {
   const node = root.querySelector<HTMLElement>(
     `.mdmark-diagram-node[data-node="${id}"]`,
   ) as HTMLElement;
   const name = node.querySelector(".mdmark-diagram-node-name") as HTMLElement;
-  const rect = name.getBoundingClientRect();
+  // 名前の要素はノードの幅に伸びるため、文字の範囲を測る
+  const range = document.createRange();
+  range.selectNodeContents(name);
+  const rect = range.getBoundingClientRect();
   return {
     width: node.getBoundingClientRect().width,
     nameWidth: rect.width,
@@ -670,6 +676,17 @@ test("test_attach_map_flow_when_measured_name", async () => {
       id,
     ).toBeLessThanOrEqual(1);
   }
+});
+
+// 最初の種類が pill でないノードは pill の左の余白で見積もらない（正常系）
+test("test_attach_map_flow_when_first_kind_not_pill", async () => {
+  // 準備・実行（both は種類 step・outside の順に持ち、step の形状で描く）
+  const { root } = await setUpMeasured();
+  // 検証（左の余白 10px・右の余白 28px・枠線 3px）
+  const box = nodeBox(root, "both");
+  expect(
+    Math.abs(box.width - (box.nameWidth + 10 + 28 + 3)),
+  ).toBeLessThanOrEqual(1);
 });
 
 // 書体を読み込み終えた後に測り直す（正常系）
