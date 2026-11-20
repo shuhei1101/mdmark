@@ -298,7 +298,7 @@ suite("プレビューを開く", () => {
       await stub.setTags(["v0.10.0"]);
       await writeFixture(
         "flow.md",
-        "# 図\n\n```mermaid\n%%{init: {}}%%\nflowchart LR\n  A[受付] --> B[回答]\n```\n",
+        "<!-- features: {\"map\": false} -->\n\n# 図\n\n```mermaid\nflowchart LR\n  A[受付] --> B[回答]\n```\n",
       );
       await writeFixture(
         "mdmark.config.yaml",
