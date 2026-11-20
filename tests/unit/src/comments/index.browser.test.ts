@@ -598,3 +598,89 @@ test("test_attach_comments_when_focused", async () => {
   expect(next?.hasAttribute("data-focused")).toBe(true);
   expect(document.querySelector(".mdmark-comment-bubble")).toBeNull();
 });
+
+/** 2 列の表の HTML（見出しの行と本文の行） */
+const TABLE_HTML =
+  "<table><thead><tr><th>名前</th><th>説明</th></tr></thead><tbody><tr><td>導入の手順</td><td>手順を整える</td></tr></tbody></table>";
+
+/** 表の全ての行の子の要素名を並べる */
+function rowChildren(table: HTMLTableElement): string[][] {
+  return [...table.rows].map((row) =>
+    [...row.children].map((child) => child.tagName),
+  );
+}
+
+// 表のセルの文字を選ぶと、ボタンを表の直後に配置し、行の子に入れない（正常系）
+test("test_attach_comments_when_table_cell_selected", async () => {
+  // 準備
+  const { attachComments } = await loadComments();
+  const root = createRoot(TABLE_HTML);
+  detachers.push(
+    (await attachComments({ root, store: createStore(), docId: DOC_ID }))
+      .detach,
+  );
+  const table = root.querySelector("table");
+  const header = root.querySelector("th");
+  const cell = root.querySelector("td");
+  if (!table || !header || !cell) {
+    throw new Error("表が無い");
+  }
+  for (const target of [cell, header]) {
+    // 実行・検証
+    await expectButtonAfterTable(table, target);
+  }
+});
+
+/** セルの文字を選び、ボタンが表の直後にあり、行の子がセルだけで、選んだ文字の下に出ることを確認してから選びを解く */
+async function expectButtonAfterTable(
+  table: HTMLTableElement,
+  target: HTMLTableCellElement,
+): Promise<void> {
+  select(target, 0, 2);
+  await vi.waitFor(() => expect(visibleButton()).toBeDefined());
+  const button = visibleButton();
+  expect(button?.parentElement?.tagName).not.toBe("TR");
+  expect(table.nextElementSibling).toBe(button);
+  expect(rowChildren(table)).toEqual([
+    ["TH", "TH"],
+    ["TD", "TD"],
+  ]);
+  const selected = window.getSelection()?.getRangeAt(0).getBoundingClientRect();
+  expect(Number.parseFloat(button?.style.top ?? "")).toBeGreaterThanOrEqual(
+    selected?.bottom ?? Number.NaN,
+  );
+  window.getSelection()?.removeAllRanges();
+  document.dispatchEvent(new Event("selectionchange"));
+  await vi.waitFor(() => expect(visibleButton()).toBeUndefined());
+}
+
+// root が表の中の要素でも、ボタンを表の直後に配置し、detach で削除する（正常系）
+test("test_attach_comments_when_root_in_table", async () => {
+  // 準備
+  const { attachComments } = await loadComments();
+  const holder = createRoot(TABLE_HTML);
+  const table = holder.querySelector("table");
+  const root = holder.querySelector("tbody");
+  const cell = holder.querySelector("td");
+  if (!table || !root || !cell) {
+    throw new Error("表が無い");
+  }
+  const { detach } = await attachComments({
+    root,
+    store: createStore(),
+    docId: DOC_ID,
+  });
+  // 実行
+  select(cell, 0, 2);
+  await vi.waitFor(() => expect(visibleButton()).toBeDefined());
+  // 検証
+  expect(table.nextElementSibling).toBe(visibleButton());
+  expect(rowChildren(table)).toEqual([
+    ["TH", "TH"],
+    ["TD", "TD"],
+  ]);
+  // 実行
+  detach();
+  // 検証
+  expect(document.querySelector(".mdmark-comment-add")).toBeNull();
+});

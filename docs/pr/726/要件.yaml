@@ -1,0 +1,16 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-80.yaml
+    impact: run_only
+    detail: 文字を選んで出したコメントのボタンの文書の中での置き場所が変わり、ボタンから入力欄を開いて保存する流れを壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-81.yaml
+    impact: run_only
+    detail: 利用側の要素に付けたコメントでも同じボタンの置き場所の変更を受け、ボタンから保存する流れを壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-90.yaml
+    impact: run_only
+    detail: 表形式のビューの本文の選んだ箇所にコメントを付ける流れが、表のセルでのボタンの置き場所の変更を受ける
+    depends_on: []

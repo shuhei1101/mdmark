@@ -313,3 +313,42 @@ test("test_error_when_module_unavailable", async () => {
   // 検証
   expect(visibleButton()).toBeUndefined();
 });
+
+/** 表のセルと表の幅と高さを、行ごとに並べる */
+function tableBoxes(table: HTMLTableElement): string[] {
+  const size = (element: Element) => {
+    const { width, height } = element.getBoundingClientRect();
+    return `${width}x${height}`;
+  };
+  return [
+    size(table),
+    ...[...table.rows].flatMap((row) => [...row.cells].map(size)),
+  ];
+}
+
+// 表のセルの文字を選んでコメントのボタンを出しても、セルと表の幅と高さを変えない（正常系）
+test("test_normal_when_table_cell_selected", async () => {
+  // 準備
+  const el = document.createElement("div");
+  el.innerHTML =
+    "<table><thead><tr><th>名前</th><th>説明</th></tr></thead><tbody><tr><td>導入の手順</td><td>手順を整える</td></tr></tbody></table>";
+  document.body.append(el);
+  elements.push(el);
+  await mountCommentsTracked(el, createStore());
+  const table = el.querySelector("table");
+  const cell = el.querySelector("td");
+  if (!table || !cell) {
+    throw new Error("表が無い");
+  }
+  const before = tableBoxes(table);
+  // 実行
+  select(cell, 0, 2);
+  // 検証
+  await vi.waitFor(() => expect(visibleButton()).toBeDefined());
+  expect(tableBoxes(table)).toEqual(before);
+  // 実行
+  window.getSelection()?.removeAllRanges();
+  // 検証
+  await vi.waitFor(() => expect(visibleButton()).toBeUndefined());
+  expect(tableBoxes(table)).toEqual(before);
+});
