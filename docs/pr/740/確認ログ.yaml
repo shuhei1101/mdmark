@@ -5,3 +5,9 @@ confirmations:
     approver: shuhei1101
     commit: 34e0315f
     thread: https://github.com/shuhei1101/mdmark/pull/740#discussion_r4639383599
+  - topic: map の確信度のマーカー・計画した変更・図の書き出し・一覧の表示のモックで進めてよいか
+    decision: 推奨案 A。map-trust-changes・map-export-list のモックで進める
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b8b5a416
+    thread: https://github.com/shuhei1101/mdmark/pull/740#discussion_r4639966763

@@ -40,8 +40,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T06:34:49.481804+00:00'
   - process: モック作成
-    status: todo
-    note: 追加すると決めた項目の見え方（確信度のマーカー・計画した変更・書き出しのボタン・一覧の表示）のモックを作る。何も追加しない場合は skipped にする
+    status: done
+    note:
+    updated_by: planner
+    updated_at: '2026-11-20T08:08:02.789597+00:00'
   - process: データ設計
     status: todo
   - process: インターフェース定義設計
