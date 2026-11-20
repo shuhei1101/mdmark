@@ -83,7 +83,8 @@ path.map740-wire-removed { stroke: var(--mdmark-color-diff-del-sign) !important;
   box-sizing: border-box;
   height: 100%;
   margin: 0;
-  padding: 12px 16px;
+  /* 上の余白は、表示する枠の右上に重ねたパネル（高さ 34px と上の余白）の下から項目を始める分 */
+  padding: 56px 16px 12px;
   overflow: auto;
   list-style: none;
   font-size: 14px;
