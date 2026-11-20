@@ -79,7 +79,7 @@
   height: auto;
   cursor: grab;
 }
-.mock-763 .mock-group-edge.is-left { left: 0; top: 36px; bottom: 16px; width: 8px; }
-.mock-763 .mock-group-edge.is-right { right: 0; top: 36px; bottom: 16px; width: 8px; }
-.mock-763 .mock-group-edge.is-bottom { left: 8px; right: 16px; bottom: 0; height: 8px; }
+.mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge.is-left { inset: 36px auto 16px 0; width: 8px; }
+.mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge.is-right { inset: 36px 0 16px auto; width: 8px; }
+.mock-763 .mdmark-diagram[data-diagram="map"] .map-group-bar.mock-group-edge.is-bottom { inset: auto 16px 0 8px; height: 8px; }
 .mock-763 .mock-group-edge:hover { background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent); }
