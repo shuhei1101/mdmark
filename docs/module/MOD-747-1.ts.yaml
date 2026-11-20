@@ -1,0 +1,86 @@
+id: MOD-747-1
+visibility: internal
+title: ライブラリ本体 / map / 読み取り / mermaid-style.ts
+lead: Mermaid の外観を指定する行（`style`・`classDef`・`class`・`:::`・`cssClass`・`linkStyle`）からノードと線の色を読み取り、面に対する文字の色を決める処理を受け持ち、map の図に適用する色の読み取りを変えるときに参照する。
+data_models:
+  - name: MermaidStyles
+    title: Mermaid の色の指定
+    container: src/map/mermaid-style.ts
+    role: データモデル
+    summary: '`readMermaidStyles` の戻り値'
+    properties:
+      - name: nodes
+        type: 'Record<string, { fill?: string; stroke?: string; color?: string }>'
+        description: ノード（クラス・状態・テーブル・ブロック）の ID から、面・枠線・文字の色。`style` を `classDef` より優先し、`classDef default` は全てのノードの既定にする
+      - name: wires
+        type: 'Record<number, { stroke?: string; color?: string }>'
+        description: 線の記載順の番号（0 から）から、線と線のラベルの文字の色
+      - name: defaultWire
+        type: '{ stroke?: string; color?: string } | undefined'
+        description: '`linkStyle default` の色（番号の指定の無い線の既定）'
+functions:
+  - name: readMermaidStyles
+    title: Mermaidの色の指定を読み取る
+    kind: 関数
+    container: src/map/mermaid-style.ts
+    scope: public
+    summary: Mermaid の行から、外観を指定する行を読み取ってノードと線の色を返却する
+    process: |-
+      1. `classDef {クラス,…} {属性}`（`,` で区切った複数のクラスを含む）を読み取り、属性の `fill`・`stroke`・`color` だけを持つ（`stroke-width`・`stroke-dasharray`・`font-size` などは捨てる。属性の末尾の `;` は除く）
+      2. `class {ID,…} {クラス}`・行の中の `{ID}:::{クラス}`・`cssClass "{ID,…}" {クラス}` でノードにクラスを当て、`classDef` の色をそのノードに入れる（`classDef` を持たないクラスは当てない）
+      3. `style {ID} {属性}` の色をノードに重ねる（`classDef` より優先）
+      4. `linkStyle {番号,…|default} {属性}` の `stroke`・`color` を線の番号か `defaultWire` に入れる
+      5. 色は記載した文字のまま持つ（`#f9f`・`#ffe08a`・`red`・`rgb(…)`）
+    args:
+      - name: options
+        type: '{ lines: string[]; classTarget: "class" | "cssClass" }'
+        required: true
+        description: Mermaid の行（1 行目を除く）と、クラスを当てる行の書き方（flowchart・状態遷移図・ER 図・ブロック図は `class`、クラス図は `cssClass`）
+    returns:
+      type: MermaidStyles
+      description: ノードと線の色
+    unit_tests:
+      - name: test_read_mermaid_styles
+        case: 正常
+        summary: style・classDef・class・:::・linkStyle を読み取り、style を優先する
+        condition: モック `docs/mock/components/plain-mermaid-style/` の「style と classDef を持つ flowchart」の行に `class A warn` を足したもの、`classTarget` が `class`
+        mock: なし
+        expected: '`nodes.A` が `{ fill: "#f9f", stroke: "#c3c" }`、`nodes.D`・`nodes.E` が `{ fill: "#ffe08a", stroke: "#b8860b" }`、`wires[1]` が `{ stroke: "#d33" }`'
+      - name: test_read_mermaid_styles_when_ignored
+        case: 正常
+        summary: 色でない属性と classDef を持たないクラスを当てず、default を既定にする
+        condition: '`style A stroke-width:4px,stroke-dasharray: 5 5`・`B:::unknown`・`classDef default fill:#eee;`・`linkStyle default stroke:#999`'
+        mock: なし
+        expected: '`nodes.A` と `nodes.B` が `{ fill: "#eee" }`、`defaultWire` が `{ stroke: "#999" }`'
+    refs:
+      - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
+    status: planned
+  - name: textColorOn
+    title: 面に対する文字の色を決める
+    kind: 関数
+    container: src/map/mermaid-style.ts
+    scope: public
+    summary: 面の色に対して WCAG 2 のコントラスト比が高い方の `#000000` か `#ffffff` を返却する
+    description: '`#rgb`・`#rrggbb`・`rgb()`・CSS の名前の色を sRGB にして相対輝度を計算する。読み取れない色は `undefined` を返却し、呼ぶ側は文字の色を指定しない（map の配色のまま）'
+    args:
+      - name: fill
+        type: string
+        required: true
+        description: 面の色
+    returns:
+      type: '"#000000" | "#ffffff" | undefined'
+      description: 文字の色
+    unit_tests:
+      - name: test_text_color_on
+        case: 正常
+        summary: 明るい面は黒、暗い面は白、読み取れない色は undefined
+        condition: '`#f9f`・`#ffe08a`・`#333`・`navy`・`rgb(255, 255, 255)`・`var(--x)`'
+        mock: なし
+        expected: 順に `#000000`・`#000000`・`#ffffff`・`#ffffff`・`#000000`・`undefined`
+    refs:
+      - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
+    status: planned
+tags:
+  - name: topic:map
+  - name: topic:図
+  - name: action:読み取り

@@ -240,6 +240,8 @@ items:
   summary: ライブラリ本体 / map / 描画と操作 / flow-view.ts
 - page: MOD-472-137.ts.yaml
   summary: ライブラリ本体 / map / 読み取り / flowchart.ts
+- page: MOD-747-1.ts.yaml
+  summary: ライブラリ本体 / map / 読み取り / mermaid-style.ts
 - page: MOD-472-128.ts.yaml
   summary: ライブラリ本体 / map / 描画と操作 / index.ts
 - page: MOD-472-141.ts.yaml

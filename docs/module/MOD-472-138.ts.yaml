@@ -50,7 +50,7 @@ functions:
       type: Sequence
       description: 読み取り結果
     process: |-
-      1. 行ごとに、`participant`・`actor`（`as` の別名）・`autonumber`・`activate`・`deactivate`・`Note`・`loop`・`alt`・`opt`・`par`・`critical`・`break`・`rect`・`else`・`and`・`option`・`end`・`box`・`%% block:`・`%%`・メッセージの行に分けて読み取る
+      1. 行ごとに、`participant`・`actor`（`as` の別名）・`autonumber`・`activate`・`deactivate`・`Note`・`loop`・`alt`・`opt`・`par`・`critical`・`break`・`rect`・`else`・`and`・`option`・`end`・`box`・`%% block:`・`%%`・メッセージの行に分けて読み取る。mermaid と同じく、参加者の `@{ "type": …, "alias": … }`（`type` は `boundary`・`control`・`entity`・`database`・`collections`・`queue` を参加者の種類にし、`alias` と後ろの `as` の名前は `as` を優先する）・メッセージの中央への接続（`->>()`・`()->>`。矢印の端に小さな円を描く）・矢印と `+`・`-` の間や前後の空白（`->>+ `・`-->>- `）も読み取る
       2. メッセージは長い矢印から順に照らし、受け手の前の `+`・送り手の `-` で活性化の区間を開閉する
       3. ブロックは開いた順に番号を振り、区切りの行で `sections` を追加し、`end` で `end` を記録する
          - 読み取れない行・閉じの無いブロック・対の無い `deactivate` は `map_invalid` の項目にする
@@ -92,6 +92,12 @@ functions:
         condition: '`A => B: x`'
         mock: なし
         expected: '`problems` に `map_invalid` が 1 件'
+      - name: test_parse_sequence_when_mermaid_syntax
+        case: 正常
+        summary: mermaid の公式の記法の例のシーケンス図の行を読み取る
+        condition: '`participant API@{ "type": "boundary", "alias": "Internal Name" } as External Name`・`actor DB@{ "type": "database" }`・`Alice->>()John: Hello`・`Alice ->>+ John: Did you want to go?`・`John -->>- Alice: Yeah!` を持つシーケンス図'
+        mock: なし
+        expected: '`problems` が空。`API` の名前が `External Name` で種類が `boundary`、`DB` の種類が `database`、1 つ目のメッセージが受け手の端に中央への接続を持ち、`John` の活性化の区間が 1 つ'
 lead: 'Mermaid の sequenceDiagram の読み取りを受け持ち、シーケンス図の記法の読み取りを変えるときに参照する。'
 tags:
   - name: topic:map
