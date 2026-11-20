@@ -2630,7 +2630,7 @@ flows:
       <!-- /map -->
     expected:
       - 1 つ目は `data-tree-language="text"` を持つ `div.mdmark-tree` で、`src/` がフォルダ、`index.ts` がファイルの項目になり、前に記載の警告が無い
-      - 2 つ目は `data-tree-language` を持たない `div.mdmark-tree` で、`src/` の下に `index.ts` と `parts/` の項目がある
+      - 2 つ目は `data-tree-language=""` の `div.mdmark-tree` で、`src/` の下に `index.ts` と `parts/` の項目がある
       - 3 つ目と 4 つ目は `language-text` の `pre` のコードブロックのままで、前に記載の警告が無い
       - 5 つ目の前に、読み込めない行の行番号を記載した記載の警告が 1 つだけあり、コードブロックは `language-text` の `pre` のまま
       - 6 つ目の前に `tree_warning` の `"no"` と `true`・`false` で記載する修正方法の記載の警告が 1 つあり、読み取れない値は既定の `true` として扱って `div.mdmark-tree` にする
@@ -3249,7 +3249,7 @@ constraints:
   - item: ステップ・ファイルツリー・バッジ
     constraint: '`<!-- steps -->` の範囲の番号付きリストの `ol` に class `mdmark-steps` を付ける。言語 `tree` のコードブロックを `<div class="mdmark-tree">` の中の `<ul class="mdmark-tree-list" aria-label="ファイルツリー">` の入れ子にし、項目を `<li class="mdmark-tree-folder">`（名前が `/` で終わるか子を持つ）・`<li class="mdmark-tree-file">` と `<span class="mdmark-tree-name">` にする。直前の `<!-- tree: {JSON のオブジェクト} -->` の `wrap` の `true` は、そのツリーの `div.mdmark-tree` に class `mdmark-tree-wrap` を付ける（`depth` と同じオブジェクトに記載できる）。頭が `badge:` の行内のコードを `<span class="mdmark-badge">{頭を削除した文言}</span>` にし、`badge\:` の行内のコードは `\` を削除した `<code>` にする。`badge:` の後ろが空か空白だけの行内のコードはバッジにせず、`<code>` のまま出す'
   - item: 罫線のフォルダ構成のファイルツリー
-    constraint: '`code` がオンのとき、言語が `tree` でない普通のコードブロック（言語なし・`text`・`plaintext` などの言語。言語 `tree` のファイルツリー・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html`・mermaid・CSV の表・map の範囲のコードブロックは除く）のうち、行頭の空白と罫線の縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行を 2 行以上持つものを、制約『ステップ・ファイルツリー・バッジ』の言語 `tree` のコードブロックと同じ読み取りで `<div class="mdmark-tree">` にする。記載した言語を `div.mdmark-tree` の属性 `data-tree-language` に持たせる（言語なしは属性を付けない）。罫線を読み取れない行を持つものは、言語 `tree` のコードブロックと同じ記載の警告を 1 つだけ配置し、記載した言語のコードブロックのまま描く。直前の `<!-- code: {JSON のオブジェクト} -->` の `tree_warning` が `false` のコードブロックはファイルツリーにせず、記載の警告を配置せずに記載した言語のまま描く'
+    constraint: '`code` がオンのとき、言語が `tree` でない普通のコードブロック（言語なし・`text`・`plaintext` などの言語。言語 `tree` のファイルツリー・図の部品の範囲の `json`・埋め込んだ HTML の範囲の `html`・mermaid・CSV の表・map の範囲のコードブロックは除く）のうち、行頭の空白と罫線の縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行を 2 行以上持つものを、制約『ステップ・ファイルツリー・バッジ』の言語 `tree` のコードブロックと同じ読み取りで `<div class="mdmark-tree">` にする。記載した言語を `div.mdmark-tree` の属性 `data-tree-language` に持たせる（言語なしは空の値）。罫線を読み取れない行を持つものは、言語 `tree` のコードブロックと同じ記載の警告を 1 つだけ配置し、記載した言語のコードブロックのまま描く。直前の `<!-- code: {JSON のオブジェクト} -->` の `tree_warning` が `false` のコードブロックはファイルツリーにせず、記載の警告を配置せずに記載した言語のまま描く'
     notes: '外観はモック `docs/mock/components/file-tree-plain-lines/`。確認ログ『言語が tree でない罫線を描いたファイルツリーの帯のラベル』『罫線のまま見せる指定 tree_warning: false の扱い』'
   - item: 見出しの ID とアンカー
     constraint: 全ての見出しに GitHub と同じ規則の `id` を付ける（小文字にし、英数字・`-`・`_`・空白と英字以外の文字のほかを落とし、空白を `-` にする。同じ ID の 2 つ目から `-1`・`-2` を付ける）。見出しの ID は機能に関わらず付ける。`anchors` がオンのとき、見出しの中に `<a class="mdmark-anchor" href="#{ID}" aria-label="「{見出しの文字}」へのリンク">` を追加する

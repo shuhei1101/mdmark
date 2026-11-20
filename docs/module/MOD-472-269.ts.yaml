@@ -27,10 +27,11 @@ functions:
     summary: '部品設計『ファイルツリー』の HTML を返却する'
     description: |-
       `div.mdmark-tree` に `open` を `data-open`、`source` を `data-source` で持たせ、名前が `...` の項目を `mdmark-tree-more`、ファイルを `fileIconOf` の `data-file-icon` で描き、`note` を `mdmark-tree-note` に入れる。
-      `interactive` のときは `renderTreeBar` の帯を配置し、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを配置する
+      `language` が `tree` でなければ `data-tree-language` に持たせる（空も空の値で持たせる）。
+      `interactive` のときは `renderTreeBar`（`language`。省いたときは `tree`）の帯を配置し、子を持つフォルダの名前を開閉のボタンにし、`folderOpenByDefault` で開かないフォルダの入れ子の `ul` を `hidden="until-found"` にし、`copyFallback` ならツリーの下に `renderCopyPanel` のパネルを配置する
     args:
       - name: options
-        type: '{ nodes: TreeNode[]; source: string; open?: string; wrap?: boolean; interactive?: boolean; copyState?: "idle" | "copied"; copyFallback?: boolean; id?: string }'
+        type: '{ nodes: TreeNode[]; source: string; open?: string; wrap?: boolean; interactive?: boolean; language?: string; copyState?: "idle" | "copied"; copyFallback?: boolean; id?: string }'
         required: true
         description: 部品設計の引数と、`aria-controls` の id の頭（既定 `mdmark-tree`。`interactive` のときだけ使用する）
     returns:
@@ -73,6 +74,12 @@ functions:
         condition: 部品設計『ファイルツリー』の状態 `Wrap` の引数
         mock: なし
         expected: '`div.mdmark-tree` が `mdmark-tree-wrap` と `data-open="all"` を持ち、`wrap` を指定しないと `mdmark-tree-wrap` を持たない'
+      - name: test_render_tree_when_language
+        case: 正常
+        summary: 言語が tree でない罫線のツリーに言語を持たせ、帯のラベルにする
+        condition: 部品設計『ファイルツリー』の状態 `PlainLanguage`・`PlainNoLanguage` の引数と、`interactive` を省いた `language` が `text` のもの
+        mock: なし
+        expected: '`PlainLanguage` は `data-tree-language="text"` と帯のラベル `text`、`PlainNoLanguage` は `data-tree-language=""` で帯のラベルを持たない。`interactive` を省いたものは `data-tree-language="text"` を持ち、帯を持たない'
   - name: fileIconOf
     title: ファイルのアイコンの種類を決める
     container: src/tree/tree.part.ts
@@ -100,27 +107,30 @@ functions:
     container: src/tree/tree.part.ts
     summary: 'ツリーの上に配置するコピーのボタンの帯の HTML を返却する'
     description: |-
-      ツリーの上に配置する `<div class="mdmark-tree-bar">`（種類 `tree`・`mdmark-tree-copy` のボタン・`role="status"` の `mdmark-tree-status`）を返却する。
-      ボタンは `copyState` を `data-state` に持ち、`idle` は `copy` のアイコンと `コピー`、`copied` は `check` のアイコンと `コピーしました`。
+      ツリーの上に配置する `<div class="mdmark-code-bar">` を返却する。中身は `renderCodeBar`（`language`、`fileName` と `title` は空、`copyState`）で、コードブロックの帯と同じ要素とクラス（`mdmark-code-lang`・`mdmark-code-meta`・`mdmark-code-copy`・`mdmark-code-status`）を持つ。
       `mount` が描いたツリーに追加するのにも使用する
     kind: 関数
     scope: internal
     args:
       - name: options
-        type: '{ copyState?: "idle" | "copied" }'
+        type: '{ language: string; copyState?: "idle" | "copied" }'
         required: true
-        description: コピーボタンの状態（既定 `idle`）
+        description: ラベルに出す言語（空ならラベル無し）と、コピーボタンの状態（既定 `idle`）
     returns:
       type: string
-      description: '`<div class="mdmark-tree-bar"` で始まる HTML'
+      description: '`<div class="mdmark-code-bar"` で始まる HTML'
     unit_tests:
       - name: test_render_tree_bar
         case: 正常
-        summary: コピーボタンの状態で文言を切り替える
-        condition: '`copyState` を省いたものと `copied`'
+        summary: コードブロックと同じ帯に言語のラベルを出し、コピーボタンの状態で文言を切り替える
+        condition: '`language` が `tree` で `copyState` を省いたもの、`language` が `text` で `copied`、`language` が空のもの'
         mock: なし
-        expected: 1 つ目は `<button class="mdmark-tree-copy" type="button" data-state="idle">` と `コピー`、2 つ目は `data-state="copied"` と `コピーしました`。どちらも `aria-hidden="true"` の `tree` と `role="status"` の要素を持つ
+        expected: 1 つ目は `mdmark-code-lang-name` が `tree` で `<button class="mdmark-code-copy" type="button" data-state="idle">` と `コピー`、2 つ目はラベルが `text` で `data-state="copied"` と `コピーしました`、3 つ目は `mdmark-code-lang` を持たない。どれも `role="status"` の `mdmark-code-status` を持ち、`mdmark-tree-bar` を持たない
     status: planned
+    refs:
+      - IF-472-35#constraints[ファイルツリーの開閉とコピー]
+    callees:
+      - MOD-472-306#functions[renderCodeBar]
   - name: folderOpenByDefault
     title: フォルダを既定で開くかを決める
     container: src/tree/tree.part.ts

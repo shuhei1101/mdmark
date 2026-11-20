@@ -82,7 +82,7 @@ styles:
 
           注意書きの面は種類の色を `--mdmark-color-bg` に 7%、線は 40% `color-mix(in oklab, …)` で混ぜる（`docs/mock/refs/80/assets/canvas-themes.css` の `.theme-dev-swiss .markdown-alert`）。
 
-          表・タブ・ステップの折り畳み（`.mdmark-collapsible` と閉じた表の帯）は `docs/mock/refs/225/assets/collapse.css`、ファイルツリーの帯・注釈の列（`--mdmark-tree-note-start`）・`data-file-icon` ごとのアイコンと色・「ほかにもある」の項目・フォルダの開閉は `docs/mock/refs/225/assets/tree.css` から取る。
+          表・タブ・ステップの折り畳み（`.mdmark-collapsible` と閉じた表の帯）は `docs/mock/refs/225/assets/collapse.css`、注釈の列（`--mdmark-tree-note-start`）・`data-file-icon` ごとのアイコンと色・「ほかにもある」の項目・フォルダの開閉は `docs/mock/refs/225/assets/tree.css` から取る。ファイルツリーの帯はコードブロックの帯（`.mdmark-code-bar`）の規則をそのまま当て、`.mdmark-tree > .mdmark-code-bar` だけ帯の枠線と角丸を外してツリーの外側の枠線を帯とツリーの共通の枠線にする（`docs/mock/refs/747/assets/mock.css`）。`.mdmark-tree-bar`・`.mdmark-tree-kind`・`.mdmark-tree-meta`・ツリーの帯の `.mdmark-tree-copy` の規則は削除する（キーの階層の表の `.mdmark-table[data-tree]` の規則は残す）。
 
           モックのアイコンの要素（`.mdmark-icon`・`.mdmark-tree-chevron`）は、フォルダは開閉のボタンの `aria-expanded`、ファイルは `data-file-icon` で選ぶ `mask-image` として解釈する。
 

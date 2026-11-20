@@ -11911,7 +11911,7 @@ constraints:
       削除したブロックの中の要素は `data-source-line` と `id` を持たず、番号付きリストの削除した項目は番号を使用しない
     notes: 外観は確認ログのモックへの合意（左の余白の + / −）。色は `--mdmark-color-diff-add-bg`・`--mdmark-color-diff-del-bg`・`--mdmark-color-diff-add-sign`・`--mdmark-color-diff-del-sign`。削除したブロックはスクロールを合わせる先と見出しのアンカーにしない
   - item: ファイルツリーの開閉とコピー
-    constraint: '`tree` がオンのとき、`div.mdmark-tree` の上に、コードブロックの帯と同じ部品の帯（左端のラベルと右端のコピーボタン）を配置する。ラベルは、言語 `tree` のコードブロックは `tree`、`data-tree-language` を持つツリーはその言語で、`data-tree-language` を持たない言語なしの罫線のツリーはラベルを出さない。子を持つフォルダの名前とアイコンを `aria-expanded`・`aria-controls` を持つボタンにする。`data-open` が数ならルートの深さを 0 として深さがその数より浅いフォルダを開き、`all` か無ければ全てのフォルダを開き、閉じたフォルダの入れ子の `ul` を `hidden="until-found"` にする。Shift を押しながらの開閉は入れ子のフォルダも同じ状態にする。コピーは `data-source` を記載し、記載できないときは表のコピーと同じパネルを出す'
+    constraint: '`tree` がオンのとき、`div.mdmark-tree` の上に、コードブロックの帯と同じ部品の帯（左端のラベルと右端のコピーボタン）を配置する。ラベルは、言語 `tree` のコードブロックは `tree`、`data-tree-language` を持つツリーはその言語で、`data-tree-language` が空の言語なしの罫線のツリーはラベルを出さない。子を持つフォルダの名前とアイコンを `aria-expanded`・`aria-controls` を持つボタンにする。`data-open` が数ならルートの深さを 0 として深さがその数より浅いフォルダを開き、`all` か無ければ全てのフォルダを開き、閉じたフォルダの入れ子の `ul` を `hidden="until-found"` にする。Shift を押しながらの開閉は入れ子のフォルダも同じ状態にする。コピーは `data-source` を記載し、記載できないときは表のコピーと同じパネルを出す'
     notes: 確認ログ『言語が tree でない罫線を描いたファイルツリーの帯のラベル』。外観はモック `docs/mock/components/file-tree-plain-lines/`
   - item: 色のプリセット
     constraint: 色の名前ごとに、面の薄い色 `--mdmark-color-accent-{色}-bg` と文字の色 `--mdmark-color-accent-{色}-text` の CSS 変数を、選べるテーマのそれぞれの明るい配色と暗い配色で持つ（色の名前は インターフェース定義『文書をHTML文字列にする』の制約「色の名前」）。`data-color` を持つ強調した列のセルと行は面の薄い色、バッジは面の薄い色と文字の色、本文の文字の色の `mdmark-color` は文字の色と太字にする。強調した列の見出しのセルに下端の線、色を付けた行に上下の線を付ける。どの組も、文字と面のコントラストを 4.5:1 以上にする。印刷では選んだテーマの明るい配色の値で色を残す
