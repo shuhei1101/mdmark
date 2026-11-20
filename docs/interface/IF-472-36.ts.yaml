@@ -317,6 +317,12 @@ request:
     description: '`mount` の `opts.aliases` と同じ。構造は ER 図『エイリアス』'
     notes: 使用できないエイリアス（`env` を含む）は `mount` と同じく除いて照合する
     status: planned
+  - name: input.frontmatter
+    type: Record<string, unknown>
+    required: false
+    default: なし（フロントマターで補わない）
+    location: argument
+    description: '`collectReferences` の `input.frontmatter` と同じ'
 request_example: |-
   ```json
   {

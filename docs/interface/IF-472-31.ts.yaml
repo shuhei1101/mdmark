@@ -169,7 +169,7 @@ flows:
       - name: 配布物を読み込む Node の処理
         description: 正常系と同じ
       - name: フロントマターを持つ索引と本文
-        description: 正常系の索引のうち `arch` の行を `id`・`path` だけにしたもの。`設計/arch.md` の本文の先頭のフロントマターが `title` に `アーキテクチャ`、`aliases` に `[構成図]` を持ち、`使い方/guide.md` の本文の先頭のフロントマターが `aliases` に文字列の `使い方` を持ち、本文の段落に `構成図` が出る。`documents` は、索引に無い `note.md`（先頭のフロントマターが `title` に `メモ` を持ち、本文が `[構成](設計/arch.md)`）と `draft.md`（フロントマターを持たず、本文が `[構成](設計/arch.md)`）も持つ
+        description: 正常系の索引のうち `arch` の行を `id`・`path` だけにしたもの。`設計/arch.md` の本文の先頭のフロントマターが `title` に `アーキテクチャ`、`aliases` に `[構成図]` を持ち、`使い方/guide.md` の本文の先頭のフロントマターが `aliases` に文字列の `使い方` を持ち、本文の段落に `構成図` が出る。`documents` は、索引に無い `note.md`（先頭のフロントマターが `title` に `メモ` を持ち、本文が `[構成](設計/arch.md)`）と `draft.md`（フロントマターを持たず、本文が `[構成](設計/arch.md)`）も持つ。`frontmatter` に、各文書のフロントマターを解析した値を指定する
         notes: 型の合わない `aliases` を `guide` に、フロントマターに `title` を持つ・持たない索引に無い文書を並べて、補う・補わない・加える・加えないを決定的に発生させる
       - name: Mock
         description: 差し替える依存は無い
@@ -180,8 +180,8 @@ flows:
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
-        C->>M: collectReferences({ index, documents })
-        M->>M: 各文書の先頭のフロントマターを解析し、索引に無いキーを補い、title を持つ索引に無い文書を加える
+        C->>M: collectReferences({ index, documents, frontmatter })
+        M->>M: frontmatter の値で索引に無いキーを補い、title を持つ索引に無い文書を加える
         M->>M: 補った文書で related・本文のリンク・別名の出現を取得する
         M-->>C: { backlinks, glossary, docs }
       ```
@@ -218,6 +218,14 @@ request:
     default: なし（全てのキーに既定を適用する）
     location: argument
     description: '`mount` の `opts.config` と同じ。読み込むのは `features`（文書ごとの `<!-- features: {…} -->` を重ねて、`backlinks`・`glossary` がオフの文書を算出から除外する）だけ'
+  - name: input.frontmatter
+    type: Record<string, unknown>
+    required: false
+    default: なし（フロントマターで補わず、索引に無い文書も加えない）
+    location: argument
+    description: 文書のパス（`documents` のキーと同じ記載方法）から、その文書の本文の先頭のフロントマターの中身を呼ぶ側が YAML として解析した値を参照する表
+    example: '{ "note.md": { "title": "メモ" } }'
+    notes: フロントマターの範囲は `splitFrontmatter` と同じ判定で取り出す。解析できない文書は表に入れない。配布物に YAML の解析器を入れないため、解析は呼ぶ側が行う
 request_example: |-
   ```json
   {
@@ -295,7 +303,7 @@ constraints:
   - item: フロントマター
     constraint: 各文書の本文の先頭のフロントマターは、インターフェース定義『文書をHTML文字列にする』の制約「フロントマター」と同じ判定で除外してから、本文のリンクの解決と文書の別名の照合・用語集の表の取り出しをする。フロントマターの中のリンク・文書の別名・用語は、被参照と用語の出現に数えない
   - item: フロントマターのメタデータ
-    constraint: 各文書の本文の先頭のフロントマター（制約「フロントマター」と同じ判定）の中身を YAML として解析し、最上位のマッピングの `title`・`description`・`aliases`・`tags` だけを参照する。`title`・`description` は空でない文字列、`aliases` は空でない文字列の並び、`tags` は索引の `docs[].tags` と同じ要素の並びのときだけ使用し、型の合わないキーと、解析できない・最上位がマッピングでない中身は、無いものとして扱う（例外を投げない）。索引の文書は、索引に無いキーだけをフロントマターの値で補う（両方にあれば索引の値）。索引に無い文書は、使用できる `title` を持つときだけ、`id` と `path` をその文書のパスにした文書として加える。加える文書の `id` が索引の文書の `id` と重なるときは加えない
+    constraint: '`input.frontmatter` の各文書の値がマッピングのとき、その `title`・`description`・`aliases`・`tags` だけを参照する。`title`・`description` は空でない文字列、`aliases` は空でない文字列の並び、`tags` は索引の `docs[].tags` と同じ要素の並びのときだけ使用し、型の合わないキーと、マッピングでない値と、`input.frontmatter` に無い文書は、無いものとして扱う（例外を投げない）。索引の文書は、索引に無いキーだけをフロントマターの値で補う（両方にあれば索引の値）。索引に無い文書は、使用できる `title` を持つときだけ、`id` と `path` をその文書のパスにした文書として加える。加える文書の `id` が索引の文書の `id` と重なるときは加えない'
     notes: 補った文書はレスポンスの `docs`。`checkIndex`・`collectMatches` も同じ規則で補う
 refs:
   - SC-472-75#

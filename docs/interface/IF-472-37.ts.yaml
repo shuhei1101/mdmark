@@ -278,7 +278,7 @@ flows:
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
-        C->>M: checkIndex({ index, documents })
+        C->>M: checkIndex({ index, documents, frontmatter })
         M->>M: フロントマターの値で索引の文書を補い、両方にあるキーの値を比べる
         M-->>C: []
       ```
@@ -304,7 +304,7 @@ flows:
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
-        C->>M: checkIndex({ index, documents })
+        C->>M: checkIndex({ index, documents, frontmatter })
         M->>M: title を持つ索引に無い文書を索引の文書に加える
         M-->>C: ずれの一覧
       ```
@@ -319,7 +319,7 @@ flows:
       - name: 配布物を読み込む Node の処理
         description: 正常系と同じ
       - name: 値が違う索引と本文
-        description: 索引が `guide`（`title` に `使用方法`、`tags` に `[手順]`）と `faq`（`title` に `よくある質問`）を持つ。`guide.md` の先頭のフロントマターが `title` に `使い方`、`tags` に `[手順]` を持ち、`faq.md` の先頭のフロントマターは YAML として解析できない
+        description: 索引が `guide`（`title` に `使用方法`、`tags` に `[手順]`）と `faq`（`title` に `よくある質問`）を持つ。`guide.md` の先頭のフロントマターが `title` に `使い方`、`tags` に `[手順]` を持ち、`faq.md` の先頭のフロントマターは YAML として解析できず、`frontmatter` に値を持たない
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -329,7 +329,7 @@ flows:
       sequenceDiagram
         participant C as 利用側の処理
         participant M as mdmark
-        C->>M: checkIndex({ index, documents })
+        C->>M: checkIndex({ index, documents, frontmatter })
         M->>M: 索引とフロントマターの両方にあるキーの値を比べる
         M-->>C: ずれの一覧
       ```
@@ -370,6 +370,12 @@ request:
     description: 比べる基準から変わった文書のパス（`documents` のキーと同じ記載方法）。指定したときだけ、`change_together` の組のうち片方だけが変わった組を `missed_change_together` で返却する
     example: '["設計/arch.md"]'
     notes: パスの引き方（git の比べ方）は呼ぶ側が決める。索引のどの `path` にも該当しないパスは無視する
+  - name: input.frontmatter
+    type: Record<string, unknown>
+    required: false
+    default: なし（フロントマターで補わず、`frontmatter_mismatch` を確認しない）
+    location: argument
+    description: '`collectReferences` の `input.frontmatter` と同じ'
 response:
   - name: '[]'
     type: MdmarkIndexIssue[]

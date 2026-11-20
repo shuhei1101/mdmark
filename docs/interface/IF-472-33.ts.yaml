@@ -708,7 +708,7 @@ constraints:
   - item: 利用側の CSS
     constraint: 設定の `theme` の CSS を配布物の CSS の後に埋める。読み込めないときは埋めず警告に出す
   - item: 索引と参照の表
-    constraint: 設定に `index` があるとき、索引と、索引の `docs` の文書を読み込んで `collectReferences` で作った参照の表を埋め、索引に書き出す文書があればその `id` を `mount` の `docId` に指定する。読み込めない索引の文書は飛ばして警告に出す
+    constraint: 設定に `index` があるとき、索引と、索引の `docs` の文書を読み込み、それらと書き出す文書の先頭のフロントマターの中身を YAML として解析した値（`frontmatter`。解析できない文書は入れない）も指定して `collectReferences` で作った参照の表を埋め、索引に書き出す文書があればその `id` を `mount` の `docId` に指定する。読み込めない索引の文書は飛ばして警告に出す
     decided_by: IF-472-31#
   - item: 文書間のリンク
     constraint: 記載したままの `href` で残す。警告には出さない
