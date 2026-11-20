@@ -786,9 +786,9 @@ constraints:
 
       (2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].rendered.html`・`docs[].pureMarkdown`・`index`・`references`・`aliases`・`entry`・画像の `data:` URL の `assets`）を除く値で、単語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。
 
-      (3) 埋める本文の HTML（`docs[].rendered.html`）では、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby`・`aria-details`・`aria-controls`・`aria-labelledby`・`aria-owns`・`aria-flowto`・`aria-activedescendant`・`aria-errormessage`。`aria-label` などの文字の `aria-*` は置き換えない）・`for`・`headers` の属性の値・`style` の属性の CSS 変数の名前・`mdmark-asset:` の `mdmark` だけを別名へ置き換え、テキストのノードと、それ以外の `href`・`src`・`alt`・`title` の属性の値は置き換えない。HTML のコメントは削除する。純粋な Markdown（`docs[].pureMarkdown`）は置き換えない。
+      (3) 埋める本文の HTML（`docs[].rendered.html`）では、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby`・`aria-details`・`aria-controls`・`aria-labelledby`・`aria-owns`・`aria-flowto`・`aria-activedescendant`・`aria-errormessage`。`aria-label` などの文字の `aria-*` は置き換えない）・`for`・`headers` の属性の値・`style` の属性の CSS 変数の名前・`mdmark-asset:` の `mdmark` と、テキストのノードのうちコードの例の部品の要素名（`&lt;mdmark-`・`&lt;/mdmark-`）の `mdmark` だけを別名へ置き換え、ほかのテキストのノードと、それ以外の `href`・`src`・`alt`・`title` の属性の値は置き換えない。HTML のコメントは削除する。純粋な Markdown（`docs[].pureMarkdown`）は置き換えない。
 
-      範囲のスクリプトの表の鍵（範囲のコードの文字）は元の文書から取り出し、鍵から変換したコードには (2) を適用する。埋める本文の HTML はテキストのノードを置き換えないため、開いたときに描いた範囲のコードと一致する。
+      範囲のスクリプトの表の鍵（範囲のコードの文字）は元の文書から取り出し、鍵から変換したコードには (2) を適用する。範囲のスクリプトの `template` の中のテキストは置き換えないため、開いたときに描いた範囲のコードと一致する。
 
       開いた文書の DOM にコメントのノードを残さない。
 

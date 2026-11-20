@@ -136,8 +136,8 @@ functions:
     container: src/cli/traces.ts
     kind: 関数
     scope: internal
-    summary: 埋める本文の HTML の要素名・属性名・`class`・`id`・`data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby`・`aria-details`・`aria-controls`・`aria-labelledby`・`aria-owns`・`aria-flowto`・`aria-activedescendant`・`aria-errormessage`。`aria-label` などの文字の `aria-*` は置き換えない）・`for`・`headers` の属性の値・`style` の属性の CSS 変数の名前・`mdmark-asset:` の `mdmark` を別名へ置き換え、HTML のコメントを削除する
-    description: テキストのノードと、文書の中の `id` を指すもののほかの `href`・`src`・`alt`・`title` の属性の値は置き換えない。DOM に頼らず、タグの字句を読み取って置き換える（書き出しは Node で動く）
+    summary: 埋める本文の HTML の要素名・属性名・`class`・`id`・`data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby`・`aria-details`・`aria-controls`・`aria-labelledby`・`aria-owns`・`aria-flowto`・`aria-activedescendant`・`aria-errormessage`。`aria-label` などの文字の `aria-*` は置き換えない）・`for`・`headers` の属性の値・`style` の属性の CSS 変数の名前・`mdmark-asset:` の `mdmark` と、テキストのノードのうちコードの例の部品の要素名（`&lt;mdmark-`・`&lt;/mdmark-`）の `mdmark` を別名へ置き換え、HTML のコメントを削除する
+    description: ほかのテキストのノード（範囲のスクリプトの `template` の中は部品の要素名も含む）と、文書の中の `id` を指すもののほかの `href`・`src`・`alt`・`title` の属性の値は置き換えない。DOM に頼らず、タグの字句を読み取って置き換える（書き出しは Node で動く）
     args:
       - name: html
         type: string
@@ -155,6 +155,12 @@ functions:
         condition: '`<mdmark-chart class="mdmark-x" data-mdmark-mermaid style="color:var(--mdmark-fg)"><a href="mdmark-intro.md">mdmark</a></mdmark-chart><!-- c --><img src="mdmark-asset:1">`'
         mock: なし
         expected: 要素名・`class`・属性名・CSS 変数・`mdmark-asset:` が別名になり、`href` とテキストの `mdmark` は残り、コメントが無い
+      - name: test_hide_rendered_html_with_code_example
+        case: 正常
+        summary: コードの例の部品の要素名を置き換え、ほかの文字と範囲のスクリプトのコードは残す
+        condition: '`<pre><code>&lt;mdmark-chart&gt;{}&lt;/mdmark-chart&gt; mdmark</code></pre><template class="mdmark-html-script" data-lang="ts">"&lt;mdmark-x&gt;"</template>`'
+        mock: なし
+        expected: コードの例が `&lt;zq-chart&gt;{}&lt;/zq-chart&gt; mdmark` になり、`template` の中の `&lt;mdmark-x&gt;` は残る
 refs:
   - IF-472-33#constraints[mdmark の痕跡]
 lead: '書き出した HTML の mdmark の痕跡を隠す処理を受け持ち、書き出しで隠す範囲を変えるときに参照する。'
