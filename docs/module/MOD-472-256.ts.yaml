@@ -293,9 +293,9 @@ functions:
     description: '`title`・`description` は文字列で、`aliases` は要素の集合で、`tags` はタグの名前と `main`（文字列の要素は `false`）の組の集合で比べる。`where` は `docs[{索引の位置}].{キー}`、`file` は `indexFile`、`message` は `索引の {キー}（{索引の値}）と {パス} のフロントマターの {キー}（{フロントマターの値}）が違います。どちらかに合わせてください。`。並びは索引の `docs` の順、文書の中は `title`・`description`・`aliases`・`tags` の順'
     args:
       - name: input
-        type: '{ index: MdmarkIndex; metadata: Map<string, FrontmatterMetadata>; indexFile: string }'
+        type: '{ index: MdmarkIndex; metadata: Map<string, FrontmatterMetadata>; indexFile: string; positionOf?: (doc: MdmarkIndexDoc) => number }'
         required: true
-        description: '`normalizeIndex` で検査した索引・`supplementIndexDocs` の `metadata`・索引のファイルの名前'
+        description: '`normalizeIndex` で検査した索引・`supplementIndexDocs` の `metadata`・索引のファイルの名前・`where` に出す文書の位置（省くと `index.docs` の位置。`checkIndex` は検査で除かれる前の `docs` の位置を指定する）'
     returns:
       type: MdmarkIndexIssue[]
       description: '`frontmatter_mismatch` のずれ'
