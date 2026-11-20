@@ -9,10 +9,10 @@ use_cases:
     impact: none
     detail: 書き出しと一覧の表示は map の図だけの操作で、『Mermaidと補足で図を描く』に記載する。共通の拡大・縮小・移動の操作は変わらない
     depends_on: []
-  - kind: single
+  - kind: composite
     scenario: docs/scenario/SC-472-87.yaml
     impact: following
-    detail: 読者が図を辿って読む流れに、追加すると決めた項目の確認を追随させる
+    detail: 読者が図を辿って読む流れに、確信度と計画した変更を一覧の表示で辿る正常シナリオを追加して追随させる
     depends_on:
       - docs/scenario/SC-472-8.yaml
 scope_out:
