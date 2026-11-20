@@ -49,14 +49,16 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T16:29:17.931882+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T17:21:24.037850+00:00'
   - process: 部品設計
     status: todo
   - process: 画面設計
-    status: skipped
-    reason: 変わるのは map の部品（部品設計）と書き出した HTML の中身で、VS Code の画面の UI 項目と操作は変わらないため対象外（判定フローチャート『画面設計要否』）
+    status: todo
     updated_by: planner
-    updated_at: '2026-11-20T16:29:17.931882+00:00'
+    updated_at: '2026-11-20T17:20:55.375471+00:00'
+    note: VS Code の書き出しで、配布物を取得できないときと描いた HTML から起動できないバージョンのときの通知が SCR-472-1 に増える（インターフェース定義設計で判明）
   - process: モジュール構成設計
     status: todo
   - process: ドキュメント修正
