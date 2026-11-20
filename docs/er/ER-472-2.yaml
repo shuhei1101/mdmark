@@ -71,6 +71,30 @@ tables:
         description: シーケンス図の補足だけが持つ。再生の強調を重ねる構成図の図の番号
         example: '1'
         notes: 無い番号は `map_unknown_ref`
+      - name: walkthroughs
+        title: 案内の手順
+        source: DATA-472-2#fields[walkthroughs]
+        type: array
+        description: 構成図の案内の手順の並び。要素はテーブル `walkthroughs` の 1 行
+        example: '[{"text": "map のマーカーを読み取り、範囲を 1 つの図にする", "nodes": ["marker"]}]'
+      - name: layout
+        title: 配置の上書き
+        source: DATA-472-2#fields[layout]
+        type: object
+        description: ノード・グループ・線の ID ごとの配置と外観の上書き。値はテーブル `layout` の 1 行
+        example: '{"mount": {"color": "blue"}}'
+      - name: groups
+        title: 分類
+        source: DATA-472-2#fields[groups]
+        type: object
+        description: ER 図の補足だけが持つ。分類の ID ごとの分類の箱。値はテーブル `groups` の 1 行
+        example: '{"rec": {"title": "記録", "tables": ["注文"]}}'
+      - name: changes
+        title: 計画した変更
+        source: DATA-472-2#fields[changes]
+        type: object
+        description: ノード・グループ・線の ID ごとの計画した変更。値はテーブル `changes` の 1 行
+        example: '{"mount": {"type": "added"}}'
   - name: groups
     title: 分類
     source: DATA-472-3#
@@ -101,6 +125,12 @@ tables:
         description: 入れ子にするときの外の分類の ID
         example: 業務
         notes: 無い ID と循環は `map_unknown_ref`
+      - name: id
+        title: 分類の ID
+        type: string
+        primary_key: true
+        description: 補足の `groups` のキー
+        example: rec
   - name: walkthroughs
     title: 案内の手順
     source: DATA-472-4#
@@ -144,6 +174,12 @@ tables:
         type: string
         description: その手順で中へ入るグループの ID（section は `notes` と同じ名前）
         example: place
+      - name: index
+        title: 手順の位置
+        type: integer
+        description: 補足の `walkthroughs` の配列の中の位置（0 から）。JSON のキーには持たない
+        example: '0'
+        primary_key: true
   - name: layout
     title: 配置の上書き
     source: DATA-472-5#
@@ -228,6 +264,12 @@ tables:
         default: '`false`'
         description: グループ（構成図の `subgraph`、ER 図の分類、状態遷移図の入れ子の状態、クラス図の `namespace`、アーキテクチャ図の group、C4 図の境界と配置先のノード）の ID と、ER 図のテーブル名・クラス図のクラス名・マインドマップの子を持つ項目のキー（`notes` と同じ）・ガントチャートとタイムラインとジャーニーの section の名前・ブロック図の入れ子のブロックの ID のときだけ。`true` なら、開閉の状態が保たれていないときに、グループを閉じて描き、テーブルは列を、クラスはメンバーを、マインドマップの項目は子孫を閉じて描き、section と入れ子のブロックは「{名前}（{種類} {数} 件）」の 1 つの項目にして描く
         example: 'true'
+      - name: id
+        title: ID
+        type: string
+        primary_key: true
+        description: 補足の `layout` のキー。上書きするノード・グループ・線の ID
+        example: mount
   - name: changes
     title: 計画した変更
     source: DATA-472-34#
@@ -245,6 +287,12 @@ tables:
         description: '`added` は差分の追加の色、`changed` は色の名前 `orange`、`removed` は差分の削除の色の破線と取り消し線の名前で描き、変更の名前のバッジを付ける。`removed` のノード・線も配置に含める'
         example: added
         notes: キーは `notes` と同じ ID のうち、flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図のノード・グループ・線の ID。無い ID は `map_unknown_ref`、知らない値と列・メンバーのキー（`{テーブル名}.{列名}`・`{クラス名}.{メンバー名}`）は `map_invalid_value`。シーケンス図・マインドマップ・軸と格子の配置の図の補足が `changes` を持つときは `map_invalid_value` を 1 件にして描かない。変更の色は、同じ ID の `layout` の `color` と設定の `map.kinds` の種類の色より優先して枠線と線に適用する。種類のアイコンと名前の行の色は種類の色のまま
+      - name: id
+        title: ID
+        type: string
+        primary_key: true
+        description: 補足の `changes` のキー。変更を示すノード・グループ・線の ID
+        example: mount
 refs:
   - IF-472-34#constraints[map の範囲]
   - MOD-472-139#data_models[MapData]

@@ -1,0 +1,6 @@
+scope_out:
+  - item: 設計書の検証の規則を、列を持たない実体の関連を許すように修正すること
+    reason: ER 図のスキーマが関連の from_column・to_column を必須にしており、検証の規則はスキーマどおりに判定している。ER 図の側で関連が指す列を実体に持たせれば検証に合格する
+    plan: none
+use_cases: []
+docs: []
