@@ -72,7 +72,7 @@ catalogs:
           - name: structuredContent?
             type: Record<string, unknown>
             description: 構造化した結果。`outputSchema` を登録していないツールでも返却でき、クライアントの `callTool` の結果にそのまま届く（2.3.1 で確認した）
-            notes: 古いクライアントのため、同じ JSON の文字列を `content` にも入れる
+            notes: 旧バージョンのクライアントのため、同じ JSON の文字列を `content` にも入れる
       - name: fromJsonSchema
         kind: 関数
         purpose: JSON Schema を `inputSchema` に指定できる構造に包み、引数に型を付ける。検査に使用する検証器を差し替えられる
@@ -140,7 +140,7 @@ catalogs:
         status: planned
       - name: hostHeaderValidationResponse
         kind: 関数
-        purpose: Host が許すホスト名でなければ 403 の応答を返却する
+        purpose: Host が許可するホスト名でなければ 403 の応答を返却する
         params:
           - name: req
             type: Request
@@ -149,15 +149,15 @@ catalogs:
           - name: allowedHostnames
             type: string[]
             required: true
-            description: 許すホスト名
+            description: 許可するホスト名
         returns:
           - name: '-'
             type: Response | undefined
-            description: 拒むときの応答。許すときは `undefined`
+            description: 拒むときの応答。許可するときは `undefined`
         status: planned
       - name: originValidationResponse
         kind: 関数
-        purpose: Origin があり許すホスト名でなければ 403 の応答を返却する
+        purpose: Origin があり許可するホスト名でなければ 403 の応答を返却する
         params:
           - name: req
             type: Request
@@ -166,11 +166,11 @@ catalogs:
           - name: allowedOriginHostnames
             type: string[]
             required: true
-            description: 許す Origin のホスト名
+            description: 許可する Origin のホスト名
         returns:
           - name: '-'
             type: Response | undefined
-            description: 拒むときの応答。許すときは `undefined`
+            description: 拒むときの応答。許可するときは `undefined`
         status: planned
       - name: localhostAllowedHostnames
         kind: 関数

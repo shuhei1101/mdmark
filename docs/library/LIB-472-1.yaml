@@ -159,7 +159,7 @@ catalogs:
           - name: hookSpecificOutput.permissionDecisionReason
             type: string
             required: false
-            description: 許可・拒否の理由。`allow` のときはデバッグのログにだけ書かれる
+            description: 許可・拒否の理由。`allow` のときはデバッグのログにだけ出力される
           - name: hookSpecificOutput.updatedInput
             type: object
             required: true
@@ -198,7 +198,7 @@ verification:
 
     採用した構造（まとめた MCP-SDK v2 のサーバー・ガイドの `index.json`・`plugin.json` の `version` の記載方法）での導入と呼び出しは E2E で確認する。
 
-    2.1.322 で、`plugin.json` に `version` が無いプラグインは導入の記録の `version` が commit の短縮 SHA、`gitCommitSha` が commit の SHA になり、commit を追加して `claude plugin marketplace update` → `claude plugin update` で新しい commit に更新された。
+    2.1.322 で、`plugin.json` に `version` が無いプラグインは導入の記録の `version` が commit の短縮 SHA、`gitCommitSha` が commit の SHA になり、commit を追加して `claude plugin marketplace update` → `claude plugin update` で最新の commit に更新された。
 
     `version` を持つプラグインは、`version` を変えずに commit を追加しても更新されなかった（[PoC: plugin.json に version が無いプラグインが commit で更新されるか](https://github.com/shuhei1101/mdmark/pull/493)。マーケットプレイスは手元の smart HTTP の git URL で追加した）。
 
@@ -234,7 +234,7 @@ limitations:
     content: Claude Code の画面は返答の Markdown の HTML コメントを隠さず文字で出すため、mdmark のマーカーは mod で描き換えなければそのまま画面に出る。`ui.render` の `e.props.text` にはマーカーが元の文字のまま入る
     notes: 2.1.328 で [PoC](https://github.com/shuhei1101/mdmark/commit/52e97244) で確認した
   - item: mod の返答と発言の描き換え
-    content: '`ui.render` の `component` が `AssistantMessage`（`props.text`・`surface`・`viewport.columns`・`requestId`）と `UserMessage`（`props.text`・`props.origin.kind`）のとき、mod が返した部品の木で描く。`next(e)` の戻り値は中を読めない参照（`{ type: "engine" }`）で、標準の描画の一部だけを書き換えられない'
+    content: '`ui.render` の `component` が `AssistantMessage`（`props.text`・`surface`・`viewport.columns`・`requestId`）と `UserMessage`（`props.text`・`props.origin.kind`）のとき、mod が返却した部品の木で描く。`next(e)` の戻り値は中を読み取れない参照（`{ type: "engine" }`）で、標準の描画の一部だけを書き換えられない'
     notes: 2.1.328 の `plugin-authoring/types/claude-code.d.ts`
   - item: mod の部品の木の上限
     content: ノードの数 20,000・深さ 32・文字数 100,000 を超える木は描かれない
@@ -249,13 +249,13 @@ limitations:
     content: '`claude plugin test {フォルダ}` はフォルダの中の `*.test.ts(x)` だけを実行し、テストは `claude-code/testing` の `$.ui.mount` でエンジンが読み込んだ mod を通して描く'
     notes: 2.1.328 の `plugin-authoring/reference.md`
   - item: mod の `$` の渡り先
-    content: '`claude plugin validate` は hooks module の中で `$` を渡した関数をたどり、渡り先が最上位の `function` 宣言か `const` にまとめた関数でないとき（`var` を含む）と、`$` をオブジェクトに入れたときに失敗する。esbuild はまとめるときに最上位の `const` を `var` にするため、まとめる mod では `$` を受け取る関数を `function` 宣言にする'
+    content: '`claude plugin validate` は hooks module の中で `$` を指定した関数をたどり、渡り先が最上位の `function` 宣言か `const` にまとめた関数でないとき（`var` を含む）と、`$` をオブジェクトに入れたときに失敗する。esbuild はまとめるときに最上位の `const` を `var` にするため、まとめる mod では `$` を受け取る関数を `function` 宣言にする'
     notes: 2.1.328 で `const`・`var`・`$` をオブジェクトに入れた形状・`function` 宣言を確認した（`docs/pr/699/テスト結果/20261119215435_73687ecc_validate.log`）。型定義と `plugin-authoring/reference.md` には記載が無い
   - item: 標準の発言の背景の色
     content: テーマの `userMessageBackground` は、明るいテーマが `rgb(240, 240, 240)`、暗いテーマが `rgb(55, 55, 55)`（ターミナルでは 256 色の 237。`#3a3a3a`）。mod からは参照できない
     notes: 2.1.328 の配布物から取った（`docs/pr/699/テスト結果/20261119215519_73687ecc_発言の背景の色.log`）
   - item: mod のフックの例外
-    content: フックが例外を投げると、Claude Code はそのフックを飛ばして元の描画で描くが、`claude plugin test` はテストを失敗にする。例外を投げる振る舞いを結合テストで確認できないため、読めない入力はフックの中で `$.ui.log` に理由を記載して `next(e)` を返却する
+    content: フックが例外を投げると、Claude Code はそのフックを飛ばして元の描画で描くが、`claude plugin test` はテストを失敗にする。例外を投げる振る舞いを結合テストで確認できないため、読み取れない入力はフックの中で `$.ui.log` に理由を記載して `next(e)` を返却する
     notes: 2.1.328 で確認した（`docs/pr/699/テスト結果/20261119224246_2956a6bf_フックの例外.log`）
 tags:
   - name: tool:claude-code

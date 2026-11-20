@@ -50,7 +50,7 @@ catalogs:
       - name: Webview
         kind: クラス
         purpose: パネルの中の HTML と、拡張機能とのメッセージのやり取り
-        description: '`html` に入れた HTML を描く。`postMessage(message)` は背面で `retainContextWhenHidden` が `false` のとき `false` を返却して届かない。`onDidReceiveMessage` で Webview の `acquireVsCodeApi().postMessage` を受ける。Webview の中の `acquireVsCodeApi().setState(state)` で保存した JSON にできる値は、背面で再作成した Webview と `html` をもう一度入れた Webview でも `getState()` で読み込める（パネルを閉じると消える）。`asWebviewUri(uri)` は手元のファイルを Webview で読み込める URL にし、`cspSource` はその URL を CSP で許す値'
+        description: '`html` に入れた HTML を描く。`postMessage(message)` は背面で `retainContextWhenHidden` が `false` のとき `false` を返却して届かない。`onDidReceiveMessage` で Webview の `acquireVsCodeApi().postMessage` を受ける。Webview の中の `acquireVsCodeApi().setState(state)` で保存した JSON にできる値は、背面で再作成した Webview と `html` をもう一度入れた Webview でも `getState()` で読み込める（パネルを閉じると消える）。`asWebviewUri(uri)` は手元のファイルを Webview で読み込める URL にし、`cspSource` はその URL を CSP で許可する値'
       - name: window.onDidChangeTextEditorVisibleRanges
         kind: イベント
         purpose: エディタの見えている行の範囲が変わったときに通知する（行は 0 始まり）
