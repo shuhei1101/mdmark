@@ -234,8 +234,8 @@ functions:
         case: 正常
         summary: 外から図を移す
         condition: '`follow([mount, marker])` を呼ぶ。表示する枠でホイールを回してからもう一度呼ぶ。`resumeFollow` の後にもう一度呼ぶ'
-        mock: 表示する枠の `zoomControlOf` の `focusRect`
-        expected: '`focusRect` を 1 回目と 3 回目だけ呼ぶ'
+        mock: 表示する枠の `zoomControlOf` の `centerRect`
+        expected: '`centerRect` を 1 回目と 3 回目だけ呼ぶ'
       - name: test_attach_map_flow_when_crowded
         case: 正常
         summary: 並べた線が矩形に入るときは間を広げて配置し直す
