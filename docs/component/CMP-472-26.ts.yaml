@@ -219,7 +219,7 @@ states:
       - name: interactive
         value: 'true'
       - name: language
-        value: ''
+        value: '""'
     notes:
       定義: モック `docs/mock/components/file-tree-plain-lines/` の「言語なしの ASCII の罫線」
 lead: 言語 `tree` のコードブロックと、罫線の行を 2 行以上持つ言語が `tree` でないコードブロックに罫線で記載したフォルダ構成を、フォルダとファイルの入れ子のツリーにする。`render` は全ての項目を開いて出し、`mount` がコードブロックと同じ部品の帯（記載した言語のラベルとコピーボタン）とフォルダの開閉を付ける。

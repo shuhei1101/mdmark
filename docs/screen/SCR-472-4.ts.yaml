@@ -289,7 +289,7 @@ elements:
         value: 言語 `tree` のコードブロックは `tree`、言語が `tree` でない罫線のコードブロックは `data-tree-language` の言語（言語なしは空）
     position: 描く先の要素
     description: '言語 `tree` のコードブロックと、罫線の行を 2 行以上持つ言語が `tree` でないコードブロック（直前の `<!-- code: {"tree_warning": false} -->` を持つものは除く）。上にコードブロックと同じ帯（記載した言語のラベル。言語なしはラベル無し）を持つ。長い名前と注釈は折り返さずにツリーの中で横スクロールし、直前の `<!-- tree: {…} -->` の `wrap` が `true` のツリーだけは、名前を名前の列の中で折り返し、注釈を名前の下の行に出す'
-    visible_when: 文書に言語 `tree` のコードブロックがあり、`tree` がオンで、全ての行を読み込めたとき
+    visible_when: '文書に、言語 `tree` のコードブロックか、罫線の行を 2 行以上持つ言語が `tree` でないコードブロック（`tree_warning: false` を除く）があり、`tree` がオンで、全ての行を読み込めたとき'
     initial_value: '`depth` の階層まで開いた状態（指定が無ければ全てのフォルダを開く）。コピーボタンは `コピー`'
     action: フォルダの名前かアイコンを押すか Enter・Space で開閉し、Shift を押しながらなら入れ子のフォルダも同じ状態にする。ページ内検索が閉じたフォルダの中に該当するとそのフォルダを開く。コピーボタンで `source` をクリップボードへ書き込み、書き込めないときはツリーの下に手動でコピーするパネルを出す。印刷の前に閉じたフォルダを開き、後にもう一度閉じる
     refs:
@@ -525,7 +525,7 @@ elements:
       - IF-472-35#constraints[mermaid の描き方]
       - IF-472-35#constraints[mermaid のテーマ]
       - IF-472-35#constraints[mermaid のノードのリンク]
-      - IF-472-35#constraints[範囲の外の map の図を mermaid の図に戻す]
+      - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
     status: planned
   - name: map の構成図
     id: map-flow
