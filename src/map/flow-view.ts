@@ -28,9 +28,11 @@ import {
   parseFlowchart,
 } from "./flowchart.ts";
 import {
+  LABEL_METRICS,
   layoutMap,
   type MapLayout,
   type MapOverride,
+  type MeasureText,
   separateWires,
 } from "./layout.ts";
 import {
@@ -76,6 +78,8 @@ export type MapFlowExtension = {
     collapsed: ReadonlySet<string>;
     /** 補足の layout の width を持つ ID から幅 */
     widths: Record<string, number>;
+    /** layoutMap に指定するのと同じ、名前の 1 行の幅を測る関数 */
+    measureText: MeasureText;
   }) => Record<string, MapOverride>;
   /** 補足の walkthroughs の代わりに帯で進める手順 */
   walkthroughs?: MapStep[] | undefined;
@@ -205,6 +209,62 @@ const overridesOf = (
     overrides[id] = { ...overrides[id], size };
   return overrides;
 };
+
+/** 範囲の書体と名前の文字の大きさ・太さで名前の 1 行の幅を canvas で測る関数（同じ文字の列は覚えて使い回す）と、覚えた幅を測り直して変わったかを返す関数 */
+const textMeasurerOf = (
+  range: HTMLElement,
+): { measureText: MeasureText; remeasure: () => boolean } => {
+  const context = document.createElement("canvas").getContext("2d");
+  if (!context)
+    throw new Error("名前の幅を測る canvas の 2D の描画を使えません");
+  let widths = new Map<string, number>();
+  let font: string | undefined;
+  return {
+    measureText: (text) => {
+      const known = widths.get(text);
+      if (known !== undefined) return known;
+      font ??= `700 ${LABEL_METRICS.nameSize}px ${getComputedStyle(range).fontFamily}`;
+      context.font = font;
+      const width = context.measureText(text).width;
+      widths.set(text, width);
+      return width;
+    },
+    remeasure: () => {
+      const before = widths;
+      widths = new Map();
+      font = undefined;
+      return [...before].some(([text, width]) => {
+        font ??= `700 ${LABEL_METRICS.nameSize}px ${getComputedStyle(range).fontFamily}`;
+        context.font = font;
+        return context.measureText(text).width !== width;
+      });
+    },
+  };
+};
+
+/** 拡張の上書きに、種類の形状が pill のノードの左の余白を重ねる */
+const withPaddings = (
+  paddings: Record<string, MapOverride>,
+  base: Record<string, MapOverride> | undefined,
+): Record<string, MapOverride> => {
+  const merged: Record<string, MapOverride> = { ...base };
+  for (const [id, padding] of Object.entries(paddings))
+    merged[id] = { ...padding, ...merged[id] };
+  return merged;
+};
+
+/** 種類の形状が pill のノードの、左の余白の上書き */
+const pillPaddings = (
+  chart: Flowchart,
+  kinds: Record<string, MapKind>,
+): Record<string, MapOverride> =>
+  Object.fromEntries(
+    chart.nodes
+      .filter((node) =>
+        node.classes.some((name) => kinds[name]?.shape === "pill"),
+      )
+      .map((node) => [node.id, { padLeft: LABEL_METRICS.padPill }]),
+  );
 
 /** 範囲の `data-map-terms`（用語から意味の JSON）。無ければ undefined */
 export const termsOf = (
@@ -614,6 +674,9 @@ export const attachMapFlow = (
   const wireLines = layoutValues(data, "line");
   const colors = layoutValues(data, "color");
   const sizes: Record<string, { w: number; h: number }> = {};
+  const measurer = textMeasurerOf(range);
+  const { measureText } = measurer;
+  const paddings = pillPaddings(chart, kinds);
   let focus: { nodes: string[]; wires: string[] } | undefined;
   /** 指している線の ID */
   let hovered: string | undefined;
@@ -625,17 +688,22 @@ export const attachMapFlow = (
       {
         overrides: overridesOf(data, state, {
           sizes,
-          base: extension?.overrides?.({
-            collapsed: new Set(state.collapsed),
-            widths: Object.fromEntries(
-              Object.entries(data.layout).flatMap(([id, entry]) =>
-                entry.width === undefined ? [] : [[id, entry.width]],
+          base: withPaddings(
+            paddings,
+            extension?.overrides?.({
+              collapsed: new Set(state.collapsed),
+              widths: Object.fromEntries(
+                Object.entries(data.layout).flatMap(([id, entry]) =>
+                  entry.width === undefined ? [] : [[id, entry.width]],
+                ),
               ),
-            ),
-          }),
+              measureText,
+            }),
+          ),
         }),
         nodeFit: config.map.node_fit,
         spread,
+        measureText,
       },
     );
     const rewired: MapLayout = extension?.rewire
@@ -863,6 +931,13 @@ export const attachMapFlow = (
   };
   measure();
   observeNodes();
+  // 書体を読み込み終えたら名前の幅を測り直し、変わっていれば測った大きさを捨てて配置し直す
+  let destroyed = false;
+  void document.fonts?.ready.then(() => {
+    if (destroyed || !measurer.remeasure()) return;
+    for (const id of Object.keys(sizes)) delete sizes[id];
+    refresh();
+  });
   // 保った選択の強調と印を、初めに描いた図にも当てる
   emphasize();
 
@@ -1185,6 +1260,7 @@ export const attachMapFlow = (
     follow: follower.reveal,
     resumeFollow: follower.resume,
     destroy: () => {
+      destroyed = true;
       band?.destroy();
       follower.destroy();
       resizeObserver?.disconnect();

@@ -61,3 +61,9 @@ export const LongMembers: Story = {
   parameters: { server: { id: "map-class" } },
   args: { sample: "long" },
 };
+
+export const MeasuredName: Story = {
+  name: "MeasuredName",
+  parameters: { server: { id: "map-class" } },
+  args: { sample: "measured" },
+};

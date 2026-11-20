@@ -1,7 +1,7 @@
 import type { MapSide } from "./data.ts";
 import type { Direction, FlowArrow, Flowchart } from "./flowchart.ts";
 
-/** 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさ（px）・行の高さの倍率・余白（px）。`padRight` は map のノードが右上の i と開閉の山形の分だけ右に空ける幅、`border` はノードの枠線の幅。CSS を修正したときは合わせて修正する */
+/** 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさ（px）・行の高さの倍率・余白（px）。`padRight` は map のノードが右上の i と開閉の山形の分だけ右に空ける幅、`padPill` は種類の形状が `pill` のノードの左の余白、`border` はノードの枠線の幅。CSS を修正したときは合わせて修正する */
 export const LABEL_METRICS = {
   kindSize: 11,
   nameSize: 14,
@@ -10,6 +10,7 @@ export const LABEL_METRICS = {
   padY: 6,
   padX: 10,
   padRight: 28,
+  padPill: 16,
   border: 1.5,
 };
 
@@ -60,6 +61,8 @@ export type MapOverride = {
   aside?: number | undefined;
   /** 線の ID に指定すると、段を決める処理でその線を使わない（経路は引く） */
   rankless?: boolean | undefined;
+  /** ノードの左の余白（種類の形状が pill のノードは LABEL_METRICS.padPill。無ければ LABEL_METRICS.padX） */
+  padLeft?: number | undefined;
 };
 
 /** 辺ごとの、線が辺から出ていく向き（routeEdges の向きの番号） */
@@ -165,43 +168,40 @@ const isWide = (char: string): boolean => {
   return !(code <= 0x7e || (code >= 0xff61 && code <= 0xff9f));
 };
 
-/** 全角を文字の大きさ、半角を 0.6 倍の幅として、幅に収まるように行に分ける */
+/** 1 行の幅（px）を返す関数 */
+export type MeasureText = (text: string) => number;
+
+/** 全角を名前の文字の大きさ、半角を 0.6 倍の幅とみなした 1 行の幅（描くフォントを測れない呼び出しが使用する） */
+export const estimateTextWidth: MeasureText = (text) =>
+  [...text].reduce(
+    (sum, char) => sum + (isWide(char) ? 1 : 0.6) * LABEL_METRICS.nameSize,
+    0,
+  );
+
+/** 段落ごとに先頭から文字を足した行の幅を測り、幅を超える文字の手前で行に分ける（行の先頭の 1 文字は幅を超えても入れる） */
 export const splitLines = (
   text: string,
-  fontSize: number,
   width: number,
+  measure: MeasureText,
 ): string[] => {
   const lines: string[] = [];
   for (const paragraph of text.split("\n")) {
     let line = "";
-    let used = 0;
     for (const char of paragraph) {
-      const advance = isWide(char) ? fontSize : fontSize * 0.6;
-      if (used > 0 && used + advance > width) {
+      if (line !== "" && measure(line + char) > width) {
         lines.push(line);
         line = "";
-        used = 0;
       }
       line += char;
-      used += advance;
     }
     lines.push(line);
   }
   return lines;
 };
 
-/** 文字の見積もりの幅 */
-export const textWidth = (text: string, fontSize: number): number =>
-  Math.max(
-    ...text
-      .split("\n")
-      .map((line) =>
-        [...line].reduce(
-          (sum, char) => sum + (isWide(char) ? fontSize : fontSize * 0.6),
-          0,
-        ),
-      ),
-  );
+/** 改行で分けた行のうち最も広い行の幅 */
+export const textWidth = (text: string, measure: MeasureText): number =>
+  Math.max(...text.split("\n").map((line) => measure(line)));
 
 /** 種類の行と名前の行の数から見積もるノードの高さ */
 export const leafHeight = (lines: number): number => {
@@ -215,16 +215,18 @@ const sizeLeaf = (
     maxWidth: number;
     width: number | undefined;
     size: { w: number; h: number } | undefined;
+    padLeft: number | undefined;
+    measureText: MeasureText;
   },
 ): { w: number; h: number; lines: string[] } => {
-  const { maxWidth, width, size } = fit;
-  const { nameSize, padX, padRight, border } = LABEL_METRICS;
-  const inset = padX + padRight + border * 2;
+  const { maxWidth, width, size, measureText } = fit;
+  const { padX, padRight, border } = LABEL_METRICS;
+  const inset = (fit.padLeft ?? padX) + padRight + border * 2;
   if (size)
     return {
       w: size.w,
       h: size.h,
-      lines: splitLines(label, nameSize, size.w - inset),
+      lines: splitLines(label, size.w - inset, measureText),
     };
   const w =
     width ??
@@ -232,10 +234,10 @@ const sizeLeaf = (
       maxWidth,
       Math.max(
         MAP_LAYOUT.minWidth,
-        Math.ceil(textWidth(label, nameSize) + inset),
+        Math.ceil(textWidth(label, measureText) + inset),
       ),
     );
-  const lines = splitLines(label, nameSize, w - inset);
+  const lines = splitLines(label, w - inset, measureText);
   return { w, h: leafHeight(lines.length), lines };
 };
 
@@ -244,6 +246,7 @@ type ViewContext = {
   chart: Flowchart;
   overrides: Record<string, MapOverride>;
   maxWidth: number;
+  measureText: MeasureText;
   /** 閉じたグループ */
   collapsed: Set<string>;
 };
@@ -389,6 +392,8 @@ const makeLeaf = (
     maxWidth: context.maxWidth,
     width: override?.width,
     size: override?.size,
+    padLeft: override?.padLeft,
+    measureText: context.measureText,
   });
   // 閉じたグループは上と左右を空けず、タイトルの行の下に数の行が収まる高さにする
   const { above, aside, h } = collapsedGroup
@@ -497,7 +502,11 @@ const enteredRoot = (
 const buildView = (
   chart: Flowchart,
   view: MapView,
-  fit: { overrides: Record<string, MapOverride>; maxWidth: number },
+  fit: {
+    overrides: Record<string, MapOverride>;
+    maxWidth: number;
+    measureText: MeasureText;
+  },
 ): { root: ViewBox; edges: ViewWire[] } => {
   const enter = view.entered;
   const collapsed = new Set(view.collapsed ?? []);
@@ -1469,12 +1478,18 @@ export const layoutMap = (
     nodeFit: "height" | "width";
     /** 段の中の間と段の間に足す幅（separateWires の crowded） */
     spread?: number | undefined;
+    /** 名前の 1 行の幅を測る関数（ブラウザは描くフォントで測り、DOM を持たない呼び出しは estimateTextWidth） */
+    measureText: MeasureText;
   },
 ): MapLayout => {
-  const { overrides, nodeFit, spread = 0 } = options;
+  const { overrides, nodeFit, spread = 0, measureText } = options;
   const maxWidth =
     nodeFit === "width" ? MAP_LAYOUT.maxWidthWide : MAP_LAYOUT.maxWidth;
-  const { root, edges } = buildView(chart, view, { overrides, maxWidth });
+  const { root, edges } = buildView(chart, view, {
+    overrides,
+    maxWidth,
+    measureText,
+  });
   // 段を決める処理で使わない線（閉じたグループへまとめた線は使う）を除く
   const links = edges
     .filter(
