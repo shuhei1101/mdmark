@@ -1397,6 +1397,10 @@ files:
     visibility: internal
     description: '#735 のモックの見本: #283 の表の見本と同じ列と行で、はみ出す表の既定（どの列も留めない）の表の定義。このモックの表の見本を変えるときに参照する。'
     tags: [topic:モック, topic:テーブル]
+  - path: refs/735/assets/table.css
+    visibility: internal
+    description: '#735 のモックの規則: 既定の表の見本で、ポインターを乗せられる端末では押していないピン止めを見出しにポインターかフォーカスがある間だけ見せる。このモックの表のピン止めの見せ方を変えるときに参照する。'
+    tags: [topic:モック, topic:テーブル]
   - path: refs/709/index.md
     visibility: internal
     description: '#709（map の手順の再生で倍率を変えない・言語が markdown のコードブロックでソースと描いた結果を切り替える）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
