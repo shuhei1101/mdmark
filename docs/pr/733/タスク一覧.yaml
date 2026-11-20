@@ -1,0 +1,92 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-20T04:23:00.719971+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: map の設計書が揃っているため対象外
+    updated_by: planner
+    updated_at: '2026-11-20T04:23:00.719971+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-20T04:23:00.719971+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 今の入れ子のグループの自動配置の上に帯の配置を足すだけで、未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-20T04:23:00.719971+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: マーカーの引数 1 つの追加で、単一ユースケースをまたぐ流れを変えない
+    updated_by: planner
+    updated_at: '2026-11-20T04:23:00.719971+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 既存のデザインスタイルの中で map の図の見せ方を足すだけで、スタイルを選び直さない
+    updated_by: planner
+    updated_at: '2026-11-20T04:23:00.719971+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面を持たないライブラリの記法の追加で、画面と遷移が増えない
+    updated_by: planner
+    updated_at: '2026-11-20T04:23:00.719971+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    note: 最初に mode を追加するか（要件.mark.md の案 A・B）をユーザーへ確認する
+    updated_by: planner
+    updated_at: '2026-11-20T04:26:54.408076+00:00'
+  - process: モック作成
+    status: skipped
+    note: mode を追加すると決めた場合だけ、layers の見せ方のモックを作る。追加しない場合は skipped にする
+    reason: mode を追加しないと決めた（確認ログ）ため、見せ方が増えない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
+  - process: データ設計
+    status: skipped
+    reason: mode を追加しないと決めたため、マーカーの設定のキーが増えない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
+  - process: インターフェース定義設計
+    status: skipped
+    reason: mode を追加しないと決めたため、入出力が変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
+  - process: 部品設計
+    status: skipped
+    reason: mode を追加しないと決めたため、構成図の部品が変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
+  - process: 画面設計
+    status: skipped
+    reason: 画面を持たないライブラリで、描画は部品設計（CMP-472-5）で扱う
+    updated_by: planner
+    updated_at: '2026-11-20T04:23:00.719971+00:00'
+  - process: モジュール構成設計
+    status: skipped
+    reason: mode を追加しないと決めたため、モジュールが変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
+  - process: ドキュメント修正
+    status: skipped
+    reason: mode を追加しないと決めたため、記法とコアコンセプトのページが変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
+  - process: 単体テスト作成
+    status: skipped
+    reason: mode を追加しないと決めたため、実装が変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
+  - process: 実装
+    status: skipped
+    reason: mode を追加しないと決めたため、実装を変えない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'
+  - process: 結合テスト作成
+    status: skipped
+    reason: mode を追加しないと決めたため、実装が変わらない
+    updated_by: planner
+    updated_at: '2026-11-20T04:41:01.744619+00:00'

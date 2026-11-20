@@ -1,0 +1,7 @@
+confirmations:
+  - topic: map のマーカーの引数に mode を追加するか
+    decision: 追加しない。層は今のとおり補足の layout とグループ（subgraph）で表す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: c1d1f52d
+    thread: https://github.com/shuhei1101/mdmark/pull/733#discussion_r4638524281

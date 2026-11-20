@@ -352,3 +352,121 @@ test("test_attach_term_tips_when_mouse_pressed", async () => {
   // 検証
   expect(wrap.classList.contains("is-open")).toBe(true);
 });
+
+/** 先頭の列をピン止めした表の HTML。見出しの行を高くし、本文の 1 行目のセルの上に開いたツールチップが見出し行と重なるようにする */
+function pinnedTableHtml(options: {
+  headFirst?: string;
+  headSecond?: string;
+  bodyFirst?: string;
+}): string {
+  const {
+    headFirst = "用語",
+    headSecond = "説明",
+    bodyFirst = "項目",
+  } = options;
+  return `<div class="mdmark-table"><table><thead><tr><th class="is-pinned-col" style="left: 0; height: 240px">${headFirst}</th><th style="height: 240px">${headSecond}</th></tr></thead><tbody><tr><td class="is-pinned-col" style="left: 0">${bodyFirst}</td><td>説明の文</td></tr></tbody></table></div>`;
+}
+
+/** 要素の中の点 (x, y) で一番手前に描かれる要素が、`container` の中にあるか */
+function frontmostWithin(container: Element, x: number, y: number): boolean {
+  const hit = document.elementFromPoint(x, y);
+  return hit !== null && container.contains(hit);
+}
+
+// ピン止めした列のセルの中のツールチップを、上に開いたときに留めた見出し行より手前に描く（正常系）
+test("test_attach_term_tips_when_in_pinned_cell", async () => {
+  // 準備
+  const { attachTermTips } = await loadTerms();
+  window.scrollTo(0, 0);
+  const root = createRootFromHtml(
+    pinnedTableHtml({ bodyFirst: await termHtml() }),
+  );
+  root.style.marginTop = `${Math.floor(window.innerHeight / 2)}px`;
+  detachers.push(attachTermTips({ root, placement: "top" }));
+  const { wrap, term } = termParts(root);
+  const cell = wrap.closest("td");
+  const tip = wrap.querySelector<HTMLElement>(".mdmark-term-tip");
+  if (!cell || !tip) {
+    throw new Error("ピン止めした列のセルかツールチップが無い");
+  }
+  // 実行: 単語にフォーカスして上に開く
+  term.focus();
+  // 検証: セルが is-tip-open を持ち、ツールチップの上端の点で一番手前にツールチップが描かれる
+  expect(wrap.classList.contains("is-below")).toBe(false);
+  expect(cell.classList.contains("is-tip-open")).toBe(true);
+  const rect = tip.getBoundingClientRect();
+  expect(frontmostWithin(tip, rect.left + 10, rect.top + 10)).toBe(true);
+  // 実行: Esc で閉じる
+  press("Escape");
+  // 検証
+  expect(cell.classList.contains("is-tip-open")).toBe(false);
+});
+
+// 見出し行のセルの中のツールチップを開いている間、セルを見出し行・ピン止めした列の見出しより手前に出す（正常系）
+test("test_attach_term_tips_when_in_sticky_head_cell", async () => {
+  // 準備
+  const { attachTermTips } = await loadTerms();
+  const { renderTermTip } = await loadTermTip();
+  const tipHtml = (id: string) =>
+    renderTermTip({
+      text: "ワークスペース",
+      id,
+      meaning: "話し合いの記録を配置するフォルダ",
+    });
+  const root = createRootFromHtml(
+    pinnedTableHtml({
+      headFirst: tipHtml("tip-head-pinned"),
+      headSecond: tipHtml("tip-head"),
+    }),
+  );
+  detachers.push(attachTermTips({ root, placement: "top" }));
+  const heads = [...root.querySelectorAll<HTMLElement>("thead th")];
+  for (const head of heads) {
+    const term = head.querySelector<HTMLElement>(".mdmark-term");
+    if (!term) {
+      throw new Error("見出しのセルに用語の単語が無い");
+    }
+    // 実行: 見出しのセルの単語にフォーカスして開く
+    term.focus();
+    // 検証: 開いている間、見出しのセルが is-tip-open を持ち、z-index が 10 になる
+    expect(head.classList.contains("is-tip-open")).toBe(true);
+    expect(getComputedStyle(head).zIndex).toBe("10");
+    press("Escape");
+  }
+});
+
+// 同じセルの脚注のツールチップが開いていれば、用語が閉じてもセルの is-tip-open を残す（正常系）
+test("test_attach_term_tips_when_footnote_open_in_same_cell", async () => {
+  // 準備
+  vi.useFakeTimers();
+  const { attachTermTips } = await loadTerms();
+  const { attachFootnotes } = await import(
+    "../../../../src/footnote/footnote.interact.ts"
+  );
+  const { renderFootnoteRef } = await import(
+    "../../../../src/footnote/footnote.part.ts"
+  );
+  const ref = renderFootnoteRef({ number: 1, bodies: ["補足の中身。"] });
+  const root = createRootFromHtml(
+    pinnedTableHtml({ bodyFirst: `${await termHtml()}${ref}` }),
+  );
+  detachers.push(
+    attachTermTips({ root, placement: "top" }),
+    attachFootnotes({ root, placement: "top" }),
+  );
+  const { wrap } = termParts(root);
+  const sup = root.querySelector<HTMLElement>("sup.mdmark-fn-ref");
+  const cell = wrap.closest("td");
+  if (!sup || !cell) {
+    throw new Error("脚注の番号かセルが無い");
+  }
+  // 実行: 用語を開き、同じセルの脚注の番号へ移る
+  wrap.dispatchEvent(pointer("pointerenter", "mouse"));
+  wrap.dispatchEvent(pointer("pointerleave", "mouse"));
+  sup.dispatchEvent(pointer("pointerenter", "mouse"));
+  vi.advanceTimersByTime(150);
+  // 検証
+  expect(wrap.classList.contains("is-open")).toBe(false);
+  expect(sup.classList.contains("is-open")).toBe(true);
+  expect(cell.classList.contains("is-tip-open")).toBe(true);
+});

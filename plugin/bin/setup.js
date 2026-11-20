@@ -41044,7 +41044,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: localVersionOf("v0.14.0+develop.1dbc91e"),
+    version: localVersionOf("v0.14.0+develop.d369de7"),
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

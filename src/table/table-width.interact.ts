@@ -1,3 +1,4 @@
+import { removeHiddenText } from "../shared/text.interact.ts";
 import {
   type ColumnBounds,
   columnBounds,
@@ -47,9 +48,10 @@ type ProbeGroup = {
   probes: HTMLElement[];
 };
 
-/** セルを改行（`br`・`li`・`p`）で行に分ける */
+/** セルを、セルの中で幅を取らない文字を除いて改行（`br`・`li`・`p`）で行に分ける */
 const linesOf = (cell: HTMLElement): string[] => {
   const clone = cell.cloneNode(true) as HTMLElement;
+  removeHiddenText(clone);
   for (const br of clone.querySelectorAll("br")) {
     br.replaceWith("\n");
   }
@@ -78,6 +80,7 @@ const headProbes = (cell: HTMLElement): HTMLElement[] => {
     return linesOf(cell).map(textProbe);
   }
   const probe = content.cloneNode(true) as HTMLElement;
+  removeHiddenText(probe);
   probe.style.cssText =
     "position:absolute;visibility:hidden;white-space:nowrap;width:max-content";
   return [probe];

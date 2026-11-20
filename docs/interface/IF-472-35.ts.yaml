@@ -10513,6 +10513,39 @@ flows:
       - 各表の `No`・`状態`・`更新日`・`名前` の列の `th` と `td` の高さが 1 行分で、`説明` の列の `td` が折り返している
       - 描いた後に、表の中に計測用の要素が残っていない
     test: test_normal_when_many_tables_column_widths
+  - name: 正常系（用語と脚注を含む列の幅）
+    summary: 用語・脚注のツールチップの文字を数えず、セルに見えている文字の幅で列の幅を決める
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。画面と描く先の `div` の幅は 1280px
+      - name: 索引
+        description: 用語 `ターン`（意味は全角 100 文字の文）を持つ索引
+      - name: 用語と脚注を含む表の Markdown
+        description: '`<!-- table: {"kind": "data"} -->` 〜 `<!-- /table -->` で、`用語`・`説明` の 2 列 2 行の表を囲んだ文書。`用語` の列は 1 行目が `ターン`、2 行目が `確認[^1]`（脚注の定義は全角 100 文字の文）、`説明` の列は全角 10 文字の文'
+        notes: 用語の意味と脚注の定義の文字を 1 行として測ると、`用語` の列は描く先の要素の幅を超える
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown, index })
+        M->>M: ツールチップの文字を除き、セルに見えている文字で列ごとに最も長い行の幅を測る
+        M->>P: 用語の列を見えている文字の幅で描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`ターン` が class `mdmark-term` の要素で、`確認` の後ろに脚注の参照がある'
+      - '`用語` の列の `th` の幅が、見出しのセルの中身（列名とボタン）・`ターン`・`確認` と脚注の番号のうち最も広いものが収まる幅と同じ（差が 4px 以内）で、用語の意味の文の幅より狭い'
+      - '`table` の幅が本文の幅より狭く、表の `scrollWidth` が `clientWidth` 以下'
+      - '`用語` の列の `td` の高さが 1 行分'
+    test: test_normal_when_column_width_ignores_hidden_tips
+    refs:
+      - SC-472-73#scenarios[正常シナリオ（列の幅を中身から決める）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -11673,6 +11706,8 @@ constraints:
       判定の順・長文の列とみなす文字数・残りの幅の分け方は部品設計『表』に従う。
 
       長文でない列と `mdmark-wide` の列は折り返さず、最も長い行（見出しとセルを `<br>`・リストの項目・段落で分けた行）の幅にする。
+
+      行はセルに見えている文字だけで作り、用語・脚注・注記のツールチップ（開いているかに関わらない）と画面に出さないスクリーンリーダー用の文字を含めない。
 
       長文の列と `data-width` の列（長文の列でなくても）は折り返し、最小の幅を `data-width` の最小の幅、無ければ `opts.config.table.long_column_min` の em（最も長い行の幅の方が狭ければその幅）にし、`data-width` の最大の幅があればそれを上限にする（最小の幅も最大の幅を超えない）。
 
