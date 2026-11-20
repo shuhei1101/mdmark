@@ -28,5 +28,6 @@
 | --- | --- | --- | --- |
 | `src/mdmark-style/blocks.ts` | R7 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | - |
 | `tests/unit/src/mdmark-style/blocks.test.ts` | R7（単体テストとその見本。結合テストが参照しない） | - | - |
+| `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | R2 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | - |
 
 `render-reply.test.tsx` はランナーに Claude Code の CLI が無いため、テスト実行方法の補足「Claude Code の mod の結合テスト」の `npm run test:mdmark-style -- render-reply.test.tsx` で手元で実行する。
