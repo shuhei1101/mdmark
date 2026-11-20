@@ -1934,6 +1934,12 @@ files:
     related:
       - to: vscode/src/export/embed.ts
         type: tests
+  - path: unit/vscode/src/export/dist.test.ts
+    description: vscode/src/export/dist.ts（「書き出しで描く配布物の取得・保存・読み込み（vscode を import しない）」）を確認する単体テスト。dist.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, tool:vscode, topic:書き出し]
+    related:
+      - to: vscode/src/export/dist.ts
+        type: tests
   - path: unit/vscode/src/export/html.test.ts
     description: vscode/src/export/html.ts（「書き出す先のパスと HTML の組み立て（vscode を import しない）」）を確認する単体テスト。html.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, tool:vscode, tool:html, topic:書き出し]

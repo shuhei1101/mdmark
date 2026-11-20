@@ -110,6 +110,33 @@ test("test_load_dist_renderer_when_unsupported", async () => {
   expect(result.kind).toBe("unsupported");
 });
 
+// develop は呼ぶたびに取得し、更新された内容を読み込む（正常系）
+test("test_load_dist_renderer_when_develop", async () => {
+  // 準備
+  const { loadDistRenderer } = await loadDist();
+  const storageDir = await storageOf();
+  const fetchText = vi
+    .fn(async (_url: string) => SUPPORTED)
+    .mockImplementationOnce(async () => UNSUPPORTED);
+  const options = {
+    version: "develop",
+    storageDir,
+    distBase: DIST_BASE,
+    fetchText,
+  };
+  // 実行
+  const first = await loadDistRenderer(options);
+  const second = await loadDistRenderer(options);
+  // 検証
+  expect(fetchText).toHaveBeenCalledTimes(2);
+  expect(first.kind).toBe("unsupported");
+  expect(second.kind).toBe("ok");
+  const files = (await readdir(join(storageDir, "dist", "develop"))).filter(
+    (name) => name.endsWith(".js"),
+  );
+  expect(files).toHaveLength(1);
+});
+
 /** 作業ツリーの `vscode/` を、依存と生成物・取得物を除外して一時フォルダに複製する（`build.test.ts` の `copyExtension` と同じ） */
 const copyExtension = async (): Promise<string> => {
   const temp = await mkdtemp(join(tmpdir(), "mdmark-vscode-build-"));
