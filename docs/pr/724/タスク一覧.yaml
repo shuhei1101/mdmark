@@ -55,7 +55,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T01:43:29.691290+00:00'
   - process: 部品設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T01:48:38.503656+00:00'
   - process: 画面設計
     status: skipped
     reason: ツールチップは部品で、部品設計（CMP-472-53・CMP-472-58）が受け持つ
