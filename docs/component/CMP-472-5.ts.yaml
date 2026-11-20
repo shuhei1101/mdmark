@@ -53,6 +53,11 @@ states:
         value: '{"lib": "記法を読み取る部分", "mount": "文書を描く入口"}'
       - name: hints
         value: 'false'
+  - name: GroupResized
+    description: 中のグループ「ページ」を角で右と下へ 40px 広げた。外のグループが中身に合わせて広がり、グループの右下に 2 本の斜線の角のボタンがある
+    args:
+      - name: groupSizes
+        value: '{"page": {"w": 336, "h": 274}}'
   - name: Narrow
     description: 幅 390px の置き場所。図は倍率 1 のまま表示する枠の中で横にスクロールする
   - name: Plain
@@ -158,6 +163,11 @@ args:
     required: false
     default: '[]'
     description: データの印を流す線（`{ wire, direction, color, shape }`。`direction` は `forward`・`backward`・`both`、`shape` は `circle`・`square`・`diamond`）。指定している間、元から先へ繰り返し流す。`color` は色の名前か `line`・`source`・`target` で、省く・知らない値は線の色
+  - name: groupSizes
+    type: オブジェクト
+    required: false
+    default: '{}'
+    description: 角で大きさを変えたグループの ID → `{ w, h }`（px）。配置はそのグループをこの大きさ以上で描き、外のグループを中身に合わせて広げる。中のノードとグループを囲む大きさより小さくはしない
   - name: dragging
     type: 文字列
     required: false
@@ -214,9 +224,13 @@ events:
     value: ノードの ID（`data-node`）か、線の両端の ID
     description: '`mount` が `selected` のノードを切り替える。線は、両端が選ばれていれば両方を解き、それ以外は両方を選ぶ'
   - name: 動かす
-    when: ノード・グループのタイトルの行（上端から 36px。ボタンの外）・線の区間を 4px 以上ドラッグする。フォーカスして Alt + 矢印キーを押す（8px ずつ。Shift も押すと 32px ずつ。線は真ん中の区間を動かす）
+    when: ノード・グループのタイトルの行（上端から 36px。ボタンの外）・グループの左・右・下の縁（内側 8px。右下の角を除く）・線の区間を 4px 以上ドラッグする。フォーカスして Alt + 矢印キーを押す（8px ずつ。Shift も押すと 32px ずつ。線は真ん中の区間を動かす）
     value: 動かした要素の ID と動いた量（px）
     description: '`mount` が位置を固定して再配置し、sessionStorage に保つ。ほかのノード・グループとの間が 16px より狭くなる位置と、グループの左端・上端より外へは動かさない'
+  - name: 大きさを変える
+    when: 開いたグループの右下の角のボタンを 4px 以上ドラッグする。角にフォーカスして矢印キーを押す（→・↓ で広げ、←・↑ で狭める。8px ずつ、Shift も押すと 32px ずつ）
+    value: グループの ID と大きさ（px）
+    description: '`mount` が `groupSizes` を変えて再配置し、sessionStorage に保つ。中のノードとグループを囲む大きさより小さくせず、ほかのノード・グループとの間が 16px より狭くなる大きさへは広げない。「配置と選択を元に戻す」で空にする'
   - name: 線を指す
     when: 線にポインターを乗せるかフォーカスする。離す
     value: 線の ID
@@ -236,6 +250,8 @@ uses:
   - component: CMP-472-8#
     how: ノードの種類の行の Lucide のアイコンと、開閉の山形
 accessibility:
+  - 開いたグループの右下の角のボタンは `button` で、押せる大きさが 24px 四方、`aria-label="{タイトル}の大きさを変える"`、ポインターの形状が `nwse-resize` で、キーボードでフォーカスでき、フォーカスの枠が見える。見た目は 16px の 2 本の斜線で、閉じたグループと中へ入っているときの外のグループには置かない
+  - グループの左・右・下の縁の内側 8px は、タイトルの行と同じくポインターの形状が `grab` で、ドラッグでグループを動かす。キーボードではタイトルの行と同じ Alt + 矢印キーで動かす
   - グループの開閉のボタンは `aria-expanded` と `aria-label="{タイトル}を開く"`（開いているときは `閉じる`）を持つ。タイトルのボタンは `aria-label="{タイトル}の中へ入る"` を持つ
   - リンク先を持たないノードは、ノードの `div` がフォーカスを受けず、ノードの全体を覆う押せる要素（`span.mdmark-diagram-node-hit`）がノードの代わりにフォーカスを受ける（ノードの中にフォーカスできる要素を入れ子にしない）。押せる要素は `role="button"`・`tabindex="0"`・`aria-roledescription="ノード"`・`aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight"` と、ノードの名前のスクリーンリーダー向けの名前を持ち、フォーカスの枠をノードの外側に出す。選んだかをノードの `data-selected` と、スクリーンリーダー向けの名前の末尾の `（選択中）` で伝える（`aria-pressed` は付けない）
   - 押せる要素は、ノードの中の種類の行・名前の文字・説明のマーカー・ノードの中に入れた部品（ER 図の列の行と、列の開閉・列の説明のボタン）の下に重ね、それらを押せる要素の中に入れない。名前の中の用語・説明のマーカー・ノードの中に入れた部品のボタンは、押せる要素とは別にフォーカスできる（Tab の順は押せる要素、ノードの中の並び）。名前の文字と ER 図の列の名前の文字は、押せる要素の上で選んでコピーできる

@@ -78,6 +78,9 @@ data_models:
       - name: selectable
         type: '((id: string) => boolean) | undefined'
         description: 選べるノードか（クラス図のノート・アーキテクチャ図の junction を選ばない）。無ければ全てのノードを選べる。選べないノードを押しても選択を変えない
+      - name: packetDirection
+        type: '((wireId: string) => "forward" | "backward") | undefined'
+        description: 線ごとのデータの印の向き（ER 図は関連の両端の多重度で決める）。無ければ線の元から先（`both` の線は両向き）
 constants:
   - name: DIM_SELECTOR
     title: 薄くする対象
@@ -180,8 +183,10 @@ functions:
       2. 名前の幅を測る関数を作る。範囲の要素の計算値の `font-family` と `LABEL_METRICS.nameSize`・太字（700）のフォントで、canvas の 2D の文脈の `measureText` で 1 行の幅を測り、同じ文字の列の幅は覚えて再利用する。この関数を `layoutMap` の `measureText` と `extension.overrides` の `measureText` に指定する。`document.fonts` があれば、`document.fonts.ready` の後に覚えた文字の列の幅を再計測し、幅が 1 つでも変わっていれば測った大きさを捨てて「配置する」を再実行する（書体を読み込み終える前は代わりの書体で測るため。描く前に読み込み終えていれば幅は変わらず、再配置さない）。`destroy` の後に `ready` が解決したときは再配置さない。上書きには、ノードの種類（`classes` のうち重ねた `map.kinds` にある最初の種類）の形状が `pill` のノードに `padLeft`（`LABEL_METRICS.padPill`）を加える。`extension.overrides` に補足の `layout` と状態の `positions`・`attachments`（`ends` に重ねる）を重ねた上書きで、次の「配置する」をする。`layoutMap` で配置し、`extension.rewire` があれば線を再計算し、`separateWires` で同じ区間の線を並べる。`crowded` が 0 より大きければ、`spread` を `crowded` にして配置・再計算し・並べるを 1 回だけ再実行する（`crowded` は通り道に足りない幅なので、広げた通り道の中ほどに束が収まる）。この手順の開閉と手順 3 の「配置し直す」は、この「配置する」を再実行することを指す。`renderDiagramFrame`（種類 `map`・`wide`・`tools`）と `renderMapFlow`（`extension.render` があればそちら。補足の `notes` と、`parseFlowchart` の `links` を `mapLinkProblems`（`idLinks` は `resolve` と `resolveIdLink`）で確認した `allowed`、`readMapAnnotations` で読み込んだ要素ごとの注記の `annotations`、`hints` は `config.features.hints`）で描き、描くたびに `linkAnnotationOwners` で持ち主の `id` を一覧の戻るリンクに合わせる。再描画して図の中身の大きさが変わったら（グループに入る・出る、開閉、再計測し、書体の読み込み後の再配置し）、表示する枠の `zoomControlOf` の `resize` に大きさを指定し、倍率の文字を保つ。図のツールチップの操作は `attachDiagrams`（`placement` は `config.tooltips.diagramPlacement`）で付ける。`data-node-toggle` のボタンを押すと、その ID の `collapsed` を切り替え、測った大きさを捨てて再配置する
       3. ノードと閉じたグループ（`.map-closed-group[data-group]`）の中身を測り、中身が入る高さ（絶対配置でなく、`display` が `none` でない子要素の、最初の子要素の上端から `margin-top` を引いた位置から、最後の子要素の下端に `margin-bottom` を加えた位置までの高さに、上下の余白と上下の枠線を加えた高さ）が、ノードの高さを 1px より大きく越えるノードを、越えた分を高さに加えた `size` にして再配置する。中身を上寄せにするノードも上下の中央に配置するノードも、1 回の再計測で中身が上下の余白の内側に入る。以降はノードの大きさを `ResizeObserver` で見て同じく再配置する
       4. 補足の `walkthroughs`（`extension.walkthroughs` があればそちら）を `attachBand`（モードは `extension.bandMode`、無ければ `walkthrough`。単位は `extension.bandUnit`）の手順にする。手順へ移るたびに `onWalk` を呼び、`onStep` で `resumeFollow` と手順の `nodes` の `follow` を呼んで図を移し、停止で案内を始めたときに中へ入っていたグループと倍率に戻す。手順の `nodes` のうち閉じたグループの中のノードはそのグループに、`edges` のうち描いていない線（閉じたグループへの線にまとめた線）は、両端を同じく付け替えた描いた線に置き換えて、強調とデータの印を適用する
-      4. 構成図の `styles`（線の番号は記載順の線の ID に置き換える）を `renderMapFlow` に指定し、`collapsed` を補足の `layout` の `collapsed` と同じく最初の閉じたグループに加える。範囲の外の map の図も範囲の中と同じく適用する
-      5. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ。動かす操作は `startDrag` に任せ（`pointerType` が `touch` の押下ではノード・グループ・線の区間を動かさず、指の移動を表示する枠のスクロールに任せる）、`pointerup` か `pointercancel` で保つ（`pointercancel` では `startDrag` が戻した状態を保つ）
+      5. 構成図の `styles`（線の番号は記載順の線の ID に置き換える）を `renderMapFlow` に指定し、`collapsed` を補足の `layout` の `collapsed` と同じく最初の閉じたグループに加える。範囲の外の map の図も範囲の中と同じく適用する
+      6. データの印の向きは `extension.packetDirection` があればそれで決め、無ければ線の元から先（`both` の線は両向き）にする。グループの右下の角のボタンと左・右・下の縁の帯を描き、角のドラッグとキーは `startDrag`・`resizeByKey` に任せて `groupSizes` を変え、配置で `groupSizes` を下限の大きさとして重ねる
+      7. `attachDiagrams` の `attachModal` に、全画面のモーダルに複製した図へ同じ読み取りの結果と `extension` で描画と操作（手順 2〜6）を付け直す関数を指定する。一覧の表示（`attachMapList`）と書き出すボタン（`attachMapExport`）もモーダルの図に付ける。モーダルの図は状態を sessionStorage から読み直し、`writeMapState` の `scope: modal` で保つ。モーダルの Esc はツールチップ・選択・中へ入った状態の順に解き、どれも無いときは `preventDefault` せずモーダルに任せる。閉じたら付けた操作を解除し、元の図の状態を sessionStorage から読み直して再配置する
+      8. 開閉・中へ入る・選ぶ・線を指す・動かすの操作と、Esc（選択を解き、無ければ外へ戻る）、右上のボタンを付け、変わるたびに `writeMapState` で保つ。動かす操作は `startDrag` に任せ（`pointerType` が `touch` の押下ではノード・グループ・線の区間を動かさず、指の移動を表示する枠のスクロールに任せる）、`pointerup` か `pointercancel` で保つ（`pointercancel` では `startDrag` が戻した状態を保つ）
     unit_tests:
       - name: test_attach_map_flow_when_mermaid_styles
         case: 正常

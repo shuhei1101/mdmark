@@ -104,6 +104,49 @@ export const moveItem = (
   return { x: item.x - origin.x, y: item.y - origin.y };
 };
 
+/** グループの中のノードとグループを囲む大きさ（中の余白とタイトルの行を含む） */
+const contentSizeOf = (
+  layout: MapLayout,
+  group: PlacedGroup,
+): { w: number; h: number } => {
+  const children: Item[] = [...layout.nodes, ...layout.groups].filter(
+    (item) => item.ancestors[0] === group.id,
+  );
+  const pad = MAP_LAYOUT.groupPad;
+  return {
+    w: Math.max(pad * 2, ...children.map((c) => c.x + c.w + pad - group.x)),
+    h: Math.max(
+      pad * 2 + MAP_LAYOUT.groupTitle,
+      ...children.map((c) => c.y + c.h + pad - group.y),
+    ),
+  };
+};
+
+/** グループの大きさを (dw, dh) だけ変えた大きさ。中身を囲む大きさより小さくせず、ほかとの間が minGap より狭くなる手前まで */
+export const resizeGroup = (
+  layout: MapLayout,
+  group: PlacedGroup,
+  delta: { dw: number; dh: number },
+): { w: number; h: number } => {
+  const least = contentSizeOf(layout, group);
+  const target = {
+    w: Math.max(least.w, Math.round(group.w + delta.dw)),
+    h: Math.max(least.h, Math.round(group.h + delta.dh)),
+  };
+  const dw = target.w - group.w;
+  const dh = target.h - group.h;
+  const steps = Math.ceil(Math.hypot(dw, dh));
+  for (let step = steps; step > 0; step -= 1) {
+    const t = step / steps;
+    const w = Math.max(least.w, Math.round(group.w + dw * t));
+    const h = Math.max(least.h, Math.round(group.h + dh * t));
+    const grows = w > group.w || h > group.h;
+    if (!grows || fitsAt(layout, group, { x: group.x, y: group.y, w, h }))
+      return { w, h };
+  }
+  return { w: Math.max(least.w, group.w), h: Math.max(least.h, group.h) };
+};
+
 /** 点が矩形の内側（辺を除く）か */
 const inside = (rect: Rect, [x, y]: [number, number]) =>
   x > rect.x && x < rect.x + rect.w && y > rect.y && y < rect.y + rect.h;
@@ -243,6 +286,8 @@ export const applyWireShifts = (
 /** ドラッグで動かすノード・グループか、線と区間 */
 type DragTarget = {
   item: Item | undefined;
+  /** 角を押して大きさを変えるグループ */
+  resize: PlacedGroup | undefined;
   wire: PlacedWire | undefined;
   segment: number | undefined;
 };
@@ -265,20 +310,28 @@ const pressedOf = (
 ): {
   node: string | undefined;
   group: string | undefined;
+  corner: string | undefined;
   hit: Element | null | undefined;
 } => {
   const target = event.target instanceof Element ? event.target : undefined;
   return {
+    corner: groupAt(target, ".map-group-resize"),
     node:
       target?.closest("[data-node]")?.getAttribute("data-node") ?? undefined,
-    group:
-      target
-        ?.closest(".map-group-bar, .map-group-head")
-        ?.closest("[data-group]")
-        ?.getAttribute("data-group") ?? undefined,
+    group: groupAt(target, ".map-group-bar, .map-group-head"),
     hit: target?.closest(".map-wire-hit"),
   };
 };
+
+/** 要素が selector の中にあれば、それを持つグループの ID */
+const groupAt = (
+  target: Element | undefined,
+  selector: string,
+): string | undefined =>
+  target
+    ?.closest(selector)
+    ?.closest("[data-group]")
+    ?.getAttribute("data-group") ?? undefined;
 
 /** 押した場所から、動かすノード・グループか、線と区間を決める */
 const dragTargetOf = (
@@ -289,7 +342,7 @@ const dragTargetOf = (
   },
 ): DragTarget => {
   const { event, pointOf } = context;
-  const { node, group, hit } = pressedOf(event);
+  const { node, group, corner, hit } = pressedOf(event);
   const wireId = hit?.getAttribute("data-wire") ?? undefined;
   const wire =
     wireId === undefined
@@ -298,6 +351,10 @@ const dragTargetOf = (
   const given = hit?.getAttribute("data-segment");
   return {
     item: itemOf(layout, { node, group }),
+    resize:
+      corner === undefined
+        ? undefined
+        : layout.groups.find((one) => one.id === corner),
     wire,
     segment: segmentOf(wire, {
       given,
@@ -357,7 +414,16 @@ const dragged = (
   move: { layout: MapLayout; target: DragTarget; dx: number; dy: number },
 ): MapState | undefined => {
   const { layout, target, dx, dy } = move;
-  const { item, wire, segment } = target;
+  const { item, resize, wire, segment } = target;
+  if (resize) {
+    return {
+      ...state,
+      groupSizes: {
+        ...state.groupSizes,
+        [resize.id]: resizeGroup(layout, resize, { dw: dx, dh: dy }),
+      },
+    };
+  }
   if (item) {
     return {
       ...state,
@@ -372,7 +438,7 @@ const dragged = (
   return state;
 };
 
-/** 押した場所（ノード・グループのタイトルの行・線の区間）からドラッグを始める。4px 動くまでは押した扱い。`pointercancel` で動かした分を戻す */
+/** 押した場所（ノード・グループのタイトルの行と縁・グループの角・線の区間）からドラッグを始める。角ではグループの大きさを変える。4px 動くまでは押した扱い。`pointercancel` で動かした分を戻す */
 export const startDrag = (options: {
   event: PointerEvent;
   layout: MapLayout;
@@ -512,4 +578,23 @@ export const nearestSegment = (
       best = { index, distance };
   }
   return best?.index;
+};
+
+/** フォーカスしたグループの角で、グループの幅と高さを (dw, dh) だけ変えた状態を返す。変えられないときは undefined */
+export const resizeByKey = (options: {
+  layout: MapLayout;
+  state: MapState;
+  group: string;
+  dw: number;
+  dh: number;
+}): MapState | undefined => {
+  const { layout, state, dw, dh } = options;
+  const group = layout.groups.find((one) => one.id === options.group);
+  if (!group) return undefined;
+  const size = resizeGroup(layout, group, { dw, dh });
+  if (size.w === group.w && size.h === group.h) return undefined;
+  return {
+    ...state,
+    groupSizes: { ...state.groupSizes, [group.id]: size },
+  };
 };

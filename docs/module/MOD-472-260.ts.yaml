@@ -53,6 +53,12 @@ data_models:
       - name: replacement
         type: string | undefined
         description: '`avoid` の種類の置き換え先の単語'
+      - name: row
+        type: string | undefined
+        description: このエイリアスを作った元の行の `id`。`buildAliases` が入れる
+      - name: details
+        type: MdmarkAliasDetail[] | undefined
+        description: '`term` の種類の、用語を説明するページ。`href` は設定ファイルのフォルダからの相対パスか URL。残った要素が無ければ持たない'
     refs:
       - ER-472-3#tables[MdmarkAlias]
     status: planned
@@ -95,6 +101,17 @@ data_models:
     refs:
       - IF-472-26#response[problems]
     status: planned
+  - name: MdmarkAliasDetail
+    title: 詳細のページ
+    container: src/knowledge/aliases.ts
+    summary: エイリアスの用語を説明するページ 1 つ
+    properties:
+      - name: title
+        type: string
+        description: リンクに出すページの名前
+      - name: href
+        type: string
+        description: 設定ファイルのフォルダからの相対パス（区切りは `/`、先頭の `./` を持たない）か URL。`#` 以降のアンカーを持てる
 enums:
   - name: MdmarkAliasType
     title: エイリアスの種類
@@ -181,6 +198,7 @@ functions:
     callees:
       - '#functions[readAliasRecord]'
       - '#functions[checkAliasFields]'
+      - '#functions[readAliasDetails]'
     refs:
       - IF-472-26#
     unit_tests:
@@ -232,6 +250,12 @@ functions:
         condition: '`env` の `dev-server` の後に `url` の `dev-server`'
         mock: なし
         expected: '`problems` が `duplicate_alias_id` の 1 件で、`aliases` が空'
+      - name: test_build_aliases_with_row_and_details
+        case: 正常
+        summary: エイリアスに元の行の id と詳細のページを入れる
+        condition: インターフェース定義『エイリアスを作る』の正常系（元の行と詳細のページ）の行と中身
+        mock: なし
+        expected: '`marker` の `row` が `terms`、`details` が 2 件で `href` が `docs/guide/コアコンセプト-文書を描く仕組み.md#流れ`・`https://example.com/spec`、`problems` が空'
     status: planned
   - name: readAliasRecord
     title: レコードから値を取る
@@ -308,6 +332,34 @@ functions:
         mock: なし
         expected: 1 つ目の `unit-test` だけを返却する
     status: planned
+  - name: readAliasDetails
+    title: 詳細のページを読み込む
+    container: src/knowledge/aliases.ts
+    kind: 関数
+    scope: internal
+    summary: レコードの `details` の列の値から、空でない文字列の `title` と `href` を持つ要素だけを残し、`href` を設定ファイルのフォルダからの相対パスに書き換える
+    description: '`href` がスキーム（`[a-z][a-z0-9+.-]*:`）か `#` で始まるときはそのまま。それ以外は `#` の前をレコードのファイルのフォルダから解き（`./`・`../` を畳む）、`#` 以降を後ろに残す。並びでない値と、残った要素が無いときは `undefined`'
+    args:
+      - name: options
+        type: '{ value: unknown; sourcePath: string }'
+        required: true
+        description: レコードの `details` の列の値と、そのレコードのファイルの `path`（設定ファイルのフォルダからの相対パス）
+    returns:
+      type: MdmarkAliasDetail[] | undefined
+      description: 読み込んだ詳細のページ
+    unit_tests:
+      - name: test_read_alias_details
+        case: 正常
+        summary: 相対パスを設定ファイルのフォルダからのパスにし、URL と `#` はそのままにする
+        condition: '`sourcePath` が `docs/guide/用語集.yaml`、`value` が `./a.md#流れ`・`../b.md`・`https://example.com/x`・`#top` の 4 件'
+        mock: なし
+        expected: '`href` が `docs/guide/a.md#流れ`・`docs/b.md`・`https://example.com/x`・`#top`'
+      - name: test_read_alias_details_when_invalid
+        case: 異常
+        summary: '`title`・`href` のどちらかが空の要素と、並びでない値を使用しない'
+        condition: '`value` が `[{ title: "a" }, { href: "b.md" }]` と文字列 `x`'
+        mock: なし
+        expected: どちらも `undefined`
 lead: 'エイリアスの型と、設定の行と YAML の中身からのエイリアスの作成を受け持ち、エイリアスの作り方を変えるときに参照する。'
 tags:
   - name: topic:エイリアス

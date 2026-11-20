@@ -28,7 +28,10 @@ import type { MdmarkAlias } from "./knowledge/aliases.ts";
 import type { MdmarkIndex } from "./knowledge/index-shape.ts";
 import type { MdmarkReferences } from "./knowledge/references.ts";
 import { embeddedLibraries, loadLibraries } from "./libraries.ts";
-import { toPureMarkdown } from "./markdown/pure-markdown.ts";
+import {
+  type PureMarkdownResult,
+  toPureMarkdown,
+} from "./markdown/pure-markdown.ts";
 import { attachMermaid } from "./mermaid.ts";
 import { attachParts, type PartsHandle } from "./mount-parts.ts";
 import { attachPrint } from "./print.ts";
@@ -44,10 +47,22 @@ import type { MdmarkIconNode } from "./shared/icon-node.logic.ts";
 import { renderNotice } from "./shared/notice.part.ts";
 import type { PartStates } from "./shared/part-states.interact.ts";
 
+/** `mount` の `rendered` に指定する、`renderDocument` の戻り値のうち `mount` が使用する項目 */
+export type MdmarkRendered = Pick<
+  RenderedDocument,
+  "html" | "features" | "page" | "paramDefinitions" | "extensionDefinitions"
+>;
+
 /** `mount` の第 2 引数 */
 export type MountOptions = {
-  /** 描く Markdown */
-  markdown: string;
+  /** 描く Markdown。`rendered` を指定しないとき必須 */
+  markdown?: string;
+  /** 書き出しが `render` と同じ処理で描いた結果。指定すると Markdown を描かず、その HTML を要素に入れて操作を付ける。`html` はもう一度サニタイズしない */
+  rendered?: MdmarkRendered;
+  /** `rendered` で描いた文書の Markdown のコピーとエクスポートのボタンが使用する純粋な Markdown。省くとボタンを配置しない */
+  pureMarkdown?: string;
+  /** 描く文書の、設定ファイルのフォルダからの相対パス（`render` の `path` と同じ） */
+  path?: string;
   /** 利用側の設定。省いたキーには既定を適用する */
   config?: MdmarkConfig;
   /** 索引。省くと索引の用語と関連文書を出さない */
@@ -272,9 +287,36 @@ function wrapContent(el: HTMLElement): HTMLElement {
   return content;
 }
 
+/** `markdown` も `rendered` も無いときと、`rendered` を差分・比較元・コメントと一緒に指定したときに `TypeError` を投げる */
+function checkRendered(opts: MountOptions): void {
+  if (opts.rendered === undefined) {
+    if (typeof opts.markdown !== "string") {
+      throw new TypeError(
+        "markdown か rendered を指定してください（markdown は文字列、rendered は render と同じ処理で描いた結果）",
+      );
+    }
+    return;
+  }
+  const mixed = (
+    [
+      ["diffSource", opts.diffSource],
+      ["baseMarkdown", opts.baseMarkdown],
+      ["commentStore", opts.commentStore],
+    ] as const
+  )
+    .filter(([, value]) => value !== undefined && value !== null)
+    .map(([key]) => key);
+  if (mixed.length > 0) {
+    throw new TypeError(
+      `rendered は ${mixed.join("・")} と一緒に指定できません。差分・比較元・コメントを使用するときは markdown を指定してください`,
+    );
+  }
+}
+
 /** 要素の中に文書を描き、記法の操作を付け、外部ライブラリと拡張のマーカーを描かせ、ビューとコメントの部品を付け、印刷の受け取りを付けて、再描画と片付けの関数を返却する。`diffSource` か `commentStore` を指定して `docId` が無いとき、`commentStore`・`baseMarkdown`・`onColumnsChange` が合わないときは、何も描かずに `TypeError` を投げる */
 export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   const { diffSource, commentStore, docId, onColumnsChange } = opts;
+  checkRendered(opts);
   if (diffSource !== undefined && docId === undefined) {
     throw new TypeError("diffSource を指定するときは docId も指定してください");
   }
@@ -345,6 +387,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       includes,
       icons: opts.icons,
       resolveIdLink: opts.resolveIdLink,
+      path: opts.path,
     });
   /** 描いた HTML を要素に入れる。`from` があれば、前の Markdown と比べて色分けする */
   const paint = (target: {
@@ -385,11 +428,30 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     }
     lastTocMode = drawn.sideToc.mode;
   };
+  /** Markdown のコピーとエクスポートのボタンが使用する純粋な Markdown を作る関数。描いた結果から描いたときは `opts.pureMarkdown`（無ければボタンを配置しない） */
+  const pureMarkdownOf = (
+    markdown: string | undefined,
+  ): (() => Promise<PureMarkdownResult>) | undefined => {
+    const pure = opts.pureMarkdown;
+    if (markdown === undefined) {
+      return pure === undefined
+        ? undefined
+        : () => Promise.resolve({ markdown: pure, warnings: [] });
+    }
+    return () =>
+      toPureMarkdown(markdown, {
+        config: opts.config,
+        index: opts.index,
+        docId: opts.docId,
+        includes,
+      });
+  };
   /** 右側の目次を付け、以降の操作と部品を付ける本文の列を返却する。コメントの余白の列を本文の列の右に配置するため、右側の目次が包んでいなければ本文の列に包む */
   const layoutBody = (
     drawn: ResolvedConfig,
-    markdown: string,
+    markdown: string | undefined,
   ): { body: HTMLElement; aside: HTMLElement | undefined } => {
+    const pureMarkdown = pureMarkdownOf(markdown);
     const sideToc =
       features["side-toc"] === true
         ? attachSideToc({
@@ -397,13 +459,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
             mode: drawn.sideToc.mode,
             sections: features.sections === true,
             markdownButtons: features["markdown-buttons"] === true,
-            pureMarkdown: () =>
-              toPureMarkdown(markdown, {
-                config: opts.config,
-                index: opts.index,
-                docId: opts.docId,
-                includes,
-              }),
+            pureMarkdown,
             state: sideTocState,
           })
         : undefined;
@@ -454,7 +510,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
   /** アイコン・外部ライブラリと拡張・色分け・mermaid・範囲のスクリプトの読み込みを始める */
   const startLoading = (target: {
     body: HTMLElement;
-    rendered: RenderedDocument;
+    rendered: MdmarkRendered;
     drawn: ResolvedConfig;
     isCurrent: () => boolean;
   }): void => {
@@ -532,9 +588,9 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     });
   };
 
-  /** 文書を描く。`coloredFrom` は `blocks` で色分けするときの前の Markdown（`markdown` が後）、`fromUpdate` は `update` から始まった描画か */
+  /** 文書を描く。`markdown` が無いときは `opts.rendered` を描く。`coloredFrom` は `blocks` で色分けするときの前の Markdown（`markdown` が後）、`fromUpdate` は `update` から始まった描画か */
   const draw = (
-    markdown: string,
+    markdown: string | undefined,
     coloredFrom?: string,
     fromUpdate = false,
   ): void => {
@@ -545,10 +601,19 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     parts = undefined;
     // 比較元があって本文と違うときは、比較元と比べて色分けする
     const from =
-      coloredFrom ??
-      (base !== undefined && base !== markdown ? base : undefined);
-    const rendered = renderMarkdown(markdown);
-    paint({ rendered, markdown, from });
+      markdown === undefined
+        ? undefined
+        : (coloredFrom ??
+          (base !== undefined && base !== markdown ? base : undefined));
+    const rendered =
+      markdown === undefined
+        ? (opts.rendered as MdmarkRendered)
+        : renderMarkdown(markdown);
+    if (markdown === undefined) {
+      el.innerHTML = rendered.html;
+    } else {
+      paint({ rendered: rendered as RenderedDocument, markdown, from });
+    }
     // 文書の page のマーカーを、既定を適用した設定に重ねてこの描画の設定にする
     const drawn = applyPageSettings({ config, page: rendered.page });
     applyAppearance(drawn);
@@ -602,7 +667,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
     }
   };
 
-  draw(opts.markdown);
+  draw(opts.rendered === undefined ? opts.markdown : undefined);
   const detachPrint = attachPrint({
     root: el,
     isEnabled: () => features[PRINT_FEATURE] === true,

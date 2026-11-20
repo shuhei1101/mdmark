@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/terms.schema.yaml
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v9.7.0/schemas/terms.schema.yaml
 id: terms
 kind: terms
 name: 用語集
@@ -14,64 +14,112 @@ rev: 1
 items:
 - id: overview
   name: 概要
-  body: mdmark の公開ドキュメントで使用する用語の一覧。描く表は [用語集](用語集.mark.md) が持つ。
+  body: mdmark の公開ドキュメントで使用する用語の一覧。この YAML が原本で、[用語集](用語集.mark.md) は `glossary` のマーカーでこの YAML から表を描く。
 terms:
 - id: marker
   name: マーカー
   description: '文書に記載する `<!-- 名前: 引数 -->` の書式の HTML コメント（引数の無いマーカーは `<!-- 名前 -->`）。名前は英小文字で始まり、英小文字・数字・`-` だけを持ち、引数は空白で区切る。コードブロックと行内のコードの中はマーカーとして扱わない。描いた本文には残らない'
+  details:
+  - title: 文書を描く仕組み
+    href: ./コアコンセプト-文書を描く仕組み.md
 - id: marker-slot
   name: マーカーの場所
   description: 外部ライブラリのマーカーを置き換えた要素。外部ライブラリのモジュールが描く先になる
   avoid:
   - 印の場所
+  details:
+  - title: 外部ライブラリの対応表
+    href: ./設定.mark.md#外部ライブラリの対応表
 - id: library-table
   name: 対応表
   description: マーカーの名前から、外部ライブラリのモジュールの URL を参照する表。mdmark が持つ既定に、設定の `libraries` を重ねる
+  details:
+  - title: 外部ライブラリの対応表
+    href: ./設定.mark.md#外部ライブラリの対応表
 - id: mdmark-style
   name: mdmark-style
   description: Claude Code の返答と発言を mdmark の共通スタイルで描く mod のプラグイン。プラグイン mdmark とは別に入れる
+  details:
+  - title: 画面を共通スタイルで描く
+    href: ./ClaudeCodeで使用する-画面を共通スタイルで描く.md
 - id: mod
   name: mod
   description: Claude Code に入れて、画面の描画とフックを TypeScript の関数で変えるプラグイン。Node・DOM の無い環境で動く
+  details:
+  - title: 画面を共通スタイルで描く
+    href: ./ClaudeCodeで使用する-画面を共通スタイルで描く.md
 - id: feature
   name: 機能
   description: mdmark の働きのうち、オン・オフを決められるもの。設定の `features` が既定を決め、文書のマーカーがその文書だけ上書きする
+  details:
+  - title: 機能をオン・オフする
+    href: ./カスタマイズ-機能をオン・オフする.md
 - id: theme
   name: テーマ
   description: 描いた文書の外観。`--mdmark-` で始まる CSS 変数と、`@layer mdmark` に入れた mdmark の CSS で決定する
+  details:
+  - title: テーマを上書きする
+    href: ./カスタマイズ-テーマを上書きする.md
 - id: color-theme
   name: 選べるテーマ
   description: mdmark に入れた配色の値の組。`dev-swiss`（既定）・`theme-paper`・`theme-slate`・`theme-contrast` の 4 つから、設定の `colorTheme` で選ぶ。替えるのは `--mdmark-color-*` の変数と `color-scheme` だけで、書体・余白・角丸と配置の変数は替えない。外観全体を指す「テーマ」とは別で、利用側の CSS は選んだテーマに勝つ
+  details:
+  - title: 選ぶテーマ
+    href: ./設定.mark.md#選ぶテーマ
 - id: layer
   name: レイヤー
   description: mdmark の CSS を入れる `@layer mdmark`。利用側がレイヤーの外に記載した CSS は、詳細度によらずレイヤーの中の mdmark の CSS に勝つ
+  details:
+  - title: 文書を描く仕組み
+    href: ./コアコンセプト-文書を描く仕組み.md
 - id: loading-block
   name: 読み込み中のブロック
   description: 外部ライブラリを読み込んでいる間、マーカーの場所に出す破線の枠。`図を読み込んでいます` と出し、図の高さを先に取る
   avoid:
   - 読み込み中の枠
+  details:
+  - title: 文書を描く仕組み
+    href: ./コアコンセプト-文書を描く仕組み.md
 - id: notice-block
   name: 通知ブロック
   description: 外部ライブラリや拡張のモジュールを読み込めないマーカーの場所に出す枠。タイトルは `この図を表示できません`（図でないマーカーは `この箇所を表示できません`）で、本文に読み込めなかったマーカーの名前と修正方法を記載する
   avoid:
   - 知らせの枠
+  details:
+  - title: 文書を描く
+    href: ./API.mark.md#文書を描く
 - id: range-marker
   name: 範囲のマーカー
   description: '`<!-- 名前: 引数 -->` 〜 `<!-- /名前 -->` で本文を囲むマーカー。閉じのマーカーは `<!-- /名前 -->`。マーカーに対応しない表示ではマーカーが見えず、囲んだ Markdown がそのまま読み込める'
   avoid:
   - 範囲の印
+  details:
+  - title: 記法
+    href: ./記法.mark.md
 - id: syntax
   name: 記法
   description: マーカーや記載方法で、表・注意書き・タブなどの表示を付けるもの。記法ごとに機能としてオン・オフできる
+  details:
+  - title: 記法
+    href: ./記法.mark.md
 - id: table-kind
   name: 表の種類
   description: 表のマーカーに記載する `data`・`plain`。種類ごとに並べ替え・ピン止め・絞り込み・列の幅の変更の機能が決定し、囲まない表は既定の種類になる
+  details:
+  - title: 表
+    href: ./記法.mark.md#表
 - id: cell-merge
   name: セルの結合
   description: マーカーで囲んだ表で、文字がちょうど `^^` のセルを上のセルと、`<<` のセルを左のセルとつなぎ、1 つのセルとして描くこと。本文の行の結合したセルは、並べ替え・絞り込み・集計で結合の始まりのセルと同じ値を持つ
+  details:
+  - title: 多段の見出しとセルの結合
+    href: ./記法.mark.md#多段の見出しとセルの結合
 - id: row-header
   name: 行見出し
   description: 表のマーカーの `header.columns` で、本文の各行の先頭の何列かを行の見出しにしたもの。ピン止めした行見出しの列は横にスクロールしても左端に残る（設定の `table.pin_default` が `true` なら描いた直後から留まる）
+  details:
+  - title: 多段の見出しとセルの結合
+    href: ./記法.mark.md#多段の見出しとセルの結合
 - id: table-settings
   name: テーブル設定
   description: '`columns`・`reorder` の機能を持つ表の上のボタンで開くパネル。列名を並べ、目のアイコンで列の表示・非表示を、つまみで列の並べ替えを操作する'
@@ -81,241 +129,460 @@ terms:
 - id: column-resize-handle
   name: 列の幅のつまみ
   description: '`resize` の表の列の見出しの右端に配置し、ドラッグと ←・→ キーでその列の幅を変える部品。ダブルクリック・ダブルタップ・Enter で元の幅に戻し、変えた幅は保存しない。図の高さを変えるリサイズハンドルとは別の部品'
+  details:
+  - title: 表
+    href: ./記法.mark.md#表
 - id: key-hierarchy
   name: キーの階層
   description: 表のマーカーの `tree.key.column` で、列の文字を `.` と `[]` で区切ったキーのパスとして読み込み、行を末尾の名前で字下げして並べた表。表に無い親のパスの行を補い、開閉・全体のパスのコピー・行の選択を付ける
   aliases:
   - 階層の表
+  details:
+  - title: キーの階層と YAML の見本
+    href: ./記法.mark.md#キーの階層と-yaml-の見本
 - id: yaml-sample
   name: YAML の見本
   description: '`tree` の表のマーカーの `tree.example.heading` で、見出しの直下のタブの範囲を表の下へ移したもの。YAML の行をキーのパスで表の行と結び、表で選んだ行と同じパスの行に色を付ける'
+  details:
+  - title: キーの階層と YAML の見本
+    href: ./記法.mark.md#キーの階層と-yaml-の見本
 - id: total-row
   name: 集計の行
   description: 列に `total` を記載した表の末尾に、計算ごとに 1 行ずつ配置する行。表示している行を `sum`（合計）・`avg`（平均）・`count`（空でないセルの数）で集計し、絞り込みに合わせてもう一度計算する。先頭のセルに計算の名前（`合計`・`平均`・`件数`）を出し、表の上の「集計」ボタンで出す計算を選べる。`sum`・`avg` の列に数として読み込めないセルがあると、その列のその計算のセルを空にして警告を出す
+  details:
+  - title: 表
+    href: ./記法.mark.md#表
 - id: row-link
   name: 行へのリンク
   description: '`rowlink` の機能を持つ表の各行の先頭のセルに配置する、その行を指す `#ID` のリンク。`#ID` は先頭の列の文字から見出しのアンカーと同じ規則で作る。URL の `#ID` が行を指すと、その行へ移って強調する。押すと、その行を指す URL をクリップボードへコピーして短く通知する'
+  details:
+  - title: 表
+    href: ./記法.mark.md#表
 - id: callout
   name: 注意書き
   description: 1 行目が `[!NOTE]` などの引用を、種類ごとのタイトル・色・アイコンを持つ枠にしたもの。`[!NOTE]` の後ろの文字はタイトルになる。種類の後ろに `-` を付けると閉じた折り畳み、`+` を付けると開いた折り畳みになる
+  details:
+  - title: 注意書き
+    href: ./記法.mark.md#注意書き
 - id: tab
   name: タブ
   description: '`<!-- tabs -->` の範囲を、見出しの文字をタブ名にして切り替えて見せるもの'
+  details:
+  - title: タブ
+    href: ./記法.mark.md#タブ
 - id: tab-group
   name: タブの組
   description: タブのマーカーの `group` で付ける名前。同じページで同じ組のタブ群は、選んだタブ名を統一し、読者が選んだタブ名を localStorage に残して、次に描くときもそのタブを選ぶ
+  details:
+  - title: タブ
+    href: ./記法.mark.md#タブ
 - id: steps
   name: ステップ
   description: 番号付きリストを、番号と項目をつなぐ線を持つ手順にしたもの
+  details:
+  - title: ステップ
+    href: ./記法.mark.md#ステップ
 - id: file-tree
   name: ファイルツリー
   description: 言語 `tree` のコードブロック（罫線の行を 2 行以上持つほかの言語のコードブロックも）の罫線を、フォルダとファイルの入れ子のツリーにしたもの。項目の右に注釈を統一して出し、拡張子ごとのアイコンを付け、読者がフォルダを開閉して元の罫線のテキストをコピーできる
+  details:
+  - title: ファイルツリー
+    href: ./記法.mark.md#ファイルツリー
 - id: code-annotation
   name: 注釈
   description: ファイルツリーの項目の名前の後ろに、前に空白がある最初の `#` から続けて記載するテキスト。全ての行で同じ位置の列に統一して出し、中のインライン（コード・リンク・太字・バッジ）を描く。`C#/` のように `#` の前に空白が無い名前は注釈にしない
+  details:
+  - title: ファイルツリー
+    href: ./記法.mark.md#ファイルツリー
 - id: badge
   name: バッジ
   description: 頭に `badge\:` を付けた行内のコードを、頭を削除した文言の札にしたもの
+  details:
+  - title: バッジ
+    href: ./記法.mark.md#バッジ
 - id: icon
   name: アイコン
   description: 頭に `icon\:` を付けた行内のコードを、Lucide のアイコンにしたもの
+  details:
+  - title: アイコン
+    href: ./記法.mark.md#アイコン
 - id: keyboard-key
   name: キー
   description: 頭に `kbd\:` を付けた行内のコードを、`+` で区切ったキーの外観にしたもの
+  details:
+  - title: キー
+    href: ./記法.mark.md#キー
 - id: highlighter
   name: 蛍光ペン
   description: '`==文字==` で文字に付ける色の面'
+  details:
+  - title: 蛍光ペン
+    href: ./記法.mark.md#蛍光ペン
 - id: columns-layout
   name: 段組み
   description: '`<!-- columns -->` の範囲を `<!-- column -->` で区切り、2〜3 列に横に並べたもの'
+  details:
+  - title: 段組み
+    href: ./記法.mark.md#段組み
 - id: card-grid
   name: カードの格子
   description: '`<!-- cards -->` で囲んだリストの項目を、アイコン・タイトル・説明のカードにして格子に並べたもの'
+  details:
+  - title: カードの格子
+    href: ./記法.mark.md#カードの格子
 - id: front-matter
   name: フロントマター
   description: 文書の 1 行目の `---` から次の `---` か `...` までの YAML。本文に出さず、機能 `frontmatter` がオンのときだけ本文の先頭の折りたたみに出す。`title`・`description`・`aliases`・`tags` は、索引に無いキーを補う文書のメタデータになる
+  details:
+  - title: フロントマター
+    href: ./記法.mark.md#フロントマター
 - id: page-settings
   name: ページの設定
   description: '文書の先頭の `<!-- page: … -->` に記載する、その文書だけの配色の明暗・テーマ・右側の目次の出し方。設定より優先する'
+  details:
+  - title: ページの設定
+    href: ./記法.mark.md#ページの設定
 - id: color-scheme
   name: 配色の明暗
   description: 描いた文書を明るい配色・ダーク・OS に合わせるのどれで描くか。設定の `colorScheme` とページの設定の `scheme` で決め、どちらも無ければ描く先の祖先の class と OS の設定に従う
+  details:
+  - title: 配色の明暗
+    href: ./設定.mark.md#配色の明暗
 - id: details-range
   name: details の範囲
   description: '`<!-- details: {"title": "タイトル"} -->` の範囲を、タイトルから開閉する折りたたみにしたもの'
   aliases:
   - 範囲の折りたたみ
+  details:
+  - title: details の範囲
+    href: ./記法.mark.md#details-の範囲
 - id: page-break
   name: 改ページ
   description: '`<!-- pagebreak -->` の場所で、印刷のときに改ページすること'
+  details:
+  - title: 改ページ
+    href: ./記法.mark.md#改ページ
 - id: include
   name: 取り込み
   description: '`<!-- include: {"path": "パス"} -->` の場所に、ほかの文書の全体・見出しの中・ファイルの行の範囲を描くこと'
+  details:
+  - title: 取り込み
+    href: ./記法.mark.md#取り込み
 - id: include-target
   name: 取り込み先
   description: include のマーカーが指すファイル・見出し・行の範囲
+  details:
+  - title: 取り込み
+    href: ./記法.mark.md#取り込み
 - id: wide-range
   name: wide の範囲
   description: '`<!-- wide -->` の範囲の図・表・画像を本文の幅より広げて描いたもの。ボタンで本文の幅と切り替える'
+  details:
+  - title: wide の範囲
+    href: ./記法.mark.md#wide-の範囲
 - id: csv-table
   name: CSV の表
   description: 言語 `csv` のコードブロックを、1 行目を見出しにして描いた表。ボタンで元の CSV と切り替える
+  details:
+  - title: CSV の表
+    href: ./記法.mark.md#csv-の表
 - id: annotation
   name: 注記
   description: '行頭の `※[ID]: 本文` で定義し、本文・表のセル・map の図のノードと線から `※[ID]` で参照する注意書き。参照の場所に `※1` の上付きのマーカーとツールチップを配置し、文書の末尾の閉じた注記の一覧に並べる。ファイルツリーの注釈・Mermaid の `note`（ノート）とは別のもの'
+  details:
+  - title: 注記
+    href: ./記法.mark.md#注記
 - id: annotation-list
   name: 注記の一覧
   description: 文書の末尾の、脚注の一覧の後・関連文書の一覧の前に配置する閉じた一覧。参照された注記を番号の順に並べ、項目の戻るリンクで参照の場所へ戻る。印刷では開いて出す
+  details:
+  - title: 注記
+    href: ./記法.mark.md#注記
 - id: footnote
   name: 脚注
   description: '本文の `[^ラベル]` と行頭の `[^ラベル]: 中身`、行内の `^[中身]` で記載する補足。参照の場所に `[1]` の上付きの番号とツールチップを配置し、文書の末尾の閉じた一覧に並べる。番号は本文で参照した順に振る'
+  details:
+  - title: 脚注
+    href: ./記法.mark.md#脚注
 - id: color-preset
   name: 色のプリセット
   description: 色の名前（`blue`・`red`・`green`・`yellow`・`orange`・`purple`・`gray`）ごとに、面の薄い色と文字の色の組を持つ CSS 変数（`--mdmark-color-accent-{色}-bg`・`--mdmark-color-accent-{色}-text`）。表の列と行・バッジ・本文の文字の色に使用し、明るい配色・暗い配色と選べるテーマのそれぞれで、文字と面のコントラストを 4.5:1 以上にする。色に加えて、線か太字でも見分けられる
+  details:
+  - title: 色で強調する
+    href: ./記載する-色で強調する.md
 - id: lightbox
   name: ライトボックス
   description: 図の画像を押すと開く、画像を拡大する全画面のダイアログ。同じ文書の画像を前後に切り替え、図の全画面と同じボタンとキーで拡大・縮小・移動する。属性 `nolightbox` の画像は拡大しない
+  details:
+  - title: 画像
+    href: ./記法.mark.md#画像
 - id: gallery
   name: ギャラリー
   description: '`<!-- gallery: {"columns": 列の数} -->` の範囲の画像を格子に並べたもの。狭い幅では列を減らし、`fig` のマーカーを付けるとサブ図の番号（`図 1a`・`図 1b`）を付ける'
+  details:
+  - title: ギャラリー
+    href: ./記法.mark.md#ギャラリー
 - id: asset-root
   name: アセットのルート
   description: 文書のフォルダからの相対パスに無い画像・動画・音声・添付のファイルを、同じ相対パスで探すフォルダ。設定の `assets.root` に記載し、書き出し・点検・VS Code のプレビューが読み込む
+  details:
+  - title: アセットのルート
+    href: ./設定.mark.md#アセットのルート
 - id: link-card
   name: リンクのカード
   description: URL へのリンク 1 つだけの段落を、タイトル・ドメイン・URL のカードにしたもの。リンク先へは要求しない
+  details:
+  - title: リンクと添付のカード
+    href: ./記法.mark.md#リンクと添付のカード
 - id: attachment-card
   name: 添付のカード
   description: PDF などのファイルへのリンク 1 つだけの段落を、種類のアイコン・拡張子・ファイル名のカードにしたもの
+  details:
+  - title: リンクと添付のカード
+    href: ./記法.mark.md#リンクと添付のカード
 - id: line-highlight
   name: 行の強調
   description: コードブロックの直前のマーカーの `highlight` か、行末の `[!code highlight]` で、コードブロックの行に強調の色と左端の線を付けること。色以外でも見分けられる
+  details:
+  - title: コードブロックの飾り
+    href: ./記法.mark.md#コードブロックの飾り
 - id: syntax-highlight
   name: 色分け
   description: コードブロックの情報文字列の言語に応じて、キーワード・文字列・数値・型・名前・コメントの 6 種類を色で分けること（シンタックスハイライト）。`typescript`・`javascript`・`json`・`yaml`・`python`・`bash`・`html`・`css`・`markdown`・`sql`・`dockerfile`・`diff` の 12 言語を、`mount` が描いた後に付ける。色分けのライブラリは配布物に含めず、色分けする言語のコードブロックがある文書でだけ、バージョンを固定した URL から読み込む。設定の `features.syntax` か文書のマーカーでオン・オフする
+  details:
+  - title: コードブロックの飾り
+    href: ./記法.mark.md#コードブロックの飾り
 - id: code-line-marker
   name: コードの行のマーカー
   description: コードブロックの行末の行コメントに記載する `[!code ++]`（追加した行）・`[!code --]`（削除した行）・`[!code highlight]`（強調）・`[!code focus]`（注目。ほかの行が薄く出る）・`[!code error]`（エラー）・`[!code warning]`（警告）。行を色と行頭の `+`・`-`・`×`・`!` で分け、マーカーと、マーカーだけを持つ行コメントの頭は画面に出さない。`[` の後ろに `\` を入れると打ち消し、`\` を削除した文字のまま出す
   avoid:
   - コードの行の印
+  details:
+  - title: コードブロックの飾り
+    href: ./記法.mark.md#コードブロックの飾り
 - id: line-fold
   name: 行の畳み
   description: コードブロックで、次の空でない行がより深いインデントの行の開閉のボタンを押し、次の同じ深さ以下の行の手前までを隠すこと。直前のマーカーの `fold` に記載した行の番号の行を、最初から畳んで出す
   aliases:
   - コードの折りたたみ
+  details:
+  - title: コードブロックの飾り
+    href: ./記法.mark.md#コードブロックの飾り
 - id: section-toggle
   name: セクションの開閉
   description: 見出し（h1〜h4）のセクションを、見出しから開閉すること。見出しの直後の `section` のマーカーで、閉じた状態で始められる。Shift を押しながら開閉すると入れ子のセクションもまとめて開閉し、右側の目次のボタンで文書の全てのセクションをまとめて開閉する
   avoid:
   - 節の開閉
+  details:
+  - title: セクションの開閉
+    href: ./記法.mark.md#セクションの開閉
 - id: side-toc
   name: 右側の目次
   description: 描いた文書の右側に出す、h1〜h3 の見出しを入れ子にした目次。マーカーは記載せず、設定の `features.side-toc` と文書のマーカーでオン・オフし、`side-toc.mode` の `hover`・`fixed` で出し方を選ぶ。`toc` のマーカーで本文の中に配置する目次とは別
+  details:
+  - title: 右側の目次
+    href: ./記法.mark.md#右側の目次
 - id: back-to-top
   name: 先頭へ戻るボタン
   description: 描いた文書をスクロールする場所の高さ分スクロールすると、スクロールする場所の右下に出し、押すと描いた文書の先頭へ戻すボタン。マーカーは記載せず、設定の `features.back-to-top` と文書のマーカーでオン・オフする
+  details:
+  - title: 先頭へ戻るボタン
+    href: ./記法.mark.md#先頭へ戻るボタン
 - id: current-section
   name: 今いるセクション
   description: 右側の目次でハイライトする、今読んでいるセクション。画面の上端から高さの 25% の線より上にある最後の h1〜h3 の見出し。閉じたセクションと選ばれていないタブの中の見出しは数えず、スクロール・セクションの開閉・タブの切り替えのたびにもう一度決める
   avoid:
   - 今いる節
+  details:
+  - title: 右側の目次
+    href: ./記法.mark.md#右側の目次
 - id: row-detail
   name: 行の詳細
   description: 表の行の下に開閉して出す詳細。表の直後の `row-detail` の範囲に記載する
+  details:
+  - title: 行の詳細
+    href: ./記法.mark.md#行の詳細
 - id: figure-number
   name: 図表の番号
   description: '`fig` のマーカーの直後の図と表に付ける、種類ごとの通し番号（`図 1`・`表 1`）'
+  details:
+  - title: 図と表の番号
+    href: ./記法.mark.md#図と表の番号
 - id: extension
   name: 拡張
   description: 利用側が `registerExtension` で追加するマーカー。文書にマーカーがあるときだけ、モジュールを読み込んでマーカーの場所に描かせる
+  details:
+  - title: 拡張を登録する
+    href: ./API.mark.md#拡張を登録する
 - id: syntax-warning
   name: 記載の警告
   description: 記法のマーカーや拡張の引数に読み込めない指定がある箇所に出す、タイトル `記載の警告` の枠。読み込めた指定で本文を描き、読み込めない指定と修正方法を記載する
   avoid:
   - 書き方の警告
+  details:
+  - title: 記載の警告
+    href: ./記法.mark.md#記載の警告
 - id: doc-index
   name: 索引
   description: 利用側が記載する YAML のファイル。文書（`docs`）と用語（`terms`）を並べる。文書のメタデータは、両方に記載したとき索引の値を優先する。利用側が読み込んだオブジェクトを `mount`・`render` に指定する
+  details:
+  - title: 索引
+    href: ./索引.mark.md
 - id: glossary-table
   name: 用語集の表
-  description: '`glossary` のマーカーで囲んだ表。用語・意味・別名の列から用語を入れる。表の中の単語には下線を付けない'
+  description: '`glossary` のマーカーで囲んだ表か、`alias_row` で設定の `aliases` の行を指した `glossary` のマーカーから描く表。囲んだ表は用語・意味・別名の列から用語を入れ、行を指したマーカーはその行の `term` のエイリアスから用語・別名・使用しない言い方・意味・詳細の列の表を描く。表の中の単語には下線を付けない'
+  details:
+  - title: 用語集の表
+    href: ./記法.mark.md#用語集の表
 - id: term-tooltip
   name: 用語のツールチップ
   description: 本文に出た用語の単語・別名に破線の下線を付け、ポインターを乗せるかフォーカスすると出す枠。見出し「用語」に意味を、見出し「関連文書」に文書の別名に一致した文書を出す。やめた言い方には破線でなく波線のマーカーを引き、見出し「代わりの用語」を出す
+  details:
+  - title: 索引と用語集を記載する
+    href: ./記載する-索引と用語集を記載する.mark.md
 - id: doc-alias
   name: 文書の別名
   description: 索引の文書の `aliases`。本文に出た単語に用語と同じ規則で下線を付け、ツールチップの「関連文書」に一致した文書を出す
+  details:
+  - title: 索引
+    href: ./索引.mark.md
 - id: alias
   name: エイリアス
   description: 設定の `aliases` で YAML から登録する、本文に出た単語に下線とツールチップを付ける単語。名前と別名を、用語と同じ規則で照合する。`buildAliases` が作り、`mount`・`render`・`collectMatches` の `aliases` に指定する
+  details:
+  - title: エイリアスの元の行
+    href: ./設定.mark.md#エイリアスの元の行
 - id: alias-source-row
   name: エイリアスの元の行
   description: 設定の `aliases` に並べる 1 行。どの YAML のどの列からエイリアスを作るかを、`paths`・`records`・`metadata` で決め、エイリアスの種類を `alias_type`、名前を取る本文のファイルの列を `body_file` で決める。構造は alias-inject の `aliases.schema.yaml` が決める
+  details:
+  - title: エイリアスの元の行
+    href: ./設定.mark.md#エイリアスの元の行
 - id: alias-type
   name: エイリアスの種類
   description: エイリアスの `alias_type`。`term`・`doc`・`command`・`url`・`skill`・`tool`・`path`・`env`・`avoid` の 9 つで、ツールチップの区分と種類ごとの必須のキーを決める。`env` は値にシークレットキーを含みうるため、照合も書き出しへの埋め込みもしない
+  details:
+  - title: エイリアスの元の行
+    href: ./設定.mark.md#エイリアスの元の行
 - id: related-docs
   name: 関連文書
   description: ツールチップの区分（単語に文書の別名が一致した文書）と、文書の末尾に配置する一覧（その文書を参照している文書）のタイトル
+  details:
+  - title: 索引と被参照
+    href: ./コアコンセプト-索引と被参照.md
 - id: backlinks
   name: 被参照
   description: ある文書を参照している文書。保存せず、索引の `related`・本文の文書間のリンク・文書の別名の出現から、描くときに算出する
+  details:
+  - title: 索引と被参照
+    href: ./コアコンセプト-索引と被参照.md
 - id: reference-table
   name: 参照の表
   description: 文書ごとの被参照と、各文書の用語集の表の用語をまとめた表。`collectReferences` が返却し、`mount`・`render` の `opts.references` に指定する
+  details:
+  - title: 参照の表を作る
+    href: ./API.mark.md#参照の表を作る
 - id: text-match
   name: 本文の一致
   description: 本文に出た用語・文書の別名の 1 回の出現。`collectMatches` が、参照先・一致した文字列・本文の位置（行と、行の中の開始と終了）の組で、文書ごとに返却する。照合の規則は描いた文書の下線と同じ
+  details:
+  - title: 本文の参照を取り出す
+    href: ./API.mark.md#本文の参照を取り出す
 - id: reference-target
   name: 参照先
   description: 本文の一致が指す、索引の用語・用語集の表の用語・文書。種類・`id`・タイトル・短い説明で表し、`collectMatches` が指定した全ての文書の分を重なりを除いてまとめて返却する
+  details:
+  - title: 本文の参照を取り出す
+    href: ./API.mark.md#本文の参照を取り出す
 - id: mdmark-doc
   name: mdmark の文書
   description: mdmark の記法で記載する文書。拡張子を `.mark.md`（`hoge.mark.md`）にして、純粋な `.md` と分ける
   aliases:
   - .mark.md
+  details:
+  - title: 文書の記載方法
+    href: ./記載する-文書の記載方法.md
 - id: plain-md
   name: 純粋な .md
   description: 拡張子が `.md` で `.mark.md` でない文書。mdmark の記法を含むと、点検が拡張子を `.mark.md` に変えるよう提案する（`plain_md_with_marks`）
+  details:
+  - title: 点検する
+    href: ./書き出す-点検する.mark.md
 - id: check
   name: 点検
   description: 索引と文書のずれを見つける処理（`checkIndex`）。ずれは、ファイル・場所・種類・内容の一覧で返る
+  details:
+  - title: 索引を点検する
+    href: ./API.mark.md#索引を点検する
 - id: avoided-word
   name: やめた言い方
   description: 索引の用語の `avoid` か、用語集の表の `avoid.column` の列に並べる、使用しないことにした言い方。索引の文書の本文に出ると、点検が `avoided_term` のずれで通知する。索引の用語の `avoid` と用語集の表の `avoid.column` の列のやめた言い方は、描いた文書の本文に出ると波線のマーカーを付け、見出し「代わりの用語」のツールチップに代わりの用語の単語と意味を出す。`collectMatches` は、本文に出たやめた言い方を位置と代わりの用語つきで `avoided` に返却する。エイリアスの `avoid` の種類と、`term` の種類の `avoid` も同じ扱いにする
+  details:
+  - title: 索引と用語集を記載する
+    href: ./記載する-索引と用語集を記載する.mark.md
 - id: topic-tag
   name: 主題のタグ
   description: '文書のタグのうち、その文書の主題を表す `main: true` のタグ'
+  details:
+  - title: 索引
+    href: ./索引.mark.md#文書
 - id: relation-type
   name: 関係の種類
   description: 索引の `related` の要素の `type`。`requires`（前提）・`references`（参照）・`replaces`（置き換え）・`part_of`（一部）・`change_together`（一緒に修正する）のどれか。同じ要素の `when` に、いつ読み込むかを 1 文で記載する
+  details:
+  - title: 索引
+    href: ./索引.mark.md#関連の要素
 - id: reverse-relation
   name: 逆向きの関連
   description: 関連を記載した文書の相手を基準にした関係。関連は片側だけに記載し、逆向きは保存しない。`change_together` だけは両側に記載する
+  details:
+  - title: 索引
+    href: ./索引.mark.md#関連の要素
 - id: export
   name: 書き出し
-  description: CLI の `mdmark export` と `mdmark build` が、Markdown を、配布物・利用側の CSS・外部ライブラリのモジュール・拡張・画像を埋めた 1 枚の HTML にすること。開いてから描き終えるまで、ページ自身と画像の `data:` のほかへ要求しない
+  description: CLI の `mdmark export` と `mdmark build` が、Markdown を書き出すときに描いた HTML と純粋な Markdown を、配布物・利用側の CSS・外部ライブラリのモジュール・拡張・画像と一緒に埋めた 1 枚の HTML にすること。元の Markdown は埋めない。開いてから描き終えるまで、ページ自身と画像の `data:` のほかへ要求しない
+  details:
+  - title: CLI
+    href: ./CLI.mark.md
 - id: plain-markdown
   name: 純粋な Markdown
   description: mdmark の文書からマーカー・生の HTML・mdmark だけの記法を除き、GFM と Mermaid だけで読み取れるようにした Markdown。`mdmark export-markdown`・MCP の `export_markdown`・右側の目次の Markdown のボタンが作る
+  details:
+  - title: Markdown に書き出す
+    href: ./書き出す-文書を書き出す.mark.md#markdown-に書き出す
 - id: export-hook
   name: 書き出しのフック
   description: '`registerExtension` の `toMarkdown`。純粋な Markdown にするときだけ呼び、返却した Markdown を拡張のマーカーの場所に入れる。持たない拡張のマーカーは取り除く'
+  details:
+  - title: 拡張を登録する
+    href: ./API.mark.md#拡張を登録する
 - id: bundled-html
   name: まとめた HTML
   description: '`mdmark build` が書き出す、複数の文書を埋めた 1 枚の HTML。文書の一覧と開いている文書を並べ、URL の `#/{文書のパス}` で文書を行き来する'
+  details:
+  - title: 文書を1枚にまとめる
+    href: ./書き出す-文書を1枚にまとめる.md
 - id: doc-list
   name: 文書の一覧
   description: まとめた HTML の、まとめた文書へのリンクを並べた一覧。フォルダの無い文書を先に配置し、続けてフォルダごとの見出しでまとめ、開いている文書の行を背景で示す
+  details:
+  - title: 文書を1枚にまとめる
+    href: ./書き出す-文書を1枚にまとめる.md
 - id: scaffold
   name: 雛形
   description: '`mdmark init` が配置する、設定・`theme.css`・索引・拡張の例のファイル'
+  details:
+  - title: 雛形を配置する
+    href: ./書き出す-雛形を配置する.md
 - id: terminal-settings
   name: 端末の設定
   description: 端末ごとに 1 つ配置する設定のファイル（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）。`mdmark.config.yaml` と同じキーと、重ね方を切り替える `config` のキーを持ち、重ねる最初の層になる
   aliases:
   - グローバルの設定
   - settings.yaml
+  details:
+  - title: 設定を重ねて読み込む仕組み
+    href: ./コアコンセプト-設定を重ねて読み込む仕組み.mark.md
 - id: layered-config
   name: 設定を重ねて読み込む
   description: 端末の設定・上のフォルダの設定・近いフォルダの設定を、近い層ほど優先して 1 つの設定にすること。マップはキーごとに重ね、それ以外は後の層の値で置き換える
@@ -323,233 +590,440 @@ terms:
   - 重ねた設定
   avoid:
   - 設定を重ねて読む
+  details:
+  - title: 設定を重ねて読み込む仕組み
+    href: ./コアコンセプト-設定を重ねて読み込む仕組み.mark.md
 - id: css-template
   name: CSS のテンプレート
   description: 端末の設定のファイルと同じフォルダの `templates/css/` に配置し、説明とタグを付けて再利用する利用側の CSS。MCP の `list_templates`・`add_template`・`apply_template` で一覧・登録・配置し、配置した CSS を設定の `theme` から適用する
   aliases:
   - テンプレート
+  details:
+  - title: MCP のツールを使用する
+    href: ./ClaudeCodeで使用する-MCPのツールを使用する.md#css-のテンプレートを使用する
 - id: template-index
   name: テンプレートの索引
   description: テンプレートのフォルダの `templates.yaml`。テンプレートごとに名前・CSS のファイル名・説明・タグを並べる
   aliases:
   - templates.yaml
+  details:
+  - title: MCP
+    href: ./MCP.mark.md#css-のテンプレートの一覧を返却する
 - id: migration-step
   name: 移行の手順
   description: バージョンごとに mdmark の開発者が記載する、設定・索引・文書を新しいバージョンに合わせる手順。`mdmark upgrade` が、手元のバージョンより新しく目標のバージョン以下のバージョンの分をバージョンの順に適用する。キーの名前を変える・キーを追加する・値を解釈する・文書のマーカーを書き換える・スクリプトで適用する、の 5 種類があり、どれももう一度適用しても結果が変わらない
+  details:
+  - title: バージョンを上げる仕組み
+    href: ./コアコンセプト-バージョンを上げる仕組み.md
 - id: local-version
   name: 手元のバージョン
   description: 設定・索引・文書が合わせてある mdmark のバージョン。設定の `version` に `v{MAJOR}.{MINOR}.{PATCH}` の構造で記載し、develop の最新を参照しているときは `develop` を記載する。`mdmark upgrade` が、呼んだ CLI のバージョン（目標のバージョン）まで移行の手順を適用した後に、目標のバージョンへ書き換える
   avoid:
   - 手元の版
+  details:
+  - title: 手元のバージョン
+    href: ./設定.mark.md#手元のバージョン
 - id: breaking-step
   name: 壊す手順
   description: 適用すると値が失われる移行の手順。`mdmark upgrade --plan` が（壊す手順）と示し、`--yes` が無いとき適用する前に確認する
+  details:
+  - title: バージョンを上げる
+    href: ./導入-バージョンを上げる.md
 - id: diagram-part
   name: 図の部品
   description: 文書に記載した部品の定義から描く、グラフ・操作できる部品。`chart`・`param` の範囲のマーカーに `json` のコードブロックを配置する
+  details:
+  - title: 図の部品
+    href: ./記法.mark.md#図の部品
 - id: mermaid-diagram
   name: mermaid の図
   description: map が描かない種類（`pie` など）の言語 `mermaid` のコードブロックを mermaid で描き、図の枠に入れた図。描いた文書の配色から作るテーマ `mdmark` で描き、拡大・縮小・移動・全画面で確認する。図の枠のタイトルは front matter の `title`、`accTitle`、図の種類の名前の順に決める
+  details:
+  - title: mermaid のコードブロック
+    href: ./記法.mark.md#mermaid-のコードブロック
 - id: wrap
   name: 折り返し
   description: コードブロックとファイルツリーのマーカーの `wrap` で、長い行・名前・注釈を枠の幅で折り返すこと。`wrap` の無いブロックは折り返さず、横にスクロールする
   aliases:
   - wrap
+  details:
+  - title: コードブロックの飾り
+    href: ./記法.mark.md#コードブロックの飾り
 - id: diagram-panel
   name: 図のパネル
   description: 図の部品の表示する枠の右上に重ねる、拡大・縮小・全画面のボタンのまとまり。倍率のボタンと開くボタンだけに畳んで開き、開くボタンで残りのボタンを並べる。map の図のグループの中では、畳んだときも戻るボタンを出す
+  details:
+  - title: 構成図の決まり
+    href: ./構成図の決まり.mark.md#操作
 - id: resize-handle
   name: リサイズハンドル
   description: 図の部品の表示する枠の右下に配置し、ドラッグと上下キーで枠の高さを縦にだけ変える部品。ダブルクリックで元の高さに戻し、変えた高さは同じタブの中で再読み込みしても保つ。設定の `features.diagram-resize` で削除できる
+  details:
+  - title: 構成図の決まり
+    href: ./構成図の決まり.mark.md#操作
 - id: er-diagram
   name: ER 図
-  description: map の範囲の `erDiagram` から描く図。テーブルを列の行を持つノードにし、関連の線を FK の列の行から引いて、両端に多重度の記号を配置する
+  description: map の範囲の `erDiagram` から描く図。テーブルを列の行を持つノードにし、関連の線を FK の列の行から引いて、両端に多重度の記号を配置する。テーブル名の行の右端の山形で列を閉じる
+  details:
+  - title: Mermaidと補足で図を描く
+    href: ./図を描く-Mermaidと補足で図を描く.md#er-図を描く
 - id: cardinality
   name: 多重度
   description: ER 図の関連の端が表す件数。`erDiagram` の関連の記号（`||`・`|o`・`}|`・`}o`）で、1 つ・0 か 1 つ・1 つ以上・0 以上を表す
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: mindmap
   name: マインドマップ
   description: map の範囲の `mindmap` から描く図。根を中央に配置し、字下げで決めた項目を、枝ごとの色の曲線で左右の外へ広げる
+  details:
+  - title: Mermaidと補足で図を描く
+    href: ./図を描く-Mermaidと補足で図を描く.md#マインドマップを描く
 - id: mindmap-branch
   name: マインドマップの枝
   description: マインドマップの、根の子（1 レイヤー目の項目）とその子孫のまとまり。枝ごとに線と縁の色が分かれ、子を持つ項目は持ち手のボタンで開閉と中へ入るができる
+  details:
+  - title: Mermaidと補足で図を描く
+    href: ./図を描く-Mermaidと補足で図を描く.md#マインドマップを描く
 - id: axis-grid-diagram
   name: 軸と格子の配置の図
   description: map の範囲の `gantt`・`timeline`・`gitGraph`・`journey`・`block-beta` から描く図。入れ子の自動配置と木の配置を使用せず、日付の軸・記載順の軸・`columns` の格子に沿って項目を配置する
+  details:
+  - title: Mermaidと補足で図を描く
+    href: ./図を描く-Mermaidと補足で図を描く.md#ガントチャートタイムラインgit-グラフジャーニーブロック図を描く
 - id: gantt-section
   name: section
   description: ガントチャート・タイムライン・ジャーニーの `section` の行でまとめた項目のまとまり。グループと同じく開閉と中へ入るができ、閉じると「{名前}（{種類} {数} 件）」の 1 つの項目になる
+  details:
+  - title: Mermaidと補足で図を描く
+    href: ./図を描く-Mermaidと補足で図を描く.md#ガントチャートタイムラインgit-グラフジャーニーブロック図を描く
 - id: part-definition
   name: 部品の定義
   description: 図の部品や拡張のマーカーの範囲に配置する、描く中身を記載した JSON。式もスクリプトも記載せず、`definition` として部品に渡る
+  details:
+  - title: 図を描く
+    href: ./図を描く-図を描く.md
 - id: embedded-html
   name: 埋め込んだ HTML
   description: '`<!-- html -->` の範囲の `html` のコードブロックに記載し、コードではなくその場の HTML として描く HTML。`script` 要素とイベントの属性は落とし、動くのは mdmark の部品と範囲のスクリプトだけ'
+  details:
+  - title: 埋め込んだ HTML
+    href: ./記法.mark.md#埋め込んだ-html
 - id: range-script
   name: 範囲のスクリプト
   description: '`html-scripts` がオンの文書で、埋め込んだ HTML の範囲に配置する `css`・`ts`・`js` のコードブロック。`css` は範囲の HTML にだけ適用し、`ts`・`js` は既定のエクスポートの関数を範囲の根の要素で呼ぶ。既定はオフ'
+  details:
+  - title: 埋め込んだ HTML
+    href: ./記法.mark.md#埋め込んだ-html
 - id: chart
   name: チャート
   description: 埋め込んだ HTML の中の custom element（`<mdmark-chart>` など）に部品の定義を記載して描く図。グラフは折れ線・棒・円・散布図を描ける
+  details:
+  - title: コードブロックのHTMLを描く
+    href: ./図を描く-コードブロックのHTMLを描く.md
 - id: hint
   name: ヒント
   description: '`data-hint`・図のノード・枠・レイヤーの `hint` とノードの `io`・線の `tip` を、ホバーとフォーカスで開くツールチップで出す文。設定の `features.hints` でまとめて削除できる'
+  details:
+  - title: ヒント
+    href: ./記法.mark.md#ヒント
 - id: diff
   name: 差分
   description: 文書の 2 つのリビジョンの Markdown のソースを行で比べ、削除した行を赤と行頭の `-`、追加した行を緑と行頭の `+`、対の行で変わった単語を濃い色で出す表示。`mount` に取り出し元を指定すると、タイトルの後ろの「変更表示」のボタンで開く
+  details:
+  - title: 差分を表示する仕組み
+    href: ./コアコンセプト-差分を表示する仕組み.md
 - id: revision
   name: リビジョン
   description: 文書の変更の 1 回分。取り出し元が返却する `id`・`at`・`label`・`author` を持ち、差分で比べる前と後に選ぶ。mdmark のバージョンとは別のもの
+  details:
+  - title: 文書を描く
+    href: ./API.mark.md#文書を描く
 - id: diff-source
   name: 取り出し元
   description: 利用側が記載する `DiffSource`。リビジョンの一覧を返却する `revisions` と、リビジョンごとの本文を返却する `content` を持ち、`mount` の `opts.diffSource` に指定する。Git や YAML の読み込み方は利用側が持つ
+  details:
+  - title: 差分を表示する
+    href: ./導入-差分を表示する.md
 - id: diff-mode
   name: 差分の出し方
   description: '`mount` の `opts.diffMode`。`button`（既定。「変更表示」を押してから差分の行を出す）・`open`（描いた時点で押した状態にして差分の行を出す）・`blocks`（描いた文書のブロックを色分けする）から選ぶ。配布物の `diffModes` が、対応する値を持つ'
+  details:
+  - title: 文書を描く
+    href: ./API.mark.md#文書を描く
 - id: diff-block
   name: 差分のブロック
   description: '`blocks` で描いた文書のブロックに適用する色分け。追加・変更したブロックは追加の色の面と左の余白の `+`、削除したブロックは削除の色の面と `−` で、変更前の文書での位置に差し込む。スクリーンリーダー向けの名前は `追加:`・`削除:`'
+  details:
+  - title: 差分を表示する仕組み
+    href: ./コアコンセプト-差分を表示する仕組み.md#描いた文書のブロックを色分けする
 - id: change-marker
   name: 変更のマーカー
   description: 本文を比較元か `blocks` で色分けしているとき、右側の目次で、色分けしたブロックを持つセクション（子のセクションを含む）の項目の右端に出す橙の円。読み上げでは項目の名前に続けて `（変更）` と伝え、`hover` の右端の線もその見出しの線を橙にする
+  details:
+  - title: 差分を表示する
+    href: ./導入-差分を表示する.md#比較元の-markdown-で色分けする
 - id: base-markdown
   name: 比較元の Markdown
   description: '`mount` の `opts.baseMarkdown`（`update` の第 2 引数の `baseMarkdown`）に指定する、比べる前の Markdown。指定すると、取り出し元を使用せずに、本文の中で比較元から追加・変更したブロックと削除したブロックを差分のブロックの色で塗り分ける'
+  details:
+  - title: 差分を表示する
+    href: ./導入-差分を表示する.md#比較元の-markdown-で色分けする
 - id: view
   name: ビュー
   description: '`view` のマーカーの範囲の最初の表を項目にして、ボード表示と表形式のビューを切り替えて見せるもの。利用側の JavaScript からは `mountView` で描く'
+  details:
+  - title: ビュー
+    href: ./記法.mark.md#ビュー
 - id: board-view
   name: ボード表示
   description: ビューの表示の 1 つ。`board.group` の列の値ごとの列に項目を並べ、列の見出しに値のアイコンと項目の数を出す
+  details:
+  - title: ビュー
+    href: ./記法.mark.md#ビュー
 - id: table-view
   name: 表形式のビュー
   description: ビューの表示の 1 つ。範囲の表を使用し、並べ替えと、`filter` を記載した列の絞り込みを付ける。絞り込みはボード表示に適用しない
+  details:
+  - title: ビュー
+    href: ./記法.mark.md#ビュー
 - id: comment
   name: コメント
   description: 読者が本文の選んだ箇所に付ける意見。選んだ文字・その前後の文字・本文の組で、利用側の保存先に残る。機能 `comments` で付けられるようにする
+  details:
+  - title: ビューとコメントを使用する
+    href: ./記載する-ビューとコメントを使用する.mark.md
 - id: comment-marker
   name: コメントのマーカー
   description: コメントが付いた本文の文字を包むマーカー。本文の文字は変えず、押すと付いたコメントの吹き出しを開く
   avoid:
   - コメントの印
+  details:
+  - title: ビューとコメントを使用する
+    href: ./記載する-ビューとコメントを使用する.mark.md
 - id: margin-marker
   name: 余白のマーカー
   description: '`mount` でコメントを付けた文書の、本文の列の右の余白に、コメントの箇所の行の高さで出すボタン。押すと箇所までスクロールして吹き出しを開く。同じ行の箇所は 1 つにまとめて数を添え、閉じた中の箇所は開くボタンの行に破線で出す'
+  details:
+  - title: ビューとコメントを使用する
+    href: ./記載する-ビューとコメントを使用する.mark.md
 - id: comment-store
   name: コメントの読み込みと保存の関数
   description: 利用側が記載する `MdmarkCommentStore`。コメントを読み込む `load` と保存する `save` を持ち、`mount` の `opts.commentStore` と `mountComments` の `opts.store` に指定する。mdmark はコメントを保存しない
   avoid:
   - コメントの読み書きの関数
+  details:
+  - title: 文書を描く
+    href: ./API.mark.md#文書を描く
 - id: orphan-comment
   name: 箇所が見つからないコメント
   description: 本文が書き換わり、コメントを付けた文字が見つからないコメント。文書の末尾の `箇所が見つからないコメント` の一覧に、選んだ文字と本文を並べる
+  details:
+  - title: ビューとコメントを使用する
+    href: ./記載する-ビューとコメントを使用する.mark.md
 - id: common-definition
   name: 共通の定義
   description: mdmark が持つ図の部品と、色・文字・ライト / ダークの CSS 変数。どの文書でも使用できる
+  details:
+  - title: 共通の定義と固有の定義
+    href: ./コアコンセプト-共通の定義と固有の定義.md
 - id: local-definition
   name: 固有の定義
   description: 利用側が `registerExtension` と `theme.css` で追加する部品と CSS。追加した設定ファイルの単位の文書にだけ該当する
+  details:
+  - title: 共通の定義と固有の定義
+    href: ./コアコンセプト-共通の定義と固有の定義.md
 - id: vscode-extension
   name: VS Code 拡張機能
   description: VS Code で Markdown を mdmark で描いたプレビューを出し、HTML への書き出しと PDF への印刷をするための拡張機能。mdmark の配布物は同梱せず、jsDelivr の版付きの URL から読み込む。mdmark 本体とは別のタグ `vscode-v{バージョン}` で配る
+  details:
+  - title: VS Code 拡張機能
+    href: ./VSCode拡張機能.mark.md
 - id: preview
   name: プレビュー
   description: VS Code 拡張機能が Webview のパネルに出す、開いている Markdown を mdmark で描いた文書。打つたびに再描画し、エディタとスクロールを合わせ、VS Code のテーマの明暗に合わせる
+  details:
+  - title: プレビューを開く
+    href: ./VSCodeで確認する-プレビューを開く.md
 - id: render-failure-reason
   name: 描けない理由
   description: プレビューが配布物を読み込めないときと、差分のパネルで読み込んだ配布物が差分の表示に対応しないとき、文書の代わりに出す理由と「リロード」のボタン。オフライン・指定したバージョンが無い・バージョンを決められない・差分に対応しないバージョン、の 4 種類がある
+  details:
+  - title: プレビューを開く
+    href: ./VSCodeで確認する-プレビューを開く.md
 - id: diff-view
   name: 差分ビュー
   description: VS Code が、変更前と変更後の Markdown を左右に並べて出すエディタ。Source Control の変更・タイムラインの `変更を開く`・コミットの差分から開く。変更前と変更後の両方が Markdown の差分ビューだけが、プレビューを差分で開く対象になる
+  details:
+  - title: 差分をプレビューで確認する
+    href: ./VSCodeで確認する-差分をプレビューで確認する.md
 - id: diff-panel
   name: 差分のパネル
   description: 差分ビューからプレビューを開いたときのパネル。変更後の文書を `blocks` で描き、タブは `差分プレビュー {ファイル名}`。変更前と変更後の組ごとに 1 つで、差分でないプレビューとは別になる
+  details:
+  - title: 差分をプレビューで確認する
+    href: ./VSCodeで確認する-差分をプレビューで確認する.md
 - id: source-line-number
   name: 元の行番号
   description: 本文のブロックの開始の要素に付く `data-source-line`。ブロックが Markdown で始まる行の番号（0 始まり）で、エディタとプレビューのスクロールを合わせる手がかりになる
+  details:
+  - title: 文書を HTML 文字列にする
+    href: ./API.mark.md#文書を-html-文字列にする
 - id: line-jump
   name: line jump
   description: 図の横の線が縦の線と交わる点に入れる飛び越えの弧
+  details:
+  - title: 構成図の決まり
+    href: ./構成図の決まり.mark.md#交差
 - id: legend
   name: 凡例
   description: 図の下に並べる、定義に出るノードの種類・線の種類・系列と、図にある枠・層・交差・マーカー・下線の意味の一覧
+  details:
+  - title: 構成図の決まり
+    href: ./構成図の決まり.mark.md#タイトルと凡例
 - id: decision-flowchart-diagram
   name: 判定フローチャートの図
   description: 質問の YES / NO で結果を決める図。map の構成図で、開始・質問・アクション・結果のノードを描く。knowledge の用語「判定フローチャート」が指す文書の図を、mdmark で描いたもの
+  details:
+  - title: フローチャートの決まり
+    href: ./フローチャートの決まり.md#判定フローチャート
 - id: guide
   name: ガイド
   description: Claude Code に参照させる mdmark の使用方法。`plugin/guide-index.yaml` の行が指す `docs/` のページで、dev-docs の配信元 `mdmark` の `docs` の行にタグ `topic:ガイド` を付けて配る。Claude Code は dev-docs の `search_docs` で参照する
   avoid:
   - 使い方集
+  details:
+  - title: Claude Code に使用方法を提供する仕組み
+    href: ./コアコンセプト-ClaudeCodeに使用方法を提供する仕組み.md
 - id: plugin
   name: プラグイン
   description: mdmark のリポジトリの `plugin/` にある Claude Code のプラグイン。入れると、MCP サーバーが常駐サーバーへつながり、PreToolUse のフックがツールの引数に作業のフォルダを入れる
+  details:
+  - title: プラグインを入れる
+    href: ./ClaudeCodeで使用する-プラグインを入れる.mark.md
 - id: mcp-tool
   name: MCP のツール
   description: プラグインの MCP サーバーが出し、Claude Code から呼ぶ `export_html`・`build_site`・`check`
+  details:
+  - title: MCP
+    href: ./MCP.mark.md
 - id: resident-server
   name: 常駐サーバー
   description: 文書の作成者が `mdmark serve` で起動し、127.0.0.1 の `/mcp` で待ち受ける MCP サーバー。ポートは既定 8782 で、環境変数 `MDMARK_PORT` で変える。並行して開いたセッションが同じプロセスを共有し、起動していないと Claude Code の MCP サーバーだけが接続に失敗する。`/mdmark:global-setup` は、systemd --user が使用できる端末では unit（既定 `mdmark-mcp`）、使用できない端末では tmux のセッション（既定 `mdmark-mcp`）で起動する
+  details:
+  - title: MCPサーバーを起動する
+    href: ./ClaudeCodeで使用する-MCPサーバーを起動する.mark.md
 - id: setup-skill
   name: セットアップのスキル
   description: プラグインの `/mdmark:global-setup`（端末の設定と常駐サーバー）と `/mdmark:setup`（文書のフォルダの `mdmark.config.yaml`）。設定のキーを 1 つずつ確認してから記載する
+  details:
+  - title: セットアップする
+    href: ./ClaudeCodeで使用する-セットアップする.mark.md
 - id: map
   name: map
   description: '`<!-- map -->` 〜 `<!-- /map -->` の範囲の Mermaid のブロックと補足を、入れ子のグループを自動で配置した図に描く記法。この版で描くのは `flowchart`・`sequenceDiagram`・`erDiagram`・`stateDiagram-v2`・`classDiagram`・`architecture-beta`・`C4Context`・`C4Container`・`C4Component`・`C4Dynamic`・`C4Deployment`・`mindmap`・`gantt`・`timeline`・`gitGraph`・`journey`・`block-beta`'
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: map-data
   name: 補足
   description: 'map の範囲に `<!-- map-data: {…} -->` の HTML コメントで記載する JSON のオブジェクト。ノード・線の説明（`notes`）・案内の手順（`walkthroughs`）・配置と外観の上書き（`layout`）・再生を重ねる構成図（`plays_over`）・ER 図の分類（`groups`）・計画した変更（`changes`）を持つ'
   aliases:
   - map-data
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: planned-changes
   name: 計画した変更
   description: map の補足の `changes` で、ノード・グループ・線に示す追加・変更・削除。追加と削除は差分の色、変更は色の名前 `orange` の枠線とバッジで描き、削除の要素も配置したまま描く
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: diagram-export
   name: 図の書き出し
   description: map の図の右上のパネルの書き出すボタンで、今の開閉のまま等倍の図の全体を SVG か 2 倍の画素数の PNG のファイルにすること。CLI の書き出しとは別のもの
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: list-view
   name: 一覧の表示
   description: map の構成図とシーケンス図の右上のパネルのボタンで、図の代わりに、グループとノードの入れ子かメッセージの並びの一覧を出し、キーボードと読み上げで辿れるようにすること
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: enter-group
   name: 中へ入る
   description: map の構成図でグループのタイトルを押し、そのグループの中だけを再配置して描くこと。外は薄く残し、右上のパネルの戻るボタンか Esc で外へ戻る
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: collapse
   name: 開閉
   description: map の構成図のグループと、シーケンス図のブロックを、左上の山形で閉じて 1 つのノード（ブロックは 1 行）にする・開くこと
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: tour
   name: 案内
   description: map の構成図の補足の `walkthroughs` の手順を、図の下の手順のバーで選んで繰り返し、手順ごとにノードを強調すること
   aliases:
   - 巡回
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: playback
   name: 再生
   description: map のシーケンス図のメッセージを、図の下の手順のバーで 1 通ずつ選んで繰り返し、`plays_over` で指した構成図の上でも強調すること。map の状態遷移図では、記載順の遷移を 1 本ずつ選ぶこと
   aliases:
   - シーケンスの再生
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: step-bar
   name: 手順のバー
   description: map の図の下の帯の、案内・再生の手順の数に区切ったバー。区切りか左右の矢印を押すとその手順を停止するまで繰り返し、バーの外か図の空いた場所を押すと止まる
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: repeating-relation
   name: 行が増える関連
   description: map の ER 図で 2 つのテーブルを選んだとき、経路を 1 の側から多の側へたどる関連。結合すると行が増える箇所で、線の横に「×n」のマーカーを付ける
   aliases:
   - ×n
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: data-packet
   name: データの印
-  description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。補足の `layout` の `packet` で色と形を変える
+  description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。ER 図では多重度の多い側から少ない側へ流れる。補足の `layout` の `packet` で色と形を変える
   aliases:
   - パケット
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: diagram-frame
   name: 図の枠
   description: 図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、ボタンのパネル・拡大と縮小・全画面のモーダル・リサイズハンドルを持つ
+  details:
+  - title: 構成図の決まり
+    href: ./構成図の決まり.mark.md#操作
 - id: tour-band
   name: 案内の帯
   description: 図の枠の下に常に出す、案内（構成図）と再生（シーケンス図・状態遷移図・時系列の図・C4Dynamic）の帯。手順のバーと左右の矢印のボタンを持ち、始めた後はその下に手順のタイトルと説明の文を出す
   aliases:
   - 再生の帯
+  details:
+  - title: map
+    href: ./記法.mark.md#map
 - id: er-category-box
   name: 分類の箱
   description: ER 図で、補足の分類（キーが分類の ID）に入れたテーブルを囲む箱。分類のタイトルを持ち、入れ子にできる
+  details:
+  - title: Mermaidと補足で図を描く
+    href: ./図を描く-Mermaidと補足で図を描く.md#er-図を描く
 - id: legacy-syntax
   name: 今の書き方
   description: 名前の後ろが `{` で始まらないマーカーの引数（`キー=値`・`+機能`・位置の値）。JSON の記載方法を入れたマイナーバージョンの間だけ参照し、点検が通知する
+  details:
+  - title: 記載の警告
+    href: ./記法.mark.md#記載の警告

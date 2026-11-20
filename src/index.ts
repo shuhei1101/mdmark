@@ -19,6 +19,7 @@ export type {
 export { registerExtension } from "./extensions.ts";
 export type {
   MdmarkAlias,
+  MdmarkAliasDetail,
   MdmarkAliasProblem,
   MdmarkAliasSource,
   MdmarkAliasType,
@@ -50,6 +51,7 @@ export type {
 export { toPureMarkdown } from "./markdown/pure-markdown.ts";
 export type {
   MdmarkColumnsChange,
+  MdmarkRendered,
   MountHandle,
   MountOptions,
 } from "./mount.ts";
@@ -67,3 +69,4 @@ declare const __MDMARK_VERSION__: string;
 export function version(): string {
   return __MDMARK_VERSION__;
 }
+export type { PageSettings as MdmarkPageSettings } from "./config.ts";

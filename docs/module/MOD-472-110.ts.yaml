@@ -226,6 +226,7 @@ functions:
       - 'MOD-472-113#functions[checkMissingFiles]'
       - '#functions[checkDiagrams]'
       - MOD-472-117#functions[readFrontmatterValues]
+      - '#functions[checkGlossaryAliasRows]'
     process: |-
       1. 設定を重ねて読み込む（設定を重ねて読み込む。`purpose: export`、`keepInvalid: true`、`explicit` のときは `explicit` に `path`、それ以外は `cwd` に `path` のフォルダ）
          - `unreadable` がある場合、そのファイルのパス（設定ファイルのパスを表示の構造にする）と行で「YAML として読み込めません」の `CliError` を投げる
@@ -586,6 +587,28 @@ functions:
         mock: なし
         expected: '`greet` の行の `legacy_mark` の 1 件だけ'
     status: planned
+  - name: checkGlossaryAliasRows
+    title: 用語集の表のエイリアスの行を点検する
+    container: src/cli/check.ts
+    kind: 関数
+    scope: internal
+    summary: 点検する文書の `glossary` のマーカーの `alias_row` が、設定の `aliases` の `alias_type` が `term` で `enabled` が `false` でない行の `id` に無いとき、`glossary_alias_row_missing` のずれを返却する
+    description: コードブロックと行内のコードの中のマーカーは点検しない。場所はマーカーの行の番号（1 から）、内容は指した行の id と修正方法
+    args:
+      - name: options
+        type: '{ documents: CheckDocument[]; aliasRows: unknown[] }'
+        required: true
+        description: 点検する文書と、設定の `aliases` の行
+    returns:
+      type: CheckIssue[]
+      description: '`glossary_alias_row_missing` のずれの並び'
+    unit_tests:
+      - name: test_check_glossary_alias_rows
+        case: 異常
+        summary: 設定の term の行に無い alias_row だけをずれにする
+        condition: 'インターフェース定義『設定と索引を点検する』の正常系（用語集の表が無いエイリアスの行を指す）の設定と文書。加えて `enabled: false` の term の行を指すマーカー'
+        mock: なし
+        expected: '`glossary-terms` と `enabled: false` の行を指すマーカーが 1 件ずつずれになり、`terms` を指すマーカーはずれにならない'
 lead: '設定と索引と文書を点検するコマンドを受け持ち、点検で返却するずれを変えるときに参照する。'
 tags:
   - name: topic:検査

@@ -343,6 +343,46 @@ test("test_render_map_flow_when_packets", async () => {
   }
 });
 
+// 逆向きのデータの印（正常系）
+test("test_render_map_flow_when_packets_backward", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const args = await flowArgs();
+  // 実行
+  const { html } = renderMapFlow({
+    ...args,
+    packets: [
+      {
+        wire: "marker->data",
+        direction: "backward",
+        color: undefined,
+        shape: "circle",
+      },
+    ],
+  });
+  // 検証
+  const backward = packetsOf(html, "marker->data");
+  expect(backward.length).toBeGreaterThanOrEqual(1);
+  for (const item of backward) expect(item).toContain('keyPoints="1;0"');
+});
+
+// グループの角のボタンと縁の帯（正常系）
+test("test_render_map_flow_when_group_resize", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  // 実行
+  const { html } = renderMapFlow(await flowArgs());
+  // 検証
+  const group = outerHtml(html, 'data-group="store"');
+  expect(findTag(group, "map-group-resize")).toContain(
+    'aria-label="データの大きさを変える"',
+  );
+  for (const side of ["is-left", "is-right", "is-bottom"])
+    expect(findTags(group, "map-group-bar")).toEqual(
+      expect.arrayContaining([expect.stringContaining(side)]),
+    );
+});
+
 // 知らない色の名前（異常系）
 test("test_render_map_flow_when_unknown_color", async () => {
   // 準備
@@ -894,7 +934,8 @@ test("test_render_map_er_when_collapsed", async () => {
   const result = renderMapEr(await orderTable(true));
   // 検証
   expect(result.columns).not.toContain("map-er-column");
-  expect(result.toggle).toContain("列 8");
+  expect(plainText(result.toggle)).toBe("");
+  expect(result.toggle).toContain("<svg");
   expect(result.toggle).toContain('aria-expanded="false"');
 });
 
@@ -1569,7 +1610,9 @@ test("test_render_map_class_members_when_collapsed", async () => {
   });
   // 検証
   expect(part.members).not.toContain('role="list"');
-  expect(plainText(part.toggle)).toContain("メンバー 3");
+  expect(plainText(part.toggle)).toBe("");
+  expect(part.toggle).toContain("<svg");
+  expect(part.toggle).toContain('aria-expanded="false"');
 });
 
 // 同じ点に入る 3 本（正常系）

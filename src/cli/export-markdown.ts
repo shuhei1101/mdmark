@@ -63,7 +63,7 @@ function figureLines(figure: MdmarkFigure, name: string): string {
 }
 
 /** 設定の `extensions` の拡張を Node で読み込んで登録する。読み込めない拡張は警告にして続ける */
-async function registerConfigExtensions(
+export async function registerConfigExtensions(
   loaded: LoadedConfig,
 ): Promise<string[]> {
   resetExtensions();

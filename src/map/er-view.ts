@@ -6,6 +6,7 @@ import {
   erColumnNotes,
   erFanouts,
   erOverrides,
+  erPacketDirection,
   erPartRelations,
   erToFlowchart,
   parseErDiagram,
@@ -63,6 +64,10 @@ export const attachMapEr = (
       overrides: ({ collapsed }) => erOverrides(er, collapsed),
       collapsibles: er.tables.map((table) => table.name),
       collapsedTag: (group) => `テーブル ${tablesUnder(group)} 件`,
+      packetDirection: (id) => {
+        const relation = er.relations.find((one) => one.id === id);
+        return relation ? erPacketDirection(relation) : "forward";
+      },
       rewire: (layout, view) =>
         rewireMapEr({
           layout,

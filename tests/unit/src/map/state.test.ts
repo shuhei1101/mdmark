@@ -283,3 +283,43 @@ test("test_write_map_state_when_left", async () => {
   // 検証
   expect(calls).toEqual(["/a.html"]);
 });
+
+// 全画面のモーダルの図は共有する状態だけを書く（正常系）
+test("test_write_map_state_when_modal", async () => {
+  // 準備
+  const { writeMapState, readMapState } = await loadState();
+  const storage = stored({ entered: "read", selected: ["lib"] });
+  const { history, calls } = recordingHistory();
+  const state = {
+    ...readMapState({
+      index: 1,
+      ids: IDS,
+      urlState: true,
+      focus: undefined,
+      collapsed: [],
+      storage: memoryStorage(),
+      location: at(""),
+    }),
+    entered: "place",
+    selected: ["store"],
+    collapsed: ["store"],
+    groupSizes: { place: { w: 336, h: 274 } },
+  };
+  // 実行
+  writeMapState({
+    index: 1,
+    state,
+    urlState: true,
+    storage,
+    history,
+    location: at(""),
+    scope: "modal",
+  });
+  // 検証
+  const saved = JSON.parse(storage.getItem(KEY) ?? "{}");
+  expect(saved.collapsed).toEqual(["store"]);
+  expect(saved.groupSizes).toEqual({ place: { w: 336, h: 274 } });
+  expect(saved.entered).toBe("read");
+  expect(saved.selected).toEqual(["lib"]);
+  expect(calls).toEqual([]);
+});

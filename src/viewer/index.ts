@@ -1,8 +1,8 @@
 import type { ExportPayload } from "../cli/html.ts";
 import { mount } from "../mount.ts";
 import { startBundle } from "./bundle.ts";
-import { includesOf, knowledgeOptions } from "./includes.ts";
 import { type EmbeddedModules, prepareModules } from "./modules.ts";
+import { knowledgeOptions, renderedOptions } from "./options.ts";
 
 /** 書き出しの中身を埋めた `script` 要素の `id` */
 const PAYLOAD_ID = "mdmark-payload";
@@ -34,10 +34,9 @@ export async function startViewer(
     throw new Error("描く先の要素か文書がありません");
   }
   mount(target, {
-    markdown: entry.markdown,
+    ...renderedOptions({ payload, doc: entry }),
     config,
     ...knowledgeOptions(payload, entry.docId),
-    includes: includesOf(payload, entry),
     ...(payload.icons ? { icons: payload.icons } : {}),
   });
 }

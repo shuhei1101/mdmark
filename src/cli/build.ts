@@ -122,7 +122,15 @@ export async function buildSite(options: {
     hideTraces: hide,
   });
   warnings.unshift(...embedWarnings);
-  warnings.push(...outsideLinkWarnings(payload.docs, included));
+  warnings.push(
+    ...outsideLinkWarnings(
+      payload.docs.map((doc) => ({
+        path: doc.path,
+        markdown: doc.pureMarkdown,
+      })),
+      included,
+    ),
+  );
 
   const { distCss, viewer, view, map } = await readDistAssets({
     distDir: options.distDir,

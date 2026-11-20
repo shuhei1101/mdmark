@@ -129,6 +129,12 @@ functions:
         condition: '索引の `api`（`path: "api.md"`、`title` 無し）が `related` に `arch` を持ち、`references` を省き、`docId` が `arch`'
         mock: なし
         expected: 関連文書の一覧に `api` のリンクがある
+      - name: test_render_document_with_path
+        case: 正常
+        summary: '`path` を `env.path` に入れ、エイリアスの行から描く用語集の表のリンク先を描く文書からの相対パスにする'
+        condition: '`path` が `docs/guide/用語集.mark.md`、`aliases` に `details` が `docs/guide/a.md` の term を持つ行 `terms`、本文が `<!-- glossary: {"alias_row": "terms"} -->`'
+        mock: なし
+        expected: '`html` の表のリンクの `href` が `a.md`'
   - name: collectWarnings
     title: 記載の警告を取り出す
     container: src/render/index.ts

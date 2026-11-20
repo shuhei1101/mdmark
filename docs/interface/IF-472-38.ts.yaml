@@ -680,7 +680,7 @@ response:
     description: 書き出したら（警告があっても）0、書き出せなかったら 1
   - name: 出力の HTML
     type: ファイル
-    description: インターフェース定義『文書をHTMLに書き出す』と同じものを埋め、文書はまとめる全ての文書をパスで参照できる構造で埋める。開くと、文書の一覧と、URL が指す文書（指していなければ `build.entry`）を描く
+    description: インターフェース定義『文書をHTMLに書き出す』と同じものを埋め、文書はまとめる全ての文書の描いた結果と純粋な Markdown をパスで参照できる構造で埋め、元の Markdown は埋めない。開くと、文書の一覧と、URL が指す文書（指していなければ `build.entry`）を描く
 response_example: |-
   ```text
   書き出した: dist/docs.html（文書 3 件）
@@ -729,9 +729,9 @@ constraints:
     constraint: Node 24 以降
     decided_by: NFR-472-1#requirements[CLI が動く Node のバージョン]
   - item: 取り込みとアイコン
-    constraint: インターフェース定義『文書をHTMLに書き出す』の制約「埋める取り込み」「埋めるアイコン」と同じ。取り込む文書の表はまとめる文書ごとに、その文書のフォルダからのパスをキーにして作る。取り込み先が `build` の対象外のファイルでも、設定ファイルのフォルダの中なら読み込んで埋め、文書の一覧には出さない。同じファイルの本文と同じ名前のアイコンの形状は 1 回だけ埋める
+    constraint: インターフェース定義『文書をHTMLに書き出す』の制約「埋める取り込み」「埋めるアイコン」と同じ。取り込む文書の表はまとめる文書ごとに、その文書のフォルダからのパスをキーにして作る。取り込み先が `build` の対象外のファイルでも、設定ファイルのフォルダの中なら読み込んで描画に使用し、文書の一覧には出さない（取り込む文書の表は埋めない）。同じ名前のアイコンの形状は 1 回だけ埋める
   - item: 文書ごとのページの設定
-    constraint: 文書の page のマーカーは各文書の本文に残して埋め、開いた文書を `mount`（`update`）で描くときにその文書のマーカーで明暗・テーマ・右側の目次の出し方をもう一度決める。マーカーを持たない文書は、埋めた設定の `colorScheme`・`colorTheme`・`side-toc.mode` で描く
+    constraint: 文書の page のマーカーの値は各文書の `docs[].rendered.page` に埋め、開いた文書を `mount` の `opts.rendered` で描くときにその値で明暗・テーマ・右側の目次の出し方をもう一度決める。マーカーを持たない文書は、埋めた設定の `colorScheme`・`colorTheme`・`side-toc.mode` で描く
     decided_by: IF-472-35#constraints[ページの設定のマーカー]
   - item: 埋める mermaid
     constraint: 文書をHTMLに書き出す.ts の制約「埋める mermaid」と同じ。まとめる文書のどれかに mermaid のコードブロックがあるときだけ、mermaid を 1 回埋める
@@ -749,7 +749,7 @@ constraints:
     constraint: 文書をHTMLに書き出す.ts の制約「map の設定」と同じ
     decided_by: IF-472-33#constraints[map の設定]
   - item: mdmark の痕跡
-    constraint: 文書をHTMLに書き出す.ts の制約「mdmark の痕跡」と同じ。まとめる全ての文書の本文・取り込む文書の表に同じ規則を適用し、文書のパスと文書間のリンクの `href` は置き換えない
+    constraint: 文書をHTMLに書き出す.ts の制約「mdmark の痕跡」と同じ。まとめる全ての文書の埋める本文の HTML に同じ規則を適用し、文書のパスと文書間のリンクの `href` は置き換えない
     decided_by: IF-472-33#constraints[mdmark の痕跡]
   - item: 文書のタイトル
     constraint: 文書の一覧・帯のタイトル・ページのタイトルに出す文書のタイトルは、参照の表の `docs` のその文書の `title`（索引の `title`、無ければフロントマターの `title`）、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名。設定に `index` が無いときも、文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）を本文の最初の h1 より先に使用する

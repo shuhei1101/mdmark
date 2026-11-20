@@ -3,6 +3,7 @@ import { LUCIDE_VERSION } from "../inline-icons.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import type { MdmarkIndex } from "../knowledge/index-shape.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
+import type { MdmarkRendered } from "../mount.ts";
 import { escapeHtml } from "../shared/escape.logic.ts";
 import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
 import { hideCss, hideNames, hidePayload } from "./traces.ts";
@@ -20,17 +21,14 @@ export type ExportPayload = {
   index?: MdmarkIndex | undefined;
   /** `collectReferences` の参照の表 */
   references?: MdmarkReferences | undefined;
-  /** 埋める文書。`markdown` は画像を `data:` URL に替え、動画・音声の `src` をコピーへの相対パスに替えたもの（`bundle` では画像を `mdmark-asset:{キー}` に替える） */
+  /** 埋める文書。`rendered` は画像を `data:` URL に替え、動画・音声の `src` をコピーへの相対パスに替えた Markdown を書き出すときに描いた結果（`bundle` では画像を `mdmark-asset:{キー}` に替える）。元の Markdown は持たない */
   docs: Array<{
     path: string;
     title: string;
-    markdown: string;
+    rendered: MdmarkRendered;
+    pureMarkdown: string;
     docId?: string | undefined;
-    /** 取り込む文書の表: 文書のフォルダからのパスから、`includes` のキー（設定ファイルのフォルダからのパス）を参照する */
-    includes?: Record<string, string> | undefined;
   }>;
-  /** 取り込む文書の本文。キーは設定ファイルのフォルダからのパスで、同じファイルは 1 回だけ持つ */
-  includes?: Record<string, string> | undefined;
   /** まとめていない名前のアイコンの形状の表 */
   icons?: Record<string, MdmarkIconNode> | undefined;
   /** 最初に開く文書の `path` */

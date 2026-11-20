@@ -3065,6 +3065,64 @@ flows:
     test: test_normal_when_id_link_resolved
     refs:
       - 'SC-472-8#scenarios[正常シナリオ（id: のリンク先を持つノード）]'
+  - name: 正常系（エイリアスの行から用語集の表を描く）
+    summary: alias_row のマーカーの場所に、その行の term のエイリアスから用語集の表を描く
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: ビルドした `dist/index.js` を読み込み、`render` を呼ぶ
+      - name: エイリアス
+        description: '`row` が `terms` の `term` の `マーカー`（別名 `マーク`、やめた言い方 `印`、説明 `HTML コメントで記載する指定`、`details` が `{ title: 文書を描く仕組み, href: docs/guide/コアコンセプト-文書を描く仕組み.md }`）と `term` の `機能`（説明 `オン・オフを決められる働き`）、`row` が `docs` の `doc` の `使用方法`'
+      - name: Markdown と文書のパス
+        description: '`<!-- glossary: {"alias_row": "terms"} -->` と、後の段落 `マークを記載する`。`opts.path` は `docs/guide/用語集.mark.md`'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { aliases, path })
+        M->>M: row が terms の term のエイリアスから用語集の表を作る
+        M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表が 1 つあり、見出しの列が `用語`・`別名`・`使用しない言い方`・`意味`・`詳細`
+      - 行が `マーカー`・`機能` の 2 行で、`使用方法` の行が無い
+      - '`マーカー` の行の `詳細` のセルのリンクの `href` が `コアコンセプト-文書を描く仕組み.md`、文字が `文書を描く仕組み`'
+      - 表の中に class `mdmark-term` の要素が無く、後の段落の `マーク` が class `mdmark-term` の要素になる
+      - 記載の警告が無い
+    test: test_normal_when_glossary_alias_row
+  - name: 正常系（指したエイリアスの行が無い）
+    summary: 指した行の term のエイリアスが無いとき、表の代わりに記載の警告を描く
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常系（エイリアスの行から用語集の表を描く）と同じ
+      - name: 無い行を指す Markdown
+        description: '`<!-- glossary: {"alias_row": "glossary-terms"} -->` と後の段落。エイリアスは正常系（エイリアスの行から用語集の表を描く）と同じ'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { aliases })
+        M->>M: 指した行のエイリアスが無い
+        M-->>C: 記載の警告を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表が無い
+      - マーカーの場所に、`glossary-terms` を記載した記載の警告がある
+      - 後の段落が描かれている
+    test: test_normal_when_glossary_alias_row_missing
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返却する。
 idempotent: true
 side_effects: なし（外部ライブラリも読み込まない）
@@ -3133,6 +3191,13 @@ request:
     constraints: 返った文字も制約「URL のスキーム」の許可で確認する。文字以外を返却したときと例外を投げたときは URL を返却しなかったものとして扱い（`href` を落とす）、描画を続ける
     notes: '確認ログ『map の flowchart の click の id: をどこで URL に変えるか』'
     example: (ref) => `https://docs.example.com/${ref.slice(3)}`
+  - name: opts.path
+    type: string
+    required: false
+    default: なし（詳細のページのリンク先を設定ファイルのフォルダからの相対パスのまま出す）
+    location: argument
+    description: 描く文書の、設定ファイルのフォルダからの相対パス（区切りは `/`）。エイリアスの行から描く用語集の表の `詳細` の列のリンク先を、描く文書からの相対パスに解くのに使用する
+    example: docs/guide/用語集.mark.md
 response:
   - name: '-'
     type: string
@@ -3687,6 +3752,14 @@ constraints:
   - item: map の書き方の誤り
     constraint: map の範囲で、JSON のオブジェクトとして読み取れない印の引数と型の合わない印の引数の値と、廃止した印のキー `play`・`interval`（廃止した旨と `mdmark upgrade` で削除できる旨を添える。`data-map-args` に残さない）を集め、範囲の場所の前に書き方の警告を 1 つ配置する。印の知らないキーは警告にせず無視する（点検が `map_unknown_key` で通知する）。Mermaid の読み取れない行・閉じの無い `subgraph` と複合フラグメント・補足の JSON の誤り（JSON のオブジェクトとして読み取れない・スキーマに合わない）・補足が指す Mermaid に無い ID・HTML コメントの中にそのまま記載した `--` を含む補足の文字は `render` では確認しず、`mount` が図の前の書き方の警告にする（文書を描く.ts の制約『map の書き方の警告』。Mermaid と補足を読み取る処理を `dist/index.js` に入れず、配布物の大きさの上限に収めるため）。mermaid のブロックが無い・2 つ以上ある・補足が 2 つ以上ある範囲と、描かない図の種類の範囲は図にせず、警告とソースのコードブロックだけを配置する
     notes: 警告の部品は部品設計『書き方の警告』。文言は画面設計『文書』
+  - item: エイリアスの行から描く用語集の表
+    constraint: |-
+      `<!-- glossary: {"alias_row": "{行の id}"} -->` のマーカーがあるとき（機能 `glossary` がオフのときも、本文の表を囲む用語集の表と同じく描く）、閉じのマーカーを探さず、マーカーの場所に `opts.aliases` のうち `alias_type` が `term` で `row` がその値のエイリアスを、並びの順に 1 行ずつ持つ表を描く。
+      列は `用語`（`name`）・`別名`（`aliases` を「、」でつなぐ）・`使用しない言い方`（`avoid` を「、」でつなぐ）・`意味`（`description`）・`詳細`（`details` を並びの順にリンクにし「・」でつなぐ）の順で、表の種類は `data` にする。
+      `詳細` のリンク先は、`details[].href` が URL か `#` で始まるときはそのまま、それ以外は `opts.path` のフォルダからの相対パスに解く（`opts.path` が無ければそのまま）。リンクは制約「URL のスキーム」に従う。
+      描いた表は本文の表から入れた用語集の表と同じく、表の中の単語に下線を付けない。表の行を用語として入れ直さない（エイリアスとして照合する）。
+      該当するエイリアスが 1 件も無いときは、表を描かずにマーカーの場所に記載の警告を出す。`alias_row` と `term`・`meaning`・`aliases`・`avoid` を一緒に記載したマーカーは、記載の警告を出し、`alias_row` を使用して描く
+    notes: 記載の警告の文は、指した行の id と、設定の `aliases` の行の `id` を確認する修正方法を持つ
 test_file: tests/integration/lib/render.test.ts
 tags:
   - name: topic:api

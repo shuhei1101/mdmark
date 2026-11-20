@@ -1,0 +1,52 @@
+$ gh workflow run test.yml --ref feat/export/glossary-yaml-and-prerendered-html -f layer=integration -f paths="tests/integration/lib/export.test.ts tests/integration/lib/bundle.test.ts"
+# https://github.com/shuhei1101/mdmark/actions/runs/44751896925 (commit 68378b02)
+
+
+ RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+
+ ✓  integration-node  tests/integration/lib/export.test.ts (21 tests) 42284ms
+   ✓ test_normal 1570ms
+   ✓ test_normal_when_unreadable_assets 1947ms
+   ✓ test_error_when_document_missing 625ms
+   ✓ test_error_when_output_unwritable 456ms
+   ✓ test_normal_when_tooltip_placement 1193ms
+   ✓ test_normal_when_syntax_highlighted 622ms
+   ✓ test_normal_when_aliases 633ms
+   ✓ test_normal_when_color_theme 1175ms
+   ✓ test_normal_when_param_copy_label 1122ms
+   ✓ test_normal_when_media_embedded 1651ms
+   ✓ test_normal_when_blob_and_dynamic_import_blocked 623ms
+   ✓ test_normal_when_includes_and_icons 803ms
+   ✓ test_normal_when_range_scripts 514ms
+   ✓ test_normal_when_cascaded 532ms
+   ✓ test_normal_when_mermaid_embedded 7158ms
+   ✓ test_normal_when_map_config 713ms
+   ✓ test_normal_when_traces_hidden 12944ms
+   ✓ test_normal_when_traces_kept 7227ms
+ ✓  integration-node  tests/integration/lib/bundle.test.ts (22 tests) 47898ms
+   ✓ test_normal 1559ms
+   ✓ test_normal_when_link_outside_bundle 1963ms
+   ✓ test_error_when_build_missing 631ms
+   ✓ test_error_when_output_unwritable 444ms
+   ✓ test_normal_when_aliases 1134ms
+   ✓ test_normal_when_color_theme 658ms
+   ✓ test_normal_when_page_settings_per_document 716ms
+   ✓ test_normal_when_media_embedded 1378ms
+   ✓ test_normal_when_blob_and_dynamic_import_blocked 710ms
+   ✓ test_normal_when_includes_and_icons 705ms
+   ✓ test_normal_when_range_scripts 616ms
+   ✓ test_normal_when_mermaid_embedded 7015ms
+   ✓ test_normal_when_back_forward_restore_scroll 1168ms
+   ✓ test_normal_when_reload_restore_scroll 1254ms
+   ✓ test_normal_when_back_restore_folds_and_tabs 894ms
+   ✓ test_normal_when_session_storage_unavailable 905ms
+   ✓ test_normal_when_switch_clears_map_query 779ms
+   ✓ test_normal_when_map_config 854ms
+   ✓ test_normal_when_traces_hidden 20289ms
+   ✓ test_normal_when_traces_kept 3621ms
+
+ Test Files  2 passed (2)
+      Tests  43 passed (43)
+   Start at  14:17:33
+   Duration  64.63s (tests 99%, import 1%)
+

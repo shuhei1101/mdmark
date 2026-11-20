@@ -182,3 +182,18 @@ test("test_parse_er_diagram_when_mermaid_syntax", async () => {
   expect(diagram.styles.nodes.PERSON?.stroke).toBe("#f00");
   expect(diagram.styles.nodes.id2?.fill).toBe("#f9f");
 });
+
+// 両端の多重度ごとのデータの印の向き（正常系）
+test("test_er_packet_direction", async () => {
+  // 準備
+  const { erPacketDirection, parseErDiagram } = await loadEr();
+  const er = parseErDiagram(`erDiagram
+  A ||--o{ B : r1
+  C }o--|| D : r2
+  E |o--|| F : r3
+  G }o--|{ H : r4`);
+  // 実行
+  const directions = er.relations.map(erPacketDirection);
+  // 検証
+  expect(directions).toEqual(["backward", "forward", "forward", "forward"]);
+});

@@ -16,6 +16,8 @@ export type MapState = {
   attachments: Record<string, { from?: MapSide; to?: MapSide }>;
   order: string[] | undefined;
   height: number | undefined;
+  /** 角で大きさを変えたグループの幅と高さ */
+  groupSizes: Record<string, { w: number; h: number }>;
 };
 
 /** sessionStorage のキーの頭（`{頭}{pathname}{まとめた HTML の文書の経路}#{図の番号}`） */
@@ -34,6 +36,7 @@ export const emptyMapState = (): MapState => ({
   attachments: {},
   order: undefined,
   height: undefined,
+  groupSizes: {},
 });
 
 /** キー。まとめた HTML では文書ごとに分けるため、ハッシュの文書の経路（`#/a.md`）を足す */
@@ -109,10 +112,20 @@ export const readMapState = (options: {
       ? stored.order.filter((id): id is string => typeof id === "string")
       : undefined,
     height: typeof stored.height === "number" ? stored.height : undefined,
+    groupSizes: objectOr(stored.groupSizes),
   };
 };
 
-/** sessionStorage に状態を書き、url_state が true なら入ったグループかブロックを history.replaceState でクエリ文字列に書く */
+/** 全画面のモーダルの図が元の図と共有する状態 */
+const SHARED_KEYS = [
+  "collapsed",
+  "positions",
+  "wireShifts",
+  "attachments",
+  "groupSizes",
+] as const satisfies ReadonlyArray<keyof MapState>;
+
+/** sessionStorage に状態を書き、url_state が true なら入ったグループかブロックを history.replaceState でクエリ文字列に書く。scope が modal なら共有する状態だけを元の図の状態に重ねて書き、クエリ文字列は変えない */
 export const writeMapState = (options: {
   index: number;
   state: MapState;
@@ -120,23 +133,31 @@ export const writeMapState = (options: {
   storage: Storage | undefined;
   history: Pick<History, "replaceState" | "state">;
   location: Pick<Location, "pathname" | "search" | "hash">;
+  scope?: "page" | "modal";
 }): void => {
+  const key = stateKey(options.location, options.index);
+  const modal = options.scope === "modal";
+  const value = modal
+    ? {
+        ...readStored(options.storage, key),
+        ...Object.fromEntries(
+          SHARED_KEYS.map((name) => [name, options.state[name]]),
+        ),
+      }
+    : options.state;
   try {
-    options.storage?.setItem(
-      stateKey(options.location, options.index),
-      JSON.stringify(options.state),
-    );
+    options.storage?.setItem(key, JSON.stringify(value));
   } catch (error) {
     console.warn(
       "map の図の状態を sessionStorage に保存できませんでした",
       error,
     );
   }
-  if (!options.urlState) return;
+  if (!options.urlState || modal) return;
   const params = new URLSearchParams(options.location.search);
-  const key = `${MAP_QUERY_PREFIX}${options.index}`;
-  if (options.state.entered === undefined) params.delete(key);
-  else params.set(key, options.state.entered);
+  const query = `${MAP_QUERY_PREFIX}${options.index}`;
+  if (options.state.entered === undefined) params.delete(query);
+  else params.set(query, options.state.entered);
   const search = params.toString();
   const next = `${options.location.pathname}${search === "" ? "" : `?${search}`}${options.location.hash}`;
   const current = `${options.location.pathname}${options.location.search}${options.location.hash}`;

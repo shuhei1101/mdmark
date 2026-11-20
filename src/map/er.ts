@@ -82,6 +82,14 @@ const CARDINALITY: Record<string, ErCardinality> = {
 /** 多の側の多重度 */
 const MANY = new Set<ErCardinality>(["1..n", "0..n"]);
 
+/** 関連の線のデータの印の向き。多い側が線の元なら forward、先なら backward、両端が同じ側なら forward */
+export const erPacketDirection = (
+  relation: Pick<ErRelation, "fromCardinality" | "toCardinality">,
+): "forward" | "backward" =>
+  !MANY.has(relation.fromCardinality) && MANY.has(relation.toCardinality)
+    ? "backward"
+    : "forward";
+
 /** テーブル名（引用符で囲んだ名前か、空白・記号を持たない名前） */
 const TABLE = '(?:"([^"]*)"|([^\\s{}:"|\\[\\]]+))';
 /** テーブル名の後ろの `:::{クラス}` */

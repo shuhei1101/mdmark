@@ -5,6 +5,8 @@ export { ZOOM };
 export declare const DIAGRAM_REDRAW_EVENT = "mdmark-diagram-redraw";
 /** 図の `id` の頭 `from` を `to` にもう一度振り、それを指す属性も合わせて修正する */
 export declare function renumberIds(scope: HTMLElement, from: string, to: string): void;
+/** 全画面のモーダルに複製した図（modal）に、元の図（source）の部品の操作を付け直し、解除する関数を返す */
+export type AttachModal = (modal: HTMLElement, source: HTMLElement) => () => void;
 /** 図を全画面のモーダルで開き、開いた全画面を閉じる関数を返却する。閉じるボタンか Esc で閉じたら、付けた操作と監視を解除して `dialog` を削除し、フォーカスを全画面のボタンへ戻す */
 export declare function openDiagramDialog(options: {
     /** 開く図 */
@@ -13,6 +15,8 @@ export declare function openDiagramDialog(options: {
     opener: HTMLButtonElement;
     /** モーダルの中のツールチップを先に出す側 */
     placement: TooltipPlacement;
+    /** 複製した図に部品の操作を付け直し、解除する関数を返す（map の図） */
+    attachModal?: AttachModal | undefined;
 }): () => void;
 /** `root` の中の図ごとに、開いたときの倍率を当て、拡大・縮小・移動・全画面のボタンとキー・ドラッグ、ツールチップを付ける。付けた操作と監視を解除し、開いている全画面を閉じる関数を返却する */
 export declare function attachDiagrams(options: {
@@ -24,4 +28,6 @@ export declare function attachDiagrams(options: {
     storage?: Storage | null;
     /** 付ける図（省くと `root` の中の全ての図。高さのキーの通し番号は `root` の中の順） */
     figures?: HTMLElement[];
+    /** 全画面のモーダルに複製した図へ部品の操作を付け直す関数（`openDiagramDialog` へ指定する） */
+    attachModal?: AttachModal;
 }): () => void;

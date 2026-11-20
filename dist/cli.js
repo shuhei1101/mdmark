@@ -62727,7 +62727,7 @@ import { homedir as homedir3 } from "node:os";
 import { isAbsolute as isAbsolute5, resolve as resolve15 } from "node:path";
 
 // src/cli/build.ts
-import { join as join8, resolve as resolve12 } from "node:path";
+import { join as join9, resolve as resolve14 } from "node:path";
 
 // src/knowledge/paths.ts
 var MARK_MARKDOWN_SUFFIX = ".mark.md";
@@ -63097,7 +63097,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.2ff6489";
+  return "v0.14.0+develop.5383a76";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -74309,10 +74309,13 @@ var glossary_schema_default = {
     },
     avoid: {
       $ref: "common.schema.json#/$defs/column_ref"
+    },
+    alias_row: {
+      type: "string",
+      minLength: 1
     }
   },
-  additionalProperties: false,
-  required: ["term", "meaning"]
+  additionalProperties: false
 };
 
 // schemas/marks/include.schema.json
@@ -75823,7 +75826,50 @@ function toUsableAlias(item, type) {
   if (Array.isArray(item.related)) {
     alias.related = list3(item.related);
   }
+  if (typeof item.row === "string") {
+    alias.row = item.row;
+  }
+  const details = Array.isArray(item.details) ? item.details.filter(isDetail) : [];
+  if (details.length > 0) {
+    alias.details = details;
+  }
   return alias;
+}
+function isDetail(value) {
+  return isRecord4(value) && isFilled(value.title) && isFilled(value.href);
+}
+var SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+function normalizePath2(path) {
+  const parts = [];
+  for (const part of path.split("/")) {
+    if (part === "" || part === ".") {
+      continue;
+    }
+    if (part === ".." && parts.length > 0 && parts.at(-1) !== "..") {
+      parts.pop();
+    } else {
+      parts.push(part);
+    }
+  }
+  return parts.join("/");
+}
+function readAliasDetails(options) {
+  const { value, sourcePath } = options;
+  if (!Array.isArray(value)) {
+    return void 0;
+  }
+  const folder = sourcePath.includes("/") ? sourcePath.slice(0, sourcePath.lastIndexOf("/")) : "";
+  const details = value.filter(isDetail).map(({ title, href }) => {
+    if (SCHEME.test(href) || href.startsWith("#")) {
+      return { title, href };
+    }
+    const hash = href.indexOf("#");
+    const path = hash === -1 ? href : href.slice(0, hash);
+    const anchor2 = hash === -1 ? "" : href.slice(hash);
+    const joined = folder === "" ? path : `${folder}/${path}`;
+    return { title, href: `${normalizePath2(joined)}${anchor2}` };
+  });
+  return details.length > 0 ? details : void 0;
 }
 function usableAliases(aliases) {
   const seen = /* @__PURE__ */ new Set();
@@ -75839,7 +75885,7 @@ function usableAliases(aliases) {
   }
   return usable;
 }
-function toAlias(values, aliasType) {
+function toAlias(values, aliasType, extra) {
   const text2 = (key) => typeof values[key] === "string" ? values[key] : void 0;
   const list3 = (key) => Array.isArray(values[key]) ? values[key] : void 0;
   const alias = {
@@ -75870,6 +75916,10 @@ function toAlias(values, aliasType) {
   const avoid = list3("avoid");
   if (avoid !== void 0) {
     alias.avoid = avoid;
+  }
+  alias.row = extra.row;
+  if (extra.details !== void 0) {
+    alias.details = extra.details;
   }
   return alias;
 }
@@ -75993,7 +76043,13 @@ function takeRecord(build6, row2, at) {
   }
   build6.aliasIds.add(id);
   if (row2.aliasType !== "env") {
-    build6.aliases.push(toAlias(values, row2.aliasType));
+    const details = readAliasDetails({
+      value: readColumn(record2, columnOf(row2, "details")).value,
+      sourcePath: source.path
+    });
+    build6.aliases.push(
+      toAlias(values, row2.aliasType, { row: row2.id, details })
+    );
   }
 }
 function buildAliases(input) {
@@ -76342,10 +76398,10 @@ function columnPositions(spec, columns) {
   return problem === void 0 ? { positions } : { problem };
 }
 function tableRows(table2, positions, docId) {
-  const cellOf = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
+  const cellOf2 = (cells, argName) => cells[positions[argName] ?? -1] ?? "";
   return table2.rows.flatMap((row2) => {
-    const term = cellOf(row2.cells, "term");
-    const meaning = cellOf(row2.cells, "meaning");
+    const term = cellOf2(row2.cells, "term");
+    const meaning = cellOf2(row2.cells, "meaning");
     if (term === "" || meaning === "") {
       return [];
     }
@@ -76353,10 +76409,10 @@ function tableRows(table2, positions, docId) {
       {
         entry: {
           term,
-          aliases: splitCell(cellOf(row2.cells, "aliases")),
+          aliases: splitCell(cellOf2(row2.cells, "aliases")),
           meaning,
           docId,
-          avoid: splitCell(cellOf(row2.cells, "avoid"))
+          avoid: splitCell(cellOf2(row2.cells, "avoid"))
         },
         line: row2.line
       }
@@ -76405,6 +76461,131 @@ function collectGlossary(state, range) {
   }
   return out;
 }
+var ALIAS_TABLE_COLUMNS = [
+  "\u7528\u8A9E",
+  "\u5225\u540D",
+  "\u4F7F\u7528\u3057\u306A\u3044\u8A00\u3044\u65B9",
+  "\u610F\u5473",
+  "\u8A73\u7D30"
+];
+var COLUMN_KEYS = ["term", "meaning", "aliases", "avoid"];
+var SCHEME2 = /^[a-z][a-z0-9+.-]*:/i;
+function cellOf(text2) {
+  return text2.replaceAll("|", "\\|").replaceAll(/\r?\n/g, " ");
+}
+function relativeFrom(from, to) {
+  const fromParts = from.split("/").slice(0, -1);
+  const toParts = to.split("/");
+  let common = 0;
+  while (common < fromParts.length && common < toParts.length - 1 && fromParts[common] === toParts[common]) {
+    common++;
+  }
+  return [
+    ...fromParts.slice(common).map(() => ".."),
+    ...toParts.slice(common)
+  ].join("/");
+}
+function detailHref(href, path) {
+  if (path === void 0 || SCHEME2.test(href) || href.startsWith("#")) {
+    return href;
+  }
+  const hash = href.indexOf("#");
+  const target = hash === -1 ? href : href.slice(0, hash);
+  const anchor2 = hash === -1 ? "" : href.slice(hash);
+  return `${relativeFrom(path, target)}${anchor2}`;
+}
+function aliasRowLine(alias, path) {
+  const details = (alias.details ?? []).map(
+    ({ title, href }) => `[${cellOf(title).replaceAll(/[[\]]/g, "\\$&")}](<${detailHref(href, path).replaceAll(">", "%3E")}>)`
+  ).join("\u30FB");
+  const cells = [
+    cellOf(alias.name),
+    cellOf(alias.aliases.join("\u3001")),
+    cellOf((alias.avoid ?? []).join("\u3001")),
+    cellOf(alias.description ?? ""),
+    details
+  ];
+  return `| ${cells.join(" | ")} |`;
+}
+function tableMarkTokens(state, source) {
+  const make = (closing) => {
+    const token = new state.Token(MARK_TOKEN, "", 0);
+    token.block = true;
+    token.level = source.level;
+    token.map = source.map;
+    const raw = closing ? "<!-- /table -->" : '<!-- table: {"kind": "data"} -->';
+    const mark = {
+      name: "table",
+      options: closing ? {} : { kind: "data" },
+      source: closing ? "none" : "json",
+      problems: [],
+      unknownKeys: [],
+      raw,
+      closing
+    };
+    token.meta = mark;
+    return token;
+  };
+  return [make(false), make(true)];
+}
+function aliasGlossaryTokens(options) {
+  const { options: spec, state } = options;
+  const env = envOf(state);
+  const row2 = String(spec.alias_row);
+  const mixed = COLUMN_KEYS.filter((key) => Object.hasOwn(spec, key));
+  const aliases = usableAliases(env.aliases ?? []).filter(
+    (alias) => alias.alias_type === "term" && alias.row === row2
+  );
+  if (aliases.length === 0) {
+    return {
+      tokens: [],
+      warning: `\u306E \`alias_row\` \u306E\u884C \`${row2}\` \u304B\u3089\u4F5C\u3063\u305F\u7528\u8A9E\u304C\u3042\u308A\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E \`aliases\` \u306B \`alias_type\` \u304C \`term\` \u306E\u884C \`${row2}\` \u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`alias_row\` \u3092\u884C\u306E \`id\` \u306B\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002\u7528\u8A9E\u96C6\u306E\u8868\u3092\u63CF\u3044\u3066\u3044\u307E\u305B\u3093\u3002`
+    };
+  }
+  const markdown = [
+    `| ${ALIAS_TABLE_COLUMNS.join(" | ")} |`,
+    `| ${ALIAS_TABLE_COLUMNS.map(() => "---").join(" | ")} |`,
+    ...aliases.map((alias) => aliasRowLine(alias, env.path)),
+    ""
+  ].join("\n");
+  const parsed = [];
+  state.md.block.parse(markdown, state.md, state.env, parsed);
+  for (const token of parsed) {
+    if (token.type === "inline") {
+      token.children = [];
+      state.md.inline.parse(token.content, state.md, state.env, token.children);
+      for (const child of token.children) {
+        child.meta = { ...child.meta, mdmarkNoTerms: true };
+      }
+    }
+  }
+  const tokens = parsed;
+  const keys = mixed.map((key) => `\`${key}\``).join("\u30FB");
+  return mixed.length === 0 ? { tokens } : {
+    tokens,
+    warning: `\u306F \`alias_row\` \u3068 ${keys} \u3092\u4E00\u7DD2\u306B\u8A18\u8F09\u3057\u3066\u3044\u307E\u3059\u3002\`alias_row\` \u3092\u4F7F\u7528\u3059\u308B\u3068\u304D\u306F ${keys} \u3092\u524A\u9664\u3057\u3066\u304F\u3060\u3055\u3044\u3002\`alias_row\` \u306E\u884C\u306E\u7528\u8A9E\u3067\u8868\u3092\u63CF\u3044\u3066\u3044\u307E\u3059\u3002`
+  };
+}
+function aliasGlossary(state, token, mark) {
+  const { tokens, warning } = aliasGlossaryTokens({
+    options: mark.options,
+    mark: mark.raw,
+    state
+  });
+  for (const item of tokens) {
+    item.map = token.map;
+    item.level += token.level;
+  }
+  const out = [];
+  if (warning !== void 0) {
+    out.push(warningBlock(state, { mark: mark.raw, message: warning }, token));
+  }
+  if (tokens.length > 0) {
+    const [open2, close] = tableMarkTokens(state, token);
+    out.push(open2, ...tokens, close);
+  }
+  return out;
+}
 function glossaryRule(state) {
   const enabled = featureOn(state, "glossary");
   const tokens = state.tokens;
@@ -76419,6 +76600,10 @@ function glossaryRule(state) {
       continue;
     }
     if (mark.closing) {
+      continue;
+    }
+    if (Object.hasOwn(mark.options, "alias_row")) {
+      out.push(...aliasGlossary(state, token, mark));
       continue;
     }
     const close = findClose(tokens, position, "glossary");
@@ -84458,7 +84643,7 @@ function buildViews(state) {
 var MARKDOWN_PATTERN = /\.(?:md|markdown)$/i;
 var LINES_PATTERN = /^L(\d+)(?:-L(\d+))?$/;
 var isMarkdownPath = (path) => MARKDOWN_PATTERN.test(path);
-var normalizePath2 = (path) => {
+var normalizePath3 = (path) => {
   const parts = [];
   for (const part of path.split("/")) {
     if (part === "" || part === ".") {
@@ -84478,7 +84663,7 @@ var resolveIncludePath = (fromPath, written) => {
   const fragment = hash < 0 ? "" : written.slice(hash + 1);
   const slash = fromPath.lastIndexOf("/");
   const dir = slash < 0 ? "" : fromPath.slice(0, slash);
-  const key = normalizePath2(dir ? `${dir}/${path}` : path);
+  const key = normalizePath3(dir ? `${dir}/${path}` : path);
   if (fragment === "") {
     return { key, target: { kind: "whole" } };
   }
@@ -84979,6 +85164,7 @@ function renderDocument(options) {
     includes: options.includes,
     icons: options.icons,
     resolveIdLink: options.resolveIdLink,
+    path: options.path,
     ownGlossary: [],
     extensionDefinitions: [],
     paramDefinitions: []
@@ -85015,7 +85201,8 @@ function render2(markdown, opts = {}) {
     aliases: opts.aliases,
     includes: opts.includes,
     icons: opts.icons,
-    resolveIdLink: opts.resolveIdLink
+    resolveIdLink: opts.resolveIdLink,
+    path: opts.path
   }).html;
 }
 
@@ -86167,8 +86354,8 @@ var parseSequence = (source) => {
 // src/map/map.part.ts
 var MAP_ER = {
   width: 240,
-  /** テーブル名の行（種類の行と名前）の高さ */
-  head: 56,
+  /** テーブル名の行（名前と開閉のボタンの 1 行）の高さ */
+  head: 36,
   row: 28,
   foot: 6,
   /** ノードの左右に空ける幅（関連の端と多重度の置き場所） */
@@ -88382,8 +88569,6 @@ var HTML_SCRIPT_KEY_PATTERN = new RegExp(
 );
 var VERSION_DECLARATION_PATTERN = /:root\{--mdmark-version:"[^"]*"\}\n?/g;
 var COMMENT_PATTERN = /<!--[\s\S]*?-->/g;
-var MARK_COMMENT_PATTERN = /^<!--\s*\/?([a-z][a-z0-9-]*)(?::[\s\S]*?)?\s*-->$/;
-var INLINE_CODE_PATTERN = /(`+)[\s\S]*?\1/g;
 var hideNames = (text2) => text2.replace(/mdmark/gi, (found) => {
   if (found === found.toUpperCase()) {
     return TRACE_ALIAS.toUpperCase();
@@ -88393,65 +88578,65 @@ var hideNames = (text2) => text2.replace(/mdmark/gi, (found) => {
   }
   return TRACE_ALIAS;
 });
-var dropCommentsOutsideCode = (text2, markNames) => {
-  const drop = (part) => part.replace(COMMENT_PATTERN, (comment2) => {
-    const name = MARK_COMMENT_PATTERN.exec(comment2)?.[1];
-    return name !== void 0 && markNames.has(name) ? comment2 : "";
+var STYLE_PATTERN = /(<style\b[^>]*>)([\s\S]*?)<\/style>/g;
+var TAG_PATTERN = /<(\/?)([^\s/>]+)([^>]*)>/g;
+var ATTRIBUTE_PATTERN2 = /([^\s=/]+)(\s*=\s*)?("[^"]*"|'[^']*'|[^\s"'>]+)?/g;
+var ID_REFERENCE_ATTRIBUTES = /* @__PURE__ */ new Set([
+  "for",
+  "headers",
+  "aria-describedby",
+  "aria-details",
+  "aria-controls",
+  "aria-labelledby",
+  "aria-owns",
+  "aria-flowto",
+  "aria-activedescendant",
+  "aria-errormessage"
+]);
+var isNameValue = (name) => name === "class" || name === "id" || name.startsWith("data-") || ID_REFERENCE_ATTRIBUTES.has(name);
+var hideAttributeValue = (name, value) => {
+  if (isNameValue(name)) {
+    return hideNames(value);
+  }
+  const quote = value[0] === '"' || value[0] === "'" ? value[0] : "";
+  if (name === "href" && value.slice(quote.length).startsWith("#")) {
+    return hideNames(value);
+  }
+  const assets = value.replace(/\bmdmark-asset:/g, `${TRACE_ALIAS}-asset:`);
+  return name === "style" ? assets.replace(/--mdmark-/g, `--${TRACE_ALIAS}-`) : assets;
+};
+var TEXT_PIECE_PATTERN = /<template\b[^>]*>[\s\S]*?<\/template>|<[^>]*>|[^<]+/g;
+var hideCodeElementNames = (html) => html.replace(
+  TEXT_PIECE_PATTERN,
+  (piece) => piece.startsWith("<") ? piece : piece.replace(
+    /&lt;(\/?)mdmark-/gi,
+    (found, slash) => `&lt;${slash}${hideNames(found.slice(4 + slash.length, -1))}-`
+  )
+);
+var hideRenderedHtml = (html) => hideCodeElementNames(html.replace(COMMENT_PATTERN, "")).replace(STYLE_PATTERN, (...style) => {
+  const [, open2 = "", css = ""] = style;
+  return `${open2}${hideNames(css)}</style>`;
+}).replace(TAG_PATTERN, (...tag) => {
+  const [, slash = "", name = "", rest2 = ""] = tag;
+  const attributes = rest2.replace(ATTRIBUTE_PATTERN2, (...attribute) => {
+    const [, attr = "", equals = "", value = ""] = attribute;
+    const hidden = value === "" ? "" : hideAttributeValue(attr.toLowerCase(), value);
+    return `${hideNames(attr)}${equals ?? ""}${hidden}`;
   });
-  let result = "";
-  let last = 0;
-  for (const match of text2.matchAll(INLINE_CODE_PATTERN)) {
-    result += drop(text2.slice(last, match.index)) + match[0];
-    last = match.index + match[0].length;
-  }
-  return result + drop(text2.slice(last));
-};
-var htmlLines = (markdown) => {
-  const tokens = new MarkdownItCallable({ html: true, linkify: true }).parse(
-    markdown,
-    {}
-  );
-  const lines = /* @__PURE__ */ new Set();
-  for (const token of tokens) {
-    const hasHtml = token.type === "html_block" || token.type === "inline" && (token.children ?? []).some((child) => child.type === "html_inline");
-    if (hasHtml && token.map) {
-      for (let line = token.map[0]; line < token.map[1]; line++) {
-        lines.add(line);
-      }
-    }
-  }
-  return lines;
-};
-var hideMarkdown = (options) => {
-  const { markdown, markNames } = options;
-  const targets = htmlLines(markdown);
-  const lines = markdown.split("\n");
-  const kept2 = [];
-  for (let line = 0; line < lines.length; ) {
-    if (!targets.has(line)) {
-      kept2.push(lines[line] ?? "");
-      line++;
-      continue;
-    }
-    let end = line;
-    while (targets.has(end)) {
-      end++;
-    }
-    kept2.push(
-      dropCommentsOutsideCode(lines.slice(line, end).join("\n"), markNames)
-    );
-    line = end;
-  }
-  return kept2.join("\n").replace(/(<\/?)mdmark-/gi, `$1${TRACE_ALIAS}-`).replace(/--mdmark-/g, `--${TRACE_ALIAS}-`).replace(
-    /(\bclass\s*=\s*["'])([^"']*)/gi,
-    (_, head, value) => head + value.replace(/\bmdmark-/g, `${TRACE_ALIAS}-`)
-  ).replace(/\bmdmark-asset:/g, `${TRACE_ALIAS}-asset:`);
-};
+  return `<${slash}${hideNames(name)}${attributes}>`;
+});
 var hideValue = (value) => JSON.parse(hideNames(JSON.stringify(value)));
 var hidePayload = (payload) => ({
   ...payload,
   config: hideValue(payload.config),
-  ...payload.icons ? { icons: hideValue(payload.icons) } : {}
+  ...payload.icons ? { icons: hideValue(payload.icons) } : {},
+  docs: payload.docs.map((doc) => {
+    const { html, ...others } = doc.rendered;
+    return {
+      ...doc,
+      rendered: { ...hideValue(others), html: hideRenderedHtml(html) }
+    };
+  })
 });
 var hideCss = (css) => hideNames(css.replace(VERSION_DECLARATION_PATTERN, ""));
 var hideScript = (options) => hideNames(options.code).replace(
@@ -88830,22 +89015,745 @@ function findOutsideLinks(markdown, docPath, paths) {
 }
 
 // src/cli/export.ts
-import { mkdir as mkdir2, readFile as readFile9, stat as stat4, writeFile } from "node:fs/promises";
+import { mkdir as mkdir3, readFile as readFile11, stat as stat5, writeFile as writeFile2 } from "node:fs/promises";
 import {
-  basename as basename7,
-  dirname as dirname9,
-  extname as extname5,
-  join as join7,
-  relative as relative8,
-  resolve as resolve11,
-  sep as sep8
+  basename as basename8,
+  dirname as dirname10,
+  extname as extname6,
+  join as join8,
+  relative as relative10,
+  resolve as resolve13,
+  sep as sep9
 } from "node:path";
-import { build as build4 } from "esbuild";
+import { build as build5 } from "esbuild";
+
+// src/markdown/pure-blocks.logic.ts
+var FIGURE_MARKS = {
+  chart: "diagrams",
+  param: "diagrams",
+  html: "html"
+};
+var EMPTY_MARKS = /* @__PURE__ */ new Set([
+  "features",
+  "page",
+  "map-data",
+  "fig",
+  "pagebreak"
+]);
+var TOC_LEVELS = { min: 2, max: 3 };
+var CODE_NOTATION_PATTERN = /\s*(?:\/\/|#|--|;|<!--|\/\*)?\s*\[!code(?:\s[^\]]*)?\](?:\s*(?:-->|\*\/))?\s*$/;
+var FENCE_OPEN_PATTERN = /^(\s*)(`{3,}|~{3,})(.*)$/;
+var parser3;
+function parse5(markdown) {
+  parser3 ??= new MarkdownItCallable({ html: true });
+  return parser3.parse(markdown, {});
+}
+function topRanges(tokens) {
+  return tokens.filter((token) => token.level === 0 && token.nesting !== -1 && token.map).map((token) => {
+    const [start = 0, end = 0] = token.map ?? [];
+    return { token, start, end };
+  });
+}
+function leadingMark(range) {
+  if (range?.token.type !== "html_block") {
+    return void 0;
+  }
+  const content = range.token.content.trim();
+  const match = new RegExp(MARK_PATTERN.source, "s").exec(content);
+  if (match?.index !== 0) {
+    return void 0;
+  }
+  return {
+    name: match[2] ?? "",
+    closing: match[1] === "/",
+    args: match[3] ?? ""
+  };
+}
+function closingIndex(ranges, from, name) {
+  let depth = 0;
+  for (let index = from; index < ranges.length; index++) {
+    const mark = leadingMark(ranges[index]);
+    if (mark?.name !== name) {
+      continue;
+    }
+    depth += mark.closing ? -1 : 1;
+    if (depth === 0) {
+      return index;
+    }
+  }
+  return -1;
+}
+function optionsOf(args) {
+  const read = readMarkArgs(args);
+  return read.kind === "json" ? read.options : {};
+}
+function definitionOf(ranges) {
+  const fence2 = ranges.find(
+    ({ token }) => token.type === "fence" && token.info.trim() === "json"
+  );
+  if (!fence2) {
+    return void 0;
+  }
+  try {
+    return JSON.parse(fence2.token.content);
+  } catch {
+    return void 0;
+  }
+}
+function classify(name, features) {
+  const figure = FIGURE_MARKS[name];
+  if (figure !== void 0) {
+    return features[figure] === false ? { kind: "mark", off: true } : { kind: "figure", off: false };
+  }
+  const syntax = SYNTAX_MARKS[name];
+  if (syntax !== void 0) {
+    return { kind: "mark", off: features[syntax] === false };
+  }
+  if (!RESERVED_DIRECTIVES.has(name) && extensionFor(name)) {
+    return { kind: "extension", off: false };
+  }
+  return { kind: "mark", off: false };
+}
+function markBlock(options) {
+  const { ranges, index, lines, features } = options;
+  const first = ranges[index];
+  const head = leadingMark(first) ?? { name: "", closing: true, args: "" };
+  let last = head.closing ? index : closingIndex(ranges, index, head.name);
+  if (last < 0) {
+    last = head.name === "code" && ranges[index + 1]?.token.type === "fence" ? index + 1 : index;
+  }
+  const end = ranges[last]?.end ?? first.end;
+  const { kind, off } = classify(head.name, features);
+  const definition = definitionOf(ranges.slice(index + 1, last));
+  return {
+    block: {
+      kind,
+      lines: lines.slice(first.start, end),
+      line: first.start + 1,
+      mark: {
+        name: head.name,
+        options: optionsOf(head.args),
+        ...definition === void 0 ? {} : { definition }
+      },
+      off
+    },
+    next: last + 1
+  };
+}
+function plainKind(range) {
+  const { type } = range.token;
+  if (type === "html_block") {
+    return "html";
+  }
+  return type === "fence" || type === "code_block" ? "fence" : "text";
+}
+function splitPureBlocks(options) {
+  const { markdown, features } = options;
+  const lines = markdown.split("\n");
+  const ranges = topRanges(parse5(markdown));
+  const blocks = [];
+  let index = 0;
+  while (index < ranges.length) {
+    const range = ranges[index];
+    if (leadingMark(range)) {
+      const { block: block2, next } = markBlock({ ranges, index, lines, features });
+      blocks.push(block2);
+      index = next;
+      continue;
+    }
+    const kind = plainKind(range);
+    const previous = blocks[blocks.length - 1];
+    if (kind === "text" && previous?.kind === "text") {
+      previous.lines = lines.slice(previous.line - 1, range.end);
+    } else {
+      blocks.push({
+        kind,
+        lines: lines.slice(range.start, range.end),
+        line: range.start + 1,
+        off: false
+      });
+    }
+    index += 1;
+  }
+  return blocks;
+}
+function dropMarkerLines(lines) {
+  const dropped = /* @__PURE__ */ new Set();
+  for (const { token, start, end } of topRanges(parse5(lines.join("\n")))) {
+    const onlyMarks = token.type === "html_block" && token.content.replace(MARK_PATTERN, "").trim() === "";
+    for (let line = start; onlyMarks && line < end; line++) {
+      dropped.add(line);
+    }
+  }
+  return lines.filter((_, index) => !dropped.has(index));
+}
+function convertFence(lines) {
+  const [open2 = "", ...rest2] = lines;
+  const match = FENCE_OPEN_PATTERN.exec(open2);
+  if (!match) {
+    return lines;
+  }
+  const [, indent = "", fence2 = "", info = ""] = match;
+  const language = info.trim().split(/\s+/)[0] ?? "";
+  const head = `${indent}${fence2}${language === "tree" ? "" : language}`;
+  return [head, ...rest2.map((line) => line.replace(CODE_NOTATION_PATTERN, ""))];
+}
+function convertFences(lines) {
+  const ranges = topRanges(parse5(lines.join("\n")));
+  const converted = [...lines];
+  for (const { token, start, end } of ranges) {
+    if (token.type === "fence") {
+      converted.splice(
+        start,
+        end - start,
+        ...convertFence(lines.slice(start, end))
+      );
+    }
+  }
+  return converted;
+}
+function mermaidOnly(lines) {
+  return topRanges(parse5(lines.join("\n"))).filter(
+    ({ token }) => token.type === "fence" && token.info.trim().split(/\s+/)[0] === "mermaid"
+  ).flatMap(({ start, end }) => ["", ...lines.slice(start, end)]).slice(1);
+}
+function convertMark(block2, headings) {
+  const { name, options } = block2.mark;
+  if (EMPTY_MARKS.has(name)) {
+    return [];
+  }
+  if (name === "toc") {
+    return tocList(headings);
+  }
+  if (name === "map") {
+    return mermaidOnly(block2.lines);
+  }
+  const inner = dropMarkerLines(block2.lines);
+  if (name !== "code") {
+    return inner;
+  }
+  const title = typeof options.title === "string" ? options.title : "";
+  const fences = convertFences(inner);
+  return title === "" ? fences : [`**${title}**`, "", ...fences];
+}
+function convertPureBlock(options) {
+  const { block: block2, headings } = options;
+  switch (block2.kind) {
+    case "text":
+      return block2.lines;
+    case "fence":
+      return convertFence(block2.lines);
+    case "html":
+      return [];
+    case "mark":
+      if (block2.mark === void 0 || block2.off) {
+        return dropMarkerLines(block2.lines);
+      }
+      return convertMark({ ...block2, mark: block2.mark }, headings);
+    case "figure":
+    case "extension":
+      return [];
+    default: {
+      const never2 = block2.kind;
+      return never2;
+    }
+  }
+}
+function tocList(headings) {
+  const used = /* @__PURE__ */ new Map();
+  const lines = [];
+  for (const { level, text: text2 } of headings) {
+    const anchor2 = slugify2(text2, used);
+    if (level < TOC_LEVELS.min || level > TOC_LEVELS.max) {
+      continue;
+    }
+    const indent = "  ".repeat(level - TOC_LEVELS.min);
+    lines.push(`${indent}- [${text2}](#${anchor2})`);
+  }
+  return lines;
+}
+
+// src/markdown/pure-inline.logic.ts
+var CODE_SPAN_PATTERN = /(`+)([\s\S]*?[^`])\1(?!`)/g;
+var COMMENT_PATTERN2 = /<!--[\s\S]*?-->/g;
+var PAIRED_TAG_PATTERN = /<([a-zA-Z][a-zA-Z0-9-]*)(?:\s[^>]*)?>[\s\S]*?<\/\1\s*>/g;
+var SINGLE_TAG_PATTERN = /<\/?[a-zA-Z][a-zA-Z0-9-]*(?:[\s/][^>]*)?>/g;
+var ANNOTATION_DEFINITION_PATTERN = /^(\s*)※\[([^\]\s]+)\]:/;
+var ANNOTATION_REF_PATTERN = /※\[([^\]\s]+)\]/g;
+var INLINE_FOOTNOTE_PATTERN = /\^\[([^\]]*)\]/g;
+var IMAGE_ATTRIBUTE_PATTERN = /(!\[[^\]]*\]\([^)]*\))\{[^{}]*\}/g;
+var TEXT_COLOR_PATTERN = /\[([^\]]*)\]\{color=[^}]*\}/g;
+var HIGHLIGHT_PATTERN = /==([^=]+)==(?:\{color=[^}]*\})?/g;
+var FIGURE_LINK_PATTERN = /\[[^\]]*\]\(#(fig-[^)\s]+)\)/g;
+var CALLOUT_TITLE_PATTERN = /^(\s*>\s*)\[!([A-Za-z]+)\][-+]?\s+(\S.*)$/;
+var CODE_PREFIXES = {
+  "badge:": "badge",
+  "kbd:": "kbd",
+  "icon:": "icon"
+};
+function featureOn2(features, name) {
+  return features[name] !== false;
+}
+function convertCode2(ticks, content, features) {
+  for (const [prefix, feature] of Object.entries(CODE_PREFIXES)) {
+    const escaped = `${prefix.slice(0, -1)}\\:`;
+    if (content.startsWith(escaped) && featureOn2(features, feature)) {
+      return `${ticks}${prefix}${content.slice(escaped.length)}${ticks}`;
+    }
+    if (!content.startsWith(prefix) || !featureOn2(features, feature)) {
+      continue;
+    }
+    const rest2 = content.slice(prefix.length);
+    if (feature === "icon") {
+      return "";
+    }
+    const label = feature === "badge" ? splitBadgeColor(rest2).label : rest2;
+    return `${ticks}${label}${ticks}`;
+  }
+  return `${ticks}${content}${ticks}`;
+}
+function convertText(options) {
+  const { numbers, features, lineHead } = options;
+  let text2 = options.text.replace(COMMENT_PATTERN2, "").replace(PAIRED_TAG_PATTERN, "").replace(SINGLE_TAG_PATTERN, "");
+  if (featureOn2(features, "annotations")) {
+    if (lineHead) {
+      text2 = text2.replace(ANNOTATION_DEFINITION_PATTERN, "$1[^note-$2]:");
+    }
+    text2 = text2.replace(ANNOTATION_REF_PATTERN, "[^note-$1]");
+  }
+  if (featureOn2(features, "footnotes")) {
+    text2 = text2.replace(INLINE_FOOTNOTE_PATTERN, "\uFF08$1\uFF09");
+  }
+  if (featureOn2(features, "images")) {
+    text2 = text2.replace(IMAGE_ATTRIBUTE_PATTERN, "$1");
+  }
+  if (featureOn2(features, "text-color")) {
+    text2 = text2.replace(TEXT_COLOR_PATTERN, "$1");
+  }
+  if (featureOn2(features, "highlight")) {
+    text2 = text2.replace(HIGHLIGHT_PATTERN, "$1");
+  }
+  return text2.replace(FIGURE_LINK_PATTERN, (whole, id) => {
+    const label = numbers.get(id);
+    return label === void 0 ? whole : `[${label}](#${id})`;
+  });
+}
+function convertPureInline(options) {
+  const { line, numbers, features } = options;
+  let converted = "";
+  let last = 0;
+  for (const match of line.matchAll(CODE_SPAN_PATTERN)) {
+    const at = match.index;
+    converted += convertText({
+      text: line.slice(last, at),
+      numbers,
+      features,
+      lineHead: last === 0
+    });
+    converted += convertCode2(match[1] ?? "", match[2] ?? "", features);
+    last = at + match[0].length;
+  }
+  converted += convertText({
+    text: line.slice(last),
+    numbers,
+    features,
+    lineHead: last === 0
+  });
+  const callout = featureOn2(features, "callout") ? CALLOUT_TITLE_PATTERN.exec(converted) : null;
+  if (callout) {
+    const [, quote = "> ", kind = "NOTE", title = ""] = callout;
+    return `${quote}[!${kind}]
+${quote.trimEnd()} **${title}**`;
+  }
+  return converted;
+}
+
+// src/markdown/pure-markdown.ts
+var SCRIPT_LANGUAGES = /* @__PURE__ */ new Set(["ts", "js", "typescript", "javascript"]);
+var parser4;
+function parse6(markdown) {
+  parser4 ??= new MarkdownItCallable({ html: true });
+  return parser4.parse(markdown, {});
+}
+function warn(context, line, message) {
+  const file = context.chain[context.chain.length - 1];
+  const where = file === void 0 ? "" : `${file} \u306E `;
+  context.warnings.push(`${where}${line} \u884C\u76EE: ${message}`);
+}
+function featuresOf(markdown, config3) {
+  const features = { ...resolveConfig({ config: config3 }).features };
+  for (const mark of findMarkTexts(markdown)) {
+    const read = mark.name === "features" ? readMarkArgs(mark.args) : void 0;
+    if (read?.kind !== "json") {
+      continue;
+    }
+    for (const [name, value] of Object.entries(read.options)) {
+      if (typeof value === "boolean" && Object.hasOwn(features, name)) {
+        features[name] = value;
+      }
+    }
+  }
+  return features;
+}
+function headingsOf(markdown, features) {
+  const tokens = parse6(markdown);
+  return tokens.flatMap((token, index) => {
+    const inline2 = tokens[index + 1];
+    if (token.type !== "heading_open" || inline2?.type !== "inline") {
+      return [];
+    }
+    const text2 = convertPureInline({
+      line: inline2.content,
+      numbers: /* @__PURE__ */ new Map(),
+      features
+    }).trim();
+    return [{ level: Number(token.tag.slice(1)), text: text2 }];
+  });
+}
+function figIdOf(block2) {
+  const id = block2.mark?.options.id;
+  const fig = block2.kind === "mark" && !block2.off && block2.mark?.name === "fig";
+  return fig && typeof id === "string" && id !== "" ? id : void 0;
+}
+function numbersOf(blocks) {
+  const numbers = /* @__PURE__ */ new Map();
+  const counts = { \u56F3: 0, \u8868: 0 };
+  blocks.forEach((block2, index) => {
+    const id = figIdOf(block2);
+    if (id === void 0) {
+      return;
+    }
+    const next = blocks[index + 1];
+    const kind = next?.kind === "text" && next.lines[0]?.trimStart().startsWith("|") ? "\u8868" : "\u56F3";
+    counts[kind] += 1;
+    if (!numbers.has(`fig-${id}`)) {
+      numbers.set(`fig-${id}`, `${kind} ${counts[kind]}`);
+    }
+  });
+  return numbers;
+}
+function convertLines(lines, context) {
+  let fence2;
+  return lines.map((line) => {
+    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
+    if (marker !== void 0) {
+      if (fence2 === void 0) {
+        fence2 = marker;
+      } else if (marker.startsWith(fence2)) {
+        fence2 = void 0;
+      }
+      return line;
+    }
+    if (fence2 !== void 0) {
+      return line;
+    }
+    return convertPureInline({
+      line,
+      numbers: context.numbers,
+      features: context.features
+    });
+  });
+}
+function withoutScripts(lines) {
+  const dropped = /* @__PURE__ */ new Set();
+  for (const token of parse6(lines.join("\n"))) {
+    const language = token.info.trim().split(/\s+/)[0] ?? "";
+    if (token.type !== "fence" || !SCRIPT_LANGUAGES.has(language)) {
+      continue;
+    }
+    const [start = 0, end = 0] = token.map ?? [];
+    for (let line = start; line < end; line++) {
+      dropped.add(line);
+    }
+  }
+  return {
+    lines: lines.filter((_, index) => !dropped.has(index)),
+    removed: dropped.size > 0
+  };
+}
+function textOf2(value, key) {
+  const field = value?.[key];
+  return typeof field === "string" ? field : void 0;
+}
+function namesOf(value, key) {
+  const items = value?.[key];
+  if (!Array.isArray(items)) {
+    return [];
+  }
+  return items.flatMap((item) => {
+    const name = textOf2(item, "name");
+    return name === void 0 ? [] : [name];
+  });
+}
+function paramLegendOf(definition) {
+  const param = definition;
+  const value = param?.knob?.value;
+  if (typeof value !== "number" || typeof param?.table !== "object") {
+    return [];
+  }
+  const { series = [] } = paramChart(
+    definition,
+    value
+  );
+  return series.map((item) => item.name);
+}
+function legendOf(kind, definition) {
+  if (kind === "chart") {
+    const series = namesOf(definition, "series");
+    return series.length > 0 ? series : namesOf(definition, "items");
+  }
+  if (kind === "param") {
+    return paramLegendOf(definition);
+  }
+  return [];
+}
+function figureOf(options) {
+  const { block: block2, index, config: config3 } = options;
+  if (block2.mark === void 0) {
+    throw new TypeError("figureOf: \u56F3\u306E\u7BC4\u56F2\u306E\u30D6\u30ED\u30C3\u30AF\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
+  }
+  const kind = block2.mark.name;
+  const warnings = [];
+  let lines = block2.lines;
+  if (kind === "html") {
+    const stripped = withoutScripts(lines);
+    lines = stripped.lines;
+    if (stripped.removed) {
+      warnings.push(
+        `${block2.line} \u884C\u76EE: \u57CB\u3081\u8FBC\u3093\u3060 HTML \u306E\u7BC4\u56F2\u306E\u30B9\u30AF\u30EA\u30D7\u30C8\uFF08ts\u30FBjs \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\uFF09\u3092\u9664\u3044\u3066\u66F8\u304D\u51FA\u3057\u307E\u3057\u305F`
+      );
+    }
+  }
+  const html = render2(lines.join("\n"), config3 === void 0 ? {} : { config: config3 });
+  const definition = block2.mark.definition;
+  return {
+    figure: {
+      kind,
+      index,
+      html,
+      title: kind === "html" ? void 0 : textOf2(definition, "title"),
+      legend: legendOf(kind, definition)
+    },
+    warnings
+  };
+}
+async function convertFigure(block2, context) {
+  context.figures += 1;
+  const { figure, warnings } = figureOf({
+    block: block2,
+    index: context.figures,
+    config: context.opts.config
+  });
+  for (const warning of warnings) {
+    warn(context, block2.line, warning.replace(/^\d+ 行目: /, ""));
+  }
+  const converted = await context.opts.figure?.(figure);
+  return typeof converted === "string" ? [converted] : [];
+}
+async function convertExtension(block2, context) {
+  const { name: directive, options, definition } = block2.mark;
+  const extension = extensionFor(directive);
+  const name = extension?.name ?? directive;
+  if (extension?.toMarkdown === void 0) {
+    warn(
+      context,
+      block2.line,
+      `\u62E1\u5F35\u300C${name}\u300D\u306E ${directive} \u306E\u30DE\u30FC\u30AB\u30FC\u306F\u3001\u66F8\u304D\u51FA\u3057\u306E\u30D5\u30C3\u30AF\uFF08toMarkdown\uFF09\u304C\u7121\u3044\u305F\u3081\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
+    );
+    return [];
+  }
+  try {
+    const converted = await extension.toMarkdown({
+      options,
+      ...definition === void 0 ? {} : { definition }
+    });
+    if (typeof converted === "string") {
+      return [converted];
+    }
+    warn(
+      context,
+      block2.line,
+      `\u62E1\u5F35\u300C${name}\u300D\u306E toMarkdown \u304C\u6587\u5B57\u5217\u3092\u8FD4\u5374\u3057\u306A\u304B\u3063\u305F\u305F\u3081\u3001${directive} \u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
+    );
+  } catch (error2) {
+    const reason = error2 instanceof Error ? error2.message : String(error2);
+    warn(
+      context,
+      block2.line,
+      `\u62E1\u5F35\u300C${name}\u300D\u306E toMarkdown \u304C\u5931\u6557\u3057\u305F\u305F\u3081\u3001${directive} \u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u307E\u3057\u305F\uFF08${reason}\uFF09`
+    );
+  }
+  return [];
+}
+function headingSection(text2, id) {
+  const tokens = parse6(text2);
+  const lines = text2.split("\n");
+  const headings = tokens.flatMap(
+    (token, index) => token.type === "heading_open" && token.map ? [
+      {
+        level: Number(token.tag.slice(1)),
+        start: token.map[0],
+        id: slugBase(tokens[index + 1]?.content ?? "")
+      }
+    ] : []
+  );
+  const position = headings.findIndex((heading2) => heading2.id === id);
+  const found = headings[position];
+  if (found === void 0) {
+    return void 0;
+  }
+  const next = headings.slice(position + 1).find((heading2) => heading2.level <= found.level);
+  return lines.slice(found.start, next?.start ?? lines.length).join("\n");
+}
+function includedFileLines(file) {
+  const { key, text: text2, target } = file;
+  const selected = target.kind === "lines" ? selectLines(text2, target.from, target.to) : { text: text2 };
+  if (!("text" in selected)) {
+    return void 0;
+  }
+  const language = /\.([^./]+)$/.exec(key)?.[1] ?? "";
+  return [
+    `\`\`\`${language}`,
+    ...selected.text.replace(/\n$/, "").split("\n"),
+    "```"
+  ];
+}
+async function convertInclude2(block2, context) {
+  const written = writtenOf(block2.mark.options);
+  const { key, target } = resolveIncludePath(
+    context.chain[context.chain.length - 1] ?? "",
+    written
+  );
+  const text2 = context.opts.includes?.[key];
+  if (text2 === void 0 || context.chain.includes(key)) {
+    warn(
+      context,
+      block2.line,
+      `\u53D6\u308A\u8FBC\u307F\u5148 ${written} \u3092\u53D6\u308A\u8FBC\u3081\u306A\u3044\u305F\u3081\u3001\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
+    );
+    return [];
+  }
+  if (!isMarkdownPath(key)) {
+    const lines = includedFileLines({ key, text: text2, target });
+    if (lines === void 0) {
+      warn(
+        context,
+        block2.line,
+        `\u53D6\u308A\u8FBC\u307F\u5148 ${written} \u306E\u884C\u306E\u7BC4\u56F2\u304C\u7121\u3044\u305F\u3081\u3001\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
+      );
+    }
+    return lines ?? [];
+  }
+  const section = target.kind === "heading" ? headingSection(text2, target.id) : text2;
+  if (section === void 0) {
+    warn(
+      context,
+      block2.line,
+      `\u53D6\u308A\u8FBC\u307F\u5148 ${written} \u306E\u898B\u51FA\u3057\u304C\u7121\u3044\u305F\u3081\u3001\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
+    );
+    return [];
+  }
+  const included = { ...context, chain: [...context.chain, key] };
+  const converted = await convertDocument(
+    splitFrontmatter(section).body,
+    included
+  );
+  context.figures = included.figures;
+  return [converted];
+}
+async function convertMarkBlock(block2, context) {
+  const { name, options } = block2.mark;
+  if (block2.off) {
+    return convertLines(convertPureBlock({ block: block2, headings: [] }), context);
+  }
+  if (name === "include") {
+    return convertInclude2(block2, context);
+  }
+  if (name === "fig") {
+    const id = typeof options.id === "string" ? `fig-${options.id}` : "";
+    const label = context.numbers.get(id);
+    return label === void 0 ? [] : [`**${label}**`];
+  }
+  const lines = convertPureBlock({ block: block2, headings: context.headings });
+  if (name === "toc" || name === "map") {
+    return lines;
+  }
+  return [await convertDocument(lines.join("\n"), context)];
+}
+async function convertBlock(block2, context) {
+  const { mark } = block2;
+  if (block2.kind === "text") {
+    return convertLines(block2.lines, context);
+  }
+  if (mark === void 0) {
+    return convertPureBlock({ block: block2, headings: context.headings });
+  }
+  const marked = { ...block2, mark };
+  if (block2.kind === "figure") {
+    return convertFigure(marked, context);
+  }
+  if (block2.kind === "extension") {
+    return convertExtension(marked, context);
+  }
+  return convertMarkBlock(marked, context);
+}
+function trimBlankLines(text2) {
+  return text2.replace(/^(?:[ \t]*\n)+/, "").replace(/(?:\n[ \t]*)+$/, "");
+}
+async function convertDocument(markdown, context) {
+  const parts = [];
+  for (const block2 of splitPureBlocks({
+    markdown,
+    features: context.features
+  })) {
+    const text2 = trimBlankLines(
+      (await convertBlock(block2, context)).join("\n")
+    );
+    if (text2.trim() !== "") {
+      parts.push(text2);
+    }
+  }
+  return parts.join("\n\n");
+}
+async function toPureMarkdown(markdown, opts = {}) {
+  if (typeof markdown !== "string") {
+    throw new TypeError(
+      "toPureMarkdown: markdown \u306F\u6587\u5B57\u5217\u3067\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  if (opts.figure !== void 0 && typeof opts.figure !== "function") {
+    throw new TypeError(
+      "toPureMarkdown: opts.figure \u306F\u95A2\u6570\u3067\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  const { body, content } = splitFrontmatter(markdown);
+  const features = featuresOf(body, opts.config);
+  const context = {
+    opts,
+    features,
+    numbers: numbersOf(splitPureBlocks({ markdown: body, features })),
+    headings: headingsOf(body, features),
+    warnings: [],
+    figures: 0,
+    chain: []
+  };
+  const converted = await convertDocument(body, context);
+  const front = content === void 0 ? "" : `---
+${content}
+---
+
+`;
+  return {
+    markdown: `${front}${converted}
+`,
+    warnings: context.warnings
+  };
+}
 
 // src/cli/aliases.ts
 import { readFile as readFile5 } from "node:fs/promises";
 import { basename as basename3, join as join5 } from "node:path";
-import { parse as parse5, YAMLParseError as YAMLParseError3 } from "yaml";
+import { parse as parse7, YAMLParseError as YAMLParseError3 } from "yaml";
 function isRecord7(value) {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
@@ -88866,7 +89774,7 @@ async function filesOf(dir, patterns) {
 async function readAliasFile(options) {
   const { absolute, file, rowId } = options;
   try {
-    const data = parse5(await readFile5(absolute, "utf8"));
+    const data = parse7(await readFile5(absolute, "utf8"));
     return { source: { rowId, path: file, data } };
   } catch (error2) {
     if (!(error2 instanceof YAMLParseError3)) {
@@ -88930,6 +89838,11 @@ async function loadAliases(loaded) {
     files: [...matched]
   };
 }
+
+// src/cli/export-markdown.ts
+import { mkdir as mkdir2, readFile as readFile10, rm, stat as stat4, writeFile } from "node:fs/promises";
+import { basename as basename7, dirname as dirname9, join as join7, relative as relative9, resolve as resolve12, sep as sep8 } from "node:path";
+import { build as build4 } from "esbuild";
 
 // src/cli/check.ts
 import { readFile as readFile8, stat as stat3 } from "node:fs/promises";
@@ -90089,14 +91002,6 @@ function knownMarkNames(options) {
     ...options.directives
   ]);
 }
-async function collectMarkNames(loaded) {
-  const { directives } = await loadExtensionDirectives(loaded, loaded.path);
-  return /* @__PURE__ */ new Set([
-    ...knownMarkNames({ config: loaded.config, directives }),
-    PAGE_MARK,
-    ...loaded.config.check?.ignore ?? []
-  ]);
-}
 function checkUnknownMarks(documents, config3, directives) {
   const known = /* @__PURE__ */ new Set([
     ...knownMarkNames({ config: config3, directives }),
@@ -90186,6 +91091,38 @@ function markIssues(mark, embedNames) {
     isExtension
   });
   return [...found, ...notes];
+}
+function termRowIds(aliasRows) {
+  const ids = /* @__PURE__ */ new Set();
+  for (const row2 of Array.isArray(aliasRows) ? aliasRows : []) {
+    if (typeof row2 === "object" && row2 !== null && !Array.isArray(row2) && row2.alias_type === "term" && row2.enabled !== false && typeof row2.id === "string") {
+      ids.add(row2.id);
+    }
+  }
+  return ids;
+}
+function checkGlossaryAliasRows(options) {
+  const ids = termRowIds(options.aliasRows);
+  const issues = [];
+  for (const document3 of options.documents) {
+    for (const mark of findMarkTexts(document3.markdown)) {
+      if (mark.name !== "glossary" || mark.closing) {
+        continue;
+      }
+      const read = readMarkArgs(mark.args);
+      const row2 = read.kind === "json" ? read.options.alias_row : void 0;
+      if (typeof row2 !== "string" || ids.has(row2)) {
+        continue;
+      }
+      issues.push({
+        file: document3.path,
+        where: String(mark.line),
+        kind: "glossary_alias_row_missing",
+        message: `\u7528\u8A9E\u96C6\u306E\u8868\u306E\u30DE\u30FC\u30AB\u30FC\u306E \`alias_row\` \u304C\u6307\u3059\u884C \`${row2}\` \u304C\u3001\u8A2D\u5B9A\u306E \`aliases\` \u306E \`alias_type\` \u304C \`term\` \u306E\u884C\u306B\u3042\u308A\u307E\u305B\u3093\u3002\u8A2D\u5B9A\u306E \`aliases\` \u306B \`term\` \u306E\u884C \`${row2}\` \u3092\u8A18\u8F09\u3059\u308B\u304B\u3001\`alias_row\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      });
+    }
+  }
+  return issues;
 }
 function checkMarkOptions(documents, embedNames) {
   return documents.flatMap(
@@ -90404,6 +91341,10 @@ async function collectCheckIssues(path, options = {}) {
     (issue2) => checkMarks || issue2.kind !== "retired_diagram"
   );
   const maps2 = checkMaps(documents, resolveConfig({ config: config3 }));
+  const glossaryRows = checkGlossaryAliasRows({
+    documents,
+    aliasRows: config3.aliases
+  });
   const plainMarkdown = checkMarks && config3.check?.suggestMarkExtension !== false ? checkPlainMarkdown(
     documents,
     knownMarkNames({ config: config3, directives: extensions2.directives })
@@ -90432,7 +91373,8 @@ async function collectCheckIssues(path, options = {}) {
     ...includes,
     ...diagrams,
     ...maps2,
-    ...plainMarkdown
+    ...plainMarkdown,
+    ...glossaryRows
   ];
 }
 function checkTextArgs(options) {
@@ -90490,1409 +91432,12 @@ async function runCheck(options, io) {
   return issues.length === 0 ? 0 : 1;
 }
 
-// src/cli/icons.ts
-var import_lucide4 = __toESM(require_lucide(), 1);
-var ICON_CODE_PATTERN = /`icon:\s*([^`\s]+)\s*`/g;
-var pascalName = (name) => name.split("-").map((part) => part ? `${part[0]?.toUpperCase()}${part.slice(1)}` : "").join("");
-var collectIconNodes = (markdowns) => {
-  const icons2 = {};
-  const missing = /* @__PURE__ */ new Set();
-  const table2 = import_lucide4.icons;
-  for (const markdown of markdowns) {
-    for (const match of markdown.matchAll(ICON_CODE_PATTERN)) {
-      const name = match[1] ?? "";
-      if (!ICON_NAME_PATTERN.test(name) || bundledIconNode(name) !== void 0 || Object.hasOwn(icons2, name)) {
-        continue;
-      }
-      const key = pascalName(name);
-      const node2 = Object.hasOwn(table2, key) ? table2[key] : void 0;
-      if (node2 === void 0) {
-        missing.add(name);
-      } else {
-        icons2[name] = node2;
-      }
-    }
-  }
-  return { icons: icons2, missing: [...missing] };
-};
-
-// src/cli/export.ts
-var GLOSSARY_ID_PREFIX = "mdmark-glossary-";
-function toPosix4(path) {
-  return path.split(sep8).join("/");
-}
-function reasonOf(error2) {
-  return (error2 instanceof Error ? error2.message : String(error2)).split("\n")[0] ?? "";
-}
-var URL_PATTERN = /^https?:\/\//;
-function moduleSource(path, baseDir) {
-  return URL_PATTERN.test(path) ? path : resolve11(baseDir, path);
-}
-function addGlossaryDocs(options, target) {
-  const { loaded, kind, markdowns } = options;
-  const { referenceDocs, documents, indexPathOf } = target;
-  const glossaryPaths = kind === "bundle" ? loaded.config.build?.glossary ?? [] : [];
-  const prefix = options.hideTraces ? hideNames(GLOSSARY_ID_PREFIX) : GLOSSARY_ID_PREFIX;
-  glossaryPaths.forEach((glossaryPath, position) => {
-    const path = normalizePath(glossaryPath);
-    const markdown = markdowns.get(path);
-    if (markdown === void 0) {
-      return;
-    }
-    const key = indexPathOf(path);
-    documents[key] = markdown;
-    if (!referenceDocs.some((doc) => normalizePath(doc.path) === key)) {
-      referenceDocs.push({
-        id: `${prefix}${position}`,
-        path: key,
-        title: documentTitle({ path, markdown })
-      });
-    }
-  });
-}
-function referencesOf(options) {
-  const { index, documents, loaded, withFrontmatter } = options;
-  if (index.docs.length === 0) {
-    return void 0;
-  }
-  return collectReferences({
-    index,
-    documents,
-    config: { features: loaded.config.features ?? {} },
-    ...withFrontmatter && { frontmatter: readFrontmatterValues(documents) }
-  });
-}
-async function prepareReferences(options) {
-  const { loaded } = options;
-  const info = await readIndexWithDocuments(loaded);
-  const index = info ? normalizeIndex(info.raw).index : void 0;
-  const baseDir = info ? info.indexDir : loaded.dir;
-  const indexPathOf = (path) => toPosix4(relative8(baseDir, join7(loaded.dir, path)));
-  const referenceDocs = [...index?.docs ?? []];
-  const documents = { ...info?.documents };
-  addGlossaryDocs(options, { referenceDocs, documents, indexPathOf });
-  const references = referencesOf({
-    index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
-    documents,
-    loaded,
-    // フロントマターは索引があるときだけ解析して補う
-    withFrontmatter: info !== void 0
-  });
-  const byPath = (path) => (references?.docs ?? index?.docs)?.find(
-    (doc) => normalizePath(doc.path) === indexPathOf(path)
-  );
-  return {
-    index,
-    references,
-    docIdOf: (path) => byPath(path)?.id,
-    titleOf: (path) => byPath(path)?.title
-  };
-}
-async function bundleSyntax(options) {
-  const { languages, url: url2, loaded, warnings, fetchText } = options;
-  if (languages.length === 0) {
-    return void 0;
-  }
-  const folder = url2.endsWith("/") ? url2 : `${url2}/`;
-  const bundle = async (path) => {
-    const result = await bundleModule(`${folder}${path}`, loaded.dir, {
-      fetchText,
-      build: build4
-    });
-    if ("code" in result) {
-      return moduleSource(`${folder}${path}`, loaded.dir);
-    }
-    warnings.push(
-      `${basename7(loaded.path)}: \u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA \`${folder}${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`syntax.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-    return void 0;
-  };
-  const core = await bundle("core.min.js");
-  if (core === void 0) {
-    return void 0;
-  }
-  const bundled = {};
-  for (const language of languages) {
-    const source = await bundle(`languages/${language}.min.js`);
-    if (source !== void 0) {
-      bundled[language] = source;
-    }
-  }
-  return { core, languages: bundled };
-}
-async function resolveAssetsRoot(loaded, warnings) {
-  const root2 = loaded.config.assets?.root;
-  if (root2 === void 0) {
-    return void 0;
-  }
-  const dir = resolve11(loaded.dir, root2);
-  try {
-    if ((await stat4(dir)).isDirectory()) {
-      return dir;
-    }
-  } catch {
-  }
-  warnings.push(
-    `${basename7(loaded.path)}: \`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${root2}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u3060\u3051\u3067\u63A2\u3057\u307E\u3059\u3002`
-  );
-  return void 0;
-}
-async function readDocuments(options) {
-  const { loaded, docs, kind, out, assetsRoot, warnings } = options;
-  const originals = /* @__PURE__ */ new Map();
-  const inlined = /* @__PURE__ */ new Map();
-  const copied = /* @__PURE__ */ new Map();
-  const assets = kind === "bundle" ? /* @__PURE__ */ new Map() : void 0;
-  for (const doc of docs) {
-    const original = await readFile9(doc.file, "utf8");
-    const media = await copyMedia({
-      markdown: original,
-      docFile: doc.file,
-      assetsRoot,
-      baseDir: loaded.dir,
-      out,
-      copied
-    });
-    const result = await inlineImages(media.markdown, doc.file, {
-      assetsRoot,
-      ...assets ? { assets } : {}
-    });
-    originals.set(doc.path, original);
-    inlined.set(doc.path, result.markdown);
-    warnings.push(
-      ...[...media.warnings, ...result.warnings].map(
-        (text2) => `${doc.path}: ${text2}`
-      )
-    );
-  }
-  return { originals, inlined, assets };
-}
-async function readIncludes(options) {
-  const { loaded, docs, originals, warnings } = options;
-  const includeTexts = {};
-  const includeKeys = /* @__PURE__ */ new Map();
-  const fromConfig = (docFile, path) => toPosix4(relative8(loaded.dir, resolve11(dirname9(docFile), path)));
-  for (const doc of docs) {
-    const result = await collectIncludes({
-      docPath: doc.file,
-      markdown: originals.get(doc.path) ?? "",
-      root: loaded.dir
-    });
-    const keys = {};
-    for (const [key, text2] of Object.entries(result.includes)) {
-      const path = fromConfig(doc.file, key);
-      keys[key] = path;
-      includeTexts[path] = text2;
-    }
-    includeKeys.set(doc.path, keys);
-    for (const problem of result.problems) {
-      const file = problem.file === "" ? doc.path : fromConfig(doc.file, problem.file);
-      warnings.push(
-        `${file}:${problem.line}: ${includeProblemMessage(problem)}`
-      );
-    }
-  }
-  return { includeTexts, includeKeys };
-}
-async function bundleLibraries(options) {
-  const { loaded, urls, markdowns, fetchText, warnings } = options;
-  const configName = basename7(loaded.path);
-  const bundled = /* @__PURE__ */ new Map();
-  const modules = {};
-  for (const mark of usedLibraryMarks(markdowns, urls)) {
-    const url2 = urls[mark] ?? "";
-    let pending = bundled.get(url2);
-    if (!pending) {
-      pending = bundleModule(url2, loaded.dir, { fetchText, build: build4 });
-      bundled.set(url2, pending);
-    }
-    const result = await pending;
-    if (!("code" in result)) {
-      warnings.push(
-        `${configName}: \u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002URL \u304B\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-      continue;
-    }
-    modules[mark] = moduleSource(url2, loaded.dir);
-    if (hasDynamicImport(result.code)) {
-      warnings.push(
-        dynamicImportWarning(configName, `\u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\``)
-      );
-    }
-  }
-  return modules;
-}
-async function bundleExtensions(options) {
-  const { loaded, fetchText, warnings } = options;
-  const configName = basename7(loaded.path);
-  const extensions2 = [];
-  for (const path of loaded.config.extensions ?? []) {
-    const result = await bundleModule(path, loaded.dir, { fetchText, build: build4 });
-    if (!("code" in result)) {
-      warnings.push(
-        `${configName}: \u62E1\u5F35 \`${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-      );
-      continue;
-    }
-    extensions2.push(moduleSource(path, loaded.dir));
-    if (hasDynamicImport(result.code)) {
-      warnings.push(dynamicImportWarning(configName, `\u62E1\u5F35 \`${path}\``));
-    }
-  }
-  return extensions2;
-}
-async function readThemeCss(loaded, warnings) {
-  const theme = loaded.config.theme;
-  if (theme === void 0) {
-    return void 0;
-  }
-  try {
-    return await readFile9(resolve11(loaded.dir, theme), "utf8");
-  } catch (error2) {
-    warnings.push(
-      `${basename7(loaded.path)}: \u5229\u7528\u5074\u306E CSS \`${theme}\` \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-    return void 0;
-  }
-}
-async function bundleMermaid(options) {
-  const { loaded, used, fetchText, warnings } = options;
-  if (!used) {
-    return void 0;
-  }
-  const { url: url2 } = resolveConfig({ config: loaded.config }).mermaid;
-  const result = await bundleModule(url2, loaded.dir, { fetchText, build: build4 });
-  if ("code" in result) {
-    return moduleSource(url2, loaded.dir);
-  }
-  warnings.push(
-    `${basename7(loaded.path)}: mermaid \`${url2}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`mermaid.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-  );
-  return void 0;
-}
-function colorThemeWarnings(loaded) {
-  const colorTheme = loaded.config.colorTheme;
-  return colorTheme === void 0 || COLOR_THEMES.some((t) => t === colorTheme) ? [] : [
-    `${basename7(loaded.path)}: \u4E0D\u660E\u306A\u30C6\u30FC\u30DE\u540D ${colorTheme} \u3067\u3059\u3002\u65E2\u5B9A\u306E ${DEFAULT_COLOR_THEME} \u3067\u63CF\u753B\u3057\u307E\u3059\u3002`
-  ];
-}
-function payloadConfig(config3, libraryNames) {
-  const { url: _mermaidUrl, ...mermaid } = config3.mermaid ?? {};
-  const picked = {
-    features: config3.features,
-    tooltips: config3.tooltips,
-    "side-toc": config3["side-toc"],
-    table: config3.table,
-    colorTheme: config3.colorTheme,
-    colorScheme: config3.colorScheme,
-    labels: config3.labels,
-    map: config3.map,
-    mermaid: Object.keys(mermaid).length > 0 ? mermaid : void 0
-  };
-  return {
-    ...Object.fromEntries(
-      Object.entries(picked).filter(([, value]) => value !== void 0)
-    ),
-    libraries: Object.fromEntries(libraryNames.map((name) => [name, name]))
-  };
-}
-function whenFilled(key, value) {
-  return value !== void 0 && Object.keys(value).length > 0 ? { [key]: value } : {};
-}
-async function markdownHider(options) {
-  if (!options.hideTraces) {
-    return void 0;
-  }
-  const markNames = await collectMarkNames(options.loaded);
-  return (markdown) => hideMarkdown({ markdown, markNames });
-}
-function hidePayloadText(shown, hideText) {
-  return {
-    ...shown,
-    docs: shown.docs.map((doc) => ({
-      ...doc,
-      markdown: hideText(doc.markdown)
-    })),
-    ...whenFilled(
-      "includes",
-      shown.includes && Object.fromEntries(
-        Object.entries(shown.includes).map(([key, text2]) => [
-          key,
-          hideText(text2)
-        ])
-      )
-    )
-  };
-}
-async function prepareEmbeds(options) {
-  const { loaded, docs, kind, entry, fetchText } = options;
-  const warnings = [];
-  const assetsRoot = await resolveAssetsRoot(loaded, warnings);
-  const { originals, inlined, assets } = await readDocuments({
-    ...options,
-    assetsRoot,
-    warnings
-  });
-  const markdowns = [...originals.values()];
-  const { includeTexts, includeKeys } = await readIncludes({
-    loaded,
-    docs,
-    originals,
-    warnings
-  });
-  const iconResult = collectIconNodes([
-    ...markdowns,
-    ...Object.values(includeTexts)
-  ]);
-  for (const name of iconResult.missing) {
-    warnings.push(
-      `\`icon:${name}\` \u306E \`${name}\` \u306F Lucide \u306B\u7121\u3044\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u3067\u3059\u3002https://lucide.dev/icons/ \u3067\u540D\u524D\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  const resolved = resolveConfig({ config: loaded.config });
-  const libraries = Object.fromEntries(
-    Object.entries(resolved.libraries).map(([name, library]) => [
-      name,
-      library.url
-    ])
-  );
-  const modules = await bundleLibraries({
-    loaded,
-    urls: libraries,
-    markdowns,
-    fetchText,
-    warnings
-  });
-  const extensions2 = await bundleExtensions({ loaded, fetchText, warnings });
-  const themeCss = await readThemeCss(loaded, warnings);
-  const includesOf = (path) => Object.fromEntries(
-    Object.entries(includeKeys.get(path) ?? {}).map(([key, file]) => [
-      key,
-      includeTexts[file] ?? ""
-    ])
-  );
-  const used = {
-    markdowns,
-    includes: docs.map((doc) => includesOf(doc.path)),
-    config: loaded.config
-  };
-  const syntax = await bundleSyntax({
-    languages: usedSyntaxLanguages(used),
-    url: resolved.syntax.url,
-    loaded,
-    warnings,
-    fetchText
-  });
-  const mermaid = await bundleMermaid({
-    loaded,
-    used: usesMermaid(used),
-    fetchText,
-    warnings
-  });
-  const aliasResult = await loadAliases(loaded);
-  warnings.push(...aliasResult.issues.map(formatCheckIssue));
-  warnings.push(...colorThemeWarnings(loaded));
-  const refs = await prepareReferences({ ...options, markdowns: originals });
-  const shown = {
-    kind,
-    config: payloadConfig(loaded.config, Object.keys(libraries)),
-    index: refs.index,
-    references: refs.references,
-    docs: docs.map((doc) => {
-      const markdown = inlined.get(doc.path) ?? "";
-      return {
-        path: doc.path,
-        title: documentTitle({
-          path: doc.path,
-          markdown,
-          indexTitle: refs.titleOf(doc.path),
-          frontmatterTitle: readFrontmatterMetadata(
-            readFrontmatterValues({ [doc.path]: markdown })[doc.path]
-          ).title
-        }),
-        markdown,
-        docId: refs.docIdOf(doc.path),
-        ...whenFilled("includes", includeKeys.get(doc.path))
-      };
-    }),
-    ...whenFilled("includes", includeTexts),
-    ...whenFilled("icons", iconResult.icons),
-    entry,
-    ...aliasResult.aliases ? { aliases: aliasResult.aliases } : {},
-    ...assets ? {
-      assets: Object.fromEntries(
-        [...assets.values()].map((asset) => [asset.key, asset.url])
-      )
-    } : {}
-  };
-  const hider = await markdownHider(options);
-  const hideText = hider ?? ((markdown) => markdown);
-  const payload = hider ? hidePayloadText(shown, hider) : shown;
-  const compiled = await compileHtmlScripts({
-    documents: [...originals.entries()].map(([path, markdown]) => ({
-      path,
-      markdown: hideText(markdown)
-    })),
-    config: loaded.config
-  });
-  warnings.push(...compiled.warnings);
-  const embeds = {
-    libraries: modules,
-    extensions: extensions2,
-    ...syntax ? { syntax } : {},
-    ...mermaid ? { mermaid } : {},
-    view: usedParts({ markdowns }),
-    map: usesMap({ markdowns, config: loaded.config }),
-    ...compiled.scripts.length > 0 ? { htmlScripts: compiled.scripts } : {}
-  };
-  return { payload, embeds, themeCss, warnings };
-}
-function dynamicImportWarning(configName, what) {
-  return `${configName}: ${what} \u306F\u307E\u3068\u3081\u305F\u5F8C\u3082\u52D5\u7684 import() \u304C\u6B8B\u308A\u3001blob: \u3068\u52D5\u7684 import \u3092\u8A31\u3055\u306A\u3044\u74B0\u5883\u3067\u306F\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u8AAD\u307F\u8FBC\u3080\u5148\u3092\u30EA\u30C6\u30E9\u30EB\u306E\u6587\u5B57\u5217\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
-}
-async function readDistAssets(options) {
-  const { distDir, kind } = options;
-  let distCss;
-  const viewer = resolve11(distDir, "viewer.js");
-  const view = resolve11(distDir, "view.js");
-  const map = resolve11(distDir, "map.js");
-  try {
-    distCss = await readFile9(join7(distDir, "index.css"), "utf8");
-    await stat4(viewer);
-    await stat4(view);
-  } catch (error2) {
-    throw new CliError(
-      `\u914D\u5E03\u7269\u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002mdmark \u3092\u3082\u3046\u4E00\u5EA6\u5165\u308C\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  if (kind === "bundle") {
-    try {
-      distCss += `
-${await readFile9(join7(distDir, "viewer.css"), "utf8")}`;
-    } catch (error2) {
-      if (!(error2 instanceof Error && "code" in error2 && error2.code === "ENOENT")) {
-        throw error2;
-      }
-    }
-  }
-  return { distCss, viewer, view, map };
-}
-async function writeHtml(options) {
-  const { file, display, html } = options;
-  try {
-    await mkdir2(dirname9(file), { recursive: true });
-    await writeFile(file, html);
-  } catch (error2) {
-    throw new CliError(
-      `\u66F8\u304D\u8FBC\u3081\u306A\u3044: ${display} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002\u51FA\u529B\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-}
-async function exportDocument(options) {
-  const { cwd } = options;
-  const loaded = await requireConfig(cwd, options.config);
-  const docFile = resolve11(cwd, options.file);
-  try {
-    await readFile9(docFile);
-  } catch {
-    throw new CliError(
-      `\u6587\u66F8\u304C\u7121\u3044: ${options.file} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    );
-  }
-  const path = normalizePath(toPosix4(relative8(loaded.dir, docFile)));
-  const outFile = options.out ? resolve11(cwd, options.out) : join7(dirname9(docFile), `${basename7(docFile, extname5(docFile))}.html`);
-  const display = options.out ?? toPosix4(relative8(cwd, outFile));
-  const fetchText = cacheFetchText();
-  const hide2 = options.keepTraces !== true;
-  const { payload, embeds, themeCss, warnings } = await prepareEmbeds({
-    loaded,
-    docs: [{ path, file: docFile }],
-    kind: "document",
-    entry: path,
-    out: outFile,
-    fetchText,
-    hideTraces: hide2
-  });
-  const { distCss, viewer, view, map } = await readDistAssets({
-    distDir: options.distDir,
-    kind: "document"
-  });
-  const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, map, embeds, hideTraces: hide2 }),
-    baseDir: loaded.dir,
-    fetchText,
-    ...hide2 ? {
-      hideTraces: {
-        keys: (embeds.htmlScripts ?? []).map(({ source }) => source)
-      }
-    } : {}
-  });
-  await writeHtml({
-    file: outFile,
-    display,
-    html: assembleHtml({
-      payload,
-      distCss,
-      themeCss,
-      script,
-      hideTraces: hide2
-    })
-  });
-  return { out: outFile, display, warnings };
-}
-async function runExport(options, io) {
-  const { display, warnings } = await exportDocument({
-    cwd: io.cwd,
-    ...options
-  });
-  for (const warning of warnings) {
-    io.stderr(`\u8B66\u544A: ${warning}`);
-  }
-  io.stdout(`\u66F8\u304D\u51FA\u3057\u305F: ${display}`);
-  return 0;
-}
-
-// src/cli/build.ts
-function chooseEntry(options) {
-  const { build: build6, first, included, warnings } = options;
-  if (build6.entry === void 0) {
-    return first;
-  }
-  const wanted = normalizePath(build6.entry);
-  if (included.has(wanted)) {
-    return wanted;
-  }
-  warnings.push(
-    `${build6.entry}: build.entry \u304C\u307E\u3068\u3081\u308B\u6587\u66F8\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B\u6587\u66F8\u306E\u6700\u521D\u306E 1 \u3064\uFF08${first}\uFF09\u3092\u958B\u304D\u307E\u3059\u3002`
-  );
-  return first;
-}
-function glossaryWarnings(build6, included) {
-  return (build6.glossary ?? []).filter((glossary) => !included.has(normalizePath(glossary))).map(
-    (glossary) => `${glossary}: build.glossary \u304C\u307E\u3068\u3081\u308B\u6587\u66F8\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u7528\u8A9E\u96C6\u306E\u8868\u3092\u98DB\u3070\u3057\u307E\u3059\u3002`
-  );
-}
-function outsideLinkWarnings(docs, included) {
-  return docs.flatMap(
-    (doc) => findOutsideLinks(doc.markdown, doc.path, included).map(
-      (href) => `${doc.path}: \`${href}\` \u3078\u306E\u30EA\u30F3\u30AF\u306F\u307E\u3068\u3081\u305F HTML \u306B\u542B\u307E\u308C\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u305F\u307E\u307E\u306E\u30EA\u30F3\u30AF\u3067\u6B8B\u3057\u307E\u3059\u3002\u307E\u3068\u3081\u308B\u306A\u3089 \`build.include\` \u306B\u8FFD\u52A0\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
-    )
-  );
-}
-async function requireBuild(loaded) {
-  const build6 = loaded.config.build;
-  if (!build6) {
-    throw new CliError(
-      "build \u304C\u7121\u3044: \u8A2D\u5B9A\u306B build \u304C\u3042\u308A\u307E\u305B\u3093\u3002build.include \u3068 build.out \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  }
-  const paths = await collectBuildDocuments(loaded.dir, build6);
-  const first = paths[0];
-  if (first === void 0) {
-    throw new CliError(
-      "0 \u4EF6: build.include \u306B\u8A72\u5F53\u3059\u308B\u6587\u66F8\u304C\u3042\u308A\u307E\u305B\u3093\u3002build.include \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  }
-  return { build: build6, paths, first };
-}
-async function buildSite(options) {
-  const loaded = await requireConfig(options.cwd, options.config);
-  const hide2 = options.keepTraces !== true;
-  const { build: build6, paths, first } = await requireBuild(loaded);
-  const included = new Set(paths);
-  const warnings = [];
-  const entry = chooseEntry({ build: build6, first, included, warnings });
-  warnings.push(...glossaryWarnings(build6, included));
-  const out = resolve12(loaded.dir, build6.out);
-  const fetchText = cacheFetchText();
-  const {
-    payload,
-    embeds,
-    themeCss,
-    warnings: embedWarnings
-  } = await prepareEmbeds({
-    loaded,
-    docs: paths.map((path) => ({ path, file: join8(loaded.dir, path) })),
-    kind: "bundle",
-    entry,
-    out,
-    fetchText,
-    hideTraces: hide2
-  });
-  warnings.unshift(...embedWarnings);
-  warnings.push(...outsideLinkWarnings(payload.docs, included));
-  const { distCss, viewer, view, map } = await readDistAssets({
-    distDir: options.distDir,
-    kind: "bundle"
-  });
-  const script = await bundleViewer({
-    entry: createViewerEntry({ viewer, view, map, embeds, hideTraces: hide2 }),
-    baseDir: loaded.dir,
-    fetchText,
-    ...hide2 ? { hideTraces: { keys: htmlScriptKeys(embeds) } } : {}
-  });
-  await writeHtml({
-    file: out,
-    display: build6.out,
-    html: assembleHtml({
-      payload,
-      distCss,
-      themeCss,
-      script,
-      hideTraces: hide2
-    })
-  });
-  return { out, display: build6.out, docs: paths.length, warnings };
-}
-function htmlScriptKeys(embeds) {
-  return (embeds.htmlScripts ?? []).map(({ source }) => source);
-}
-async function runBuild(options, io) {
-  const { display, docs, warnings } = await buildSite({
-    cwd: io.cwd,
-    ...options
-  });
-  for (const warning of warnings) {
-    io.stderr(`\u8B66\u544A: ${warning}`);
-  }
-  io.stdout(`\u66F8\u304D\u51FA\u3057\u305F: ${display}\uFF08\u6587\u66F8 ${docs} \u4EF6\uFF09`);
-  return 0;
-}
-
-// src/cli/export-markdown.ts
-import { mkdir as mkdir3, readFile as readFile11, rm, stat as stat5, writeFile as writeFile2 } from "node:fs/promises";
-import { basename as basename8, dirname as dirname10, join as join9, relative as relative10, resolve as resolve14, sep as sep9 } from "node:path";
-import { build as build5 } from "esbuild";
-
-// src/markdown/pure-blocks.logic.ts
-var FIGURE_MARKS = {
-  chart: "diagrams",
-  param: "diagrams",
-  html: "html"
-};
-var EMPTY_MARKS = /* @__PURE__ */ new Set([
-  "features",
-  "page",
-  "map-data",
-  "fig",
-  "pagebreak"
-]);
-var TOC_LEVELS = { min: 2, max: 3 };
-var CODE_NOTATION_PATTERN = /\s*(?:\/\/|#|--|;|<!--|\/\*)?\s*\[!code(?:\s[^\]]*)?\](?:\s*(?:-->|\*\/))?\s*$/;
-var FENCE_OPEN_PATTERN = /^(\s*)(`{3,}|~{3,})(.*)$/;
-var parser3;
-function parse6(markdown) {
-  parser3 ??= new MarkdownItCallable({ html: true });
-  return parser3.parse(markdown, {});
-}
-function topRanges(tokens) {
-  return tokens.filter((token) => token.level === 0 && token.nesting !== -1 && token.map).map((token) => {
-    const [start = 0, end = 0] = token.map ?? [];
-    return { token, start, end };
-  });
-}
-function leadingMark(range) {
-  if (range?.token.type !== "html_block") {
-    return void 0;
-  }
-  const content = range.token.content.trim();
-  const match = new RegExp(MARK_PATTERN.source, "s").exec(content);
-  if (match?.index !== 0) {
-    return void 0;
-  }
-  return {
-    name: match[2] ?? "",
-    closing: match[1] === "/",
-    args: match[3] ?? ""
-  };
-}
-function closingIndex(ranges, from, name) {
-  let depth = 0;
-  for (let index = from; index < ranges.length; index++) {
-    const mark = leadingMark(ranges[index]);
-    if (mark?.name !== name) {
-      continue;
-    }
-    depth += mark.closing ? -1 : 1;
-    if (depth === 0) {
-      return index;
-    }
-  }
-  return -1;
-}
-function optionsOf(args) {
-  const read = readMarkArgs(args);
-  return read.kind === "json" ? read.options : {};
-}
-function definitionOf(ranges) {
-  const fence2 = ranges.find(
-    ({ token }) => token.type === "fence" && token.info.trim() === "json"
-  );
-  if (!fence2) {
-    return void 0;
-  }
-  try {
-    return JSON.parse(fence2.token.content);
-  } catch {
-    return void 0;
-  }
-}
-function classify(name, features) {
-  const figure = FIGURE_MARKS[name];
-  if (figure !== void 0) {
-    return features[figure] === false ? { kind: "mark", off: true } : { kind: "figure", off: false };
-  }
-  const syntax = SYNTAX_MARKS[name];
-  if (syntax !== void 0) {
-    return { kind: "mark", off: features[syntax] === false };
-  }
-  if (!RESERVED_DIRECTIVES.has(name) && extensionFor(name)) {
-    return { kind: "extension", off: false };
-  }
-  return { kind: "mark", off: false };
-}
-function markBlock(options) {
-  const { ranges, index, lines, features } = options;
-  const first = ranges[index];
-  const head = leadingMark(first) ?? { name: "", closing: true, args: "" };
-  let last = head.closing ? index : closingIndex(ranges, index, head.name);
-  if (last < 0) {
-    last = head.name === "code" && ranges[index + 1]?.token.type === "fence" ? index + 1 : index;
-  }
-  const end = ranges[last]?.end ?? first.end;
-  const { kind, off } = classify(head.name, features);
-  const definition = definitionOf(ranges.slice(index + 1, last));
-  return {
-    block: {
-      kind,
-      lines: lines.slice(first.start, end),
-      line: first.start + 1,
-      mark: {
-        name: head.name,
-        options: optionsOf(head.args),
-        ...definition === void 0 ? {} : { definition }
-      },
-      off
-    },
-    next: last + 1
-  };
-}
-function plainKind(range) {
-  const { type } = range.token;
-  if (type === "html_block") {
-    return "html";
-  }
-  return type === "fence" || type === "code_block" ? "fence" : "text";
-}
-function splitPureBlocks(options) {
-  const { markdown, features } = options;
-  const lines = markdown.split("\n");
-  const ranges = topRanges(parse6(markdown));
-  const blocks = [];
-  let index = 0;
-  while (index < ranges.length) {
-    const range = ranges[index];
-    if (leadingMark(range)) {
-      const { block: block2, next } = markBlock({ ranges, index, lines, features });
-      blocks.push(block2);
-      index = next;
-      continue;
-    }
-    const kind = plainKind(range);
-    const previous = blocks[blocks.length - 1];
-    if (kind === "text" && previous?.kind === "text") {
-      previous.lines = lines.slice(previous.line - 1, range.end);
-    } else {
-      blocks.push({
-        kind,
-        lines: lines.slice(range.start, range.end),
-        line: range.start + 1,
-        off: false
-      });
-    }
-    index += 1;
-  }
-  return blocks;
-}
-function dropMarkerLines(lines) {
-  const dropped = /* @__PURE__ */ new Set();
-  for (const { token, start, end } of topRanges(parse6(lines.join("\n")))) {
-    const onlyMarks = token.type === "html_block" && token.content.replace(MARK_PATTERN, "").trim() === "";
-    for (let line = start; onlyMarks && line < end; line++) {
-      dropped.add(line);
-    }
-  }
-  return lines.filter((_, index) => !dropped.has(index));
-}
-function convertFence(lines) {
-  const [open2 = "", ...rest2] = lines;
-  const match = FENCE_OPEN_PATTERN.exec(open2);
-  if (!match) {
-    return lines;
-  }
-  const [, indent = "", fence2 = "", info = ""] = match;
-  const language = info.trim().split(/\s+/)[0] ?? "";
-  const head = `${indent}${fence2}${language === "tree" ? "" : language}`;
-  return [head, ...rest2.map((line) => line.replace(CODE_NOTATION_PATTERN, ""))];
-}
-function convertFences(lines) {
-  const ranges = topRanges(parse6(lines.join("\n")));
-  const converted = [...lines];
-  for (const { token, start, end } of ranges) {
-    if (token.type === "fence") {
-      converted.splice(
-        start,
-        end - start,
-        ...convertFence(lines.slice(start, end))
-      );
-    }
-  }
-  return converted;
-}
-function mermaidOnly(lines) {
-  return topRanges(parse6(lines.join("\n"))).filter(
-    ({ token }) => token.type === "fence" && token.info.trim().split(/\s+/)[0] === "mermaid"
-  ).flatMap(({ start, end }) => ["", ...lines.slice(start, end)]).slice(1);
-}
-function convertMark(block2, headings) {
-  const { name, options } = block2.mark;
-  if (EMPTY_MARKS.has(name)) {
-    return [];
-  }
-  if (name === "toc") {
-    return tocList(headings);
-  }
-  if (name === "map") {
-    return mermaidOnly(block2.lines);
-  }
-  const inner = dropMarkerLines(block2.lines);
-  if (name !== "code") {
-    return inner;
-  }
-  const title = typeof options.title === "string" ? options.title : "";
-  const fences = convertFences(inner);
-  return title === "" ? fences : [`**${title}**`, "", ...fences];
-}
-function convertPureBlock(options) {
-  const { block: block2, headings } = options;
-  switch (block2.kind) {
-    case "text":
-      return block2.lines;
-    case "fence":
-      return convertFence(block2.lines);
-    case "html":
-      return [];
-    case "mark":
-      if (block2.mark === void 0 || block2.off) {
-        return dropMarkerLines(block2.lines);
-      }
-      return convertMark({ ...block2, mark: block2.mark }, headings);
-    case "figure":
-    case "extension":
-      return [];
-    default: {
-      const never2 = block2.kind;
-      return never2;
-    }
-  }
-}
-function tocList(headings) {
-  const used = /* @__PURE__ */ new Map();
-  const lines = [];
-  for (const { level, text: text2 } of headings) {
-    const anchor2 = slugify2(text2, used);
-    if (level < TOC_LEVELS.min || level > TOC_LEVELS.max) {
-      continue;
-    }
-    const indent = "  ".repeat(level - TOC_LEVELS.min);
-    lines.push(`${indent}- [${text2}](#${anchor2})`);
-  }
-  return lines;
-}
-
-// src/markdown/pure-inline.logic.ts
-var CODE_SPAN_PATTERN = /(`+)([\s\S]*?[^`])\1(?!`)/g;
-var COMMENT_PATTERN2 = /<!--[\s\S]*?-->/g;
-var PAIRED_TAG_PATTERN = /<([a-zA-Z][a-zA-Z0-9-]*)(?:\s[^>]*)?>[\s\S]*?<\/\1\s*>/g;
-var SINGLE_TAG_PATTERN = /<\/?[a-zA-Z][a-zA-Z0-9-]*(?:[\s/][^>]*)?>/g;
-var ANNOTATION_DEFINITION_PATTERN = /^(\s*)※\[([^\]\s]+)\]:/;
-var ANNOTATION_REF_PATTERN = /※\[([^\]\s]+)\]/g;
-var INLINE_FOOTNOTE_PATTERN = /\^\[([^\]]*)\]/g;
-var IMAGE_ATTRIBUTE_PATTERN = /(!\[[^\]]*\]\([^)]*\))\{[^{}]*\}/g;
-var TEXT_COLOR_PATTERN = /\[([^\]]*)\]\{color=[^}]*\}/g;
-var HIGHLIGHT_PATTERN = /==([^=]+)==(?:\{color=[^}]*\})?/g;
-var FIGURE_LINK_PATTERN = /\[[^\]]*\]\(#(fig-[^)\s]+)\)/g;
-var CALLOUT_TITLE_PATTERN = /^(\s*>\s*)\[!([A-Za-z]+)\][-+]?\s+(\S.*)$/;
-var CODE_PREFIXES = {
-  "badge:": "badge",
-  "kbd:": "kbd",
-  "icon:": "icon"
-};
-function featureOn2(features, name) {
-  return features[name] !== false;
-}
-function convertCode2(ticks, content, features) {
-  for (const [prefix, feature] of Object.entries(CODE_PREFIXES)) {
-    const escaped = `${prefix.slice(0, -1)}\\:`;
-    if (content.startsWith(escaped) && featureOn2(features, feature)) {
-      return `${ticks}${prefix}${content.slice(escaped.length)}${ticks}`;
-    }
-    if (!content.startsWith(prefix) || !featureOn2(features, feature)) {
-      continue;
-    }
-    const rest2 = content.slice(prefix.length);
-    if (feature === "icon") {
-      return "";
-    }
-    const label = feature === "badge" ? splitBadgeColor(rest2).label : rest2;
-    return `${ticks}${label}${ticks}`;
-  }
-  return `${ticks}${content}${ticks}`;
-}
-function convertText(options) {
-  const { numbers, features, lineHead } = options;
-  let text2 = options.text.replace(COMMENT_PATTERN2, "").replace(PAIRED_TAG_PATTERN, "").replace(SINGLE_TAG_PATTERN, "");
-  if (featureOn2(features, "annotations")) {
-    if (lineHead) {
-      text2 = text2.replace(ANNOTATION_DEFINITION_PATTERN, "$1[^note-$2]:");
-    }
-    text2 = text2.replace(ANNOTATION_REF_PATTERN, "[^note-$1]");
-  }
-  if (featureOn2(features, "footnotes")) {
-    text2 = text2.replace(INLINE_FOOTNOTE_PATTERN, "\uFF08$1\uFF09");
-  }
-  if (featureOn2(features, "images")) {
-    text2 = text2.replace(IMAGE_ATTRIBUTE_PATTERN, "$1");
-  }
-  if (featureOn2(features, "text-color")) {
-    text2 = text2.replace(TEXT_COLOR_PATTERN, "$1");
-  }
-  if (featureOn2(features, "highlight")) {
-    text2 = text2.replace(HIGHLIGHT_PATTERN, "$1");
-  }
-  return text2.replace(FIGURE_LINK_PATTERN, (whole, id) => {
-    const label = numbers.get(id);
-    return label === void 0 ? whole : `[${label}](#${id})`;
-  });
-}
-function convertPureInline(options) {
-  const { line, numbers, features } = options;
-  let converted = "";
-  let last = 0;
-  for (const match of line.matchAll(CODE_SPAN_PATTERN)) {
-    const at = match.index;
-    converted += convertText({
-      text: line.slice(last, at),
-      numbers,
-      features,
-      lineHead: last === 0
-    });
-    converted += convertCode2(match[1] ?? "", match[2] ?? "", features);
-    last = at + match[0].length;
-  }
-  converted += convertText({
-    text: line.slice(last),
-    numbers,
-    features,
-    lineHead: last === 0
-  });
-  const callout = featureOn2(features, "callout") ? CALLOUT_TITLE_PATTERN.exec(converted) : null;
-  if (callout) {
-    const [, quote = "> ", kind = "NOTE", title = ""] = callout;
-    return `${quote}[!${kind}]
-${quote.trimEnd()} **${title}**`;
-  }
-  return converted;
-}
-
-// src/markdown/pure-markdown.ts
-var SCRIPT_LANGUAGES = /* @__PURE__ */ new Set(["ts", "js", "typescript", "javascript"]);
-var parser4;
-function parse7(markdown) {
-  parser4 ??= new MarkdownItCallable({ html: true });
-  return parser4.parse(markdown, {});
-}
-function warn(context, line, message) {
-  const file = context.chain[context.chain.length - 1];
-  const where = file === void 0 ? "" : `${file} \u306E `;
-  context.warnings.push(`${where}${line} \u884C\u76EE: ${message}`);
-}
-function featuresOf(markdown, config3) {
-  const features = { ...resolveConfig({ config: config3 }).features };
-  for (const mark of findMarkTexts(markdown)) {
-    const read = mark.name === "features" ? readMarkArgs(mark.args) : void 0;
-    if (read?.kind !== "json") {
-      continue;
-    }
-    for (const [name, value] of Object.entries(read.options)) {
-      if (typeof value === "boolean" && Object.hasOwn(features, name)) {
-        features[name] = value;
-      }
-    }
-  }
-  return features;
-}
-function headingsOf(markdown, features) {
-  const tokens = parse7(markdown);
-  return tokens.flatMap((token, index) => {
-    const inline2 = tokens[index + 1];
-    if (token.type !== "heading_open" || inline2?.type !== "inline") {
-      return [];
-    }
-    const text2 = convertPureInline({
-      line: inline2.content,
-      numbers: /* @__PURE__ */ new Map(),
-      features
-    }).trim();
-    return [{ level: Number(token.tag.slice(1)), text: text2 }];
-  });
-}
-function figIdOf(block2) {
-  const id = block2.mark?.options.id;
-  const fig = block2.kind === "mark" && !block2.off && block2.mark?.name === "fig";
-  return fig && typeof id === "string" && id !== "" ? id : void 0;
-}
-function numbersOf(blocks) {
-  const numbers = /* @__PURE__ */ new Map();
-  const counts = { \u56F3: 0, \u8868: 0 };
-  blocks.forEach((block2, index) => {
-    const id = figIdOf(block2);
-    if (id === void 0) {
-      return;
-    }
-    const next = blocks[index + 1];
-    const kind = next?.kind === "text" && next.lines[0]?.trimStart().startsWith("|") ? "\u8868" : "\u56F3";
-    counts[kind] += 1;
-    if (!numbers.has(`fig-${id}`)) {
-      numbers.set(`fig-${id}`, `${kind} ${counts[kind]}`);
-    }
-  });
-  return numbers;
-}
-function convertLines(lines, context) {
-  let fence2;
-  return lines.map((line) => {
-    const marker = /^\s*(`{3,}|~{3,})/.exec(line)?.[1];
-    if (marker !== void 0) {
-      if (fence2 === void 0) {
-        fence2 = marker;
-      } else if (marker.startsWith(fence2)) {
-        fence2 = void 0;
-      }
-      return line;
-    }
-    if (fence2 !== void 0) {
-      return line;
-    }
-    return convertPureInline({
-      line,
-      numbers: context.numbers,
-      features: context.features
-    });
-  });
-}
-function withoutScripts(lines) {
-  const dropped = /* @__PURE__ */ new Set();
-  for (const token of parse7(lines.join("\n"))) {
-    const language = token.info.trim().split(/\s+/)[0] ?? "";
-    if (token.type !== "fence" || !SCRIPT_LANGUAGES.has(language)) {
-      continue;
-    }
-    const [start = 0, end = 0] = token.map ?? [];
-    for (let line = start; line < end; line++) {
-      dropped.add(line);
-    }
-  }
-  return {
-    lines: lines.filter((_, index) => !dropped.has(index)),
-    removed: dropped.size > 0
-  };
-}
-function textOf2(value, key) {
-  const field = value?.[key];
-  return typeof field === "string" ? field : void 0;
-}
-function namesOf(value, key) {
-  const items = value?.[key];
-  if (!Array.isArray(items)) {
-    return [];
-  }
-  return items.flatMap((item) => {
-    const name = textOf2(item, "name");
-    return name === void 0 ? [] : [name];
-  });
-}
-function paramLegendOf(definition) {
-  const param = definition;
-  const value = param?.knob?.value;
-  if (typeof value !== "number" || typeof param?.table !== "object") {
-    return [];
-  }
-  const { series = [] } = paramChart(
-    definition,
-    value
-  );
-  return series.map((item) => item.name);
-}
-function legendOf(kind, definition) {
-  if (kind === "chart") {
-    const series = namesOf(definition, "series");
-    return series.length > 0 ? series : namesOf(definition, "items");
-  }
-  if (kind === "param") {
-    return paramLegendOf(definition);
-  }
-  return [];
-}
-function figureOf(options) {
-  const { block: block2, index, config: config3 } = options;
-  if (block2.mark === void 0) {
-    throw new TypeError("figureOf: \u56F3\u306E\u7BC4\u56F2\u306E\u30D6\u30ED\u30C3\u30AF\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002");
-  }
-  const kind = block2.mark.name;
-  const warnings = [];
-  let lines = block2.lines;
-  if (kind === "html") {
-    const stripped = withoutScripts(lines);
-    lines = stripped.lines;
-    if (stripped.removed) {
-      warnings.push(
-        `${block2.line} \u884C\u76EE: \u57CB\u3081\u8FBC\u3093\u3060 HTML \u306E\u7BC4\u56F2\u306E\u30B9\u30AF\u30EA\u30D7\u30C8\uFF08ts\u30FBjs \u306E\u30B3\u30FC\u30C9\u30D6\u30ED\u30C3\u30AF\uFF09\u3092\u9664\u3044\u3066\u66F8\u304D\u51FA\u3057\u307E\u3057\u305F`
-      );
-    }
-  }
-  const html = render2(lines.join("\n"), config3 === void 0 ? {} : { config: config3 });
-  const definition = block2.mark.definition;
-  return {
-    figure: {
-      kind,
-      index,
-      html,
-      title: kind === "html" ? void 0 : textOf2(definition, "title"),
-      legend: legendOf(kind, definition)
-    },
-    warnings
-  };
-}
-async function convertFigure(block2, context) {
-  context.figures += 1;
-  const { figure, warnings } = figureOf({
-    block: block2,
-    index: context.figures,
-    config: context.opts.config
-  });
-  for (const warning of warnings) {
-    warn(context, block2.line, warning.replace(/^\d+ 行目: /, ""));
-  }
-  const converted = await context.opts.figure?.(figure);
-  return typeof converted === "string" ? [converted] : [];
-}
-async function convertExtension(block2, context) {
-  const { name: directive, options, definition } = block2.mark;
-  const extension = extensionFor(directive);
-  const name = extension?.name ?? directive;
-  if (extension?.toMarkdown === void 0) {
-    warn(
-      context,
-      block2.line,
-      `\u62E1\u5F35\u300C${name}\u300D\u306E ${directive} \u306E\u30DE\u30FC\u30AB\u30FC\u306F\u3001\u66F8\u304D\u51FA\u3057\u306E\u30D5\u30C3\u30AF\uFF08toMarkdown\uFF09\u304C\u7121\u3044\u305F\u3081\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
-    );
-    return [];
-  }
-  try {
-    const converted = await extension.toMarkdown({
-      options,
-      ...definition === void 0 ? {} : { definition }
-    });
-    if (typeof converted === "string") {
-      return [converted];
-    }
-    warn(
-      context,
-      block2.line,
-      `\u62E1\u5F35\u300C${name}\u300D\u306E toMarkdown \u304C\u6587\u5B57\u5217\u3092\u8FD4\u5374\u3057\u306A\u304B\u3063\u305F\u305F\u3081\u3001${directive} \u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
-    );
-  } catch (error2) {
-    const reason = error2 instanceof Error ? error2.message : String(error2);
-    warn(
-      context,
-      block2.line,
-      `\u62E1\u5F35\u300C${name}\u300D\u306E toMarkdown \u304C\u5931\u6557\u3057\u305F\u305F\u3081\u3001${directive} \u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u307E\u3057\u305F\uFF08${reason}\uFF09`
-    );
-  }
-  return [];
-}
-function headingSection(text2, id) {
-  const tokens = parse7(text2);
-  const lines = text2.split("\n");
-  const headings = tokens.flatMap(
-    (token, index) => token.type === "heading_open" && token.map ? [
-      {
-        level: Number(token.tag.slice(1)),
-        start: token.map[0],
-        id: slugBase(tokens[index + 1]?.content ?? "")
-      }
-    ] : []
-  );
-  const position = headings.findIndex((heading2) => heading2.id === id);
-  const found = headings[position];
-  if (found === void 0) {
-    return void 0;
-  }
-  const next = headings.slice(position + 1).find((heading2) => heading2.level <= found.level);
-  return lines.slice(found.start, next?.start ?? lines.length).join("\n");
-}
-function includedFileLines(file) {
-  const { key, text: text2, target } = file;
-  const selected = target.kind === "lines" ? selectLines(text2, target.from, target.to) : { text: text2 };
-  if (!("text" in selected)) {
-    return void 0;
-  }
-  const language = /\.([^./]+)$/.exec(key)?.[1] ?? "";
-  return [
-    `\`\`\`${language}`,
-    ...selected.text.replace(/\n$/, "").split("\n"),
-    "```"
-  ];
-}
-async function convertInclude2(block2, context) {
-  const written = writtenOf(block2.mark.options);
-  const { key, target } = resolveIncludePath(
-    context.chain[context.chain.length - 1] ?? "",
-    written
-  );
-  const text2 = context.opts.includes?.[key];
-  if (text2 === void 0 || context.chain.includes(key)) {
-    warn(
-      context,
-      block2.line,
-      `\u53D6\u308A\u8FBC\u307F\u5148 ${written} \u3092\u53D6\u308A\u8FBC\u3081\u306A\u3044\u305F\u3081\u3001\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
-    );
-    return [];
-  }
-  if (!isMarkdownPath(key)) {
-    const lines = includedFileLines({ key, text: text2, target });
-    if (lines === void 0) {
-      warn(
-        context,
-        block2.line,
-        `\u53D6\u308A\u8FBC\u307F\u5148 ${written} \u306E\u884C\u306E\u7BC4\u56F2\u304C\u7121\u3044\u305F\u3081\u3001\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
-      );
-    }
-    return lines ?? [];
-  }
-  const section = target.kind === "heading" ? headingSection(text2, target.id) : text2;
-  if (section === void 0) {
-    warn(
-      context,
-      block2.line,
-      `\u53D6\u308A\u8FBC\u307F\u5148 ${written} \u306E\u898B\u51FA\u3057\u304C\u7121\u3044\u305F\u3081\u3001\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`
-    );
-    return [];
-  }
-  const included = { ...context, chain: [...context.chain, key] };
-  const converted = await convertDocument(
-    splitFrontmatter(section).body,
-    included
-  );
-  context.figures = included.figures;
-  return [converted];
-}
-async function convertMarkBlock(block2, context) {
-  const { name, options } = block2.mark;
-  if (block2.off) {
-    return convertLines(convertPureBlock({ block: block2, headings: [] }), context);
-  }
-  if (name === "include") {
-    return convertInclude2(block2, context);
-  }
-  if (name === "fig") {
-    const id = typeof options.id === "string" ? `fig-${options.id}` : "";
-    const label = context.numbers.get(id);
-    return label === void 0 ? [] : [`**${label}**`];
-  }
-  const lines = convertPureBlock({ block: block2, headings: context.headings });
-  if (name === "toc" || name === "map") {
-    return lines;
-  }
-  return [await convertDocument(lines.join("\n"), context)];
-}
-async function convertBlock(block2, context) {
-  const { mark } = block2;
-  if (block2.kind === "text") {
-    return convertLines(block2.lines, context);
-  }
-  if (mark === void 0) {
-    return convertPureBlock({ block: block2, headings: context.headings });
-  }
-  const marked = { ...block2, mark };
-  if (block2.kind === "figure") {
-    return convertFigure(marked, context);
-  }
-  if (block2.kind === "extension") {
-    return convertExtension(marked, context);
-  }
-  return convertMarkBlock(marked, context);
-}
-function trimBlankLines(text2) {
-  return text2.replace(/^(?:[ \t]*\n)+/, "").replace(/(?:\n[ \t]*)+$/, "");
-}
-async function convertDocument(markdown, context) {
-  const parts = [];
-  for (const block2 of splitPureBlocks({
-    markdown,
-    features: context.features
-  })) {
-    const text2 = trimBlankLines(
-      (await convertBlock(block2, context)).join("\n")
-    );
-    if (text2.trim() !== "") {
-      parts.push(text2);
-    }
-  }
-  return parts.join("\n\n");
-}
-async function toPureMarkdown(markdown, opts = {}) {
-  if (typeof markdown !== "string") {
-    throw new TypeError(
-      "toPureMarkdown: markdown \u306F\u6587\u5B57\u5217\u3067\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  }
-  if (opts.figure !== void 0 && typeof opts.figure !== "function") {
-    throw new TypeError(
-      "toPureMarkdown: opts.figure \u306F\u95A2\u6570\u3067\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
-    );
-  }
-  const { body, content } = splitFrontmatter(markdown);
-  const features = featuresOf(body, opts.config);
-  const context = {
-    opts,
-    features,
-    numbers: numbersOf(splitPureBlocks({ markdown: body, features })),
-    headings: headingsOf(body, features),
-    warnings: [],
-    figures: 0,
-    chain: []
-  };
-  const converted = await convertDocument(body, context);
-  const front = content === void 0 ? "" : `---
-${content}
----
-
-`;
-  return {
-    markdown: `${front}${converted}
-`,
-    warnings: context.warnings
-  };
-}
-
 // src/cli/figure-svg.ts
 init_dist4();
 init_dist3();
 init_dist6();
-import { readFile as readFile10 } from "node:fs/promises";
-import { extname as extname6, relative as relative9, resolve as resolve13 } from "node:path";
+import { readFile as readFile9 } from "node:fs/promises";
+import { extname as extname5, relative as relative8, resolve as resolve11 } from "node:path";
 
 // node_modules/postcss/lib/postcss.mjs
 var import_postcss = __toESM(require_postcss(), 1);
@@ -92184,14 +91729,14 @@ async function embedImage(img, baseDir) {
   if (src.startsWith("data:")) {
     return [];
   }
-  const file = resolve13(baseDir, decodeURI(src));
-  const type = IMAGE_TYPES[extname6(file).toLowerCase()];
-  const inside = !relative9(baseDir, file).startsWith("..");
+  const file = resolve11(baseDir, decodeURI(src));
+  const type = IMAGE_TYPES[extname5(file).toLowerCase()];
+  const inside = !relative8(baseDir, file).startsWith("..");
   if (/^[a-z][a-z0-9+.-]*:/i.test(src) || !inside || type === void 0) {
     removeNode(img);
     return [`\u5916\u90E8\u306E\u753B\u50CF ${src} \u306F\u66F8\u304D\u51FA\u305B\u306A\u3044\u305F\u3081\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`];
   }
-  const buffer = await readFile10(file).catch(() => void 0);
+  const buffer = await readFile9(file).catch(() => void 0);
   if (buffer === void 0) {
     removeNode(img);
     return [`\u753B\u50CF ${src} \u3092\u8AAD\u307F\u8FBC\u3081\u306A\u3044\u305F\u3081\u53D6\u308A\u9664\u304D\u307E\u3057\u305F`];
@@ -92385,15 +91930,15 @@ async function figureToSvg(options) {
 // src/cli/export-markdown.ts
 var IMAGES_DIR = "images";
 var DOCUMENT_EXTENSION_PATTERN = /(?:\.mark)?\.md$/i;
-function toPosix5(path) {
-  return path.split(sep9).join("/");
+function toPosix4(path) {
+  return path.split(sep8).join("/");
 }
-function reasonOf2(error2) {
+function reasonOf(error2) {
   return (error2 instanceof Error ? error2.message : String(error2)).split("\n")[0] ?? "";
 }
 function markdownOutDir(file) {
-  const name = basename8(file).replace(DOCUMENT_EXTENSION_PATTERN, "");
-  return { name, dir: join9(dirname10(file), `${name}-markdown`) };
+  const name = basename7(file).replace(DOCUMENT_EXTENSION_PATTERN, "");
+  return { name, dir: join7(dirname9(file), `${name}-markdown`) };
 }
 function figureLines(figure, name) {
   const alt = figure.title ?? `\u56F3 ${figure.index}`;
@@ -92409,7 +91954,7 @@ async function registerConfigExtensions(loaded) {
   const warnings = [];
   for (const [position, path] of (loaded.config.extensions ?? []).entries()) {
     const where = `extensions[${position}] \u306E ${path}`;
-    const bundled = await bundleModule(path, loaded.dir, { build: build5 });
+    const bundled = await bundleModule(path, loaded.dir, { build: build4 });
     if ("error" in bundled) {
       warnings.push(
         `${where} \u3092\u8AAD\u307F\u8FBC\u3081\u306A\u3044\u305F\u3081\u3001\u305D\u306E\u62E1\u5F35\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u307E\u3057\u305F\uFF08${bundled.error}\uFF09`
@@ -92421,7 +91966,7 @@ async function registerConfigExtensions(loaded) {
       registerExtension(module?.default);
     } catch (error2) {
       warnings.push(
-        `${where} \u3092\u767B\u9332\u3067\u304D\u306A\u3044\u305F\u3081\u3001\u305D\u306E\u62E1\u5F35\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u307E\u3057\u305F\uFF08${reasonOf2(error2)}\uFF09`
+        `${where} \u3092\u767B\u9332\u3067\u304D\u306A\u3044\u305F\u3081\u3001\u305D\u306E\u62E1\u5F35\u306E\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u307E\u3057\u305F\uFF08${reasonOf(error2)}\uFF09`
       );
     }
   }
@@ -92431,7 +91976,7 @@ async function exportMarkdownFiles(options) {
   const { file, loaded, distDir } = options;
   const { distCss } = await readDistAssets({ distDir, kind: "document" });
   const warnings = await registerConfigExtensions(loaded);
-  const source = await readFile11(file, "utf8");
+  const source = await readFile10(file, "utf8");
   const { includes } = await collectIncludes({
     docPath: file,
     markdown: source,
@@ -92446,7 +91991,7 @@ async function exportMarkdownFiles(options) {
       const { svg, warnings: found } = await figureToSvg({
         figure,
         css: distCss,
-        baseDir: dirname10(file)
+        baseDir: dirname9(file)
       });
       const name = `figure-${figure.index}.svg`;
       images.push({ name, svg });
@@ -92466,52 +92011,52 @@ async function prepareDir(dir) {
   const unwritable = (reason) => new CliError(
     `\u66F8\u304D\u8FBC\u3081\u306A\u3044: ${dir} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reason}\uFF09\u3002--out \u3067\u5225\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
   );
-  const found = await stat5(dir).catch(() => void 0);
+  const found = await stat4(dir).catch(() => void 0);
   if (found !== void 0 && !found.isDirectory()) {
     throw unwritable("\u540C\u3058\u540D\u524D\u306E\u30D5\u30A1\u30A4\u30EB\u304C\u3042\u308A\u307E\u3059");
   }
   try {
-    await mkdir3(dir, { recursive: true });
+    await mkdir2(dir, { recursive: true });
   } catch (error2) {
-    throw unwritable(reasonOf2(error2));
+    throw unwritable(reasonOf(error2));
   }
 }
 async function writeMarkdownFiles(options) {
   const { dir, name, markdown, images } = options;
   await prepareDir(dir);
-  const imagesDir = join9(dir, IMAGES_DIR);
-  const markdownFile = join9(dir, `${name}.md`);
+  const imagesDir = join7(dir, IMAGES_DIR);
+  const markdownFile = join7(dir, `${name}.md`);
   try {
     await rm(imagesDir, { recursive: true, force: true });
     if (images.length > 0) {
-      await mkdir3(imagesDir, { recursive: true });
+      await mkdir2(imagesDir, { recursive: true });
     }
     for (const image2 of images) {
-      await writeFile2(join9(imagesDir, image2.name), image2.svg);
+      await writeFile(join7(imagesDir, image2.name), image2.svg);
     }
-    await writeFile2(markdownFile, markdown);
+    await writeFile(markdownFile, markdown);
   } catch (error2) {
     throw new CliError(
-      `\u66F8\u304D\u8FBC\u3081\u306A\u3044: ${dir} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf2(error2)}\uFF09\u3002--out \u3067\u5225\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      `\u66F8\u304D\u8FBC\u3081\u306A\u3044: ${dir} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf(error2)}\uFF09\u3002--out \u3067\u5225\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u6307\u5B9A\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
   return {
     markdown: markdownFile,
-    images: images.map((image2) => join9(imagesDir, image2.name))
+    images: images.map((image2) => join7(imagesDir, image2.name))
   };
 }
 async function runExportMarkdown(options, io) {
   const loaded = await requireConfig(io.cwd, options.config);
-  const file = resolve14(io.cwd, options.file);
+  const file = resolve12(io.cwd, options.file);
   try {
-    await readFile11(file);
+    await readFile10(file);
   } catch {
     throw new CliError(
       `\u6587\u66F8\u304C\u7121\u3044: ${options.file} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
     );
   }
   const defaults = markdownOutDir(file);
-  const dir = options.out === void 0 ? defaults.dir : resolve14(io.cwd, options.out);
+  const dir = options.out === void 0 ? defaults.dir : resolve12(io.cwd, options.out);
   const { markdown, images, warnings } = await exportMarkdownFiles({
     file,
     loaded,
@@ -92527,8 +92072,716 @@ async function runExportMarkdown(options, io) {
     io.stderr(`\u8B66\u544A: ${warning}`);
   }
   io.stdout(
-    `\u66F8\u304D\u51FA\u3057\u305F: ${toPosix5(relative10(io.cwd, written.markdown))} \uFF08SVG ${written.images.length} \u4EF6\uFF09`
+    `\u66F8\u304D\u51FA\u3057\u305F: ${toPosix4(relative9(io.cwd, written.markdown))} \uFF08SVG ${written.images.length} \u4EF6\uFF09`
   );
+  return 0;
+}
+
+// src/cli/icons.ts
+var import_lucide4 = __toESM(require_lucide(), 1);
+var ICON_CODE_PATTERN = /`icon:\s*([^`\s]+)\s*`/g;
+var pascalName = (name) => name.split("-").map((part) => part ? `${part[0]?.toUpperCase()}${part.slice(1)}` : "").join("");
+var collectIconNodes = (markdowns) => {
+  const icons2 = {};
+  const missing = /* @__PURE__ */ new Set();
+  const table2 = import_lucide4.icons;
+  for (const markdown of markdowns) {
+    for (const match of markdown.matchAll(ICON_CODE_PATTERN)) {
+      const name = match[1] ?? "";
+      if (!ICON_NAME_PATTERN.test(name) || bundledIconNode(name) !== void 0 || Object.hasOwn(icons2, name)) {
+        continue;
+      }
+      const key = pascalName(name);
+      const node2 = Object.hasOwn(table2, key) ? table2[key] : void 0;
+      if (node2 === void 0) {
+        missing.add(name);
+      } else {
+        icons2[name] = node2;
+      }
+    }
+  }
+  return { icons: icons2, missing: [...missing] };
+};
+
+// src/cli/export.ts
+var GLOSSARY_ID_PREFIX = "mdmark-glossary-";
+function toPosix5(path) {
+  return path.split(sep9).join("/");
+}
+function reasonOf2(error2) {
+  return (error2 instanceof Error ? error2.message : String(error2)).split("\n")[0] ?? "";
+}
+var URL_PATTERN = /^https?:\/\//;
+function moduleSource(path, baseDir) {
+  return URL_PATTERN.test(path) ? path : resolve13(baseDir, path);
+}
+function addGlossaryDocs(options, target) {
+  const { loaded, kind, markdowns } = options;
+  const { referenceDocs, documents, indexPathOf } = target;
+  const glossaryPaths = kind === "bundle" ? loaded.config.build?.glossary ?? [] : [];
+  const prefix = options.hideTraces ? hideNames(GLOSSARY_ID_PREFIX) : GLOSSARY_ID_PREFIX;
+  glossaryPaths.forEach((glossaryPath, position) => {
+    const path = normalizePath(glossaryPath);
+    const markdown = markdowns.get(path);
+    if (markdown === void 0) {
+      return;
+    }
+    const key = indexPathOf(path);
+    documents[key] = markdown;
+    if (!referenceDocs.some((doc) => normalizePath(doc.path) === key)) {
+      referenceDocs.push({
+        id: `${prefix}${position}`,
+        path: key,
+        title: documentTitle({ path, markdown })
+      });
+    }
+  });
+}
+function referencesOf(options) {
+  const { index, documents, loaded, withFrontmatter } = options;
+  if (index.docs.length === 0) {
+    return void 0;
+  }
+  return collectReferences({
+    index,
+    documents,
+    config: { features: loaded.config.features ?? {} },
+    ...withFrontmatter && { frontmatter: readFrontmatterValues(documents) }
+  });
+}
+async function prepareReferences(options) {
+  const { loaded } = options;
+  const info = await readIndexWithDocuments(loaded);
+  const index = info ? normalizeIndex(info.raw).index : void 0;
+  const baseDir = info ? info.indexDir : loaded.dir;
+  const indexPathOf = (path) => toPosix5(relative10(baseDir, join8(loaded.dir, path)));
+  const referenceDocs = [...index?.docs ?? []];
+  const documents = { ...info?.documents };
+  addGlossaryDocs(options, { referenceDocs, documents, indexPathOf });
+  const references = referencesOf({
+    index: { schema: 2, docs: referenceDocs, terms: index?.terms ?? [] },
+    documents,
+    loaded,
+    // フロントマターは索引があるときだけ解析して補う
+    withFrontmatter: info !== void 0
+  });
+  const byPath = (path) => (references?.docs ?? index?.docs)?.find(
+    (doc) => normalizePath(doc.path) === indexPathOf(path)
+  );
+  return {
+    index,
+    references,
+    docIdOf: (path) => byPath(path)?.id,
+    titleOf: (path) => byPath(path)?.title
+  };
+}
+async function bundleSyntax(options) {
+  const { languages, url: url2, loaded, warnings, fetchText } = options;
+  if (languages.length === 0) {
+    return void 0;
+  }
+  const folder = url2.endsWith("/") ? url2 : `${url2}/`;
+  const bundle = async (path) => {
+    const result = await bundleModule(`${folder}${path}`, loaded.dir, {
+      fetchText,
+      build: build5
+    });
+    if ("code" in result) {
+      return moduleSource(`${folder}${path}`, loaded.dir);
+    }
+    warnings.push(
+      `${basename8(loaded.path)}: \u8272\u5206\u3051\u306E\u30E9\u30A4\u30D6\u30E9\u30EA \`${folder}${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`syntax.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+    return void 0;
+  };
+  const core = await bundle("core.min.js");
+  if (core === void 0) {
+    return void 0;
+  }
+  const bundled = {};
+  for (const language of languages) {
+    const source = await bundle(`languages/${language}.min.js`);
+    if (source !== void 0) {
+      bundled[language] = source;
+    }
+  }
+  return { core, languages: bundled };
+}
+async function resolveAssetsRoot(loaded, warnings) {
+  const root2 = loaded.config.assets?.root;
+  if (root2 === void 0) {
+    return void 0;
+  }
+  const dir = resolve13(loaded.dir, root2);
+  try {
+    if ((await stat5(dir)).isDirectory()) {
+      return dir;
+    }
+  } catch {
+  }
+  warnings.push(
+    `${basename8(loaded.path)}: \`assets.root\` \u306E\u30D5\u30A9\u30EB\u30C0 \`${root2}\` \u304C\u3042\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D5\u30A9\u30EB\u30C0\u3060\u3051\u3067\u63A2\u3057\u307E\u3059\u3002`
+  );
+  return void 0;
+}
+async function readDocuments(options) {
+  const { loaded, docs, kind, out, assetsRoot, warnings } = options;
+  const originals = /* @__PURE__ */ new Map();
+  const inlined = /* @__PURE__ */ new Map();
+  const copied = /* @__PURE__ */ new Map();
+  const assets = kind === "bundle" ? /* @__PURE__ */ new Map() : void 0;
+  for (const doc of docs) {
+    const original = await readFile11(doc.file, "utf8");
+    const media = await copyMedia({
+      markdown: original,
+      docFile: doc.file,
+      assetsRoot,
+      baseDir: loaded.dir,
+      out,
+      copied
+    });
+    const result = await inlineImages(media.markdown, doc.file, {
+      assetsRoot,
+      ...assets ? { assets } : {}
+    });
+    originals.set(doc.path, original);
+    inlined.set(doc.path, result.markdown);
+    warnings.push(
+      ...[...media.warnings, ...result.warnings].map(
+        (text2) => `${doc.path}: ${text2}`
+      )
+    );
+  }
+  return { originals, inlined, assets };
+}
+async function readIncludes(options) {
+  const { loaded, docs, originals, warnings } = options;
+  const includeTexts = {};
+  const includeKeys = /* @__PURE__ */ new Map();
+  const fromConfig = (docFile, path) => toPosix5(relative10(loaded.dir, resolve13(dirname10(docFile), path)));
+  for (const doc of docs) {
+    const result = await collectIncludes({
+      docPath: doc.file,
+      markdown: originals.get(doc.path) ?? "",
+      root: loaded.dir
+    });
+    const keys = {};
+    for (const [key, text2] of Object.entries(result.includes)) {
+      const path = fromConfig(doc.file, key);
+      keys[key] = path;
+      includeTexts[path] = text2;
+    }
+    includeKeys.set(doc.path, keys);
+    for (const problem of result.problems) {
+      const file = problem.file === "" ? doc.path : fromConfig(doc.file, problem.file);
+      warnings.push(
+        `${file}:${problem.line}: ${includeProblemMessage(problem)}`
+      );
+    }
+  }
+  return { includeTexts, includeKeys };
+}
+async function bundleLibraries(options) {
+  const { loaded, urls, markdowns, fetchText, warnings } = options;
+  const configName = basename8(loaded.path);
+  const bundled = /* @__PURE__ */ new Map();
+  const modules = {};
+  for (const mark of usedLibraryMarks(markdowns, urls)) {
+    const url2 = urls[mark] ?? "";
+    let pending = bundled.get(url2);
+    if (!pending) {
+      pending = bundleModule(url2, loaded.dir, { fetchText, build: build5 });
+      bundled.set(url2, pending);
+    }
+    const result = await pending;
+    if (!("code" in result)) {
+      warnings.push(
+        `${configName}: \u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002URL \u304B\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+      continue;
+    }
+    modules[mark] = moduleSource(url2, loaded.dir);
+    if (hasDynamicImport(result.code)) {
+      warnings.push(
+        dynamicImportWarning(configName, `\u5916\u90E8\u30E9\u30A4\u30D6\u30E9\u30EA \`${mark}\``)
+      );
+    }
+  }
+  return modules;
+}
+async function bundleExtensions(options) {
+  const { loaded, fetchText, warnings } = options;
+  const configName = basename8(loaded.path);
+  const extensions2 = [];
+  for (const path of loaded.config.extensions ?? []) {
+    const result = await bundleModule(path, loaded.dir, { fetchText, build: build5 });
+    if (!("code" in result)) {
+      warnings.push(
+        `${configName}: \u62E1\u5F35 \`${path}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+      );
+      continue;
+    }
+    extensions2.push(moduleSource(path, loaded.dir));
+    if (hasDynamicImport(result.code)) {
+      warnings.push(dynamicImportWarning(configName, `\u62E1\u5F35 \`${path}\``));
+    }
+  }
+  return extensions2;
+}
+async function readThemeCss(loaded, warnings) {
+  const theme = loaded.config.theme;
+  if (theme === void 0) {
+    return void 0;
+  }
+  try {
+    return await readFile11(resolve13(loaded.dir, theme), "utf8");
+  } catch (error2) {
+    warnings.push(
+      `${basename8(loaded.path)}: \u5229\u7528\u5074\u306E CSS \`${theme}\` \u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf2(error2)}\uFF09\u3002\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+    return void 0;
+  }
+}
+async function bundleMermaid(options) {
+  const { loaded, used, fetchText, warnings } = options;
+  if (!used) {
+    return void 0;
+  }
+  const { url: url2 } = resolveConfig({ config: loaded.config }).mermaid;
+  const result = await bundleModule(url2, loaded.dir, { fetchText, build: build5 });
+  if ("code" in result) {
+    return moduleSource(url2, loaded.dir);
+  }
+  warnings.push(
+    `${basename8(loaded.path)}: mermaid \`${url2}\` \u3092\u307E\u3068\u3081\u3089\u308C\u307E\u305B\u3093\uFF08${result.error}\uFF09\u3002\`mermaid.url\` \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+  );
+  return void 0;
+}
+function colorThemeWarnings(loaded) {
+  const colorTheme = loaded.config.colorTheme;
+  return colorTheme === void 0 || COLOR_THEMES.some((t) => t === colorTheme) ? [] : [
+    `${basename8(loaded.path)}: \u4E0D\u660E\u306A\u30C6\u30FC\u30DE\u540D ${colorTheme} \u3067\u3059\u3002\u65E2\u5B9A\u306E ${DEFAULT_COLOR_THEME} \u3067\u63CF\u753B\u3057\u307E\u3059\u3002`
+  ];
+}
+function payloadConfig(config3, libraryNames) {
+  const { url: _mermaidUrl, ...mermaid } = config3.mermaid ?? {};
+  const picked = {
+    features: config3.features,
+    tooltips: config3.tooltips,
+    "side-toc": config3["side-toc"],
+    table: config3.table,
+    colorTheme: config3.colorTheme,
+    colorScheme: config3.colorScheme,
+    labels: config3.labels,
+    map: config3.map,
+    mermaid: Object.keys(mermaid).length > 0 ? mermaid : void 0
+  };
+  return {
+    ...Object.fromEntries(
+      Object.entries(picked).filter(([, value]) => value !== void 0)
+    ),
+    libraries: Object.fromEntries(libraryNames.map((name) => [name, name]))
+  };
+}
+function whenFilled(key, value) {
+  return value !== void 0 && Object.keys(value).length > 0 ? { [key]: value } : {};
+}
+var ASSET_PREFIX = "mdmark-asset:";
+async function renderPayloadDoc(options) {
+  const { markdown, config: config3, index, docId, includes } = options;
+  const result = renderDocument({
+    markdown,
+    config: resolveConfig({ config: config3 }),
+    index,
+    docId,
+    references: options.references,
+    aliases: options.aliases,
+    includes,
+    icons: options.icons,
+    path: options.path
+  });
+  const pure = await toPureMarkdown(markdown, {
+    config: config3,
+    index,
+    docId,
+    includes
+  });
+  return {
+    rendered: {
+      html: result.html,
+      features: result.features,
+      page: result.page,
+      paramDefinitions: result.paramDefinitions,
+      extensionDefinitions: result.extensionDefinitions
+    },
+    pureMarkdown: pure.markdown
+  };
+}
+function withAssetUrls(markdown, assets) {
+  let restored = markdown;
+  for (const asset of assets?.values() ?? []) {
+    restored = restored.replaceAll(`${ASSET_PREFIX}${asset.key}`, asset.url);
+  }
+  return restored;
+}
+function withAssetKeys(html, assets) {
+  let keyed = html;
+  for (const asset of assets?.values() ?? []) {
+    keyed = keyed.replaceAll(asset.url, `${ASSET_PREFIX}${asset.key}`);
+  }
+  return keyed;
+}
+async function prepareEmbeds(options) {
+  const { loaded, docs, kind, entry, fetchText } = options;
+  const warnings = [];
+  const assetsRoot = await resolveAssetsRoot(loaded, warnings);
+  const { originals, inlined, assets } = await readDocuments({
+    ...options,
+    assetsRoot,
+    warnings
+  });
+  const markdowns = [...originals.values()];
+  const { includeTexts, includeKeys } = await readIncludes({
+    loaded,
+    docs,
+    originals,
+    warnings
+  });
+  const iconResult = collectIconNodes([
+    ...markdowns,
+    ...Object.values(includeTexts)
+  ]);
+  for (const name of iconResult.missing) {
+    warnings.push(
+      `\`icon:${name}\` \u306E \`${name}\` \u306F Lucide \u306B\u7121\u3044\u30A2\u30A4\u30B3\u30F3\u306E\u540D\u524D\u3067\u3059\u3002https://lucide.dev/icons/ \u3067\u540D\u524D\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  const resolved = resolveConfig({ config: loaded.config });
+  const libraries = Object.fromEntries(
+    Object.entries(resolved.libraries).map(([name, library]) => [
+      name,
+      library.url
+    ])
+  );
+  const modules = await bundleLibraries({
+    loaded,
+    urls: libraries,
+    markdowns,
+    fetchText,
+    warnings
+  });
+  const extensions2 = await bundleExtensions({ loaded, fetchText, warnings });
+  const themeCss = await readThemeCss(loaded, warnings);
+  const includesOf = (path) => Object.fromEntries(
+    Object.entries(includeKeys.get(path) ?? {}).map(([key, file]) => [
+      key,
+      includeTexts[file] ?? ""
+    ])
+  );
+  const used = {
+    markdowns,
+    includes: docs.map((doc) => includesOf(doc.path)),
+    config: loaded.config
+  };
+  const syntax = await bundleSyntax({
+    languages: usedSyntaxLanguages(used),
+    url: resolved.syntax.url,
+    loaded,
+    warnings,
+    fetchText
+  });
+  const mermaid = await bundleMermaid({
+    loaded,
+    used: usesMermaid(used),
+    fetchText,
+    warnings
+  });
+  const aliasResult = await loadAliases(loaded);
+  warnings.push(...aliasResult.issues.map(formatCheckIssue));
+  warnings.push(...colorThemeWarnings(loaded));
+  const refs = await prepareReferences({ ...options, markdowns: originals });
+  await registerConfigExtensions(loaded);
+  const payloadDocs = [];
+  for (const doc of docs) {
+    const markdown = inlined.get(doc.path) ?? "";
+    const docId = refs.docIdOf(doc.path);
+    const { rendered, pureMarkdown } = await renderPayloadDoc({
+      markdown: withAssetUrls(markdown, assets),
+      config: loaded.config,
+      index: refs.index,
+      docId,
+      references: refs.references,
+      aliases: aliasResult.aliases,
+      includes: includesOf(doc.path),
+      icons: iconResult.icons,
+      path: doc.path
+    });
+    payloadDocs.push({
+      path: doc.path,
+      title: documentTitle({
+        path: doc.path,
+        markdown,
+        indexTitle: refs.titleOf(doc.path),
+        frontmatterTitle: readFrontmatterMetadata(
+          readFrontmatterValues({ [doc.path]: markdown })[doc.path]
+        ).title
+      }),
+      rendered: { ...rendered, html: withAssetKeys(rendered.html, assets) },
+      pureMarkdown: withAssetKeys(pureMarkdown, assets),
+      docId
+    });
+  }
+  const payload = {
+    kind,
+    config: payloadConfig(loaded.config, Object.keys(libraries)),
+    index: refs.index,
+    references: refs.references,
+    docs: payloadDocs,
+    ...whenFilled("icons", iconResult.icons),
+    entry,
+    ...aliasResult.aliases ? { aliases: aliasResult.aliases } : {},
+    ...assets ? {
+      assets: Object.fromEntries(
+        [...assets.values()].map((asset) => [asset.key, asset.url])
+      )
+    } : {}
+  };
+  const compiled = await compileHtmlScripts({
+    documents: [...originals.entries()].map(([path, markdown]) => ({
+      path,
+      markdown
+    })),
+    config: loaded.config
+  });
+  warnings.push(...compiled.warnings);
+  const embeds = {
+    libraries: modules,
+    extensions: extensions2,
+    ...syntax ? { syntax } : {},
+    ...mermaid ? { mermaid } : {},
+    view: usedParts({ markdowns }),
+    map: usesMap({ markdowns, config: loaded.config }),
+    ...compiled.scripts.length > 0 ? { htmlScripts: compiled.scripts } : {}
+  };
+  return { payload, embeds, themeCss, warnings };
+}
+function dynamicImportWarning(configName, what) {
+  return `${configName}: ${what} \u306F\u307E\u3068\u3081\u305F\u5F8C\u3082\u52D5\u7684 import() \u304C\u6B8B\u308A\u3001blob: \u3068\u52D5\u7684 import \u3092\u8A31\u3055\u306A\u3044\u74B0\u5883\u3067\u306F\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\u3002\u8AAD\u307F\u8FBC\u3080\u5148\u3092\u30EA\u30C6\u30E9\u30EB\u306E\u6587\u5B57\u5217\u306B\u3057\u3066\u304F\u3060\u3055\u3044\u3002`;
+}
+async function readDistAssets(options) {
+  const { distDir, kind } = options;
+  let distCss;
+  const viewer = resolve13(distDir, "viewer.js");
+  const view = resolve13(distDir, "view.js");
+  const map = resolve13(distDir, "map.js");
+  try {
+    distCss = await readFile11(join8(distDir, "index.css"), "utf8");
+    await stat5(viewer);
+    await stat5(view);
+  } catch (error2) {
+    throw new CliError(
+      `\u914D\u5E03\u7269\u3092\u8AAD\u307F\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf2(error2)}\uFF09\u3002mdmark \u3092\u3082\u3046\u4E00\u5EA6\u5165\u308C\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  if (kind === "bundle") {
+    try {
+      distCss += `
+${await readFile11(join8(distDir, "viewer.css"), "utf8")}`;
+    } catch (error2) {
+      if (!(error2 instanceof Error && "code" in error2 && error2.code === "ENOENT")) {
+        throw error2;
+      }
+    }
+  }
+  return { distCss, viewer, view, map };
+}
+async function writeHtml(options) {
+  const { file, display, html } = options;
+  try {
+    await mkdir3(dirname10(file), { recursive: true });
+    await writeFile2(file, html);
+  } catch (error2) {
+    throw new CliError(
+      `\u66F8\u304D\u8FBC\u3081\u306A\u3044: ${display} \u306B\u66F8\u304D\u8FBC\u3081\u307E\u305B\u3093\uFF08${reasonOf2(error2)}\uFF09\u3002\u51FA\u529B\u5148\u306E\u30D5\u30A9\u30EB\u30C0\u3092\u78BA\u8A8D\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+}
+async function exportDocument(options) {
+  const { cwd } = options;
+  const loaded = await requireConfig(cwd, options.config);
+  const docFile = resolve13(cwd, options.file);
+  try {
+    await readFile11(docFile);
+  } catch {
+    throw new CliError(
+      `\u6587\u66F8\u304C\u7121\u3044: ${options.file} \u304C\u898B\u3064\u304B\u308A\u307E\u305B\u3093\u3002\u6587\u66F8\u306E\u30D1\u30B9\u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    );
+  }
+  const path = normalizePath(toPosix5(relative10(loaded.dir, docFile)));
+  const outFile = options.out ? resolve13(cwd, options.out) : join8(dirname10(docFile), `${basename8(docFile, extname6(docFile))}.html`);
+  const display = options.out ?? toPosix5(relative10(cwd, outFile));
+  const fetchText = cacheFetchText();
+  const hide2 = options.keepTraces !== true;
+  const { payload, embeds, themeCss, warnings } = await prepareEmbeds({
+    loaded,
+    docs: [{ path, file: docFile }],
+    kind: "document",
+    entry: path,
+    out: outFile,
+    fetchText,
+    hideTraces: hide2
+  });
+  const { distCss, viewer, view, map } = await readDistAssets({
+    distDir: options.distDir,
+    kind: "document"
+  });
+  const script = await bundleViewer({
+    entry: createViewerEntry({ viewer, view, map, embeds, hideTraces: hide2 }),
+    baseDir: loaded.dir,
+    fetchText,
+    ...hide2 ? {
+      hideTraces: {
+        keys: (embeds.htmlScripts ?? []).map(({ source }) => source)
+      }
+    } : {}
+  });
+  await writeHtml({
+    file: outFile,
+    display,
+    html: assembleHtml({
+      payload,
+      distCss,
+      themeCss,
+      script,
+      hideTraces: hide2
+    })
+  });
+  return { out: outFile, display, warnings };
+}
+async function runExport(options, io) {
+  const { display, warnings } = await exportDocument({
+    cwd: io.cwd,
+    ...options
+  });
+  for (const warning of warnings) {
+    io.stderr(`\u8B66\u544A: ${warning}`);
+  }
+  io.stdout(`\u66F8\u304D\u51FA\u3057\u305F: ${display}`);
+  return 0;
+}
+
+// src/cli/build.ts
+function chooseEntry(options) {
+  const { build: build6, first, included, warnings } = options;
+  if (build6.entry === void 0) {
+    return first;
+  }
+  const wanted = normalizePath(build6.entry);
+  if (included.has(wanted)) {
+    return wanted;
+  }
+  warnings.push(
+    `${build6.entry}: build.entry \u304C\u307E\u3068\u3081\u308B\u6587\u66F8\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u307E\u3068\u3081\u308B\u6587\u66F8\u306E\u6700\u521D\u306E 1 \u3064\uFF08${first}\uFF09\u3092\u958B\u304D\u307E\u3059\u3002`
+  );
+  return first;
+}
+function glossaryWarnings(build6, included) {
+  return (build6.glossary ?? []).filter((glossary) => !included.has(normalizePath(glossary))).map(
+    (glossary) => `${glossary}: build.glossary \u304C\u307E\u3068\u3081\u308B\u6587\u66F8\u306B\u8A72\u5F53\u3057\u307E\u305B\u3093\u3002\u7528\u8A9E\u96C6\u306E\u8868\u3092\u98DB\u3070\u3057\u307E\u3059\u3002`
+  );
+}
+function outsideLinkWarnings(docs, included) {
+  return docs.flatMap(
+    (doc) => findOutsideLinks(doc.markdown, doc.path, included).map(
+      (href) => `${doc.path}: \`${href}\` \u3078\u306E\u30EA\u30F3\u30AF\u306F\u307E\u3068\u3081\u305F HTML \u306B\u542B\u307E\u308C\u307E\u305B\u3093\u3002\u8A18\u8F09\u3057\u305F\u307E\u307E\u306E\u30EA\u30F3\u30AF\u3067\u6B8B\u3057\u307E\u3059\u3002\u307E\u3068\u3081\u308B\u306A\u3089 \`build.include\` \u306B\u8FFD\u52A0\u3057\u3066\u304F\u3060\u3055\u3044\u3002`
+    )
+  );
+}
+async function requireBuild(loaded) {
+  const build6 = loaded.config.build;
+  if (!build6) {
+    throw new CliError(
+      "build \u304C\u7121\u3044: \u8A2D\u5B9A\u306B build \u304C\u3042\u308A\u307E\u305B\u3093\u3002build.include \u3068 build.out \u3092\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  const paths = await collectBuildDocuments(loaded.dir, build6);
+  const first = paths[0];
+  if (first === void 0) {
+    throw new CliError(
+      "0 \u4EF6: build.include \u306B\u8A72\u5F53\u3059\u308B\u6587\u66F8\u304C\u3042\u308A\u307E\u305B\u3093\u3002build.include \u3092\u4FEE\u6B63\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+    );
+  }
+  return { build: build6, paths, first };
+}
+async function buildSite(options) {
+  const loaded = await requireConfig(options.cwd, options.config);
+  const hide2 = options.keepTraces !== true;
+  const { build: build6, paths, first } = await requireBuild(loaded);
+  const included = new Set(paths);
+  const warnings = [];
+  const entry = chooseEntry({ build: build6, first, included, warnings });
+  warnings.push(...glossaryWarnings(build6, included));
+  const out = resolve14(loaded.dir, build6.out);
+  const fetchText = cacheFetchText();
+  const {
+    payload,
+    embeds,
+    themeCss,
+    warnings: embedWarnings
+  } = await prepareEmbeds({
+    loaded,
+    docs: paths.map((path) => ({ path, file: join9(loaded.dir, path) })),
+    kind: "bundle",
+    entry,
+    out,
+    fetchText,
+    hideTraces: hide2
+  });
+  warnings.unshift(...embedWarnings);
+  warnings.push(
+    ...outsideLinkWarnings(
+      payload.docs.map((doc) => ({
+        path: doc.path,
+        markdown: doc.pureMarkdown
+      })),
+      included
+    )
+  );
+  const { distCss, viewer, view, map } = await readDistAssets({
+    distDir: options.distDir,
+    kind: "bundle"
+  });
+  const script = await bundleViewer({
+    entry: createViewerEntry({ viewer, view, map, embeds, hideTraces: hide2 }),
+    baseDir: loaded.dir,
+    fetchText,
+    ...hide2 ? { hideTraces: { keys: htmlScriptKeys(embeds) } } : {}
+  });
+  await writeHtml({
+    file: out,
+    display: build6.out,
+    html: assembleHtml({
+      payload,
+      distCss,
+      themeCss,
+      script,
+      hideTraces: hide2
+    })
+  });
+  return { out, display: build6.out, docs: paths.length, warnings };
+}
+function htmlScriptKeys(embeds) {
+  return (embeds.htmlScripts ?? []).map(({ source }) => source);
+}
+async function runBuild(options, io) {
+  const { display, docs, warnings } = await buildSite({
+    cwd: io.cwd,
+    ...options
+  });
+  for (const warning of warnings) {
+    io.stderr(`\u8B66\u544A: ${warning}`);
+  }
+  io.stdout(`\u66F8\u304D\u51FA\u3057\u305F: ${display}\uFF08\u6587\u66F8 ${docs} \u4EF6\uFF09`);
   return 0;
 }
 

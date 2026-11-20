@@ -293,6 +293,12 @@ function prepareModalFigure(figure: HTMLElement): HTMLElement {
   return copy;
 }
 
+/** 全画面のモーダルに複製した図（modal）に、元の図（source）の部品の操作を付け直し、解除する関数を返す */
+export type AttachModal = (
+  modal: HTMLElement,
+  source: HTMLElement,
+) => () => void;
+
 /** 図を全画面のモーダルで開き、開いた全画面を閉じる関数を返却する。閉じるボタンか Esc で閉じたら、付けた操作と監視を解除して `dialog` を削除し、フォーカスを全画面のボタンへ戻す */
 export function openDiagramDialog(options: {
   /** 開く図 */
@@ -301,6 +307,8 @@ export function openDiagramDialog(options: {
   opener: HTMLButtonElement;
   /** モーダルの中のツールチップを先に出す側 */
   placement: TooltipPlacement;
+  /** 複製した図に部品の操作を付け直し、解除する関数を返す（map の図） */
+  attachModal?: AttachModal | undefined;
 }): () => void {
   const { figure, opener, placement } = options;
   const host = figure.closest<HTMLElement>(".mdmark") ?? document.body;
@@ -310,11 +318,18 @@ export function openDiagramDialog(options: {
   dialog.append(modalFigure);
   host.append(dialog);
   dialog.showModal();
-  const tips = attachDiagramTips({ figure: modalFigure, placement });
+  let tips = attachDiagramTips({ figure: modalFigure, placement });
+  // 部品が中身を描き直したとき（map の図の操作）は、ツールチップをもう一度付ける
+  const onRedraw = (): void => {
+    tips.detach();
+    tips = attachDiagramTips({ figure: modalFigure, placement });
+  };
+  modalFigure.addEventListener(DIAGRAM_REDRAW_EVENT, onRedraw);
   const detachView = attachView(modalFigure, {
     modal: true,
     onPanStart: () => tips.closeOpen(),
   });
+  const detachModal = options.attachModal?.(modalFigure, figure);
   const heading = modalFigure.querySelector(".mdmark-diagram-head");
   if (heading) {
     dialog.setAttribute("aria-labelledby", heading.id);
@@ -333,8 +348,10 @@ export function openDiagramDialog(options: {
   dialog.addEventListener(
     "close",
     () => {
+      modalFigure.removeEventListener(DIAGRAM_REDRAW_EVENT, onRedraw);
       tips.detach();
       detachView();
+      detachModal?.();
       dialog.remove();
       opener.focus();
     },
@@ -365,6 +382,8 @@ export function attachDiagrams(options: {
   storage?: Storage | null;
   /** 付ける図（省くと `root` の中の全ての図。高さのキーの通し番号は `root` の中の順） */
   figures?: HTMLElement[];
+  /** 全画面のモーダルに複製した図へ部品の操作を付け直す関数（`openDiagramDialog` へ指定する） */
+  attachModal?: AttachModal;
 }): () => void {
   const { root, placement, storage = defaultStorage() } = options;
   attachCounter += 1;
@@ -412,7 +431,12 @@ export function attachDiagrams(options: {
     let closeDialog: (() => void) | undefined;
     const onOpen = (): void => {
       if (opener) {
-        closeDialog = openDiagramDialog({ figure, opener, placement });
+        closeDialog = openDiagramDialog({
+          figure,
+          opener,
+          placement,
+          attachModal: options.attachModal,
+        });
       }
     };
     opener?.addEventListener("click", onOpen);
