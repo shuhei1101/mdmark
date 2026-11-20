@@ -259,7 +259,6 @@ exceptions:
 constraints:
   - item: 案内する条件
     constraint: PreToolUse は `tool_input.file_path` が `.mark.md` で終わるとき、UserPromptSubmit は `prompt` が大文字・小文字を区別せずに語 `mdmark` を含むとき。どちらも、記録のフォルダに `session_id` のファイルが無いときだけ案内する
-    notes: 指示の判定は要件.md の決めた内容（7 の判定）
   - item: 記録
     constraint: 案内する前に、記録のフォルダ（無ければ作る）に `session_id` を名前にした空のファイルを作る。作れないときは案内しない。PreToolUse と UserPromptSubmit は同じ記録を使用し、どちらかで案内したセッションはもう一方でも案内しない。PreCompact は `session_id` の記録のファイルがあれば消し、何も出さない（`matcher` を持たず、手動と自動の圧縮の両方で消す）
   - item: 案内の文

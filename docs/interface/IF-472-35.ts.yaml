@@ -10783,7 +10783,7 @@ request:
     description: mermaid のテーマの変数（`primaryColor` など）を上書きする値。`theme` で選んだテーマの変数に重ねる
     constraints: 値が文字列のキーだけを受け、ほかは無視する。`useGradient`・`dropShadow` は上書きできない（制約「mermaid のテーマ」）
     example: '{ "primaryColor": "#e0f2f1" }'
-    notes: mermaid の初期化の設定のうち、テーマ以外（`securityLevel`・`startOnLoad` など）は利用側に開けない（要件.md の推奨案 A）
+    notes: mermaid の初期化の設定のうち、テーマ以外（`securityLevel`・`startOnLoad` など）は利用側に開けない
   - name: opts.includes
     type: Record<string, string>
     required: false
@@ -11092,7 +11092,7 @@ constraints:
     notes: '移動のボタンを削除し、指の移動をブラウザのスクロールに任せるのは作業 PR #659 の確認ログの決定（iPhone の Safari ではポインターのイベントが途中で打ち切られ、図が動かないため）。動かし始めるしきい値の距離はモジュール構成設計。外観はモック `docs/mock/components/diagram-frame-panel/`・`docs/mock/components/diagram-frame-touch/`'
   - item: 図の全画面
     constraint: 全画面のボタンで、タイトル・図・凡例を `<dialog>` のモーダル（`showModal()`）に出し、モーダルの中の図をモーダルの幅と高さに収まる倍率で開く。モーダルの右上のパネルは文書の中と同じボタンで、全画面のボタンの位置に閉じるボタン（lucide の `x`）を配置する。閉じるボタンか Esc で閉じ、フォーカスを全画面のボタンへ戻す。ツールチップを開いている間の Esc はツールチップだけを閉じる。閉じたときに、モーダルのために付けた受け取りと大きさの監視を解除する
-    notes: 全画面のモーダルは確認ログの決定（要件.md の `拡大・縮小`）
+    notes: 全画面のモーダルは確認ログの決定
   - item: 図のツールチップ
     constraint: 'map の補足の `notes` で説明か注記（`annotations`）を持つ線の押せる帯とノードの右上のマーカーとグループのタイトルの右のマーカーと、グラフの項目（点・棒・扇形など）を、`aria-describedby` でそのツールチップを指すフォーカスできる要素にする。
 

@@ -1230,7 +1230,7 @@ constraints:
   - item: 拡張子の提案
     constraint: '制約「点検する文書」の文書のうち、ファイル名が `.md` で終わり `.mark.md` で終わらない文書（純粋な `.md`）ごとに、制約「知らないマーカーの点検」と同じ取得の仕方でマーカーを取得し、名前が知っているマーカー（`check.ignore` の名前を除く）に該当するマーカーが 1 つ以上あれば、1 文書につき 1 件の `plain_md_with_marks` のずれにする。場所は最初のマーカーの行の番号（1 から）、内容は拡張子を `.mark.md` に変える改名先のファイル名と、提案を止める設定 `check.suggestMarkExtension: false` の 1 文。設定の `check.suggestMarkExtension` が `false` のときと、`--text`・`--file` のときは点検しない'
     decided_by: CFG-472-3#settings[check.suggestMarkExtension]
-    notes: 記法の判定の範囲は要件.md の未確定（判定の範囲、推奨 A）。GFM の記法と `mermaid` のコードブロックは mdmark の記法に数えない
+    notes: GFM の記法と `mermaid` のコードブロックは mdmark の記法に数えない
   - item: 点検する文書
     constraint: 索引の点検に指定する文書（設定に `index` があるとき）と、`build` の対象の文書（設定に `build` があるとき）を合わせ、同じファイルは 1 回だけ点検する。どちらも無い設定では知らないマーカーを点検しない
   - item: 変わった文書
@@ -1272,7 +1272,6 @@ constraints:
       設定ファイルが見つかれば、`features`・`libraries`・`extensions`（制約「知っているマーカー」と同じ読み込み方）・`check.ignore` を適用して描くときと同じ警告にし、見つからなければ既定の設定で点検する（設定ファイルが無いことをエラーにしない）。
 
       点検はブラウザを使用しない'
-    notes: 入口を `mdmark check` の引数にするのは要件.md の未確定（記法の点検の入口、推奨 A）
   - item: マーカーの設定の点検
     constraint: '点検する文書ごと（`--text`・`--file` のときは指定した Markdown）に、記法のマーカー（`map`・`map-data` を除く。map のマーカーは制約「map の点検」の種類で点検する）の引数を、描く処理と同じ読み取り（インターフェース定義『文書をHTML文字列にする』の制約「マーカーの書式」）で読み、マーカーごとの JSON Schema（ER 図『マーカーの設定の共通の決まり』から辿るマーカーごとの ER 図と同じ内容）で検証する。
 

@@ -3115,7 +3115,7 @@ request:
     default: なし（include のマーカーを全て取り込み先が無い記載の警告にする）
     description: 取り込む文書の表。キーは描く文書のあるフォルダを基準にしたパス（区切りは `/`。`./`・`../` を解いた構造）、値はそのファイルの本文
     constraints: キーに `#` を含めない
-    notes: mdmark はファイルを読み込まない。読み込むファイルは利用側が include のマーカーから決める（制約「取り込み」）。要件.md の未確定（取り込む文書の指定方法）の推奨案 A
+    notes: mdmark はファイルを読み込まない。読み込むファイルは利用側が include のマーカーから決める（制約「取り込み」）
     example: '{ "共通/手順.md": "## 準備\n…", "src/app.ts": "…" }'
   - name: opts.icons
     type: Record<string, MdmarkIconNode>
@@ -3384,7 +3384,7 @@ constraints:
     notes: 番号は markdown-it のトークンの `map` の開始の行で、VS Code のエディタの行番号（0 始まり）とそのまま比べられる。コードブロックの行の `data-line`（コードの中の 1 始まりの行番号）・図の線の `data-line`（線の種類）とは別の属性にする
   - item: コードブロックの色分け
     constraint: '`render` は色分けせず、色分けのライブラリを読み込まない（返却する HTML に `hljs-*` の class を入れない）。色分けは `mount` が描いた後に、色分けの対象の `code` に `render` が付ける属性 `data-mdmark-syntax="{言語のモジュール名}"`（言語は制約『コードブロック』の `:` の前）を手掛かりに行う（文書に記載した生の HTML のこの属性は sanitize が落とす）。機能 `syntax` は機能のオン・オフの一つとして文書の `<!-- features: {"syntax": false} -->` を受け、返却する `features` に含める'
-    notes: '`render` を同期のまま保ち、外部ライブラリのマーカーを `mount` だけが描く今の役割分担と統一する（要件.md の推奨案 A）。色分けの中身は docs/interface/IF-472-35.ts の制約『色分けの対象』〜『色分けを読み込めないとき』'
+    notes: '`render` を同期のまま保ち、外部ライブラリのマーカーを `mount` だけが描く今の役割分担と統一する。色分けの中身は docs/interface/IF-472-35.ts の制約『色分けの対象』〜『色分けを読み込めないとき』'
   - item: mermaid のコードブロック
     constraint: '機能 `mermaid` がオンの文書で、情報文字列の最初の単語がちょうど `mermaid` のコードブロックは、制約『コードブロック』のとおりのコードブロックに描き、囲む `div.mdmark-code` に属性 `data-mdmark-mermaid` を付ける。`render` は図にせず、mermaid を読み込まない。色分けの対象にしない（`data-mdmark-syntax` を付けない）。機能 `mermaid` は文書の `<!-- features: {"mermaid": false} -->` を受け、返却する `features` に含める。
 
@@ -3618,7 +3618,7 @@ constraints:
       取り込みの途中で同じファイルをもう一度取り込むマーカーは、その場所に記載の警告（循環することと、`a.md → b.md → a.md` の循環の順）を配置して取り込まない。
 
       `include` がオフのときはマーカーを取り除き、中身を取り込まない'
-    notes: 取り込む文書の指定方法は要件.md の未確定の推奨案 A。行の範囲の記載方法と、Markdown 以外のファイルでだけ行の範囲として読み込むことは確認ログの決定
+    notes: 行の範囲の記載方法と、Markdown 以外のファイルでだけ行の範囲として読み込むことは確認ログの決定
   - item: wide の範囲
     constraint: '`wide` がオンのとき、`<!-- wide -->` 〜 `<!-- /wide -->` を `<div class="mdmark-wide-range" data-state="wide">` で囲み、`<!-- wide: {"open": false} -->` で始めた範囲は `data-state="narrow"` にする。幅の切り替えのボタンは `mount` が付ける。閉じのマーカーの無い範囲は、マーカーの場所に記載の警告（閉じのマーカー `<!-- /wide -->` が無いこと）を配置し、中身を囲まずに本文の幅で出す。知らないキーは警告を配置せずに無視し、`data-state="wide"` で描く。wide の範囲の中の wide のマーカーは取り除く。`wide` がオフのときはマーカーを取り除き、中身を順に出す'
     notes: class は埋め込んだ HTML の `.is-wide` と、表の `width.mode` が `nowrap` の列の `mdmark-wide` と分ける。最初に狭い幅にする指定は確認ログの決定。外観はモック `docs/mock/components/wide/`
