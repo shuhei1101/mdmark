@@ -671,8 +671,8 @@ test("test_render_map_sequence_when_self_message", async () => {
   const selfLabel = labelOf(1);
   // 札の中心の左右は折り返しの左右の中央
   expect(selfLabel.left).toBe(((startX ?? 0) + (rightX ?? 0)) / 2);
-  // 札（高さ 20px、中心で配置）の下端は折り返しの上の辺の 6px 上
-  expect(selfLabel.top + 10).toBe((loopTop ?? 0) - 6);
+  // 札（線のラベルの文字 11px で高さ 18.5px、中心で配置）の下端は折り返しの上の辺の 6px 上
+  expect(selfLabel.top + 9.25).toBe((loopTop ?? 0) - 6);
   // ほかの参加者へのメッセージのラベルは線の中点の 14px 上のまま
   const other = wireOf(0).match(/^M([\d.]+) ([\d.]+)H([\d.]+)$/);
   const [, fromX, lineY, toX] = (other ?? []).map(Number);
