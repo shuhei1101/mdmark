@@ -16,4 +16,17 @@
 
 ## テスト結果
 
-なし（テスト作成・実装で記入する）
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/mdmark-style/blocks.test.ts` | 全実行 | 変更 | ✅ | 単体テストの全件の実行に含む<br>`テスト結果/20261120234932_efcc4461_単体テスト.log` |
+
+### 結合テストの実行範囲
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無いエントリーポイント |
+| --- | --- | --- | --- |
+| `src/mdmark-style/blocks.ts` | R7 | `tests/integration/ClaudeCodeプラグイン/mdmark-style/render-reply.test.tsx` | - |
+| `tests/unit/src/mdmark-style/blocks.test.ts` | R7（単体テストとその見本。結合テストが参照しない） | - | - |
+
+`render-reply.test.tsx` はランナーに Claude Code の CLI が無いため、テスト実行方法の補足「Claude Code の mod の結合テスト」の `npm run test:mdmark-style -- render-reply.test.tsx` で手元で実行する。
