@@ -833,9 +833,7 @@ test("test_find_frontmatter_mismatches", async () => {
       { id: "guide", path: "guide.md", title: "使用方法", tags: ["手順"] },
     ],
   };
-  const metadata = new Map([
-    ["guide.md", { title: "使い方", tags: ["手順"] }],
-  ]);
+  const metadata = new Map([["guide.md", { title: "使い方", tags: ["手順"] }]]);
   // 実行
   const issues = findFrontmatterMismatches({
     index,
@@ -846,7 +844,11 @@ test("test_find_frontmatter_mismatches", async () => {
   expect(
     issues.map(({ file, where, kind }) => ({ file, where, kind })),
   ).toEqual([
-    { file: "index.yaml", where: "docs[0].title", kind: "frontmatter_mismatch" },
+    {
+      file: "index.yaml",
+      where: "docs[0].title",
+      kind: "frontmatter_mismatch",
+    },
   ]);
   expect(issues[0]?.message).toContain("使用方法");
   expect(issues[0]?.message).toContain("使い方");

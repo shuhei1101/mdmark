@@ -167,10 +167,16 @@ const FRONTMATTER_DOCUMENTS: Record<string, string> = {
     "公開関数を使用する。",
   ].join("\n"),
   "api.md": "# API\n",
-  "使い方/guide.md": ["---", "aliases: 使い方", "---", "", "構成図を参照する。"].join(
+  "使い方/guide.md": [
+    "---",
+    "aliases: 使い方",
+    "---",
+    "",
+    "構成図を参照する。",
+  ].join("\n"),
+  "note.md": ["---", "title: メモ", "---", "", "[構成](設計/arch.md)"].join(
     "\n",
   ),
-  "note.md": ["---", "title: メモ", "---", "", "[構成](設計/arch.md)"].join("\n"),
   "draft.md": "[構成](設計/arch.md)",
 };
 
@@ -303,7 +309,11 @@ test("test_supplement_index_docs_when_unindexed", async () => {
     frontmatter: { "note.md": { title: "メモ" } },
   });
   // 検証
-  expect(docs.at(-1)).toEqual({ id: "note.md", path: "note.md", title: "メモ" });
+  expect(docs.at(-1)).toEqual({
+    id: "note.md",
+    path: "note.md",
+    title: "メモ",
+  });
   expect([...added]).toEqual(["note.md"]);
 });
 
