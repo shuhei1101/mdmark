@@ -134,7 +134,7 @@ flows:
 refs:
   - IF-472-34#
   - IF-472-48#
-test_file: tests/integration/lib/render-for-mount.test.ts
+test_file: tests/integration/lib/render-for-mount.browser.test.ts
 tags:
   - name: topic:書き出し
     main: true
