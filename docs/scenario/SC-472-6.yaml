@@ -5,7 +5,7 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 見本のワークスペース
-        description: VSCodeでプレビューを開くの正常シナリオと同じ。`mdmark.export.outputDir` は既定の空
+        description: VSCodeでプレビューを開くの正常シナリオと同じ。`mdmark.export.outputDir` は既定の空。開いている Markdown は、原本だけの目印の HTML コメント `<!-- 原本だけの目印 6 -->` を 1 つ持つ
       - name: Mock
         description: VSCodeでプレビューを開くの正常シナリオと同じ。既定のブラウザで開く操作は、開いた URL を記録する代役
     flow: |-
@@ -33,7 +33,7 @@ scenarios:
       - 通知に書き出したパスと「ブラウザで開く」が出る
       - ブラウザで開く代役に、書き出した HTML の URL が渡る
       - 書き出した HTML をブラウザで開くと、プレビューと同じ見出し・表・注意書き・map の構成図が描かれる
-      - 書き出した HTML に、開いている Markdown のマーカー（`<!-- map -->` など）と生の Markdown の記法の文字列が含まれず、開いたときは埋めた描いた HTML から描かれる。右側の目次の「Markdown でコピー」は埋めた純粋な Markdown をコピーする
+      - 書き出した HTML のソースに、目印の文字列（`原本だけの目印 6`）とマーカーの文字（`<!-- map`）が 0 件で、開いたときは埋めた描いた HTML から描かれる。右側の目次の「Markdown でコピー」は埋めた純粋な Markdown をコピーする
     test: test_normal
   - name: 正常シナリオ（ブラウザで開く）
     setup:
