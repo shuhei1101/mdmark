@@ -982,7 +982,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-        notes: 描く先の要素の幅は、表が横にスクロールする幅。設定で、はみ出す表を描いた直後に既定の列を留める指定をする
+        notes: '描く先の要素の幅は、表が横にスクロールする幅。設定に `table.pin_default: true` を指定する'
       - name: はみ出す表を持つ Markdown
         description: 'マーカーで囲まない 10 列 30 行の表と、`<!-- table: {"features": {"pin": {"enabled": false}}} -->` で囲んだ 10 列の表を持つ文書'
       - name: Mock
@@ -1099,7 +1099,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-        notes: 描く先の要素の幅は、表が横にスクロールする幅。設定で、はみ出す表を描いた直後に既定の列を留める指定をする
+        notes: '描く先の要素の幅は、表が横にスクロールする幅。設定に `table.pin_default: true` を指定する'
       - name: 行見出しを持つはみ出す表の Markdown
         description: '`<!-- table: {"kind": "data", "header": {"columns": 2}} -->` で囲んだ 10 列の表を持つ文書'
       - name: Mock
@@ -2305,7 +2305,7 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-        notes: 描く先の要素の幅は、表が横にスクロールする幅。設定に、はみ出す表を描いた直後に既定の列を留める指定を記載しない
+        notes: 描く先の要素の幅は、表が横にスクロールする幅。設定に `table.pin_default` を記載しない（既定の `false`）
       - name: はみ出す表を持つ Markdown
         description: 'マーカーで囲まない 10 列 30 行の表と、`<!-- table: {"kind": "data", "header": {"columns": 2}} -->` で囲んだ 10 列の表と、`<!-- table: {"kind": "data", "columns": {"物理名": {"pinned": true}}} -->` で 1 列目 `No`・2 列目 `物理名` を含む 8 列の表を囲んだ文書'
       - name: Mock
