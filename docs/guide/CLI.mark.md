@@ -73,6 +73,7 @@ Markdown を 1 つ、CDN を読み込まない 1 枚の HTML に書き出す。
 配布物・利用側の CSS・外部ライブラリのモジュール・拡張・画像を埋める。
 動画・音声は、出力の HTML と同じフォルダの `{出力のファイル名から拡張子を除いた名前}_files/` へコピーし、HTML からそのコピーへの相対パスにする。
 開いた HTML は `mount` で文書を描き、開いてから描き終えるまで、ページ自身・`_files/` の下にコピーした動画と音声と画像の `data:` のほかへ要求しない。
+ページのタイトルは、索引の `title`、無ければ文書の先頭のフロントマターの `title`、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名。
 手順は [文書を書き出す](./書き出す-文書を書き出す.mark.md)。
 
 標準出力に `書き出した: {出力のパス}` の 1 行を出す。
@@ -187,6 +188,8 @@ npx github:shuhei1101/mdmark#v{バージョン} export-markdown {文書} [--out 
 
 設定の `build` で決めた文書を、文書を行き来できる 1 枚の HTML にまとめる。
 参照・被参照・用語のツールチップが有効になる。
+文書の先頭のフロントマターを解析し、索引に無いキーを補う（[フロントマターで補うキー](./索引.mark.md#フロントマターで補うキー)）。
+文書の一覧・帯・ページのタイトルは、索引の `title`、無ければフロントマターの `title`、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名。
 埋めるものと外へ要求しないことは、[文書を HTML に書き出す](#文書を-html-に書き出す) と同じ。
 画像・動画・音声はそれぞれの文書のフォルダを基準に探す。
 include の取り込み先は文書ごとにその文書のフォルダから数え、`build` の対象外のファイルでも設定ファイルのフォルダの中なら埋める（文書の一覧には出さない）。
@@ -253,12 +256,13 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `unknown_color_theme` | 設定の `colorTheme` が選べるテーマの名前に無い。場所は `colorTheme`。内容は `不明なテーマ名 {名前} です。dev-swiss・theme-paper・theme-slate・theme-contrast のいずれかに修正してください。` |
 | `no_documents` | `build.include` に該当し `build.exclude` に該当しない文書が 0 件 |
 | `missing_doc` | 索引にあって、文書が見つからない |
-| `orphan_doc` | 文書があって、索引に無い |
+| `orphan_doc` | 文書があって、索引に無く、先頭のフロントマターに `title` も持たない |
 | `broken_ref` | `related` の `id`（オブジェクトの要素は `to`）が索引に無い |
 | `untyped_related` | `related` の要素が `type` と `when` を持たない文字列。オブジェクトへの書き換えを求める |
 | `one_sided_change_together` | `change_together` の相手が、自分への `change_together` を記載していない |
 | `related_link_overlap` | `change_together` でない `related` の相手を、本文でもリンクしている |
 | `missed_change_together` | `--base` を指定したとき、`change_together` の組のうち片方の文書だけが変わっている。場所は空で、ファイルは変わっていない側の文書のパス |
+| `frontmatter_mismatch` | 索引の文書と、その文書の先頭のフロントマターの両方に記載した `title`・`description`・`aliases`・`tags` の値が違う。場所は索引のそのキーのパス |
 | `duplicate_term` | 用語の単語か別名が、NFKC・英字の小文字化・前後の空白の除去で正規化した後に重なっている |
 | `avoided_term` | 索引の文書の本文に、用語のやめた言い方が出ている |
 | `alias_no_files` | `aliases` の行の `paths` に該当するファイルが 0 件。場所は `aliases[1].paths` |

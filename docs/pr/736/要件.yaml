@@ -49,43 +49,63 @@ docs:
   - page: docs/guide/コアコンセプト-索引と被参照.md
     new: false
     change: 「索引が正」の節に、文書のメタデータをフロントマターからも参照することと、索引との優先を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/索引.mark.md
     new: false
     change: 文書のキーのうちフロントマターでも記載できるキーと、食い違いのずれの種類（追加するとき）を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/記載する-索引と用語集を記載する.mark.md
     new: false
     change: 文書のメタデータをフロントマターに記載する手順を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: フロントマターの節に、値を索引・文書の一覧・文書のタイトルに使用することを加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/書き出す-文書を1枚にまとめる.md
     new: false
     change: 文書の一覧のタイトルの決まり方にフロントマターの title を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/書き出す-文書を書き出す.mark.md
     new: false
     change: ページのタイトルの決まり方にフロントマターの title を加える
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/API.mark.md
     new: false
     change: collectReferences・checkIndex がフロントマターの値を参照することと、返却するずれを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/CLI.mark.md
     new: false
     change: build・export の文書のタイトルの決まり方と check のずれを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/VSCodeで確認する-HTMLとPDFにする.md
     new: false
     change: 書き出した HTML のページのタイトルの決まり方を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: 索引・フロントマターの用語の意味を変更に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:24:53.495444+00:00'
 scope_out:
   - item: フロントマターの related を索引の関連として参照すること
     reason: 要望はタイトル・タグなどのメタデータで、関連は相手の id を要し索引に残す推奨のため。参照するキーの決定で入れるときはスコープに戻す

@@ -16,7 +16,7 @@ files:
     name: 索引と被参照
     visibility: public
     category: はじめに
-    description: 索引を正にして被参照を描くときに算出し、ずれを点検で見つける仕組みを説明し、索引と被参照の関係を確認するときに参照する。
+    description: 索引を優先し、被参照を描くときに算出し、ずれを点検で見つける仕組みを説明し、索引と被参照の関係を確認するときに参照する。
     tags: [topic:仕組み, topic:索引, topic:被参照, action:点検]
   - path: コアコンセプト-1枚にまとめる仕組み.md
     name: 1枚にまとめる仕組み

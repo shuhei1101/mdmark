@@ -120,7 +120,7 @@ handle.destroy();
 | `opts.config` | 任意 | 利用側のサーバーが `mdmark.config.yaml` を読み込んだオブジェクト。省いたキーには既定を適用する。キーは [設定](./設定.mark.md) |
 | `opts.index` | 任意 | 利用側のサーバーが、設定の `index` のパスの索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.mark.md)。Schema に合わない文書・用語の項目は除いて使用する。省くと、描く文書の用語集の表だけで用語を照合し、被参照を出さない |
 | `opts.docId` | 任意 | 描く文書の索引の `id`。被参照の一覧を引き、関連文書から自分を除き、リンクの相対パスを求めるのに使用する。省くと、被参照の一覧を出さず、関連文書のリンクは索引の `path` のままにする。索引に無い `id` は、省いたときと同じに扱う。`opts.commentStore` を指定するときは必須で、コメントの読み込みと保存の関数に指定する対象の ID にもなる |
-| `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返却した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語とそのやめた言い方に使用する。用語の `avoid` は任意で、無い用語はやめた言い方を持たないものとして扱う。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
+| `opts.references` | 任意 | [`collectReferences`](#参照の表を作る) が返却した参照の表。被参照の一覧と、ほかの文書の用語集の表の用語とそのやめた言い方に使用する。用語の `avoid` は任意で、無い用語はやめた言い方を持たないものとして扱う。`docs` を持つときは、被参照の一覧とツールチップの関連文書に `opts.index` の `docs` の代わりに使用し、`opts.docId` にはフロントマターで加えた文書の `id`（文書のパス）も指定できる。省くと、被参照は索引の `related` だけから出し、ほかの文書の用語集の表の用語を照合しない |
 | `opts.aliases` | 任意 | [`buildAliases`](#エイリアスを作る) が作ったエイリアスの並び（`MdmarkAlias[]`）。使用できないエイリアス（必須のキーが空・知らない種類・重なった `id`）は除いて使用し、`env` の種類は直接渡されても照合しない。`update` は描いたときのエイリアスを使用する。省くと、エイリアスを照合しない |
 | `opts.includes` | 任意 | 取り込む文書の表（`Record<string, string>`）。キーは描く文書のフォルダからのパス（区切りは `/`。`./`・`../` を解いた構造）、値はそのファイルの本文。[取り込み](./記法.mark.md#取り込み) のマーカーはこの表から参照する。mdmark はファイルを読み込まない。省くと、取り込みのマーカーの場所に記載の警告を出す |
 | `opts.icons` | 任意 | 配布物に入っていない名前の Lucide のアイコンの形状の表（`Record<string, IconNode>`）。表にある名前は jsDelivr から読み込まずにこの構造で描く。省くと、使用する名前だけを jsDelivr から読み込む |
@@ -390,14 +390,16 @@ const references = collectReferences({
 | 引数 | 必須 / 任意 | 説明 |
 | --- | --- | --- |
 | `input.index` | 必須 | 利用側が索引の YAML を読み込んだオブジェクト。構造は [索引](./索引.mark.md)。Schema に合わない文書・用語の項目は除いて作る |
-| `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。索引に無いパスの文書は無視する。索引にあって表に無い文書は、`related` だけで参照に入る |
+| `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。索引に無いパスの文書は、`input.frontmatter` に使用できる `title` を持つときだけ索引の文書として加え、ほかは無視する。索引にあって表に無い文書は、`related` だけで参照に入る |
 | `input.config` | 任意 | `mount` の `opts.config` と同じ。読み込むのは `features` だけで、文書ごとの `<!-- features: … -->` を重ね、`backlinks` がオフの文書を参照元にも参照先にもせず、`glossary` がオフの文書の表の用語を入れない |
+| `input.frontmatter` | 任意 | 文書のパス（`input.documents` のキーと同じ記載方法）から、その文書の先頭のフロントマターの中身を呼ぶ側が YAML として解析した値を参照する表。値がマッピングの文書の `title`・`description`・`aliases`・`tags` のうち型の合うキーで、索引に無いキーを補う（[フロントマターで補うキー](./索引.mark.md#フロントマターで補うキー)）。解析できない文書は表に入れない。省くと補わない |
 
 ### レスポンス
 
 | フィールド | 型 | 説明 |
 | --- | --- | --- |
 | `backlinks` | `Record<string, string[]>` | 文書の `id` から、その文書を参照している文書の `id` の並びを参照する表。並びは索引の `docs` の順で、重なりと自分自身は入らない。参照されていない文書は空の並び |
+| `docs` | `MdmarkIndexDoc[]` | 索引の文書を `input.frontmatter` の値で補い、索引に無く `title` を持つ文書を加えた並び。どの文書も `title` を持つ（索引・フロントマターに無ければ本文の最初の h1、無ければ拡張子を除いたファイル名）。加えた文書の `id` と `path` はその文書のパス。並びは索引の `docs` の順の後ろに、加えた文書を `input.documents` のキーの順 |
 | `glossary` | `{ term, aliases, meaning, docId, avoid }[]` | 各文書の用語集の表から入れた用語の並び。並びは索引の `docs` の順で、同じ文書の中は表の行の順。`aliases` は別名の列を「、」か「,」で区切ったもので、別名の列が無いときは空。`docId` はその表を持つ文書の `id`。`avoid` はやめた言い方の列を別名と同じく区切ったもので、やめた言い方の列が無いときは空 |
 
 参照は、次のどれかで数える。
@@ -450,6 +452,7 @@ const { byDocument, avoided, targets } = collectMatches({
 | `input.documents` | 必須 | 文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。複数の文書を指定できる。索引に無いパスの文書は無視する。ほかの文書の用語集の表の用語も、この表にある本文から読み込む |
 | `input.config` | 任意 | `mount` の `opts.config` と同じ。読み込むのは `features` だけで、文書ごとの `<!-- features: … -->` を重ね、`glossary`・`backlinks`・`html`・`diagrams` のオン・オフを文書ごとに決める |
 | `input.aliases` | 任意 | `mount` の `opts.aliases` と同じ。使用できないエイリアス（`env` を含む）は `mount` と同じく除いて照合する。省くと、エイリアスを照合しない |
+| `input.frontmatter` | 任意 | `collectReferences` の `input.frontmatter` と同じ。補った文書のタイトル・短い説明・別名で照合して返却する |
 
 ### レスポンス
 
@@ -577,6 +580,7 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | `input.index` | 必須 | 利用側が索引の YAML を読み込んだ値。構造を確認する前の値をそのまま指定する |
 | `input.documents` | 必須 | 索引のフォルダにある文書のパス（索引のファイルからの相対パス。区切りは `/`）から、その文書の Markdown を参照する表。どのファイルを文書として指定するかは呼ぶ側が決める |
 | `input.indexFile` | 任意 | ずれの `file` に出す索引のファイルの名前。既定は `index.yaml` |
+| `input.frontmatter` | 任意 | `collectReferences` の `input.frontmatter` と同じ。指定したときだけ、フロントマターで補い、使用できる `title` を持つ索引に無い文書を `orphan_doc` にせず、索引とフロントマターの値の違いを `frontmatter_mismatch` で返却する |
 | `input.changedPaths` | 任意 | 比べる基準から変わった文書のパス（`documents` のキーと同じ記載方法）の並び。指定したときだけ、`change_together` の組のうち片方の文書だけが変わった組を `missed_change_together` で返却する。省くと修正漏れを確認しない。索引のどの `path` にも該当しないパスは無視する。基準の引き方（git の比べ方）は呼ぶ側が決める |
 
 索引の `docs[].related` の要素は、`MdmarkIndexRelated` のオブジェクトか、関連する文書の `id` の文字列。
@@ -600,10 +604,10 @@ const issues = checkIndex({ index, documents, indexFile: "docs/index.yaml" });
 | --- | --- | --- |
 | `file` | `string` | ずれのあるファイル。索引のずれは `indexFile`、文書のずれはその文書のパス |
 | `where` | `string` | 索引のキーのパス（`docs[3].path`）か、文書の行。ファイル全体のずれは空文字 |
-| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.mark.md#点検が返却するずれ) |
+| `kind` | `'schema' \| 'missing_doc' \| 'orphan_doc' \| 'broken_ref' \| 'untyped_related' \| 'one_sided_change_together' \| 'related_link_overlap' \| 'missed_change_together' \| 'frontmatter_mismatch' \| 'duplicate_term' \| 'avoided_term'` | ずれの種類。意味は [索引](./索引.mark.md#点検が返却するずれ) |
 | `message` | `string` | ずれの内容と修正方法を記載した日本語の 1 文 |
 
-並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `duplicate_term` → `avoided_term` の順で、同じ種類の中は索引の並びとパスの順。
+並びは `schema` → `missing_doc` → `orphan_doc` → `broken_ref` → `untyped_related` → `one_sided_change_together` → `related_link_overlap` → `missed_change_together` → `frontmatter_mismatch` → `duplicate_term` → `avoided_term` の順で、同じ種類の中は索引の並びとパスの順。
 
 ```json
 [
