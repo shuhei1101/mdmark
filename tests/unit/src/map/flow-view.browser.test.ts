@@ -1,5 +1,9 @@
 import { afterEach, expect, onTestFinished, test, vi } from "vitest";
-import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 import { CONFIG, DATA, FLOW, mapRange } from "../../helpers/map.ts";
 import { renderDoc } from "../../helpers/render.ts";
 
@@ -605,4 +609,92 @@ test("test_attach_map_flow_when_kind_row_hidden", async () => {
   // 検証
   const layout = await loadLayout();
   expect(vi.mocked(layout.layoutMap)).toHaveBeenCalledTimes(1);
+});
+
+/** 名前の幅を測る構成図（半角を含む名前の種類の行を持つノードと、pill の形状の種類のノード） */
+const MEASURED_FLOW = `flowchart LR
+  doc["文書の Markdown"]:::step
+  user(["利用側のページ"]):::outside
+  short["abcd"]:::step
+  doc --> user
+  user --> short
+`;
+
+/** 描いた文書の CSS を当てて、名前の幅を測る構成図を描いて付ける */
+async function setUpMeasured() {
+  addStyles();
+  const { attachMapFlow } = await loadFlowView();
+  const { parseMapArgs } = await loadSpec();
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(
+    renderDoc(mapRange({ mermaid: MEASURED_FLOW, data: '{"version": 1}' }))
+      .html,
+  );
+  const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
+  const handle = attachMapFlow(
+    range,
+    resolveConfig({ config: { map: CONFIG } }),
+    { args: parseMapArgs("").args },
+  );
+  handles.push(handle);
+  return { root, handle };
+}
+
+/** 描いたノードの幅と、名前の要素の幅と高さ */
+const nodeBox = (root: HTMLElement, id: string) => {
+  const node = root.querySelector<HTMLElement>(
+    `.mdmark-diagram-node[data-node="${id}"]`,
+  ) as HTMLElement;
+  const name = node.querySelector(".mdmark-diagram-node-name") as HTMLElement;
+  const rect = name.getBoundingClientRect();
+  return {
+    width: node.getBoundingClientRect().width,
+    nameWidth: rect.width,
+    nameHeight: rect.height,
+  };
+};
+
+// 描くフォントで測った名前の幅で配置する（正常系）
+test("test_attach_map_flow_when_measured_name", async () => {
+  // 準備・実行
+  const { root } = await setUpMeasured();
+  // 検証（名前が 1 行で、ノードの幅が名前の幅に左右の余白と枠線を加えた幅）
+  for (const [id, padLeft] of [
+    ["doc", 10],
+    ["user", 16],
+  ] as const) {
+    const box = nodeBox(root, id);
+    expect(box.nameHeight, id).toBeLessThanOrEqual(14 * 1.35 + 0.5);
+    expect(
+      Math.abs(box.width - (box.nameWidth + padLeft + 28 + 3)),
+      id,
+    ).toBeLessThanOrEqual(1);
+  }
+});
+
+// 書体を読み込み終えた後に測り直す（正常系）
+test("test_attach_map_flow_when_fonts_ready", async () => {
+  // 準備（書体の読み込みを終えていない状態で 2 つの範囲を描き、1 つを片付ける）
+  let resolveReady: (fonts: FontFaceSet) => void = () => undefined;
+  const ready = new Promise<FontFaceSet>((resolve) => {
+    resolveReady = resolve;
+  });
+  vi.spyOn(document.fonts, "ready", "get").mockReturnValue(ready);
+  const kept = await setUpMeasured();
+  const destroyed = await setUpMeasured();
+  destroyed.handle.destroy();
+  const before = nodeBox(destroyed.root, "short").width;
+  // 実行（名前の 1 文字を 20px と測るようにしてから読み込みを終える）
+  vi.spyOn(
+    CanvasRenderingContext2D.prototype,
+    "measureText",
+  ).mockImplementation(
+    (text: string) => ({ width: [...text].length * 20 }) as TextMetrics,
+  );
+  resolveReady(document.fonts);
+  await ready;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  // 検証（abcd は 4 × 20 + 10 + 28 + 3 = 121px で配置し直す。片付けた範囲は描き直さない）
+  expect(nodeBox(kept.root, "short").width).toBeCloseTo(121, 0);
+  expect(nodeBox(destroyed.root, "short").width).toBe(before);
 });

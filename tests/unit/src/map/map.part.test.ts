@@ -19,12 +19,12 @@ const loadRows = () => import("../../../../src/map/sequence-rows.ts");
 /** 部品『mapの構成図』の Default の引数 */
 async function flowArgs(entered?: string) {
   const { parseFlowchart } = await loadFlowchart();
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const chart = parseFlowchart(FLOW);
   const layout = layoutMap(
     chart,
     { collapsed: [], entered },
-    { overrides: {}, nodeFit: "height" },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
   );
   return {
     layout,
@@ -88,11 +88,11 @@ test("test_render_map_flow_when_note_node", async () => {
   // 準備
   const { renderMapFlow } = await loadParts();
   const { parseFlowchart } = await loadFlowchart();
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const layout = layoutMap(
     parseFlowchart(FLOW),
     { collapsed: [], entered: undefined },
-    { overrides: {}, nodeFit: "height" },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
   );
   // 実行
   const { html } = renderMapFlow({
@@ -374,14 +374,14 @@ test("test_render_map_flow_when_terms", async () => {
   // 準備
   const { renderMapFlow } = await loadParts();
   const { parseFlowchart } = await loadFlowchart();
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const chart = parseFlowchart(
     FLOW.replace('data["補足の検査"]', 'data["<b>補足</b>の検査"]'),
   );
   const layout = layoutMap(
     chart,
     { collapsed: [], entered: undefined },
-    { overrides: {}, nodeFit: "height" },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
   );
   // 実行
   const { html, tips } = renderMapFlow({
@@ -678,11 +678,11 @@ test("test_render_map_flow_when_collapsed_count", async () => {
   // 準備
   const { renderMapFlow } = await loadParts();
   const { parseFlowchart } = await loadFlowchart();
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const layout = layoutMap(
     parseFlowchart(FLOW),
     { collapsed: ["read"], entered: undefined },
-    { overrides: {}, nodeFit: "height" },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
   );
   // 実行
   const { html } = renderMapFlow({
@@ -736,11 +736,11 @@ test("test_render_map_flow_when_merged_notes", async () => {
   // 準備
   const { renderMapFlow } = await loadParts();
   const { parseFlowchart } = await loadFlowchart();
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const layout = layoutMap(
     parseFlowchart(FLOW),
     { collapsed: ["read"], entered: undefined },
-    { overrides: {}, nodeFit: "height" },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
   );
   const args = { ...(await flowArgs()), layout, collapsed: ["read"] };
   // 実行
@@ -925,7 +925,7 @@ test("test_render_map_state", async () => {
 async function erArgs(collapsed: string[]) {
   const { parseErDiagram, erToFlowchart, erOverrides, erPartRelations } =
     await import("../../../../src/map/er.ts");
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const { rewireMapEr } = await loadParts();
   const { ER } = await import("../../helpers/map.ts");
   const er = parseErDiagram(ER);
@@ -938,7 +938,11 @@ async function erArgs(collapsed: string[]) {
   const placed = layoutMap(
     erToFlowchart(er, {}),
     { collapsed },
-    { overrides: erOverrides(er, new Set(collapsed)), nodeFit: "height" },
+    {
+      overrides: erOverrides(er, new Set(collapsed)),
+      nodeFit: "height",
+      measureText: estimateTextWidth,
+    },
   );
   const layout = {
     ...placed,
@@ -1254,7 +1258,7 @@ test("test_render_map_state_diagram", async () => {
   const { parseStateDiagram, stateToFlowchart, statePartInputs } = await import(
     "../../../../src/map/state-diagram.ts"
   );
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const { renderMapStateDiagram } = await loadParts();
   const { STATE } = await import("../../helpers/map.ts");
   const { chart, loops: selfLoops } = stateToFlowchart(
@@ -1264,7 +1268,7 @@ test("test_render_map_state_diagram", async () => {
   const layout = layoutMap(
     chart,
     { collapsed: [] },
-    { overrides, nodeFit: "height" },
+    { overrides, nodeFit: "height", measureText: estimateTextWidth },
   );
   // 実行
   const part = renderMapStateDiagram({
@@ -1320,7 +1324,7 @@ test("test_render_map_flow_when_group_note", async () => {
   // 準備
   const { renderMapFlow } = await loadParts();
   const { parseFlowchart } = await loadFlowchart();
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const notes = { read: "記法を読み取る部分" };
   const opened = { ...(await flowArgs()), notes };
   const closed = {
@@ -1328,7 +1332,7 @@ test("test_render_map_flow_when_group_note", async () => {
     layout: layoutMap(
       parseFlowchart(FLOW),
       { collapsed: ["read"], entered: undefined },
-      { overrides: {}, nodeFit: "height" },
+      { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
     ),
     collapsed: ["read"],
   };
@@ -1401,7 +1405,7 @@ async function classArgs(hints?: boolean) {
   const { parseClassDiagram, classToFlowchart, classPartInputs } = await import(
     "../../../../src/map/class-diagram.ts"
   );
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const { spreadMapEnds } = await loadParts();
   const { CLASS } = await import("../../helpers/map.ts");
   const diagram = parseClassDiagram(CLASS);
@@ -1410,11 +1414,12 @@ async function classArgs(hints?: boolean) {
     collapsed: new Set(),
     widths: {},
     maxWidth: 220,
+    measureText: estimateTextWidth,
   });
   const layout = layoutMap(
     chart,
     { collapsed: [] },
-    { overrides, nodeFit: "height" },
+    { overrides, nodeFit: "height", measureText: estimateTextWidth },
   );
   return {
     layout: { ...layout, wires: spreadMapEnds(layout) },
@@ -1609,7 +1614,7 @@ async function archLayout() {
   const { parseArchitecture, architectureToFlowchart } = await import(
     "../../../../src/map/architecture.ts"
   );
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const { rewireMapArchitecture } = await loadParts();
   const { ARCH } = await import("../../helpers/map.ts");
   const diagram = parseArchitecture(ARCH);
@@ -1617,7 +1622,7 @@ async function archLayout() {
   const layout = layoutMap(
     chart,
     { collapsed: [] },
-    { overrides, nodeFit: "height" },
+    { overrides, nodeFit: "height", measureText: estimateTextWidth },
   );
   const wires = rewireMapArchitecture({
     layout,
@@ -1745,7 +1750,7 @@ test("test_render_map_architecture", async () => {
 test("test_render_map_c4_diagram", async () => {
   // 準備
   const { parseC4, c4ToFlowchart } = await import("../../../../src/map/c4.ts");
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const { renderMapC4Diagram, spreadMapEnds } = await loadParts();
   const { C4 } = await import("../../helpers/map.ts");
   const { MAP_C4_KINDS } = await import("../../../../src/map/c4.ts");
@@ -1754,7 +1759,7 @@ test("test_render_map_c4_diagram", async () => {
   const layout = layoutMap(
     chart,
     { collapsed: [] },
-    { overrides, nodeFit: "height" },
+    { overrides, nodeFit: "height", measureText: estimateTextWidth },
   );
   // 実行
   const part = renderMapC4Diagram({
@@ -1810,12 +1815,12 @@ test("test_render_map_flow_when_no_kind", async () => {
   // 準備
   const { renderMapFlow } = await loadParts();
   const { parseFlowchart } = await loadFlowchart();
-  const { layoutMap } = await loadLayout();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
   const chart = parseFlowchart("flowchart LR\n  A[受付]:::step --> B[回答]\n");
   const layout = layoutMap(
     chart,
     { collapsed: [], entered: undefined },
-    { overrides: {}, nodeFit: "height" },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
   );
   // 実行
   const { html } = renderMapFlow({
