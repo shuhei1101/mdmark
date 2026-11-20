@@ -161,8 +161,13 @@ export const attachMapList = (
       "beforeend",
       renderMapList({ label: source.label(), items: source.items() }),
     );
+    // 一覧は先頭から見せる（図の位置は閉じるときに戻す）
+    viewport.scrollLeft = 0;
+    viewport.scrollTop = 0;
     button.setAttribute("aria-pressed", "true");
-    viewport.querySelector<HTMLElement>('[role="treeitem"]')?.focus();
+    viewport
+      .querySelector<HTMLElement>('[role="treeitem"]')
+      ?.focus({ preventScroll: true });
   };
   const onClick = (event: MouseEvent) => {
     const target = event.target as HTMLElement;

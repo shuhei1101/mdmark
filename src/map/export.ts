@@ -237,30 +237,32 @@ const prunedClone = (stage: HTMLElement): { copy: HTMLElement } => {
   return { copy };
 };
 
-/** 複製から、除外の目印の要素・`class`・値に `var(` を持つ属性・外を指す `href` を除く */
+/** 書き出す SVG に残さない属性の名前 */
+const DROPPED_ATTRIBUTES = new Set(["class", "role", "tabindex", "title"]);
+
+/** 資源を指す属性の名前 */
+const RESOURCE_ATTRIBUTES = new Set(["href", "xlink:href", "src"]);
+
+/** 複製から除く属性か（目印・読み上げの属性、値に `var(` を持つ属性、図の中の `#` と `data:` のほかを指す資源の属性） */
+const isDroppedAttribute = (attribute: Attr): boolean => {
+  const { name, value } = attribute;
+  if (DROPPED_ATTRIBUTES.has(name) || value.includes("var(")) return true;
+  if (name.startsWith("data-") || name.startsWith("aria-")) return true;
+  return (
+    RESOURCE_ATTRIBUTES.has(name) &&
+    !value.startsWith("#") &&
+    !value.startsWith("data:")
+  );
+};
+
+/** 複製から、除外の目印の要素と除く属性を除く */
 const cleanUp = (copy: Element): void => {
   for (const element of copy.querySelectorAll("[data-mdmark-export-drop]"))
     element.remove();
   for (const element of [copy, ...copy.querySelectorAll("*")]) {
-    for (const attribute of [...element.attributes]) {
-      const { name, value } = attribute;
-      const external =
-        (name === "href" || name === "xlink:href" || name === "src") &&
-        !value.startsWith("#") &&
-        !value.startsWith("data:");
-      if (
-        name === "class" ||
-        name.startsWith("data-") ||
-        name.startsWith("aria-") ||
-        name === "role" ||
-        name === "tabindex" ||
-        name === "title" ||
-        value.includes("var(") ||
-        external
-      ) {
-        element.removeAttribute(name);
-      }
-    }
+    for (const attribute of [...element.attributes])
+      if (isDroppedAttribute(attribute))
+        element.removeAttribute(attribute.name);
   }
 };
 

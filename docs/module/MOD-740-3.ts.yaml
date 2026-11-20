@@ -13,7 +13,7 @@ functions:
     summary: 構成図の部品の上に描く図の読み取った図から、グループを子を持つ項目、ノードを項目にした入れ子の `MapListItem[]` を Mermaid の記載順で作る
     args:
       - name: input
-        type: '{ chart: MapFlowChart; notes: Record<string, string>; changes: Record<string, "added" | "changed" | "removed">; kindLabel: (node: string) => string | undefined }'
+        type: '{ chart: Flowchart; notes: Record<string, string>; changes: Record<string, "added" | "changed" | "removed">; kindLabel: (node: string) => string | undefined }'
         required: true
         description: 読み取った図・補足の説明・計画した変更・ノードの種類の名前を返却する関数
     returns:
@@ -36,7 +36,7 @@ functions:
     summary: '読み取ったシーケンス図のメッセージを記載順に「{送信元} → {送信先}: {メッセージ}」の `MapListItem`（`id` はメッセージの番号）にする'
     args:
       - name: sequence
-        type: MapSequence
+        type: Sequence
         required: true
         description: '`parseSequence` の読み取ったシーケンス図'
     returns:
@@ -71,7 +71,7 @@ functions:
       description: 付けた受け取りを解除し、一覧を破棄する関数
     side_effects: 図の `hidden` とボタンの `aria-pressed` を書き換え、表示する枠に一覧を入れる・取り除く
     process: |-
-      1. 一覧の表示のボタン（`[data-tool="list"]`）を押すと、`aria-pressed` が `false` なら `renderMapList` の一覧を表示する枠に入れて図を `hidden` にし、最初の項目へフォーカスを移す。`true` なら一覧を取り除いて図を表示する（倍率・位置・開閉は触らない）
+      1. 一覧の表示のボタン（`[data-tool="list"]`）を押すと、`aria-pressed` が `false` なら `renderMapList` の一覧を表示する枠に入れて図を `hidden` にし、表示する枠のスクロールの位置を記録して先頭へ戻し、最初の項目へフォーカスを移す。`true` なら一覧を取り除いて図を表示し、記録したスクロールの位置に戻す（倍率・開閉は触らない）
       2. 一覧の項目で ↑・↓・Home・End は隠れていない項目の並びで `tabindex="0"` とフォーカスを移す
       3. → は閉じた項目を開き、開いた項目では最初の子へ移る。← は開いた項目を閉じ、閉じた項目や子を持たない項目では親へ移る。山形を押しても開閉する
       4. 一覧の状態は保存しない

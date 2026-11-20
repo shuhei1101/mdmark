@@ -102,7 +102,12 @@ import {
   MAP_CLASS_KINDS,
   parseClassDiagram,
 } from "../src/map/class-diagram.ts";
-import { type MapChange, noteTexts, parseMapData } from "../src/map/data.ts";
+import {
+  type MapChange,
+  type MapData,
+  noteTexts,
+  parseMapData,
+} from "../src/map/data.ts";
 import {
   erColumnNotes,
   erFanouts,
@@ -1187,6 +1192,47 @@ const mapStoryListItems = (list: unknown): MapListItem[] => {
   });
 };
 
+/** 構成図のストーリーの見本（`changes` があれば計画した変更の見本、無ければ引数 `source` で選ぶ） */
+const mapFlowStorySource = (
+  source: unknown,
+  changes: Record<string, MapChange> | undefined,
+): string => {
+  if (changes !== undefined) return MAP_FLOW_CHANGES;
+  const sources: Record<string, string> = {
+    long: MAP_FLOW_LONG,
+    plain: MAP_FLOW_PLAIN,
+    wrapped: MAP_FLOW_WRAPPED,
+    measured: MAP_FLOW_MEASURED,
+    parallel: MAP_FLOW_PARALLEL,
+  };
+  return sources[String(source)] ?? MAP_FLOW;
+};
+
+/** 構成図のストーリーの補足の layout の color（計画した変更の見本では、変更の色が優先されることを見せるため mount に blue を足す） */
+const mapFlowStoryColors = (
+  data: MapData,
+  changes: Record<string, MapChange> | undefined,
+): Record<string, string> => ({
+  ...Object.fromEntries(
+    Object.entries(data.layout).flatMap(([id, entry]) =>
+      entry.color === undefined ? [] : [[id, entry.color]],
+    ),
+  ),
+  ...(changes === undefined ? {} : { mount: "blue" }),
+});
+
+/** 図の枠のストーリーの種類 `map` の中の図（引数 `source` が `flow` は構成図、`gantt` はガントチャート、それ以外はシーケンス図） */
+const mapFrameStory = (args: PartArgs): string => {
+  if (args.source === "flow")
+    return (PART_RENDERERS["map-flow"] as (args: PartArgs) => string)({
+      ...args,
+      source: undefined,
+    });
+  if (args.source === "gantt")
+    return mapAxisGridStory({ ...args, kind: "gantt" });
+  return mapSequenceStory(args);
+};
+
 /** ストーリーの引数 `narrow` があれば、幅 390px の置き場所に入れる */
 const narrowed = (html: string, args: PartArgs): string =>
   args.narrow === true ? `<div style="inline-size:390px">${html}</div>` : html;
@@ -1471,20 +1517,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     const entered = typeof args.entered === "string" ? args.entered : undefined;
     const collapsed = jsonList(args.collapsed);
     const { data } = parseMapData(MAP_DATA);
-    const sources: Record<string, string> = {
-      long: MAP_FLOW_LONG,
-      plain: MAP_FLOW_PLAIN,
-      wrapped: MAP_FLOW_WRAPPED,
-      measured: MAP_FLOW_MEASURED,
-      parallel: MAP_FLOW_PARALLEL,
-      changes: MAP_FLOW_CHANGES,
-    };
     const changes = jsonObject<Record<string, MapChange>>(args.changes);
     const placed = layoutMap(
-      parseFlowchart(
-        sources[changes === undefined ? String(args.source) : "changes"] ??
-          MAP_FLOW,
-      ),
+      parseFlowchart(mapFlowStorySource(args.source, changes)),
       { collapsed, entered },
       {
         overrides:
@@ -1535,15 +1570,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           color: data.layout[wire]?.packet?.color,
           shape: data.layout[wire]?.packet?.shape ?? "circle",
         })),
-        colors: {
-          ...Object.fromEntries(
-            Object.entries(data.layout).flatMap(([id, entry]) =>
-              entry.color === undefined ? [] : [[id, entry.color]],
-            ),
-          ),
-          // 計画した変更の色が補足の layout の color より優先されることを見せる
-          ...(changes === undefined ? {} : { mount: "blue" }),
-        },
+        colors: mapFlowStoryColors(data, changes),
         dragging: undefined,
         id: "story-map",
         changes,
@@ -2331,16 +2358,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     }),
   "diagram-frame": (args) => {
     if (args.kind === "map") {
-      const story =
-        args.source === "flow"
-          ? (PART_RENDERERS["map-flow"] as (args: PartArgs) => string)({
-              ...args,
-              source: undefined,
-            })
-          : args.source === "gantt"
-            ? mapAxisGridStory({ ...args, kind: "gantt" })
-            : mapSequenceStory(args);
-      return narrowed(story, args);
+      return narrowed(mapFrameStory(args), args);
     }
     if (args.kind === "mermaid") {
       return fitted(

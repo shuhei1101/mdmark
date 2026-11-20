@@ -4928,7 +4928,7 @@
         background: transparent;
       }
 
-      /* 畳んだパネル: 倍率のボタン・開閉のボタン・押せる外へ戻るのボタンのほかを隠す */
+      /* 畳んだパネル: 倍率のボタン・開閉のボタン・押せる外へ戻るのボタン・押した一覧の表示のボタンのほかを隠す */
       &:not([data-open]) {
         .mdmark-diagram-tools-group:not(
             [data-group="zoom"],
@@ -4937,8 +4937,16 @@
           ),
         [data-group="zoom"] .mdmark-diagram-tool:not(.mdmark-diagram-zoom),
         [data-group="map"]
-          .mdmark-diagram-tool:not([data-tool="back"]:not(:disabled)),
-        [data-group="map"]:not(:has([data-tool="back"]:not(:disabled))) {
+          .mdmark-diagram-tool:not(
+            [data-tool="back"]:not(:disabled),
+            [data-tool="list"][aria-pressed="true"]
+          ),
+        [data-group="map"]:not(
+            :has(
+              [data-tool="back"]:not(:disabled),
+              [data-tool="list"][aria-pressed="true"]
+            )
+          ) {
           display: none;
         }
 
@@ -11664,40 +11672,124 @@
 }
 
 @layer mdmark {
-  .mdmark-diagram[data-diagram="map"] {
-    /* 計画した変更のバッジ: ノードとグループの右上に、枠線をまたいで重ねる */
-    .mdmark-map-change {
-      position: absolute;
-      inset-block-start: -0.5625rem;
-      inset-inline-end: 0.5rem;
-      z-index: 1;
-      display: inline-flex;
-      align-items: center;
-      block-size: 1.125rem;
-      padding-inline: 0.375rem;
-      border: 1px solid currentcolor;
-      border-radius: 0.5625rem;
-      background: var(--mdmark-color-bg-opaque);
-      font-size: 0.6875rem;
-      font-weight: 400;
-      line-height: 1;
-      white-space: nowrap;
-      pointer-events: none;
+  /* 計画した変更のバッジ: ノードとグループの右上に、枠線をまたいで重ねる */
+  .mdmark-map-change {
+    position: absolute;
+    inset-block-start: -0.5625rem;
+    inset-inline-end: 0.5rem;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    block-size: 1.125rem;
+    padding-inline: 0.375rem;
+    border: 1px solid currentcolor;
+    border-radius: 0.5625rem;
+    background: var(--mdmark-color-bg-opaque);
+    font-size: 0.6875rem;
+    font-weight: 400;
+    line-height: 1;
+    white-space: nowrap;
+    pointer-events: none;
 
-      &[data-change="added"] {
-        color: var(--mdmark-color-diff-add-sign);
-      }
-
-      &[data-change="changed"] {
-        color: var(--mdmark-color-accent-orange-text);
-      }
-
-      &[data-change="removed"] {
-        border-style: dashed;
-        color: var(--mdmark-color-diff-del-sign);
-      }
+    &[data-change="added"] {
+      color: var(--mdmark-color-diff-add-sign);
     }
 
+    &[data-change="changed"] {
+      color: var(--mdmark-color-accent-orange-text);
+    }
+
+    &[data-change="removed"] {
+      border-style: dashed;
+      color: var(--mdmark-color-diff-del-sign);
+    }
+  }
+
+  /* 一覧の表示: 上の余白は、右上に重ねたパネルの下から項目を始める分 */
+  .mdmark-map-list {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 3.5rem 1rem 0.75rem;
+    list-style: none;
+    font-size: 0.875rem;
+
+    ul {
+      margin: 0;
+      padding-inline-start: 1.25rem;
+      list-style: none;
+
+      &[hidden] {
+        display: none;
+      }
+    }
+  }
+
+  .mdmark-map-list-item {
+    margin-block: 0.125rem;
+
+    &:focus {
+      outline: none;
+    }
+
+    &:focus-visible > .mdmark-map-list-row {
+      outline: 2px solid var(--mdmark-color-link);
+      outline-offset: 1px;
+    }
+
+    &[aria-expanded="false"]
+      > .mdmark-map-list-row
+      .mdmark-map-list-toggle
+      svg {
+      transform: rotate(-90deg);
+    }
+
+    &[data-change="removed"] > .mdmark-map-list-row > .mdmark-map-list-name {
+      text-decoration: line-through var(--mdmark-color-diff-del-sign) 2px;
+    }
+  }
+
+  .mdmark-map-list-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.125rem 0.5rem;
+    align-items: baseline;
+    min-block-size: 1.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: var(--mdmark-radius);
+
+    .mdmark-map-change {
+      position: static;
+      align-self: center;
+    }
+  }
+
+  .mdmark-map-list-toggle {
+    display: inline-flex;
+    inline-size: 1em;
+    color: var(--mdmark-color-muted);
+    cursor: pointer;
+
+    svg {
+      inline-size: 1em;
+      block-size: 1em;
+    }
+  }
+
+  .mdmark-map-list-name {
+    font-weight: 600;
+  }
+
+  :is(.mdmark-map-list-kind, .mdmark-map-list-note, .mdmark-map-list-out) {
+    color: var(--mdmark-color-muted);
+    font-size: 0.8125rem;
+  }
+
+  .mdmark-map-list-out {
+    flex-basis: 100%;
+    padding-inline-start: 1.5em;
+  }
+
+  .mdmark-diagram[data-diagram="map"] {
     /* 計画した変更のノードとグループ: 補足の layout の color と種類の色より優先して、枠線の色で示す（種類の行のアイコンと名前は種類の色のまま） */
     :is(.mdmark-diagram-node, .map-group).map-change-added {
       /* biome-ignore lint/complexity/noImportantStyles: 補足の layout の color・種類の色・選択の強調より強くする */
@@ -11805,90 +11897,6 @@
       overflow-y: auto;
       cursor: auto;
       user-select: text;
-    }
-
-    /* 一覧の表示: 上の余白は、右上に重ねたパネルの下から項目を始める分 */
-    .mdmark-map-list {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 3.5rem 1rem 0.75rem;
-      list-style: none;
-      font-size: 0.875rem;
-
-      ul {
-        margin: 0;
-        padding-inline-start: 1.25rem;
-        list-style: none;
-
-        &[hidden] {
-          display: none;
-        }
-      }
-    }
-
-    .mdmark-map-list-item {
-      margin-block: 0.125rem;
-
-      &:focus {
-        outline: none;
-      }
-
-      &:focus-visible > .mdmark-map-list-row {
-        outline: 2px solid var(--mdmark-color-link);
-        outline-offset: 1px;
-      }
-
-      &[aria-expanded="false"]
-        > .mdmark-map-list-row
-        .mdmark-map-list-toggle
-        svg {
-        transform: rotate(-90deg);
-      }
-
-      &[data-change="removed"] > .mdmark-map-list-row > .mdmark-map-list-name {
-        text-decoration: line-through var(--mdmark-color-diff-del-sign) 2px;
-      }
-    }
-
-    .mdmark-map-list-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.125rem 0.5rem;
-      align-items: baseline;
-      min-block-size: 1.75rem;
-      padding: 0.125rem 0.375rem;
-      border-radius: var(--mdmark-radius);
-
-      .mdmark-map-change {
-        position: static;
-        align-self: center;
-      }
-    }
-
-    .mdmark-map-list-toggle {
-      display: inline-flex;
-      inline-size: 1em;
-      color: var(--mdmark-color-muted);
-      cursor: pointer;
-
-      svg {
-        inline-size: 1em;
-        block-size: 1em;
-      }
-    }
-
-    .mdmark-map-list-name {
-      font-weight: 600;
-    }
-
-    :is(.mdmark-map-list-kind, .mdmark-map-list-note, .mdmark-map-list-out) {
-      color: var(--mdmark-color-muted);
-      font-size: 0.8125rem;
-    }
-
-    .mdmark-map-list-out {
-      flex-basis: 100%;
-      padding-inline-start: 1.5em;
     }
   }
 

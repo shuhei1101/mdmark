@@ -219,7 +219,7 @@ states:
       - name: listable
         value: 'true'
     notes:
-      定義: MapExportOpen と同じ図で、ストーリーの中で `HTMLCanvasElement.prototype.toBlob` を `null` を渡す関数に差し替えて PNG を押す
+      定義: MapExportOpen と同じ図で、PNG にできなかった後の状態（`role="status"` の文を入れた要素）を描く。`HTMLCanvasElement.prototype.toBlob` を `null` を渡す関数に差し替えて PNG を押す動きは、単体テスト `test_attach_map_export_when_png_unavailable` で確認する
 lead: |-
   図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、表示する枠の右上に重ねたボタンのパネルと、拡大・縮小・移動・ピンチ・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
   パネルと表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方（図の枠の幅が 30rem 未満のとき 1.5rem）、パネルの余白は 0.125rem。
@@ -303,7 +303,7 @@ args:
     default: "'false'"
     status: planned
     enabled_when: '`listable` が `true` のとき'
-    description: 表示する枠の中を図から一覧（部品『mapの一覧』）に替えているか。一覧の表示のボタンの `aria-pressed` に入れ、`true` のときは図を `hidden` にする。倍率・位置・開閉は保ち、一覧の上の余白をパネルの高さ分とる
+    description: 表示する枠の中を図から一覧（部品『mapの一覧』）に替えているか。一覧の表示のボタンの `aria-pressed` に入れ、`true` のときは図を `hidden` にする。倍率・位置・開閉は保ち、一覧の上の余白をパネルの高さ分とる。一覧は先頭から出し（図の位置は図に戻すときに戻す）、畳んだパネルでも押した一覧の表示のボタンは隠さない
 slots:
   - name: default
     description: 表示する枠の中に配置する図の本体
