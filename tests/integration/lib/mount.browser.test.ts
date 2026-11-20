@@ -2209,6 +2209,189 @@ test("test_normal_when_code_copy_denied", async () => {
   }
 });
 
+/** 言語 markdown のコードブロックの中身 */
+const PREVIEW_SOURCE = [
+  "## 在庫の点検",
+  "",
+  "> [!NOTE]",
+  "> 点検は毎朝 9 時までに済ませる。",
+  "",
+  "| 品目 | 数 |",
+  "| --- | --- |",
+  "| りんご | 3 |",
+].join("\n");
+
+/** 本文の見出しの後に、言語 markdown・md・ts のコードブロックを並べた文書 */
+const PREVIEW_MARKDOWN = [
+  "# 手順",
+  "",
+  "## 概要",
+  "",
+  "概要の段落",
+  "",
+  "```markdown",
+  PREVIEW_SOURCE,
+  "```",
+  "",
+  "```md",
+  PREVIEW_SOURCE,
+  "```",
+  "",
+  "```ts",
+  "const a = 1;",
+  "```",
+  "",
+].join("\n");
+
+/** コードブロックの pre・描いた結果・Raw のボタン */
+function previewParts(block: Element) {
+  return {
+    pre: find<HTMLElement>(block, ":scope > pre"),
+    preview: find<HTMLElement>(block, ":scope > .mdmark-code-preview"),
+    raw: find<HTMLButtonElement>(block, "button.mdmark-code-raw"),
+    copy: find<HTMLButtonElement>(block, "button.mdmark-code-copy"),
+  };
+}
+
+// 言語 markdown・md のコードブロックの中身を描いた結果で出し、Raw のボタンで元の Markdown と切り替える（正常系）
+test("test_normal_when_markdown_code_previewed", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  await mountTracked(el, { markdown: PREVIEW_MARKDOWN });
+  const blocks = [...el.querySelectorAll(".mdmark-code")].filter(
+    (block) => !block.parentElement?.closest(".mdmark-code-preview"),
+  );
+  const [markdownBlock, mdBlock, tsBlock] = blocks as [
+    HTMLElement,
+    HTMLElement,
+    HTMLElement,
+  ];
+  const md = previewParts(markdownBlock);
+  // 検証: markdown と md は描いた結果を出し、中に見出し・注意書き・表があり、pre を隠す
+  for (const block of [markdownBlock, mdBlock]) {
+    const parts = previewParts(block);
+    expect(isShown(parts.preview)).toBe(true);
+    expect(parts.preview.querySelector("h2")?.textContent).toContain(
+      "在庫の点検",
+    );
+    expect(parts.preview.querySelector(".markdown-alert")).not.toBeNull();
+    expect(parts.preview.querySelector("table")).not.toBeNull();
+    expect(parts.pre.hidden).toBe(true);
+  }
+  // 検証: ts のコードブロックには描いた結果も Raw のボタンも無い
+  expect(tsBlock.querySelector(".mdmark-code-preview")).toBeNull();
+  expect(tsBlock.querySelector("button.mdmark-code-raw")).toBeNull();
+  // 検証: Raw のボタンはコピーのボタンの左にあり、type と aria-pressed を持つ
+  expect(md.raw.type).toBe("button");
+  expect(md.raw.getAttribute("aria-pressed")).toBe("false");
+  expect(md.raw.getBoundingClientRect().right).toBeLessThanOrEqual(
+    md.copy.getBoundingClientRect().left,
+  );
+  // 検証: 描いた結果の見出しは右側の目次に無く、id は頭が付いて重ならない
+  const previewIds = [...el.querySelectorAll(".mdmark-code-preview [id]")].map(
+    (element) => element.id,
+  );
+  expect(previewIds.length).toBeGreaterThan(0);
+  for (const id of previewIds) expect(id).toMatch(/^mdmark-preview-/);
+  const ids = [...el.querySelectorAll("[id]")].map((element) => element.id);
+  expect(new Set(ids).size).toBe(ids.length);
+  const tocIds = [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-side-toc-list a"),
+  ].map((link) => link.dataset.headingId ?? link.getAttribute("href"));
+  expect(tocIds.some((id) => String(id).includes("mdmark-preview-"))).toBe(
+    false,
+  );
+  expect(
+    [...el.querySelectorAll(".mdmark-side-toc-list a")].some((link) =>
+      link.textContent?.includes("在庫の点検"),
+    ),
+  ).toBe(false);
+  // 検証: 描いた結果の中に、文書の単位の部品が無く、右側の目次は 1 つ
+  const inner = md.preview;
+  for (const selector of [
+    "aside.mdmark-side-toc",
+    "button.mdmark-back-to-top",
+    "button.mdmark-markdown-button",
+    "nav.mdmark-backlinks",
+  ])
+    expect(inner.querySelector(selector)).toBeNull();
+  expect(
+    el.querySelectorAll("aside.mdmark-side-toc").length,
+  ).toBeLessThanOrEqual(1);
+  // 実行・検証: 押すとそのコードブロックだけ元の Markdown を出し、スクロールの位置は変わらない
+  const page = [window.scrollX, window.scrollY];
+  md.raw.click();
+  expect(md.pre.hidden).toBe(false);
+  expect(md.preview.hidden).toBe(true);
+  expect(md.raw.getAttribute("aria-pressed")).toBe("true");
+  expect(previewParts(mdBlock).preview.hidden).toBe(false);
+  expect([window.scrollX, window.scrollY]).toEqual(page);
+  // 実行・検証: 元の Markdown を出しているときのコピーは、記載した Markdown と同じ
+  md.copy.click();
+  await vi.waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+  expect(writeText).toHaveBeenNthCalledWith(1, PREVIEW_SOURCE);
+  // 実行・検証: Tab でフォーカスして Enter・Space でも切り替わる
+  md.raw.focus();
+  await userEvent.keyboard("{Enter}");
+  expect(md.raw.getAttribute("aria-pressed")).toBe("false");
+  expect(md.preview.hidden).toBe(false);
+  expect(md.pre.hidden).toBe(true);
+  await userEvent.keyboard(" ");
+  expect(md.raw.getAttribute("aria-pressed")).toBe("true");
+  await userEvent.keyboard(" ");
+  expect(md.raw.getAttribute("aria-pressed")).toBe("false");
+  expect([window.scrollX, window.scrollY]).toEqual(page);
+  // 実行・検証: 描いた結果を出しているときのコピーも、記載した Markdown と同じ
+  md.copy.click();
+  await vi.waitFor(() => expect(writeText).toHaveBeenCalledTimes(2));
+  expect(writeText).toHaveBeenNthCalledWith(2, PREVIEW_SOURCE);
+});
+
+// code のマーカーの raw を持つ言語 markdown のコードブロックを元の Markdown で出し、Raw のボタンで初めて描く（正常系）
+test("test_normal_when_markdown_code_raw_by_marker", async () => {
+  // 準備
+  const markdown = [
+    '<!-- code: {"raw": true} -->',
+    "",
+    "```markdown",
+    PREVIEW_SOURCE,
+    "```",
+    "",
+    "```markdown",
+    PREVIEW_SOURCE,
+    "```",
+    "",
+  ].join("\n");
+  const el = createElement();
+  // 実行
+  await mountTracked(el, { markdown });
+  const [marked, plain] = [...el.querySelectorAll(".mdmark-code")].filter(
+    (block) => !block.parentElement?.closest(".mdmark-code-preview"),
+  ) as [HTMLElement, HTMLElement];
+  const parts = previewParts(marked);
+  // 検証: マーカーの付いたコードブロックは元の Markdown を出し、描いた結果は中身を持たずに隠れている
+  expect(isShown(parts.pre)).toBe(true);
+  expect(parts.preview.hidden).toBe(true);
+  expect(parts.preview.childElementCount).toBe(0);
+  expect(parts.raw.getAttribute("aria-pressed")).toBe("true");
+  // 検証: マーカーの無いコードブロックは描いた結果を出す
+  expect(isShown(previewParts(plain).preview)).toBe(true);
+  expect(previewParts(plain).pre.hidden).toBe(true);
+  // 実行: マーカーの付いたコードブロックの Raw のボタンを押す
+  parts.raw.click();
+  // 検証: 描いた結果が入って見え、pre が隠れる
+  expect(isShown(parts.preview)).toBe(true);
+  expect(parts.preview.querySelector("h2")?.textContent).toContain(
+    "在庫の点検",
+  );
+  expect(parts.pre.hidden).toBe(true);
+  expect(parts.raw.getAttribute("aria-pressed")).toBe("false");
+});
+
 /** 長い段落の後に、閉じたセクションの中のタブ（`macOS`・`Windows`）が見出しを持つ Markdown */
 const FRAGMENT_TAB_MARKDOWN = [
   ...Array.from({ length: 30 }, (_, i) => `前の段落 ${i + 1}\n`),
@@ -16640,6 +16823,11 @@ test("test_normal_when_map_walkthrough_played", async () => {
     expect(bandFill(figure())).toBeLessThan(35);
     expect(bandStep(figure())).toBe(1);
     // 実行・検証: 右の矢印で手順 2 へ移り、説明の文は改行のまま。説明の行数によらずバーの位置が変わらない
+    const position = () => [
+      mapScale(figure()),
+      viewport().scrollLeft,
+      viewport().scrollTop,
+    ];
     const first = barRect();
     pressArrow(figure(), 1);
     expect(bandStep(figure())).toBe(2);
@@ -16660,23 +16848,26 @@ test("test_normal_when_map_walkthrough_played", async () => {
         segment.classList.contains("is-done") ||
           segment.classList.contains("is-current"),
       ).toBe(false);
-    // 検証: 手順 2 のノードが収まる位置と倍率へ、時間をかけて移る。文書のスクロールは変わらない
-    const before = mapScale(figure());
+    // 検証: 100% で全体が収まらない図で、倍率のボタンの文字は 100% のまま、見えていなかった手順 2 のノードが見える位置へ時間をかけて移る。文書のスクロールは変わらない
+    expect(viewport().scrollWidth).toBeGreaterThan(viewport().clientWidth);
+    const leaving = position();
     vi.advanceTimersByTime(MAP_FOCUS_MS / 2);
-    const middle = mapScale(figure());
+    const middle = position();
     vi.advanceTimersByTime(MAP_FOCUS_MS);
-    const after = mapScale(figure());
-    expect(after).not.toBeCloseTo(before, 3);
-    expect(Math.abs(middle - before)).toBeGreaterThan(0);
-    expect(Math.abs(after - middle)).toBeGreaterThan(0);
-    expect(after).toBeGreaterThanOrEqual(fit - 0.001);
+    expect(middle).not.toEqual(leaving);
+    expect(position()).not.toEqual(middle);
+    expect(zoomText(figure())).toBe("100%");
+    expect(mapScale(figure())).toBeCloseTo(fit, 3);
     expect(mapNodesShown(figure(), ["doc", "index", "data"])).toBe(true);
     expect([window.scrollX, window.scrollY]).toEqual(page);
-    // 実行・検証: 同じ区切りをもう一度押すと、最初から塗り直す
+    // 実行・検証: 同じ区切りをもう一度押すと、最初から塗り直す。ノードが見えているので位置は変わらない
+    const shown = position();
     vi.advanceTimersByTime(MAP_STEP_MS / 4);
     pressSegment(figure(), 2);
     expect(bandStep(figure())).toBe(2);
     expect(bandFill(figure())).toBeLessThan(5);
+    vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    expect(position()).toEqual(shown);
     // 実行・検証: 手順 3 で「配置」の中へ入り、両方の手順で残す線が消えない
     pressArrow(figure(), 1);
     expect(
@@ -16691,27 +16882,74 @@ test("test_normal_when_map_walkthrough_played", async () => {
       ).opacity,
     ).not.toBe("0");
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    // 検証: 入った後も倍率のボタンの文字は 100% のままで、入った後の中身の全体が収まる
+    expect(zoomText(figure())).toBe("100%");
+    const sizer = find<HTMLElement>(figure(), ".mdmark-diagram-sizer");
+    expect(sizer.getBoundingClientRect().width).toBeLessThanOrEqual(
+      viewport().clientWidth + 1,
+    );
+    expect(sizer.getBoundingClientRect().height).toBeLessThanOrEqual(
+      viewport().clientHeight + 1,
+    );
     pressArrow(figure(), 1);
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
     // 実行・検証: 最後の次で最初へ回る
     pressArrow(figure(), 1);
     expect(bandStep(figure())).toBe(1);
-    // 実行・検証: 移す途中で読者が図の枠をキーで動かすと、次にボタンを押すまで移さない
-    vi.advanceTimersByTime(MAP_FOCUS_MS / 3);
-    const touched = () => [
-      mapScale(figure()),
-      viewport().scrollLeft,
-      viewport().scrollTop,
+    vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    // 実行: 拡大のキーを 5 回押して 100% より大きくし、手順 2 へ移る
+    for (let i = 0; i < 5; i += 1)
+      viewport().dispatchEvent(
+        new KeyboardEvent("keydown", { key: "+", bubbles: true }),
+      );
+    vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    const zoomed = zoomText(figure());
+    expect(zoomed).not.toBe("100%");
+    pressSegment(figure(), 2);
+    vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    // 検証: 倍率のボタンの文字は変わらず、強調するノードを囲む矩形の中心が表示する枠の中心へ移る（図の端で移せない向きを除く）
+    expect(zoomText(figure())).toBe(zoomed);
+    const boxes = ["doc", "index", "data"].map((id) =>
+      mapNode(figure(), id).getBoundingClientRect(),
+    );
+    const view = viewport().getBoundingClientRect();
+    const centers = [
+      [
+        (Math.min(...boxes.map((box) => box.left)) +
+          Math.max(...boxes.map((box) => box.right))) /
+          2,
+        view.left + viewport().clientLeft + viewport().clientWidth / 2,
+        viewport().scrollLeft,
+        viewport().scrollWidth - viewport().clientWidth,
+      ],
+      [
+        (Math.min(...boxes.map((box) => box.top)) +
+          Math.max(...boxes.map((box) => box.bottom))) /
+          2,
+        view.top + viewport().clientTop + viewport().clientHeight / 2,
+        viewport().scrollTop,
+        viewport().scrollHeight - viewport().clientHeight,
+      ],
     ];
+    for (const [rect, frame, scroll, max] of centers)
+      if ((scroll ?? 0) > 0 && (scroll ?? 0) < (max ?? 0) - 1)
+        expect(Math.abs((rect ?? 0) - (frame ?? 0))).toBeLessThanOrEqual(1);
+    expect([window.scrollX, window.scrollY]).toEqual(page);
+    // 実行・検証: 移す途中で読者が図の枠をキーで動かすと、次にボタンを押すまで移さない
+    pressSegment(figure(), 1);
+    vi.advanceTimersByTime(MAP_FOCUS_MS / 3);
     viewport().dispatchEvent(
       new KeyboardEvent("keydown", { key: "Shift", bubbles: true }),
     );
-    const held = touched();
+    const held = position();
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
-    expect(touched()).toEqual(held);
+    expect(position()).toEqual(held);
+    pressSegment(figure(), 3);
+    vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
+    expect(position()).not.toEqual(held);
+    expect(zoomText(figure())).toBe(zoomed);
     pressSegment(figure(), 1);
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
-    expect(touched()).not.toEqual(held);
     // 実行・検証: 図の枠の空いた場所で 4px 以上動かした操作は停止しない
     pressBlank(figure(), 6);
     expect(bandStep(figure())).toBe(1);
@@ -16746,6 +16984,32 @@ test("test_normal_when_map_walkthrough_played", async () => {
     expect(bandStep(figure())).toBe(0);
   } finally {
     vi.useRealTimers();
+  }
+  // 実行・検証: 100% で全体が収まる幅では、手順を移しても倍率のボタンの文字と中身の位置が変わらない
+  const width = el.style.width;
+  el.style.width = "2400px";
+  try {
+    await remountMap(el, markdown);
+    await vi.waitFor(() =>
+      expect(viewport().scrollWidth).toBeLessThanOrEqual(
+        viewport().clientWidth,
+      ),
+    );
+    const placed = () => [
+      zoomText(figure()),
+      mapScale(figure()),
+      viewport().scrollLeft,
+      viewport().scrollTop,
+    ];
+    const whole = placed();
+    for (const step of [1, 2]) {
+      pressSegment(figure(), step);
+      await new Promise((resolve) => setTimeout(resolve, MAP_FOCUS_MS + 100));
+      expect(placed()).toEqual(whole);
+    }
+    pressBlank(figure());
+  } finally {
+    el.style.width = width;
   }
   // 実行・検証: 動きを減らす設定では、時間をかけずに移し、データの印は流す
   await cdp().send("Emulation.setEmulatedMedia", {
@@ -16908,6 +17172,7 @@ test("test_normal_when_map_sequence_played", async () => {
     ],
   });
   try {
+    const zooms = [zoomText(flow()), zoomText(seq())];
     pressSegment(seq(), 1);
     // 検証: 両方の図でメッセージ 1 のほかが薄くなり、印が流れる
     expect(find(seq(), ".map-band-title").textContent).toBe("設定と Markdown");
@@ -16937,8 +17202,9 @@ test("test_normal_when_map_sequence_played", async () => {
     // 実行: 右の矢印でメッセージ 2 へ移る
     pressArrow(seq(), 1);
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
-    // 検証: 構成図の図の枠の中は送り手と受け手、シーケンス図の図の枠の中は今のメッセージの線が収まる
+    // 検証: 両方の図の枠の倍率のボタンの文字は変わらず、構成図の図の枠の中は送り手と受け手、シーケンス図の図の枠の中は今のメッセージの線が見える
     expect(bandStep(seq())).toBe(2);
+    expect([zoomText(flow()), zoomText(seq())]).toEqual(zooms);
     expect(mapNodesShown(flow(), ["mount", "marker"])).toBe(true);
     const wire = find<SVGPathElement>(
       seq(),
