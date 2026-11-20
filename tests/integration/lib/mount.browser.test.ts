@@ -16536,7 +16536,7 @@ function expectMapErWiresNearAndClear(figure: Element): void {
     y >= rect.y - 0.5 &&
     y <= rect.y + rect.h + 0.5;
   for (const wire of figure.querySelectorAll<SVGPathElement>(
-    ".map-wire-hits > .map-wire-hit[data-wire]",
+    "path.mdmark-diagram-wire[data-wire]",
   )) {
     const points = mapWirePoints(figure, wire.dataset.wire ?? "");
     const ends = [points[0], points.at(-1)] as Array<[number, number]>;
@@ -16551,14 +16551,14 @@ function expectMapErWiresNearAndClear(figure: Element): void {
   }
 }
 
-/** 線の押せる帯のパスの点 */
+/** 見える線のパスの点（飛び越えの弧は除く） */
 function mapWirePoints(figure: Element, id: string): Array<[number, number]> {
   const d =
     find<SVGPathElement>(
       figure,
-      `.map-wire-hit[data-wire="${id}"]`,
+      `.mdmark-diagram-wire[data-wire="${id}"]`,
     ).getAttribute("d") ?? "";
-  return [...d.matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g)].map(
+  return [...d.matchAll(/[ML](-?[\d.]+)[ ,](-?[\d.]+)/g)].map(
     (match) => [Number(match[1]), Number(match[2])] as [number, number],
   );
 }
@@ -17756,17 +17756,21 @@ test("test_normal_when_map_items_moved", async () => {
     Math.abs(box("layout").top - layoutBefore.top - 60),
   ).toBeLessThanOrEqual(1);
   // 実行: 線の真ん中の区間を動かす
-  const hits = [
-    ...flow().querySelectorAll<SVGPathElement>(".map-wire-hit[data-wire]"),
+  // 点は見える線のパスから読み、ポインターは線の押せる範囲（線ごとの g）へ送る
+  const wires = [
+    ...flow().querySelectorAll<SVGPathElement>(
+      "path.mdmark-diagram-wire[data-wire]",
+    ),
   ];
   const points = (path: SVGPathElement) =>
-    [...(path.getAttribute("d") ?? "").matchAll(/[ML]([\d.]+) ([\d.]+)/g)].map(
-      (match) => [Number(match[1]), Number(match[2])] as [number, number],
-    );
-  const bent = hits.find((path) => points(path).length >= 4) as SVGPathElement;
-  expect(bent).toBeDefined();
-  const id = bent.dataset.wire ?? "";
-  const before = points(bent);
+    [
+      ...(path.getAttribute("d") ?? "").matchAll(/[ML]([\d.]+)[ ,]([\d.]+)/g),
+    ].map((match) => [Number(match[1]), Number(match[2])] as [number, number]);
+  const bentWire = wires.find((path) => points(path).length >= 4);
+  expect(bentWire).toBeDefined();
+  const id = bentWire?.dataset.wire ?? "";
+  const bent = find<SVGGElement>(flow(), `.map-wire-hit[data-wire="${id}"]`);
+  const before = points(bentWire as SVGPathElement);
   const middle = Math.floor((before.length - 2) / 2);
   const a = before[middle] as [number, number];
   const b = before[middle + 1] as [number, number];
@@ -17790,7 +17794,7 @@ test("test_normal_when_map_items_moved", async () => {
   window.dispatchEvent(new PointerEvent("pointerup", { ...base, ...moved }));
   // 検証: 区間が 12px 動く
   const after = points(
-    find<SVGPathElement>(flow(), `.map-wire-hit[data-wire="${id}"]`),
+    find<SVGPathElement>(flow(), `.mdmark-diagram-wire[data-wire="${id}"]`),
   );
   const axis = horizontal ? 1 : 0;
   expect((after[middle] as [number, number])[axis] - a[axis]).toBe(12);
@@ -18291,7 +18295,7 @@ test("test_normal_when_map_overrides", async () => {
   };
   const numbers = (id: string) =>
     (
-      find<SVGPathElement>(stage, `.map-wire-hit[data-wire="${id}"]`)
+      find<SVGPathElement>(stage, `.mdmark-diagram-wire[data-wire="${id}"]`)
         .getAttribute("d")
         ?.match(/-?[\d.]+/g) ?? []
     ).map(Number);
@@ -18492,12 +18496,14 @@ const MAP_STATE_MARKDOWN = mapRange({
 function mapWireOverlaps(figure: Element): string[] {
   const paths = [
     ...figure.querySelectorAll<SVGPathElement>(
-      ".map-wire-hits > .map-wire-hit[data-wire]",
+      "path.mdmark-diagram-wire[data-wire]",
     ),
   ];
   const pointsOf = (path: SVGPathElement) =>
     [
-      ...(path.getAttribute("d") ?? "").matchAll(/[ML](-?[\d.]+) (-?[\d.]+)/g),
+      ...(path.getAttribute("d") ?? "").matchAll(
+        /[ML](-?[\d.]+)[ ,](-?[\d.]+)/g,
+      ),
     ].map((match) => [Number(match[1]), Number(match[2])] as const);
   const ends = new Map<string, number>();
   for (const points of paths.map(pointsOf))
@@ -21587,9 +21593,12 @@ test("test_normal_when_map_mindmap_drawn", async () => {
     "hexagon",
     "plain",
   ]);
+  // 形状の指定の無い項目も枝の色の 1px の枠線を持つ角の丸い四角
   const plain = getComputedStyle(mapNode(figure, "利用者を増やす"));
-  expect(plain.borderTopStyle).toBe("none");
+  expect(plain.borderTopStyle).toBe("solid");
   expect(plain.borderBottomStyle).toBe("solid");
+  expect(plain.borderTopWidth).toBe("1px");
+  expect(plain.borderTopLeftRadius).toBe("6px");
   // 検証: 枝ごとに縁と曲線の色が分かれる
   const colors = branches.map((key) =>
     mapNode(figure, key).style.getPropertyValue("--map-mindmap-color"),
@@ -21740,18 +21749,27 @@ test("test_normal_when_map_mindmap_selected", async () => {
   expect(dimmedTextContrast(mapNode(figure(), "a1"))).toBeGreaterThanOrEqual(
     4.5,
   );
-  // 実行・検証: 形状の指定の無い項目を押すと選択が移る
-  mindmapHit(figure(), "利用者を増やす").click();
+  // 実行・検証: 形状の指定の無い「利用者を増やす」の名前の文字を押すと選択が移る
+  find<HTMLElement>(
+    mapNode(figure(), "利用者を増やす"),
+    ".mdmark-diagram-node-name",
+  ).click();
   expect(
     mindmapKeys(figure())
       .filter((key) => !mapDimmed(mapNode(figure(), key)))
       .sort(),
   ).toEqual(["root", "a1", "利用者を増やす"].sort());
-  // 実行・検証: 名前の文字・説明のマーカー・持ち手のボタンでは選択が変わらない
-  find<HTMLElement>(
+  expect(
+    getComputedStyle(mapNode(figure(), "利用者を増やす")).borderTopStyle,
+  ).toBe("solid");
+  // 実行・検証: 名前の文字をドラッグして選んだとき・説明のマーカー・持ち手のボタンでは選択が変わらない
+  const otherName = find<HTMLElement>(
     mapNode(figure(), "体制"),
     ".mdmark-diagram-node-name",
-  ).click();
+  );
+  getSelection()?.selectAllChildren(otherName);
+  otherName.click();
+  getSelection()?.removeAllRanges();
   find<HTMLButtonElement>(
     mapNode(figure(), "a1"),
     ".mdmark-diagram-info",

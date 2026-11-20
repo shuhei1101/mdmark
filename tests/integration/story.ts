@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import { type Browser, chromium, type Page } from "playwright";
 import { expect, inject, onTestFinished } from "vitest";
 import { CONNECT_TIMEOUT_MS } from "./storybook-setup.ts";
@@ -290,7 +291,7 @@ export async function expectTargetSize(
 /** map の図の、同じ向きの区間が同じ直線の上で重なる 2 本の線の組（「{線} と {線}」。同じ点から出る・入る線の端の区間は除く） */
 export function mapWireOverlaps(page: Page): Promise<string[]> {
   return page
-    .locator(".map-wire-hits > .map-wire-hit[data-wire]")
+    .locator("path.mdmark-diagram-wire[data-wire]")
     .evaluateAll((paths) => {
       type Segment = {
         wire: string;
@@ -300,7 +301,7 @@ export function mapWireOverlaps(page: Page): Promise<string[]> {
       const pointsOf = (path: Element) =>
         [
           ...(path.getAttribute("d") ?? "").matchAll(
-            /[ML](-?[\d.]+) (-?[\d.]+)/g,
+            /[ML](-?[\d.]+)[ ,](-?[\d.]+)/g,
           ),
         ].map(
           (match) => [Number(match[1]), Number(match[2])] as [number, number],
@@ -349,4 +350,30 @@ export function mapWireOverlaps(page: Page): Promise<string[]> {
             pairs.add(`${a.wire} と ${b.wire}`);
       return [...pairs];
     });
+}
+
+/** ページに axe-core を読み込み、target-size の違反の要素（`target` のセレクタ）を返却する */
+export async function targetSizeViolations(page: Page): Promise<string[]> {
+  const path = createRequire(import.meta.url).resolve("axe-core/axe.min.js");
+  await page.addScriptTag({ path });
+  return page.evaluate(async () => {
+    const axe = (
+      window as unknown as {
+        axe: {
+          run: (
+            context: Element,
+            options: object,
+          ) => Promise<{
+            violations: Array<{ nodes: Array<{ target: string[] }> }>;
+          }>;
+        };
+      }
+    ).axe;
+    const result = await axe.run(document.body, {
+      runOnly: { type: "rule", values: ["target-size"] },
+    });
+    return result.violations.flatMap((violation) =>
+      violation.nodes.map((node) => node.target.join(" ")),
+    );
+  });
 }

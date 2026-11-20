@@ -6,6 +6,7 @@ import {
   expectCountBelowTitle,
   overlaps,
   pageOverflows,
+  targetSizeViolations,
   textContrastsOf,
 } from "../story.ts";
 
@@ -201,12 +202,12 @@ test("test_default", async () => {
       .sort(),
   ).toEqual(["含む", "指す", "支払う", "最後に見た", "注文する"].sort());
   expectApart(texts, (text) => `${text.text}(${text.wire})`);
-  // 検証: 同じ辺につながる線どうしの間隔（「注文」の右の辺の 注文する（先の端）と 支払う（元の端）。押せる帯の、辺の隣の点の x が辺から出た縦の区間の x）
+  // 検証: 同じ辺につながる線どうしの間隔（「注文」の右の辺の 注文する（先の端）と 支払う（元の端）。見える線の、辺の隣の点の x が辺から出た縦の区間の x）
   const r1 = await wireEnds(page, "r1");
   const r4 = await wireEnds(page, "r4");
   expect(Math.abs(r1.end.x - r4.start.x)).toBeLessThan(1);
   const stubs = await page
-    .locator('path.map-wire-hit:is([data-wire="r1"], [data-wire="r4"])')
+    .locator('path.mdmark-diagram-wire:is([data-wire="r1"], [data-wire="r4"])')
     .evaluateAll((paths) =>
       paths.map((path) => {
         const numbers =
@@ -445,4 +446,20 @@ test("test_accessibility", async () => {
     .locator('[data-column="状態"] .map-er-name')
     .evaluate((name) => getComputedStyle(name).userSelect);
   expect(select).toBe("text");
+  // 列の説明のボタンの上のポインターは、ほかのボタンと同じ pointer（help にしない）
+  await expect(
+    note.evaluate((button) => getComputedStyle(button).cursor),
+  ).resolves.toBe("pointer");
+});
+
+// 関連の線の押せる範囲は区間ごとの帯で、線から離れたテーブル・ボタンを含まず、axe の target-size の違反が無い（Default）
+test("test_wire_hit_target_size", async () => {
+  // 準備・実行
+  const page = await openEr("default");
+  // 検証
+  await expect(targetSizeViolations(page)).resolves.toEqual([]);
+  const bands = await page
+    .locator('.map-wire-hit[data-wire="r2"] .map-wire-hit-segment')
+    .count();
+  expect(bands).toBeGreaterThan(1);
 });

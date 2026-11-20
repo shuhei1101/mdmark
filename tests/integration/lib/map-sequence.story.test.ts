@@ -419,10 +419,22 @@ test("test_self_message", async () => {
     (otherWire.top + otherWire.bottom) / 2 - 14,
     0,
   );
+  // 自分へのメッセージの押せる範囲は折り返しの区間ごとの 3 つの帯で、どれもフォーカスと名前を持たない
+  const bands = page.locator(
+    '.map-wire-hit[data-message="2"] .map-wire-hit-segment',
+  );
+  await expect(bands.count()).resolves.toBe(3);
+  await expect(
+    page
+      .locator(
+        '.map-wire-hit[data-message="2"] :is([tabindex], [role], [aria-label])',
+      )
+      .count(),
+  ).resolves.toBe(0);
   // 説明を持つ自分へのメッセージの線の押せる帯は、ツールチップの持ち主になる
   await expect(
     page
-      .locator('.map-wire-hit[data-message="2"]')
+      .locator('.map-wire-hit[data-message="2"] [data-tip-owner]')
       .getAttribute("data-tip-owner"),
   ).resolves.toBe("message:2");
 });
@@ -433,8 +445,8 @@ test("test_hints_off", async () => {
   const page = await openSequence("hints-off");
   // 検証
   const hit = page.locator('.map-wire-hit[data-message="0"]');
-  await expect(hit.getAttribute("data-tip-owner")).resolves.toBeNull();
-  await expect(hit.getAttribute("aria-describedby")).resolves.toBeNull();
+  await expect(hit.locator("[data-tip-owner]").count()).resolves.toBe(0);
+  await expect(hit.locator("[aria-describedby]").count()).resolves.toBe(0);
   await expect(page.locator('[role="tooltip"]').count()).resolves.toBe(0);
   await expect(
     page.locator('.mdmark-diagram-label[data-message="0"]').count(),

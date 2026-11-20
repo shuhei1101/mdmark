@@ -201,3 +201,74 @@ test("test_accessibility", async () => {
     page.locator("path.map-mindmap-branch").first().getAttribute("aria-hidden"),
   ).resolves.toBe("true");
 });
+
+// 項目の文字と形状の指定の無い項目の枠線、ポインターを重ねた項目と選んだ項目の面（Default・Selected）
+test("test_item_appearance", async () => {
+  // 準備・実行
+  const page = await openStory("default");
+  // 検証: 名前は 13px・400、根の名前は 15px・600、名前の文字の上のポインターは pointer
+  const fontOf = (selector: string) =>
+    page.locator(selector).evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        size: style.fontSize,
+        weight: style.fontWeight,
+        cursor: style.cursor,
+      };
+    });
+  await expect(
+    fontOf('[data-node="体制"] .mdmark-diagram-node-name'),
+  ).resolves.toEqual({ size: "13px", weight: "400", cursor: "pointer" });
+  const root = await fontOf(".map-mindmap-root .mdmark-diagram-node-name");
+  expect(root.size).toBe("15px");
+  expect(root.weight).toBe("600");
+  // 検証: 形状の指定の無い項目は枝の色の 1px の枠線を持つ角の丸い四角
+  const plain = await page
+    .locator('.map-mindmap-item[data-node="利用者を増やす"]')
+    .evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        top: style.borderTopStyle,
+        width: style.borderTopWidth,
+        radius: style.borderTopLeftRadius,
+      };
+    });
+  expect(plain).toEqual({ top: "solid", width: "1px", radius: "6px" });
+  // 検証: ポインターを重ねた項目は面の色が変わる
+  const item = page.locator('.map-mindmap-item[data-node="予算"]');
+  const backgroundOf = (target: typeof item) =>
+    target.evaluate((element) => getComputedStyle(element).backgroundColor);
+  const before = await backgroundOf(item);
+  await item.hover();
+  const hovered = await backgroundOf(item);
+  expect(hovered).not.toBe(before);
+  // 検証: 選んだ項目は、選んでいない同じ枝の項目と面の色が違う
+  const selected = await openStory("selected");
+  const chosen = await selected
+    .locator('.map-mindmap-item[data-node="体制"]')
+    .evaluate((element) => getComputedStyle(element).backgroundColor);
+  const unselected = await selected
+    .locator('.map-mindmap-item[data-node="人手が足りない"]')
+    .evaluate((element) => getComputedStyle(element).backgroundColor);
+  expect(chosen).not.toBe(unselected);
+});
+
+// 名前の文字の上を押しても項目を選ぶ（Default）
+test("test_select_on_name", async () => {
+  // 準備
+  const page = await openStory("default");
+  // 実行
+  await page
+    .locator('[data-node="利用者を増やす"] .mdmark-diagram-node-name')
+    .click();
+  // 検証
+  await expect(
+    page
+      .locator('[data-node="利用者を増やす"] > .mdmark-diagram-node-hit')
+      .getAttribute("aria-label"),
+  ).resolves.toBe("利用者を増やす（選択中）");
+  const kept = (await itemsOf(page))
+    .filter((item) => !item.dim)
+    .map((item) => item.id);
+  expect(kept.sort()).toEqual(["root", "a1", "利用者を増やす"].sort());
+});
