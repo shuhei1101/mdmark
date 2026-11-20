@@ -66,9 +66,3 @@ export const NodeLink: Story = {
   parameters: { server: { id: "mermaid-diagram" } },
   args: { svg: "flowchart-link", title: "フローチャート" },
 };
-
-export const StyledFallback: Story = {
-  name: "StyledFallback",
-  parameters: { server: { id: "mermaid-diagram" } },
-  args: { svg: "flowchart-styled", title: "フローチャート" },
-};
