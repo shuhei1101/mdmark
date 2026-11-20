@@ -1395,7 +1395,7 @@ files:
     tags: [topic:モック]
   - path: refs/735/assets/table-samples.js
     visibility: internal
-    description: '#735 のモックの見本: #283 の表の見本と同じ列と行で、はみ出す表の既定（どの列も留めない）と、設定で既定の列を留める指定をした表の定義。このモックの表の見本を変えるときに参照する。'
+    description: '#735 のモックの見本: #283 の表の見本と同じ列と行で、はみ出す表の既定（どの列も留めない）の表の定義。このモックの表の見本を変えるときに参照する。'
     tags: [topic:モック, topic:テーブル]
   - path: refs/709/index.md
     visibility: internal
