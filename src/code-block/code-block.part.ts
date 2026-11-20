@@ -262,8 +262,7 @@ function wrapWithBar(options: {
   attributes: string;
   preview: CodePreview | undefined;
 }): string {
-  const { language, fileName, title, copyState, attributes, preview } =
-    options;
+  const { language, fileName, title, copyState, attributes, preview } = options;
   const raw = preview?.view === "raw";
   const pre =
     preview?.view === "rendered"

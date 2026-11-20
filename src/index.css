@@ -7351,6 +7351,11 @@
       }
     }
 
+    /* 描いた結果を出している間の元の Markdown */
+    .mdmark-code > pre[hidden] {
+      display: none;
+    }
+
     /* diff の言語で色分けした行: 追加した行と削除した行を差分の表示と同じ色で出す */
     pre code .hljs-addition {
       color: var(--mdmark-color-diff-add-sign);

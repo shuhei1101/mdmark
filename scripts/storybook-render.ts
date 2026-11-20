@@ -151,6 +151,7 @@ import { renderGif } from "../src/media/gif.part.ts";
 import { renderImageFigure } from "../src/media/image.part.ts";
 import { renderLightbox } from "../src/media/lightbox.part.ts";
 import { renderMedia } from "../src/media/media.part.ts";
+import { render } from "../src/render/index.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 import { renderBackToTop } from "../src/section/back-to-top.part.ts";
 import { renderSection } from "../src/section/section.part.ts";
@@ -2145,6 +2146,14 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       // 畳める行を持つストーリーは、`mount` が付ける開閉のボタンと `⋯` を配置した状態で出す
       foldButtons: lines.some((line) => line.foldLines !== undefined),
       foldColumnHovered: args.foldColumnHovered === true,
+      // 言語 markdown のストーリーは、`mount` が付ける Raw のボタンと、中身を `render` で描いた結果を配置した状態で出す
+      ...(args.preview === "rendered" || args.preview === "raw"
+        ? {
+            markdown: true,
+            preview: args.preview,
+            previewHtml: `<div class="mdmark">${render(lines.map((line) => line.text).join("\n"))}</div>`,
+          }
+        : {}),
     });
     return args.highlight === true
       ? highlightCodeBlock(html, language, lines)
