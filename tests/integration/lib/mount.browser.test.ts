@@ -20391,10 +20391,13 @@ test("test_normal_when_column_width_ignores_hidden_tips", async () => {
     expect(table.width).toBeLessThan(bodyWidth(el));
     const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
     expect(scroller.scrollWidth).toBeLessThanOrEqual(scroller.clientWidth);
-    // 検証: 用語の列のセルは 1 行
-    for (const cell of [turnCell, confirmCell]) {
-      expect(textLineCount(cell)).toBe(1);
-    }
+    // 検証: 用語の列のセルは 1 行（脚注の番号は上付きで上端がずれるため、確認のセルは本文の文字の行を数える）
+    expect(textLineCount(turnCell)).toBe(1);
+    const confirmText = document.createRange();
+    confirmText.selectNodeContents(confirmCell.firstChild as Node);
+    expect(
+      new Set([...confirmText.getClientRects()].map((rect) => rect.top)).size,
+    ).toBe(1);
   });
 });
 
