@@ -23409,3 +23409,138 @@ test("test_error_when_map_png_unavailable", async () => {
   expect(errors).toEqual([]);
   expect(mapViewState(figure)).toBe(before);
 });
+
+/** 書き出しと同じ処理（`renderDocument`・`toPureMarkdown`）で、Markdown を描いた結果と純粋な Markdown にする */
+async function renderedOf(
+  markdown: string,
+  opts: { config?: Record<string, unknown>; aliases?: MdmarkAlias[] } = {},
+) {
+  const { renderDocument } = await import("../../../src/render/index.ts");
+  const { resolveConfig } = await import("../../../src/config.ts");
+  const { toPureMarkdown } = await import(
+    "../../../src/markdown/pure-markdown.ts"
+  );
+  const result = renderDocument({
+    markdown,
+    config: resolveConfig({ config: opts.config ?? {} }),
+    aliases: opts.aliases,
+  });
+  const pure = await toPureMarkdown(markdown, { config: opts.config ?? {} });
+  return {
+    rendered: {
+      html: result.html,
+      features: result.features,
+      page: result.page,
+      paramDefinitions: result.paramDefinitions,
+      extensionDefinitions: result.extensionDefinitions,
+    },
+    pureMarkdown: pure.markdown,
+  };
+}
+
+// 描いた結果の HTML を要素に入れ、Markdown から描いたときと同じ操作を付ける（正常系（描いた結果から描く））
+test("test_normal_when_rendered", async () => {
+  // 準備
+  const writeText = vi.fn((_text: string) => Promise.resolve());
+  stubClipboard(writeText);
+  const config = {
+    libraries: { "test-lib": TEST_LIB_PATH },
+    syntax: { url: highlightUrl("rendered") },
+  };
+  const markdown = [
+    '<!-- page: {"scheme": "dark"} -->',
+    "",
+    "# 手引き",
+    "",
+    "ワークスペースを作る。",
+    "",
+    '<!-- table: {"kind": "data"} -->',
+    "",
+    "| 名前 | 値 |",
+    "| --- | --- |",
+    "| b | 2 |",
+    "| a | 1 |",
+    "",
+    "<!-- /table -->",
+    "",
+    "<!-- tabs -->",
+    "",
+    "### A",
+    "",
+    "a",
+    "",
+    "### B",
+    "",
+    "b",
+    "",
+    "<!-- /tabs -->",
+    "",
+    "```ts",
+    "const count: number = 1;",
+    "```",
+    "",
+    '<!-- test-lib: {"items": ["a", "b"]} -->',
+    "",
+  ].join("\n");
+  const fromMarkdown = createElement();
+  const fromRendered = createElement();
+  const { rendered, pureMarkdown } = await renderedOf(markdown, {
+    config,
+    aliases: ALIASES,
+  });
+  // 実行
+  await mountTracked(fromMarkdown, { markdown, config, aliases: ALIASES });
+  await mountTracked(fromRendered, {
+    rendered,
+    pureMarkdown,
+    config,
+    aliases: ALIASES,
+  });
+  // 検証
+  const content = (el: HTMLElement) =>
+    (el.querySelector(".mdmark-content")?.innerHTML ?? "")
+      .replaceAll(/(mdmark-(?:table|tabs))-\d+/g, "$1-n")
+      .replace(/<div[^>]*data-mdmark-slot[\s\S]*$/, "");
+  expect(content(fromRendered)).toBe(content(fromMarkdown));
+  find<HTMLButtonElement>(fromRendered, "thead th button.mdmark-sort").click();
+  await expect
+    .poll(() =>
+      [...fromRendered.querySelectorAll("tbody td:first-child")].map(
+        (cell) => cell.textContent,
+      ),
+    )
+    .not.toEqual(["b", "a"]);
+  const tabs = fromRendered.querySelectorAll<HTMLButtonElement>(".mdmark-tab");
+  tabs[1]?.click();
+  expect(tabs[1]?.getAttribute("aria-selected")).toBe("true");
+  expect(fromRendered.querySelector(".mdmark-term")?.textContent).toBe(
+    "ワークスペース",
+  );
+  await expect
+    .poll(() => coloredLanguages(fromRendered))
+    .toContain("language-ts");
+  await expect
+    .poll(() => find(fromRendered, "[data-mdmark-slot]").textContent)
+    .toBe("drawn:a,b");
+  expect(fromRendered.classList.contains("mdmark-theme-dark")).toBe(true);
+  find<HTMLButtonElement>(fromRendered, 'button[data-markdown="copy"]').click();
+  await expect.poll(() => firstCopiedText(writeText)).toBe(pureMarkdown);
+});
+
+// Markdown も描いた結果も無いときと、描いた結果を比較元と一緒に指定したときに TypeError を投げる（異常系（描いた結果の指定の誤り・TypeError））
+test("test_error_when_rendered_invalid", async () => {
+  // 準備
+  const { mount } = await loadBuilt();
+  const empty = createElement();
+  const mixed = createElement();
+  const { rendered } = await renderedOf("# 手引き\n");
+  // 実行・検証
+  expect(() => mount(empty, {} as Parameters<Built["mount"]>[1])).toThrow(
+    TypeError,
+  );
+  expect(() => mount(mixed, { rendered, baseMarkdown: "# 前\n" })).toThrow(
+    TypeError,
+  );
+  expect(empty.innerHTML).toBe("");
+  expect(mixed.innerHTML).toBe("");
+});

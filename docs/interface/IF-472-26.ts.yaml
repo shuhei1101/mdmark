@@ -239,6 +239,7 @@ constraints:
   - item: 詳細のページのリンク先
     constraint: '`details[].href` が URL（`http:`・`https:` などのスキームで始まる）か `#` で始まるときはそのまま入れる。それ以外は、そのレコードのファイルの `path` のフォルダからの相対パスとして解き、設定ファイルのフォルダからの相対パス（区切りは `/`、先頭の `./` を持たない）に書き換える。見出しのアンカー（`#` 以降）はそのまま残す'
     notes: 設定ファイルのフォルダの外を指すパスは `../` で始まる値になる
+test_file: tests/integration/lib/build-aliases.test.ts
 refs:
   - ER-472-3#
   - CFG-472-3#settings[aliases]

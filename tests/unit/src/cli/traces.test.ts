@@ -175,7 +175,7 @@ test("test_hide_rendered_html_keeps_id_references", async () => {
   );
   const href = /href="#([^"]*)"/.exec(hidden)?.[1];
   const described = /aria-describedby="([^"]*)"/.exec(hidden)?.[1] ?? "";
-  expect(ids.has(href)).toBe(true);
+  expect(ids.has(href ?? "")).toBe(true);
   expect(ids.has(described.split(" ")[0])).toBe(true);
   expect(described).toBe("zq-fn-tip-1-0 zq-note-1");
   expect(hidden).toContain('for="zq-input-1"');
