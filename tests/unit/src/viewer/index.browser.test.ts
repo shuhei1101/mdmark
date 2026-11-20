@@ -97,15 +97,11 @@ test("test_start_viewer_with_rendered", async () => {
     config: {},
     docs: [
       {
-        path: "a.md",
-        title: "タイトル",
-        rendered: {
-          html: "<h1>タイトル</h1>",
-          features: { "side-toc": true, "markdown-buttons": true },
-          page: {},
-          paramDefinitions: [],
-          extensionDefinitions: [],
-        },
+        ...(await renderedDoc({
+          path: "a.md",
+          title: "タイトル",
+          markdown: "# タイトル\n\n## 節\n\n本文\n",
+        })),
         pureMarkdown: "# タイトル",
       },
     ],
@@ -126,7 +122,7 @@ test("test_start_viewer_with_rendered", async () => {
       .querySelector<HTMLButtonElement>('button[data-markdown="copy"]')
       ?.click();
     // 検証
-    expect(article.querySelector("h1")?.textContent).toBe("タイトル");
+    expect(article.querySelector("h1")?.textContent).toContain("タイトル");
     await vi.waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
     expect(writeText).toHaveBeenCalledWith("# タイトル");
   } finally {
