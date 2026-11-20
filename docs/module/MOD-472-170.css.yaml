@@ -343,6 +343,18 @@ styles:
         target: 開いた用語・脚注のツールチップを持つ表のセル
         value: '`z-index: 10`（ツールチップとメニューと同じ値）。`position: sticky` のセル（ピン止めした列・見出し行・集計の行）は重なりのまとまりを作り、中の `position: fixed` のツールチップもセルの `z-index` の高さで描かれるため、開いている間だけセルを見出し行と集計の行（`3`）・ピン止めした列（`4`）・右側の目次（`5`）より手前に出す。見出し行と集計の行の規則（`z-index: 3`・`4`。詳細度 (0,3,2)）と同じ詳細度にするため `:is()` の引数に `thead th` を持たせ、それらより後ろに配置して優先させる'
         notes: class は `attachTermTips`・`attachFootnotes` が付け、閉じたときに削除する。対応ブラウザの下限（非機能要件 NFR-2）は Popover API に対応するバージョンより前のため、トップレイヤーには出さない
+      - class_name: .mdmark-map .map-change-added・.map-change-changed・.map-change-removed
+        target: map の計画した変更
+        value: 'ノード・グループの枠線と線の色を `added` は `--mdmark-color-diff-add-sign`、`changed` は色の名前 `orange` の文字の色、`removed` は `--mdmark-color-diff-del-sign` にし、`!important` で `layout` の `color` と種類の色より優先する（種類のアイコンと名前の行の色は変えない）。`added`・`changed` のノードは同じ色の 1px の `box-shadow` を重ねる。`removed` は枠線と線を破線（線は `stroke-dasharray: 6 4`）にし、ノードの名前を `word-break: normal` と 2px の `line-through` にする。値はモック `docs/mock/refs/740/assets/map-extra.css` の `map740-added`・`map740-changed`・`map740-removed` から取る'
+      - class_name: .mdmark-map-change
+        target: 計画した変更のバッジ
+        value: ノード・グループの右上に枠線をまたいで重ねる高さ 18px・角丸 9px・文字 11px の札。枠線と文字は変更の色で、`data-change="removed"` は破線。一覧の項目では名前の後ろに並べる。値はモックの `map740-badges`・`map740-badge` から取る
+      - class_name: .mdmark-diagram-export
+        target: 書き出すボタンの開く要素
+        value: 表示する枠の中で書き出すボタンの下に絶対配置する、枠線・角丸 8px・影を持つ縦並びのボタンの並び（最小の幅 120px・高さ 32px）と、その下の `role="status"` の文。`hidden` のときは出さない。値はモックの `map740-export-menu` から取る（popover の規則は写さない）
+      - class_name: .mdmark-map-list
+        target: map の一覧
+        value: 表示する枠の高さいっぱいで縦にスクロールし、上の余白をパネルの高さ分（56px）とる。項目の行は折り返す flex で、名前は太字、種類・説明・出る線は `--mdmark-color-muted` の 13px、入れ子は 20px 字下げ。フォーカスした項目の行に 2px のリンクの色の枠。`data-change="removed"` の項目の名前は 2px の取り消し線。値はモックの `map740-list` から取る
     refs:
       - SCR-472-4#
       - CMP-472-65#

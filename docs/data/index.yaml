@@ -64,3 +64,5 @@ items:
   summary: details の範囲
 - page: DATA-472-32.yaml
   summary: wide の範囲
+- page: DATA-472-34.yaml
+  summary: 計画した変更

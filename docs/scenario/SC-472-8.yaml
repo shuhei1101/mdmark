@@ -1192,8 +1192,115 @@ scenarios:
       - 説明を持つ要素にツールチップのマーカーがあり、フォーカスかポインターで補足の説明が出る。補足の `notes` のキー・`layout` の指定・ドラッグ・案内は、正常シナリオ（C4 図）と同じ規則で該当する
       - mermaid のライブラリへの要求が 0 件
     test: test_normal_when_c4_other_kinds
+  - name: 正常シナリオ（計画した変更を示す）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 計画した変更を持つ map の Markdown
+        description: map の範囲を 2 つ持つ文書。1 つ目は flowchart で、補足の `changes` で、ノード 1 つと線 1 本に `added`、ノード 1 つに `changed`、ノード 1 つと線 1 本に `removed` を持つ。2 つ目は sequenceDiagram で、メッセージ `1` に `added` を持つ
+        notes: '`changes` の値は `{"type": "{値}"}` のオブジェクトで記載する。flowchart の `changes` に知らない値 `moved` を持つ ID を 1 つ持つ。種類の色 `green` を持つノードを `added` にし、補足の `layout` で `color` に `blue` を持つノードを `changed` にする'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 補足に changes を持つ Markdown を指定して描かせる
+        M->>M: changes の ID と値を点検する
+        M-->>P: 追加・変更・削除の色とバッジを付けたノードと線
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`added` のノードは差分の追加の色（`--mdmark-color-diff-add-sign`）の枠線、`added` の線は同じ色の線で描かれ、ノードに「追加」のバッジがある'
+      - '`changed` のノードは色の名前 `orange` の枠線で描かれ、「変更」のバッジがある'
+      - '`removed` のノードは差分の削除の色（`--mdmark-color-diff-del-sign`）の破線の枠線と取り消し線の名前で描かれ、「削除」のバッジがある。`removed` の線は同じ色の破線で描かれる'
+      - '`removed` のノードと線も配置に含まれ、ほかのノードと重ならない'
+      - '`layout` の `color` か種類の色を持つノードも、枠線は変更の色で描かれ、種類のアイコンと名前の行は種類の色のまま'
+      - '`changes` を描くのは、構成図の部品の上に描く種類（flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図）だけ。シーケンス図・マインドマップ・軸と格子の配置の図の補足が `changes` を持つときは、図の前の記載の警告に `map_invalid_value` が 1 件出て、色とバッジを付けない'
+      - 1 つ目の図の前の記載の警告に、知らない値 `moved` の `map_invalid_value`（使用できる値の一覧を含む）が 1 件出て、そのノードは枠線の色とバッジが正常シナリオと同じ
+    test: test_normal_when_planned_changes
+  - name: 正常シナリオ（図を SVG・PNG に書き出す）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 構成図の map を持つ Markdown
+        description: 正常シナリオと同じ文書。グループを 1 つ閉じ、ノードを 1 つ選んだ状態にする
+      - name: Mock
+        description: 正常シナリオと同じ。ブラウザのダウンロードを受け取るように用意する。端末の `devicePixelRatio` は 1
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        participant B as ブラウザ
+        U->>D: 右上のパネルを開いて書き出すボタンを押す
+        D-->>U: SVG と PNG の項目のメニュー
+        U->>D: SVG を選ぶ
+        D->>B: 今の見せ方の図の全体を SVG のファイルにして保存させる
+        U->>D: 書き出すボタンを押して PNG を選ぶ
+        D->>B: 同じ図を PNG のファイルにして保存させる
+      ```
+
+      <!-- /map -->
+    expected:
+      - パネルを開くと、拡大・全画面のボタンと並んで、スクリーンリーダー向けの名前「図を書き出す」を持つ書き出すボタンがある
+      - SVG と PNG のファイル名が `{図の枠のタイトル}.svg`・`{図の枠のタイトル}.png`（タイトルが無い図は `図 {文書の中の map の番号}`）になる
+      - 書き出した SVG は、閉じたグループの名前を持ち、閉じたグループの中のノードの名前を持たない。`width`・`height` は倍率と表示する位置に依らず、等倍の図の全体の大きさになる
+      - 書き出した SVG は、選択の強調・パネル・リサイズハンドル・ツールチップのマーカー・記載の警告の要素を持たない
+      - 書き出した SVG は外部の資源（外部への `href`・`url()`・CSS 変数の `var()`）を持たず、ノードの名前の文字・種類のアイコンの図形・ノードの枠線の色（ページで計算した値）を SVG の中に持つ
+      - PNG の幅・高さは、書き出した SVG の `width`・`height` の 2 倍
+      - Esc でメニューが閉じ、書き出すボタンへフォーカスが戻る
+    test: test_normal_when_exported
+  - name: 正常シナリオ（一覧の表示で読む）
+    setup:
+      - name: 図を描くページ
+        description: 正常シナリオと同じ
+      - name: 構成図の map を持つ Markdown
+        description: map の範囲を 3 つ持つ文書。1 つ目は正常シナリオの構成図、2 つ目は正常シナリオ（シーケンス図）の sequenceDiagram、3 つ目は正常シナリオ（ガントチャート）の gantt
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant D as 図
+        U->>D: 構成図のパネルを開いて一覧の表示のボタンを押す
+        D-->>U: グループとノードの入れ子の一覧
+        U->>D: 一覧にフォーカスして ↓・→・← を押す
+        D-->>U: 項目を移り、グループの項目を開閉する
+        U->>D: シーケンス図の一覧の表示のボタンを押す
+        D-->>U: メッセージを記載順に並べた一覧
+        U->>D: 構成図の一覧の表示のボタンをもう一度押す
+        D-->>U: 図の表示に戻す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 一覧の表示のボタンはスクリーンリーダー向けの名前「一覧で表示」と `aria-pressed` を持ち、押すと表示する枠の中が図から一覧に替わる
+      - 一覧の表示のボタンは、構成図の部品の上に描く種類（flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図）とシーケンス図のパネルにある。3 つ目のガントチャートのパネルには一覧の表示のボタンが無い（マインドマップとほかの軸と格子の配置の図も同じ）
+      - 構成図の一覧は、グループを子を持つ項目、ノードを項目にした入れ子の一覧で、ノードの項目は名前・種類の名前・補足の `notes` の説明と、出る線（「→ {相手の名前}」と線のラベル）を持つ
+      - ↑・↓ で項目を移り、→ でグループの項目を開き、← で閉じる。項目はスクリーンリーダーで名前・種類・説明・出る線の数の順に読み上げられる
+      - 'シーケンス図の一覧は、メッセージを記載順に「{送信元} → {送信先}: {メッセージ}」の項目で並べる'
+      - 一覧の表示は文書の目次に見出しを追加しない
+      - もう一度押すと図の表示に戻り、図の倍率・位置・開閉は一覧に切り替える前と同じ
+    test: test_normal_when_list
 tags:
   - name: topic:map
     main: true
   - name: tool:mermaid
   - name: topic:図
+  - name: topic:書き出し
+  - name: tool:svg
+  - name: topic:一覧
+  - name: topic:アクセシビリティ
+  - name: topic:差分

@@ -56,6 +56,16 @@ export type MapGroup = {
   parent: string | undefined;
 };
 
+/** 計画した変更の種類 */
+export type MapChange = "added" | "changed" | "removed";
+
+/** 計画した変更の種類（使用できる値） */
+export const MAP_CHANGES: readonly MapChange[] = [
+  "added",
+  "changed",
+  "removed",
+];
+
 /** 補足 */
 export type MapData = {
   version: 1;
@@ -65,6 +75,8 @@ export type MapData = {
   plays_over: number | undefined;
   /** ER 図の分類（分類の ID ごと） */
   groups: Record<string, MapGroup>;
+  /** ノード・グループ・線の ID ごとの計画した変更 */
+  changes: Record<string, { type: MapChange }>;
 };
 
 /** 補足のトップレベルのキー */
@@ -75,8 +87,10 @@ export const MAP_DATA_KEYS = [
   "layout",
   "plays_over",
   "groups",
+  "changes",
 ] as const;
 const GROUP_KEYS = ["title", "tables", "parent"];
+const CHANGE_KEYS = ["type"];
 const STEP_KEYS = ["title", "text", "nodes", "edges", "enter"];
 const LAYOUT_KEYS = [
   "align",
@@ -103,6 +117,7 @@ export const emptyMapData = (): MapData => ({
   layout: {},
   plays_over: undefined,
   groups: {},
+  changes: {},
 });
 
 /**
@@ -591,6 +606,50 @@ const readGroups = (
   }
 };
 
+/** changes の 1 件（読めなければ `undefined`） */
+const readChange = (
+  reader: DataReader,
+  value: unknown,
+  path: string,
+): { type: MapChange } | undefined => {
+  if (!isObject(value)) {
+    invalid(reader, path, ' `{"type": 変更の種類}` ');
+    return undefined;
+  }
+  let type: MapChange | undefined;
+  for (const [name, field] of Object.entries(value)) {
+    if (name === "type")
+      type = readChoice<MapChange>(reader, field, {
+        path: `${path}.type`,
+        choices: MAP_CHANGES,
+      });
+    else unknownKey(reader, { path, key: name, keys: CHANGE_KEYS });
+  }
+  if (type === undefined && value.type === undefined)
+    invalid(
+      reader,
+      `${path}.type`,
+      ` ${MAP_CHANGES.map((name) => `\`${name}\``).join("・")} `,
+    );
+  return type === undefined ? undefined : { type };
+};
+
+/** changes を読んで `data` に入れる */
+const readChanges = (
+  reader: DataReader,
+  value: unknown,
+  data: MapData,
+): void => {
+  if (!isObject(value)) {
+    invalid(reader, "changes", ' ID ごとの `{"type"}` ');
+    return;
+  }
+  for (const [id, change] of Object.entries(value)) {
+    const parsed = readChange(reader, change, `changes.${id}`);
+    if (parsed !== undefined) data.changes[id] = parsed;
+  }
+};
+
 /** トップレベルのキー 1 つを読んで `data` に入れる */
 const readRootKey = (
   reader: DataReader,
@@ -618,6 +677,9 @@ const readRootKey = (
     }
     case "groups":
       readGroups(reader, value, data);
+      return;
+    case "changes":
+      readChanges(reader, value, data);
       return;
     default:
       unknownKey(reader, { path: "", key, keys: MAP_DATA_KEYS });

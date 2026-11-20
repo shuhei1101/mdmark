@@ -750,3 +750,86 @@ test("test_attach_map_flow_when_fonts_ready", async () => {
   expect(nodeBox(kept.root, "short").width).toBeCloseTo(121, 0);
   expect(nodeBox(destroyed.root, "short").width).toBe(before);
 });
+
+/** 補足を指定して構成図を描き、文書と同じく記載の警告とともに付ける */
+async function setUpWithData(data: string, mermaid = FLOW) {
+  addStyles();
+  const { attachMap } = await import("../../../../src/map/index.ts");
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(renderDoc(mapRange({ mermaid, data })).html);
+  const detach = attachMap(root, resolveConfig({ config: { map: CONFIG } }));
+  handles.push({ destroy: detach });
+  return root;
+}
+
+/** 描いた文書の中で CSS 変数を色にした計算値 */
+const resolvedColor = (root: HTMLElement, variable: string): string => {
+  const probe = document.createElement("span");
+  probe.style.color = `var(${variable})`;
+  root.append(probe);
+  const color = getComputedStyle(probe).color;
+  probe.remove();
+  return color;
+};
+
+// 計画した変更を描く（正常系）
+test("test_attach_map_flow_when_changes", async () => {
+  // 準備
+  const data = JSON.stringify({
+    version: 1,
+    changes: {
+      user: { type: "added" },
+      frame: { type: "removed" },
+      "mount->marker": { type: "removed" },
+      data: { type: "moved" },
+    },
+  });
+  // 実行
+  const root = await setUpWithData(data);
+  // 検証
+  const node = (id: string) =>
+    root.querySelector<HTMLElement>(`.mdmark-diagram-node[data-node="${id}"]`);
+  expect(node("user")?.classList.contains("map-change-added")).toBe(true);
+  expect(node("user")?.querySelector(".mdmark-map-change")).not.toBeNull();
+  expect(node("frame")?.classList.contains("map-change-removed")).toBe(true);
+  expect(node("frame")?.querySelector(".mdmark-map-change")).not.toBeNull();
+  expect(node("data")?.querySelector(".mdmark-map-change")).toBeNull();
+  const warnings = [...root.querySelectorAll(".mdmark-syntax-warning li")];
+  expect(
+    warnings.filter((item) => item.textContent?.includes("changes.data")),
+  ).toHaveLength(1);
+  const name = node("frame")?.querySelector<HTMLElement>(
+    ".mdmark-diagram-node-name",
+  ) as HTMLElement;
+  expect(getComputedStyle(name).textDecorationLine).toContain("line-through");
+  const removed = resolvedColor(root, "--mdmark-color-diff-del-sign");
+  const paths = root.querySelectorAll<SVGPathElement>(
+    '.mdmark-diagram-wires path[data-wire="mount->marker"]',
+  );
+  expect(paths.length).toBeGreaterThan(0);
+  for (const path of paths) {
+    expect(getComputedStyle(path).stroke).toBe(removed);
+    expect(getComputedStyle(path).strokeDasharray).not.toBe("none");
+  }
+});
+
+// 一覧の表示のボタンと書き出すボタン（正常系）
+test("test_attach_map_flow_when_list", async () => {
+  // 準備
+  const root = await setUpWithData(DATA);
+  root
+    .querySelector<HTMLButtonElement>('button[aria-label="表示の操作を開く"]')
+    ?.click();
+  // 実行
+  const list = root.querySelector<HTMLButtonElement>('[data-tool="list"]');
+  const exporter = root.querySelector<HTMLButtonElement>(
+    '[data-tool="export"]',
+  );
+  // 検証
+  expect(list?.getAttribute("aria-pressed")).toBe("false");
+  expect(exporter?.getAttribute("aria-expanded")).toBe("false");
+  list?.click();
+  expect(
+    root.querySelector('.mdmark-diagram-viewport [role="tree"]'),
+  ).not.toBeNull();
+});

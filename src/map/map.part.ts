@@ -32,6 +32,7 @@ import {
   type AxisGridLayout,
   type AxisGridPlacement,
 } from "./axis-grid-layout.ts";
+import type { MapChange } from "./data.ts";
 import { MAP_LAYOUT, type MapLayout } from "./layout.ts";
 import type { Mindmap, MindmapItem } from "./mindmap.ts";
 import type { MindmapLayout, MindmapPlacement } from "./mindmap-layout.ts";
@@ -165,6 +166,8 @@ export type MapFlowArgs = {
   nodeParts?: Record<string, MapNodePart> | undefined;
   /** 選択と強調の代わりに残すノードと線（ほかを薄くする） */
   keep?: { nodes: string[]; wires: string[] } | undefined;
+  /** 補足の changes のノード・グループ・線の ID ごとの計画した変更 */
+  changes?: Record<string, MapChange> | undefined;
 };
 
 /** 状態遷移図のノードの形状（`junction` はアーキテクチャ図の分岐点） */
@@ -671,6 +674,43 @@ const markFlowNode = (
   return selected ? markSelected(hit, value) : hit;
 };
 
+/** 計画した変更の名前（バッジとスクリーンリーダー向けの名前） */
+export const MAP_CHANGE_LABELS: Readonly<Record<MapChange, string>> = {
+  added: "追加",
+  changed: "変更",
+  removed: "削除",
+};
+
+/** 計画した変更のバッジ（読み上げは押せる要素の名前に足すため `aria-hidden`） */
+export const mapChangeBadge = (change: MapChange): string =>
+  `<span class="mdmark-map-change" data-change="${change}" aria-hidden="true">${MAP_CHANGE_LABELS[change]}</span>`;
+
+/** 計画した変更を、ノード・グループに class とバッジ、押せる要素の名前の末尾に変更の名前、線に class で付ける */
+const markChanges = (html: string, args: MapFlowArgs): string => {
+  let out = html;
+  for (const [id, change] of Object.entries(args.changes ?? {})) {
+    const value = regExpValue(id);
+    const name = `map-change-${change}`;
+    out = addClass(out, { attribute: "data-node", id, name });
+    out = addClass(out, { attribute: "data-group", id, name });
+    out = addClass(out, { attribute: "data-wire", id, name });
+    out = out.replace(
+      new RegExp(
+        `(<div class="[^"]*\\bmdmark-diagram-node\\b[^"]*"[^>]*\\sdata-(?:node|group)="${value}"[^>]*>|<div class="[^"]*\\bmap-group\\b[^"]*"[^>]*\\sdata-group="${value}"[^>]*>)`,
+        "g",
+      ),
+      `$1${mapChangeBadge(change)}`,
+    );
+    out = out.replace(
+      new RegExp(
+        `(\\sdata-node="${value}"[^>]*>[\\s\\S]*?class="mdmark-diagram-node-(?:hit|link)"[^>]*?aria-label=")([^"]*)"`,
+      ),
+      `$1$2、${MAP_CHANGE_LABELS[change]}"`,
+    );
+  }
+  return out;
+};
+
 /** 持ち主の `id` の属性（無ければ空） */
 const ownerAttribute = (ownerId: string | undefined): string =>
   ownerId === undefined ? "" : ` id="${escapeHtml(ownerId)}"`;
@@ -874,7 +914,10 @@ export const renderMapFlow = (args: MapFlowArgs): MapPart => {
     wireName: names.wireName,
   });
   return {
-    html: `${groups}${html}${hitLayer}${closedHtml}${packets}`,
+    html: markChanges(
+      `${groups}${html}${hitLayer}${closedHtml}${packets}`,
+      args,
+    ),
     tips: `${markTipTerms(`${part.tips}${wireTips.tips.html()}${groupTips.html()}`, args.terms)}${marker.tips.html()}${inserted.tips}`,
   };
 };

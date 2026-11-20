@@ -1805,3 +1805,97 @@ test("test_normal_when_map_node_id_link_checked", async () => {
   expect(lines.at(-1)).toBe("ずれ 1 件");
   expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
 });
+
+// map の計画した変更の補足にずれがある（正常系）
+test("test_normal_when_map_changes_drift", async () => {
+  // 準備: 10 行目・27 行目に 1 行の補足、40 行目からずれの無い範囲を置く
+  const flow = [
+    "# A",
+    "",
+    "<!-- map -->",
+    "```mermaid",
+    "flowchart LR",
+    "  mount[mount] --> marker[マーカー]",
+    "```",
+    "",
+    "",
+    '<!-- map-data: {"version": 1, "changes": {"ghost": {"type": "added"}, "mount": {"type": "moved"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ];
+  const sequence = [
+    "<!-- map -->",
+    "```mermaid",
+    "sequenceDiagram",
+    "  A->>B: 送る",
+    "```",
+    "",
+    "",
+    '<!-- map-data: {"version": 1, "changes": {"1": {"type": "added"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+    "",
+  ];
+  const clean = [
+    "<!-- map -->",
+    "```mermaid",
+    "flowchart LR",
+    "  a[A] --> b[B]",
+    "  b --> c[C]",
+    "```",
+    "",
+    '<!-- map-data: {"version": 1, "changes": {"a": {"type": "added"}, "b": {"type": "changed"}, "b->c": {"type": "removed"}}} -->',
+    "",
+    "<!-- /map -->",
+    "",
+  ];
+  const a = [...flow, ...sequence, ...clean];
+  expect(a[9]).toContain("ghost");
+  expect(a[26]).toContain('"1"');
+  expect(a[39]).toBe("<!-- map -->");
+  const dir = await createMapDir(a);
+  const before = await snapshotFiles(dir, MAP_FILES);
+  // 実行
+  const result = await runCli(["check"], dir);
+  // 検証
+  expect(result.code).toBe(1);
+  const lines = linesOf(result.stdout);
+  const at10 = lines.filter((item) => item.startsWith("docs/a.mark.md:10: "));
+  const unknown = at10.filter((item) => item.includes("map_unknown_ref"));
+  expect(unknown).toHaveLength(1);
+  expect(unknown[0]).toContain("changes.ghost");
+  const invalid = at10.filter((item) => item.includes("map_invalid_value"));
+  expect(invalid).toHaveLength(1);
+  for (const text of ["changes.mount.type", "added", "changed", "removed"])
+    expect(invalid[0]).toContain(text);
+  const at27 = lines.filter((item) =>
+    item.startsWith("docs/a.mark.md:27: map_invalid_value:"),
+  );
+  expect(at27).toHaveLength(1);
+  for (const text of [
+    "changes",
+    "flowchart・ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図",
+  ])
+    expect(at27[0]).toContain(text);
+  expect(lines.some((item) => /^docs\/a\.mark\.md:(4\d|5\d):/.test(item))).toBe(
+    false,
+  );
+  expect(lines.at(-1)).toBe("ずれ 3 件");
+  expect(await snapshotFiles(dir, MAP_FILES)).toEqual(before);
+});

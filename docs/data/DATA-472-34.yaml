@@ -1,0 +1,14 @@
+id: DATA-472-34
+visibility: internal
+title: 'データ: 計画した変更'
+lead: 構成図の部品の上に描く図の、ノード・グループ・線 1 つに計画した変更（キーが ID）。
+datastore: JSON
+fields:
+  - key: type
+    title: 変更の種類
+    type: enum
+    description: '`added`（追加）/ `changed`（変更）/ `removed`（削除。削除するノード・線も配置に含めて描く）'
+    required: true
+    example: added
+refs:
+  - ER-472-2#tables[changes]

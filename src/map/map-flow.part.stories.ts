@@ -104,3 +104,12 @@ export const MeasuredName: Story = {
   parameters: { server: { id: "map-flow" } },
   args: { source: "measured" },
 };
+
+export const PlannedChanges: Story = {
+  name: "PlannedChanges",
+  parameters: { server: { id: "map-flow" } },
+  args: {
+    changes:
+      '{"user": "added", "user->mount": "added", "mount": "changed", "legacy": "removed", "mount->legacy": "removed"}',
+  },
+};

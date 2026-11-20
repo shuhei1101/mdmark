@@ -2345,6 +2345,14 @@ files:
         type: tests
       - to: CMP-531-1
         type: see_also
+  - path: integration/lib/map-list.story.test.ts
+    description: 部品設計『mapの一覧』の状態ごとのストーリーを Playwright で開いて確かめる結合テスト。一覧の部品の状態を変えるときに参照する。
+    tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図, topic:一覧]
+    related:
+      - to: src/map/list.part.ts
+        type: tests
+      - to: CMP-740-1
+        type: see_also
   - path: integration/lib/map-flow.story.test.ts
     description: '部品設計『mapの構成図』のストーリーを実際のブラウザで開き、状態ごとの描画を確認する結合テスト。部品の引数や状態を変えたときに参照する。'
     tags: [topic:結合テスト, topic:ストーリー, tool:playwright, tool:vitest, topic:図]
