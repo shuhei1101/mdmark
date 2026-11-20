@@ -128,11 +128,11 @@ test("test_render_tree_when_interactive", async () => {
   });
   // 検証: 帯が一覧の前にあり、コピーのボタンが idle で種類 tree を持つ
   for (const html of [basic, levels]) {
-    const bar = html.indexOf("mdmark-tree-bar");
+    const bar = html.indexOf("mdmark-code-bar");
     expect(bar).toBeGreaterThan(-1);
     expect(bar).toBeLessThan(html.indexOf('<ul class="mdmark-tree-list"'));
     expect(html).toContain('aria-hidden="true">tree<');
-    expect(findTags(html, "mdmark-tree-copy")[0]).toContain(
+    expect(findTags(html, "mdmark-code-copy")[0]).toContain(
       'data-state="idle"',
     );
   }

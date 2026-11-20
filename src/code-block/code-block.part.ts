@@ -252,6 +252,29 @@ function codeBody(options: {
     .join("\n");
 }
 
+/** 部品『コードブロック』の帯の中身（言語のラベル・ファイル名・タイトル・コピーのボタン）の HTML を返却する。言語が空ならラベルを出さず、`copyState` を省くとコピーのボタンを出さない。コードブロックと部品『ファイルツリー』が共通で使用する */
+export function renderCodeBar(options: {
+  language: string;
+  fileName: string;
+  title: string;
+  copyState: CodeCopyState | undefined;
+  raw: { pressed: boolean } | undefined;
+}): string {
+  const { language, fileName, title, copyState, raw } = options;
+  const meta =
+    copyState === undefined
+      ? ""
+      : renderCodeCopy({ state: copyState }).replace(
+          '<span class="mdmark-code-meta">',
+          `<span class="mdmark-code-meta">${raw ? renderCodeRaw(raw) : ""}`,
+        );
+  return (
+    renderLanguageLabel({ language, fileName }) +
+    (title ? escapeHtml(title) : "") +
+    meta
+  );
+}
+
 /** `pre` を帯で包む。タイトルがあれば `figure` の `figcaption` を帯にする */
 function wrapWithBar(options: {
   pre: string;
@@ -268,17 +291,13 @@ function wrapWithBar(options: {
     preview?.view === "rendered"
       ? options.pre.replace(/^<pre/, "<pre hidden")
       : options.pre;
-  const meta =
-    copyState === undefined
-      ? ""
-      : renderCodeCopy({ state: copyState }).replace(
-          '<span class="mdmark-code-meta">',
-          `<span class="mdmark-code-meta">${preview ? renderCodeRaw({ pressed: raw }) : ""}`,
-        );
-  const barContent =
-    renderLanguageLabel({ language, fileName }) +
-    (title ? escapeHtml(title) : "") +
-    meta;
+  const barContent = renderCodeBar({
+    language,
+    fileName,
+    title,
+    copyState,
+    raw: preview ? { pressed: raw } : undefined,
+  });
   const previewHtml = preview
     ? `<div class="mdmark-code-preview"${raw ? " hidden" : ""}>${preview.html}</div>`
     : "";

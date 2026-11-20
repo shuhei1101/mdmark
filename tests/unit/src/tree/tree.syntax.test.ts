@@ -260,7 +260,7 @@ test("test_build_plain_file_trees", () => {
     ...fence("text", PLAIN_TREE),
     ...fence("", ["src/", "|-- index.ts", "`-- parts/"]),
     ...fence("text", ["└── index.js"]),
-    jsonMark("code", { tree_warning: false }),
+    jsonMark("code", { tree_warning: false }).raw,
     "",
     ...fence("text", PLAIN_TREE),
   ].join("\n");
@@ -269,7 +269,8 @@ test("test_build_plain_file_trees", () => {
   // 検証
   expect(matches(html, /<div class="mdmark-tree"/g)).toHaveLength(2);
   expect(html).toContain('data-tree-language="text"');
-  expect(html).toContain('data-tree-language=""');
+  // 空の属性は描いた HTML で値を持たない形（`data-tree-language`）になる
+  expect(html).toMatch(/data-tree-language(?:="")?[\s>]/);
   expect(html).toContain("└── index.js");
   expect(matches(html, /<pre/g)).toHaveLength(2);
   expect(html).not.toContain("mdmark-syntax-warning");
@@ -307,7 +308,7 @@ test("test_build_plain_file_trees_when_excluded", () => {
     "",
   ].join("\n");
   const codeOff = [
-    jsonMark("features", { code: false }),
+    jsonMark("features", { code: false }).raw,
     "",
     ...fence("text", PLAIN_TREE),
   ].join("\n");

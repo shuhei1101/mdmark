@@ -202,11 +202,14 @@ function attachTree(
   const cleanups: Array<() => void> = [];
   let detached = false;
 
-  // 帯: 種類とコピーのボタン
-  list.insertAdjacentHTML("beforebegin", renderTreeBar({}));
-  const bar = tree.querySelector<HTMLElement>(":scope > .mdmark-tree-bar");
-  const copyButton = bar?.querySelector<HTMLButtonElement>(".mdmark-tree-copy");
-  const status = bar?.querySelector<HTMLElement>(".mdmark-tree-status");
+  // 帯: 記載した言語とコピーのボタン（部品『コードブロック』の帯と共通）
+  list.insertAdjacentHTML(
+    "beforebegin",
+    renderTreeBar({ language: tree.dataset.treeLanguage ?? "tree" }),
+  );
+  const bar = tree.querySelector<HTMLElement>(":scope > .mdmark-code-bar");
+  const copyButton = bar?.querySelector<HTMLButtonElement>(".mdmark-code-copy");
+  const status = bar?.querySelector<HTMLElement>(".mdmark-code-status");
   cleanups.push(() => bar?.remove());
 
   const marker = tree.dataset.open ?? "";
@@ -375,7 +378,7 @@ function attachTree(
   };
   const onTreeClick = (event: MouseEvent): void => {
     const target = event.target instanceof Element ? event.target : null;
-    if (target?.closest(".mdmark-tree-copy")) {
+    if (target?.closest(".mdmark-code-copy")) {
       void copyTree();
     } else if (target?.closest(".mdmark-copy-panel-close")) {
       closePanel(true);

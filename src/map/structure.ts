@@ -91,7 +91,8 @@ const INIT_MAIN_BRANCH_RE =
   /^%%\{\s*init\s*:[\s\S]*?["']mainBranchName["']\s*:\s*["']([^"']+)["']/m;
 
 /** front matter の `mainBranchName: …` */
-const FRONT_MAIN_BRANCH_RE = /^\s*mainBranchName\s*:\s*["']?([^"'\r\n]+?)["']?\s*$/m;
+const FRONT_MAIN_BRANCH_RE =
+  /^\s*mainBranchName\s*:\s*["']?([^"'\r\n]+?)["']?\s*$/m;
 
 /** Mermaid のソースの front matter の `config.gitGraph.mainBranchName` と `%%{init}` の `gitGraph.mainBranchName` から、Git グラフの最初のブランチの名前を返却する。両方にあれば `%%{init}` を優先する */
 export const mermaidMainBranchOf = (source: string): string | undefined => {

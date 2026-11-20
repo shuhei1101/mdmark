@@ -2994,74 +2994,11 @@
       }
     }
 
-    /* 帯: 左端に種類の札、右端にコピーのボタン */
-    .mdmark-tree-bar {
-      display: flex;
-      gap: 0.5em;
-      align-items: center;
-      justify-content: space-between;
-      min-height: 2rem;
-      padding-block: 0.15em;
-      padding-inline: 0.5em 0.35em;
+    /* 帯: 部品『コードブロック』の帯をツリーの面の上端に置く。枠と角はツリーの面が持つ */
+    > .mdmark-code-bar {
+      border: 0;
       border-block-end: 1px solid var(--mdmark-color-border);
-    }
-
-    /* 種類の札: コードブロックの言語のラベルと同じ小さな札 */
-    .mdmark-tree-kind {
-      padding: 0.1em 0.5em;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: calc(var(--mdmark-radius) - 2px);
-      background: var(--mdmark-color-surface);
-      color: var(--mdmark-color-muted);
-      font-family: var(--mdmark-font-mono);
-      font-size: 0.75rem;
-      line-height: 1.5;
-      user-select: none;
-    }
-
-    /* 帯の右の塊（コピーのボタンとスクリーンリーダーの通知） */
-    .mdmark-tree-meta {
-      display: inline-flex;
-      flex: none;
-      align-items: center;
-    }
-
-    /* コピーのボタン: 枠を持たない小さなボタン */
-    .mdmark-tree-copy {
-      display: inline-flex;
-      gap: 0.3em;
-      align-items: center;
-      min-height: 1.75rem;
-      padding: 0 0.5em;
-      border: 1px solid transparent;
-      border-radius: calc(var(--mdmark-radius) - 2px);
-      background: none;
-      color: var(--mdmark-color-muted);
-      font-family: var(--mdmark-font-body);
-      font-size: 0.75rem;
-      white-space: nowrap;
-      cursor: pointer;
-
-      .mdmark-diagram-icon {
-        width: 1.1em;
-        height: 1.1em;
-      }
-
-      &:hover {
-        border-color: var(--mdmark-color-border);
-        background: var(--mdmark-color-bg-opaque);
-        color: var(--mdmark-color-text);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--mdmark-color-link);
-        outline-offset: 1px;
-      }
-
-      /* コピーした: 追加した行と同じ緑で通知する */
-      &[data-state="copied"] {
-        color: var(--mdmark-color-diff-add-sign);
-      }
+      border-radius: 0;
     }
 
     /* 入れ子のリスト: 等幅の文字で並べ、長い名前と注釈は折り返さずに横へスクロールする */
@@ -4058,7 +3995,7 @@
       }
 
       /* ファイルツリー: 紙では押せない帯・コピーのパネル・開閉の山形を出さず、長い名前と注釈を折り返す */
-      :is(.mdmark-tree-bar, .mdmark-tree > .mdmark-copy-panel) {
+      :is(.mdmark-tree > .mdmark-code-bar, .mdmark-tree > .mdmark-copy-panel) {
         display: none;
       }
 

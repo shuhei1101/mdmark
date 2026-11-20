@@ -1,4 +1,9 @@
 import type { StateCore, Token } from "markdown-it";
+import {
+  readCodeSpec,
+  splitInfoString,
+} from "../code-block/code-block.syntax.ts";
+import { MAP_SOURCE_META } from "../map/map.syntax.ts";
 import type { Mark } from "../render/marks.ts";
 import { escapeHtml } from "../shared/escape.logic.ts";
 import { warningBlock } from "../shared/syntax-warning.syntax.ts";
@@ -6,6 +11,22 @@ import { envOf, featureOn, markOf, ownBlock } from "../shared/tokens.syntax.ts";
 import { renderTree, type TreeNode } from "./tree.part.ts";
 
 export type { TreeNode };
+
+/** 罫線でフォルダ構成を記載した行。行頭の空白（`tree` コマンドが縦線の後ろに出す NBSP を含む）と縦線の後に、罫線の枝が続く */
+export const TREE_LINE_PATTERN = /^[\t \u00A0│|]*(?:├── |└── |\|-- |`-- )/u;
+
+/** この数以上の罫線の行を持つ言語が `tree` でないコードブロックをファイルツリーにする */
+export const PLAIN_TREE_MIN_LINES = 2;
+
+/** 罫線の行を持ってもファイルツリーにしないコードブロックの言語 */
+export const PLAIN_TREE_EXCLUDED_LANGUAGES: readonly string[] = [
+  "mermaid",
+  "csv",
+];
+
+/** コードブロックの中身の、罫線でフォルダ構成を記載した行の数を返却する */
+export const countTreeLines = (source: string): number =>
+  source.split("\n").filter((line) => TREE_LINE_PATTERN.test(line)).length;
 
 /** ツリーの 1 階層分の字下げ（`│   `・`|   ` か空白 4 つ） */
 const INDENT_UNITS = ["│   ", "|   ", "    "];
@@ -100,6 +121,15 @@ function renderNoteInline(state: StateCore, markdown: string): string {
   return state.md.renderer.renderInline(children, state.md.options, env);
 }
 
+/** 読み込めないファイルツリーの記載の警告 */
+const tooDeepWarning = (
+  state: StateCore,
+  result: { line: number; depth: number },
+): Token =>
+  warningBlock(state, {
+    message: `ファイルツリーの ${result.line} 行目が、上の行より ${result.depth} 階層深く記載されていて読み込めません。罫線の階層を 1 階層ずつ深くしてください。コードブロックのまま描いています。`,
+  });
+
 /** `tree` がオンなら、言語 `tree` のコードブロックを読み込んでファイルツリーの部品にする。直前に `tree` のマーカーがあれば `open=` を読み込んで部品へ指定し、読み込めない指定は警告を差し込む。罫線を読み込めなければ警告を差し込み、コードブロックのままにする */
 export function buildFileTrees(state: StateCore): void {
   if (!featureOn(state, "tree")) {
@@ -116,12 +146,7 @@ export function buildFileTrees(state: StateCore): void {
       renderNoteInline(state, markdown),
     );
     if (!("nodes" in result)) {
-      out.push(
-        warningBlock(state, {
-          message: `ファイルツリーの ${result.line} 行目が、上の行より ${result.depth} 階層深く記載されていて読み込めません。罫線の階層を 1 階層ずつ深くしてください。コードブロックのまま描いています。`,
-        }),
-        token,
-      );
+      out.push(tooDeepWarning(state, result), token);
       continue;
     }
     const mark = markOf(state.tokens[index - 1]);
@@ -143,3 +168,53 @@ export function buildFileTrees(state: StateCore): void {
   }
   state.tokens = out;
 }
+
+/** 言語が `tree` でない `fence` をファイルツリーにする対象か（直前の `code` のマーカーは `previous`） */
+const isPlainTree = (token: Token, previous: Mark | undefined): boolean => {
+  if (token.type !== "fence" || token.meta?.[MAP_SOURCE_META] === true)
+    return false;
+  const { language } = splitInfoString(token.info);
+  if (language === "tree" || PLAIN_TREE_EXCLUDED_LANGUAGES.includes(language))
+    return false;
+  if (countTreeLines(token.content) < PLAIN_TREE_MIN_LINES) return false;
+  if (previous === undefined) return true;
+  return readCodeSpec({
+    options: previous.options,
+    lineCount: token.content.split("\n").length,
+  }).treeWarning;
+};
+
+/** `code` と `tree` がオンのとき、罫線の行を `PLAIN_TREE_MIN_LINES` 以上持つ言語が `tree` でない `fence` を部品『ファイルツリー』にする。読み込めなければ警告を 1 つ差し込み、`fence` のまま残す */
+export const buildPlainFileTrees = (state: StateCore): void => {
+  if (!featureOn(state, "tree") || !featureOn(state, "code")) return;
+  const out: Token[] = [];
+  for (const [index, token] of state.tokens.entries()) {
+    const mark = markOf(state.tokens[index - 1]);
+    const code = mark?.name === "code" && !mark.closing ? mark : undefined;
+    if (!isPlainTree(token, code)) {
+      out.push(token);
+      continue;
+    }
+    const result = parseTree(token.content, (markdown) =>
+      renderNoteInline(state, markdown),
+    );
+    if (!("nodes" in result)) {
+      out.push(tooDeepWarning(state, result), token);
+      continue;
+    }
+    if (code) out.pop();
+    out.push(
+      ownBlock(
+        state,
+        renderTree({
+          nodes: result.nodes,
+          source: token.content.replace(/\n+$/, ""),
+          language: splitInfoString(token.info).language,
+          wrap: false,
+        }),
+        token,
+      ),
+    );
+  }
+  state.tokens = out;
+};
