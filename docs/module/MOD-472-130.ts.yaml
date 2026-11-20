@@ -307,7 +307,7 @@ functions:
         summary: 計画した変更を描く
         condition: 補足に `changes`（`added`・`removed`）と知らない値 `moved` を持つ構成図
         mock: なし（Chromium）
-        expected: '`added`・`removed` のノードが変更の class とバッジを持ち、`moved` のノードは持たず、図の前の記載の警告に `map_invalid_value` が 1 件。`removed` のノードの名前の計算した `text-decoration-line` が `line-through`'
+        expected: '`added`・`removed` のノードが変更の class とバッジを持ち、`moved` のノードは持たず、図の前の記載の警告に `map_invalid_value` が 1 件。`removed` のノードの名前の計算した `text-decoration-line` が `line-through`。`removed` の線は、辺から延ばす区間を含む経路の全ての `path` の計算した `stroke` が `--mdmark-color-diff-del-sign` の値で、`stroke-dasharray` が `none` でない'
       - name: test_attach_map_flow_when_list
         case: 正常
         summary: 一覧の表示のボタンと書き出すボタン
