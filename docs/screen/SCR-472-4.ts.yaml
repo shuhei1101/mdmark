@@ -1037,7 +1037,7 @@ elements:
     id: comment-add
     kind: button
     component: CMP-472-14#
-    position: 描く先の要素 > 選んだ文字のブロックの直後
+    position: 描く先の要素 > 選んだ文字のブロックの直後（表のセルのときはセルを含む表の直後）
     description: 本文の文字を 1 つのブロック（段落・リストの項目・表のセル・見出し・引用）の中で選んだとき、選んだ文字の終わりの下（収まらなければ上）に出す
     label: コメント
     visible_when: '`comments` がオンで `opts.commentStore` を指定したか `mountComments` を呼び、文字を選んでいて入力欄を開いていないとき。入力欄・ビューの操作・コード・既にあるマーカーの中の選びでは出さない。コメントの部品のモジュールを読み込めないときは出さない'
