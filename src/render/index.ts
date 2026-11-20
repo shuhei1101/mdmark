@@ -86,6 +86,8 @@ export function renderDocument(options: {
   icons?: Record<string, MdmarkIconNode> | undefined;
   /** `id:` で始まるリンク先を URL に変える関数 */
   resolveIdLink?: ResolveIdLink | undefined;
+  /** 描く文書の、設定ファイルのフォルダからの相対パス。エイリアスの行から描く用語集の表の詳細のリンク先を解くのに使用する */
+  path?: string | undefined;
 }): RenderedDocument {
   parser ??= createParser();
   const index = indexOf(options.index, options.references);
@@ -109,6 +111,7 @@ export function renderDocument(options: {
     includes: options.includes,
     icons: options.icons,
     resolveIdLink: options.resolveIdLink,
+    path: options.path,
     ownGlossary: [],
     extensionDefinitions: [],
     paramDefinitions: [],

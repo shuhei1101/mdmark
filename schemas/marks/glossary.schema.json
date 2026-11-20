@@ -13,8 +13,11 @@
     },
     "avoid": {
       "$ref": "common.schema.json#/$defs/column_ref"
+    },
+    "alias_row": {
+      "type": "string",
+      "minLength": 1
     }
   },
-  "additionalProperties": false,
-  "required": ["term", "meaning"]
+  "additionalProperties": false
 }

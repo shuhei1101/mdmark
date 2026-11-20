@@ -61,6 +61,14 @@ export const ALIAS_KEY_LABELS: Record<string, string> = {
   replacement: "置き換え先",
 };
 
+/** エイリアスの用語を説明するページ 1 つ */
+export type MdmarkAliasDetail = {
+  /** リンクに出すページの名前 */
+  title: string;
+  /** 設定ファイルのフォルダからの相対パス（区切りは `/`、先頭の `./` を持たない）か URL。`#` 以降のアンカーを持てる */
+  href: string;
+};
+
 /** 設定の行の `metadata` を適用して作ったエイリアス 1 件。値の無いキーは持たない（`aliases` だけは空の並びでも持つ） */
 export type MdmarkAlias = {
   /** エイリアスの種類。ツールチップの区分と照合したときの扱いを決める */
@@ -91,6 +99,10 @@ export type MdmarkAlias = {
   avoid?: string[];
   /** `avoid` の種類の置き換え先の単語 */
   replacement?: string;
+  /** このエイリアスを作った元の行の `id`。`buildAliases` が入れる */
+  row?: string;
+  /** `term` の種類の、用語を説明するページ */
+  details?: MdmarkAliasDetail[];
 };
 
 /** 行の `paths` に該当したファイルを YAML として読み込んだ中身 1 つ */
@@ -329,7 +341,67 @@ function toUsableAlias(
   if (Array.isArray(item.related)) {
     alias.related = list(item.related);
   }
+  if (typeof item.row === "string") {
+    alias.row = item.row;
+  }
+  const details = Array.isArray(item.details)
+    ? item.details.filter(isDetail)
+    : [];
+  if (details.length > 0) {
+    alias.details = details;
+  }
   return alias;
+}
+
+/** 空でない文字列の `title` と `href` を持つ詳細のページか */
+function isDetail(value: unknown): value is MdmarkAliasDetail {
+  return isRecord(value) && isFilled(value.title) && isFilled(value.href);
+}
+
+/** スキームで始まる URL か */
+const SCHEME = /^[a-z][a-z0-9+.-]*:/i;
+
+/** `/` で区切ったパスの `.`・`..` を畳む */
+function normalizePath(path: string): string {
+  const parts: string[] = [];
+  for (const part of path.split("/")) {
+    if (part === "" || part === ".") {
+      continue;
+    }
+    if (part === ".." && parts.length > 0 && parts.at(-1) !== "..") {
+      parts.pop();
+    } else {
+      parts.push(part);
+    }
+  }
+  return parts.join("/");
+}
+
+/** レコードの `details` の列の値から、空でない `title` と `href` を持つ要素だけを残し、`href` を設定ファイルのフォルダからの相対パスに書き換える。並びでない値と、残った要素が無いときは `undefined` */
+export function readAliasDetails(options: {
+  /** レコードの `details` の列の値 */
+  value: unknown;
+  /** レコードのファイルの `path`（設定ファイルのフォルダからの相対パス） */
+  sourcePath: string;
+}): MdmarkAliasDetail[] | undefined {
+  const { value, sourcePath } = options;
+  if (!Array.isArray(value)) {
+    return undefined;
+  }
+  const folder = sourcePath.includes("/")
+    ? sourcePath.slice(0, sourcePath.lastIndexOf("/"))
+    : "";
+  const details = value.filter(isDetail).map(({ title, href }) => {
+    if (SCHEME.test(href) || href.startsWith("#")) {
+      return { title, href };
+    }
+    const hash = href.indexOf("#");
+    const path = hash === -1 ? href : href.slice(0, hash);
+    const anchor = hash === -1 ? "" : href.slice(hash);
+    const joined = folder === "" ? path : `${folder}/${path}`;
+    return { title, href: `${normalizePath(joined)}${anchor}` };
+  });
+  return details.length > 0 ? details : undefined;
 }
 
 /** 照合に使用できるエイリアスだけを並びの順に返却する（`env`・知らない種類・必須のキーが空・前と同じ `id` を除く） */
@@ -349,7 +421,11 @@ export function usableAliases(aliases: readonly unknown[]): MdmarkAlias[] {
 }
 
 /** 検めて残した値と行の種類から、エイリアス 1 件を作る */
-function toAlias(values: AliasValues, aliasType: MdmarkAliasType): MdmarkAlias {
+function toAlias(
+  values: AliasValues,
+  aliasType: MdmarkAliasType,
+  extra: { row: string; details: MdmarkAliasDetail[] | undefined },
+): MdmarkAlias {
   const text = (key: (typeof ALIAS_KEYS)[number]): string | undefined =>
     typeof values[key] === "string" ? (values[key] as string) : undefined;
   const list = (key: (typeof ALIAS_KEYS)[number]): string[] | undefined =>
@@ -382,6 +458,10 @@ function toAlias(values: AliasValues, aliasType: MdmarkAliasType): MdmarkAlias {
   const avoid = list("avoid");
   if (avoid !== undefined) {
     alias.avoid = avoid;
+  }
+  alias.row = extra.row;
+  if (extra.details !== undefined) {
+    alias.details = extra.details;
   }
   return alias;
 }
@@ -575,7 +655,11 @@ function takeRecord(
   }
   build.aliasIds.add(id);
   if (row.aliasType !== "env") {
-    build.aliases.push(toAlias(values, row.aliasType));
+    const details = readAliasDetails({
+      value: readColumn(record, columnOf(row, "details")).value,
+      sourcePath: source.path,
+    });
+    build.aliases.push(toAlias(values, row.aliasType, { row: row.id, details }));
   }
 }
 
