@@ -91,7 +91,7 @@ data_models:
   - name: MdmarkRendered
     title: 描いた結果
     container: src/mount.ts
-    summary: '`mount` の `rendered` に指定する、`renderDocument` の戻り値のうち `mount` が使用する項目。`Pick<RenderedDocument, "html" | "features" | "page" | "paramDefinitions" | "extensionDefinitions">` で導出し、公開の型として export する'
+    summary: '`mount` の `rendered` に指定する、`renderDocument` の戻り値のうち `mount` が使用する項目。`Pick<RenderedDocument, "html" | "features" | "page" | "paramDefinitions" | "extensionDefinitions">` で導出し、公開の型として export する。`page` の型の `src/config.ts` の `PageSettings` は、`MdmarkPageSettings` の名前で `src/index.ts` から export する'
     properties:
       - name: html
         type: string
@@ -100,7 +100,7 @@ data_models:
         type: Record<string, boolean>
         description: 文書のマーカーを重ねた機能のオン・オフ
       - name: page
-        type: PageSettings
+        type: MdmarkPageSettings
         description: page のマーカーのページの設定
       - name: paramDefinitions
         type: MdmarkParamDefinition[]
