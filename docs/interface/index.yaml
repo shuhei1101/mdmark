@@ -16,6 +16,8 @@ items:
   summary: 文書の作成者が、文書を純粋な Markdown と SVG のファイルに書き出す（mdmark export-markdown）
 - page: IF-472-50.ts.yaml
   summary: mdmark export-markdown と同じ処理で、文書を純粋な Markdown と SVG に書き出してパスを返却する（MCP の export_markdown）
+- page: IF-472-51.ts.yaml
+  summary: 書き出しが、文書を mount の opts.rendered に指定する描いた結果と純粋な Markdown にする（renderForMount）
 - page: IF-472-32.ts.yaml
   summary: 利用側が、自分のマーカーとそのマーカーを描くモジュールの読み込み方を登録する（registerExtension）
 - page: IF-655-1.ts.yaml

@@ -378,13 +378,13 @@ exceptions:
     condition: 決めたバージョンの `dist/index.js` を jsDelivr から取得できず、拡張機能の保存先にもそのバージョンが無い
     notes: 記載せずに、取得できないバージョンと理由を `showErrorMessage` で出す
   - name: なし（描いた HTML から起動できないバージョン）
-    condition: 決めたバージョンの配布物が `render`・`toPureMarkdown` を公開していないか、`mount` が `opts.rendered` を受け取らない（`opts.rendered` を追加したバージョンより前）
+    condition: 決めたバージョンの配布物が `renderForMount` を公開していない（`renderForMount` を追加したバージョンより前）
     notes: 元の Markdown を埋めずには書き出せないため記載せずに、そのバージョンでは書き出せない旨と `mdmark.version` を上げる旨を `showErrorMessage` で出す
 constraints:
   - item: 書き出す先
     constraint: '`mdmark.export.outputDir` が空なら Markdown と同じフォルダ、相対パスなら Markdown を含むワークスペースのフォルダから、絶対パスならそのまま。ファイル名は Markdown の拡張子を `.html` に替えたもの。フォルダが無ければ作る。同じフォルダの一時ファイルに書き込んでから置き換える'
   - item: 書き出す中身
-    constraint: '制約「バージョンと描く処理」で読み込んだ配布物の `render` で `TextDocument.getText()` の全文（保存していない書き換えを含む）を描き、描いた結果（本文の HTML・機能のオン・オフ・ページの設定。インターフェース定義『文書を描く』の `opts.rendered`）と、`toPureMarkdown` で作った純粋な Markdown を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。元の Markdown と取り込む文書の本文は埋めない。取り込む文書はプレビューと同じ読み込み方で集めて `render` に指定する。`<link>` と `<script type="module">` で描いたのと同じバージョンの jsDelivr の `dist/index.css`・`dist/index.js` を読み込み、`mount(document.querySelector("main"), { rendered, pureMarkdown, config })` を呼ぶ。外部ライブラリと拡張のマーカーは、`render` が残したマーカーの場所に、開いたときモジュールで描く。制約「エイリアス」のエイリアスがあるときは、`render` と `mount` の `opts.aliases` に指定し、同じ JSON に `aliases` を埋める'
+    constraint: '制約「バージョンと描く処理」で読み込んだ配布物の `renderForMount`（インターフェース定義『書き出す文書を描く』）で `TextDocument.getText()` の全文（保存していない書き換えを含む）を描き、返却した描いた結果（`mount` の `opts.rendered`。本文の HTML・機能のオン・オフ・ページの設定・`param` と拡張の定義）と純粋な Markdown を、`<script type="application/json">` に JSON で埋める（JSON の中の `<` は、JSON の Unicode エスケープであるバックスラッシュ・`u`・`003c` の 6 文字に置き換え、本文の `</script>` で `script` 要素が閉じないようにする）。元の Markdown と取り込む文書の本文は埋めない。取り込む文書はプレビューと同じ読み込み方で集めて `renderForMount` に指定する。`<link>` と `<script type="module">` で描いたのと同じバージョンの jsDelivr の `dist/index.css`・`dist/index.js` を読み込み、`mount(document.querySelector("main"), { rendered, pureMarkdown, config })` を呼ぶ。外部ライブラリと拡張のマーカーは、`renderForMount` が残したマーカーの場所に、開いたときモジュールで描く。制約「エイリアス」のエイリアスがあるときは、`renderForMount` と `mount` の `opts.aliases` に指定し、同じ JSON に `aliases` を埋める'
   - item: 設定と相対パス
     constraint: '`config` はプレビューを再描画する.ts の制約「設定の取り出し方」と同じ。
 
@@ -419,10 +419,12 @@ constraints:
   - item: ページのタイトル
     constraint: 書き出す HTML の `<title>` は、文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）、無ければ Markdown のファイル名。索引は参照しない
   - item: バージョンと描く処理
-    constraint: バージョンはプレビューを開く.ts の制約「バージョンの決め方」で決める。書き出すときに、そのバージョンの jsDelivr の `dist/index.js` を取得し、拡張機能のホストで ES モジュールとして読み込んで `render`・`toPureMarkdown` を呼ぶ（`dist/index.js` は外部ライブラリのほかへ import しない 1 つのファイル）。取得した `dist/index.js` はバージョンごとに拡張機能の保存先（`ExtensionContext.globalStorageUri`）に保存し、次の書き出しは保存したものを読み込む。拡張機能に同梱した `src/` の描く処理は使用しない
+    constraint: バージョンはプレビューを開く.ts の制約「バージョンの決め方」で決める。書き出すときに、そのバージョンの jsDelivr の `dist/index.js` を取得し、拡張機能のホストで ES モジュールとして読み込んで `renderForMount` を呼ぶ（`dist/index.js` は外部ライブラリのほかへ import しない 1 つのファイル）。取得した `dist/index.js` はバージョンごとに拡張機能の保存先（`ExtensionContext.globalStorageUri`）に保存し、次の書き出しは保存したものを読み込む。拡張機能に同梱した `src/` の描く処理は使用しない
     notes: '開いたときに読み込む配布物のバージョンと、描いたバージョンを一致させるため（要件の #769 の案 A）。描いた HTML の class と操作の付け方はバージョンごとに変わりうる'
 tags:
   - name: topic:書き出し
     main: true
   - name: tool:html
   - name: tool:vscode
+refs:
+  - IF-472-51#
