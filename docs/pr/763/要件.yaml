@@ -37,6 +37,7 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-20T13:22:37.596755+00:00'
+    new: false
 scope_out:
   - item: map の図のグループ以外（ノード・ER 図のテーブル）の大きさをドラッグで変える操作
     reason: 要望はグループの角のドラッグだけで、ノードの大きさの変更を含まない
