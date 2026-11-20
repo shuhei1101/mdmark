@@ -1,0 +1,21 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: none
+    detail: mode を追加しないと決めたため、シナリオは変わらない。層は今の「正常シナリオ（構成図の層を指定する）」のとおり描く
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: none
+    detail: mode を追加しないため、シナリオは変わらない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: none
+    detail: mode を追加しないため、シナリオは変わらない
+    depends_on: []
+docs: []
+scope_out:
+  - item: mode の値 list（一覧の表示）
+    reason: 'A-35 の No 17（一覧の表示）に当たり、追加するかを #471 で決める'
+    plan: '#471'

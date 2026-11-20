@@ -456,3 +456,36 @@ test("test_attach_footnotes_when_root_has_bubbling_click", async () => {
   expect(location.hash).toBe(hash);
   expect(document.activeElement).toBe(link);
 });
+
+// ピン止めした列のセルの中の脚注のツールチップを、上に開いたときに留めた見出し行より手前に描く（正常系）
+test("test_attach_footnotes_when_in_pinned_cell", async () => {
+  // 準備
+  const { attachFootnotes } = await loadFootnotes();
+  const { renderFootnoteRef } = await loadFootnotePart();
+  const ref = renderFootnoteRef({ number: 1, bodies: ["補足の中身。"] });
+  window.scrollTo(0, 0);
+  const root = createRootFromHtml(
+    `<div class="mdmark-table"><table><thead><tr><th class="is-pinned-col" style="left: 0; height: 240px">用語</th><th style="height: 240px">説明</th></tr></thead><tbody><tr><td class="is-pinned-col" style="left: 0">項目${ref}</td><td>説明の文</td></tr></tbody></table></div>`,
+  );
+  root.style.marginTop = `${Math.floor(window.innerHeight / 2)}px`;
+  detachers.push(attachFootnotes({ root, placement: "top" }));
+  const sup = root.querySelector<HTMLElement>("sup.mdmark-fn-ref");
+  const link = root.querySelector<HTMLElement>("a.mdmark-fn-link");
+  const tip = root.querySelector<HTMLElement>(".mdmark-fn-tip");
+  const cell = sup?.closest("td");
+  if (!sup || !link || !tip || !cell) {
+    throw new Error("ピン止めした列のセルか脚注の番号が無い");
+  }
+  // 実行: 番号のリンクにフォーカスして上に開く
+  link.focus();
+  // 検証: セルが is-tip-open を持ち、ツールチップの上端の点で一番手前にツールチップが描かれる
+  expect(sup.classList.contains("is-below")).toBe(false);
+  expect(cell.classList.contains("is-tip-open")).toBe(true);
+  const rect = tip.getBoundingClientRect();
+  const hit = document.elementFromPoint(rect.left + 10, rect.top + 10);
+  expect(hit !== null && tip.contains(hit)).toBe(true);
+  // 実行: Esc で閉じる
+  press("Escape");
+  // 検証
+  expect(cell.classList.contains("is-tip-open")).toBe(false);
+});

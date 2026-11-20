@@ -2230,6 +2230,12 @@
       z-index: 4;
     }
 
+    /* 開いた用語・脚注のツールチップを持つセル: 留めたセルの重なりのまとまりの中のツールチップを、見出し行・ピン止めした列・右側の目次より手前に描く（詳細度を上の 2 つの規則と同じにして後ろで勝つ） */
+    :is(.mdmark-table, [data-mdmark-sticky])
+      :is(thead th, tbody :is(th, td), tfoot td).is-tip-open {
+      z-index: 10;
+    }
+
     /* ずらす集計の行のセル: 行の間の罫線を削除して面の色を隙間なくつなぎ、後ろの本文の行を透かさない（行の区切りは影の線で描く） */
     [data-mdmark-sticky] tfoot td {
       border-block-width: 0;
