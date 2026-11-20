@@ -107,16 +107,18 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-20T06:20:21.799869+00:00'
-  - page: docs/pr/610/README.md
-    new: false
-    change: docs/pr/ の PR ドキュメント全てで文を削り『文章の書き方』で点検する（hidden-content-04 は適用しない）。行はフォルダの代表として置く
-    status: todo
   - page: docs/guide/用語集.yaml
     new: true
     change: 用語集.mark.md の表の用語・別名・意味を terms[] に移して原本にする。判定フローチャート『用語の登録』で登録すると決めた用語を追加する
     status: done
     updated_by: planner
     updated_at: '2026-11-20T06:33:36.079971+00:00'
+  - page: docs/pr/731/README.mark.md
+    new: false
+    change: この PR の PR ドキュメントを『文章の書き方』の確認表で点検する（hidden-content-04 と AI slop の対応表は適用しない）。行はフォルダの代表として置く
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:55:13.716030+00:00'
 scope_out:
   - item: ガイド（docs/guide/ の Markdown）のエイリアスの登録（files.yml の行に aliases を持たせる schemas/files.schema.yaml の変更）
     reason: 要望のエイリアスの登録先は設計書の aliases と用語集で、ガイドの Markdown は含まれない。含めるかはレビューで確定する

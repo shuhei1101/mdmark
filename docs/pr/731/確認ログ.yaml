@@ -11,3 +11,9 @@ confirmations:
     approver: shuhei1101
     commit: 55b75506
     thread: https://github.com/shuhei1101/mdmark/pull/731#discussion_r4638676112
+  - topic: PR ドキュメントの文の削除の範囲
+    decision: 過去の PR ドキュメントは文の削除もしない。この PR（`docs/pr/731/`）の PR ドキュメントだけを確認表で点検する（推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 7ceb7e6b
+    thread: https://github.com/shuhei1101/mdmark/pull/731#discussion_r4639264693
