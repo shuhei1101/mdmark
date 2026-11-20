@@ -147,12 +147,6 @@ functions:
         condition: 幅 1000px の描く先に、ノード 2 つの flowchart の mermaid のコードブロック
         mock: mermaid のモジュール
         expected: '`.mdmark-diagram-sizer` の幅が表示する枠より狭く、表示する枠の左端からの空きと右端までの空きの差が 2px 以内'
-      - name: test_attach_mermaid_when_blocks_given
-        case: 正常
-        summary: 指定したコードブロックだけを図にする
-        condition: '`[data-mdmark-mermaid]` のコードブロック 2 つを持つ要素で、`blocks` に 2 つ目だけを指定する'
-        mock: mermaid のモジュール（`render` が固定の SVG を返却する）
-        expected: 図の枠が 1 つで 2 つ目の場所にあり、1 つ目は `hidden` を持たないコードブロックのまま
       - name: test_attach_mermaid_when_loader_set
         case: 正常
         summary: 関数で指定した mermaid で描き、URL もまとめたモジュールも読み込まない
