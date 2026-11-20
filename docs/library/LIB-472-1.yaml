@@ -246,7 +246,7 @@ limitations:
     content: mod は Node・DOM の無い環境で動き、プラグインの外部のファイルと `import()` を読み込めない。ファイル・環境変数・設定は `$.fs`・`$.env`・`$.settings` で扱い、`$.env.get` は変数の名前を文字列リテラルで受け取る
     notes: 2.1.328 の `plugin-authoring/reference.md`・型定義
   - item: mod のテスト
-    content: '`claude plugin test {フォルダ}` はフォルダの中の `*.test.ts(x)` だけを実行し、テストは `claude-code/testing` の `$.ui.mount` でエンジンが読み込んだ mod を通して描く'
+    content: '`claude plugin test {フォルダ}` はフォルダの中の `*.test.ts(x)` だけを実行し、テストは `claude-code/testing` の `$.ui.mount` でエンジンが読み込んだ mod 経由で描く'
     notes: 2.1.328 の `plugin-authoring/reference.md`
   - item: mod の `$` の渡り先
     content: '`claude plugin validate` は hooks module の中で `$` を指定した関数をたどり、渡り先が最上位の `function` 宣言か `const` にまとめた関数でないとき（`var` を含む）と、`$` をオブジェクトに入れたときに失敗する。esbuild はまとめるときに最上位の `const` を `var` にするため、まとめる mod では `$` を受け取る関数を `function` 宣言にする'

@@ -205,7 +205,7 @@ settings:
     status: planned
     visibility: user
 notes:
-  読み直し: 設定ファイルと用語集は `ui.render`・`classic.SessionStart` のたびに読み込み直す。読み込んだ値をプロセスの中に持ち越さないため、反映は `immediate`（次に描く返答・発言から反映される）
+  再読み込み: 設定ファイルと用語集は `ui.render`・`classic.SessionStart` のたびに再読み込みする。読み込んだ値をプロセスの中に持ち越さないため、反映は `immediate`（次に描く返答・発言から反映される）
 tags:
   - name: topic:設定
     main: true

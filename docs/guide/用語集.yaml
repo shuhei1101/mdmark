@@ -530,3 +530,17 @@ terms:
   description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。補足の `layout` の `packet` で色と形を変える
   aliases:
   - パケット
+- id: diagram-frame
+  name: 図の枠
+  description: 図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、ボタンのパネル・拡大と縮小・全画面のモーダル・リサイズハンドルを持つ
+- id: tour-band
+  name: 案内の帯
+  description: 図の枠の下に常に出す、案内（構成図）と再生（シーケンス図・状態遷移図・時系列の図・C4Dynamic）の帯。手順のバーと左右の矢印のボタンを持ち、始めた後はその下に手順のタイトルと説明の文を出す
+  aliases:
+  - 再生の帯
+- id: er-category-box
+  name: 分類の箱
+  description: ER 図で、補足の分類（キーが分類の ID）に入れたテーブルを囲む箱。分類のタイトルを持ち、入れ子にできる
+- id: legacy-syntax
+  name: 今の書き方
+  description: 名前の後ろが `{` で始まらないマーカーの引数（`キー=値`・`+機能`・位置の値）。JSON の記載方法を入れたマイナーバージョンの間だけ参照し、点検が通知する
