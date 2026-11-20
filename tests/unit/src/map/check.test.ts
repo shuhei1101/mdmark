@@ -571,3 +571,55 @@ test("test_collect_map_problems_when_class_id_link", async () => {
     "A: id:SC-1",
   );
 });
+
+// 計画した変更のずれ（異常系）
+test("test_collect_map_problems_when_changes", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  const er =
+    "erDiagram\n  注文 {\n    int id PK\n  }\n  明細 {\n    int id PK\n  }\n  注文 ||--|{ 明細 : \"含む\"\n";
+  // 実行
+  const flow = collectMapProblems(
+    range(FLOW, '{"version": 1, "changes": {"ghost": {"type": "added"}}}'),
+    CONFIG,
+    { includeUnknownKeys: true, idLinks: SKIP },
+  );
+  const table = collectMapProblems(
+    range(er, '{"version": 1, "changes": {"注文.id": {"type": "changed"}}}'),
+    CONFIG,
+    { includeUnknownKeys: true, idLinks: SKIP },
+  );
+  // 検証
+  expect(flow.map((problem) => problem.kind)).toEqual(["map_unknown_ref"]);
+  expect(flow[0]?.message).toContain("changes.ghost");
+  expect(table.map((problem) => problem.kind)).toEqual(["map_invalid_value"]);
+  expect(table[0]?.message).toContain("changes.注文.id");
+});
+
+// changes を使用できない図の種類（異常系）
+test("test_collect_map_problems_when_changes_unsupported_kind", async () => {
+  // 準備
+  const { collectMapProblems } = await loadCheck();
+  // 実行
+  const problems = collectMapProblems(
+    range(
+      "sequenceDiagram\n  participant a as A\n  participant b as B\n  a->>b: 送る\n",
+      '{"version": 1, "changes": {"1": {"type": "added"}}}',
+    ),
+    CONFIG,
+    { includeUnknownKeys: true, idLinks: SKIP },
+  );
+  // 検証
+  expect(problems.map((problem) => problem.kind)).toEqual([
+    "map_invalid_value",
+  ]);
+  for (const kind of [
+    "flowchart",
+    "ER 図",
+    "状態遷移図",
+    "クラス図",
+    "アーキテクチャ図",
+    "C4 図",
+  ])
+    expect(problems[0]?.message).toContain(kind);
+});

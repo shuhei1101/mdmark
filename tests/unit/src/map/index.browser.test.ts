@@ -328,3 +328,29 @@ test("test_attach_map_when_class_id_link", async () => {
   expect(warning?.textContent).toContain("B");
   expect(warning?.textContent).toContain("id:unknown");
 });
+
+// 全ての種類に書き出すボタン（正常系）
+test("test_attach_map_when_export", async () => {
+  // 準備
+  const gantt =
+    "gantt\n  dateFormat YYYY-MM-DD\n  section 設計\n    シナリオ :a1, 2026-11-20, 2d\n";
+  // 実行
+  const { root, detach } = await attach(
+    `${mapRange({ mermaid: FLOW, data: DATA })}\n${mapRange({ mermaid: SEQUENCE })}\n${mapRange({ mermaid: gantt })}`,
+  );
+  // 検証
+  const ranges = [...root.querySelectorAll<HTMLElement>(".mdmark-map")];
+  expect(ranges).toHaveLength(3);
+  for (const range of ranges)
+    expect(range.querySelector('[data-tool="export"]')).not.toBeNull();
+  expect(
+    ranges.map((range) => range.querySelector('[data-tool="list"]') !== null),
+  ).toEqual([true, true, false]);
+  detach();
+  detachers.pop();
+  const button = ranges[0]?.querySelector<HTMLButtonElement>(
+    '[data-tool="export"]',
+  );
+  button?.click();
+  expect(button?.getAttribute("aria-expanded")).toBe("false");
+});

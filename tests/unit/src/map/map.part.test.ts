@@ -2365,3 +2365,42 @@ test("test_rewire_map_er_when_near_side", async () => {
     }
   }
 });
+
+// 計画した変更（正常系）
+test("test_render_map_flow_when_changes", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  // 実行
+  const { html } = renderMapFlow({
+    ...(await flowArgs()),
+    changes: {
+      user: "added",
+      "user->mount": "added",
+      mount: "changed",
+      frame: "removed",
+      "mount->marker": "removed",
+    },
+  });
+  // 検証
+  const user = outerHtml(html, 'data-node="user"');
+  expect(findTag(user, 'data-node="user"')).toContain("map-change-added");
+  const badge = findTag(user, "mdmark-map-change");
+  expect(badge).toContain('data-change="added"');
+  expect(badge).toContain('aria-hidden="true"');
+  expect(plainText(innerHtml(user, "mdmark-map-change"))).toBe("追加");
+  expect(findTag(user, "mdmark-diagram-node-hit")).toMatch(
+    /aria-label="利用側のページ、追加"/,
+  );
+  expect(findTag(outerHtml(html, 'data-node="mount"'), 'data-node="mount"')).toContain(
+    "map-change-changed",
+  );
+  expect(findTag(outerHtml(html, 'data-node="frame"'), 'data-node="frame"')).toContain(
+    "map-change-removed",
+  );
+  const wires = findTags(html, 'class="mdmark-diagram-wire').filter((tag) =>
+    tag.includes('data-wire="mount-&gt;marker"'),
+  );
+  expect(wires.length).toBeGreaterThan(0);
+  for (const wire of wires) expect(wire).toContain("map-change-removed");
+  expect(outerHtml(html, 'data-node="data"')).not.toContain("mdmark-map-change");
+});

@@ -368,3 +368,34 @@ test("test_attach_map_sequence_when_hovered_after_escape", async () => {
   expect(dimmedKeys(root)).toEqual([]);
   expect(root.querySelector(".map-packets-hover")).toBeNull();
 });
+
+// シーケンス図の一覧の表示（正常系）
+test("test_attach_map_sequence_when_list", async () => {
+  // 準備
+  addStyles();
+  const { attachMapSequence } = await loadSequenceView();
+  const { parseMapArgs } = await loadSpec();
+  const { resolveConfig } = await loadConfig();
+  const mermaid =
+    "sequenceDiagram\n  participant user as 利用側のページ\n  participant mount as mount\n  participant parse as 記法の読み取り\n  user->>mount: 設定と Markdown\n  mount->>parse: map の範囲\n  parse-->>mount: 読み取った図\n  mount-->>user: 描いた文書\n";
+  const root = createRootFromHtml(renderDoc(mapRange({ mermaid })).html);
+  const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
+  handles.push(
+    attachMapSequence(range, resolveConfig({ config: { map: CONFIG } }), {
+      args: parseMapArgs("").args,
+    }),
+  );
+  // 実行
+  root.querySelector<HTMLButtonElement>('[data-tool="list"]')?.click();
+  // 検証
+  const items = [
+    ...root.querySelectorAll<HTMLElement>('[role="tree"] [role="treeitem"]'),
+  ];
+  expect(items.map((item) => item.getAttribute("aria-label"))).toEqual([
+    "利用側のページ → mount: 設定と Markdown",
+    "mount → 記法の読み取り: map の範囲",
+    "記法の読み取り → mount: 読み取った図",
+    "mount → 利用側のページ: 描いた文書",
+  ]);
+  expect(items.some((item) => item.hasAttribute("aria-expanded"))).toBe(false);
+});

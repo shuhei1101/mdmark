@@ -672,3 +672,71 @@ test("test_render_diagram_frame_when_bounds", async () => {
   expect(stateAt(1.25)).toEqual({ out: false, in: false, atFit: false });
   expect(stateAt(5)).toEqual({ out: false, in: true, atFit: false });
 });
+
+// 書き出すボタン（正常系）
+test("test_render_diagram_frame_when_exportable", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const frame = {
+    kind: "map" as const,
+    title: "全体の構成",
+    legend: [],
+    wide: true,
+    exportable: true,
+    exportOpen: false,
+    id: "d1",
+  };
+  // 実行
+  const html = renderDiagramFrame(frame, BODY);
+  // 検証
+  const screen = innerHtml(html, 'data-group="screen"');
+  const button = findTag(screen, 'data-tool="export"');
+  expect(button).toContain('aria-label="図を書き出す"');
+  expect(button).toContain('aria-expanded="false"');
+  expect(button).not.toContain("aria-haspopup");
+  const panel = findTag(html, "mdmark-diagram-export");
+  const controls = /aria-controls="([^"]+)"/.exec(button)?.[1];
+  expect(controls).toBeDefined();
+  expect(panel).toContain(`id="${controls}"`);
+  expect(panel).toContain("hidden");
+  expect(panel).not.toContain("popover");
+  const inside = innerHtml(html, "mdmark-diagram-export");
+  expect(findTag(inside, 'data-export="svg"')).toBeTruthy();
+  expect(findTag(inside, 'data-export="png"')).toBeTruthy();
+  expect(findTag(inside, 'role="status"')).toBeTruthy();
+  expect(renderDiagramFrame({ ...frame, exportable: false }, BODY)).not.toContain(
+    'data-tool="export"',
+  );
+});
+
+// 一覧の表示のボタン（正常系）
+test("test_render_diagram_frame_when_listable", async () => {
+  // 準備
+  const { renderDiagramFrame } = await loadDiagram();
+  const frame = {
+    kind: "map" as const,
+    title: "全体の構成",
+    legend: [],
+    wide: true,
+    panelOpen: true,
+    tools: [{ name: "back", label: "外へ戻る", disabled: true }],
+    listable: true,
+    listView: true,
+    id: "d1",
+  };
+  // 実行
+  const html = renderDiagramFrame(frame, BODY);
+  // 検証
+  const group = innerHtml(html, 'data-group="map"');
+  expect(group.trimStart().startsWith("<button")).toBe(true);
+  const button = findTag(group, 'data-tool="list"');
+  expect(group.indexOf('data-tool="list"')).toBeLessThan(
+    group.indexOf('data-tool="back"'),
+  );
+  expect(button).toContain('aria-label="一覧で表示"');
+  expect(button).toContain('aria-pressed="true"');
+  expect(findTag(html, "mdmark-diagram-sizer")).toContain("hidden");
+  expect(
+    renderDiagramFrame({ ...frame, listable: false }, BODY),
+  ).not.toContain('data-tool="list"');
+});
