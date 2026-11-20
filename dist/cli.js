@@ -63092,7 +63092,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.f0bbb9f";
+  return "v0.14.0+develop.e0661bd";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -69974,7 +69974,7 @@ function renderFootnoteRef(options) {
   const role = linked ? `role="group" aria-label="${label}"` : 'role="tooltip"';
   const classes = `mdmark-fn-ref${names2.refClass}${below ? " is-below" : ""}${afterRef ? " is-after-ref" : ""}`;
   const items = bodies.map((body) => `${FOOTNOTE_BODY_OPEN}${body}</span>`).join("");
-  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names2.refId}${number4}-${refIndex}" href="#${names2.itemId}${number4}" ${pointer}><span class="mdmark-visually-hidden">${names2.label} </span>${number4}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-title">${label}</span>${items}</span></sup>`;
+  return `<sup class="${classes}"><a class="mdmark-fn-link" id="${names2.refId}${number4}-${refIndex}" href="#${names2.itemId}${number4}" ${pointer}><span class="mdmark-visually-hidden">${names2.label} </span>${number4}</a><span class="mdmark-fn-tip" id="${tipId}" ${role}><span class="mdmark-fn-tip-frame"><span class="mdmark-fn-tip-title">${label}</span>${items}</span></span></sup>`;
 }
 function renderBackLink(options) {
   const { label: name, number: number4, index, count, ref } = options;
@@ -81002,7 +81002,7 @@ function renderWordTip(options) {
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const termClass = replacement === void 0 ? "" : " mdmark-term-avoided";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
-  return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}>${sections.join("")}</span></span>`;
+  return `<span class="${wrapClass}"><span class="mdmark-term${termClass}" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${label}><span class="mdmark-term-tip-frame">${sections.join("")}</span></span></span>`;
 }
 function docsLabel(options) {
   return `\u300C${options.word}\u300D\u306E${options.meaning === "" ? "" : "\u7528\u8A9E\u3068"}\u95A2\u9023\u6587\u66F8`;
@@ -81062,7 +81062,7 @@ function renderAliasTip(options) {
   const described = role === "group" ? termDescribedBy({ described: hasDescription, target: meaningId }) : ` aria-describedby="${tipId}"`;
   const details = role === "group" ? ` aria-details="${tipId}"` : "";
   const wrapClass = below ? "mdmark-term-wrap is-below" : "mdmark-term-wrap";
-  return `<span class="${wrapClass}"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${labelAttribute}>${renderSection(heading2, body)}</span></span>`;
+  return `<span class="${wrapClass}"><span class="mdmark-term" tabindex="0"${described}${details}>${word}</span><span class="mdmark-term-tip" id="${tipId}" role="${role}"${labelAttribute}><span class="mdmark-term-tip-frame">${renderSection(heading2, body)}</span></span></span>`;
 }
 function renderAliasKind(options) {
   const { alias, copy, word } = options;

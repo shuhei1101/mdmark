@@ -1,0 +1,427 @@
+$ run_url=$(gh workflow run test.yml --ref "design/tooltip/border-all-sides" -f layer=unit | grep -o 'https://[^ ]*/actions/runs/[0-9]*') && ... gh run view "$run_id" --log
+# 実行: https://github.com/shuhei1101/mdmark/actions/runs/44658419366（commit 6428422a）
+
+test	単体テストを回す	﻿2026-11-20T02:07:10.0510421Z ##[group]Run npm run test:unit 2>&1 | tee test.log
+test	単体テストを回す	2026-11-20T02:07:10.0510668Z npm run test:unit 2>&1 | tee test.log
+test	単体テストを回す	2026-11-20T02:07:10.0553095Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test	単体テストを回す	2026-11-20T02:07:10.0553303Z env:
+test	単体テストを回す	2026-11-20T02:07:10.0553422Z   LAYER: unit
+test	単体テストを回す	2026-11-20T02:07:10.0553562Z   PATHS: 
+test	単体テストを回す	2026-11-20T02:07:10.0553678Z ##[endgroup]
+test	単体テストを回す	2026-11-20T02:07:10.1250175Z 
+test	単体テストを回す	2026-11-20T02:07:10.1250765Z > test:unit
+test	単体テストを回す	2026-11-20T02:07:10.1251015Z > vitest run --project 'unit*'
+test	単体テストを回す	2026-11-20T02:07:10.1251147Z 
+test	単体テストを回す	2026-11-20T02:07:10.6139090Z 
+test	単体テストを回す	2026-11-20T02:07:10.6170034Z  RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+test	単体テストを回す	2026-11-20T02:07:10.6172158Z 
+test	単体テストを回す	2026-11-20T02:07:11.8506305Z  ✓  unit  tests/unit/src/table/table.part.test.ts (39 tests) 719ms
+test	単体テストを回す	2026-11-20T02:07:11.8506851Z    ✓ test_render_table 686ms
+test	単体テストを回す	2026-11-20T02:07:13.3610036Z  ✓  unit  tests/unit/src/map/map.part.test.ts (61 tests) 1738ms
+test	単体テストを回す	2026-11-20T02:07:13.3659278Z    ✓ test_render_map_flow 484ms
+test	単体テストを回す	2026-11-20T02:07:13.3689384Z    ✓ test_rewire_map_architecture 541ms
+test	単体テストを回す	2026-11-20T02:07:14.9967112Z  ✓  unit-browser (chromium)  tests/unit/src/section/side-toc.interact.browser.test.ts (31 tests) 1055ms
+test	単体テストを回す	2026-11-20T02:07:16.0820055Z  ✓  unit  tests/unit/src/table/table.syntax.test.ts (34 tests) 145ms
+test	単体テストを回す	2026-11-20T02:07:16.5627513Z  ✓  unit  tests/unit/src/map/layout.test.ts (32 tests) 261ms
+test	単体テストを回す	2026-11-20T02:07:16.6361360Z  ✓  unit-browser (chromium)  tests/unit/src/table/table.interact.browser.test.ts (79 tests) 2674ms
+test	単体テストを回す	2026-11-20T02:07:17.1873910Z  ✓  unit  tests/unit/src/code-block/code-block.syntax.test.ts (38 tests) 134ms
+test	単体テストを回す	2026-11-20T02:07:17.4027274Z  ✓  unit  tests/unit/src/cli/check.test.ts (37 tests) 5303ms
+test	単体テストを回す	2026-11-20T02:07:17.4065718Z    ✓ test_run_check 3998ms
+test	単体テストを回す	2026-11-20T02:07:17.4099052Z    ✓ test_run_check_when_base_given 425ms
+test	単体テストを回す	2026-11-20T02:07:17.7270047Z  ✓  unit-browser (chromium)  tests/unit/src/mount.browser.test.ts (48 tests) 3817ms
+test	単体テストを回す	2026-11-20T02:07:17.7299146Z    ✓ test_mount_when_mermaid 616ms
+test	単体テストを回す	2026-11-20T02:07:17.7327433Z    ✓ test_mount_when_plain_mermaid_fallback 1230ms
+test	単体テストを回す	2026-11-20T02:07:17.8858754Z  ✓  unit  tests/unit/src/config-files.test.ts (44 tests) 273ms
+test	単体テストを回す	2026-11-20T02:07:18.5333743Z  ✓  unit-browser (chromium)  tests/unit/src/mermaid.browser.test.ts (25 tests) 3222ms
+test	単体テストを回す	2026-11-20T02:07:18.5489672Z    ✓ test_attach_mermaid 1141ms
+test	単体テストを回す	2026-11-20T02:07:18.5549645Z    ✓ test_attach_mermaid_when_scheme_changed 483ms
+test	単体テストを回す	2026-11-20T02:07:18.5658241Z    ✓ test_draw_mermaid_diagram_when_end_in_name 351ms
+test	単体テストを回す	2026-11-20T02:07:18.5745034Z stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_closed_group_measured
+test	単体テストを回す	2026-11-20T02:07:18.5849463Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	単体テストを回す	2026-11-20T02:07:18.6099876Z stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_content_in_bottom_padding
+test	単体テストを回す	2026-11-20T02:07:18.6159271Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	単体テストを回す	2026-11-20T02:07:18.6559910Z  ✓  unit-browser (chromium)  tests/unit/src/shared/zoom.interact.browser.test.ts (22 tests) 209ms
+test	単体テストを回す	2026-11-20T02:07:18.7360665Z stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_centered_content_overflows
+test	単体テストを回す	2026-11-20T02:07:18.7399251Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	単体テストを回す	2026-11-20T02:07:18.9843372Z  ✓  unit-browser (chromium)  tests/unit/src/map/flow-view.browser.test.ts (19 tests) 1289ms
+test	単体テストを回す	2026-11-20T02:07:18.9932089Z    ✓ test_attach_map_flow_when_toggle 314ms
+test	単体テストを回す	2026-11-20T02:07:19.5873865Z  ✓  unit-browser (chromium)  tests/unit/src/section/section.interact.browser.test.ts (21 tests) 411ms
+test	単体テストを回す	2026-11-20T02:07:19.8450980Z  ✓  unit-browser (chromium)  tests/unit/src/comments/index.browser.test.ts (17 tests) 823ms
+test	単体テストを回す	2026-11-20T02:07:20.0108492Z  ✓  unit-browser (chromium)  tests/unit/src/diff/blocks.browser.test.ts (18 tests) 118ms
+test	単体テストを回す	2026-11-20T02:07:20.2355269Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram.interact.browser.test.ts (16 tests) 532ms
+test	単体テストを回す	2026-11-20T02:07:20.6235189Z  ✓  unit  tests/unit/scripts/build.test.ts (34 tests) 9490ms
+test	単体テストを回す	2026-11-20T02:07:20.6236287Z    ✓ test_main 1484ms
+test	単体テストを回す	2026-11-20T02:07:20.6236896Z    ✓ test_emit_declarations 5002ms
+test	単体テストを回す	2026-11-20T02:07:21.0756272Z  ✓  unit-browser (chromium)  tests/unit/src/tabs/tabs.interact.browser.test.ts (18 tests) 171ms
+test	単体テストを回す	2026-11-20T02:07:21.1116418Z  ✓  unit-browser (chromium)  tests/unit/src/diff/panel.browser.test.ts (12 tests) 855ms
+test	単体テストを回す	2026-11-20T02:07:21.2454443Z  ✓  unit  tests/unit/src/cli/export.test.ts (26 tests) 2905ms
+test	単体テストを回す	2026-11-20T02:07:21.2492888Z    ✓ test_prepare_embeds 1393ms
+test	単体テストを回す	2026-11-20T02:07:21.2507435Z    ✓ test_run_export_when_document_missing 1110ms
+test	単体テストを回す	2026-11-20T02:07:21.2979664Z  ✓  unit  tests/unit/src/knowledge/matches.test.ts (19 tests) 190ms
+test	単体テストを回す	2026-11-20T02:07:21.5064020Z  ✓  unit  tests/unit/src/cli/upgrade.test.ts (26 tests) 3812ms
+test	単体テストを回す	2026-11-20T02:07:21.5069009Z    ✓ test_write_config_version 1312ms
+test	単体テストを回す	2026-11-20T02:07:21.5099126Z    ✓ test_run_upgrade 690ms
+test	単体テストを回す	2026-11-20T02:07:21.5122751Z    ✓ test_run_upgrade_when_version_missing 406ms
+test	単体テストを回す	2026-11-20T02:07:21.5123330Z    ✓ test_run_upgrade_when_local_newer 708ms
+test	単体テストを回す	2026-11-20T02:07:21.6903181Z  ✓  unit  tests/unit/src/knowledge/check.test.ts (23 tests) 56ms
+test	単体テストを回す	2026-11-20T02:07:21.7475361Z  ✓  unit-browser (chromium)  tests/unit/src/footnote/footnote.interact.browser.test.ts (11 tests) 155ms
+test	単体テストを回す	2026-11-20T02:07:22.2819705Z  ✓  unit  tests/unit/src/map/convert.test.ts (22 tests) 239ms
+test	単体テストを回す	2026-11-20T02:07:22.3626334Z  ✓  unit  tests/unit/src/plugin/templates.test.ts (30 tests) 321ms
+test	単体テストを回す	2026-11-20T02:07:22.3671435Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram-tips.interact.browser.test.ts (12 tests) 206ms
+test	単体テストを回す	2026-11-20T02:07:22.5032109Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-width.interact.browser.test.ts (9 tests) 699ms
+test	単体テストを回す	2026-11-20T02:07:22.6711304Z  ✓  unit  tests/unit/src/diagram/diagram.part.test.ts (19 tests) 103ms
+test	単体テストを回す	2026-11-20T02:07:22.6788867Z  ✓  unit  tests/unit/src/knowledge/dictionary.test.ts (19 tests) 63ms
+test	単体テストを回す	2026-11-20T02:07:22.7610915Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests) 2072ms
+test	単体テストを回す	2026-11-20T02:07:22.7648492Z    ✓ test_panel_screen_when_rendered 423ms
+test	単体テストを回す	2026-11-20T02:07:22.7651367Z    ✓ test_panel_screen_when_reload_clicked 320ms
+test	単体テストを回す	2026-11-20T02:07:23.0256870Z  ✓  unit-browser (chromium)  tests/unit/src/mount-parts.browser.test.ts (15 tests) 518ms
+test	単体テストを回す	2026-11-20T02:07:23.0580667Z  ✓  unit-browser (chromium)  tests/unit/src/libraries.browser.test.ts (12 tests) 70ms
+test	単体テストを回す	2026-11-20T02:07:23.4554292Z  ✓  unit-browser (chromium)  tests/unit/src/knowledge/term.interact.browser.test.ts (9 tests) 331ms
+test	単体テストを回す	2026-11-20T02:07:23.5384262Z  ✓  unit  tests/unit/src/cli/embed.test.ts (25 tests) 551ms
+test	単体テストを回す	2026-11-20T02:07:23.8430287Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-resize.interact.browser.test.ts (8 tests) 146ms
+test	単体テストを回す	2026-11-20T02:07:24.0264538Z  ✓  unit-browser (chromium)  tests/unit/src/map/sequence-view.browser.test.ts (12 tests) 564ms
+test	単体テストを回す	2026-11-20T02:07:24.1594962Z  ✓  unit  tests/unit/vscode/src/config.test.ts (24 tests) 310ms
+test	単体テストを回す	2026-11-20T02:07:24.2069833Z  ✓  unit  tests/unit/src/plugin/tools.test.ts (21 tests) 1290ms
+test	単体テストを回す	2026-11-20T02:07:24.2070792Z    ✓ test_call_tool 457ms
+test	単体テストを回す	2026-11-20T02:07:24.3713029Z  ✓  unit  tests/unit/src/plugin/setup/server.test.ts (17 tests) 2780ms
+test	単体テストを回す	2026-11-20T02:07:24.3779787Z    ✓ test_build_tmux_args 342ms
+test	単体テストを回す	2026-11-20T02:07:24.3799355Z    ✓ test_start_with_tmux 1412ms
+test	単体テストを回す	2026-11-20T02:07:24.3828730Z    ✓ test_list_tool_names 584ms
+test	単体テストを回す	2026-11-20T02:07:24.4221519Z  ✓  unit-browser (chromium)  tests/unit/src/tree/tree.interact.browser.test.ts (8 tests) 66ms
+test	単体テストを回す	2026-11-20T02:07:24.5468917Z  ✓  unit  tests/unit/src/map/check.test.ts (24 tests) 189ms
+test	単体テストを回す	2026-11-20T02:07:24.5949628Z  ✓  unit-browser (chromium)  tests/unit/src/comments/bubble.browser.test.ts (8 tests) 298ms
+test	単体テストを回す	2026-11-20T02:07:24.7057493Z stderr | tests/unit/src/render/sanitize.test.ts > test_resolve_id_href
+test	単体テストを回す	2026-11-20T02:07:24.7085849Z [mdmark] resolveIdLink が例外を投げました Error: boom
+test	単体テストを回す	2026-11-20T02:07:24.7135155Z     at resolveIdLink (/home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:474:35)
+test	単体テストを回す	2026-11-20T02:07:24.7149123Z     at resolveIdHref (/home/runner/work/mdmark/mdmark/src/render/sanitize.ts:354:16)
+test	単体テストを回す	2026-11-20T02:07:24.7177462Z     at /home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:486:19
+test	単体テストを回す	2026-11-20T02:07:24.7178468Z     at Array.map (<anonymous>)
+test	単体テストを回す	2026-11-20T02:07:24.7188112Z     at /home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:486:5
+test	単体テストを回す	2026-11-20T02:07:24.7190646Z     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+test	単体テストを回す	2026-11-20T02:07:24.7191551Z     at async file:///home/runner/work/mdmark/mdmark/node_modules/vitest/dist/chunks/run.Cm2sd7-x.js:2794:20
+test	単体テストを回す	2026-11-20T02:07:24.7192102Z 
+test	単体テストを回す	2026-11-20T02:07:24.7192813Z  ✓  unit  tests/unit/src/render/sanitize.test.ts (24 tests) 152ms
+test	単体テストを回す	2026-11-20T02:07:24.9174156Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts (14 tests) 1148ms
+test	単体テストを回す	2026-11-20T02:07:24.9206913Z    ✓ test_inspect_when_play 1022ms
+test	単体テストを回す	2026-11-20T02:07:25.0070007Z  ✓  unit  tests/unit/src/diagram/chart.part.test.ts (15 tests) 193ms
+test	単体テストを回す	2026-11-20T02:07:25.2232287Z  ✓  unit-browser (chromium)  tests/unit/src/highlight.browser.test.ts (9 tests) 52ms
+test	単体テストを回す	2026-11-20T02:07:25.3500098Z  ✓  unit  tests/unit/src/cli/migrations.test.ts (23 tests) 817ms
+test	単体テストを回す	2026-11-20T02:07:25.3551440Z    ✓ test_load_migration_versions_when_steps_invalid 568ms
+test	単体テストを回す	2026-11-20T02:07:25.3985223Z  ✓  unit  tests/unit/src/code-block/code-block.part.test.ts (16 tests) 112ms
+test	単体テストを回す	2026-11-20T02:07:25.6447234Z  ✓  unit-browser (chromium)  tests/unit/src/map/index.browser.test.ts (12 tests) 578ms
+test	単体テストを回す	2026-11-20T02:07:25.7390755Z  ✓  unit  tests/unit/src/knowledge/aliases.test.ts (12 tests) 74ms
+test	単体テストを回す	2026-11-20T02:07:26.0233255Z  ✓  unit  tests/unit/src/knowledge/term.syntax.test.ts (14 tests) 141ms
+test	単体テストを回す	2026-11-20T02:07:26.1580124Z  ✓  unit-browser (chromium)  tests/unit/src/diff/minimap.browser.test.ts (7 tests) 341ms
+test	単体テストを回す	2026-11-20T02:07:26.2427512Z  ✓  unit  tests/unit/src/knowledge/term-tip.part.test.ts (10 tests) 120ms
+test	単体テストを回す	2026-11-20T02:07:26.6599149Z  ✓  unit  tests/unit/src/config.test.ts (18 tests) 83ms
+test	単体テストを回す	2026-11-20T02:07:26.7690912Z  ✓  unit-browser (chromium)  tests/unit/src/viewer/bundle.browser.test.ts (11 tests) 1580ms
+test	単体テストを回す	2026-11-20T02:07:26.7698942Z    ✓ test_start_bundle 855ms
+test	単体テストを回す	2026-11-20T02:07:26.8924190Z  ✓  unit  tests/unit/src/render/marks.test.ts (16 tests) 442ms
+test	単体テストを回す	2026-11-20T02:07:26.9367819Z  ✓  unit-browser (chromium)  tests/unit/src/map/c4-view.browser.test.ts (11 tests) 571ms
+test	単体テストを回す	2026-11-20T02:07:27.3722815Z  ✓  unit  tests/unit/src/mdmark-style/reply.test.ts (17 tests) 2124ms
+test	単体テストを回す	2026-11-20T02:07:27.3754505Z    ✓ test_render_reply_when_disabled 856ms
+test	単体テストを回す	2026-11-20T02:07:27.3829600Z    ✓ test_render_reply_when_over_limit 1224ms
+test	単体テストを回す	2026-11-20T02:07:27.4332211Z  ✓  unit  tests/unit/src/footnote/footnote.syntax.test.ts (16 tests) 169ms
+test	単体テストを回す	2026-11-20T02:07:27.5143482Z  ✓  unit  tests/unit/src/map/class-diagram.test.ts (14 tests) 249ms
+test	単体テストを回す	2026-11-20T02:07:27.8252278Z  ✓  unit-browser (chromium)  tests/unit/src/code-block/code-fold.interact.browser.test.ts (7 tests) 83ms
+test	単体テストを回す	2026-11-20T02:07:27.8265906Z  ✓  unit-browser (chromium)  tests/unit/src/map/class-view.browser.test.ts (7 tests) 309ms
+test	単体テストを回す	2026-11-20T02:07:27.8530595Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-sticky.interact.browser.test.ts (6 tests) 1287ms
+test	単体テストを回す	2026-11-20T02:07:27.8591154Z    ✓ test_attach_sticky_rows_when_detached 332ms
+test	単体テストを回す	2026-11-20T02:07:27.9080166Z  ✓  unit  tests/unit/src/render/mark-schema.test.ts (8 tests) 176ms
+test	単体テストを回す	2026-11-20T02:07:28.1826527Z  ✓  unit  tests/unit/src/embedded-html/embedded-html.syntax.test.ts (14 tests) 158ms
+test	単体テストを回す	2026-11-20T02:07:29.9649623Z  ✓  unit  tests/unit/src/mdmark-style/blocks.test.ts (17 tests) 246ms
+test	単体テストを回す	2026-11-20T02:07:30.0000074Z  ✓  unit  tests/unit/scripts/baseline.test.ts (19 tests) 625ms
+test	単体テストを回す	2026-11-20T02:07:30.0560006Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts (12 tests) 650ms
+test	単体テストを回す	2026-11-20T02:07:30.0587079Z    ✓ test_collect_anchors 630ms
+test	単体テストを回す	2026-11-20T02:07:30.1656544Z  ✓  unit  tests/unit/src/knowledge/index-shape.test.ts (12 tests) 17ms
+test	単体テストを回す	2026-11-20T02:07:30.5112878Z  ✓  unit  tests/unit/src/comments/comment.part.test.ts (14 tests) 115ms
+test	単体テストを回す	2026-11-20T02:07:30.6144066Z  ✓  unit-browser (chromium)  tests/unit/src/html-scripts.browser.test.ts (9 tests) 2227ms
+test	単体テストを回す	2026-11-20T02:07:30.6175224Z    ✓ test_run_html_scripts 2143ms
+test	単体テストを回す	2026-11-20T02:07:30.6417504Z  ✓  unit-browser (chromium)  tests/unit/src/interact.browser.test.ts (7 tests) 315ms
+test	単体テストを回す	2026-11-20T02:07:30.7380756Z  ✓  unit  tests/unit/src/footnote/annotations.syntax.test.ts (13 tests) 150ms
+test	単体テストを回す	2026-11-20T02:07:31.0040293Z  ✓  unit-browser (chromium)  tests/unit/src/map/mindmap-view.browser.test.ts (9 tests) 499ms
+test	単体テストを回す	2026-11-20T02:07:31.1778195Z  ✓  unit  tests/unit/src/tree/tree.part.test.ts (8 tests) 197ms
+test	単体テストを回す	2026-11-20T02:07:31.3023143Z  ✓  unit  tests/unit/src/render/parser.test.ts (18 tests) 390ms
+test	単体テストを回す	2026-11-20T02:07:31.3322032Z  ✓  unit-browser (chromium)  tests/unit/src/map/band.browser.test.ts (10 tests) 160ms
+test	単体テストを回す	2026-11-20T02:07:31.6978722Z  ✓  unit-browser (chromium)  tests/unit/src/shared/part-states.interact.browser.test.ts (9 tests) 49ms
+test	単体テストを回す	2026-11-20T02:07:31.9500498Z  ✓  unit  tests/unit/src/render/index.test.ts (10 tests) 425ms
+test	単体テストを回す	2026-11-20T02:07:31.9820399Z  ✓  unit  tests/unit/src/tabs/tabs.syntax.test.ts (13 tests) 63ms
+test	単体テストを回す	2026-11-20T02:07:32.0454807Z  ✓  unit-browser (chromium)  tests/unit/src/map/axis-grid-view.browser.test.ts (5 tests) 459ms
+test	単体テストを回す	2026-11-20T02:07:32.0535117Z    ✓ test_attach_map_axis_grid 320ms
+test	単体テストを回す	2026-11-20T02:07:32.0848609Z  ✓  unit  tests/unit/scripts/storybook-render.test.ts (15 tests) 1824ms
+test	単体テストを回す	2026-11-20T02:07:32.0903766Z    ✓ test_render_part_when_notice 1668ms
+test	単体テストを回す	2026-11-20T02:07:32.2559503Z  ✓  unit  tests/unit/src/diff/compute.test.ts (10 tests) 74ms
+test	単体テストを回す	2026-11-20T02:07:32.3285059Z  ✓  unit  tests/unit/src/footnote/footnote.part.test.ts (9 tests) 70ms
+test	単体テストを回す	2026-11-20T02:07:32.6477687Z  ✓  unit-browser (chromium)  tests/unit/src/media/lightbox.interact.browser.test.ts (7 tests) 708ms
+test	単体テストを回す	2026-11-20T02:07:32.6485328Z    ✓ test_attach_lightbox_when_closed 317ms
+test	単体テストを回す	2026-11-20T02:07:32.6486681Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-tree.interact.browser.test.ts (6 tests) 405ms
+test	単体テストを回す	2026-11-20T02:07:32.8335385Z  ✓  unit  tests/unit/src/knowledge/positions.test.ts (5 tests) 97ms
+test	単体テストを回す	2026-11-20T02:07:32.8854361Z  ✓  unit  tests/unit/src/section/side-toc.part.test.ts (9 tests) 58ms
+test	単体テストを回す	2026-11-20T02:07:33.0560520Z  ✓  unit-browser (chromium)  tests/unit/src/section/back-to-top.interact.browser.test.ts (5 tests) 370ms
+test	単体テストを回す	2026-11-20T02:07:33.2113532Z  ✓  unit  tests/unit/src/cli/build.test.ts (10 tests) 989ms
+test	単体テストを回す	2026-11-20T02:07:33.2152901Z    ✓ test_run_build 589ms
+test	単体テストを回す	2026-11-20T02:07:33.4625288Z  ✓  unit-browser (chromium)  tests/unit/src/print.browser.test.ts (6 tests) 249ms
+test	単体テストを回す	2026-11-20T02:07:33.4930710Z  ✓  unit  tests/unit/src/knowledge/glossary.syntax.test.ts (9 tests) 356ms
+test	単体テストを回す	2026-11-20T02:07:33.5039393Z    ✓ test_read_glossary_table 309ms
+test	単体テストを回す	2026-11-20T02:07:33.6302535Z  ✓  unit-browser (chromium)  tests/unit/src/viewer/view-state.browser.test.ts (9 tests) 254ms
+test	単体テストを回す	2026-11-20T02:07:33.8040640Z  ✓  unit  tests/unit/scripts/build-plugin.test.ts (11 tests) 161ms
+test	単体テストを回す	2026-11-20T02:07:33.8483845Z  ✓  unit  tests/unit/src/cli/markdown-check.test.ts (10 tests) 672ms
+test	単体テストを回す	2026-11-20T02:07:33.8490785Z    ✓ test_check_markdown_source 524ms
+test	単体テストを回す	2026-11-20T02:07:34.0491042Z  ✓  unit  tests/unit/src/media/image.syntax.test.ts (12 tests) 95ms
+test	単体テストを回す	2026-11-20T02:07:34.3307174Z  ✓  unit-browser (chromium)  tests/unit/src/map/drag.browser.test.ts (8 tests) 25ms
+test	単体テストを回す	2026-11-20T02:07:34.3429750Z  ✓  unit  tests/unit/src/part-modules.test.ts (11 tests) 50ms
+test	単体テストを回す	2026-11-20T02:07:34.4274787Z  ✓  unit  tests/unit/src/markdown/pure-markdown.test.ts (8 tests) 340ms
+test	単体テストを回す	2026-11-20T02:07:34.4784141Z  ✓  unit-browser (chromium)  tests/unit/src/comments/margin.browser.test.ts (5 tests) 437ms
+test	単体テストを回す	2026-11-20T02:07:34.7230783Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-settings.interact.browser.test.ts (4 tests) 392ms
+test	単体テストを回す	2026-11-20T02:07:34.8066178Z  ✓  unit  tests/unit/src/diagram/definition.test.ts (11 tests) 29ms
+test	単体テストを回す	2026-11-20T02:07:34.8621259Z  ✓  unit  tests/unit/migrations/retired-diagrams.test.ts (5 tests) 740ms
+test	単体テストを回す	2026-11-20T02:07:34.8673885Z    ✓ test_migrate_retired_diagrams 333ms
+test	単体テストを回す	2026-11-20T02:07:34.8674925Z  ✓  unit-browser (chromium)  tests/unit/src/views/index.browser.test.ts (5 tests) 291ms
+test	単体テストを回す	2026-11-20T02:07:35.2575380Z  ✓  unit  tests/unit/src/map/map.syntax.test.ts (10 tests) 155ms
+test	単体テストを回す	2026-11-20T02:07:35.2927548Z  ✓  unit-browser (chromium)  tests/unit/src/code-block/code-block.interact.browser.test.ts (5 tests) 105ms
+test	単体テストを回す	2026-11-20T02:07:35.3008083Z  ✓  unit  tests/unit/vscode/src/version.test.ts (13 tests) 178ms
+test	単体テストを回す	2026-11-20T02:07:35.5833417Z  ✓  unit  tests/unit/src/mdmark-style/user-message.test.ts (8 tests) 373ms
+test	単体テストを回す	2026-11-20T02:07:35.5887292Z    ✓ test_render_user_message 358ms
+test	単体テストを回す	2026-11-20T02:07:35.6683547Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram-resize.interact.browser.test.ts (5 tests) 153ms
+test	単体テストを回す	2026-11-20T02:07:35.8224259Z  ✓  unit  tests/unit/src/plugin/guide-notice.test.ts (9 tests) 67ms
+test	単体テストを回す	2026-11-20T02:07:35.9214499Z stderr | tests/unit/src/inline-icons.browser.test.ts > test_load_inline_icons_when_offline
+test	単体テストを回す	2026-11-20T02:07:35.9276417Z mdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/sailboat.mjs
+test	単体テストを回す	2026-11-20T02:07:35.9305402Z stderr | tests/unit/src/inline-icons.browser.test.ts > test_load_inline_icons_when_offline
+test	単体テストを回す	2026-11-20T02:07:35.9322244Z mdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/anchor.mjs
+test	単体テストを回す	2026-11-20T02:07:35.9528940Z  ✓  unit-browser (chromium)  tests/unit/src/inline-icons.browser.test.ts (5 tests) 59ms
+test	単体テストを回す	2026-11-20T02:07:36.0256962Z  ✓  unit-browser (chromium)  tests/unit/src/map/er-view.browser.test.ts (4 tests) 378ms
+test	単体テストを回す	2026-11-20T02:07:36.1830982Z  ✓  unit  tests/unit/vscode/src/export/embed.test.ts (7 tests) 727ms
+test	単体テストを回す	2026-11-20T02:07:36.1850464Z    ✓ test_embed_local_libraries 682ms
+test	単体テストを回す	2026-11-20T02:07:36.2215338Z  ✓  unit  tests/unit/src/render/legacy-marks.test.ts (6 tests) 161ms
+test	単体テストを回す	2026-11-20T02:07:36.3810194Z  ✓  unit  tests/unit/scripts/migrations.test.ts (9 tests) 710ms
+test	単体テストを回す	2026-11-20T02:07:36.4217004Z  ✓  unit-browser (chromium)  tests/unit/src/map/architecture-view.browser.test.ts (3 tests) 243ms
+test	単体テストを回す	2026-11-20T02:07:36.6810739Z  ✓  unit-browser (chromium)  tests/unit/src/map/state-view.browser.test.ts (3 tests) 318ms
+test	単体テストを回す	2026-11-20T02:07:36.9073933Z  ✓  unit  tests/unit/migrations/alias-rows.test.ts (6 tests) 221ms
+test	単体テストを回す	2026-11-20T02:07:36.9546530Z  ✓  unit-browser (chromium)  tests/unit/src/media/gif.interact.browser.test.ts (3 tests) 166ms
+test	単体テストを回す	2026-11-20T02:07:37.0749830Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx (5 tests) 323ms
+test	単体テストを回す	2026-11-20T02:07:37.1970378Z  ✓  unit-browser (chromium)  tests/unit/src/comments/anchor.browser.test.ts (4 tests) 33ms
+test	単体テストを回す	2026-11-20T02:07:37.3013844Z  ✓  unit  tests/unit/src/map/flowchart.test.ts (11 tests) 110ms
+test	単体テストを回す	2026-11-20T02:07:37.3335351Z  ✓  unit  tests/unit/src/cli/export-markdown.test.ts (8 tests) 790ms
+test	単体テストを回す	2026-11-20T02:07:37.3374906Z    ✓ test_run_export_markdown 566ms
+test	単体テストを回す	2026-11-20T02:07:37.3376274Z  ✓  unit  tests/unit/src/plugin/http.test.ts (8 tests) 597ms
+test	単体テストを回す	2026-11-20T02:07:37.3377655Z    ✓ test_route_request 381ms
+test	単体テストを回す	2026-11-20T02:07:37.5541934Z  ✓  unit  tests/unit/src/extensions.test.ts (10 tests) 38ms
+test	単体テストを回す	2026-11-20T02:07:37.7576478Z  ✓  unit  tests/unit/src/map/c4.test.ts (11 tests) 162ms
+test	単体テストを回す	2026-11-20T02:07:37.7996517Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/param.interact.browser.test.ts (2 tests) 170ms
+test	単体テストを回す	2026-11-20T02:07:37.8341684Z  ✓  unit  tests/unit/src/map/state.test.ts (11 tests) 36ms
+test	単体テストを回す	2026-11-20T02:07:37.9383846Z  ✓  unit  tests/unit/src/mdmark-style/document-parts.test.ts (5 tests) 224ms
+test	単体テストを回す	2026-11-20T02:07:38.0603716Z  ✓  unit  tests/unit/src/map/axis-grid.test.ts (8 tests) 38ms
+test	単体テストを回す	2026-11-20T02:07:38.2160127Z  ✓  unit  tests/unit/vscode/src/export/html.test.ts (8 tests) 40ms
+test	単体テストを回す	2026-11-20T02:07:38.2644469Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx (3 tests) 400ms
+test	単体テストを回す	2026-11-20T02:07:38.3331863Z  ✓  unit-browser (chromium)  tests/unit/src/map/annotations.browser.test.ts (2 tests) 17ms
+test	単体テストを回す	2026-11-20T02:07:38.3500840Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx (3 tests) 1250ms
+test	単体テストを回す	2026-11-20T02:07:38.3513251Z    ✓ test_use_link_clicks 927ms
+test	単体テストを回す	2026-11-20T02:07:38.6183299Z  ✓  unit  tests/unit/vscode/src/preview/html.test.ts (7 tests) 32ms
+test	単体テストを回す	2026-11-20T02:07:38.6724531Z  ✓  unit  tests/unit/src/plugin/setup/write.test.ts (9 tests) 290ms
+test	単体テストを回す	2026-11-20T02:07:38.7122623Z  ✓  unit  tests/unit/migrations/retired-er.test.ts (4 tests) 632ms
+test	単体テストを回す	2026-11-20T02:07:38.7130689Z    ✓ test_migrate_retired_er_when_bundled 303ms
+test	単体テストを回す	2026-11-20T02:07:38.9107146Z  ✓  unit  tests/unit/src/map/structure.test.ts (11 tests) 16ms
+test	単体テストを回す	2026-11-20T02:07:38.9511176Z  ✓  unit  tests/unit/src/map/axis-grid-layout.test.ts (6 tests) 30ms
+test	単体テストを回す	2026-11-20T02:07:39.0520394Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts (3 tests) 248ms
+test	単体テストを回す	2026-11-20T02:07:39.1340892Z  ✓  unit-browser (chromium)  tests/unit/src/layout/wide.interact.browser.test.ts (2 tests) 50ms
+test	単体テストを回す	2026-11-20T02:07:39.1699981Z  ✓  unit  tests/unit/src/cli/assets.test.ts (8 tests) 223ms
+test	単体テストを回す	2026-11-20T02:07:39.3166384Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx (3 tests) 550ms
+test	単体テストを回す	2026-11-20T02:07:39.3222993Z    ✓ test_config_band_when_clicked 309ms
+test	単体テストを回す	2026-11-20T02:07:39.4840073Z  ✓  unit  tests/unit/src/views/view.syntax.test.ts (7 tests) 123ms
+test	単体テストを回す	2026-11-20T02:07:39.7083908Z  ✓  unit  tests/unit/migrations/marker-json.test.ts (3 tests) 296ms
+test	単体テストを回す	2026-11-20T02:07:39.7940372Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx (1 test) 194ms
+test	単体テストを回す	2026-11-20T02:07:39.7976636Z  ✓  unit  tests/unit/src/diagram/diagram.syntax.test.ts (7 tests) 99ms
+test	単体テストを回す	2026-11-20T02:07:40.1053933Z  ✓  unit  tests/unit/src/render/includes.test.ts (7 tests) 105ms
+test	単体テストを回す	2026-11-20T02:07:40.1449955Z  ✓  unit-browser (chromium)  tests/unit/src/viewer/index.browser.test.ts (2 tests) 656ms
+test	単体テストを回す	2026-11-20T02:07:40.1479246Z    ✓ test_start_viewer 631ms
+test	単体テストを回す	2026-11-20T02:07:40.2134711Z  ✓  unit-browser (chromium)  tests/unit/src/shared/clipboard.interact.browser.test.ts (3 tests) 22ms
+test	単体テストを回す	2026-11-20T02:07:40.3220457Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts (2 tests) 28ms
+test	単体テストを回す	2026-11-20T02:07:40.3406584Z  ✓  unit  tests/unit/src/tree/tree.syntax.test.ts (9 tests) 74ms
+test	単体テストを回す	2026-11-20T02:07:40.3896853Z  ✓  unit  tests/unit/src/render/used.test.ts (8 tests) 419ms
+test	単体テストを回す	2026-11-20T02:07:40.3921759Z    ✓ test_used_library_marks 358ms
+test	単体テストを回す	2026-11-20T02:07:40.4281014Z  ✓  unit-browser (chromium)  tests/unit/src/embedded-html/embedded-html.interact.browser.test.ts (1 test) 141ms
+test	単体テストを回す	2026-11-20T02:07:40.4449460Z  ✓  unit-browser (chromium)  tests/unit/src/shared/scroller.interact.browser.test.ts (2 tests) 11ms
+test	単体テストを回す	2026-11-20T02:07:40.5468134Z  ✓  unit  tests/unit/src/map/mindmap-layout.test.ts (5 tests) 16ms
+test	単体テストを回す	2026-11-20T02:07:40.7457577Z  ✓  unit  tests/unit/src/table/table-tree.syntax.test.ts (4 tests) 66ms
+test	単体テストを回す	2026-11-20T02:07:40.8566307Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-host-messages.browser.test.tsx (2 tests) 21ms
+test	単体テストを回す	2026-11-20T02:07:41.0639935Z  ✓  unit  tests/unit/src/markdown/pure-blocks.logic.test.ts (8 tests) 233ms
+test	単体テストを回す	2026-11-20T02:07:41.1291539Z  ✓  unit  tests/unit/src/plugin/arguments.test.ts (11 tests) 364ms
+test	単体テストを回す	2026-11-20T02:07:41.1336382Z    ✓ test_check_arguments 358ms
+test	単体テストを回す	2026-11-20T02:07:41.2975403Z  ✓  unit  tests/unit/migrations/retired-map-options.test.ts (4 tests) 166ms
+test	単体テストを回す	2026-11-20T02:07:41.5371028Z  ✓  unit-browser (chromium)  tests/unit/src/shared/text.interact.browser.test.ts (2 tests) 11ms
+test	単体テストを回す	2026-11-20T02:07:41.5389530Z  ✓  unit  tests/unit/src/map/data.test.ts (8 tests) 12ms
+test	単体テストを回す	2026-11-20T02:07:41.5991581Z  ✓  unit-browser (chromium)  tests/unit/src/table/csv.interact.browser.test.ts (1 test) 22ms
+test	単体テストを回す	2026-11-20T02:07:41.6008322Z  ✓  unit  tests/unit/src/knowledge/references.test.ts (6 tests) 204ms
+test	単体テストを回す	2026-11-20T02:07:41.6692686Z  ✓  unit  tests/unit/src/viewer/modules.test.ts (4 tests) 427ms
+test	単体テストを回す	2026-11-20T02:07:41.6750902Z    ✓ test_prepare_modules 417ms
+test	単体テストを回す	2026-11-20T02:07:41.7585884Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/app/app.browser.test.tsx (1 test) 909ms
+test	単体テストを回す	2026-11-20T02:07:41.7608936Z    ✓ test_app_when_render_error 909ms
+test	単体テストを回す	2026-11-20T02:07:41.8391140Z  ✓  unit  tests/unit/src/cli/traces.test.ts (7 tests) 45ms
+test	単体テストを回す	2026-11-20T02:07:41.9261864Z  ✓  unit  tests/unit/src/views/view.part.test.ts (6 tests) 87ms
+test	単体テストを回す	2026-11-20T02:07:42.0381490Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx (1 test) 69ms
+test	単体テストを回す	2026-11-20T02:07:42.0446975Z  ✓  unit-browser (chromium)  tests/unit/src/viewer/route.browser.test.ts (1 test) 22ms
+test	単体テストを回す	2026-11-20T02:07:42.1076020Z  ✓  unit-browser (chromium)  tests/unit/src/knowledge/dictionary.browser.test.ts (2 tests) 36ms
+test	単体テストを回す	2026-11-20T02:07:42.1119176Z  ✓  unit  tests/unit/src/cli/aliases.test.ts (5 tests) 85ms
+test	単体テストを回す	2026-11-20T02:07:42.1556786Z  ✓  unit  tests/unit/src/plugin/setup/systemd.test.ts (8 tests) 11ms
+test	単体テストを回す	2026-11-20T02:07:42.3071802Z  ✓  unit  tests/unit/src/callout/callout.syntax.test.ts (5 tests) 65ms
+test	単体テストを回す	2026-11-20T02:07:42.3551342Z  ✓  unit  tests/unit/src/mdmark-style/settings.test.ts (9 tests) 45ms
+test	単体テストを回す	2026-11-20T02:07:42.4053804Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/main.browser.test.tsx (1 test) 208ms
+test	単体テストを回す	2026-11-20T02:07:42.5120348Z  ✓  unit  tests/unit/src/map/er.test.ts (7 tests) 110ms
+test	単体テストを回す	2026-11-20T02:07:42.5709340Z  ✓  unit  tests/unit/migrations/drop-tag-vocabulary.test.ts (6 tests) 34ms
+test	単体テストを回す	2026-11-20T02:07:42.6593576Z  ✓  unit  tests/unit/src/figure/figure.syntax.test.ts (4 tests) 51ms
+test	単体テストを回す	2026-11-20T02:07:42.7194542Z  ✓  unit  tests/unit/src/tabs/tabs.part.test.ts (6 tests) 7ms
+test	単体テストを回す	2026-11-20T02:07:42.8481386Z  ✓  unit  tests/unit/src/media/gallery.syntax.test.ts (4 tests) 50ms
+test	単体テストを回す	2026-11-20T02:07:42.9139848Z  ✓  unit  tests/unit/src/cli/init.test.ts (5 tests) 34ms
+test	単体テストを回す	2026-11-20T02:07:42.9789960Z  ✓  unit  tests/unit/src/map/mindmap.test.ts (5 tests) 7ms
+test	単体テストを回す	2026-11-20T02:07:43.1399461Z  ✓  unit  tests/unit/src/mdmark-style/inline-marks.test.ts (8 tests) 72ms
+test	単体テストを回す	2026-11-20T02:07:43.1729368Z  ✓  unit  tests/unit/src/media/image.part.test.ts (6 tests) 52ms
+test	単体テストを回す	2026-11-20T02:07:43.2047377Z  ✓  unit  tests/unit/src/cli/documents.test.ts (8 tests) 410ms
+test	単体テストを回す	2026-11-20T02:07:43.2085271Z    ✓ test_read_index_with_documents_when_missing 363ms
+test	単体テストを回す	2026-11-20T02:07:43.3492053Z  ✓  unit  tests/unit/src/diagram/geometry.test.ts (8 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:43.4825153Z  ✓  unit  tests/unit/src/cli/figure-svg.test.ts (4 tests) 68ms
+test	単体テストを回す	2026-11-20T02:07:43.7540060Z  ✓  unit  tests/unit/src/steps/steps.syntax.test.ts (6 tests) 35ms
+test	単体テストを回す	2026-11-20T02:07:43.8879928Z  ✓  unit  tests/unit/src/shared/syntax-warning.syntax.test.ts (4 tests) 52ms
+test	単体テストを回す	2026-11-20T02:07:44.0138587Z  ✓  unit  tests/unit/src/table/table-tree.logic.test.ts (6 tests) 6ms
+test	単体テストを回す	2026-11-20T02:07:44.1354530Z  ✓  unit  tests/unit/src/card/card-grid.syntax.test.ts (5 tests) 64ms
+test	単体テストを回す	2026-11-20T02:07:44.7267837Z  ✓  unit  tests/unit/src/cli/backup.test.ts (4 tests) 413ms
+test	単体テストを回す	2026-11-20T02:07:44.7269611Z    ✓ test_take_backup_when_outside 374ms
+test	単体テストを回す	2026-11-20T02:07:44.8960278Z  ✓  unit  tests/unit/src/cli/main.test.ts (6 tests) 693ms
+test	単体テストを回す	2026-11-20T02:07:44.8987628Z    ✓ test_main 445ms
+test	単体テストを回す	2026-11-20T02:07:44.9469393Z  ✓  unit  tests/unit/src/plugin/session-start.test.ts (4 tests) 57ms
+test	単体テストを回す	2026-11-20T02:07:45.3964616Z  ✓  unit  tests/unit/src/section/section.syntax.test.ts (5 tests) 51ms
+test	単体テストを回す	2026-11-20T02:07:45.4277604Z  ✓  unit  tests/unit/src/cli/git.test.ts (4 tests) 329ms
+test	単体テストを回す	2026-11-20T02:07:45.4800349Z  ✓  unit  tests/unit/vscode/scripts/build.test.ts (2 tests) 2178ms
+test	単体テストを回す	2026-11-20T02:07:45.4801515Z    ✓ test_build_extension 1409ms
+test	単体テストを回す	2026-11-20T02:07:45.4802963Z    ✓ test_build_extension_when_tests 768ms
+test	単体テストを回す	2026-11-20T02:07:45.5879966Z  ✓  unit  tests/unit/src/cli/html.test.ts (4 tests) 23ms
+test	単体テストを回す	2026-11-20T02:07:45.6439850Z  ✓  unit  tests/unit/src/code-block/code-fold.logic.test.ts (9 tests) 12ms
+test	単体テストを回す	2026-11-20T02:07:45.9279872Z  ✓  unit  tests/unit/src/plugin/mcp.test.ts (3 tests) 291ms
+test	単体テストを回す	2026-11-20T02:07:45.9910234Z  ✓  unit  tests/unit/src/plugin/pre-tool-use.test.ts (4 tests) 280ms
+test	単体テストを回す	2026-11-20T02:07:46.0920335Z  ✓  unit  tests/unit/src/render/mark-options.test.ts (7 tests) 9ms
+test	単体テストを回す	2026-11-20T02:07:46.1890568Z  ✓  unit  tests/unit/src/cli/config.test.ts (6 tests) 403ms
+test	単体テストを回す	2026-11-20T02:07:46.1909121Z    ✓ test_find_config_file_when_missing 316ms
+test	単体テストを回す	2026-11-20T02:07:46.2376714Z  ✓  unit  tests/unit/src/plugin/setup/status.test.ts (3 tests) 86ms
+test	単体テストを回す	2026-11-20T02:07:46.3120747Z  ✓  unit  tests/unit/src/map/sequence.test.ts (6 tests) 46ms
+test	単体テストを回す	2026-11-20T02:07:46.3410312Z  ✓  unit  tests/unit/src/shared/notice.part.test.ts (6 tests) 27ms
+test	単体テストを回す	2026-11-20T02:07:46.3969672Z  ✓  unit  tests/unit/src/table/table-cells.logic.test.ts (5 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:46.4518378Z  ✓  unit  tests/unit/src/embedded-html/scope-css.logic.test.ts (5 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:46.4945233Z  ✓  unit  tests/unit/src/frontmatter/frontmatter.logic.test.ts (6 tests) 6ms
+test	単体テストを回す	2026-11-20T02:07:46.5690150Z  ✓  unit  tests/unit/src/shared/style-tokens.logic.test.ts (4 tests) 10ms
+test	単体テストを回す	2026-11-20T02:07:46.6462485Z  ✓  unit  tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts (5 tests) 27ms
+test	単体テストを回す	2026-11-20T02:07:46.6749892Z  ✓  unit  tests/unit/src/media/lightbox.part.test.ts (4 tests) 44ms
+test	単体テストを回す	2026-11-20T02:07:46.7358433Z  ✓  unit  tests/unit/src/comments/spec.test.ts (4 tests) 11ms
+test	単体テストを回す	2026-11-20T02:07:46.8463415Z  ✓  unit  tests/unit/src/diff/revision-picker.part.test.ts (1 test) 52ms
+test	単体テストを回す	2026-11-20T02:07:46.8817578Z  ✓  unit  tests/unit/src/cli/alias-schema.test.ts (4 tests) 91ms
+test	単体テストを回す	2026-11-20T02:07:46.9857018Z  ✓  unit  tests/unit/src/plugin/setup/paths.test.ts (7 tests) 71ms
+test	単体テストを回す	2026-11-20T02:07:47.0367477Z  ✓  unit  tests/unit/src/cli/versions.test.ts (8 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:47.0720468Z  ✓  unit  tests/unit/src/cli/includes.test.ts (2 tests) 107ms
+test	単体テストを回す	2026-11-20T02:07:47.1528078Z  ✓  unit  tests/unit/src/plugin/port.test.ts (5 tests) 26ms
+test	単体テストを回す	2026-11-20T02:07:47.2074780Z  ✓  unit  tests/unit/src/diff/diff-blocks.part.test.ts (3 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:47.2959945Z  ✓  unit  tests/unit/src/highlight-lines.test.ts (4 tests) 9ms
+test	単体テストを回す	2026-11-20T02:07:47.3736524Z  ✓  unit  tests/unit/scripts/eslint.test.ts (3 tests) 20ms
+test	単体テストを回す	2026-11-20T02:07:47.6628250Z  ✓  unit  tests/unit/vscode/src/extensions-bundle.test.ts (2 tests) 459ms
+test	単体テストを回す	2026-11-20T02:07:47.6639087Z    ✓ test_bundle_extensions 415ms
+test	単体テストを回す	2026-11-20T02:07:47.7310006Z  ✓  unit  tests/unit/src/shared/icons.part.test.ts (2 tests) 198ms
+test	単体テストを回す	2026-11-20T02:07:47.7953636Z  ✓  unit  tests/unit/src/comments/anchor.test.ts (4 tests) 12ms
+test	単体テストを回す	2026-11-20T02:07:47.8529443Z  ✓  unit  tests/unit/src/mermaid-source.test.ts (5 tests) 10ms
+test	単体テストを回す	2026-11-20T02:07:47.9221219Z  ✓  unit  tests/unit/src/diff/diff-html.part.test.ts (3 tests) 6ms
+test	単体テストを回す	2026-11-20T02:07:47.9863374Z  ✓  unit  tests/unit/src/map/spec.test.ts (6 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:48.0643682Z  ✓  unit  tests/unit/src/mdmark-style/terms.test.ts (5 tests) 177ms
+test	単体テストを回す	2026-11-20T02:07:48.1904485Z  ✓  unit  tests/unit/src/plugin/guide.test.ts (5 tests) 6ms
+test	単体テストを回す	2026-11-20T02:07:48.2727851Z  ✓  unit  tests/unit/src/table/csv.syntax.test.ts (4 tests) 42ms
+test	単体テストを回す	2026-11-20T02:07:48.3510411Z  ✓  unit  tests/unit/src/diff/diff-lines.part.test.ts (2 tests) 10ms
+test	単体テストを回す	2026-11-20T02:07:48.3516458Z  ✓  unit  tests/unit/src/card/card.syntax.test.ts (5 tests) 42ms
+test	単体テストを回す	2026-11-20T02:07:48.4795911Z  ✓  unit  tests/unit/src/media/media.part.test.ts (3 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:48.6299613Z  ✓  unit  tests/unit/src/section/heading.syntax.test.ts (5 tests) 33ms
+test	単体テストを回す	2026-11-20T02:07:48.7110944Z  ✓  unit  tests/unit/src/knowledge/backlinks.syntax.test.ts (3 tests) 31ms
+test	単体テストを回す	2026-11-20T02:07:48.8267714Z  ✓  unit  tests/unit/src/inline/text-color.syntax.test.ts (5 tests) 50ms
+test	単体テストを回す	2026-11-20T02:07:48.8623440Z  ✓  unit  tests/unit/src/markdown/pure-inline.logic.test.ts (7 tests) 81ms
+test	単体テストを回す	2026-11-20T02:07:48.9486466Z  ✓  unit  tests/unit/src/diff/source.test.ts (6 tests) 9ms
+test	単体テストを回す	2026-11-20T02:07:48.9925359Z  ✓  unit  tests/unit/src/map/state-diagram.test.ts (3 tests) 97ms
+test	単体テストを回す	2026-11-20T02:07:49.1412760Z  ✓  unit  tests/unit/src/mdmark-style/table-layout.test.ts (7 tests) 18ms
+test	単体テストを回す	2026-11-20T02:07:49.2224141Z  ✓  unit  tests/unit/src/inline/badge.syntax.test.ts (5 tests) 37ms
+test	単体テストを回す	2026-11-20T02:07:49.2590733Z  ✓  unit  tests/unit/src/frontmatter/frontmatter.syntax.test.ts (3 tests) 140ms
+test	単体テストを回す	2026-11-20T02:07:49.3430813Z  ✓  unit  tests/unit/src/viewer/doc-list.part.test.ts (2 tests) 15ms
+test	単体テストを回す	2026-11-20T02:07:49.4299866Z  ✓  unit  tests/unit/src/mdmark-style/marker-guide.test.ts (4 tests) 33ms
+test	単体テストを回す	2026-11-20T02:07:49.4609935Z  ✓  unit  tests/unit/src/media/gif.part.test.ts (3 tests) 44ms
+test	単体テストを回す	2026-11-20T02:07:49.5880216Z  ✓  unit  tests/unit/src/map/architecture.test.ts (3 tests) 87ms
+test	単体テストを回す	2026-11-20T02:07:49.6163476Z  ✓  unit  tests/unit/src/views/spec.test.ts (2 tests) 22ms
+test	単体テストを回す	2026-11-20T02:07:49.6447732Z  ✓  unit  tests/unit/src/diagram/param.part.test.ts (3 tests) 65ms
+test	単体テストを回す	2026-11-20T02:07:49.7231749Z  ✓  unit  tests/unit/src/card/card.part.test.ts (3 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:49.7780858Z  ✓  unit  tests/unit/vscode/src/settings.test.ts (3 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:49.8182326Z  ✓  unit  tests/unit/src/map/sequence-rows.test.ts (4 tests) 41ms
+test	単体テストを回す	2026-11-20T02:07:49.9166864Z  ✓  unit  tests/unit/src/section/section.part.test.ts (3 tests) 4ms
+test	単体テストを回す	2026-11-20T02:07:50.0599897Z  ✓  unit  tests/unit/src/layout/wide.syntax.test.ts (3 tests) 42ms
+test	単体テストを回す	2026-11-20T02:07:50.1717178Z  ✓  unit  tests/unit/src/layout/details.syntax.test.ts (3 tests) 45ms
+test	単体テストを回す	2026-11-20T02:07:50.2402161Z  ✓  unit  tests/unit/scripts/test-mdmark-style.test.ts (2 tests) 18ms
+test	単体テストを回す	2026-11-20T02:07:50.2740413Z  ✓  unit  tests/unit/src/layout/layout-columns.syntax.test.ts (2 tests) 47ms
+test	単体テストを回す	2026-11-20T02:07:50.3255753Z  ✓  unit  tests/unit/src/callout/callout.part.test.ts (4 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:50.3854707Z  ✓  unit  tests/unit/src/plugin/setup/keys.test.ts (2 tests) 11ms
+test	単体テストを回す	2026-11-20T02:07:50.4375042Z  ✓  unit  tests/unit/src/knowledge/paths.test.ts (4 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:50.4996782Z  ✓  unit  tests/unit/vscode/src/export/write.test.ts (2 tests) 18ms
+test	単体テストを回す	2026-11-20T02:07:50.5723982Z  ✓  unit  tests/unit/migrations-dir.test.ts (4 tests) 9ms
+test	単体テストを回す	2026-11-20T02:07:50.6144827Z  ✓  unit  tests/unit/src/card/card-grid.part.test.ts (2 tests) 80ms
+test	単体テストを回す	2026-11-20T02:07:50.6542442Z  ✓  unit  tests/unit/src/shared/placement.logic.test.ts (3 tests) 4ms
+test	単体テストを回す	2026-11-20T02:07:50.7082469Z  ✓  unit  tests/unit/src/diagram/mermaid.part.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-20T02:07:50.7825701Z  ✓  unit  tests/unit/src/viewer/route.test.ts (4 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:50.8375195Z  ✓  unit  tests/unit/src/shared/collapse.logic.test.ts (4 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:50.9140612Z  ✓  unit  tests/unit/vscode/src/preview/diff-target.test.ts (3 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:50.9688215Z  ✓  unit  tests/unit/src/features.test.ts (4 tests) 4ms
+test	単体テストを回す	2026-11-20T02:07:50.9950534Z  ✓  unit  tests/unit/src/inline/inline-icon.syntax.test.ts (3 tests) 32ms
+test	単体テストを回す	2026-11-20T02:07:51.0613989Z  ✓  unit  tests/unit/src/shared/collapsible.part.test.ts (3 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:51.1252872Z  ✓  unit  tests/unit/vscode/src/preview/scroll-guard.test.ts (3 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:51.1907445Z  ✓  unit  tests/unit/src/shared/syntax-warning.part.test.ts (2 tests) 3ms
+test	単体テストを回す	2026-11-20T02:07:51.2489845Z  ✓  unit  tests/unit/src/cli/changelog.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-20T02:07:51.3123124Z  ✓  unit  tests/unit/vscode/scripts/release-check.test.ts (3 tests) 7ms
+test	単体テストを回す	2026-11-20T02:07:51.3880380Z  ✓  unit  tests/unit/src/plugin/setup/main.test.ts (2 tests) 270ms
+test	単体テストを回す	2026-11-20T02:07:51.4750419Z  ✓  unit  tests/unit/src/comments/margin.test.ts (3 tests) 85ms
+test	単体テストを回す	2026-11-20T02:07:51.5716339Z  ✓  unit  tests/unit/src/diagram/hint.part.test.ts (1 test) 49ms
+test	単体テストを回す	2026-11-20T02:07:51.6311998Z  ✓  unit  tests/unit/src/steps/steps.part.test.ts (2 tests) 4ms
+test	単体テストを回す	2026-11-20T02:07:51.6585867Z  ✓  unit  tests/unit/src/table/row-detail.syntax.test.ts (2 tests) 41ms
+test	単体テストを回す	2026-11-20T02:07:51.7245178Z  ✓  unit  tests/unit/src/cli/prompt.test.ts (2 tests) 7ms
+test	単体テストを回す	2026-11-20T02:07:51.7833640Z  ✓  unit  tests/unit/src/diff/diff-minimap.part.test.ts (1 test) 4ms
+test	単体テストを回す	2026-11-20T02:07:51.7848694Z  ✓  unit  tests/unit/src/knowledge/backlinks.part.test.ts (2 tests) 3ms
+test	単体テストを回す	2026-11-20T02:07:51.8876704Z  ✓  unit  tests/unit/src/section/back-to-top.part.test.ts (2 tests) 33ms
+test	単体テストを回す	2026-11-20T02:07:51.9382861Z  ✓  unit  tests/unit/src/diff/diff-message.part.test.ts (1 test) 3ms
+test	単体テストを回す	2026-11-20T02:07:51.9746721Z  ✓  unit  tests/unit/vscode/src/preview/links.test.ts (2 tests) 38ms
+test	単体テストを回す	2026-11-20T02:07:52.0275450Z  ✓  unit  tests/unit/src/cli/issues.test.ts (2 tests) 5ms
+test	単体テストを回す	2026-11-20T02:07:52.0923400Z  ✓  unit  tests/unit/vscode/src/preview/includes.test.ts (1 test) 12ms
+test	単体テストを回す	2026-11-20T02:07:52.1169233Z  ✓  unit  tests/unit/src/shared/embed.part.test.ts (2 tests) 4ms
+test	単体テストを回す	2026-11-20T02:07:52.1824884Z  ✓  unit  tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts (1 test) 8ms
+test	単体テストを回す	2026-11-20T02:07:52.2449871Z  ✓  unit  tests/unit/src/figure/figure.part.test.ts (1 test) 4ms
+test	単体テストを回す	2026-11-20T02:07:52.2770892Z  ✓  unit  tests/unit/src/layout/wide.part.test.ts (1 test) 40ms
+test	単体テストを回す	2026-11-20T02:07:52.4100656Z  ✓  unit  tests/unit/vscode/src/preview/assets.test.ts (2 tests) 8ms
+test	単体テストを回す	2026-11-20T02:07:52.5100596Z  ✓  unit  tests/unit/src/inline/kbd.syntax.test.ts (2 tests) 30ms
+test	単体テストを回す	2026-11-20T02:07:52.5648783Z  ✓  unit  tests/unit/src/inline/highlight.syntax.test.ts (2 tests) 24ms
+test	単体テストを回す	2026-11-20T02:07:52.5919743Z  ✓  unit  tests/unit/src/render/page.test.ts (2 tests) 4ms
+test	単体テストを回す	2026-11-20T02:07:52.6423697Z  ✓  unit  tests/unit/src/media/gallery.part.test.ts (1 test) 4ms
+test	単体テストを回す	2026-11-20T02:07:52.6948422Z  ✓  unit  tests/unit/vscode/src/webview/shared/lib/media-error.test.ts (1 test) 4ms
+test	単体テストを回す	2026-11-20T02:07:52.7485957Z  ✓  unit  tests/unit/src/inline/inline-icon.part.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-20T02:07:52.7829293Z  ✓  unit  tests/unit/src/section/toc.part.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-20T02:07:52.8329955Z  ✓  unit  tests/unit/src/inline/badge.part.test.ts (2 tests) 4ms
+test	単体テストを回す	2026-11-20T02:07:52.9606869Z  ✓  unit  tests/unit/src/layout/layout-columns.part.test.ts (1 test) 3ms
+test	単体テストを回す	2026-11-20T02:07:53.0927506Z  ✓  unit  tests/unit/src/section/toc.syntax.test.ts (1 test) 44ms
+test	単体テストを回す	2026-11-20T02:07:53.1290721Z  ✓  unit  tests/unit/vscode/src/webview/shared/adapters/vscode-api.test.ts (1 test) 34ms
+test	単体テストを回す	2026-11-20T02:07:53.1654682Z  ✓  unit  tests/unit/src/mdmark-style/mod.test.ts (1 test) 282ms
+test	単体テストを回す	2026-11-20T02:07:53.2467251Z  ✓  unit  tests/unit/src/diff/diff-toggle.part.test.ts (1 test) 31ms
+test	単体テストを回す	2026-11-20T02:07:53.2890780Z  ✓  unit  tests/unit/src/table/row-detail.part.test.ts (1 test) 4ms
+test	単体テストを回す	2026-11-20T02:07:53.3197427Z  ✓  unit  tests/unit/src/shared/icon-node.logic.test.ts (1 test) 25ms
+test	単体テストを回す	2026-11-20T02:07:53.4290253Z  ✓  unit  tests/unit/src/inline/highlight.part.test.ts (1 test) 3ms
+test	単体テストを回す	2026-11-20T02:07:53.4600056Z  ✓  unit  tests/unit/src/cli/icons.test.ts (1 test) 74ms
+test	単体テストを回す	2026-11-20T02:07:53.4991032Z  ✓  unit  tests/unit/src/frontmatter/frontmatter.part.test.ts (1 test) 3ms
+test	単体テストを回す	2026-11-20T02:07:53.5881786Z  ✓  unit  tests/unit/git-env.test.ts (1 test) 8ms
+test	単体テストを回す	2026-11-20T02:07:53.6179843Z  ✓  unit  tests/unit/src/shared/own.logic.test.ts (1 test) 6ms
+test	単体テストを回す	2026-11-20T02:07:53.6639949Z  ✓  unit  tests/unit/src/shared/row-hash.logic.test.ts (1 test) 6ms
+test	単体テストを回す	2026-11-20T02:07:53.7165820Z  ✓  unit  tests/unit/src/inline/text-color.part.test.ts (1 test) 4ms
+test	単体テストを回す	2026-11-20T02:07:53.7907568Z  ✓  unit  tests/unit/src/inline/kbd.part.test.ts (1 test) 3ms
+test	単体テストを回す	2026-11-20T02:07:53.8484721Z  ✓  unit  tests/unit/src/shared/colors.logic.test.ts (1 test) 3ms
+test	単体テストを回す	2026-11-20T02:07:53.9636431Z  ✓  unit  tests/unit/src/layout/pagebreak.syntax.test.ts (1 test) 26ms
+test	単体テストを回す	2026-11-20T02:07:53.9718553Z  ✓  unit  tests/unit/src/shared/escape.logic.test.ts (1 test) 3ms
+test	単体テストを回す	2026-11-20T02:07:54.2355873Z  ✓  unit  tests/unit/src/index.test.ts (1 test) 323ms
+test	単体テストを回す	2026-11-20T02:07:54.2356379Z    ✓ test_version 322ms
+test	単体テストを回す	2026-11-20T02:07:54.2413480Z 
+test	単体テストを回す	2026-11-20T02:07:54.2418932Z  Test Files  324 passed (324)
+test	単体テストを回す	2026-11-20T02:07:54.2430783Z       Tests  2614 passed (2614)
+test	単体テストを回す	2026-11-20T02:07:54.2431307Z    Start at  02:07:10
+test	単体テストを回す	2026-11-20T02:07:54.2436453Z    Duration  43.60s (worker 90%, tests 6%, import 3%, transform 1%)
+test	単体テストを回す	2026-11-20T02:07:54.2449744Z 

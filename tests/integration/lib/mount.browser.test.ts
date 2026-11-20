@@ -6517,7 +6517,25 @@ function placementOwners(el: HTMLElement): {
   };
 }
 
-// 用語のツールチップを単語の上に、図・ヒントのツールチップを持ち主の下に出し、上に収まらない単語だけ下に出す（正常系（ツールチップを上に出す））
+/** 用語のツールチップの外側の要素の上下の余白と、内側の枠の画面に対する上端・下端 */
+function termTipGap(term: HTMLElement): {
+  paddingTop: number;
+  paddingBottom: number;
+  frame: DOMRect;
+} {
+  const tip = tooltipOf(term);
+  const style = getComputedStyle(tip);
+  return {
+    paddingTop: Number.parseFloat(style.paddingBlockStart),
+    paddingBottom: Number.parseFloat(style.paddingBlockEnd),
+    frame: find<HTMLElement>(
+      tip,
+      ":scope > .mdmark-term-tip-frame",
+    ).getBoundingClientRect(),
+  };
+}
+
+// 用語のツールチップを単語の上に、図・ヒントのツールチップを持ち主の下に出し、上に収まらない単語だけ下に出す。狭い画面でもスクリプトが配置したツールチップは、単語との間の余白を単語の側に持つ（正常系（ツールチップを上に出す））
 test("test_normal_when_tooltip_above", async () => {
   // 準備
   const el = createElement();
@@ -6534,6 +6552,12 @@ test("test_normal_when_tooltip_above", async () => {
   // 実行・検証: 2 つ目のセクションの用語は、単語の上に出る
   const section = await hoverAndMeasure(sectionTerm, "center");
   expect(section.tip.bottom).toBeLessThanOrEqual(section.owner.top);
+  // 実行・検証: 上に出たツールチップは、単語との間の余白が下側にあり、内側の枠が単語から離れる
+  expect(window.innerWidth).toBeLessThan(71 * 16);
+  const sectionGap = termTipGap(sectionTerm);
+  expect(sectionGap.paddingBottom).toBeGreaterThan(1);
+  expect(sectionGap.paddingTop).toBe(0);
+  expect(sectionGap.frame.bottom).toBeLessThan(section.owner.top - 1);
   // 実行・検証: テーブル・ヒントのマーカーは、tooltips.diagramPlacement の既定の bottom で持ち主の下に出る
   for (const owner of [label, mark]) {
     const rects = await hoverAndMeasure(owner, "center");
@@ -6554,6 +6578,11 @@ test("test_normal_when_tooltip_above", async () => {
   expect(tipRect.height).toBeGreaterThan(0);
   expect(tipRect.top).toBeGreaterThanOrEqual(termRect.bottom);
   expect(tipRect.top).toBeGreaterThanOrEqual(0);
+  // 実行・検証: 下に出たツールチップは、単語との間の余白が上側にあり、内側の枠が単語から離れる
+  const firstGap = termTipGap(firstTerm);
+  expect(firstGap.paddingTop).toBeGreaterThan(1);
+  expect(firstGap.paddingBottom).toBe(0);
+  expect(firstGap.frame.top).toBeGreaterThan(termRect.bottom + 1);
 });
 
 // tooltips.placement が bottom のときは持ち主の下に出し、下に収まらない単語だけ上に出す。知らない値は top として扱う（正常系（ツールチップを下に出す設定））
@@ -11337,7 +11366,7 @@ function footnoteRef(el: Element, n: number): HTMLElement {
   return ref;
 }
 
-// 脚注の番号にポインター・フォーカスでツールチップを出し、中のリンクへ Tab で移り、Esc で削除する（正常系）
+// 脚注の番号にポインター・フォーカスでツールチップを出し、番号との間の余白にポインターを移しても出たままで、中のリンクへ Tab で移り、Esc で削除する（正常系）
 test("test_normal_when_footnote_tooltip", async () => {
   // 準備
   const el = createElement();
@@ -11351,6 +11380,17 @@ test("test_normal_when_footnote_tooltip", async () => {
   await userEvent.hover(find(second, ".mdmark-fn-link"));
   expect(isOpen(secondTip)).toBe(true);
   expect(secondTip.textContent).toContain("行内の補足");
+  // 番号と内側の枠の間の余白（番号の側の padding）にポインターを移しても出たまま
+  const secondStyle = getComputedStyle(secondTip);
+  const gapSide = secondTip.parentElement?.classList.contains("is-below")
+    ? Number.parseFloat(secondStyle.paddingBlockStart)
+    : Number.parseFloat(secondStyle.paddingBlockEnd);
+  expect(gapSide).toBeGreaterThan(1);
+  const gapY = secondTip.parentElement?.classList.contains("is-below")
+    ? 1
+    : secondTip.offsetHeight - 1;
+  await userEvent.hover(secondTip, { position: { x: 4, y: gapY } });
+  expect(isOpen(secondTip)).toBe(true);
   await userEvent.hover(secondTip);
   expect(isOpen(secondTip)).toBe(true);
   await userEvent.unhover(secondTip);
