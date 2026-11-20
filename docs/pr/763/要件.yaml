@@ -1,0 +1,37 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: ER 図・クラス図のテーブルの開閉のボタンをほかの開閉と同じ見た目にし、閉じたときは閉じたことを示すアイコンだけにする。ER 図の関連の線で 1 対多の向き（どちらが多い側か）が分かるようにする。グループの角をドラッグして大きさを変えられるようにする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 全画面で開いた map の図でも、線にポインターを重ねたときの動き（データの印など）が通常の表示と同じに出る
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: following
+    detail: 図を辿って読む流れは変わらず、単一 UC『Mermaidと補足で図を描く』の変更に記述だけ追随する
+    depends_on:
+      - docs/scenario/SC-472-8.yaml
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: グループの角をドラッグして大きさを変える操作と、ER 図の関連の線の 1 対多の向きの見え方を追加する
+    status: todo
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: データの印・開閉など、1 対多の向きの見せ方・テーブルの開閉・グループの大きさの変更で意味が変わった用語の説明を合わせる
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 補足の layout にグループの大きさのキーを追加する設計になった場合、そのキーを追加する
+    status: todo
+scope_out:
+  - item: map の図のグループ以外（ノード・ER 図のテーブル）の大きさをドラッグで変える操作
+    reason: 要望はグループの角のドラッグだけで、ノードの大きさの変更を含まない
+    plan: none
+  - item: map 以外の図（グラフ・mermaid の図）の全画面での動き
+    reason: 要望は map の図の線の動きで、他の図の全画面での動きの不具合は報告されていない。再現の確認で同じ原因が他の図に及ぶと分かったら、設計の段でスコープに含めるかを確定する
+    plan: none
