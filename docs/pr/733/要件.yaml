@@ -7,12 +7,12 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-87.yaml
     impact: none
-    detail: グループの中へ入る・開閉は見せ方によらず同じで、流れの記載は変わらない（layers でも同じく動くことは SC-472-8 に記載した）
+    detail: mode を追加しないため、シナリオは変わらない
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-78.yaml
     impact: none
-    detail: 正常シナリオ（マーカーの設定にずれがある）がマーカーごとの JSON Schema での検証として記載してあり、mode の値は Schema に追加すれば同じ流れで点検される
+    detail: mode を追加しないため、シナリオは変わらない
     depends_on: []
 docs: []
 scope_out:
