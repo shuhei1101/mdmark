@@ -1440,6 +1440,8 @@ const simplifyPoints = (
 /** 線を引くときに引く値 */
 type RouteContext = {
   leaves: InnerLeaf[];
+  /** 線の端にできる開いたグループ（Mermaid の `subgraph` を指す線は、グループの枠につなぐ） */
+  groupEnds: Map<string, InnerLeaf>;
   overrides: Record<string, MapOverride>;
   vias: Map<string, Array<[number, number]>>;
   grid: Grid;
@@ -1503,8 +1505,11 @@ const foreignPortsOf = (
 /** 線 1 本を引く */
 const routeEdge = (context: RouteContext, edge: ViewWire): PlacedWire => {
   const { leaves, overrides, grid } = context;
-  const source = leaves.find((leaf) => leaf.id === edge.from) as InnerLeaf;
-  const target = leaves.find((leaf) => leaf.id === edge.to) as InnerLeaf;
+  const endOf = (id: string): InnerLeaf =>
+    leaves.find((leaf) => leaf.id === id) ??
+    (context.groupEnds.get(id) as InnerLeaf);
+  const source = endOf(edge.from);
+  const target = endOf(edge.to);
   const cells = cellsOf(grid, {
     from: context.ancestorsOf.get(edge.from) ?? [],
     to: context.ancestorsOf.get(edge.to) ?? [],
@@ -1604,12 +1609,32 @@ const routeEdges = (
     ...reserved.map((rect) => ({ ...rect, leaf: true })),
   ];
   const grid = gridOf(rects, vias);
+  const groupEnds = new Map(
+    boxes.map((box): [string, InnerLeaf] => [
+      box.id,
+      {
+        ...box,
+        lines: [],
+        faded: false,
+        ancestors: (box as Partial<InnerLeaf>).ancestors ?? [],
+        collapsed: false,
+        title: "",
+      },
+    ]),
+  );
   const context: RouteContext = {
     leaves,
+    groupEnds,
     overrides,
     vias,
     grid,
-    ancestorsOf: new Map(leaves.map((leaf) => [leaf.id, leaf.ancestors])),
+    ancestorsOf: new Map([
+      ...[...groupEnds.values()].map((end): [string, string[]] => [
+        end.id,
+        end.ancestors,
+      ]),
+      ...leaves.map((leaf): [string, string[]] => [leaf.id, leaf.ancestors]),
+    ]),
     used: {
       right: new Uint8Array(grid.nx * grid.ny),
       down: new Uint8Array(grid.nx * grid.ny),

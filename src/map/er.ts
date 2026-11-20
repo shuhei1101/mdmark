@@ -290,8 +290,10 @@ const readTableLine = (
 const readRelationLine = (reading: ErReading, text: string): boolean => {
   const relation = readRelation(text);
   if (!relation) return false;
-  tableOf(reading, relation.from);
-  tableOf(reading, relation.to);
+  // `subgraph` の ID を指す関連は、グループへの線にしてテーブルを作らない
+  for (const name of [relation.from, relation.to])
+    if (!reading.groups.some((group) => group.id === name))
+      tableOf(reading, name);
   reading.relations.push({
     id: `r${reading.relations.length + 1}`,
     ...relation,
@@ -342,8 +344,12 @@ export const parseErDiagram = (source: string): ErDiagram => {
       message: `テーブル \`${reading.current.table.name}\` の \`{\` に対応する \`}\` がありません。テーブルの最後の行の後に \`}\` を記載してください。`,
     });
   }
+  // 後ろの行の `subgraph` の ID を指していた関連のテーブルも除く
+  const groupIds = new Set(reading.groups.map((group) => group.id));
   return {
-    tables: [...reading.tables.values()],
+    tables: [...reading.tables.values()].filter(
+      (table) => !groupIds.has(table.name),
+    ),
     relations: reading.relations,
     groups: reading.groups,
     ...(reading.direction === undefined

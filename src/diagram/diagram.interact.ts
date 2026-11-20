@@ -68,8 +68,8 @@ export function renumberIds(
       }
     }
   }
-  // 矢じりと塗りの模様の参照
-  for (const name of ["marker-end", "fill"]) {
+  // 矢じり（線の端の記号を含む）と塗りの模様の参照
+  for (const name of ["marker-start", "marker-end", "fill"]) {
     for (const element of scope.querySelectorAll(`[${name}]`)) {
       const value = element.getAttribute(name) ?? "";
       element.setAttribute(name, value.replace(`url(#${head}`, `url(#${to}-`));
