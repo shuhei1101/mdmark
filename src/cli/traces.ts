@@ -76,10 +76,25 @@ const hideAttributeValue = (name: string, value: string): string => {
     : assets;
 };
 
-/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby` など）・`for`・`headers` の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` と、範囲の CSS の `style` の中の名前だけを別名へ置き換え、HTML のコメントを削除する。テキストのノード（範囲のスクリプトの `template` の中を含む）と、それ以外の `href`・`src`・`alt`・`title` の値は置き換えない */
+/** 範囲のスクリプトの `template` 要素・タグ・タグの間のテキストのいずれか */
+const TEXT_PIECE_PATTERN =
+  /<template\b[^>]*>[\s\S]*?<\/template>|<[^>]*>|[^<]+/g;
+
+/** テキストのうち、コードの例の部品の要素名（`&lt;mdmark-`・`&lt;/mdmark-`）の `mdmark` だけを別名へ置き換える。範囲のスクリプトの `template` の中は置き換えない */
+const hideCodeElementNames = (html: string): string =>
+  html.replace(TEXT_PIECE_PATTERN, (piece) =>
+    piece.startsWith("<")
+      ? piece
+      : piece.replace(
+          /&lt;(\/?)mdmark-/gi,
+          (found, slash: string) =>
+            `&lt;${slash}${hideNames(found.slice(4 + slash.length, -1))}-`,
+        ),
+  );
+
+/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby` など）・`for`・`headers` の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` と、範囲の CSS の `style` の中の名前と、コードの例の部品の要素名だけを別名へ置き換え、HTML のコメントを削除する。ほかのテキストのノード（範囲のスクリプトの `template` の中は部品の要素名も含む）と、それ以外の `href`・`src`・`alt`・`title` の値は置き換えない */
 export const hideRenderedHtml = (html: string): string =>
-  html
-    .replace(COMMENT_PATTERN, "")
+  hideCodeElementNames(html.replace(COMMENT_PATTERN, ""))
     // 範囲の CSS は mdmark が根の要素の class で範囲に限るため、CSS として名前を置き換える
     .replace(STYLE_PATTERN, (...style: string[]) => {
       const [, open = "", css = ""] = style;
