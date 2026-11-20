@@ -102,3 +102,4 @@ scope_out:
     plan: none
   - item: VS Code 拡張機能の結合テスト `test_normal_when_relative_mermaid`（HTML に書き出す）と `test_normal_when_mermaid`（プレビューを開く）の fail
     reason: develop（origin/develop）の作業ツリーでも同じ 2 件が fail し、この作業 PR の変更に依らない。この作業 PR は mermaid の読み込みと描画を変えていない
+    plan: '#773'
