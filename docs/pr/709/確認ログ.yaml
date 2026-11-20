@@ -19,3 +19,18 @@ confirmations:
     decided_by: thumbs_up
     approver: shuhei1101
     thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633244243
+  - topic: 倍率が 100 % でも図の全体が表示する枠に収まらないときの手順の移動
+    decision: 強調するノードが表示する枠に見えているときは位置を変えず、見えていない部分があるときだけ倍率を変えずに中央へ移す（推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633686688
+  - topic: 言語 markdown のコードブロックを描いた結果に mdmark の記法を含めるか
+    decision: 文書と同じ mdmark の描き方で描き、目次・先頭へ戻る・Markdown のエクスポート・被参照・コメント・印刷の処理は中に付けない（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633687386
+  - topic: 既定を元の Markdown にする code のマーカーのキー
+    decision: キー raw（真偽値・既定 false）（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/709#discussion_r4633688267
