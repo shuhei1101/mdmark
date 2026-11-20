@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <title>PoC: map の図の書き出し</title>
+  <link rel="stylesheet" href="../../dist/index.css">
+  <style>body { margin: 0; padding: 16px; background: #fff; } #doc { --mdmark-content-width: 72rem; }</style>
+</head>
+<body>
+  <div id="doc"></div>
+  <script type="module">
+    import { mount } from "../../dist/index.js";
+    const markdown = await (await fetch("./sample.md")).text();
+    const config = {
+      map: {
+        kinds: {
+          step: { label: "処理", icon: "cog", shape: "rounded" },
+          store: { label: "保存先", icon: "database", shape: "rect", color: "purple" },
+          outside: { label: "外部", icon: "globe", shape: "pill", color: "green" },
+        },
+      },
+    };
+    mount(document.querySelector("#doc"), { markdown, config });
+    window.__pocMounted = true;
+  </script>
+  <script type="module" src="./export.js"></script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+{
+  "chromium": {
+    "jitter": {
+      "pixel": 0,
+      "center": 0
+    },
+    "thresholds": {
+      "N": 0,
+      "M": 1
+    },
+    "results": {
+      "exportForeign": {
+        "size": {
+          "width": 942,
+          "height": 446
+        },
+        "exportMs": 71,
+        "svgBytes": 1158003,
+        "checks": {
+          "external": [],
+          "missingTexts": [],
+          "icons": {
+            "page": 3,
+            "svg": 5
+          },
+          "borderColor": {
+            "value": "rgb(228, 228, 231)",
+            "found": true
+          },
+          "closedGroup": {
+            "name": true,
+            "inner": false
+          }
+        },
+        "png": {
+          "ok": true,
+          "width": 1884,
+          "height": 892,
+          "double": true
+        },
+        "pixel": {
+          "ratio": 0.779278893300201,
+          "ratioShift1": 0.32989631829996285,
+          "pass": false
+        },
+        "center": {
+          "max": 0.03125,
+          "missing": [],
+          "worst": [
+            [
+              "名前のノード",
+              0.03125
+            ],
+            [
+              "範囲の切り出しを行う長い",
+              0.015625
+            ],
+            [
+              "保存先",
+              0.015625
+            ]
+          ],
+          "pass": true
+        }
+      },
+      "exportReplaced": {
+        "size": {
+          "width": 942,
+          "height": 446
+        },
+        "exportMs": 7,
+        "svgBytes": 21989,
+        "checks": {
+          "external": [],
+          "missingTexts": [],
+          "icons": {
+            "page": 3,
+            "svg": 5
+          },
+          "borderColor": {
+            "value": "rgb(228, 228, 231)",
+            "found": true
+          },
+          "closedGroup": {
+            "name": true,
+            "inner": false
+          }
+        },
+        "png": {
+          "ok": true,
+          "width": 1884,
+          "height": 892,
+          "double": true
+        },
+        "pixel": {
+          "ratio": 0.6002875286814621,
+          "ratioShift1": 0.4431940437767178,
+          "pass": false
+        },
+        "center": {
+          "max": 0,
+          "missing": [],
+          "worst": [
+            [
+              "mdmark",
+              0
+            ],
+            [
+              "記法の読み取り",
+              0
+            ],
+            [
+              "外部",
+              0
+            ]
+          ],
+          "pass": true
+        }
+      }
+    }
+  },
+  "firefox": {
+    "jitter": {
+      "pixel": 0,
+      "center": 0
+    },
+    "thresholds": {
+      "N": 0,
+      "M": 1
+    },
+    "results": {
+      "exportForeign": {
+        "size": {
+          "width": 944,
+          "height": 446
+        },
+        "exportMs": 50,
+        "svgBytes": 929766,
+        "checks": {
+          "external": [],
+          "missingTexts": [],
+          "icons": {
+            "page": 3,
+            "svg": 5
+          },
+          "borderColor": {
+            "value": "rgb(228, 228, 231)",
+            "found": true
+          },
+          "closedGroup": {
+            "name": true,
+            "inner": false
+          }
+        },
+        "png": {
+          "ok": true,
+          "width": 1888,
+          "height": 892,
+          "double": true
+        },
+        "pixel": {
+          "ratio": 0.3282473208178156,
+          "ratioShift1": 0.329434901573307,
+          "pass": false
+        },
+        "center": {
+          "max": 0.0000152587890625,
+          "missing": [],
+          "worst": [
+            [
+              "利用側のページ",
+              0.0000152587890625
+            ],
+            [
+              "mount",
+              0.0000152587890625
+            ],
+            [
+              "マーカーの読み取りと範囲",
+              0.0000152587890625
+            ]
+          ],
+          "pass": true
+        }
+      },
+      "exportReplaced": {
+        "size": {
+          "width": 944,
+          "height": 446
+        },
+        "exportMs": 3,
+        "svgBytes": 22248,
+        "checks": {
+          "external": [],
+          "missingTexts": [],
+          "icons": {
+            "page": 3,
+            "svg": 5
+          },
+          "borderColor": {
+            "value": "rgb(228, 228, 231)",
+            "found": true
+          },
+          "closedGroup": {
+            "name": true,
+            "inner": false
+          }
+        },
+        "png": {
+          "ok": true,
+          "width": 1888,
+          "height": 892,
+          "double": true
+        },
+        "pixel": {
+          "ratio": 0.45413088089990117,
+          "ratioShift1": 0.4377422664741203,
+          "pass": false
+        },
+        "center": {
+          "max": 79.55832672119287,
+          "missing": [],
+          "worst": [
+            [
+              "マーカーの読み取りと範囲",
+              79.55832672119287
+            ],
+            [
+              "の切り出しを行う長い名前",
+              79.5583267211914
+            ],
+            [
+              "設定と Markdown",
+              43.433326721191406
+            ]
+          ],
+          "pass": false
+        }
+      }
+    }
+  },
+  "webkit": {
+    "jitter": {
+      "pixel": 0,
+      "center": 0
+    },
+    "thresholds": {
+      "N": 0,
+      "M": 1
+    },
+    "results": {
+      "exportForeign": {
+        "size": {
+          "width": 942,
+          "height": 446
+        },
+        "exportMs": 42,
+        "svgBytes": 1057250,
+        "checks": {
+          "external": [],
+          "missingTexts": [],
+          "icons": {
+            "page": 3,
+            "svg": 5
+          },
+          "borderColor": {
+            "value": "rgb(228, 228, 231)",
+            "found": true
+          },
+          "closedGroup": {
+            "name": true,
+            "inner": false
+          }
+        },
+        "png": {
+          "ok": true,
+          "width": 1884,
+          "height": 892,
+          "double": true
+        },
+        "pixel": {
+          "ratio": 0.7861814858187427,
+          "ratioShift1": 0.3632191787343026,
+          "pass": false
+        },
+        "center": {
+          "max": 0.1640625,
+          "missing": [],
+          "worst": [
+            [
+              "設定と Markdown",
+              0.1640625
+            ],
+            [
+              "のノード",
+              0.03125
+            ],
+            [
+              "の切り出しを行う長い名前",
+              0.015625
+            ]
+          ],
+          "pass": true
+        }
+      },
+      "exportReplaced": {
+        "size": {
+          "width": 942,
+          "height": 446
+        },
+        "exportMs": 17,
+        "svgBytes": 20096,
+        "checks": {
+          "external": [],
+          "missingTexts": [],
+          "icons": {
+            "page": 3,
+            "svg": 5
+          },
+          "borderColor": {
+            "value": "rgb(228, 228, 231)",
+            "found": true
+          },
+          "closedGroup": {
+            "name": true,
+            "inner": false
+          }
+        },
+        "png": {
+          "ok": true,
+          "width": 1884,
+          "height": 892,
+          "double": true
+        },
+        "pixel": {
+          "ratio": 0.5714870564489256,
+          "ratioShift1": 0.4322451039197205,
+          "pass": false
+        },
+        "center": {
+          "max": 338.9375397071766,
+          "missing": [],
+          "worst": [
+            [
+              "補足の検査",
+              338.9375397071766
+            ],
+            [
+              "ノード 2 件",
+              240.59375114158496
+            ],
+            [
+              "mount",
+              237.4375936975417
+            ]
+          ],
+          "pass": false
+        }
+      }
+    }
+  }
+}
