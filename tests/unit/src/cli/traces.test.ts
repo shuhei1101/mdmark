@@ -164,6 +164,7 @@ test("test_hide_rendered_html_keeps_id_references", async () => {
     '<span role="tooltip" id="mdmark-fn-tip-1-0">脚注</span>',
     '<label for="mdmark-input-1">a</label><td headers="mdmark-th-1">b</td>',
     '<a href="mdmark-intro.md#mdmark">外のリンク</a>',
+    '<video aria-label="mdmark の紹介" controls></video>',
     '<ol><li id="mdmark-fn-1">脚注の一覧</li></ol>',
   ].join("");
   // 実行
@@ -180,4 +181,5 @@ test("test_hide_rendered_html_keeps_id_references", async () => {
   expect(hidden).toContain('for="zq-input-1"');
   expect(hidden).toContain('headers="zq-th-1"');
   expect(hidden).toContain('href="mdmark-intro.md#mdmark"');
+  expect(hidden).toContain('aria-label="mdmark の紹介"');
 });
