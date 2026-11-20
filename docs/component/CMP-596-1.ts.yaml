@@ -5,7 +5,7 @@ implementation: src/map/map.part.ts#renderMapClassDiagram
 story: Parts/MapClass
 states:
   - name: Default
-    description: クラス 6 つ（`«interface»` と型の引数を含む）・関係 7 本（7 種類の記号と多重度とラベル）・namespace「形状」・`note for` のノート
+    description: クラス 6 つ（`«interface»` と型の引数を含む）・関係 7 本（7 種類の記号と多重度とラベル）・namespace「形状」・`note for` のノート。クラス名の行は種類の行を持たない 1 行（高さ 36px）で、種類の文字と枠線の無い下向きの山形の開閉のボタンを同じ行の右端に置く
     notes:
       定義: モックの `CLASS`・`CLASS_DATA`（`docs/mock/refs/596/assets/samples.js`）
   - name: MembersCollapsed
