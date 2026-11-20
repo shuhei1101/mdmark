@@ -38,7 +38,7 @@ states:
     notes:
       定義: モックの `DYNAMIC`・`DYNAMIC_DATA`
   - name: Deployment
-    description: '`C4Deployment`。3 レイヤーの入れ子の配置先のノードを実線のグループで描き、`Node_L` を `Node_R` の左に置く'
+    description: '`C4Deployment`。3 レイヤーの入れ子の配置先のノードを実線のグループで描き、`Node_L` を `Node_R` の左に配置する'
     notes:
       定義: モックの `DEPLOYMENT`・`DEPLOYMENT_DATA`
   - name: DeploymentCollapsed

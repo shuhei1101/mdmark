@@ -8,7 +8,7 @@ scenarios:
         description: 端末の設定（`MDMARK_CONFIG` が指すパス）・状態の配置場所（`MDMARK_STATE_DIR`）・Claude Code の設定のフォルダ（`CLAUDE_CONFIG_DIR`）を、どれも空の一時フォルダにする
       - name: 文書のフォルダ
         description: '`mdmark.config.yaml` と索引の無いフォルダに、Markdown を 1 つ配置する'
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: '`systemctl --user is-system-running` が `running` か `degraded` を返却する端末で、`MDMARK_PORT` に待ち受けるプロセスの無いポートを指定する'
         notes: 手元の常駐サーバーの unit（`mdmark-mcp`）とポート 8782 を回避するため、unit の名前はテスト専用の名前にし、テストの後に unit を止めて unit のファイルを削除する
       - name: Mock
@@ -54,7 +54,7 @@ scenarios:
         description: 正常シナリオを終えた後の端末の設定・状態の配置場所・unit と、待ち受けている常駐サーバー
       - name: もう一度入れたプラグイン
         description: プラグインを削除してもう一度入れた Claude Code の設定のフォルダ
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ。端末の設定の各キーの確認には、今の値のままにする回答を返却する
@@ -74,7 +74,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - '`global-setup` が unit を起動し直さず、常駐サーバーのプロセスがもう一度入れる前と同じ'
+      - '`global-setup` が unit を再起動せず、常駐サーバーのプロセスがもう一度入れる前と同じ'
       - 端末の設定の中身がもう一度入れる前と同じ
       - MCP のクライアントの `check` が、文書のフォルダの空のずれの一覧を返却する
     test: test_normal_when_already_set_up
@@ -89,7 +89,7 @@ scenarios:
         description: 正常シナリオを終えた後の端末の設定・状態の配置場所・unit
       - name: 止めた常駐サーバー
         description: '`systemctl --user stop {unit の名前}` で unit を止め、`MDMARK_PORT` のポートで待ち受けるプロセスが無い状態'
-      - name: systemd --user が使える端末と空いたポート
+      - name: systemd --user が使用できる端末と空いたポート
         description: 正常シナリオと同じ
       - name: Mock
         description: 正常シナリオと同じ
@@ -123,7 +123,7 @@ stakeholders:
     interest: 設定のキーを調べずに、項目ごとに聞かれて回答するだけで端末と文書のフォルダの設定がそろい、常駐サーバーがどこで動いているか・どう止めるか・ログをどこで確認するかが分かる
   - name: Claude Code
     interest: セッションの開始で常駐サーバーが待ち受けていないことを知り、`global-setup` で起動できる
-trigger: 文書の作成者が、新しい端末かもう一度入れた端末で、Claude Code から mdmark を使用し始める
+trigger: 文書の作成者が、新規の端末かもう一度入れた端末で、Claude Code から mdmark を使用し始める
 preconditions:
   - 文書の作成者の手元に Claude Code・git・Node 24 以降と、systemd --user か tmux 3.4 以降のどちらかがある
   - 文書の作成者の手元から GitHub と npm のレジストリへ届く

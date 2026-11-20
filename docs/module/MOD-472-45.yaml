@@ -32,7 +32,7 @@ notes:
 
     CLI（`src/cli/`）・MCP（`src/plugin/`）と、esbuild でまとめる VS Code 拡張機能（`vscode/src/`）の両方から import する。
 
-    配布物（ブラウザ）の入口からは import しない'
+    配布物（ブラウザ）のエントリーポイントからは import しない'
   ディレクトリ: |-
     ```text
     src/

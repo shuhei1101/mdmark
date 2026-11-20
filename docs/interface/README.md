@@ -47,7 +47,7 @@
 | [MCPサーバーを起動・停止する](./IF-472-4.ts.yaml) | MCP の常駐サーバーを 127.0.0.1 の Streamable HTTP で起動し、instructions とツールを返却し、シグナルで停止する（mdmark serve） |
 | [作業のフォルダを引数に入れる](./IF-472-5.ts.yaml) | 作業のフォルダを使用するツールの引数に、PreToolUse のフックで project_dir を入れる |
 | [常駐サーバーの状態を伝える](./IF-472-6.ts.yaml) | SessionStart で常駐サーバーのポートを確認し、待ち受けていないときだけ global-setup での起動の仕方を 1 行で指定する |
-| [記法のルールの参照を案内する](./IF-472-43.ts.yaml) | .mark.md への Write・Edit と語 mdmark を含む発言で、記法のルールの参照を 1 セッションに 1 回案内する |
+| [記法のルールの参照を案内する](./IF-472-43.ts.yaml) | .mark.md への Write・Edit と単語 mdmark を含む発言で、記法のルールの参照を 1 セッションに 1 回案内する |
 | [返答を共通スタイルで描く](./IF-472-45.tsx.yaml) | Claude Code の返答の表・注意書き・見出し・コード・開閉の範囲を共通スタイルの部品の木で描く（mdmark-style の ui.render AssistantMessage） |
 | [発言の用語にマーカーを付ける](./IF-472-46.tsx.yaml) | Claude Code の発言の用語に下線・カード・脚注を付け、標準の発言と同じ背景の帯で描く（mdmark-style の ui.render UserMessage） |
 | [マーカーの記載方法を注入する](./IF-472-47.ts.yaml) | SessionStart ごとにマーカーの記載方法の説明を additionalContext へ追加する（mdmark-style の classic.SessionStart） |

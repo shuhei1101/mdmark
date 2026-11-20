@@ -72,7 +72,7 @@ elements:
     label: 閉じているとき `▸ {タイトル}`、開いているとき `▾ {タイトル}`
     initial_value: 閉じた状態
     visible_when: '`parts.fold` が `true` のとき'
-    action: 押すと開閉の状態を反転して返答を描き直す。開いているときはボタンの下に中身を描く
+    action: 押すと開閉の状態を反転して返答を再描画する。開いているときはボタンの下に中身を描く
     action_ref: IF-472-45#constraints[開閉の範囲]
     refs:
       - CMP-472-3#
@@ -144,7 +144,7 @@ elements:
     label: 閉じているとき `[ ▸ ]`、開いているとき `[ ▾ ]`
     initial_value: 閉じた状態
     visible_when: '`parts.row_detail` が `true` のとき'
-    action: 押すと開閉の状態を反転して返答を描き直す。開いているときは行の下に詳細の中身を 2 桁字下げして描く
+    action: 押すと開閉の状態を反転して返答を再描画する。開いているときは行の下に詳細の中身を 2 桁字下げして描く
     action_ref: IF-472-45#constraints[行の詳細]
     refs:
       - CMP-472-60#

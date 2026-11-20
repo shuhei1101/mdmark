@@ -7,7 +7,7 @@ data_models:
   - name: MdmarkFlowDefinition
     title: map の構成図のノードと線
     container: src/diagram/definition.ts
-    summary: '部品設計『mapの構成図』が自動配置の結果から作り、`renderFlow` に渡すノードと線。文書に記載する定義ではなく、`dist/index.d.ts` へ書き出さない'
+    summary: '部品設計『mapの構成図』が自動配置の結果から作り、`renderFlow` に指定するノードと線。文書に記載する定義ではなく、`dist/index.d.ts` へ書き出さない'
     properties:
       - name: width
         type: number

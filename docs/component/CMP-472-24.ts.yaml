@@ -29,7 +29,7 @@ states:
       - name: open
         value: 'true'
   - name: Colored
-    description: 記載した人が地の色を付けたブロックの要素。マーカーが地の色の上でも判読できる
+    description: 記載した人が背景色を付けたブロックの要素。マーカーが背景色の上でも判読できる
     args:
       - name: placement
         value: block
@@ -43,7 +43,7 @@ args:
     type: 列挙
     required: true
     choices: '`block`（右上のマーカー）・`inline`（要素そのものに下線）'
-    description: 要素の種類から決まるマーカーの付け方（インターフェース定義『文書をHTML文字列にする』の制約「ヒント」）
+    description: 要素の種類から決定するマーカーの付け方（インターフェース定義『文書をHTML文字列にする』の制約「ヒント」）
   - name: open
     type: 真偽値
     required: false

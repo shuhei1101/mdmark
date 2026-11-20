@@ -47,7 +47,7 @@ classes:
           - name: range
             type: '{ start: number; end: number }'
             required: true
-            description: '`visibleRanges[0]` の開始と終わりの行'
+            description: '`visibleRanges[0]` の開始と終了の行'
         returns:
           type: boolean
           description: '`scrollToLine` を送信するか'

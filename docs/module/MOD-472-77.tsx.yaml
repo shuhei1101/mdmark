@@ -14,7 +14,7 @@ components:
         type: '"default" | "warning"'
         required: false
         default: '`default`'
-        description: 外観。`warning` は線と警告のアイコンを `--warning-border`、地を `--background`、文字を `--foreground` にする（警告の色を文字の地にしない）
+        description: 外観。`warning` は線と警告のアイコンを `--warning-border`、背景を `--background`、文字を `--foreground` にする（警告の色を文字の背景にしない）
       - name: role
         type: string
         required: false

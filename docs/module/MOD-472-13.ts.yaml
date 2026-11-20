@@ -34,7 +34,7 @@ constants:
     title: 許可した理由
     container: src/plugin/pre-tool-use.ts
     usecase: 作業のフォルダを引数に入れる
-    summary: '`permissionDecision` の `allow` と一緒に返却する `permissionDecisionReason`。Claude Code はデバッグのログにだけ書く'
+    summary: '`permissionDecision` の `allow` と一緒に返却する `permissionDecisionReason`。Claude Code はデバッグのログにだけ記載する'
     value: mdmark のプラグインが作業のフォルダを project_dir に入れた
     refs:
       - IF-472-5#response
@@ -45,9 +45,9 @@ functions:
     kind: 関数
     container: src/plugin/pre-tool-use.ts
     usecase: 作業のフォルダを引数に入れる
-    role: 入口
+    role: エントリーポイント
     summary: 標準入力の `tool_input` に `project_dir` を入れた `updatedInput` を、`permissionDecision` の `allow` と一緒に標準出力に 1 行書く
-    description: まとめた `plugin/scripts/pre-tool-use.js` を入口として実行したときだけ、標準入力を読み込み切って実行し、戻り値を終了コードにする（`import.meta.main`）
+    description: まとめた `plugin/scripts/pre-tool-use.js` をエントリーポイントとして実行したときだけ、標準入力を読み込み切って実行し、戻り値を終了コードにする（`import.meta.main`）
     scope: public
     is_async: false
     args:
@@ -94,7 +94,7 @@ notes:
   ディレクトリ: |-
     ```tree
     src/plugin/
-    └── pre-tool-use.ts   # PreToolUse のフックの入口
+    └── pre-tool-use.ts   # PreToolUse のフックのエントリーポイント
     ```
 tags:
   - name: topic:フック

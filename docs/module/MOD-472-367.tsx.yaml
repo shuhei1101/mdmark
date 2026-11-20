@@ -112,7 +112,7 @@ functions:
     kind: 関数
     container: src/mdmark-style/document-parts.tsx
     usecase: ClaudeCodeの返答を共通スタイルで描く
-    summary: 詳細を持つ行の先頭のセルに置く開閉の Button と、開いているときの詳細の行を返却する。押すと状態を反転して `$.ui.invalidate("ui.render")` で描き直す
+    summary: 詳細を持つ行の先頭のセルに配置する開閉の Button と、開いているときの詳細の行を返却する。押すと状態を反転して `$.ui.invalidate("ui.render")` で再描画する
     description: 開閉の状態は reply.tsx の `renderFold` が使用するモジュールの中の `Map` を、`requestId`・ブロックの本文のハッシュ・`row-detail:{表の順番}:{行}` の鍵で使用する
     scope: public
     is_async: false
@@ -123,7 +123,7 @@ functions:
         description: 開閉の状態の鍵・詳細の中身を描く関数・描き方の文脈
     returns:
       type: '{ toggle: UiNode; detail?: UiNode }'
-      description: 先頭のセルに置く Button と、開いているときの 2 桁字下げした詳細
+      description: 先頭のセルに配置する Button と、開いているときの 2 桁字下げした詳細
     process: |-
       1. `key` の状態を取る（無ければ閉じた状態）
       2. 閉じていれば `[ ▸ ]`、開いていれば `[ ▾ ]` の Button を作り、開いていれば `paddingLeft: 2` の Box で `body()` を描く

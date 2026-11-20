@@ -142,7 +142,7 @@ constants:
         value: --mdmark-color-surface
       - key: rowOdd
         value: --mdmark-color-bg
-        description: ER 図の属性の行を地と面の色で交互に塗る
+        description: ER 図の属性の行を背景と面の色で交互に塗る
       - key: rowEven
         value: --mdmark-color-surface
       - key: relationColor

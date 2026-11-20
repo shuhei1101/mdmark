@@ -6,7 +6,7 @@ entry:
   value: '`node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js start-server`（スキルが Bash で呼ぶ）'
 flows:
   - name: 正常系
-    summary: systemd --user が使える端末で、unit を記載して enable して起動し、待ち受けを待って `tools/list` を確認する
+    summary: systemd --user が使用できる端末で、unit を記載して enable して起動し、待ち受けを待って `tools/list` を確認する
     setup:
       - name: 一時の端末
         description: '`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`CLAUDE_CONFIG_DIR`・`TMUX_TMPDIR` を、それぞれ空の一時フォルダの下にし、`TMUX`・`TMUX_PANE` を除外する'
@@ -74,7 +74,7 @@ flows:
       - unit の `MainPID` と unit のファイルの中身が呼ぶ前と同じ
     test: test_normal_when_already_running
   - name: 正常系（unit が待ち受けていない）
-    summary: unit が active で待ち受けていなければ、unit を起動し直す
+    summary: unit が active で待ち受けていなければ、unit を再起動する
     setup:
       - name: 待ち受けない unit
         description: unit のファイルは今の内容で、`MDMARK_SERVE_COMMAND` を待ち受けずに動き続ける `sleep 600` にして起動してある。その後 `MDMARK_SERVE_COMMAND` を戻して呼ぶ
@@ -90,7 +90,7 @@ flows:
         participant D as systemd --user
         K->>P: start-server
         P->>D: is-active（active）・ポートが待ち受けていない
-        P->>P: unit のファイルを記載し直す
+        P->>P: unit のファイルを修正する
         P->>D: daemon-reload・restart
         P-->>K: restarted・終了コード 0
       ```
@@ -100,10 +100,10 @@ flows:
       - '`result` が `restarted`'
       - '`MDMARK_PORT` のポートで待ち受けるプロセスが 1 つだけある'
     test: test_normal_when_unit_not_listening
-  - name: 正常系（unit の内容が古い）
-    summary: unit のファイルが今の内容と違えば、記載し直して起動し直す
+  - name: 正常系（unit の内容が要更新）
+    summary: unit のファイルが今の内容と違えば、修正して再起動する
     setup:
-      - name: 古い内容の unit
+      - name: 内容が要更新の unit
         description: 正常系を実行した後に、`MDMARK_SERVE_COMMAND` の引数を変えて呼ぶ（プラグインのビルドで埋めた mdmark のバージョンが変わって起動するコマンドが変わったときと同じ）
       - name: Mock
         description: 正常系と同じ
@@ -118,7 +118,7 @@ flows:
         participant S as 常駐サーバー
         K->>P: start-server
         P->>D: is-active（active）・unit のファイルが今の内容と違う
-        P->>P: unit のファイルを記載し直す
+        P->>P: unit のファイルを修正する
         P->>D: daemon-reload・restart
         D->>S: 今のコマンドで起動
         P->>S: tools/list
@@ -163,7 +163,7 @@ flows:
       - そのセッション名の tmux のセッションが無く、`MDMARK_PORT` のポートで待ち受けるプロセスが unit のメインのプロセス 1 つだけ
     test: test_normal_when_moved_from_tmux
   - name: 正常系（tmux）
-    summary: systemd --user が使えない端末で、tmux のセッションで `mdmark serve` を起動する
+    summary: systemd --user が使用できない端末で、tmux のセッションで `mdmark serve` を起動する
     setup:
       - name: 一時の端末
         description: 正常系と同じ
@@ -318,7 +318,7 @@ flows:
       - そのセッション名の tmux のセッションがあり、指定したポートで待ち受ける
     test: test_normal_when_launcher_argument_is_tmux
   - name: 異常系（起動の方法が無い・終了コード 2）
-    summary: systemd --user も tmux も使えなければ起動せず、端末で動かすコマンドを返却する
+    summary: systemd --user も tmux も使用できなければ起動せず、端末で動かすコマンドを返却する
     setup:
       - name: 一時の端末
         description: 正常系と同じ
@@ -340,7 +340,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 2
-      - 標準エラーに systemd --user も tmux も使えないことと、`MDMARK_PORT` を付けた `npx -y github:shuhei1101/mdmark#v{バージョン} serve` のコマンドが出る
+      - 標準エラーに systemd --user も tmux も使用できないことと、`MDMARK_PORT` を付けた `npx -y github:shuhei1101/mdmark#v{バージョン} serve` のコマンドが出る
       - '`MDMARK_PORT` のポートで待ち受けるプロセスが無い'
     test: test_error_when_launcher_missing
   - name: 異常系（ポートが使用されている・終了コード 1）
@@ -374,7 +374,7 @@ flows:
       - ほかのプロセスはポートを待ち受けたまま
     test: test_error_when_port_in_use
   - name: 異常系（mdmark serve が終わった・終了コード 1）
-    summary: unit で起動した `mdmark serve` が待ちの間に終わると、起動し直しを待たずに unit を disable --now して journal の末尾を返却する
+    summary: unit で起動した `mdmark serve` が待ちの間に終わると、再起動しを待たずに unit を disable --now して journal の末尾を返却する
     setup:
       - name: 一時の端末
         description: 正常系と同じ
@@ -507,23 +507,23 @@ exceptions:
     condition: 起動する前に unit とセッションの外のプロセスがポートを待ち受けている、待ちの間に `mdmark serve` が終わった（制約『終わったことの判定』）、または待ち受けているプロセスから `tools/list` を受け取れない
     notes: '`mdmark serve` が終わったときは、unit を disable --now するかセッションを残さず、ログの末尾を出す'
   - name: なし（起動の方法が無い・終了コード 2）
-    condition: 使用する起動の方法が使えない。`systemd` に固定して systemd --user が使えない、`tmux` に固定して `PATH` に tmux が無い、`auto` でどちらも使えない
+    condition: 使用する起動の方法が使用できない。`systemd` に固定して systemd --user が使用できない、`tmux` に固定して `PATH` に tmux が無い、`auto` でどちらも使用できない
   - name: なし（待ちを超えた・終了コード 3）
     condition: 上限の間にポートが待ち受けなかった
     notes: unit を disable --now するか、セッションを閉じる
 constraints:
   - item: 起動の方法の決め方
-    constraint: '`--launcher`、無ければ端末の設定の `serve.launcher`（既定 `auto`）。`auto` は systemd --user が使えれば `systemd`、使えなければ `tmux`'
+    constraint: '`--launcher`、無ければ端末の設定の `serve.launcher`（既定 `auto`）。`auto` は systemd --user が使用できれば `systemd`、使用できなければ `tmux`'
     decided_by: CFG-472-3#settings[serve.launcher]
-  - item: systemd --user が使えるか
+  - item: systemd --user が使用できるか
     constraint: '`PATH` に `systemctl` があり、`systemctl --user is-system-running` の標準出力が `running`・`degraded`・`starting` のどれか。終了コードは見ない'
     notes: '`degraded` はほかの unit が失敗しているだけで、user のマネージャーは動いている。終了コードは `degraded` でも 0 以外になる'
     decided_by: LIB-472-25#catalogs
   - item: unit のファイル
     constraint: "`${XDG_CONFIG_HOME:-~/.config}/systemd/user/{unit の名前}.service`。`[Service]` に `Environment=` で `MDMARK_PORT`・`MDMARK_CONFIG`・`MDMARK_STATE_DIR`・`MDMARK_LAUNCHER=systemd`・`PATH`（呼んだ側の `PATH` で見つかる `node`・`npx` のフォルダと `/usr/local/bin:/usr/bin:/bin`）を、`ExecStart=/bin/sh -c '{起動するコマンド}'`・`Restart=on-failure` を、`[Install]` に `WantedBy=default.target` を記載する"
     notes: |-
-      user のマネージャーの `PATH` には npx・node が無いことがあるため、`node`・`npx` のフォルダを渡す。
-      呼んだ側の `PATH` をそのまま記載すると、セッションや worktree ごとに中身が変わって呼ぶたびに起動し直し、削除される worktree のパスも残る。
+      user のマネージャーの `PATH` には npx・node が無いことがあるため、`node`・`npx` のフォルダを指定する。
+      呼んだ側の `PATH` をそのまま記載すると、セッションや worktree ごとに中身が変わって呼ぶたびに再起動し、削除される worktree のパスも残る。
       `ExecStart` の既定の `npx -y github:…#v{バージョン} serve` は、取得済みのキャッシュがあればネットワークにつながらなくても CLI を起動するが、GitHub への問い合わせの再試行で約 2 分半かかる（2026-11-09 に v0.10.0 で、`HTTPS_PROXY` を使用できないポートにして測った。`npm_config_prefer_offline=true` でも同じ。つながるときは約 10 秒）。
       端末の起動時にネットワークが無くても、その後に起動する。
       user のマネージャーからは `network-online.target` を待てない
@@ -538,8 +538,8 @@ constraints:
   - item: unit の書き換え
     constraint: 記載する内容が今のファイルと同じなら記載しない。記載したら `daemon-reload` し、active なら `restart`、active でなければ `enable --now` する。内容が同じで enabled でなければ `enable` する
   - item: 移し替え
-    constraint: 起動の方法を `--launcher` ではなく端末の設定（`auto` を含む）で決めたときだけ行う。systemd で起動するときは、端末の設定のセッション名の tmux のセッションを `kill-session` してから起動する。tmux で起動するのは端末の設定の `serve.launcher` が `tmux` のときと `auto` で systemd --user が使えないときで、前者で unit が active か enabled なら `disable --now` してから起動する。どちらもポートが解放されるまで 1 秒ごとに確かめ、上限は 10 秒
-    notes: 同じポートに 2 つの常駐サーバーを立てない。unit のファイルは削除しない。`--launcher tmux`（端末の設定が無いまま書き込みを断られたとき）は unit に触れず、unit が active でポートが待ち受けていれば `already_running`（`launcher` は `systemd`）を返却する
+    constraint: 起動の方法を `--launcher` ではなく端末の設定（`auto` を含む）で決めたときだけ行う。systemd で起動するときは、端末の設定のセッション名の tmux のセッションを `kill-session` してから起動する。tmux で起動するのは端末の設定の `serve.launcher` が `tmux` のときと `auto` で systemd --user が使用できないときで、前者で unit が active か enabled なら `disable --now` してから起動する。どちらもポートが解放されるまで 1 秒ごとに確認し、上限は 10 秒
+    notes: 同じポートに 2 つの常駐サーバーを起動しない。unit のファイルは削除しない。`--launcher tmux`（端末の設定が無いまま書き込みを断られたとき）は unit に触れず、unit が active でポートが待ち受けていれば `already_running`（`launcher` は `systemd`）を返却する
   - item: tmux の起動のコマンド
     constraint: "`tmux new-session -d -s {セッション名} -e MDMARK_PORT={ポート} -e MDMARK_CONFIG={パス} -e MDMARK_STATE_DIR={パス} -e MDMARK_LAUNCHER=tmux sh -c '{起動するコマンド} 2>&1 | tee -a {serve.log}'`。環境変数は `-e` で明示して指定し、コマンドは `sh -c` の引数として指定して POSIX の記載方法だけを使用する"
     notes: tmux サーバーが既に動いていると呼んだ側の環境変数は渡らず、1 つの文字列のコマンドは `default-shell` で実行される
@@ -550,7 +550,7 @@ constraints:
   - item: 待ち
     constraint: 1 秒ごとにポートへもう一度つなぎ、上限は 120 秒（`MDMARK_START_TIMEOUT_SEC` で変えられる）
     decided_by: NFR-472-1#requirements[MCP サーバーの接続の待ち]
-    notes: '空の npm のキャッシュから CLI を取得すると 53 秒かかった（[PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)）。新しい端末とプラグインの更新の後は空のキャッシュからの取得になるため、その 2 倍強を上限にする'
+    notes: '空の npm のキャッシュから CLI を取得すると 53 秒かかった（[PoC: プラグインの SessionStart の索引と、npx で起動する MCP サーバー](https://github.com/shuhei1101/mdmark/pull/73)）。新規の端末とプラグインの更新の後は空のキャッシュからの取得になるため、その 2 倍強を上限にする'
   - item: unit の名前・セッション名
     constraint: 端末の設定の `serve.systemdUnit`・`serve.tmuxSession`、無ければどちらも `mdmark-mcp`
     decided_by: CFG-472-3#settings[serve.systemdUnit]

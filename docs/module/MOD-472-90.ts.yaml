@@ -213,7 +213,7 @@ classes:
           - name: range
             type: '{ start: number; end: number }'
             required: true
-            description: '`visibleRanges[0]` の開始と終わりの行'
+            description: '`visibleRanges[0]` の開始と終了の行'
         returns:
           type: void
           description: '-'
@@ -224,7 +224,7 @@ classes:
       - name: inspect
         title: 要素を調べさせる
         kind: メソッド
-        summary: 新しい `id` で `inspect` を送信し、`inspected` を受けたら解決する（テストのときだけ呼ばれる）
+        summary: 新規の `id` で `inspect` を送信し、`inspected` を受けたら解決する（テストのときだけ呼ばれる）
         is_async: true
         args:
           - name: selector
@@ -259,7 +259,7 @@ classes:
       - name: audit
         title: axe で検査させる
         kind: メソッド
-        summary: '`inspect` と同じ番号の列の新しい `id` で `axe` を送信し、`axed` を受けたら解決する（テストのときだけ呼ばれる。待ちの上限は `inspect` と同じ）'
+        summary: '`inspect` と同じ番号の列の新規の `id` で `axe` を送信し、`axed` を受けたら解決する（テストのときだけ呼ばれる。待ちの上限は `inspect` と同じ）'
         is_async: true
         returns:
           type: Promise<AxeViolation[]>

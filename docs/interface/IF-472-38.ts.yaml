@@ -9,7 +9,7 @@ flows:
     summary: 3 つの文書を、文書をまたぐ用語と被参照が有効になる 1 枚にまとめる
     setup:
       - name: 見本の文書群
-        description: 入口 `README.md`・用語集の表を持つ `用語集.md`・`test-lib` のマーカーと画像を持つ `使い方/guide.md` と、3 つを記載した索引。`README.md` から他の 2 つへリンクし、本文に用語集の表の単語を持つ
+        description: 起点の文書 `README.md`・用語集の表を持つ `用語集.md`・`test-lib` のマーカーと画像を持つ `使い方/guide.md` と、3 つを記載した索引。`README.md` から他の 2 つへリンクし、本文に用語集の表の単語を持つ
       - name: build の設定
         description: '`include: ["**/*.md"]`・`glossary: ["用語集.md"]`・`entry: README.md`・`out: dist/docs.html`'
       - name: Mock
@@ -221,7 +221,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 0
-      - 最初に開いた文書と、文書の一覧から移った 2 つ目の文書のどちらでも、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+      - 最初に開いた文書と、文書の一覧から移った 2 つ目の文書のどちらでも、文書の背景色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme
   - name: 正常系（文書ごとのページの設定）
     summary: page のマーカーを持つ文書と持たない文書を行き来すると、開いた文書の明暗で再描画する
@@ -284,14 +284,14 @@ flows:
     test: test_normal_when_media_embedded
     refs:
       - SC-472-76#scenarios[正常シナリオ（画像・動画・音声を埋める）]
-  - name: '正常系（blob: と動的 import を許さない環境で開く）'
-    summary: 'まとめる全ての文書が使用するモジュールを 1 つのスクリプトにまとめて埋め、blob: と動的 import を許さない環境でも文書を移って描く'
+  - name: '正常系（blob: と動的 import を許可しない環境で開く）'
+    summary: 'まとめる全ての文書が使用するモジュールを 1 つのスクリプトにまとめて埋め、blob: と動的 import を許可しない環境でも文書を移って描く'
     setup:
       - name: 埋めるモジュールを使用する文書群
-        description: '入口 `README.md`（`greet` のマーカーと言語 `ts` のコードブロック）と、`README.md` からリンクする `guide.md`（ビューのマーカーと `test-lib` のマーカー）。`build` と、`extensions`（マーカー `greet` の拡張）・`libraries`（`test-lib` に相対パスの手元のモジュール）・`syntax.url`（手元の `vendor/highlightjs/es/`）を記載した設定'
+        description: '起点の文書 `README.md`（`greet` のマーカーと言語 `ts` のコードブロック）と、`README.md` からリンクする `guide.md`（ビューのマーカーと `test-lib` のマーカー）。`build` と、`extensions`（マーカー `greet` の拡張）・`libraries`（`test-lib` に相対パスの手元のモジュール）・`syntax.url`（手元の `vendor/highlightjs/es/`）を記載した設定'
         notes: '`greet` の拡張は `load` の中で同じフォルダの別のファイルを動的 `import()` で読み込む'
       - name: Mock
-        description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
+        description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許可しない）"
     flow: |-
       <!-- map -->
 
@@ -304,7 +304,7 @@ flows:
         C->>C: 2 つの文書が使用する greet・ビューの部品・色分けの本体と ts・test-lib を起動の処理と 1 つのスクリプトにまとめる
         C->>H: まとめたスクリプトを script 要素に入れて記載する
         C-->>W: 書き出した: dist/docs.html（文書 2 件）・終了コード 0
-        W->>H: blob: と動的 import を許さない環境で開き、リンクで guide.md へ移る
+        W->>H: blob: と動的 import を許可しない環境で開き、リンクで guide.md へ移る
         H-->>W: どちらの文書もマーカー・ビュー・色分けを描く
       ```
 
@@ -316,7 +316,7 @@ flows:
       - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
-      - 'SC-472-76#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
+      - 'SC-472-76#scenarios[正常シナリオ（blob: と動的 import を許可しない環境で開く）]'
   - name: 正常系（範囲のスクリプトと CSS）
     summary: 範囲の `ts` を変換してまとめ、文書を移るときに範囲の `destroy` を呼ぶ
     setup:
@@ -324,7 +324,7 @@ flows:
         description: '`features.html-scripts` を `true` にし、`build` に、`<!-- html -->` の範囲に `html`・`css`・`ts` を配置した文書と、範囲を持たない文書の 2 つを指定した設定'
         notes: '`ts` はノードを押すと根の要素に class `is-open` を付与・解除し、`destroy` で `window.__mdmarkDestroyed` を 1 増やす'
       - name: Mock
-        description: '正常系（blob: と動的 import を許さない環境で開く）と同じ'
+        description: '正常系（blob: と動的 import を許可しない環境で開く）と同じ'
     flow: |-
       <!-- map -->
 
@@ -383,7 +383,7 @@ flows:
     summary: まとめる文書のどれかに mermaid のコードブロックがあるときだけ mermaid を 1 回まとめて埋める
     setup:
       - name: mermaid を使用する文書を含むフォルダ
-        description: 入口と、言語 `mermaid` の flowchart のコードブロックを持つ文書の 2 つ。`mermaid.url` に手元の `vendor/mermaid/mermaid.esm.min.mjs` を記載した設定
+        description: 起点の文書と、言語 `mermaid` の flowchart のコードブロックを持つ文書の 2 つ。`mermaid.url` に手元の `vendor/mermaid/mermaid.esm.min.mjs` を記載した設定
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -431,7 +431,7 @@ flows:
         S-->>H: b.md の項目の位置
         H-->>U: b.md を保存した位置で描く
         U->>H: b.md の末尾の a.md へのリンクを押す
-        H-->>U: 新しい項目として a.md の頭
+        H-->>U: 新規の項目として a.md の頭
       ```
 
       <!-- /map -->
@@ -508,13 +508,13 @@ flows:
     test: test_normal_when_back_restore_folds_and_tabs
     refs:
       - SC-472-13#scenarios[正常シナリオ（戻る・進むで開閉と選んだタブを戻す）]
-  - name: 正常系（sessionStorage が使えない）
+  - name: 正常系（sessionStorage が使用できない）
     summary: sessionStorage を取り出せないページでは、戻るで文書の頭から描き、例外を出さない
     setup:
       - name: 長い文書を持つフォルダ
         description: 正常系（戻る・進むで離れたときの位置に戻る）と同じ
       - name: Mock
-        description: 開く前に `addInitScript` で `window.sessionStorage` を読むと `SecurityError` を投げるように差し替える
+        description: 開く前に `addInitScript` で `window.sessionStorage` を読み取ると `SecurityError` を投げるように差し替える
     flow: |-
       <!-- map -->
 
@@ -536,9 +536,9 @@ flows:
       - '`pageerror` が 0 件で、`console.warn` に表示の状態を保存できなかった旨が出る'
     test: test_normal_when_session_storage_unavailable
     refs:
-      - SC-472-13#scenarios[異常シナリオ（sessionStorage が使えない）]
-  - name: 正常系（文書を切り替えると map のクエリ文字列を消す）
-    summary: map のグループの中へ入った文書から文書の一覧で別の文書へ移ると、クエリ文字列の `map-*` を消し、移った先の図を全体から描く
+      - SC-472-13#scenarios[異常シナリオ（sessionStorage が使用できない）]
+  - name: 正常系（文書を切り替えると map のクエリ文字列を削除する）
+    summary: map のグループの中へ入った文書から文書の一覧で別の文書へ移ると、クエリ文字列の `map-*` を削除し、移った先の図を全体から描く
     setup:
       - name: map を持つフォルダ
         description: '`entry` の `a.md` と `b.md` が、それぞれ構成図の map の範囲を 1 つ持つ（どちらもグループ `place` を持つ）'
@@ -554,7 +554,7 @@ flows:
         U->>H: a.md の図の「配置」のタイトルを押す
         H-->>U: グループの中を描き、クエリ文字列に map-1=place
         U->>H: 文書の一覧で b.md を押す
-        H-->>U: クエリ文字列の map-1 を消し、b.md の図を全体から描く
+        H-->>U: クエリ文字列の map-1 を削除し、b.md の図を全体から描く
         U->>H: 戻る
         H-->>U: a.md の図を「配置」の中から描く
       ```
@@ -737,19 +737,19 @@ constraints:
     constraint: 文書をHTMLに書き出す.ts の制約「埋める mermaid」と同じ。まとめる文書のどれかに mermaid のコードブロックがあるときだけ、mermaid を 1 回埋める
     decided_by: NFR-472-1#requirements[mermaid を埋めた書き出しの HTML のサイズ]
   - item: 戻る・進む・再読み込みの表示の状態
-    constraint: 書き出した HTML は開いたとき `history.scrollRestoration` を `manual` にし、履歴の項目ごとに、縦横のスクロール位置・本文の開閉（`<details>`・セクション・行の詳細・最終列の畳み・コードの行の畳み・ER 図の畳み・ファイルツリーのフォルダ・表のツリーと見本）・`group` の無いタブで選んだタブを保存する。保存するのは `popstate`・文書の一覧と文書間のリンクのクリック・`pagehide`・間引いたスクロールのとき。戻る・進む・再読み込みで保存した状態を持つ項目へ戻ったときは、文書を描いた後に開閉とタブを戻してから位置を戻す。保存した状態を持たない項目（文書の一覧・文書間のリンクで新しく移った項目）は、今どおり見出しか文書の頭から描く
+    constraint: 書き出した HTML は開いたとき `history.scrollRestoration` を `manual` にし、履歴の項目ごとに、縦横のスクロール位置・本文の開閉（`<details>`・セクション・行の詳細・最終列の畳み・コードの行の畳み・ER 図の畳み・ファイルツリーのフォルダ・表のツリーと見本）・`group` の無いタブで選んだタブを保存する。保存するのは `popstate`・文書の一覧と文書間のリンクのクリック・`pagehide`・間引いたスクロールのとき。戻る・進む・再読み込みで保存した状態を持つ項目へ戻ったときは、文書を描いた後に開閉とタブを戻してから位置を戻す。保存した状態を持たない項目（文書の一覧・文書間のリンクで新規に移った項目）は、今どおり見出しか文書の頭から描く
     notes: 表のメニュー・ドロワー・絞り込み、右側の目次、差分のパネル、コメントの吹き出しは戻さない。位置は URL に出さない
   - item: 表示の状態の保存先
     constraint: sessionStorage。キーは履歴の項目ごとに振る ID（`history.state` に持たせる）を含む。sessionStorage を取り出せない・書き込めないときは `console.warn` に出し、保存した状態を持たない項目と同じく描く
-    decided_by: SC-472-13#scenarios[異常シナリオ（sessionStorage が使えない）]
+    decided_by: SC-472-13#scenarios[異常シナリオ（sessionStorage が使用できない）]
   - item: map のクエリ文字列
-    constraint: 文書の一覧と文書間のリンクで別の文書へ移るときは、クエリ文字列から `map-` で始まるキーを消してから移る。戻る・進む・再読み込みでは消さず、移った先の文書の map の図は sessionStorage の状態で描く
+    constraint: 文書の一覧と文書間のリンクで別の文書へ移るときは、クエリ文字列から `map-` で始まるキーを削除してから移る。戻る・進む・再読み込みでは削除せず、移った先の文書の map の図は sessionStorage の状態で描く
     decided_by: IF-472-35#constraints[map の状態の保存]
   - item: map の設定
     constraint: 文書をHTMLに書き出す.ts の制約「map の設定」と同じ
     decided_by: IF-472-33#constraints[map の設定]
   - item: mdmark の痕跡
-    constraint: 文書をHTMLに書き出す.ts の制約「mdmark の痕跡」と同じ。まとめる全ての文書の本文・取り込む文書の表に同じ規則を当て、文書のパスと文書間のリンクの `href` は置き換えない
+    constraint: 文書をHTMLに書き出す.ts の制約「mdmark の痕跡」と同じ。まとめる全ての文書の本文・取り込む文書の表に同じ規則を適用し、文書のパスと文書間のリンクの `href` は置き換えない
     decided_by: IF-472-33#constraints[mdmark の痕跡]
   - item: 文書のタイトル
     constraint: 文書の一覧・帯のタイトル・ページのタイトルに出す文書のタイトルは、参照の表の `docs` のその文書の `title`（索引の `title`、無ければフロントマターの `title`）、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名。設定に `index` が無いときも、文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）を本文の最初の h1 より先に使用する

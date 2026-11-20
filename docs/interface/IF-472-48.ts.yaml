@@ -1,7 +1,7 @@
 id: IF-472-48
 visibility: internal
 title: 文書を純粋なMarkdownにする
-lead: 利用側（CLI・MCP の書き出しとビュワーのボタン）が、画面を持たずに mdmark の文書を純粋な Markdown（GFM と Mermaid）にする。`chart`・`param`・埋め込んだ HTML は、指定した関数が返す Markdown に置き換えるか取り除く。
+lead: 利用側（CLI・MCP の書き出しとビュワーのボタン）が、画面を持たずに mdmark の文書を純粋な Markdown（GFM と Mermaid）にする。`chart`・`param`・埋め込んだ HTML は、指定した関数が返却する Markdown に置き換えるか取り除く。
 entry:
   kind: operation
   value: '`toPureMarkdown(markdown, opts)`（配布物 `dist/index.js` の公開関数）'
@@ -45,8 +45,8 @@ request:
     required: false
     location: argument
     default: なし（`chart`・`param`・埋め込んだ HTML を取り除く）
-    description: '`chart`・`param`・埋め込んだ HTML ごとに呼び、返した Markdown をその場所に入れる関数。`undefined` を返した図は取り除く'
-    notes: CLI と MCP は SVG のファイルを書き込んで画像のリンクを返す関数を指定し、ビュワーのボタンは指定しない
+    description: '`chart`・`param`・埋め込んだ HTML ごとに呼び、返却した Markdown をその場所に入れる関数。`undefined` を返却した図は取り除く'
+    notes: CLI と MCP は SVG のファイルを書き込んで画像のリンクを返却する関数を指定し、ビュワーのボタンは指定しない
   - name: figure.kind
     type: '"chart" | "param" | "html"'
     required: true
@@ -61,7 +61,7 @@ request:
     type: string
     required: true
     location: argument
-    description: '`opts.figure` が受ける、`render` がその図に返す HTML 文字列。埋め込んだ HTML は、範囲のスクリプト（`ts`・`js`）を除いた HTML'
+    description: '`opts.figure` が受ける、`render` がその図に返却する HTML 文字列。埋め込んだ HTML は、範囲のスクリプト（`ts`・`js`）を除いた HTML'
   - name: figure.title
     type: string | undefined
     required: false
@@ -88,7 +88,7 @@ response:
     description: 取り除いた中身（範囲のスクリプト・`https` の画像・書き出しのフックの無い拡張のマーカー）と場所（元の行番号）の文
 response_notes: |-
   > [!NOTE]
-  > 同じ `markdown`・`opts` では同じ `markdown` を返す。`opts.figure` は文書の中の順に 1 回ずつ呼ぶ。
+  > 同じ `markdown`・`opts` では同じ `markdown` を返却する。`opts.figure` は文書の中の順に 1 回ずつ呼ぶ。
 exceptions:
   - name: なし（正常終了）
     condition: 変換できた
@@ -107,7 +107,7 @@ constraints:
   - item: タブ
     constraint: タブ名の見出しと中身を残す
   - item: ファイルツリー
-    constraint: 言語 `tree` のコードブロックのまま残し、言語を外す
+    constraint: 言語 `tree` のコードブロックのまま残し、言語を解除する
   - item: バッジ
     constraint: 頭の `badge:` を取り除いた行内のコードにする
   - item: コードブロック
@@ -119,12 +119,12 @@ constraints:
   - item: map の範囲
     constraint: Mermaid のコードブロックだけを残し、補足（`map-data` と注記）を取り除く
   - item: chart・param・埋め込んだ HTML
-    constraint: '`opts.figure` が返す Markdown に置き換える。指定が無いか `undefined` を返したら取り除く。`chart`・`param` のタイトルと凡例は `opts.figure` の返す Markdown に含めず、呼ぶ側が決める'
+    constraint: '`opts.figure` が返却する Markdown に置き換える。指定が無いか `undefined` を返却したら取り除く。`chart`・`param` のタイトルと凡例は `opts.figure` の返却する Markdown に含めず、呼ぶ側が決める'
   - item: 拡張のマーカー
     constraint: 登録した拡張が書き出しのフック（`registerExtension` の `toMarkdown`）を持てば、その戻り値をマーカーの場所に入れる。持たなければマーカーと範囲の定義を取り除き、`warnings` に入れる。拡張のモジュール（`load`）は読み込まない
     notes: フックの入出力はインターフェース定義『拡張を登録する』
   - item: そのほかの記法
-    constraint: 色の名前・アイコン・キー・ルビ・蛍光ペン・脚注・注記・画像の属性・カードなど mdmark だけの書き方は、mdmark の無い表示で読める文字（ルビは親文字、キーはキーの名前の行内のコード、カードはリンク、画像は属性 `{…}` を除いた画像）だけを残す。注記は GFM の脚注（`[^note-{ID}]`）にし、GFM の脚注はそのまま、行内の脚注 `^[中身]` は `（中身）` にする
+    constraint: 色の名前・アイコン・キー・ルビ・蛍光ペン・脚注・注記・画像の属性・カードなど mdmark だけの書き方は、mdmark の無い表示で読み取れる文字（ルビは親文字、キーはキーの名前の行内のコード、カードはリンク、画像は属性 `{…}` を除いた画像）だけを残す。注記は GFM の脚注（`[^note-{ID}]`）にし、GFM の脚注はそのまま、行内の脚注 `^[中身]` は `（中身）` にする
   - item: フロントマター
     constraint: そのまま残す
   - item: 動く環境
@@ -157,12 +157,12 @@ flows:
       - '`warnings` が空'
     test: test_normal
   - name: 正常系（図を置き換える関数を指定する）
-    summary: '`opts.figure` が返す Markdown を図の場所に入れる'
+    summary: '`opts.figure` が返却する Markdown を図の場所に入れる'
     setup:
       - name: 図を持つ文書
         description: '`chart`・`param`・埋め込んだ HTML を 1 つずつ持つ文書'
       - name: Mock
-        description: '`opts.figure` は、受けた `kind` と `index` を持つ画像のリンクを返す関数'
+        description: '`opts.figure` は、受けた `kind` と `index` を持つ画像のリンクを返却する関数'
     flow: |-
       <!-- map -->
 
@@ -180,7 +180,7 @@ flows:
     expected:
       - '`opts.figure` が 3 回、文書の順に `index` 1〜3 で呼ばれる'
       - '`chart`・`param` の呼び出しの `title`・`legend` が、定義のタイトルと系列の名前（`param` は今の値と既定の値）'
-      - '`markdown` の図の場所に、関数が返した画像のリンクがある'
+      - '`markdown` の図の場所に、関数が返却した画像のリンクがある'
     test: test_normal_when_figure_given
   - name: 正常系（拡張のマーカー）
     summary: 書き出しのフックを持つ拡張はその戻り値に、持たない拡張は取り除く
@@ -188,7 +188,7 @@ flows:
       - name: 拡張
         description: 書き出しのフックを指定した拡張と指定しない拡張を `registerExtension` で登録する。どちらの `load` も呼ばれたら記録する
       - name: Mock
-        description: 書き出しのフックは、マーカーの JSON のオブジェクトの `target` を太字にした行を返す
+        description: 書き出しのフックは、マーカーの JSON のオブジェクトの `target` を太字にした行を返却する
     flow: |-
       <!-- map -->
 
@@ -205,13 +205,13 @@ flows:
 
       <!-- /map -->
     expected:
-      - フックを持つ拡張のマーカーの場所に、フックが返した太字の行がある
+      - フックを持つ拡張のマーカーの場所に、フックが返却した太字の行がある
       - フックを持たない拡張のマーカーと範囲の定義が残っていない
       - '`warnings` に、フックを持たない拡張の名前とマーカーの行番号が 1 件ある'
       - どちらの拡張の `load` も呼ばれていない
     test: test_normal_when_extension_marks
   - name: 正常系（書き出せない中身を持つ埋め込んだ HTML）
-    summary: 範囲のスクリプトを除いた HTML を `opts.figure` に渡し、取り除いたことを警告に入れる
+    summary: 範囲のスクリプトを除いた HTML を `opts.figure` に指定し、取り除いたことを警告に入れる
     setup:
       - name: 範囲のスクリプトを持つ文書
         description: '`html-scripts` をオンにし、範囲の `ts` を持つ埋め込んだ HTML を 1 つ持つ文書'
@@ -252,7 +252,7 @@ flows:
 
       <!-- /map -->
     expected:
-      - 返した Promise が `TypeError` で reject される
+      - 返却した Promise が `TypeError` で reject される
     test: test_error_when_markdown_not_string
 refs:
   - IF-472-34#

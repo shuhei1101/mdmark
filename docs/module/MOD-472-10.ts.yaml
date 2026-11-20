@@ -58,7 +58,7 @@ functions:
       description: 書き込んだファイルとキー
     process: |-
       1. パスを決め、端末の設定があれば `yaml` の `Document` で読み込む。無ければ `plugin/settings.sample.yaml` を雛形にし、`version` をプラグインのビルドで埋めた mdmark のバージョンにする
-      2. `--set` の組を `Document.setIn` で当て、`toJS()` を `validateConfig`（`settings: true`）で検める。ずれがあれば `SetupError`（1）で何も書き込まない
+      2. `--set` の組を `Document.setIn` で適用し、`toJS()` を `validateConfig`（`settings: true`）で検める。ずれがあれば `SetupError`（1）で何も書き込まない
       3. 端末の設定を書き込む（親のフォルダが無ければ作る）
       4. `defaultPath` が偽なら `writeClaudeEnv` で `MDMARK_CONFIG` を書き込む
     side_effects: 端末の設定と `settings.json` を書き込む

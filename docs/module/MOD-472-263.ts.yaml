@@ -76,7 +76,7 @@ functions:
         expected: '`mdmark-term-avoided` の要素が 2 つで、各節の最初の `作業場` の位置にあり、ツールチップに見出し `代わりの用語` と `ワークスペース` がある。1 つ目のセクションの `ワークスペース` には `mdmark-term-avoided` の無い下線がある'
       - name: test_terms_rule_avoided_prefers_term_words
         case: 正常
-        summary: やめた言い方が用語の単語の一部として出たところにはマーカーを付けない
+        summary: やめた言い方が用語の単単語の一部として出たところにはマーカーを付けない
         condition: 用語 `ワークスペース`（`avoid` なし）と用語 `仕事`（`avoid` に `ワーク`）。本文の 1 つ目の段落が `ワークスペースを開く。`、2 つ目のセクションの段落が `ワークを始める。`
         mock: なし
         expected: '`ワークスペース` は用語の下線で、`mdmark-term-avoided` の要素は 2 つ目のセクションの `ワーク` の 1 つだけ'

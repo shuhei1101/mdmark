@@ -6,7 +6,7 @@ test_files:
   - tests/unit/scripts/build-plugin.test.ts
 constants:
   - name: PLUGIN_ENTRY_POINTS
-    title: プラグインにまとめる入口
+    title: プラグインにまとめるエントリーポイント
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
     summary: まとめるソースと記載する先
@@ -65,10 +65,10 @@ constants:
     value: '{ from: "templates/mdmark.config.yaml", to: "plugin/templates/mdmark.config.yaml" }'
     status: planned
   - name: MDMARK_STYLE_ENTRY
-    title: mdmark-style にまとめる入口
+    title: mdmark-style にまとめるエントリーポイント
     container: scripts/build-plugin.ts
     usecase: 配布物をビルドして検査する
-    summary: 'mod のプラグイン mdmark-style の入口と記載する先。`PLUGIN_ENTRY_POINTS` と分け、`format: esm`・`platform: neutral`・`mainFields: ["module", "main"]`・`external: ["claude-code"]`・`postcssStubPlugin` でまとめる'
+    summary: 'mod のプラグイン mdmark-style のエントリーポイントと記載する先。`PLUGIN_ENTRY_POINTS` と分け、`format: esm`・`platform: neutral`・`mainFields: ["module", "main"]`・`external: ["claude-code"]`・`postcssStubPlugin` でまとめる'
     value: '{ from: "src/mdmark-style/mod.tsx", to: "mdmark-style/hooks/mod/mod.js" }'
     refs:
       - MOD-472-351#notes[ビルド]

@@ -19,7 +19,7 @@ notes:
 
     Schema を変えたら `migrations/no-steps.yaml` に `version: next` の行を配置する。
 
-    他の Issue が追加するキーを拒まないよう、最上位は `additionalProperties` を許す'
+    他の Issue が追加するキーを拒まないよう、最上位は `additionalProperties` を許可する'
   ディレクトリ: |-
     ```tree
     src/

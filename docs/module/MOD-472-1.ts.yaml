@@ -177,8 +177,8 @@ functions:
       type: string | undefined
       description: 合わないときの 1 文（例「{path} の templates[0].file がありません。…」）。合えば `undefined`
     process: |-
-      1. Ajv（2020-12）で JSON Schema を初めて使用するときにコンパイルし、以降は使い回す
-      2. 合わなければ、最初の誤りの場所を `templates[0].file` の構造にし、合わない値と、JSON Schema のその項目の `description`（許す値）を記載した文を作る
+      1. Ajv（2020-12）で JSON Schema を初めて使用するときにコンパイルし、以降は再利用する
+      2. 合わなければ、最初の誤りの場所を `templates[0].file` の構造にし、合わない値と、JSON Schema のその項目の `description`（許可する値）を記載した文を作る
       3. `name` が重なる行があれば、2 つ目の行を指す文にする
     unit_tests:
       - name: test_validate_templates_index
@@ -333,11 +333,11 @@ functions:
       type: 'Promise<{ name: string; path: string; replaced: boolean }>'
       description: 登録した名前・テンプレートのフォルダの CSS の絶対パス・置き換えたか
     process: |-
-      1. `name` が `TEMPLATE_NAME_PATTERN` に合わないか、`tags` に空の文字列があれば、引数の名前と許す値を記載した `CliError` を投げる（索引を読み込まず、何も書き込まない）
+      1. `name` が `TEMPLATE_NAME_PATTERN` に合わないか、`tags` に空の文字列があれば、引数の名前と許可する値を記載した `CliError` を投げる（索引を読み込まず、何も書き込まない）
       `source` が無いか拡張子が `.css` でなければ、パスか拡張子を記載した `CliError` を投げる
       2〜6 は、モジュールの中の Promise の連鎖で 1 つずつ順に進める（同じプロセスで重なった登録が、互いの行を上書きしない。プロセスをまたぐ排他は持たない）
       2. `readTemplatesIndex` で索引を読み込む。同じ `name` の行があり `overwrite` でなければ、名前と `overwrite` を記載した `CliError` を投げる
-      3. 新しい行（`file` は `{name}.css`）で記載する索引を作る。新しい名前は末尾に追加し、置き換える行は元の位置に配置する
+      3. 新規の行（`file` は `{name}.css`）で記載する索引を作る。新規の名前は末尾に追加し、置き換える行は元の位置に配置する
       4. `validateTemplatesIndex` の文があれば `CliError` を投げる（何も書き込まない）
       5. フォルダを作り、置き換えるときは元の CSS の中身を記録してから、CSS を書き込む
       6. `writeTemplatesIndex` で索引を書き込む。失敗したら、記載した CSS を削除する（置き換えたときは記録した中身に戻す）してから例外をもう一度投げる
@@ -353,7 +353,7 @@ functions:
         summary: 同じ名前を置き換え、行の位置を変えない
         condition: '`brand`・`paper` の 2 行の索引に、`brand` を `overwrite: true` で中身を変えて登録'
         mock: なし（一時フォルダ）
-        expected: 1 行目が `brand` で説明が新しい値、CSS が新しい中身、`replaced` が `true`
+        expected: 1 行目が `brand` で説明が変更後の値、CSS が変更後の中身、`replaced` が `true`
       - name: test_add_template_when_name_exists
         case: 異常
         summary: '`overwrite` なしの同じ名前'
@@ -362,10 +362,10 @@ functions:
         expected: '`CliError` の文に `brand` と `overwrite`、CSS と索引が元のまま'
       - name: test_add_template_when_name_invalid
         case: 異常
-        summary: '`name` に許さない文字がある'
+        summary: '`name` に許可しない文字がある'
         condition: '`name: Bad_Name`、無いフォルダ'
         mock: なし（一時フォルダ）
-        expected: '`CliError` の文に `name` と許す文字が入り、`templates[0]` が入らない。フォルダが作られていない'
+        expected: '`CliError` の文に `name` と許可する文字が入り、`templates[0]` が入らない。フォルダが作られていない'
       - name: test_add_template_when_tags_empty
         case: 異常
         summary: '`tags` に空の文字列がある'

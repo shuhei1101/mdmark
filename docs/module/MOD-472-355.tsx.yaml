@@ -62,7 +62,7 @@ functions:
         expected: '`next(e)` の戻り値を返却する'
       - name: test_render_reply_when_settings_broken
         case: 異常
-        summary: 設定ファイルを読めない
+        summary: 設定ファイルを読み取れない
         condition: '設定ファイルの本文が `global: [`'
         mock: '`$.fs`・`$.env`・`$.session`・`$.ui.log`・`next`'
         expected: '`next(e)` の戻り値を返却し、`$.ui.log` を設定ファイルのパスを含む文と `to: "debug"` で 1 回呼ぶ'
@@ -94,13 +94,13 @@ functions:
       type: UiNode
       description: 部品の木
     process: |-
-      1. `table`: `figure` があれば表の上に `dimColor` の `表 {figure}` の Text を描く。`parts.inline` が真のときは各セルの文字を行内の記法を分けるで分け、列の幅と折り返しの位置は行内の記法を描いた文字にするで得た文字の表示幅で数える。列の幅を決め（`wrap` は `surface` が `desktop` でないとき）、セルを折り返して罫線で囲む。行内の記法を含むセルは用語付きの行を描くで描く。`kind` が `data` なら見出しの行を太字にする。`details` の行は先頭のセルに行の詳細の Button を置き、開いていればその行の下に全ての列をまたぐ詳細を描く（行の詳細を描く）。`surface` が `desktop` で表の幅が `columns` を超えれば表の Box を `overflowX: "scroll"` にする
+      1. `table`: `figure` があれば表の上に `dimColor` の `表 {figure}` の Text を描く。`parts.inline` が真のときは各セルの文字を行内の記法を分けるで分け、列の幅と折り返しの位置は行内の記法を描いた文字にするで得た文字の表示幅で数える。列の幅を決め（`wrap` は `surface` が `desktop` でないとき）、セルを折り返して罫線で囲む。行内の記法を含むセルは用語付きの行を描くで描く。`kind` が `data` なら見出しの行を太字にする。`details` の行は先頭のセルに行の詳細の Button を配置し、開いていればその行の下に全ての列をまたぐ詳細を描く（行の詳細を描く）。`surface` が `desktop` で表の幅が `columns` を超えれば表の Box を `overflowX: "scroll"` にする
       2. `heading`: 太字と見出しの色の Text。`parts.inline` が真で行内の記法があれば、見出しの色と太字を保ったまま用語付きの行を描くで描く
       3. `callout`: 種類の色の縦線（`┃`）と太字の種類のラベルの後ろに中身を描く。`closed` なら開閉のボタンで包む
       4. `code`: 背景の面の Box の中に、タイトルと言語のラベルとコピーボタンの行、`Code` 部品で色分けした行（行番号・行の色）を並べる。コピーボタンは押すと `$.ui.copy` で各行の `text` を改行でつないでコピーする
       5. `fold`: 開閉のボタンを描き、開いていれば下に中身を描く
       6. `steps`・`tree`・`stack`: ステップを描く・ファイルツリーを描く・縦に並べる範囲を描く。中身のブロックはこの関数で描く
-      7. `markdown`: 用語の一致の行と位置を、ブロックの `line` と `columns` でブロックの行の中の位置に修正する。`parts.inline` が真で行内の記法（行内の記法を分ける）があるか、修正した一致があれば用語付きの行を描く。どちらも無ければ `Markdown` 部品に渡す
+      7. `markdown`: 用語の一致の行と位置を、ブロックの `line` と `columns` でブロックの行の中の位置に修正する。`parts.inline` が真で行内の記法（行内の記法を分ける）があるか、修正した一致があれば用語付きの行を描く。どちらも無ければ `Markdown` 部品に指定する
     unit_tests:
       - name: test_render_block_table
         case: 正常
@@ -189,7 +189,7 @@ functions:
     kind: 関数
     container: src/mdmark-style/reply.tsx
     usecase: ClaudeCodeの返答を共通スタイルで描く
-    summary: 開閉のボタンと、開いているときの中身を描く。押すと状態を反転して `$.ui.invalidate("ui.render")` で描き直す
+    summary: 開閉のボタンと、開いているときの中身を描く。押すと状態を反転して `$.ui.invalidate("ui.render")` で再描画する
     description: 開閉の状態は `requestId`・ブロックの本文のハッシュ・範囲の `index` を鍵にした、モジュールの中の `Map` に持つ（初めは閉じた状態。Claude Code を閉じると消える）
     scope: public
     is_async: false

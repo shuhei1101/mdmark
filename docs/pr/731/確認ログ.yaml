@@ -1,0 +1,19 @@
+confirmations:
+  - topic: 用語集の持ち方
+    decision: '用語の YAML `docs/guide/用語集.yaml`（`terms[]` に用語・別名・意味）を新設して原本にし、`project-index.yaml` に `records: terms`・`alias_type: term` の行を追加する。`用語集.mark.md` の表は残す（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 55b75506
+    thread: https://github.com/shuhei1101/mdmark/pull/731#discussion_r4638531633
+  - topic: AI slop の単語の置き換えの範囲
+    decision: 設計書・ガイドだけを文書ごとに判断して置き換え、PR ドキュメントには対応表を適用しない（文の削除だけにする。推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 55b75506
+    thread: https://github.com/shuhei1101/mdmark/pull/731#discussion_r4638676112
+  - topic: PR ドキュメントの文の削除の範囲
+    decision: 過去の PR ドキュメントは文の削除もしない。この PR（`docs/pr/731/`）の PR ドキュメントだけを確認表で点検する（推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 7ceb7e6b
+    thread: https://github.com/shuhei1101/mdmark/pull/731#discussion_r4639264693

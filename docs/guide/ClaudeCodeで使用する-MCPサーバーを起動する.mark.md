@@ -23,9 +23,9 @@ MCP の常駐サーバーを起動・停止し、待ち受けているポート�
 /mdmark:global-setup
 ```
 
-systemd --user が使える端末では unit `mdmark-mcp`（端末の設定の `serve.systemdUnit` で変える）を `~/.config/systemd/user/` に作って `enable --now` し、ログを journal に出す。
-端末を起動し直しても、unit が自動で起動する。
-使えない端末か、端末の設定の `serve.launcher` を `tmux` にした端末では、tmux のセッション `mdmark-mcp`（`serve.tmuxSession` で変える）で `serve` を起動し、ログを `${XDG_STATE_HOME:-~/.local/state}/mdmark/serve.log` に書き込む。
+systemd --user が使用できる端末では unit `mdmark-mcp`（端末の設定の `serve.systemdUnit` で変える）を `~/.config/systemd/user/` に作って `enable --now` し、ログを journal に出す。
+端末を再起動しても、unit が自動で起動する。
+使用できない端末か、端末の設定の `serve.launcher` を `tmux` にした端末では、tmux のセッション `mdmark-mcp`（`serve.tmuxSession` で変える）で `serve` を起動し、ログを `${XDG_STATE_HOME:-~/.local/state}/mdmark/serve.log` に書き込む。
 既に待ち受けていれば、もう一度起動しない。
 
 #### 端末で `serve` を起動する
@@ -96,7 +96,7 @@ Get-NetTCPConnection -LocalPort 8782 -State Listen
 #### `MDMARK_PORT` を両方に設定する
 
 既定のポート 8782 をほかのプロセスが使用しているとき、`serve` は待ち受けずに、理由と修正方法を標準エラーに出して終了コード 1 で終わる。
-Claude Code の接続先も同じ環境変数で決まるため、`~/.claude/settings.json` の `env` と、`serve` を起動する環境の両方に同じ `MDMARK_PORT` を設定する。
+Claude Code の接続先も同じ環境変数で決定するため、`~/.claude/settings.json` の `env` と、`serve` を起動する環境の両方に同じ `MDMARK_PORT` を設定する。
 
 ```json
 {

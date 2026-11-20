@@ -21,7 +21,7 @@ functions:
     returns:
       type: number
       description: 表示幅
-    process: 1. 書記素ごとに幅を足し合わせる
+    process: 1. 書記素ごとに幅を合算する
     unit_tests:
       - name: test_display_width
         case: 正常
@@ -48,7 +48,7 @@ functions:
       description: 折り返した行。どの行も表示幅が `width` 以下
     process: |-
       1. 空白と全角の文字の境で単語に分ける
-      2. 行に単語を足し、幅を超えるときは次の行へ送る
+      2. 行に単語を追加し、幅を超えるときは次の行へ送信する
       3. 1 つで `width` を超える単語は `width` ごとに分ける
     unit_tests:
       - name: test_wrap_cell
@@ -93,7 +93,7 @@ functions:
       description: 列ごとの幅
     process: |-
       1. 列ごとにセルの表示幅の最大を取る
-      2. `wrap` が真で、列の幅の合計に罫線と余白（列の数 × 3 + 1）を足した幅が `columns` を超えるとき、最も広い列を 1 ずつ縮めることを収まるまで繰り返す
+      2. `wrap` が真で、列の幅の合計に罫線と余白（列の数 × 3 + 1）を追加した幅が `columns` を超えるとき、最も広い列を 1 ずつ縮めることを収まるまで繰り返す
       3. どの列も縮められなくなったらその幅で返却する
     unit_tests:
       - name: test_fit_columns
@@ -107,7 +107,7 @@ functions:
         summary: 狭い幅では広い列から縮める
         condition: 2 列で中身の幅が 10 と 40、`columns` が 40、`wrap` が真
         mock: なし
-        expected: 幅の合計に 7 を足した値が 40 以下で、1 列目が 10
+        expected: 幅の合計に 7 を追加した値が 40 以下で、1 列目が 10
       - name: test_fit_columns_when_desktop
         case: 正常
         summary: 折り返さないときは中身の幅

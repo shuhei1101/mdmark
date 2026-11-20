@@ -1,0 +1,140 @@
+docs:
+  - page: project-index.yaml
+    new: false
+    change: '設計書の種類の行に alias_type: doc を付け、名前と aliases を照合の語にする。用語集を records: terms・alias_type: term の行で配信する'
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 判定フローチャート『用語の登録』で登録すると決めた用語を、用語集.yaml と同じ内容で表に追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:33:36.079971+00:00'
+  - page: docs/architecture/index.yaml
+    new: false
+    change: docs/architecture/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
+  - page: docs/component/index.yaml
+    new: false
+    change: docs/component/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
+  - page: docs/config/index.yaml
+    new: false
+    change: docs/config/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:33:36.079971+00:00'
+  - page: docs/data/index.yaml
+    new: false
+    change: docs/data/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:33:36.079971+00:00'
+  - page: docs/dev-command/index.yaml
+    new: false
+    change: docs/dev-command/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
+  - page: docs/er/index.yaml
+    new: false
+    change: docs/er/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:33:36.079971+00:00'
+  - page: docs/external-api/index.yaml
+    new: false
+    change: docs/external-api/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
+  - page: docs/interface/index.yaml
+    new: false
+    change: docs/interface/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
+  - page: docs/layout/index.yaml
+    new: false
+    change: docs/layout/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
+  - page: docs/library/index.yaml
+    new: false
+    change: docs/library/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:33:36.079971+00:00'
+  - page: docs/module/index.yaml
+    new: false
+    change: docs/module/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
+  - page: docs/nonfunctional/index.yaml
+    new: false
+    change: docs/nonfunctional/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
+  - page: docs/scenario/index.yaml
+    new: false
+    change: docs/scenario/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
+  - page: docs/screen/index.yaml
+    new: false
+    change: docs/screen/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:33:36.079971+00:00'
+  - page: docs/test-procedure/index.yaml
+    new: false
+    change: docs/test-procedure/ の設計書の文を削り『文章の書き方』で点検し、aliases を登録する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T05:07:24.568592+00:00'
+  - page: docs/guide/index.yaml
+    new: false
+    change: docs/guide/ のガイドの文を削り『文章の書き方』で点検する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:20:21.799869+00:00'
+  - page: docs/guide/用語集.yaml
+    new: true
+    change: 用語集.mark.md の表の用語・別名・意味を terms[] に移して原本にする。判定フローチャート『用語の登録』で登録すると決めた用語を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:33:36.079971+00:00'
+  - page: docs/pr/731/README.mark.md
+    new: false
+    change: この PR の PR ドキュメントを『文章の書き方』の確認表で点検する（hidden-content-04 と AI slop の対応表は適用しない）。行はフォルダの代表として置く
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T06:55:13.716030+00:00'
+scope_out:
+  - item: ガイド（docs/guide/ の Markdown）のエイリアスの登録（files.yml の行に aliases を持たせる schemas/files.schema.yaml の変更）
+    reason: 要望のエイリアスの登録先は設計書の aliases と用語集で、ガイドの Markdown は含まれない。含めるかはレビューで確定する
+    plan: '#743'
+  - item: コードのコメントと UI の文言の点検
+    reason: '#289 で対応済みで、要望は docs/ の文書だけを対象にする'
+    plan: none
+  - item: docs/mock/・docs/_theme/ の文書
+    reason: 要望の対象（設計書・ガイド・PR ドキュメント）に含まれない
+    plan: none
+  - item: mdmark に YAML から用語集の表を描く機能を追加する（要件の未確定の案 C）
+    reason: コードの設計と実装が要り、要望の対象（文書）に含まれない。案 A を採ったときの 2 か所の用語を 1 か所にする後続
+    plan: '#742'
+  - item: アーキテクチャ図のフォルダの役割の表に、リポジトリの直下に無い `guide/` の行が残っている
+    reason: 記述と実体のずれの修正で、文の削除とエイリアスの登録の要望に含まれない
+    plan: '#741'
+  - item: 開発コマンドのビルドの effects が配布ファイルの上限を 688KB と記載し、非機能要件の 712KB と食い違う
+    reason: 記述どうしのずれの修正で、文の削除とエイリアスの登録の要望に含まれない
+    plan: '#744'

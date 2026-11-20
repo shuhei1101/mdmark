@@ -8,7 +8,7 @@ data_models:
     title: 埋めたモジュール
     container: src/viewer/modules.ts
     usecase: 共通
-    summary: CLI がまとめる入口のモジュールが `startViewer` に指定する、同じスクリプトにまとめた部品・色分け・外部ライブラリ・拡張のモジュール
+    summary: CLI がまとめるエントリーポイントのモジュールが `startViewer` に指定する、同じスクリプトにまとめた部品・色分け・外部ライブラリ・拡張のモジュール
     properties:
       - name: parts
         type: 'Partial<Record<PartName, Record<string, unknown>>>'

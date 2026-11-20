@@ -32,7 +32,7 @@ constants:
   - name: TREE_LINE_PATTERN
     title: 罫線のフォルダ構成の行
     container: src/code-block/code-block.syntax.ts
-    summary: 罫線でフォルダ構成を記載した行に当たる正規表現。行頭の空白（タブ・空白・`tree` コマンドが縦線の後ろに出す NBSP の U+00A0）と縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行。`tree` 2.1.1 の出力を `od -c` で測り、縦線の後ろが NBSP 2 つと空白 1 つであることを確かめた
+    summary: 罫線でフォルダ構成を記載した行に該当する正規表現。行頭の空白（タブ・空白・`tree` コマンドが縦線の後ろに出す NBSP の U+00A0）と縦線（`│`・`|`）の後に `├── `・`└── `・`|-- `・`` `-- `` が続く行。`tree` 2.1.1 の出力を `od -c` で測り、縦線の後ろが NBSP 2 つと空白 1 つであることを確認した
     value: '/^[\t \u00A0│|]*(?:├── |└── |\|-- |`-- )/u'
     refs:
       - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
@@ -40,7 +40,7 @@ constants:
   - name: TREE_WARNING_MIN_LINES
     title: 罫線の記載の警告を出す行の数
     container: src/code-block/code-block.syntax.ts
-    summary: '`TREE_LINE_PATTERN` に当たる行がこの数以上あるコードブロックに、罫線のフォルダ構成の記載の警告を出す。1 行だけの罫線は説明の中の例として許す'
+    summary: '`TREE_LINE_PATTERN` に該当する行がこの数以上あるコードブロックに、罫線のフォルダ構成の記載の警告を出す。1 行だけの罫線は説明の中の例として許可する'
     value: '2'
     refs:
       - IF-472-34#constraints[罫線のフォルダ構成の記載の警告]
@@ -71,7 +71,7 @@ functions:
       | `raw` | 既定で元の Markdown を出すか（`true` だけを出す指定にし、ほかは `false`） |
       | `tree_warning` | 罫線のフォルダ構成の記載の警告を出すか（`false` だけを止める指定にし、ほかは `true`） |
 
-      `highlight`・`fold` の要素は行の番号か行の範囲（`from`〜`to`。`to` を省くと `from` の 1 行）で、`lines.start` から数えた行の番号として読み、コードブロックの行に無い番号と `from` より小さい `to` は当てずに警告にする
+      `highlight`・`fold` の要素は行の番号か行の範囲（`from`〜`to`。`to` を省くと `from` の 1 行）で、`lines.start` から数えた行の番号として読み取り、コードブロックの行に無い番号と `from` より小さい `to` は適用せずに警告にする
     args:
       - name: options
         type: '{ options: MarkOptions; lineCount: number }'
@@ -89,7 +89,7 @@ functions:
         expected: '`title` が `My App.ts`、`lineNumbers` が `true`、`lineStart` が 1、`highlights` が 2・4・5・6、`warnings` が空'
       - name: test_read_code_spec_when_line_start
         case: 正常
-        summary: 最初の行の番号から数えて強調する行を読む
+        summary: 最初の行の番号から数えて強調する行を読み取る
         condition: '`{"lines": {"start": 10}, "highlight": [11, {"from": 13}]}`、`lineCount` が 5'
         mock: なし
         expected: '`lineStart` が 10、`highlights` が 2・4、`warnings` が空'
@@ -128,7 +128,7 @@ functions:
     container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: internal
-    summary: コードブロックの中身を行に分け、`TREE_LINE_PATTERN` に当たる行の数を返却する
+    summary: コードブロックの中身を行に分け、`TREE_LINE_PATTERN` に該当する行の数を返却する
     args:
       - name: source
         type: string
@@ -163,7 +163,7 @@ functions:
       コードブロックの中身を行に分け、行末の `[!code ++]`・`[!code --]`・`[!code highlight]`・`[!code focus]`・`[!code error]`・`[!code warning]` を行の種類（`add`・`del`・`highlight`・`focus`・`error`・`warning`）にしてマーカーを削除する。
       行コメントがマーカーだけならマーカーの直前の行コメントの頭（`LINE_COMMENT_HEADS`）も削除し、削除した後の行末の空白も削除する。
       `[\!code …]` は `\` を削除した文字にする。
-      知らないマーカー（`[!code blink]` など）はその行に当てず記載した文字のままにし、警告にする
+      知らないマーカー（`[!code blink]` など）はその行に適用せず記載した文字のままにし、警告にする
     args:
       - name: source
         type: string
@@ -193,7 +193,7 @@ functions:
         expected: '`{ text: "let count = 1; // [!code ++]" }`（`kind` を持たない）'
       - name: test_read_line_marks_when_unknown
         case: 異常
-        summary: 知らないマーカーは当てずに警告にする
+        summary: 知らないマーカーは適用せずに警告にする
         condition: '`foo(); // [!code blink]`'
         mock: なし
         expected: '`{ text: "foo(); // [!code blink]" }` と、`[!code blink]` の警告'
@@ -433,7 +433,7 @@ functions:
     container: src/code-block/code-block.syntax.ts
     kind: 関数
     scope: internal
-    summary: 行の文字から `measureIndents` でインデントのレベルを、`foldLinesOf` で畳む行の数を決めて行に付け、`folds` の行のうち畳める行に `folded` を付ける。畳めない行（コードブロックに無い行は `readCodeSpec` が除く）は当てずに警告にする
+    summary: 行の文字から `measureIndents` でインデントのレベルを、`foldLinesOf` で畳む行の数を決めて行に付け、`folds` の行のうち畳める行に `folded` を付ける。畳めない行（コードブロックに無い行は `readCodeSpec` が除く）は適用せずに警告にする
     args:
       - name: options
         type: '{ lines: CodeLine[]; folds: Set<number> }'

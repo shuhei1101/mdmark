@@ -282,7 +282,7 @@ flows:
       <!-- /map -->
     expected:
       - 終了コードが 0
-      - 開いた HTML で、文書の地の色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
+      - 開いた HTML で、文書の背景色の計算値が theme-slate の明るい配色の `--mdmark-color-bg` の値
     test: test_normal_when_color_theme
   - name: 正常系（部品の文言を替える設定）
     summary: 設定の `labels` を埋める設定にコピーし、開いた HTML で操作できる部品のボタンを設定の文言で描く
@@ -345,14 +345,14 @@ flows:
     test: test_normal_when_media_embedded
     refs:
       - SC-472-56#scenarios[正常シナリオ（画像・動画・音声を埋める）]
-  - name: '正常系（blob: と動的 import を許さない環境で開く）'
-    summary: '起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトにまとめて埋め、blob: と動的 import を許さない環境でも描く'
+  - name: '正常系（blob: と動的 import を許可しない環境で開く）'
+    summary: '起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトにまとめて埋め、blob: と動的 import を許可しない環境でも描く'
     setup:
       - name: 埋めるモジュールを使用するフォルダ
         description: '`extensions`（マーカー `greet` の拡張と、最上位で例外を投げる拡張 `broken`）・`libraries`（`test-lib` に相対パスの手元のモジュールと、`missing-lib` に無いファイル）・`syntax.url`（手元の `vendor/highlightjs/es/`）を記載した設定と、`greet` のマーカー・ビューのマーカー・`test-lib` のマーカー・`missing-lib` のマーカー・言語 `ts` のコードブロックを持つ文書'
         notes: '`greet` の拡張は `load` の中で同じフォルダの別のファイルを動的 `import()` で読み込む'
       - name: Mock
-        description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
+        description: "外部ライブラリと色分けのライブラリは手元のモジュール。書き出した HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから Playwright の Chromium で開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許可しない）"
     flow: |-
       <!-- map -->
 
@@ -365,7 +365,7 @@ flows:
         C->>C: 起動の処理・greet・ビューの部品・色分けの本体と ts・test-lib を 1 つのスクリプトにまとめる
         C->>H: まとめたスクリプトを script 要素に入れて記載する
         C-->>W: missing-lib の警告・終了コード 0
-        W->>H: blob: と動的 import を許さない環境で開く
+        W->>H: blob: と動的 import を許可しない環境で開く
         H-->>W: broken を飛ばしてマーカー・ビュー・色分けを描き、missing-lib のマーカーの場所に通知ブロックを出す
       ```
 
@@ -381,15 +381,15 @@ flows:
       - 描き終えるまでに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:`・`data:` の URL のスクリプトへの要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
     refs:
-      - 'SC-472-56#scenarios[正常シナリオ（blob: と動的 import を許さない環境で開く）]'
+      - 'SC-472-56#scenarios[正常シナリオ（blob: と動的 import を許可しない環境で開く）]'
   - name: 正常系（範囲のスクリプトと CSS）
-    summary: '範囲の `ts` を変換してまとめたスクリプトに加え、blob: と動的 import を許さない環境でも動かす'
+    summary: '範囲の `ts` を変換してまとめたスクリプトに加え、blob: と動的 import を許可しない環境でも動かす'
     setup:
       - name: 範囲のスクリプトを持つフォルダ
         description: '`features.html-scripts` を `true` にした設定と、`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ配置した文書'
         notes: '`ts` は型の注釈を持つ既定のエクスポートの関数で、ノードを押すと根の要素に class `is-open` を付与・解除する'
       - name: Mock
-        description: '正常系（blob: と動的 import を許さない環境で開く）と同じ。外への要求を全て止める'
+        description: '正常系（blob: と動的 import を許可しない環境で開く）と同じ。外への要求を全て止める'
     flow: |-
       <!-- map -->
 
@@ -402,7 +402,7 @@ flows:
         C->>C: 範囲の ts を esbuild で変え、まとめるスクリプトに加える
         C->>H: まとめたスクリプトを script 要素に入れて記載する
         C-->>W: 終了コード 0
-        W->>H: blob: と動的 import を許さない環境で開く
+        W->>H: blob: と動的 import を許可しない環境で開く
         H-->>W: 範囲の css と ts を適用した文書
       ```
 
@@ -569,7 +569,7 @@ flows:
     summary: 隠さない書き出しを指定しないとき、mdmark の名前を別名へ置き換え、コメント・バージョン・mdmark 自身のライセンスの表記を削除して書き出す
     setup:
       - name: mdmark の名前を持つフォルダ
-        description: 'タイトルに `mdmark` を含む文書 `mdmark-intro.md` と、`theme`（`--mdmark-radius` の上書きと `.mdmark h1` のセレクタ）・`extensions`（マーカー `greet` の拡張）・`index`（用語 `mdmark`）を記載した設定。文書は、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲（`css` の `var(--mdmark-*)` と、ノードを押すと `window.__mdmarkOpened` を `true` にして根の要素に class `is-open` を付ける `ts`）・class `mdmark-align-center` の段落・`<mdmark-chart>` を書いたコードの例・`<!-- todo -->`・`<!-- table: data -->` と `<!-- /table -->` で囲んだ表・既定のテーマの mermaid の図・`icon:` のアイコンを持つ'
+        description: 'タイトルに `mdmark` を含む文書 `mdmark-intro.md` と、`theme`（`--mdmark-radius` の上書きと `.mdmark h1` のセレクタ）・`extensions`（マーカー `greet` の拡張）・`index`（用語 `mdmark`）を記載した設定。文書は、地の文の `mdmark`・`<mdmark-chart>` の要素・`<!-- html -->` の範囲（`css` の `var(--mdmark-*)` と、ノードを押すと `window.__mdmarkOpened` を `true` にして根の要素に class `is-open` を付ける `ts`）・class `mdmark-align-center` の段落・`<mdmark-chart>` を記載したコードの例・`<!-- todo -->`・`<!-- table: data -->` と `<!-- /table -->` で囲んだ表・既定のテーマの mermaid の図・`icon:` のアイコンを持つ'
       - name: Mock
         description: 正常系（mermaid のコードブロック）と同じく `mermaid.url` を手元のフォルダに向ける。比べる HTML は、同じフォルダを `--keep-traces` で書き出したもの
     flow: |-
@@ -698,7 +698,7 @@ constraints:
     constraint: 開いてから描き終えるまでに、ページ自身・`_files/` の下にコピーした動画と音声と画像の `data:` のほかへ要求しない
     decided_by: NFR-472-1#requirements[書き出した HTML の外部への要求]
   - item: まとめるスクリプト
-    constraint: 起動の処理を入口にし、ビューの部品・色分けの本体と言語は静的な `import` で、拡張と外部ライブラリのモジュールはリテラルの動的 `import()` を返却する関数で取り込み、分割せずに 1 つの ES モジュールにまとめ（リテラルとパターンの動的 `import()` は同じスクリプトに取り込む）、`src` を持たない `<script type="module">` に入れる。文書にマーカーが無い部品・外部ライブラリと、届かない・まとめられないモジュールは取り込まず、開いたときそのマーカーの場所に通知ブロックを出す。起動の処理は拡張と外部ライブラリを 1 つずつ `try` で囲んで評価し、評価で例外を投げたものは飛ばして、ほかの拡張の登録と描画を続ける。まとめた後に動的 `import()` が残る拡張・外部ライブラリ（変数を指定する `import()` を含む）は埋めたうえで警告に出す
+    constraint: 起動の処理を起点にし、ビューの部品・色分けの本体と言語は静的な `import` で、拡張と外部ライブラリのモジュールはリテラルの動的 `import()` を返却する関数で取り込み、分割せずに 1 つの ES モジュールにまとめ（リテラルとパターンの動的 `import()` は同じスクリプトに取り込む）、`src` を持たない `<script type="module">` に入れる。文書にマーカーが無い部品・外部ライブラリと、届かない・まとめられないモジュールは取り込まず、開いたときそのマーカーの場所に通知ブロックを出す。起動の処理は拡張と外部ライブラリを 1 つずつ `try` で囲んで評価し、評価で例外を投げたものは飛ばして、ほかの拡張の登録と描画を続ける。まとめた後に動的 `import()` が残る拡張・外部ライブラリ（変数を指定する `import()` を含む）は埋めたうえで警告に出す
   - item: 埋める外部ライブラリ
     constraint: 文書にマーカーがある外部ライブラリだけを、既定の対応表に設定の `libraries` を重ねた URL から読み込む。そのモジュールが import する先も含めて、制約「まとめるスクリプト」の 1 つのスクリプトにまとめる。相対パスの URL は、その値を記載した設定ファイルのフォルダを基準に読み込む。届かない・まとめられないものは埋めず警告に出し、開いたときそのマーカーの場所に通知ブロックを出す
   - item: 埋める拡張
@@ -772,23 +772,23 @@ constraints:
   - item: 埋める取り込み
     constraint: '文書の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方でファイルから読み込み（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）、キーを書き出す文書のフォルダからのパスにした取り込む文書の表を `opts.includes` として埋める。読み込むのは設定ファイルのフォルダ（設定ファイルが無ければ文書のフォルダ）の中のファイルだけで、その外を指すパスと読み込めないファイルは表に入れず、警告に出す（書き出しは止めない。開いたときはそのマーカーの場所に記載の警告が出る）。文書の `<!-- features: {"include": false} -->` の文書は読み込まない'
   - item: 埋めるアイコン
-    constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読み込まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして記載の警告を配置する。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは配置しない。隠す書き出しでは、同じ文をまとめたスクリプトの先頭の `/*! … */` に置く）
+    constraint: 文書（取り込む文書を含む）の `icon:` のうち配布物にまとめていない名前の IconNode を、依存の lucide から取り出して `opts.icons` として埋め、開いたとき jsDelivr を読み込まない。lucide に無い名前は埋めず警告に出し（書き出しは止めない）、開いたときはその場所を行内のコードのままにして記載の警告を配置する。`opts.icons` を埋める `script` の直前に、注釈 `<!-- lucide {バージョン} - ISC License (c) Lucide Contributors / MIT License (c) 2013-present Cole Bemis -->` を 1 行置く（埋める名前が無いときは配置しない。隠す書き出しでは、同じ文をまとめたスクリプトの先頭の `/*! … */` に配置する）
     notes: ライセンスの表示を残すことは外部ライブラリ『lucide』の `license`
   - item: map の設定
     constraint: 設定の `map` を、`tooltips.placement` と同じく埋める設定にコピーして `mount` の `opts.config` に指定する。無いときは写さず、`mount` の既定に任せる。`map` がマップでないときは設定ファイルの誤り（終了コード 1）にする。記載できる値に無い値（`node_fit` の知らない値・`url_state` が真偽値でない・知らない形・模様・太さ・矢じり・色の名前）は書き出しを止めずにコピーし、`mount` が無視して既定にする（`mdmark check` が `schema` のずれにする）。Lucide に無いアイコンの名前はコピーし、`mount` が無視する（`mdmark check` が `map_unknown_icon` にする）
     decided_by: IF-472-35#request[opts.config.map.kinds]
   - item: mdmark の痕跡
-    constraint: '`--keep-traces` が無いとき、組み立てた HTML の全体に次を当ててから書き込む。
+    constraint: '`--keep-traces` が無いとき、組み立てた HTML の全体に次を適用してから書き込む。
 
       (1) 埋め込みの JSON を除く HTML・CSS（配布物と `theme`）・まとめたスクリプト（拡張・範囲のスクリプトを含む）から、HTML のコメントと `:root{--mdmark-version:…}` の宣言を削除する。
 
       まとめたスクリプトの `/*! … */` のライセンスの注釈は残す。
 
-      (2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`・画像の `data:` URL の `assets`）を除く値で、語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。
+      (2) その全体（`<title>` の中身と、まとめたスクリプトの範囲のスクリプトの表の鍵を除く）と、埋め込みの JSON の利用者が記載した値（`docs[].title`・`docs[].path`・`docs[].markdown`・`index`・`references`・`aliases`・`entry`・`includes`・画像の `data:` URL の `assets`）を除く値で、単語の一部として出る `mdmark` を、大文字・小文字の形を保って別名 `zq` へ置き換える（`#mdmark-payload` の `id` を含む）。
 
-      (3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読むマーカーの名前でない HTML のコメントを削除する。
+      (3) 埋め込みの Markdown（`docs[].markdown` と `includes` の値）では、`<mdmark-`・`</mdmark-`・`--mdmark-`・`class` の属性の値の `mdmark-`・`mdmark-asset:` だけを別名へ置き換え、描画が読み取るマーカーの名前でない HTML のコメントを削除する。
 
-      範囲のスクリプトの表の鍵（範囲のコードの文字）は、(3) を当てた後の埋め込みの Markdown から取り出し、鍵から変換したコードには (2) を当てる。
+      範囲のスクリプトの表の鍵（範囲のコードの文字）は、(3) を適用した後の埋め込みの Markdown から取り出し、鍵から変換したコードには (2) を適用する。
 
       開いた文書の DOM にコメントのノードを残さない。
 
@@ -801,7 +801,7 @@ constraints:
 
       本文のコードの例の `<mdmark-*>` も別名で表示される。
 
-      `--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確かめる（「無い」を確かめる行も別名で確かめる）。'
+      `--keep-traces` を指定しない流れの期待値に出る mdmark の名前（セレクタ・class・属性・`window` の鍵）は、(2) と同じ規則で別名に置き換えて確認する（「無い」を確認する行も別名で確認する）。'
   - item: ページのタイトル
     constraint: '`<title>` は、参照の表の `docs` に書き出す文書があればその `title`、無ければ文書の先頭のフロントマターの使用できる `title`（インターフェース定義『参照の表を作る』の制約「フロントマターのメタデータ」と同じ判定）、無ければ本文の最初の h1、無ければ拡張子を除いたファイル名'
 test_file: tests/integration/lib/export.test.ts

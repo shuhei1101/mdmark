@@ -1,7 +1,7 @@
 id: IF-472-49
 visibility: internal
 title: 文書をMarkdownに書き出す
-lead: 文書の作成者が mdmark の文書を 1 つ、純粋な Markdown と、`chart`・`param`・埋め込んだ HTML ごとの SVG のファイルに書き出す。書き出したファイルはほかのファイル・URL を参照せず、mdmark の無い表示で読める。
+lead: 文書の作成者が mdmark の文書を 1 つ、純粋な Markdown と、`chart`・`param`・埋め込んだ HTML ごとの SVG のファイルに書き出す。書き出したファイルはほかのファイル・URL を参照せず、mdmark の無い表示で読み取れる。
 entry:
   kind: operation
   value: '`mdmark export-markdown {文書} [--out {フォルダ}] [--config {設定ファイル}]`（CLI。`npx github:shuhei1101/mdmark#v{バージョン} export-markdown` で呼ぶ）'
@@ -57,11 +57,11 @@ exceptions:
     notes: 標準エラーに書き込めないパスと修正方法（`--out` で別のフォルダを指定する）を出す
 constraints:
   - item: 変換
-    constraint: '`toPureMarkdown` で変換し、`opts.figure` に SVG を作って画像のリンクを返す関数を指定する。設定の `extensions` の拡張を登録してから変換する'
+    constraint: '`toPureMarkdown` で変換し、`opts.figure` に SVG を作って画像のリンクを返却する関数を指定する。設定の `extensions` の拡張を登録してから変換する'
   - item: 図の場所の Markdown
     constraint: '`chart`・`param` は、タイトルの太字の行・画像のリンク・凡例の系列の名前の箇条書き（系列が 2 つ以上のとき）にする。埋め込んだ HTML は画像のリンクだけにする。画像のリンクは出力の Markdown からの相対パス `images/figure-{番号}.svg`、代替の文字はタイトル（無ければ `図 {番号}`）'
   - item: SVG の作り方
-    constraint: '`figure.html` の図の部品の SVG を取り出し、埋め込んだ HTML は `foreignObject` に包む。配布物の CSS のうち図の中のクラスとタグに当たる規則だけを、明るい配色の値で SVG の `style` に埋め、不透明の背景を敷く'
+    constraint: '`figure.html` の図の部品の SVG を取り出し、埋め込んだ HTML は `foreignObject` に包む。配布物の CSS のうち図の中のクラスとタグに該当する規則だけを、明るい配色の値で SVG の `style` に埋め、不透明の背景を敷く'
     notes: PoC 検証の結果（docs/pr/700/ライブラリ本体.md の PoC 結果）
   - item: SVG の参照
     constraint: SVG の `href`・`src`・`url(` は `data:` と SVG の中の `#` で始まる参照だけにする。埋め込んだ HTML の相対パスの画像は `data:` の URL で埋め、`https` の画像は取り除いて警告に出す
@@ -135,7 +135,7 @@ flows:
       - name: 拡張を記載した設定
         description: '`extensions` に、書き出しのフックを持つ拡張と持たない拡張を 1 つずつ記載した設定と、2 つのマーカーを持つ文書'
       - name: Mock
-        description: 書き出しのフックは、マーカーの JSON のオブジェクトの `target` を太字にした行を返す
+        description: 書き出しのフックは、マーカーの JSON のオブジェクトの `target` を太字にした行を返却する
     flow: |-
       <!-- map -->
 
@@ -155,7 +155,7 @@ flows:
 
       <!-- /map -->
     expected:
-      - フックを持つ拡張のマーカーの場所に、フックが返した太字の行がある
+      - フックを持つ拡張のマーカーの場所に、フックが返却した太字の行がある
       - フックを持たない拡張のマーカーと範囲の定義が残っていない
       - マーカーの前後の段落が残っている
     test: test_normal_when_extension_marks

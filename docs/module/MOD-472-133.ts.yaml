@@ -22,7 +22,7 @@ data_models:
         description: 補足の `notes.{ID}.annotations` の、要素の ID ごとの注記（番号の順）。持つ要素は、説明を持たなくても持ち主（線の押せる帯・ノードやグループのマーカーのボタン。ER 図の列は `renderMapEr` の説明のボタン）を持ち、持ち主に `id="mdmark-note-owner-{図の通し番号}-{要素の ID}"`（図の通し番号は `id` の `map-` の後ろ）を付けて、`renderDiagramTip` の `annotations` に指定する（ノードと線は `renderFlow` の `annotations` に任せる）。ER 図・状態遷移図・シーケンス図の引数も同じ項目を持つ
       - name: links
         type: Record<string, string> | undefined
-        description: '`mapLinkProblems` が許したノードのリンク先'
+        description: '`mapLinkProblems` が許可したノードのリンク先'
       - name: hints
         type: boolean | undefined
         description: '`false` のとき、`notes` の説明と注記のツールチップ・ノードとグループのマーカー・線の `data-tip-owner` を作らず、注記の持ち主の `id` をノードの `span.mdmark-diagram-node-hit`・グループのタイトルのボタン・線の `.map-wire-hit`・ER 図の列の行に付ける。既定は `true`'
@@ -258,7 +258,7 @@ functions:
     summary: 部品設計『mapの構成図』の HTML を返却する
     description: |-
       ノードと線（`notes` の説明を `hint`、`links` のリンク先を `href` にする）を `renderFlow` で描き、グループの面とタイトルの行・開閉と中へ入るボタン・閉じたグループを重ねる。
-      中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を置く。
+      中へ入ったグループと薄く残したグループのほかは、タイトルの行に動かす帯（`.map-group-bar`）を配置する。
 
       `notes` に説明を持つグループ（閉じたグループのノードを含む）は、タイトルの右にノードと同じマーカーとツールチップの中身を配置する。
 
@@ -382,7 +382,7 @@ functions:
         summary: 種類を持たないノードは種類の行を空にする
         condition: 種類を持つノード A と種類を持たないノード B の配置
         mock: なし
-        expected: B の `.mdmark-diagram-node-kind` が `is-empty` を持ち、A は持たない（`is-empty` の行は CSS で描かず、名前をノードの上下の中央に置く）
+        expected: B の `.mdmark-diagram-node-kind` が `is-empty` を持ち、A は持たない（`is-empty` の行は CSS で描かず、名前をノードの上下の中央に配置する）
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数
@@ -452,7 +452,7 @@ functions:
       - name: args
         type: 'MapFlowArgs & { tables: Array<{ name: string; columns: ErColumn[]; notes: Record<string, string> }>; relations: MapErRelation[]; fanouts: MapErFanout[] }'
         required: true
-        description: '構成図の部品の引数（`layout` の関連の線は `rewireMapEr` で付け替えた線）と、テーブル・関連・行が増える関連（`{ wire, from, to }`）。`annotations` の `{テーブル}.{列}` のキーの注記は、そのテーブルの `renderMapEr` に列の名前ごとの注記として渡す（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）。`hints` はそのまま各テーブルの `renderMapEr` に指定する'
+        description: '構成図の部品の引数（`layout` の関連の線は `rewireMapEr` で付け替えた線）と、テーブル・関連・行が増える関連（`{ wire, from, to }`）。`annotations` の `{テーブル}.{列}` のキーの注記は、そのテーブルの `renderMapEr` に列の名前ごとの注記として指定する（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）。`hints` はそのまま各テーブルの `renderMapEr` に指定する'
     returns:
       type: MapPart
       description: 図の中身とツールチップの HTML
@@ -539,7 +539,7 @@ functions:
     unit_tests:
       - name: test_render_map_er_fanouts_when_label_nearby
         case: 正常
-        summary: ラベルの文字を避けたマーカーの置き場所
+        summary: ラベルの文字を回避したマーカーの置き場所
         condition: 両端を除いた区間が横の 1 本だけの関連で、ラベルの反対側の中ほどにほかの関連のラベルの文字が来る配置
         mock: なし
         expected: マーカーの矩形（`MAP_ER.fanoutSize` の四方）が、どのノードの矩形とも、`renderMapErMarks` が配置する多重度・ラベルの文字の矩形とも重ならない
@@ -656,7 +656,7 @@ functions:
     description: |-
       `renderMapFlow` のクラスのノードに、種類の行の注釈（`«…»`）と `renderMapClassMembers` の開閉のボタンとメンバーの区画を入れ、`renderMapClassEnds` の端の形・多重度・ラベルを重ねる。
       関係の線は矢じりを持たず（`..` は破線）、関係のラベルは `layout` の線から取って線の中ほどに描き、ノートのノード（`note_{番号}`）は種類の行「ノート」を持つ。
-      `links` は `renderMapFlow` にそのまま渡し、リンク先を持つクラスを構成図のノードと同じ `a.mdmark-diagram-node-link` で描く。
+      `links` は `renderMapFlow` にそのまま指定し、リンク先を持つクラスを構成図のノードと同じ `a.mdmark-diagram-node-link` で描く。
       クラスの大きさは `MAP_CLASS`（幅・名前の行・メンバーの行・区切り線）で決める
     scope: public
     callees:
@@ -665,7 +665,7 @@ functions:
       - name: args
         type: 'MapFlowArgs & { classes: MapClassNode[]; ends: MapClassEnd[]; terms?: Record<string, string> }'
         required: true
-        description: '構成図の部品の引数（`layout` の線は `spreadMapEnds` でずらした線）と、クラスの中身・関係の端。`notes` の `{クラス}.{メンバー}` の説明と `annotations` の注記は、そのクラスの `renderMapClassMembers` にメンバーの名前ごとに渡す（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）'
+        description: '構成図の部品の引数（`layout` の線は `spreadMapEnds` でずらした線）と、クラスの中身・関係の端。`notes` の `{クラス}.{メンバー}` の説明と `annotations` の注記は、そのクラスの `renderMapClassMembers` にメンバーの名前ごとに指定する（`ownerPrefix` は `mdmark-note-owner-{図の通し番号}-`）'
     returns:
       type: MapPart
       description: 図の中身とツールチップの HTML
@@ -730,7 +730,7 @@ functions:
       関係の端の形（白抜きの三角・黒と白のひし形・開いた矢じり）と、端の近くの多重度と、両端を除いた最も長い区間の中ほどのラベルの `svg.map-class-ends`。
       形と文字は `aria-hidden` で、`data-wire-mark` に関係の ID を持つ。
       多重度とラベルの重なりは `renderMapErMarks` と同じくずらす。
-      ラベルは、両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、縦の区間なら右 → 左、横の区間なら上 → 下を試し、避ける矩形（`layout` のクラス・ノートのノードの矩形と、グループのタイトルの行の矩形（グループの上端から `MAP_LAYOUT.groupTitle` の高さ）、先に配置した多重度・ラベルの文字の矩形）のどれとも重ならない最初の置き場所にする。
+      ラベルは、両端を除いた区間を長い順に、区間の中ほど → 4 分の 1 → 4 分の 3 の位置で、縦の区間なら右 → 左、横の区間なら上 → 下を試し、回避する矩形（`layout` のクラス・ノートのノードの矩形と、グループのタイトルの行の矩形（グループの上端から `MAP_LAYOUT.groupTitle` の高さ）、先に配置した多重度・ラベルの文字の矩形）のどれとも重ならない最初の置き場所にする。
       全て重なるときは、最も長い区間の中ほどから他のラベルと重ならないまで 1 行ずつ下へずらす（今の `placeLabel`）
     scope: public
     args:
@@ -744,7 +744,7 @@ functions:
     unit_tests:
       - name: test_render_map_class_ends_when_label_near_nodes
         case: 正常
-        summary: ラベルがノードとタイトルを避ける
+        summary: ラベルがノードとタイトルを回避する
         condition: 縦の区間の右にノートのノード、左にクラスのノードが接し、中ほどの高さにグループのタイトルの行がある、ラベル「応答の変換」を持つ関係の `layout`
         mock: なし
         expected: ラベルの文字の矩形（文字数 × `MAP_ER.labelChar` の幅）が、どのノードの矩形とタイトルの行の矩形とも重ならず、線のいずれかの区間の周りにある
@@ -788,7 +788,7 @@ functions:
       - name: args
         type: 'MapFlowArgs & { groupIcons: Record<string, string>; junctions: string[]; heads: Record<string, "none" | "end" | "start" | "both">; terms?: Record<string, string> }'
         required: true
-        description: 構成図の部品の引数（`layout` の線は `rewireMapArchitecture` で引き直した線）と、group ごとのアイコン・junction の ID・線ごとの矢じり
+        description: 構成図の部品の引数（`layout` の線は `rewireMapArchitecture` で再計算した線）と、group ごとのアイコン・junction の ID・線ごとの矢じり
     returns:
       type: MapPart
       description: 図の中身とツールチップの HTML
@@ -796,16 +796,16 @@ functions:
       - name: test_render_map_architecture
         case: 正常
         summary: アーキテクチャ図の部品
-        condition: モックの `ARCH` を配置して `rewireMapArchitecture` で引き直す
+        condition: モックの `ARCH` を配置して `rewireMapArchitecture` で再計算する
         mock: なし
         expected: '`cloud`・`app` のタイトルにアイコンの `svg` があり、`hub` が `data-shape="junction"` と `aria-label="分岐点"` を持ち `tabindex` を持たない。`r3` の線が矢じりを持たず、`r1` が先の側に矢じりを持つ'
   - name: rewireMapArchitecture
-    title: アーキテクチャ図の線の引き直し
+    title: アーキテクチャ図の線の再計算
     kind: 関数
     container: src/map/map.part.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: 線を、指定の辺の中ほどから `MAP_ARCH.endOut`（16px）外へ出た 2 点を直角につなぐ経路に引き直す。2 点は、出る辺と入る辺がどちらも左右なら中ほどの縦の区間で、どちらも上下なら中ほどの横の区間で、左右と上下の組なら 1 回だけ折れてつなぐ（折れる点の 2 つの候補のうち、両端の矩形の中を通らない方）
+    summary: 線を、指定の辺の中ほどから `MAP_ARCH.endOut`（16px）外へ出た 2 点を直角につなぐ経路に再計算する。2 点は、出る辺と入る辺がどちらも左右なら中ほどの縦の区間で、どちらも上下なら中ほどの横の区間で、左右と上下の組なら 1 回だけ折れてつなぐ（折れる点の 2 つの候補のうち、両端の矩形の中を通らない方）
     scope: public
     args:
       - name: args
@@ -814,7 +814,7 @@ functions:
         description: 配置の結果・線の辺の指定・閉じた group・補足の `layout` の `{線}.ends`
     returns:
       type: MapLayout["wires"]
-      description: 引き直した線
+      description: 再計算した線
     process: |-
       1. 辺を、補足の `ends` → Mermaid の辺の指定の順に選ぶ
       2. `{group}` を持つ端は、その service を含む group の枠を、閉じた group の中の service の端と閉じた group を指す端は、閉じたノードを端の矩形にする
@@ -921,7 +921,7 @@ functions:
       中へ入ったときは図の上端に根からの道筋 `nav.map-mindmap-trail` を出す。
       選択と案内の強調で残さない項目と曲線に `map-dim` を付ける。
 
-      色は色の名前の文字の色（`colorVar`）を項目と曲線の `--map-mindmap-color` に、`filled` の項目はその色の面の色を `--map-mindmap-fill` に入れ、形状・下線・持ち手・道筋の見た目は CSS（`src/index.css`。モックの `docs/mock/refs/649/assets/mindmap.css`）で決める
+      色は色の名前の文字の色（`colorVar`）を項目と曲線の `--map-mindmap-color` に、`filled` の項目はその色の面の色を `--map-mindmap-fill` に入れ、形状・下線・持ち手・道筋の外観は CSS（`src/index.css`。モックの `docs/mock/refs/649/assets/mindmap.css`）で決める
     scope: public
     args:
       - name: args
@@ -988,7 +988,7 @@ functions:
       軸の目盛り・section の見出しと枠・ブランチの線とブランチ名のボタン・つながりの線・今日の線を SVG と `div` で重ね、section と入れ子のブロックに開閉の `button[data-map-section-toggle]` と中へ入る `button[data-map-section-enter]` を付け、ブロック図の入れ子のブロックの名前を選ぶ `button[data-map-section-select]`（`aria-pressed`）にする。
       中へ入ったときは図の上端に「全体 › {名前}」の `nav.map-axis-trail` を出す。
       選択と強調で残さないものに `map-dim` を付ける。
-      形状・棒・顔のマーカー・格子の見た目は CSS（`src/index.css`。モックの `docs/mock/refs/653/assets/axis-grid.css`）で決める
+      形状・棒・顔のマーカー・格子の外観は CSS（`src/index.css`。モックの `docs/mock/refs/653/assets/axis-grid.css`）で決める
     scope: public
     args:
       - name: args

@@ -10,7 +10,7 @@ functions:
     kind: 関数
     scope: internal
     summary: '`data-tree` の表の子を持つ行に開閉のボタン、各行にパスのコピーのボタンと全体のパスのツールチップを配置し、開閉・行の選択・キーの列の絞り込み・見本との連動と見本の表示の切り替えを付ける'
-    description: 開閉の作法はコードの折りたたみと同じ（Shift で子孫をまとめて開閉する）。ツールチップは用語のツールチップと同じ開閉の処理を使用する。絞り込みは `attachTables` のキーの列の `text` の絞り込みの代わりに `filterTreeRows` で当て、件数を書き換える。絞り込む前の開閉を記録し、解くと戻す。コピーは `writeClipboard` を使用し、結果を 2 秒出す。印刷の前後の開閉は `attachPrint` が扱う
+    description: 開閉の作法はコードの折りたたみと同じ（Shift で子孫をまとめて開閉する）。ツールチップは用語のツールチップと同じ開閉の処理を使用する。絞り込みは `attachTables` のキーの列の `text` の絞り込みの代わりに `filterTreeRows` で適用し、件数を書き換える。絞り込む前の開閉を記録し、解くと戻す。コピーは `writeClipboard` を使用し、結果を 2 秒出す。印刷の前後の開閉は `attachPrint` が扱う
     side_effects: 表の行の `hidden`・`aria-selected`・縦線の class・見本の行の class を書き換える。クリップボードに書き込む
     args:
       - name: options
@@ -60,7 +60,7 @@ functions:
       - name: test_attach_table_tree_when_states
         case: 正常
         summary: 記録した開閉で始め、押した開閉を記録する
-        condition: '`aliases[]` が子を持つ階層の表に空の `states` を指定して付け、`aliases[]` のボタンを押してから削除し、同じ HTML を描き直した表に同じ `states` でもう一度付ける'
+        condition: '`aliases[]` が子を持つ階層の表に空の `states` を指定して付け、`aliases[]` のボタンを押してから削除し、同じ HTML を再描画した表に同じ `states` でもう一度付ける'
         mock: なし
         expected: 2 回目に付けた後、`aliases[]` の子孫の行が `hidden` を持ち、ボタンの `aria-expanded` が `false`
     status: planned

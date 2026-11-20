@@ -5,9 +5,9 @@ scenarios:
   - name: 正常シナリオ
     setup:
       - name: 見本の文書群
-        description: 文書 3 つ（入口の純粋な `.md`・用語集の表を持つ `.mark.md`・Chart.js のマーカーと画像を持つ `.mark.md`）と、3 つと用語を記載した索引。入口から他の 2 つへリンクする
+        description: 文書 3 つ（起点の純粋な `.md`・用語集の表を持つ `.mark.md`・Chart.js のマーカーと画像を持つ `.mark.md`）と、3 つと用語を記載した索引。起点の文書から他の 2 つへリンクする
       - name: build の設定
-        description: '`include` が 3 つに該当し、`glossary` が用語集の文書、`entry` が入口、`out` が出力のパス'
+        description: '`include` が 3 つに該当し、`glossary` が用語集の文書、`entry` が起点の文書、`out` が出力のパス'
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
@@ -31,15 +31,15 @@ scenarios:
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
       - 出力に入れた文書の数として 3 が出る
-      - HTML を file:// で開くと、入口の文書が描かれ、文書の一覧に `.mark.md` と純粋な `.md` の 3 つが並ぶ
-      - 用語集の文書の表の用語が、入口の文書の本文でもツールチップを出す
-      - 入口からリンクされた文書の末尾に、入口が関連文書（被参照）として出る
+      - HTML を file:// で開くと、起点の文書が描かれ、文書の一覧に `.mark.md` と純粋な `.md` の 3 つが並ぶ
+      - 用語集の文書の表の用語が、起点の文書の本文でもツールチップを出す
+      - 起点の文書からリンクされた文書の末尾に、起点の文書が関連文書（被参照）として出る
       - 外への要求が 0 件
     test: test_normal
   - name: 正常シナリオ（1 枚に含まれない文書へのリンクがある）
     setup:
       - name: 除外した文書を指す文書群
-        description: 正常シナリオの文書群に下書きの文書を 1 つ追加し、`exclude` で削除し、入口からその文書へリンクする
+        description: 正常シナリオの文書群に下書きの文書を 1 つ追加し、`exclude` で削除し、起点の文書からその文書へリンクする
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
     flow: |-
@@ -59,7 +59,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 終了コードが 0 で、入れた文書の数が 3
-      - 出力の警告に、入口の文書と 1 枚に含まれないリンク先が出る
+      - 出力の警告に、起点の文書と 1 枚に含まれないリンク先が出る
       - HTML の中で、そのリンクが記載したままの `href` で残る
       - 文書の一覧に除外した文書が無い
     test: test_normal_when_link_outside_bundle
@@ -90,7 +90,7 @@ scenarios:
   - name: 正常シナリオ（mermaid のコードブロック）
     setup:
       - name: mermaid を使用する文書を含む文書群
-        description: 文書 2 つ（入口と、言語 `mermaid` の flowchart のコードブロックを持つ文書）と索引。入口から mermaid の文書へリンクする
+        description: 文書 2 つ（起点の文書と、言語 `mermaid` の flowchart のコードブロックを持つ文書）と索引。起点の文書から mermaid の文書へリンクする
       - name: build の設定
         description: '`include` が 2 つに該当する'
       - name: Mock
@@ -107,14 +107,14 @@ scenarios:
         W->>C: mdmark build
         C->>C: include の文書に mermaid のコードブロックがあるので、mermaid を 1 つのスクリプトにまとめる
         C->>F: mermaid を埋めた HTML を書き込む
-        R->>F: file:// で開き、入口から mermaid の文書へ移る
+        R->>F: file:// で開き、起点の文書から mermaid の文書へ移る
         F-->>R: 図の枠に入った mermaid の図
       ```
 
       <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
-      - 入口から mermaid の文書へ移ると、mermaid のコードブロックの場所に図の枠と SVG の図がある
+      - 起点の文書から mermaid の文書へ移ると、mermaid のコードブロックの場所に図の枠と SVG の図がある
       - 外への要求が 0 件
       - mermaid のコードブロックを持たない文書だけを `include` にした build の出力には、mermaid が埋められていない
     test: test_normal_when_mermaid
@@ -146,7 +146,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
-      - file:// で開くと、入口の文書と、一覧から開いたほかの文書のどちらでも `単体テスト` に下線が付く
+      - file:// で開くと、起点の文書と、一覧から開いたほかの文書のどちらでも `単体テスト` に下線が付く
       - '`単体テスト` のツールチップに、コード `npm run test:unit` とコピーのボタンが出る'
       - まとめた HTML のソースに、`env` の `開発サーバー`・`http://127.0.0.1:8767/` が入っていない
       - 外への要求が 0 件
@@ -176,7 +176,7 @@ scenarios:
       <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
-      - 入口の文書と、一覧から開いたほかの文書のどちらでも、描く先の要素の地の色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
+      - 起点の文書と、一覧から開いたほかの文書のどちらでも、描く先の要素の背景色の計算値が theme-paper の暗い配色の `--mdmark-color-bg` の値
       - 外への要求が 0 件
     test: test_normal_when_theme_selected
     refs:
@@ -211,13 +211,13 @@ scenarios:
       - 動画・音声が出力先のフォルダへコピーされ、どちらの文書を開いても再生バーが出る
       - まとめた HTML を file:// で開いたとき、外へのネットワークの要求が 0 件
     test: test_normal_when_media_embedded
-  - name: '正常シナリオ（blob: と動的 import を許さない環境で開く）'
+  - name: '正常シナリオ（blob: と動的 import を許可しない環境で開く）'
     setup:
       - name: 埋めるモジュールを使用する文書群
-        description: 入口の文書（`extensions` の拡張のマーカーと言語 `ts` のコードブロック）と、入口からリンクする文書（ビューのマーカーと Chart.js のマーカー）の 2 つ。`build` の設定と `extensions` にマーカーを描く拡張のモジュールを記載した設定
+        description: 起点の文書（`extensions` の拡張のマーカーと言語 `ts` のコードブロック）と、起点の文書からリンクする文書（ビューのマーカーと Chart.js のマーカー）の 2 つ。`build` の設定と `extensions` にマーカーを描く拡張のモジュールを記載した設定
         notes: 拡張のモジュールは `load` の中で同じフォルダの別のファイルを動的 `import()` で読み込む
       - name: Mock
-        description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許さない）"
+        description: "外部ライブラリと色分けのライブラリは手元のモジュール。まとめた HTML を、`Content-Security-Policy: script-src 'unsafe-inline'` のヘッダーを付けて返却する手元のサーバーから開く（`blob:` と `data:` のスクリプトと、動的 `import()` で読み込むスクリプトを許可しない）"
     flow: |-
       <!-- map -->
 
@@ -231,21 +231,21 @@ scenarios:
         C->>C: 起動の処理・拡張・部品・色分け・外部ライブラリを 1 つのスクリプトにまとめる
         C->>F: まとめたスクリプトを script 要素に入れた HTML を書き込む
         C-->>W: 出力のパス・入れた文書の数・終了コード 0
-        R->>F: blob: と動的 import を許さない環境で開き、リンクでもう 1 つの文書へ移る
+        R->>F: blob: と動的 import を許可しない環境で開き、リンクでもう 1 つの文書へ移る
         F-->>R: どちらの文書も拡張のマーカー・ビュー・図・色分けを描く
       ```
 
       <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
-      - 入口の文書で、拡張のマーカーの場所に拡張が描いた要素があり、`ts` のコードブロックが色分けされている
+      - 起点の文書で、拡張のマーカーの場所に拡張が描いた要素があり、`ts` のコードブロックが色分けされている
       - リンクで移った文書で、ビューが描かれ、Chart.js のマーカーの場所に `canvas` が描かれ、通知ブロックが出ない
       - 開いてから文書を移った後までに、CSP の違反（`securitypolicyviolation`）が 0 件で、`blob:` の URL への要求が 0 件
     test: test_normal_when_blob_and_dynamic_import_blocked
   - name: 正常シナリオ（脚注を持つ文書）
     setup:
       - name: 脚注を持つ文書群
-        description: 入口の文書と、入口からリンクする文書の 2 つ。どちらも段落に `[^1]` と定義を持ち、定義の中身は入口が `入口の補足`、もう 1 つが `別の文書の補足`。`build` の設定
+        description: 起点の文書と、起点の文書からリンクする文書の 2 つ。どちらも段落に `[^1]` と定義を持ち、定義の中身は起点の文書が `入口の補足`、もう 1 つが `別の文書の補足`。`build` の設定
         notes: 2 つの文書で同じラベル `1` を使用し、文書をまたいだ戻るリンクの取り違えを決定的に発生させる
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
@@ -278,7 +278,7 @@ scenarios:
   - name: 正常シナリオ（注記を持つ文書）
     setup:
       - name: 注記を持つ文書群
-        description: 入口の文書と、入口からリンクする文書の 2 つ。どちらも同じ ID `cond` の注記を定義して段落から参照し、注記の本文は入口が `入口の注記`、もう 1 つが `別の文書の注記`。`build` の設定
+        description: 起点の文書と、起点の文書からリンクする文書の 2 つ。どちらも同じ ID `cond` の注記を定義して段落から参照し、注記の本文は起点の文書が `入口の注記`、もう 1 つが `別の文書の注記`。`build` の設定
         notes: 2 つの文書で同じ ID `cond` を使用し、文書をまたいだ本文と戻るリンクの取り違えを決定的に発生させる
       - name: Mock
         description: 外部ライブラリは相対パスの手元のモジュール
@@ -314,7 +314,7 @@ scenarios:
         description: '`<!-- html -->` の範囲に `html`・`css`・`ts` のコードブロックを 1 つずつ配置した文書と、範囲を持たない文書の 2 つを `build` に指定し、`features.html-scripts` を `true` にした設定'
         notes: '`ts` はノードを押すと根の要素に class `is-open` を付与・解除し、`destroy` で `window.__mdmarkDestroyed` を 1 増やす'
       - name: Mock
-        description: '正常シナリオ（blob: と動的 import を許さない環境で開く）と同じ'
+        description: '正常シナリオ（blob: と動的 import を許可しない環境で開く）と同じ'
     flow: |-
       <!-- map -->
 
@@ -466,7 +466,7 @@ scenarios:
   - name: 正常シナリオ（フロントマターのメタデータ）
     setup:
       - name: フロントマターを持つ文書群
-        description: 正常シナリオの文書 3 つのうち入口の文書の先頭に、`title`（`はじめに`）・`description`（`mdmark の入口`）・`aliases`（`入口の文書`）を記載したフロントマターを配置し、索引の入口の行を `id`・`path` だけにしたもの。用語集の表を持つ文書の本文に `入口の文書` を記載する
+        description: 正常シナリオの文書 3 つのうち起点の文書の先頭に、`title`（`はじめに`）・`description`（`mdmark の起点`）・`aliases`（`起点の文書`）を記載したフロントマターを配置し、索引の起点の文書の行を `id`・`path` だけにしたもの。用語集の表を持つ文書の本文に `起点の文書` を記載する
       - name: build の設定
         description: 正常シナリオと同じ
       - name: Mock
@@ -492,16 +492,16 @@ scenarios:
       <!-- /map -->
     expected:
       - 終了コードが 0 で、`build.out` に HTML が 1 つある
-      - 文書の一覧で、入口の文書が `はじめに` のタイトルで並ぶ
-      - 入口の文書を開くと、帯のタイトルとページのタイトルが `はじめに`
-      - 入口からリンクされた文書の末尾の関連文書に、入口が `はじめに` のリンクで出る
-      - 用語集の文書の本文の `入口の文書` に破線の下線が付き、ツールチップの「関連文書」に `はじめに` と `mdmark の入口` が出る
+      - 文書の一覧で、起点の文書が `はじめに` のタイトルで並ぶ
+      - 起点の文書を開くと、帯のタイトルとページのタイトルが `はじめに`
+      - 起点の文書からリンクされた文書の末尾の関連文書に、起点の文書が `はじめに` のリンクで出る
+      - 用語集の文書の本文の `起点の文書` に破線の下線が付き、ツールチップの「関連文書」に `はじめに` と `mdmark の起点` が出る
       - 外への要求が 0 件
     test: test_normal_when_frontmatter_metadata
   - name: 正常シナリオ（索引に無い文書がフロントマターを持つ）
     setup:
       - name: 索引に無い文書を含む文書群
-        description: 正常シナリオの文書 3 つと索引に、索引に無く先頭のフロントマターに `title`（`補足`）・`aliases`（`補足の文書`）を持つ文書 `notes.md` を加え、入口の文書の本文に `補足の文書` を記載したもの
+        description: 正常シナリオの文書 3 つと索引に、索引に無く先頭のフロントマターに `title`（`補足`）・`aliases`（`補足の文書`）を持つ文書 `notes.md` を加え、起点の文書の本文に `補足の文書` を記載したもの
       - name: build の設定
         description: '`include` が 4 つに該当する。そのほかは正常シナリオと同じ'
       - name: Mock
@@ -528,8 +528,8 @@ scenarios:
     expected:
       - 終了コードが 0 で、入れた文書の数が 4
       - 文書の一覧に `notes.md` が `補足` のタイトルで並ぶ
-      - 入口の文書の本文の `補足の文書` に破線の下線が付き、ツールチップの「関連文書」に `補足` が出る
-      - '`notes.md` を開くと、末尾の関連文書に入口の文書が出る'
+      - 起点の文書の本文の `補足の文書` に破線の下線が付き、ツールチップの「関連文書」に `補足` が出る
+      - '`notes.md` を開くと、末尾の関連文書に起点の文書が出る'
       - 外への要求が 0 件
     test: test_normal_when_frontmatter_unindexed_document
 lead: 文書の作成者が設定の `build` で対象を決めて `mdmark build` を実行し、参照・被参照・用語のツールチップが有効になる 1 枚の HTML にまとめる。
@@ -544,7 +544,7 @@ success_guarantee: '`build.out` に 1 枚の HTML ができ、`include` に該�
 
   1 枚に含まれる文書へのリンクは 1 枚の中の文書へ移り、含まれない文書へのリンクは記載したままの `href` で残る。
 
-  埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許さない環境でも同じに描かれる。
+  埋めた拡張・部品・色分け・外部ライブラリは 1 つのスクリプトで動き、`blob:` URL と動的 `import()` を許可しない環境でも同じに描かれる。
 
   隠さない書き出しを指定しなければ、HTML から mdmark を使用していることが読み取れない（mdmark の名前は別名へ置き換わり、HTML のコメント・バージョン・mdmark 自身のライセンスの表記は残らない。利用者が記載した値と第三者のライブラリのライセンスの表記は残る）。'
 minimal_guarantee: 対象の文書が 0 件のときは HTML を書き込まず、原因と修正方法の 1 文を出して 0 以外で終わる。CLI は文書と索引を書き換えない。

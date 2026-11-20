@@ -25,7 +25,7 @@ data_models:
         description: '`note for` のノート（`id`・`of`・`text`）。`id` は記載順の `note_{番号}`（1 から）'
       - name: problems
         type: MapProblem[]
-        description: 読めない行と閉じの無いクラス・`namespace`
+        description: 読み取れない行と閉じの無いクラス・`namespace`
 constants:
   - name: MAP_CLASS_KINDS
     title: クラス図のノードの種類
@@ -35,12 +35,12 @@ constants:
     summary: クラス（種類の行「クラス」）・注釈を持つクラス（種類の行は空。注釈は `renderMapClassDiagram` が出す）・ノート（種類の行「ノート」）の `MapKind`。キーは設定の `map.kinds` と重ならない `mdmark-class`・`mdmark-class-annotated`・`mdmark-memo`
 functions:
   - name: parseClassDiagram
-    title: classDiagramを読む
+    title: classDiagramを読み取る
     kind: 関数
     container: src/map/class-diagram.ts
     usecase: Mermaidと補足で図を描く
     role: 処理
-    summary: '`classDiagram` の Mermaid を、クラス・メンバー・関係・`namespace`・ノートと読めない行の項目に読み、`click {クラス} href "{URL}"`（`href` は省ける）と `link {クラス} "{URL}"` の行をクラスの ID からリンク先への `links` に読む'
+    summary: '`classDiagram` の Mermaid を、クラス・メンバー・関係・`namespace`・ノートと読み取れない行の項目に読み取り、`click {クラス} href "{URL}"`（`href` は省ける）と `link {クラス} "{URL}"` の行をクラスの ID からリンク先への `links` に読み取る'
     scope: public
     args:
       - name: source
@@ -51,10 +51,10 @@ functions:
       type: ClassDiagram
       description: 読み取り結果
     process: |-
-      1. 行ごとに、`namespace {ID} {`・`class {ID}[~T~] {`（`}` までをメンバーの区間）・`class {ID}`・`<<{注釈}>> {ID}`・区間の中の `<<{注釈}>>`・`{ID} : {メンバー}`・`note for {ID} "{文}"`・関係の行（`{元} ["{多重度}"] {記号} ["{多重度}"] {先} [: {ラベル}]`）・`}`・`%%`・空の行に分けて読む
-      2. メンバーは、先頭の `+`・`-`・`#`・`~` を可視性、末尾の `$` を静的、`*` を抽象、`(` を持てばメソッドにする。属性の名前（`name`）は、最初の空白か `:` の前まで（`+対応: dict` は `対応`）。可視性を外した残りの `~` は左から順に、直後が `~`・`,`・空白・`)`・文字列の終わりで閉じを待つ開きがある `~` を `>`、それ以外を開きにして、組になった開きを `<` にした文字を `text` にする（組にならない開きは `~` のまま。`name` は置き換えない）
+      1. 行ごとに、`namespace {ID} {`・`class {ID}[~T~] {`（`}` までをメンバーの区間）・`class {ID}`・`<<{注釈}>> {ID}`・区間の中の `<<{注釈}>>`・`{ID} : {メンバー}`・`note for {ID} "{文}"`・関係の行（`{元} ["{多重度}"] {記号} ["{多重度}"] {先} [: {ラベル}]`）・`}`・`%%`・空の行に分けて読み取る
+      2. メンバーは、先頭の `+`・`-`・`#`・`~` を可視性、末尾の `$` を静的、`*` を抽象、`(` を持てばメソッドにする。属性の名前（`name`）は、最初の空白か `:` の前まで（`+対応: dict` は `対応`）。可視性を解除した残りの `~` は左から順に、直後が `~`・`,`・空白・`)`・文字列の終わりで閉じを待つ開きがある `~` を `>`、それ以外を開きにして、組になった開きを `<` にした文字を `text` にする（組にならない開きは `~` のまま。`name` は置き換えない）
       3. 関係の記号（`<|--`・`--|>`・`*--`・`--*`・`o--`・`--o`・`-->`・`<--`・`..>`・`<..`・`..|>`・`<|..`・`--`・`..`）を、記号の側の端の形と `..` の破線にする
-         - 読めない行・閉じの無いクラスと `namespace` は `map_invalid` の項目（行番号・行の文字・直し方）にする
+         - 読み取れない行・閉じの無いクラスと `namespace` は `map_invalid` の項目（行番号・行の文字・修正方法）にする
     unit_tests:
       - name: test_parse_class_diagram
         case: 正常
@@ -64,10 +64,10 @@ functions:
         expected: クラス 6・関係 7（`r1`〜`r7`）・`namespace` 1・ノート 1 で、「図形」の注釈が `interface`、「一覧」の `generic` が `T`、「基本図形」のメンバー `描く` が抽象・`数` が静的、`r1` の `toEnd` が `triangle` で破線、`r7` の多重度が `1`・`*`、「円」の `namespace` が `形状`
       - name: test_parse_class_diagram_when_unreadable
         case: 異常
-        summary: 読めない行
+        summary: 読み取れない行
         condition: 関係の行 `図面 -x- 円`
         mock: なし
-        expected: '`map_invalid` が 1 件で行番号を含み、ほかのクラスと関係は読める'
+        expected: '`map_invalid` が 1 件で行番号を含み、ほかのクラスと関係は読み取れる'
       - name: test_parse_class_diagram_when_unclosed
         case: 異常
         summary: 閉じの無いクラス
@@ -79,7 +79,7 @@ functions:
         summary: click と link の行をリンク先にする
         condition: '`click 図面 href "./drawing.md"`・`click 円 "https://example.com"`・`link 線 "./line.md"` の行を持つ classDiagram'
         mock: なし
-        expected: '`links` が `{"図面":"./drawing.md","円":"https://example.com","線":"./line.md"}` で、読めない行の項目が無い'
+        expected: '`links` が `{"図面":"./drawing.md","円":"https://example.com","線":"./line.md"}` で、読み取れない行の項目が無い'
       - name: test_parse_class_diagram_when_member_generics
         case: 正常
         summary: メンバーの型の `~`

@@ -54,7 +54,7 @@ states:
       - name: lines
         value: '[{"text":"import { mount } from \"mdmark\";"},{"text":""},{"text":"const element = document.querySelector(\"#doc\");"},{"text":"const response = await fetch(\"/README.md\");"},{"text":"const markdown = await response.text();"},{"text":""},{"text":"const config = {"},{"text":"  features: {"},{"text":"    code: true,","kind":"highlight"},{"text":"    print: true,","kind":"highlight"},{"text":"  },"},{"text":"};"},{"text":"mount(element, markdown, config);"}]'
   - name: LongLineAndTitle
-    description: 幅を超えるタイトルと行。タイトルは帯の中で折り返し、行はブロックの中で横にスクロールして行の地を最も長い行の右端まで敷く
+    description: 幅を超えるタイトルと行。タイトルは帯の中で折り返し、行はブロックの中で横にスクロールして行の背景を最も長い行の右端まで敷く
     args:
       - name: language
         value: ts
@@ -74,7 +74,7 @@ states:
       - name: lines
         value: '[{"text":"import { mount } from \"mdmark\";"},{"text":""},{"text":"// 文書を描く"},{"text":"const element: HTMLElement | null = document.querySelector(\"#doc\");"},{"text":"mount(element, `# 見出し ${300}`, { features: { syntax: true } });"}]'
   - name: SyntaxWithLineMarks
-    description: タイトル・行番号・削除した行・追加した行・強調と色分け。行番号・行頭の `+`・`-`・行の地と左端の線はそのままに、行の中身だけが色分けされる
+    description: タイトル・行番号・削除した行・追加した行・強調と色分け。行番号・行頭の `+`・`-`・行の背景と左端の線はそのままに、行の中身だけが色分けされる
     args:
       - name: language
         value: ts
@@ -109,7 +109,7 @@ states:
       - name: lines
         value: '[{"text":"@dataclass"},{"text":"class Doc:"},{"text":"    # 文書のタイトル"},{"text":"    title: str = \"README\""},{"text":"    lines: int = 300"},{"text":""},{"text":"print(len(Doc().title))"}]'
   - name: LanguageLabel
-    description: タイトルも行のマーカーも持たない ts のコードブロック。帯の左端の上端に `ts` のタブ、右端に `コピー` のボタン。帯は本文と同じ地で、帯と本文の間に線が無い
+    description: タイトルも行のマーカーも持たない ts のコードブロック。帯の左端の上端に `ts` のタブ、右端に `コピー` のボタン。帯は本文と同じ背景で、帯と本文の間に線が無い
     args:
       - name: language
         value: ts
@@ -176,7 +176,7 @@ states:
       - name: lines
         value: '[{"text":"export function mount(element, markdown, options = {}) {","foldLines":10},{"text":"  const config = withDefaults(options);","indent":1},{"text":"  for (const block of parse(markdown)) {","kind":"focus","indent":1,"foldLines":4},{"text":"    if (block.kind === \"table\") {","kind":"focus","indent":2,"foldLines":1},{"text":"      attachTable(block, config.features);","indent":3},{"text":"    }","indent":2},{"text":"    element.append(render(block));","indent":2},{"text":"  }","indent":1},{"text":"  return () => {","indent":1,"foldLines":1},{"text":"    element.replaceChildren();","indent":2},{"text":"  };","indent":1},{"text":"}"}]'
   - name: ErrorWarning
-    description: '`[!code warning]` の 2 行目と `[!code error]` の 5 行目。地と左の線の色に加え、行頭の `!`・`×` で示す'
+    description: '`[!code warning]` の 2 行目と `[!code error]` の 5 行目。背景と左の線の色に加え、行頭の `!`・`×` で示す'
     args:
       - name: language
         value: ts
@@ -254,7 +254,7 @@ states:
       - name: lines
         value: '[{"text":"# 在庫の点検"},{"text":""},{"text":"> [!NOTE]"},{"text":"> 点検は毎朝 9 時までに済ませる。"}]'
   - name: MarkdownRaw
-    description: '`Raw` のボタンを押した後、または `<!-- code: {"raw": true} -->` を持つ言語 `markdown` のコードブロック。ボタンが `aria-pressed="true"` で、リンクの色の文字と `--mdmark-color-current-bg` の地になり、帯の下に元の Markdown の `pre` を出す'
+    description: '`Raw` のボタンを押した後、または `<!-- code: {"raw": true} -->` を持つ言語 `markdown` のコードブロック。ボタンが `aria-pressed="true"` で、リンクの色の文字と `--mdmark-color-current-bg` の背景になり、帯の下に元の Markdown の `pre` を出す'
     args:
       - name: language
         value: markdown
@@ -295,7 +295,7 @@ args:
   - name: foldColumnHovered
     type: 真偽値
     default: 'false'
-    description: ポインターが開閉のボタンの列（行番号の右の `--mdmark-code-fold-width` の幅。行番号を持たないときは行の頭の同じ幅）に乗っているか（`mount` が付けた状態）。`true` のとき `pre` に `data-fold-hover` を付け、畳める全ての行の開閉のボタンを出す。`mount` は `pre` の `pointermove`（ポインターの横の位置が列にあるか）と `pointerleave` で付け外しする
+    description: ポインターが開閉のボタンの列（行番号の右の `--mdmark-code-fold-width` の幅。行番号を持たないときは行の頭の同じ幅）に乗っているか（`mount` が付けた状態）。`true` のとき `pre` に `data-fold-hover` を付け、畳める全ての行の開閉のボタンを出す。`mount` は `pre` の `pointermove`（ポインターの横の位置が列にあるか）と `pointerleave` で付与・解除する
   - name: highlight
     type: 真偽値
     default: 'false'
@@ -332,7 +332,7 @@ css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>
     default: '#fef3c7（ダーク #5c4a12）'
-    description: 強調した行の地の色
+    description: 強調した行の背景色
   - name: --mdmark-color-code-highlight-line
     syntax: <color>
     default: '#b45309（ダーク #fbbf24）'
@@ -340,7 +340,7 @@ css_properties:
   - name: --mdmark-color-diff-add-bg
     syntax: <color>
     default: '#e1ede2'
-    description: 追加した行の地の色（差分の表示と共通）
+    description: 追加した行の背景色（差分の表示と共通）
   - name: --mdmark-color-diff-add-sign
     syntax: <color>
     default: '#15803d'
@@ -348,7 +348,7 @@ css_properties:
   - name: --mdmark-color-diff-del-bg
     syntax: <color>
     default: '#fbe6e3'
-    description: 削除した行の地の色（差分の表示と共通）
+    description: 削除した行の背景色（差分の表示と共通）
   - name: --mdmark-color-diff-del-sign
     syntax: <color>
     default: '#b91c1c'
@@ -356,11 +356,11 @@ css_properties:
   - name: --mdmark-color-error
     syntax: <color>
     default: 値は [デザイン方針](../design-policy.md)
-    description: エラーの行の左端の線と行頭の `×` の色。地はこの色を `--mdmark-color-bg` に 12% 混ぜた色
+    description: エラーの行の左端の線と行頭の `×` の色。背景はこの色を `--mdmark-color-bg` に 12% 混ぜた色
   - name: --mdmark-color-callout-warning
     syntax: <color>
     default: '#b45309（ダーク #fbbf24）'
-    description: 警告の行の左端の線と行頭の `!` の色。地はこの色を `--mdmark-color-bg` に 14% 混ぜた色
+    description: 警告の行の左端の線と行頭の `!` の色。背景はこの色を `--mdmark-color-bg` に 14% 混ぜた色
   - name: --mdmark-code-fold-width
     syntax: <length>
     default: 2.75ch
@@ -393,16 +393,16 @@ accessibility:
   - '`pre` は `tabindex="0"` とスクリーンリーダー向けの名前（タイトルがあれば `コード: {タイトル}`、ファイル名があれば `コード: {ファイル名}`、言語があれば `コード: {言語}`、どれも無ければ `コード`）を持ち、キーボードで横にスクロールできる'
   - 言語のラベルの言語は `aria-hidden="true"` でスクリーンリーダーに伝えず（`pre` の名前が持つ）、ファイル名だけを読み込ませる。ラベルは選んで写す中身に入れない
   - コピーのボタンは文言をスクリーンリーダー向けの名前に持ち、結果を `role="status"` の要素で `コードをコピーしました`・`コードをコピーできませんでした` とスクリーンリーダーに伝える。状態は文言とアイコンで示し、色だけに頼らない
-  - 追加した行・削除した行・強調した行は、色に加えて左端の 2px の線（追加した行・削除した行は行頭の `+`・`-` も）で分ける。強調の線は隣り合う地の色と 3:1 以上
+  - 追加した行・削除した行・強調した行は、色に加えて左端の 2px の線（追加した行・削除した行は行頭の `+`・`-` も）で分ける。強調の線は隣り合う背景色と 3:1 以上
   - '行頭のマーカーは擬似要素の代わりの文字でスクリーンリーダーに伝える（追加した行は `追加した行`、削除した行は `削除した行`、強調した行は表示される文字を持たず `強調した行`）。代わりの文字を読み込めないブラウザ（Firefox 128・Safari 17.4 より前）でも行番号と `+`・`-` が出るよう、代わりの文字の無い `content` を先に記載し、代わりの文字付きの `content` を後ろに重ねる（例: `content: "+"; content: "+" / "追加した行";`）'
   - '行番号と行頭の `+`・`-` は擬似要素で出し、文字を選んで写す中身に入れない。行は `inline-block` で並べ、コピーした行の間に空行を入れない。空の行は `min-height: 1.55em` で高さを取る（`lh` 単位は対応ブラウザの一部で有効にならない）'
   - '注目する行を持つコードブロックは、ほかの行を不透明度 0.45 にし、ポインターを乗せるかフォーカスがあるときは全ての行を戻す（`prefers-reduced-motion: reduce` では移り変わりを付けない）。エラーと警告の行は、色に加えて左端の線と行頭の `×`・`!` で分け、行頭の文字は代わりの文字で `エラーの行`・`警告の行` とスクリーンリーダーに伝える'
   - '開閉のボタンは `aria-expanded`・`aria-controls` と `{n} 行目から {m} 行目` のスクリーンリーダー向けの名前を持ち、Enter・Space で開閉する。`⋯` のボタンは `{n} 行目から {m} 行目を展開` をスクリーンリーダー向けの名前に持つ。ポインターで乗せられない端末（`hover: none`）では開閉のボタンを常に出す'
   - インデントの縦線は CSS で引き、スクリーンリーダーと選んで写す中身に入れない
   - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。タイトル・言語のラベル・行番号・強調・行の色と `+`・`-` はそのまま出し、コピーのボタンと `Raw` のボタンは出さない。畳んだ行は開いて出し、開閉のボタンと `⋯` は出さず、注目する行のほかの行も薄くしない
-  - 色分けは外観だけで、スクリーンリーダー向けの名前とコードの文字は変わらない。コメントは色に加えて斜体でも示す。色分けの 6 色は、地（`--mdmark-color-surface` と、追加した行・削除した行・強調した行の半透明の地を混ぜた色）に対して明るい配色で 5.21〜7.03、ダークで 6.56〜10.64（WCAG の相対輝度で計算）
+  - 色分けは外観だけで、スクリーンリーダー向けの名前とコードの文字は変わらない。コメントは色に加えて斜体でも示す。色分けの 6 色は、背景（`--mdmark-color-surface` と、追加した行・削除した行・強調した行の半透明の背景を混ぜた色）に対して明るい配色で 5.21〜7.03、ダークで 6.56〜10.64（WCAG の相対輝度で計算）
   - '印刷ではダークを解除した明るい配色の色分けの色を、`print-color-adjust: exact` で色を省くブラウザの設定でも紙に出す'
-  - '`Raw` のボタンは、アイコン（`aria-hidden="true"`）・見える文字 `Raw`・`mdmark-visually-hidden` の `（元の Markdown を表示）` を持ち、スクリーンリーダー向けの名前を `Raw（元の Markdown を表示）` にする（見える文字で始まる名前）。名前は押した状態で変えず、元の Markdown を出しているかを `aria-pressed` で伝える。押した状態は文字・地・枠線の色で示す'
+  - '`Raw` のボタンは、アイコン（`aria-hidden="true"`）・見える文字 `Raw`・`mdmark-visually-hidden` の `（元の Markdown を表示）` を持ち、スクリーンリーダー向けの名前を `Raw（元の Markdown を表示）` にする（見える文字で始まる名前）。名前は押した状態で変えず、元の Markdown を出しているかを `aria-pressed` で伝える。押した状態は文字・背景・枠線の色で示す'
   - 描いた結果の `div.mdmark-code-preview` は見出し・表・図をそのまま読み込ませ、中の見出しは右側の目次と被参照に入れない。`Raw` のボタンで隠した側は `hidden` でスクリーンリーダーにも伝えない
 refs:
   - IF-472-34#constraints[コードブロック]
@@ -420,33 +420,33 @@ notes:
 
     タイトルが無く、行番号も行の種類も無いときは、帯で囲むほかは今の `pre` のまま描く。
 
-    帯は本文と同じ `--mdmark-color-surface` の地にし、帯に続く `pre` は上の枠線を持たず、帯と `pre` を 1 つの外側の枠線と角丸で囲む（帯と本文の間に線を出さない。ダークの配色と印刷でも同じ）。
+    帯は本文と同じ `--mdmark-color-surface` の背景にし、帯に続く `pre` は上の枠線を持たず、帯と `pre` を 1 つの外側の枠線と角丸で囲む（帯と本文の間に線を出さない。ダークの配色と印刷でも同じ）。
 
-    言語のラベルは帯の上端に接したタブで、枠線を持たず、下の 2 つの角だけを `calc(var(--mdmark-radius) - 2px)` で丸め、`color-mix(in oklab, var(--mdmark-color-text) 14%, var(--mdmark-color-surface))` の地に本文の色の文字で出す。
+    言語のラベルは帯の上端に接したタブで、枠線を持たず、下の 2 つの角だけを `calc(var(--mdmark-radius) - 2px)` で丸め、`color-mix(in oklab, var(--mdmark-color-text) 14%, var(--mdmark-color-surface))` の背景に本文の色の文字で出す。
 
-    ファイル名はタブの地に合わせた `color-mix(in oklab, var(--mdmark-color-text) 35%, var(--mdmark-color-surface))` の縦線で区切って本文の色で出し、`overflow-wrap: anywhere` で折り返す。
+    ファイル名はタブの背景に合わせた `color-mix(in oklab, var(--mdmark-color-text) 35%, var(--mdmark-color-surface))` の縦線で区切って本文の色で出し、`overflow-wrap: anywhere` で折り返す。
 
     コピーのボタンは折り返さず帯の右端に配置し、アイコンは lucide（`copy`・`check`・`circle-alert`）。
 
     印刷ではコピーのボタンを出さない。
 
     モックは `docs/mock/components/code-block/` と、帯は `docs/mock/refs/505/assets/code-block.css`'
-  行の地の色: '追加した行・削除した行・強調した行の地は、不透明の変数をそのまま適用した後に `color-mix(in srgb, {変数} 60%, transparent)` を重ねて 2 回書く（例: `background: var(--mdmark-color-diff-add-bg); background: color-mix(in srgb, var(--mdmark-color-diff-add-bg) 60%, transparent);`）。`color-mix()` が有効になるブラウザでは `pre` の横スクロールの影が行の地を透けて見え、有効にならないブラウザ（Chrome 99〜110）では不透明の地になる。半透明の地と `--mdmark-color-surface` を混ぜた色に対するコントラストは、明るい配色で行頭のマーカーと線 4.53〜4.71・行番号 5.49〜5.69・文字 14.19〜14.71、ダークで行頭のマーカーと線 5.17〜6.49・行番号 5.37〜5.95・文字 14.37〜15.91（WCAG の相対輝度で計算）'
+  行の背景色: '追加した行・削除した行・強調した行の背景は、不透明の変数をそのまま適用した後に `color-mix(in srgb, {変数} 60%, transparent)` を重ねて 2 回書く（例: `background: var(--mdmark-color-diff-add-bg); background: color-mix(in srgb, var(--mdmark-color-diff-add-bg) 60%, transparent);`）。`color-mix()` が有効になるブラウザでは `pre` の横スクロールの影が行の背景を透けて見え、有効にならないブラウザ（Chrome 99〜110）では不透明の背景になる。半透明の背景と `--mdmark-color-surface` を混ぜた色に対するコントラストは、明るい配色で行頭のマーカーと線 4.53〜4.71・行番号 5.49〜5.69・文字 14.19〜14.71、ダークで行頭のマーカーと線 5.17〜6.49・行番号 5.37〜5.95・文字 14.37〜15.91（WCAG の相対輝度で計算）'
   行の開閉: |-
     開閉のボタンは行番号の右（行番号を持たないときは行の頭の余白）の `--mdmark-code-fold-width` の列に配置し、開いた行は `chevron-down`、畳んだ行は `chevron-right`（lucide）。
     開いた行のボタンはポインターを乗せた行・ポインターが開閉のボタンの列に乗っているとき（そのコードブロックの全てのボタン）・フォーカスのときだけ出し、ほかは透明にして押せる場所は残す。
     畳んだ行のボタンは常に出す。
     Shift を押しながら押すと、範囲の中の畳める行も同じ状態にする。
-    `⋯` は `--mdmark-color-surface` の地と `--mdmark-color-border` の枠のボタンで、押すと開く。
+    `⋯` は `--mdmark-color-surface` の背景と `--mdmark-color-border` の枠のボタンで、押すと開く。
     ポインターを乗せた行を含む最も内側の畳める範囲の縦線を `--mdmark-color-muted` で濃くし、ほかの縦線は `--mdmark-color-border`。
-    エラーと警告の行の地と開閉のボタンのポインターを乗せた地は、行の地の色と同じく不透明の色（`--mdmark-color-surface`）を先に記載してから `color-mix()` の宣言を重ねる。
+    エラーと警告の行の背景と開閉のボタンのポインターを乗せた背景は、行の背景色と同じく不透明の色（`--mdmark-color-surface`）を先に記載してから `color-mix()` の宣言を重ねる。
     帯の言語のラベルは後ろのファイルのアイコンとの間に `0.6em` を空ける。
     モックは `docs/mock/components/code-block/` と `docs/mock/refs/275/assets/`
   色分けの種類: '色分けのライブラリが付ける `hljs-*` の class を 6 つの CSS 変数へ統一する。キーワード: `hljs-keyword`・`hljs-meta`・`hljs-variable.language_`・`hljs-doctag`／文字列: `hljs-string`・`hljs-regexp`・`hljs-char`・`hljs-link`／数値: `hljs-number`・`hljs-literal`・`hljs-symbol`・`hljs-bullet`／型: `hljs-type`・`hljs-title.class_`・`hljs-built_in`・`hljs-name`・`hljs-selector-*`／名前: `hljs-title`・`hljs-attr`・`hljs-attribute`・`hljs-property`・`hljs-section`／コメント: `hljs-comment`・`hljs-quote`。テンプレート文字列に埋めた式 `hljs-subst` は本文の色に戻し、Markdown の `hljs-strong` は太字、`hljs-emphasis` は斜体にする。ここに無い class（変数名・引数・記号）は本文の色のまま。モックは `docs/mock/components/code-block/` と `docs/mock/refs/97/assets/syntax-highlight.css`'
   描いた結果の表示: |-
     構造と描き方はインターフェース定義『文書を描く』の制約「言語 markdown のコードブロックの描いた結果」。
-    `Raw` のボタンは `<button class="mdmark-code-raw" type="button" aria-pressed="{preview が raw か}">{code-xml のアイコン}Raw<span class="mdmark-visually-hidden">（元の Markdown を表示）</span></button>` で、`mdmark-code-meta` の先頭に配置する。寸法はコピーのボタンと同じで、押す前は枠線を持たない `--mdmark-color-muted` の文字、ホバーで枠線と `--mdmark-color-surface` の地、押した後は `color-mix(in oklab, var(--mdmark-color-link) 40%, transparent)` の枠線・`--mdmark-color-current-bg` の地・`--mdmark-color-link` の文字にする。
-    `div.mdmark-code-preview` は帯に続く `pre` と同じ外側の枠線と下の角丸を持ち、`--mdmark-space` の余白と `--mdmark-color-bg` の地で描く。中の文書の最初と最後の要素の外側の余白は削除する。
+    `Raw` のボタンは `<button class="mdmark-code-raw" type="button" aria-pressed="{preview が raw か}">{code-xml のアイコン}Raw<span class="mdmark-visually-hidden">（元の Markdown を表示）</span></button>` で、`mdmark-code-meta` の先頭に配置する。寸法はコピーのボタンと同じで、押す前は枠線を持たない `--mdmark-color-muted` の文字、ホバーで枠線と `--mdmark-color-surface` の背景、押した後は `color-mix(in oklab, var(--mdmark-color-link) 40%, transparent)` の枠線・`--mdmark-color-current-bg` の背景・`--mdmark-color-link` の文字にする。
+    `div.mdmark-code-preview` は帯に続く `pre` と同じ外側の枠線と下の角丸を持ち、`--mdmark-space` の余白と `--mdmark-color-bg` の背景で描く。中の文書の最初と最後の要素の外側の余白は削除する。
     印刷では `Raw` のボタンを出さず、印刷した時点で出している側（描いた結果か元の Markdown）をそのまま出す。
     モックは `docs/mock/components/markdown-preview/` と `docs/mock/refs/709/assets/markdown-preview.css`
 test_file: tests/integration/lib/code-block.story.test.ts
@@ -458,7 +458,7 @@ events:
   - name: 行を畳む・開く
     when: 開閉のボタンか `⋯` のボタンを押す（Enter・Space を含む）
     value: ボタンの `aria-expanded`
-    description: '`mount` が行の後ろの `foldLines` の行を `hidden` にして `⋯` を配置するか、`hidden` を削除して `⋯` を削除する。開いたとき、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。畳んだ状態は再読み込みでは覚えず `folded` のとおりに戻し、`update` で描き直すと読者が手で変えた畳みを保つ'
+    description: '`mount` が行の後ろの `foldLines` の行を `hidden` にして `⋯` を配置するか、`hidden` を削除して `⋯` を削除する。開いたとき、畳む前に畳んでいた内側の行は畳んだまま残す。Shift を押しながらなら範囲の中の畳める行も同じ状態にする。畳んだ状態は再読み込みでは覚えず `folded` のとおりに戻し、`update` で再描画すると読者が手で変えた畳みを保つ'
   - name: 描いた結果と元の Markdown を切り替える
     when: '`Raw` のボタンを押す（Enter・Space を含む）'
     value: ボタンの `aria-pressed`

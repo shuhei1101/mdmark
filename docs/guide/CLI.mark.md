@@ -24,7 +24,7 @@ Node 24 以降で動く。
 | [文書を Markdown に書き出す](#文書を-markdown-に書き出す) | `mdmark export-markdown` | mdmark の文書を 1 つ、純粋な Markdown（GFM と Mermaid）と、図の SVG に書き出す |
 | [複数の文書を 1 枚の HTML にまとめる](#複数の文書を-1-枚の-html-にまとめる) | `mdmark build` | 設定の `build` で決めた文書を、文書を行き来できる 1 枚の HTML にまとめる |
 | [設定と索引を点検する](#設定と索引を点検する) | `mdmark check` | 設定の構造・索引と文書のずれ・`build` の対象の有無を点検する |
-| [バージョンを上げる](#バージョンを上げる) | `mdmark upgrade` | 手元のバージョンから呼んだ CLI のバージョンまでの移行の手順をバージョンの順に当て、その範囲の変更履歴を出す |
+| [バージョンを上げる](#バージョンを上げる) | `mdmark upgrade` | 手元のバージョンから呼んだ CLI のバージョンまでの移行の手順をバージョンの順に適用し、その範囲の変更履歴を出す |
 | [MCP サーバーを起動する](#mcp-サーバーを起動する) | `mdmark serve` | Claude Code のプラグインがつなぐ MCP の常駐サーバーを、127.0.0.1 の HTTP で起動する |
 
 <!-- /table -->
@@ -138,8 +138,8 @@ npx github:shuhei1101/mdmark#v{バージョン} export {文書} [--out {出力}]
 
 ## 文書を Markdown に書き出す
 
-mdmark の文書を 1 つ、mdmark の無い表示（GitHub・VS Code の標準のプレビューなど）で読める純粋な Markdown（GFM と Mermaid）に書き出す。
-マーカーと生の HTML を取り除き、記法は読める文字にする（記法ごとの形は [Markdown に書き出す](./書き出す-文書を書き出す.mark.md#markdown-に書き出す)）。
+mdmark の文書を 1 つ、mdmark の無い表示（GitHub・VS Code の標準のプレビューなど）で読み取れる純粋な Markdown（GFM と Mermaid）に書き出す。
+マーカーと生の HTML を取り除き、記法は読み取れる文字にする（記法ごとの形は [Markdown に書き出す](./書き出す-文書を書き出す.mark.md#markdown-に書き出す)）。
 `chart`・`param`・埋め込んだ HTML は、ほかのファイル・URL を参照しない SVG にして `images/figure-{n}.svg` に書き込み、図の場所にその画像のリンクを入れる。
 `chart`・`param` は画像の前にタイトルの太字の行、系列が 2 つ以上なら画像の後に系列の名前の箇条書きを入れる。
 設定の `extensions` の拡張は Node で読み込んで登録し、書き出しのフック（`toMarkdown`）を持つ拡張のマーカーはその戻り値にする。
@@ -285,14 +285,14 @@ mdmark.config.yaml:build: schema: `build.out` がありません。書き出す 
 | `syntax_warning` | `--text`・`--file` で指定した Markdown を描いたときに出る記載の警告のうち、`unknown_mark`・`diagram_invalid`・`retired_diagram`・`annotation_*` に該当しないもの。include の取り込み先が無い警告は、取り込み先を読み込まないため出さない（取り込み先は設定の文書の点検の `include_target_missing`・`include_circular` で確認する）。内容は記載の警告の文と同じ。場所は警告の元のマーカーの行 |
 | `unknown_mark_arg` | 設定の文書と `--text`・`--file` で指定した Markdown の記法のマーカーに、描くときに警告を出さずに無視する知らないキーがある。1 つにつき 1 件で、内容は無視したキー・その場所で使用できるキー・修正方法。場所はマーカーの行 |
 | `legacy_mark` | 記法・拡張・`libraries` のマーカーの引数が、JSON でない前の書き方（`キー=値`・`+機能` など）。内容は JSON での記載方法と、`mdmark upgrade` で書き換えられるか。場所はマーカーの行 |
-| `mark_option_invalid` | マーカーの引数を JSON のオブジェクトとして読めないか、値の型・選べる値・必須のキーが合わない。内容は描いたときに出す記載の警告と同じ文。場所はマーカーの行 |
-| `mark_option_unapplied` | マーカーに記載した設定が当たらない（`{"enabled": false}` にした機能の列の設定、`column` と `value` の片方だけの `rows.colors` の要素など）。場所はマーカーの行 |
-| `map_invalid` | map の範囲の Mermaid に読めない行・閉じの無い `subgraph` かブロックがあるか、範囲の中の mermaid のブロックが 0 か 2 つ以上・補足が 2 つ以上・描けない図の種類（`flowchart`・`sequenceDiagram` 以外）。場所は Mermaid の行（範囲の全体なら範囲の開きのマーカーの行） |
+| `mark_option_invalid` | マーカーの引数を JSON のオブジェクトとして読み取れないか、値の型・選べる値・必須のキーが合わない。内容は描いたときに出す記載の警告と同じ文。場所はマーカーの行 |
+| `mark_option_unapplied` | マーカーに記載した設定が該当しない（`{"enabled": false}` にした機能の列の設定、`column` と `value` の片方だけの `rows.colors` の要素など）。場所はマーカーの行 |
+| `map_invalid` | map の範囲の Mermaid に読み取れない行・閉じの無い `subgraph` かブロックがあるか、範囲の中の mermaid のブロックが 0 か 2 つ以上・補足が 2 つ以上・描けない図の種類（`flowchart`・`sequenceDiagram` 以外）。場所は Mermaid の行（範囲の全体なら範囲の開きのマーカーの行） |
 | `map_unknown_ref` | map の補足（`notes`・`walkthroughs`・`layout`・`plays_over`）が、Mermaid に無いノード・線・グループの ID を指している |
 | `map_ambiguous_ref` | map のマインドマップ・ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図の補足のキーかマーカーの引数の `focus` が、ID を持たない同じ文字の 2 つ以上の項目か同じ名前の 2 つ以上の section を指している。内容に、その項目に ID を記載して ID で指すか、section の名前を分ける修正の方法を含む |
 | `map_unknown_key` | map の補足か、マーカーの JSON のオブジェクトに知らないキーがある。内容に使用できるキーの一覧を含む。マーカーの知らないキーは、描くときは警告を出さずに無視する |
 | `map_retired_key` | map のマーカーに、廃止した `play`・`interval` がある。内容は廃止したキーと、`mdmark upgrade` で削除できること。場所はマーカーの行 |
-| `map_invalid_value` | map の補足の値がスキーマに合わないか、`--` をそのまま記載しているか（Unicode エスケープで記載した `--` は含めない）、マインドマップ・ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図に適用しない `layout` のキー（`color`・`collapsed` のほか）がある、許可しないノードのリンク先がある（`id:` のリンク先はずれにしない）、またはマーカーの引数が JSON のオブジェクトとして読めないか、値の型が合わない |
+| `map_invalid_value` | map の補足の値がスキーマに合わないか、`--` をそのまま記載しているか（Unicode エスケープで記載した `--` は含めない）、マインドマップ・ガントチャート・タイムライン・Git グラフ・ジャーニー・ブロック図に適用しない `layout` のキー（`color`・`collapsed` のほか）がある、許可しないノードのリンク先がある（`id:` のリンク先はずれにしない）、またはマーカーの引数が JSON のオブジェクトとして読み取れないか、値の型が合わない |
 | `map_unknown_icon` | 設定の `map.kinds` の `icon` が Lucide に無い名前。場所はキーのパス（`map.kinds.store.icon`） |
 | `map_unknown_class` | map の範囲のノードのクラスが、設定の `map.kinds` に無い |
 | `map_unknown_line` | map の補足の `layout` の `line` の名前が、設定の `map.lines` に無い |
@@ -381,7 +381,7 @@ npx github:shuhei1101/mdmark#v{目標のバージョン} upgrade [--plan] [--yes
 | `--plan` | 任意 | 何も書き換えず、適用するバージョンごとの手順・変更履歴の行・壊す手順の有無を出す。コピーは取らない | `--plan` |
 | `--yes` | 任意 | 壊す手順を、確認せずに適用する。手元のバージョンと、値を聞く手順の質問は飛ばさない | `--yes` |
 | `--config` | 任意 | 書き換える設定ファイルのパス。省くと今のフォルダから上のフォルダへ順に `mdmark.config.yaml` を探し、最初に見つかったものを使用する。上のフォルダの設定と端末の設定は書き換えない | `--config docs/mdmark.config.yaml` |
-| `--settings` | 任意 | 端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）を書き換える。設定ファイルの手順だけを当て、索引と文書の手順は飛ばす。`--config` と一緒には指定できない | `--settings` |
+| `--settings` | 任意 | 端末の設定（`MDMARK_CONFIG`、無ければ `${XDG_CONFIG_HOME:-~/.config}/mdmark/settings.yaml`）を書き換える。設定ファイルの手順だけを適用し、索引と文書の手順は飛ばす。`--config` と一緒には指定できない | `--settings` |
 
 目標のバージョンは引数で受けず、呼んだ CLI のバージョンにする。
 手元のバージョンは設定の `version` で、無ければ標準エラーに `手元のバージョン（v{MAJOR}.{MINOR}.{PATCH}）を入れてください:` を出して聞く（`--plan` のときも聞く）。

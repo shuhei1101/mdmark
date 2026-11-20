@@ -106,7 +106,7 @@ elements:
     reason: 歯車の配置場所は確認ログ「プレビューの歯車のボタンの配置場所と押したときの動き」の決定
     status: planned
 screen: vscode/package.json
-lead: VS Code 拡張機能が VS Code の画面に追加する入口（エディタのタイトルのボタン・コマンドパレットのコマンド）と、VS Code のダイアログ・通知に出す文言。外観は VS Code のままで、モックは作らない。
+lead: VS Code 拡張機能が VS Code の画面に追加する操作の場所（エディタのタイトルのボタン・コマンドパレットのコマンド）と、VS Code のダイアログ・通知に出す文言。外観は VS Code のままで、モックは作らない。
 refs:
   - IF-472-15#
   - IF-472-25#

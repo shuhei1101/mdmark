@@ -14,7 +14,7 @@ data_models:
     properties:
       - name: destroy
         type: () => void
-        description: 時計と操作を外す
+        description: 時計と操作を解除する
 functions:
   - name: attachMapAxisGrid
     title: 軸と格子の配置の図を付ける
@@ -44,7 +44,7 @@ functions:
       - name: config
         type: ResolvedConfig
         required: true
-        description: 既定を当てた設定
+        description: 既定を適用した設定
       - name: options
         type: '{ args: MapArgs; today?: () => string }'
         required: true
@@ -57,9 +57,9 @@ functions:
       2. `readMapState` に、section と入れ子のブロックの `stateKey`・引数の `focus` の `stateKey`・`layout` の `collapsed` が `true` の `stateKey` を指定して状態を参照する
       3. `layoutAxisGrid` で配置し、`renderMapAxisGrid`（`readMapAnnotations` の注記、`hints` は `config.features.hints`）を部品『図の枠』（種類 `map`・タイトルはマーカーの `title`、無ければ `grid.title`、無ければ `mermaidKindName` に `grid.firstWord`（`block-beta` など Mermaid の 1 行目の単語）を指定した名前・ジャーニーは描くたびに `renderMapAxisGridLegend` を凡例の行に入れる・`wide`・`fitMin` 1）に入れる。ツールのボタンは「外へ戻る」（中へ入っているときだけ押せる）・「全て開く」「全て閉じる」（section か入れ子のブロックを持つときだけ）・「配置と選択を元に戻す」（選んだときだけ押せる）。図のツールチップと拡大と縮小・ドラッグでのスクロールは `attachDiagrams` で付け、描くたびに `linkAnnotationOwners` で注記の持ち主を合わせる。項目にはドラッグの操作を付けない
       4. 開閉のボタン（`data-map-section-toggle`）で `collapsed` を切り替え、中へ入るボタン（`data-map-section-enter`）で `entered` をその section にして `collapsed` から除外する。「外へ戻る」と Esc（選んでいないとき）で `entered` を外の入れ子（無ければ無し）にする
-      5. 項目・ガントチャートのタスク名・Git グラフのブランチ名のボタン・ジャーニーの凡例のボタンを押すと `selected` をその `{kind}:{key}`（`item:des` など）の 1 件にし、同じものを押すと解除する。Enter・Space でも選ぶ。ブロック図は構成図と同じく、ブロックと入れ子のブロックの名前（`data-map-section-select`）を押すと選んだものに足し（`selected` に `item:{key}` を 2 つまで保つ。3 つ目は前の 1 つを外す）、選んだものをもう一度押すと外す。Esc は選んでいれば選択を解除する
-      6. 描き直した後、押したボタンか項目の押せる要素へフォーカスを戻し、消えたときは表示する枠へ移す
-      7. 補足の `walkthroughs` があれば `attachBand`（モード `walkthrough`）の手順にする。無くて種類がガントチャート・タイムライン・Git グラフ・ジャーニーなら、`attachBand`（モード `playback`、`unit` は `task`・`period`・`commit`・`task`）の手順を、ガントチャートは開始日の順（同じ日は記載順）のタスク、ほかは記載順の期間・commit・タスクで作る。手順のタイトルと説明は制約『map の時系列の図の再生』のとおりにする。手順を進めるたびに、強調する項目が閉じた section の中にあれば section を `focus` にして描き直す
+      5. 項目・ガントチャートのタスク名・Git グラフのブランチ名のボタン・ジャーニーの凡例のボタンを押すと `selected` をその `{kind}:{key}`（`item:des` など）の 1 件にし、同じものを押すと解除する。Enter・Space でも選ぶ。ブロック図は構成図と同じく、ブロックと入れ子のブロックの名前（`data-map-section-select`）を押すと選んだものに追加し（`selected` に `item:{key}` を 2 つまで保つ。3 つ目は前の 1 つを解除する）、選んだものをもう一度押すと解除する。Esc は選んでいれば選択を解除する
+      6. 再描画した後、押したボタンか項目の押せる要素へフォーカスを戻し、消えたときは表示する枠へ移す
+      7. 補足の `walkthroughs` があれば `attachBand`（モード `walkthrough`）の手順にする。無くて種類がガントチャート・タイムライン・Git グラフ・ジャーニーなら、`attachBand`（モード `playback`、`unit` は `task`・`period`・`commit`・`task`）の手順を、ガントチャートは開始日の順（同じ日は記載順）のタスク、ほかは記載順の期間・commit・タスクで作る。手順のタイトルと説明は制約『map の時系列の図の再生』のとおりにする。手順を進めるたびに、強調する項目が閉じた section の中にあれば section を `focus` にして再描画する
     unit_tests:
       - name: test_attach_map_axis_grid
         case: 正常

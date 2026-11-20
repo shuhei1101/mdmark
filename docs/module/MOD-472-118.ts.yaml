@@ -62,7 +62,7 @@ functions:
       - name: test_uses_mermaid_when_plain
         case: 正常
         summary: 範囲の外の map の図は、mermaid の図に戻すものだけ数える
-        condition: 読める行だけの flowchart のコードブロックだけを持つ文書と、`style A fill:#f9f` の行を持つ flowchart のコードブロックを持つ文書
+        condition: 読み取れる行だけの flowchart のコードブロックだけを持つ文書と、`style A fill:#f9f` の行を持つ flowchart のコードブロックを持つ文書
         mock: なし
         expected: 順に `false`・`true`
     status: planned

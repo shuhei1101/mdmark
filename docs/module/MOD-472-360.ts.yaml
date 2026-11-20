@@ -66,7 +66,7 @@ functions:
     kind: 関数
     container: scripts/test-mdmark-style.ts
     usecase: 共通
-    role: 入口
+    role: エントリーポイント
     summary: テストをプラグインの横に並べ、`claude plugin validate` と `claude plugin test` を実行して、一時フォルダを削除する
     description: '`npm run test:mdmark-style` が実行する。引数にテストのファイル名を並べると、そのファイルだけをコピーする（結合テストの実行範囲を絞る）'
     scope: public
@@ -89,7 +89,7 @@ functions:
       - '#functions[stagePluginTests]'
     status: planned
 notes:
-  実行する場所: 結合テストは `npm run build` の後に `npm run test:mdmark-style` で実行する。`claude plugin test` は Claude Code のエンジンを使うため vitest の結合テストとは分け、`vitest.config.ts` の対象から `tests/integration/ClaudeCodeプラグイン/mdmark-style/` を除く
+  実行する場所: 結合テストは `npm run build` の後に `npm run test:mdmark-style` で実行する。`claude plugin test` は Claude Code のエンジンを使用するため vitest の結合テストとは分け、`vitest.config.ts` の対象から `tests/integration/ClaudeCodeプラグイン/mdmark-style/` を除く
 tags:
   - name: topic:テスト
     main: true

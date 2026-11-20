@@ -192,9 +192,9 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 開いたとき、描く先の要素の地の色の計算値がダークの `--mdmark-color-bg` の値
-      - B を選ぶと、地の色の計算値が明るい配色の `--mdmark-color-bg` の値になる
-      - 戻るで A に戻ると、地の色の計算値がダークの `--mdmark-color-bg` の値に戻る
+      - 開いたとき、描く先の要素の背景色の計算値がダークの `--mdmark-color-bg` の値
+      - B を選ぶと、背景色の計算値が明るい配色の `--mdmark-color-bg` の値になる
+      - 戻るで A に戻ると、背景色の計算値がダークの `--mdmark-color-bg` の値に戻る
     test: test_normal_when_page_settings_per_document
     refs:
       - SC-472-33#scenarios[正常シナリオ]
@@ -230,7 +230,7 @@ scenarios:
       - リンクで B へ移ると、B の頭（縦のスクロール位置が 0）が出る
       - 戻るで A に戻ると、縦のスクロール位置が A のリンクを押したときの値になり、B へのリンクが画面に入っている
       - 進むで B に戻ると、縦のスクロール位置が B で戻るを押したときの値になる
-      - B の末尾のリンクで A へ移ると、新しい履歴の項目として A の頭（縦のスクロール位置が 0）が出る
+      - B の末尾のリンクで A へ移ると、新規の履歴の項目として A の頭（縦のスクロール位置が 0）が出る
       - URL にスクロール位置が出ない
     test: test_normal_when_back_forward_restore_scroll
   - name: 正常シナリオ（再読み込みで離れたときの位置に戻る）
@@ -284,12 +284,12 @@ scenarios:
       - 2 つ目のタブの `aria-selected` が `true`
       - 縦のスクロール位置が A のリンクを押したときの値になり、B へのリンクが画面に入っている
     test: test_normal_when_back_restore_folds_and_tabs
-  - name: 異常シナリオ（sessionStorage が使えない）
+  - name: 異常シナリオ（sessionStorage が使用できない）
     setup:
       - name: まとめた HTML
         description: 正常シナリオ（戻る・進むで離れたときの位置に戻る）と同じ
-      - name: sessionStorage が使えないページ
-        description: 開く前に、`window.sessionStorage` を読むと `SecurityError` を投げるように差し替える
+      - name: sessionStorage が使用できないページ
+        description: 開く前に、`window.sessionStorage` を読み取ると `SecurityError` を投げるように差し替える
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -316,7 +316,7 @@ trigger: 読者が、受け取った 1 枚の HTML を開く
 preconditions:
   - 読者のブラウザが非機能要件『対応ブラウザ』の版以降
 success_guarantee: 開くと URL が指す文書（指していなければ `entry` の文書）が出る。文書を移るたびに履歴に追加し、戻る・進むで確認してきた順に行き来できる。一覧のパネルの開閉は履歴に追加しない。戻る・進む・再読み込みで履歴の項目へ戻ったときは、その項目を離れたときの開閉・選んだタブ・スクロール位置から表示し、文書の一覧・文書間のリンクで移ったときは見出しか文書の頭から表示する。外への要求は 0 件。
-minimal_guarantee: URL が 1 枚に無い文書を指していても、`entry` の文書を出して読み込める状態にする。離れたときの状態を残せない・読めないときも、見出しか文書の頭から文書を出す。
+minimal_guarantee: URL が 1 枚に無い文書を指していても、`entry` の文書を出して読み込める状態にする。離れたときの状態を残せない・読み取れないときも、見出しか文書の頭から文書を出す。
 test_file: tests/e2e/単一ユースケース/まとめたHTMLで文書を行き来する.spec.ts
 tags:
   - name: topic:書き出し

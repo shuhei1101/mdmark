@@ -110,7 +110,7 @@ functions:
         expected: 要素が通知ブロックに替わり、`console.error` が 1 回呼ばれる
       - name: test_load_libraries_when_stale
         case: 正常
-        summary: 再描画した後に読み込み終えた古いマーカーの場所には手を付けない
+        summary: 再描画した後に読み込み終えた更新前のマーカーの場所には手を付けない
         condition: '`isCurrent` が `false` を返却する。読み込みは拒否する'
         mock: '`importModule` が拒否する。`console.error` を見張る'
         expected: 要素が読み込み中のブロックのままで、`console.error` が呼ばれない
@@ -129,7 +129,7 @@ functions:
       - name: test_load_libraries_when_extension_args_invalid
         case: 異常
         summary: 引数が schema に合わない場所は記載の警告にし、load しない
-        condition: '`options.target` を英小文字で許す schema の `greet` と、引数 `{"target": "World"}` の場所'
+        condition: '`options.target` を英小文字で許可する schema の `greet` と、引数 `{"target": "World"}` の場所'
         mock: '`load` は呼ばれた回数を数える関数'
         expected: 場所が `mdmark-syntax-warning` になり、`load` が 0 回
       - name: test_load_libraries_when_extension_fails
