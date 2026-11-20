@@ -1,0 +1,64 @@
+id: MOD-472-369
+visibility: internal
+title: VS Code 拡張機能 / 書き出し / dist.ts
+test_files:
+  - tests/unit/vscode/src/export/dist.test.ts
+functions:
+  - name: loadDistRenderer
+    title: 配布物の描く処理を読み込む
+    kind: 関数
+    container: vscode/src/export/dist.ts
+    usecase: HTMLに書き出す
+    summary: 決めたバージョンの jsDelivr の `dist/index.js` を拡張機能の保存先に保存して読み込み、`renderForMount` を返却する
+    scope: public
+    is_async: true
+    side_effects: '`storageDir` の `dist/{バージョン}/index.js` に書き込む（無いときだけ）'
+    args:
+      - name: options
+        type: '{ version: string; storageDir: string; distBase: string; fetchText?: (url: string) => Promise<string> }'
+        required: true
+        description: バージョン・保存先のフォルダ（`ExtensionContext.globalStorageUri` の `fsPath`）・配布物の配信元（`ExtensionDeps.distBase`）。`fetchText` は省くと `fetch` で取得する（テストで差し替える）。`vscode` を読み込まないため、単体テスト（`unit` プロジェクト）で実行できる
+    returns:
+      type: 'Promise<{ kind: "ok"; renderForMount: (markdown: string, opts?: object) => Promise<{ rendered: MdmarkRendered; pureMarkdown: string }> } | { kind: "unavailable"; reason: string } | { kind: "unsupported" }>'
+      description: 書き出す文書を描く公開関数か、取得できない理由か、描いた HTML から起動できないバージョンであること
+    process: |-
+      1. 保存先の `dist/{バージョン}/index.js` が無ければ、`distUrl`（`base` は `distBase`、`file` は `index.js`）の内容を取得して書き込む。取得できないときは `unavailable`（`reason` は誤りの文）を返却する
+      2. 保存したファイルを `import(pathToFileURL(ファイル).href)` で読み込む。拡張機能の本体は CJS のため、指定子を変数にして esbuild が `import()` を `require` に置き換えないようにする
+      3. 読み込んだモジュールの `renderForMount` が関数でないときは `unsupported` を返却する（`version()` の文字列は比べない）
+      4. `ok` と `renderForMount` を返却する
+    unit_tests:
+      - name: test_load_dist_renderer
+        case: 正常
+        summary: 取得して保存し、次は保存したものを読み込む
+        condition: '`renderForMount` を公開する ES モジュールの文字列を返却する `fetchText` で 2 回呼ぶ'
+        mock: '`fetchText`・一時フォルダの `storageDir`'
+        expected: 2 回とも `ok` で、`fetchText` の呼び出しは 1 回だけ。保存先に `dist/{バージョン}/index.js` がある
+      - name: test_load_dist_renderer_when_unavailable
+        case: 異常
+        summary: 取得できない
+        condition: 保存先に無く、`fetchText` が誤りを投げる
+        mock: '`fetchText`'
+        expected: '`unavailable` で、`reason` が誤りの文。保存先にファイルを残さない'
+      - name: test_load_dist_renderer_when_unsupported
+        case: 異常
+        summary: 描いた HTML から起動できないバージョン
+        condition: '`render`・`toPureMarkdown` だけを公開し `renderForMount` を公開しない ES モジュールの文字列を返却する `fetchText`'
+        mock: '`fetchText`'
+        expected: '`unsupported`'
+      - name: test_extension_bundle_keeps_dynamic_import
+        case: 正常
+        summary: ビルドした拡張機能が `import()` を保つ
+        condition: 拡張機能をビルドした `dist/extension.cjs`
+        mock: なし
+        expected: '`loadDistRenderer` の読み込みが `import(` のままで、`require(` に置き換わっていない'
+    refs:
+      - IF-472-51#constraints[対応の判定]
+    callees:
+      - MOD-472-92#functions[distUrl]
+    status: planned
+lead: 書き出しで使用する配布物の取得・保存・読み込みを受け持ち、書き出しで描く配布物の読み込み方を変えるときに参照する。
+tags:
+  - name: topic:書き出し
+    main: true
+  - name: tool:vscode
+  - name: action:読み込み

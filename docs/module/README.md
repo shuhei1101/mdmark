@@ -304,6 +304,7 @@
 | [VS Code 拡張機能 / 拡張機能の入口 / deps.ts](./MOD-472-98.ts.yaml) | VS Code 拡張機能 / 拡張機能の入口 / deps.ts |
 | [VS Code 拡張機能 / 拡張機能の入口 / escape.ts](./MOD-647-5.ts.yaml) | VS Code 拡張機能 / 拡張機能の入口 / escape.ts |
 | [VS Code 拡張機能 / 書き出し / embed.ts](./MOD-472-102.ts.yaml) | VS Code 拡張機能 / 書き出し / embed.ts |
+| [VS Code 拡張機能 / 書き出し / dist.ts](./MOD-472-369.ts.yaml) | VS Code 拡張機能 / 書き出し / dist.ts |
 | [VS Code 拡張機能 / 書き出し / export.ts](./MOD-472-99.ts.yaml) | VS Code 拡張機能 / 書き出し / export.ts |
 | [VS Code 拡張機能 / 書き出し / html.ts](./MOD-472-100.ts.yaml) | VS Code 拡張機能 / 書き出し / html.ts |
 | [VS Code 拡張機能 / 書き出し / write.ts](./MOD-472-101.ts.yaml) | VS Code 拡張機能 / 書き出し / write.ts |

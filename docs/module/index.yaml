@@ -596,6 +596,8 @@ items:
   summary: VS Code 拡張機能 / 拡張機能の入口 / escape.ts
 - page: MOD-472-102.ts.yaml
   summary: VS Code 拡張機能 / 書き出し / embed.ts
+- page: MOD-472-369.ts.yaml
+  summary: VS Code 拡張機能 / 書き出し / dist.ts
 - page: MOD-472-99.ts.yaml
   summary: VS Code 拡張機能 / 書き出し / export.ts
 - page: MOD-472-100.ts.yaml

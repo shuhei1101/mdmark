@@ -44,7 +44,7 @@ functions:
          - `[warn]` 設定ファイルを読み込めないため設定なしで書き出す（パス・行・`message`）
          - `[warn]` エイリアスのずれ（`aliasIssues` の 1 件ずつ、ずれを 1 行にした値）
          - `[warn]` ライブラリをまとめられない（パス・誤り）
-      3. 配布物の描く処理を読み込み（`loadDistRenderer`。`version` は手順 1 のバージョン）、`getText()` の全文を `renderForMount`（設定・エイリアス・プレビューと同じ読み込み方で集めた取り込む文書を指定）で描いた結果と純粋な Markdown にする（戻り値の Promise を待つ）
+      3. 配布物の描く処理を読み込み（`dist.ts` の `loadDistRenderer`。`version` は手順 1 のバージョン、`storageDir` は `context.globalStorageUri.fsPath`、`distBase` は `deps.distBase`）、`getText()` の全文を `renderForMount`（設定・エイリアス・プレビューと同じ読み込み方で集めた取り込む文書を指定）で描いた結果と純粋な Markdown にする（戻り値の Promise を待つ）
          - `unavailable` の場合、画面設計の「配布物を取得できない通知」を `showErrorMessage` で出し、`undefined` を返却する
          - `unsupported` の場合、「描いた HTML から起動できないバージョンの通知」を出し、`undefined` を返却する
       4. 書き出す先を決め（書き出す先を決める）、描いた結果と純粋な Markdown で HTML を組み（書き出す HTML を組む。`print` は `mode` が `print` のとき、`importMap` は相対パスの色分けのライブラリを埋めるが返却した `imports`、`aliases` は設定ファイルを読み込むが返却した `aliases`）、記載する（一時ファイルから置き換える）
@@ -66,6 +66,7 @@ functions:
       - 'MOD-472-102#functions[embedLocalLibraries]'
       - MOD-472-102#functions[embedLocalSyntax]
       - MOD-472-117#functions[readFrontmatterValues]
+      - MOD-472-369#functions[loadDistRenderer]
     refs:
       - IF-472-15#
       - IF-472-15#constraints[エイリアス]
@@ -76,55 +77,6 @@ functions:
       - SCR-472-1#elements[バージョンを決められない通知]
     status: planned
     description: 書き出す HTML の `<title>` は、`readFrontmatterValues` で解析した開いている Markdown のフロントマターの使用できる `title`（空でない文字列）、無ければ Markdown のファイル名。索引は参照しない
-  - name: loadDistRenderer
-    title: 配布物の描く処理を読み込む
-    kind: 関数
-    container: vscode/src/export/export.ts
-    usecase: HTMLに書き出す
-    summary: 決めたバージョンの jsDelivr の `dist/index.js` を拡張機能の保存先に保存して読み込み、`renderForMount` を返却する
-    scope: public
-    is_async: true
-    side_effects: '`globalStorageUri/dist/{バージョン}/index.js` に書き込む（無いときだけ）'
-    args:
-      - name: options
-        type: '{ version: string; deps: ExtensionDeps; fetchText?: (url: string) => Promise<string> }'
-        required: true
-        description: バージョンと依存（`deps.context.globalStorageUri`・`deps.distBase`）。`fetchText` は省くと `fetch` で取得する（テストで差し替える）
-    returns:
-      type: 'Promise<{ kind: "ok"; renderForMount: (markdown: string, opts?: object) => Promise<{ rendered: MdmarkRendered; pureMarkdown: string }> } | { kind: "unavailable"; reason: string } | { kind: "unsupported" }>'
-      description: 書き出す文書を描く公開関数か、取得できない理由か、描いた HTML から起動できないバージョンであること
-    process: |-
-      1. 保存先の `dist/{バージョン}/index.js` が無ければ、`distUrl`（`file: index.js`）の内容を取得して書き込む。取得できないときは `unavailable`（`reason` は誤りの文）を返却する
-      2. 保存したファイルを `import(pathToFileURL(ファイル).href)` で読み込む。拡張機能の本体は CJS のため、指定子を変数にして esbuild が `import()` を `require` に置き換えないようにする
-      3. 読み込んだモジュールの `renderForMount` が関数でないときは `unsupported` を返却する（`version()` の文字列は比べない）
-      4. `ok` と `renderForMount` を返却する
-    unit_tests:
-      - name: test_load_dist_renderer
-        case: 正常
-        summary: 取得して保存し、次は保存したものを読み込む
-        condition: '`renderForMount` を公開する ES モジュールの文字列を返却する `fetchText` で 2 回呼ぶ'
-        mock: '`fetchText`・一時フォルダの `globalStorageUri`'
-        expected: 2 回とも `ok` で、`fetchText` の呼び出しは 1 回だけ。保存先に `dist/{バージョン}/index.js` がある
-      - name: test_load_dist_renderer_when_unavailable
-        case: 異常
-        summary: 取得できない
-        condition: 保存先に無く、`fetchText` が誤りを投げる
-        mock: '`fetchText`'
-        expected: '`unavailable` で、`reason` が誤りの文。保存先にファイルを残さない'
-      - name: test_load_dist_renderer_when_unsupported
-        case: 異常
-        summary: 描いた HTML から起動できないバージョン
-        condition: '`render`・`toPureMarkdown` だけを公開し `renderForMount` を公開しない ES モジュールの文字列を返却する `fetchText`'
-        mock: '`fetchText`'
-        expected: '`unsupported`'
-      - name: test_extension_bundle_keeps_dynamic_import
-        case: 正常
-        summary: ビルドした拡張機能が `import()` を保つ
-        condition: 拡張機能をビルドした `dist/extension.cjs`
-        mock: なし
-        expected: '`loadDistRenderer` の読み込みが `import(` のままで、`require(` に置き換わっていない'
-    refs:
-      - IF-472-51#constraints[対応の判定]
 lead: 'HTML への書き出し・ブラウザで開く・PDF への印刷のコマンドの本体を受け持ち、HTML への書き出しや PDF への印刷を変えるときに参照する。'
 tags:
   - name: topic:書き出し

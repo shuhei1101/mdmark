@@ -79,7 +79,7 @@ functions:
     scope: public
     args:
       - name: options
-        type: '{ markdown: string; config: PreviewConfig; title: string; distJs: string; distCss: string; baseHref: string; print: boolean; themeCss?: string; extensions: string[]; importMap?: Record<string, string>; aliases?: MdmarkAlias[] }'
+        type: '{ rendered: MdmarkRendered; pureMarkdown: string; config: PreviewConfig; title: string; distJs: string; distCss: string; baseHref: string; print: boolean; themeCss?: string; extensions: string[]; importMap?: Record<string, string>; aliases?: MdmarkAlias[] }'
         required: true
         description: 描いた結果（`rendered`。本文の HTML・機能のオン・オフ・ページの設定）・純粋な Markdown（`pureMarkdown`）・設定（元の Markdown は受け取らない）（相対パスの `libraries`・`html-scripts.url` は `embedLocalLibraries` が `data:` の URL にした値）・タイトル・配布物の URL・Markdown のフォルダの `file:` の URL に `/` を付けたもの・印刷を待つか・重ねた設定の `theme` の CSS の中身・拡張をまとめた ES モジュールのコード（設定の順）・設定の `aliases` から作ったエイリアス（無いときは指定しない）
     returns:
@@ -89,7 +89,7 @@ functions:
       - name: test_build_export_html
         case: 正常
         summary: 本文を JSON で埋め、バージョン付きの配布物で mount する
-        condition: '`markdown` が `# タイトル\n</script>`、`print` が `false`'
+        condition: '`rendered.html` が `<h1>タイトル</h1></script>`、`pureMarkdown` が `# タイトル`、`print` が `false`'
         mock: なし
         expected: '`<base href="{baseHref}">`・`<link rel="stylesheet" href="{distCss}">`・`type="application/json"` の `script` を持ち、その中身が `<` を含まない。`type="module"` の `script` が `{distJs}` を import し `mount` を呼ぶ。`window.print` を含まない'
       - name: test_build_export_html_when_print
