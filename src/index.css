@@ -4244,7 +4244,7 @@
       font-weight: 600;
     }
 
-    /* 用語と関連文書のツールチップ: 初めは出さず、開くと単語の上に配置する。下の透明な線で単語との間を空け、ポインターが単語からツールチップへ移っても途切れない。高さの上限を超える中身はツールチップの中でスクロールする */
+    /* 用語と関連文書のツールチップ: 初めは出さず、開くと単語の上に配置する。枠線も背景も持たない下の余白で単語との間を空け、余白も要素の中なので、ポインターが単語から枠へ移っても途切れない */
     .mdmark-term-tip {
       display: none;
       position: absolute;
@@ -4254,14 +4254,7 @@
       inset-inline-start: 0;
       width: max-content;
       max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
-      max-height: min(var(--mdmark-tooltip-max-height), 60vh);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: 0.5em 0.75em;
-      border: 1px solid var(--mdmark-color-muted);
-      border-block-end: 0.4em solid transparent;
-      border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg-opaque) padding-box;
+      padding-block: 0 0.4em;
       color: var(--mdmark-color-text);
       font-size: 0.875rem;
       font-weight: normal;
@@ -4271,11 +4264,23 @@
       white-space: normal;
     }
 
-    /* 単語の下に開いたツールチップ（上に収まらないとき）: 透明な線を上に移す */
+    /* ツールチップの枠: 4 辺の枠線と背景を持つ。高さの上限を超える中身は枠の中でスクロールする */
+    .mdmark-term-tip-frame {
+      display: block;
+      box-sizing: border-box;
+      max-height: min(var(--mdmark-tooltip-max-height), 60vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.5em 0.75em;
+      border: 1px solid var(--mdmark-color-muted);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg-opaque);
+    }
+
+    /* 単語の下に開いたツールチップ（上に収まらないとき）: 余白を上に移す */
     .mdmark-term-wrap.is-below .mdmark-term-tip {
       inset-block: 100% auto;
-      border-block-start: 0.4em solid transparent;
-      border-block-end: 1px solid var(--mdmark-color-muted);
+      padding-block: 0.4em 0;
     }
 
     /* 単語にポインターを乗せたかフォーカスしたときと、スクリプトが開いたとき: ツールチップを出す */
@@ -4495,12 +4500,10 @@
         position: static;
       }
 
-      /* ツールチップ: 描く先の要素の左端から、単語の直後に出す。単語の上に出す既定も下に開いたときも位置を指さず、単語との間の透明な線を上に配置する */
-      .mdmark-term-tip,
-      .mdmark-term-wrap.is-below .mdmark-term-tip {
+      /* スクリプトが開いていないツールチップ: 描く先の要素の左端から、単語の直後に出す。単語の上に出す既定も下に開いたときも位置を指さず、単語との間の余白を上に配置する。スクリプトが開いたとき（is-open）は、広い画面と同じく is-below の有無で余白の側を決める */
+      .mdmark-term-wrap:not(.is-open) .mdmark-term-tip {
         inset-block: auto;
-        border-block-start: 0.4em solid transparent;
-        border-block-end: 1px solid var(--mdmark-color-muted);
+        padding-block: 0.4em 0;
       }
     }
   }
@@ -4575,7 +4578,7 @@
       }
     }
 
-    /* 番号のツールチップ: 用語のツールチップと同じ枠・大きさで番号の上に配置する。下の透明な線で番号との間を空ける。上付きの小さい文字を本文の大きさに戻す */
+    /* 番号のツールチップ: 用語のツールチップと同じ枠・大きさで番号の上に配置する。枠線も背景も持たない下の余白で番号との間を空ける。上付きの小さい文字を本文の大きさに戻す */
     .mdmark-fn-tip {
       display: none;
       position: absolute;
@@ -4585,14 +4588,7 @@
       box-sizing: border-box;
       width: max-content;
       max-width: min(var(--mdmark-tooltip-max-width), calc(100vw - 2rem));
-      max-height: min(var(--mdmark-tooltip-max-height), 60vh);
-      overflow-y: auto;
-      overscroll-behavior: contain;
-      padding: 0.5em 0.75em;
-      border: 1px solid var(--mdmark-color-muted);
-      border-block-end: 0.4em solid transparent;
-      border-radius: var(--mdmark-radius);
-      background: var(--mdmark-color-bg-opaque) padding-box;
+      padding-block: 0 0.4em;
       color: var(--mdmark-color-text);
       font-size: 0.875rem;
       font-weight: normal;
@@ -4603,11 +4599,23 @@
       overflow-wrap: anywhere;
     }
 
-    /* 番号の下に開いたツールチップ（上に収まらないとき）: 透明な線を上に移す */
+    /* 番号のツールチップの枠: 用語のツールチップの枠と同じく、4 辺の枠線と背景を持ち、高さの上限を超える中身は枠の中でスクロールする */
+    .mdmark-fn-tip-frame {
+      display: block;
+      box-sizing: border-box;
+      max-height: min(var(--mdmark-tooltip-max-height), 60vh);
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 0.5em 0.75em;
+      border: 1px solid var(--mdmark-color-muted);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg-opaque);
+    }
+
+    /* 番号の下に開いたツールチップ（上に収まらないとき）: 余白を上に移す */
     .mdmark-fn-ref.is-below .mdmark-fn-tip {
       inset-block: 100% auto;
-      border-block-start: 0.4em solid transparent;
-      border-block-end: 1px solid var(--mdmark-color-muted);
+      padding-block: 0.4em 0;
     }
 
     /* 番号にポインターを乗せたかフォーカスしたときと、スクリプトが開いたとき: ツールチップを出す */
@@ -4757,12 +4765,10 @@
         position: static;
       }
 
-      /* ツールチップ: 描く先の要素の左端から、番号の直後に出す。番号の上に出す既定も下に開いたときも位置を指さず、番号との間の透明な線を上に配置する */
-      .mdmark-fn-tip,
-      .mdmark-fn-ref.is-below .mdmark-fn-tip {
+      /* スクリプトが開いていないツールチップ: 描く先の要素の左端から、番号の直後に出す。番号の上に出す既定も下に開いたときも位置を指さず、番号との間の余白を上に配置する。スクリプトが開いたとき（is-open）は is-below の有無で余白の側を決める */
+      .mdmark-fn-ref:not(.is-open) .mdmark-fn-tip {
         inset-block: auto;
-        border-block-start: 0.4em solid transparent;
-        border-block-end: 1px solid var(--mdmark-color-muted);
+        padding-block: 0.4em 0;
       }
     }
   }

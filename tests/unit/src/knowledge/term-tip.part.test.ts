@@ -54,6 +54,13 @@ test("test_render_term_tip", async () => {
   for (const html of [termOnly, docsOnly, both]) {
     expect(html).not.toMatch(/\shidden(?=[\s=>])/);
   }
+  // どの状態も区分がツールチップの直下の枠（mdmark-term-tip-frame）の中にある
+  for (const html of [termOnly, docsOnly, both]) {
+    expect(html).toMatch(
+      /<span class="mdmark-term-tip"[^>]*><span class="mdmark-term-tip-frame"><span class="mdmark-term-tip-section"/,
+    );
+    expect(html.endsWith("</span></span></span>")).toBe(true);
+  }
 });
 
 // 意味とタイトルをエスケープする（正常系）
