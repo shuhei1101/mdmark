@@ -344,7 +344,8 @@ test("test_open_diagram_dialog_when_attach_modal", async () => {
   expect(calls[0]?.source).toBe(figure);
   expect(detached).toBe(0);
   button(dialog as HTMLElement, "全画面を閉じる").click();
-  expect(detached).toBe(1);
+  // dialog の close イベントは非同期に届く
+  await vi.waitFor(() => expect(detached).toBe(1));
 });
 
 // ツールチップを開いている間の Esc は、何度でもツールチップだけを閉じる（正常系）

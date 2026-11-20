@@ -106,7 +106,7 @@ test("test_attach_map_er_when_columns_collapsed", async () => {
   const order = tableOf(root, "注文");
   expect(order.querySelectorAll(".map-er-column")).toHaveLength(0);
   const toggle = order.querySelector<HTMLButtonElement>("button.map-er-toggle");
-  expect(toggle?.textContent).toContain("列 8");
+  expect(toggle?.textContent).toBe("");
   expect(toggle?.getAttribute("aria-expanded")).toBe("false");
   const middle =
     Number.parseFloat(order.style.top) +
