@@ -158,7 +158,7 @@ css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)
-    description: 帯とキャプションの地の色
+    description: 帯とキャプションの背景色
   - name: --mdmark-color-border
     syntax: <color>
     default: '#e4e4e7（ダーク #26262b）'

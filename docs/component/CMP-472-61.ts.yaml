@@ -1531,11 +1531,11 @@ css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)
-    description: 本文の行の地、ページのスクロールで留める見出し行とピン止めした列の地、列のメニュー・表のメニュー・コピーの形式のパネル・行の URL の通知・絞り込みの引き出しの地の色
+    description: 本文の行の背景、ページのスクロールで留める見出し行とピン止めした列の背景、列のメニュー・表のメニュー・コピーの形式のパネル・行の URL の通知・絞り込みの引き出しの背景色
   - name: --mdmark-color-table-head
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'
-    description: 見出し行の地の色
+    description: 見出し行の背景色
   - name: --mdmark-color-surface
     syntax: <color>
     default: '#f4f4f5（ダーク #1b1b1f）'

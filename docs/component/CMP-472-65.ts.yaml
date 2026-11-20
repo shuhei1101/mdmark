@@ -84,7 +84,7 @@ css_properties:
   - name: --mdmark-color-notice-bg
     syntax: <color>
     default: '#f9eee8（ダーク #2a251d）'
-    description: 枠の地の色
+    description: 枠の背景色
   - name: --mdmark-color-notice-border
     syntax: <color>
     default: '#b45309（ダーク #fbbf24）'

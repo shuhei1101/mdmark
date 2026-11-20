@@ -93,7 +93,7 @@ css_properties:
   - name: --mdmark-color-text
     syntax: <color>
     default: '#18181b（ダーク #ededef）'
-    description: 「コメントを保存」のボタンの地と線の色
+    description: 「コメントを保存」のボタンの背景と線の色
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)

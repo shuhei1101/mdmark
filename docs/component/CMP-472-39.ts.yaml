@@ -226,7 +226,7 @@ css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
     default: var(--mdmark-color-bg)
-    description: 右上のパネルと全画面のモーダルの地の色
+    description: 右上のパネルと全画面のモーダルの背景色
   - name: --mdmark-diagram-max-height
     syntax: <length>
     default: 36rem

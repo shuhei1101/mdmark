@@ -29,7 +29,7 @@ states:
       - name: open
         value: 'true'
   - name: Colored
-    description: 記載した人が地の色を付けたブロックの要素。マーカーが地の色の上でも判読できる
+    description: 記載した人が背景色を付けたブロックの要素。マーカーが背景色の上でも判読できる
     args:
       - name: placement
         value: block

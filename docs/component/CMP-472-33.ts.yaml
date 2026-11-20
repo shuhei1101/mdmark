@@ -77,7 +77,7 @@ css_properties:
 accessibility:
   - '`button`（`type="button"`）で、`aria-label` と `title` に `コメント {count が 2 以上なら「{count} 件、」}「{quote}」{closed があれば（閉じたセクションの中・選ばれていないタブの中・閉じた行の詳細の中）}` を入れる'
   - アイコンの `svg` は `aria-hidden="true"` にする
-  - 開いている箇所は地と文字の色の反転、閉じた中の箇所は破線で示し、色だけに頼らない
+  - 開いている箇所は背景と文字の色の反転、閉じた中の箇所は破線で示し、色だけに頼らない
   - 押せる範囲は外観の 1.5rem の四方から 0.375rem ずつ広げる。`:focus-visible` でリンクの色の輪郭を出す
 refs:
   - IF-472-35#constraints[余白のマーカー]
@@ -85,7 +85,7 @@ refs:
 status: planned
 notes:
   HTML: '`<button class="mdmark-comment-marker" type="button" aria-label="…" title="…" data-closed="…" data-current>{アイコン}<span>{count}</span></button>`。縦の位置（`style` の `top`）は `mount` が入れる。モックは `docs/mock/components/comment-margin-marker/`'
-  色: 線・地・文字は `--mdmark-color-comment-line`・`--mdmark-color-comment-bg` を使用し、新規の色の変数を持たない
+  色: 線・背景・文字は `--mdmark-color-comment-line`・`--mdmark-color-comment-bg` を使用し、新規の色の変数を持たない
   印刷: 余白の列ごと出さない
 test_file: tests/integration/lib/comment-marker.story.test.ts
 tags:
