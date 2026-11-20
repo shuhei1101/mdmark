@@ -43,8 +43,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T12:00:47.880977+00:00'
   - process: データ設計
-    status: todo
+    status: done
     note: tree_warning の意味の変更に合わせ、DATA-472-29・ER-477-6 の記述を修正する
+    updated_by: planner
+    updated_at: '2026-11-20T12:07:24.429198+00:00'
   - process: インターフェース定義設計
     status: todo
   - process: 部品設計
