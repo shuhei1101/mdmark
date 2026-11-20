@@ -23062,6 +23062,15 @@ async function openMapExport(figure: HTMLElement): Promise<HTMLButtonElement> {
   return button;
 }
 
+/** map の範囲の前の記載の警告の項目の文 */
+function mapWarningsBefore(figure: HTMLElement): string[] {
+  const warning = figure.closest(".mdmark-map")?.previousElementSibling;
+  if (!warning) return [];
+  return [...warning.querySelectorAll("li")].map(
+    (item) => item.textContent ?? "",
+  );
+}
+
 // map の計画した変更を描く（正常系）
 test("test_normal_when_map_planned_changes", async () => {
   // 準備
@@ -23145,26 +23154,16 @@ test("test_normal_when_map_planned_changes", async () => {
     ).toMatch(new RegExp(`、${label}$`));
   }
   // 検証: 知らない値は記載の警告になり、バッジを持たない
-  const flowWarnings = [
-    ...(flow
-      .closest(".mdmark-map")
-      ?.previousElementSibling?.querySelectorAll("li") ?? []),
-  ].map((item) => item.textContent ?? "");
+  const flowWarnings = mapWarningsBefore(flow);
   const moved = flowWarnings.filter((text) => text.includes("changes.data"));
   expect(moved).toHaveLength(1);
   for (const value of ["added", "changed", "removed"])
     expect(moved[0]).toContain(value);
   expect(node("data").querySelector(".mdmark-map-change")).toBeNull();
   // 検証: シーケンス図では使用できない旨の警告で、色とバッジが無い
-  const sequenceWarnings = [
-    ...(sequence
-      .closest(".mdmark-map")
-      ?.previousElementSibling?.querySelectorAll("li") ?? []),
-  ].map((item) => item.textContent ?? "");
+  const sequenceWarnings = mapWarningsBefore(sequence);
   expect(
-    sequenceWarnings.filter(
-      (text) => text.includes("`changes`") || text.includes("changes"),
-    ),
+    sequenceWarnings.filter((text) => text.includes("changes")),
   ).toHaveLength(1);
   expect(sequence.querySelector(".mdmark-map-change")).toBeNull();
   expect(sequence.querySelector('[class*="map-change-"]')).toBeNull();
