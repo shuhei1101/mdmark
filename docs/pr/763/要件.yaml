@@ -7,7 +7,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 全画面で開いた map の図でも、線にポインターを重ねたときの動き（データの印など）が通常の表示と同じに出る
+    detail: 全画面で開いた map の図でも、線の強調・データの印・選択・開閉・中へ入る・ドラッグ・案内が通常の表示と同じに動き、全画面で変えた開閉・配置が元の図にも反映される
     depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-87.yaml
@@ -22,15 +22,11 @@ use_cases:
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
-    change: グループの角をドラッグして大きさを変える操作と、ER 図の関連の線の 1 対多の向きの見え方を追加する
+    change: グループの角をドラッグして大きさを変える操作と、ER 図の関連の線の 1 対多の向きの見え方を追加する。操作の表の ER 図のテーブル・クラス図のクラスの開閉の 2 行から、列・メンバーの数の表示の記述を削除する
     status: todo
   - page: docs/guide/用語集.yaml
     new: false
     change: データの印・開閉など、1 対多の向きの見せ方・テーブルの開閉・グループの大きさの変更で意味が変わった用語の説明を合わせる
-    status: todo
-  - page: docs/guide/記法.mark.md
-    new: false
-    change: 補足の layout にグループの大きさのキーを追加する設計になった場合、そのキーを追加する
     status: todo
 scope_out:
   - item: map の図のグループ以外（ノード・ER 図のテーブル）の大きさをドラッグで変える操作
@@ -38,4 +34,7 @@ scope_out:
     plan: none
   - item: map 以外の図（グラフ・mermaid の図）の全画面での動き
     reason: 要望は map の図の線の動きで、他の図の全画面での動きの不具合は報告されていない。再現の確認で同じ原因が他の図に及ぶと分かったら、設計の段でスコープに含めるかを確定する
+    plan: none
+  - item: マインドマップの枝・軸と格子の配置の図の section と入れ子のブロック・シーケンス図のブロックの大きさを角のドラッグで変える操作
+    reason: これらの図は入れ子の自動配置を使わず、木・軸・格子・記載順で位置と大きさが決まり、項目をドラッグしても動かない（SC-472-8 のマインドマップ・軸と格子の配置の図の正常シナリオ）。角を出すのは、ノードの移動が構成図と同じ規則の図のグループに限る
     plan: none
