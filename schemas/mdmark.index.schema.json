@@ -19,7 +19,7 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["id", "path", "title"],
+        "required": ["id", "path"],
         "properties": {
           "id": {
             "title": "ID",
@@ -35,7 +35,7 @@
           },
           "title": {
             "title": "タイトル",
-            "description": "文書のタイトル。関連文書のリンクの文字に出す。",
+            "description": "文書のタイトル。関連文書のリンクの文字に出す。省くと、文書の先頭のフロントマターの title、本文の最初の h1、拡張子を除いたファイル名の順で補う。",
             "type": "string",
             "minLength": 1
           },

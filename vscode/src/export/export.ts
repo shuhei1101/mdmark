@@ -3,8 +3,10 @@ import { homedir } from "node:os";
 import { basename, dirname } from "node:path";
 import { pathToFileURL } from "node:url";
 import { env, type TextDocument, Uri, window, workspace } from "vscode";
+import { readFrontmatterValues } from "../../../src/cli/documents.ts";
 import { formatCheckIssue } from "../../../src/cli/issues.ts";
 import type { MdmarkAlias } from "../../../src/knowledge/aliases.ts";
+import { readFrontmatterMetadata } from "../../../src/knowledge/references.ts";
 import type { PreviewConfig } from "../config.ts";
 import { applyColorTheme, isFile, loadConfig } from "../config.ts";
 import { type ExtensionDeps, LAST_VERSION_KEY } from "../deps.ts";
@@ -20,6 +22,19 @@ import { baseDirOf } from "../workspace.ts";
 import { embedLocalLibraries, embedLocalSyntax } from "./embed.ts";
 import { buildExportHtml, resolveExportPath } from "./html.ts";
 import { writeFileAtomically } from "./write.ts";
+
+/** 書き出す HTML の `<title>`: 先頭のフロントマターの使用できる `title`、無ければ Markdown のファイル名 */
+function exportTitle(options: {
+  markdownPath: string;
+  markdown: string;
+}): string {
+  const { markdownPath, markdown } = options;
+  return (
+    readFrontmatterMetadata(
+      readFrontmatterValues({ [markdownPath]: markdown })[markdownPath],
+    ).title ?? basename(markdownPath)
+  );
+}
 
 /** 書き出した後に何をするか */
 export type ExportMode = "export" | "browser" | "print";
@@ -256,10 +271,11 @@ export async function exportMarkdown(options: {
     outputDir: settings.outputDir,
     workspaceDir: baseDirOf(document.uri),
   });
+  const markdown = document.getText();
   const html = buildExportHtml({
-    markdown: document.getText(),
+    markdown,
     config,
-    title: basename(markdownPath),
+    title: exportTitle({ markdownPath, markdown }),
     distJs: distUrl({
       base: deps.distBase,
       version: decision.version,

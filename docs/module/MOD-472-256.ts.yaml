@@ -17,7 +17,7 @@ data_models:
         type: string
         description: 索引のキーのパスか文書の行。ファイル全体は空文字
       - name: kind
-        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "untyped_related" | "one_sided_change_together" | "related_link_overlap" | "missed_change_together" | "duplicate_term" | "avoided_term"'
+        type: '"schema" | "missing_doc" | "orphan_doc" | "broken_ref" | "untyped_related" | "one_sided_change_together" | "related_link_overlap" | "missed_change_together" | "frontmatter_mismatch" | "duplicate_term" | "avoided_term"'
         description: ずれの種類
       - name: message
         type: string
@@ -31,7 +31,7 @@ functions:
     summary: 索引と文書の本文から、`schema`・`missing_doc`・`orphan_doc`・`broken_ref`・`untyped_related`・`one_sided_change_together`・`related_link_overlap`・`missed_change_together`・`duplicate_term`・`avoided_term` のずれをこの順で返却する
     description: '`schema` は `normalizeIndex` の合わない場所。
 
-      文書の対応は `./` と重なった `/` を除いて比べる。
+      文書の対応は `./` と重なった `/` を除いて比べる。比べる前に `supplementIndexDocs` で索引の文書を補い、加えた文書（`added`）は `orphan_doc` にせず、以降の照合では索引の文書として扱う。`frontmatter_mismatch` は `findFrontmatterMismatches` で取得し、`missed_change_together` の後ろに並べる。
 
       用語の重複は、索引の `terms` どうし・索引と用語集の表・用語集の表どうしで、単語か別名が `normalizeWord` で正規化した後に同じになるものを 1 組 1 件にし、`message` には後ろの側の記載した表記と先の側の場所を記載する。
 
@@ -48,7 +48,7 @@ functions:
       `message` は日本語の 1 文で、修正する場所を記載する'
     args:
       - name: input
-        type: '{ index: unknown; documents: Record<string, string>; indexFile?: string; changedPaths?: string[] }'
+        type: '{ index: unknown; documents: Record<string, string>; indexFile?: string; changedPaths?: string[]; frontmatter?: Record<string, unknown> }'
         required: true
         description: 索引の値・文書のパスから本文を参照する表・索引のファイルの名前（既定 `index.yaml`）・比べる基準から変わった文書のパス（指定したときだけ修正漏れを確認する）
     returns:
@@ -60,6 +60,8 @@ functions:
       - '#functions[findAvoidedTerms]'
       - '#functions[findRelatedIssues]'
       - '#functions[findMissedChangeTogether]'
+      - MOD-472-255#functions[supplementIndexDocs]
+      - '#functions[findFrontmatterMismatches]'
     unit_tests:
       - name: test_check_index
         case: 正常
@@ -121,6 +123,18 @@ functions:
         condition: インターフェース定義『索引を点検する』の「正常系（v0.9.0 までの索引）」の索引と文書
         mock: なし
         expected: '`file`・`where`・`kind` と並びがそのフローの期待値と等しく、`where` が `schema` の `message` に `mdmark upgrade` がある'
+      - name: test_check_index_when_frontmatter_metadata
+        case: 正常
+        summary: 索引に無いキーをフロントマターで補い、`title` の無い索引の文書を `schema` のずれにしない
+        condition: インターフェース定義『索引を点検する』の「正常系（フロントマターのメタデータ）」
+        mock: なし
+        expected: 戻り値が空
+      - name: test_check_index_when_frontmatter_unindexed_document
+        case: 正常
+        summary: '`title` を持つ索引に無い文書を `orphan_doc` にしない'
+        condition: 同じインターフェース定義の「正常系（索引に無い文書がフロントマターを持つ）」
+        mock: なし
+        expected: 戻り値が `draft.md` の `orphan_doc` だけ
     refs:
       - IF-472-37#
   - name: findAvoidedTerms
@@ -270,6 +284,36 @@ functions:
     refs:
       - IF-472-37#constraints[修正漏れ]
     status: planned
+  - name: findFrontmatterMismatches
+    title: 索引とフロントマターの値の違いを探す
+    container: src/knowledge/check.ts
+    kind: 関数
+    scope: internal
+    summary: 索引の文書とフロントマターの両方に使用できる値があり、値の違うキーごとに `frontmatter_mismatch` を返却する
+    description: '`title`・`description` は文字列で、`aliases` は要素の集合で、`tags` はタグの名前と `main`（文字列の要素は `false`）の組の集合で比べる。`where` は `docs[{索引の位置}].{キー}`、`file` は `indexFile`、`message` は `索引の {キー}（{索引の値}）と {パス} のフロントマターの {キー}（{フロントマターの値}）が違います。どちらかに合わせてください。`。並びは索引の `docs` の順、文書の中は `title`・`description`・`aliases`・`tags` の順'
+    args:
+      - name: input
+        type: '{ index: MdmarkIndex; metadata: Map<string, FrontmatterMetadata>; indexFile: string; positionOf?: (doc: MdmarkIndexDoc) => number }'
+        required: true
+        description: '`normalizeIndex` で検査した索引・`supplementIndexDocs` の `metadata`・索引のファイルの名前・`where` に出す文書の位置（省くと `index.docs` の位置。`checkIndex` は検査で除かれる前の `docs` の位置を指定する）'
+    returns:
+      type: MdmarkIndexIssue[]
+      description: '`frontmatter_mismatch` のずれ'
+    refs:
+      - IF-472-37#constraints[索引とフロントマターの値の違い]
+    unit_tests:
+      - name: test_find_frontmatter_mismatches
+        case: 正常
+        summary: 値の違うキーだけを返却する
+        condition: '索引の `guide` が `title: "使用方法"`・`tags: ["手順"]`、メタデータが `{ title: "使い方", tags: ["手順"] }`'
+        mock: なし
+        expected: '`{ file: "index.yaml", where: "docs[0].title", kind: "frontmatter_mismatch" }` の 1 つだけで、`message` に `使用方法` と `使い方`'
+      - name: test_find_frontmatter_mismatches_when_order_differs
+        case: 正常
+        summary: '`aliases`・`tags` は並びの違いを違いにしない'
+        condition: '索引の `aliases: ["a", "b"]`、メタデータの `aliases: ["b", "a"]`、索引の `tags: ["x"]`、メタデータの `tags: [{ name: "x", main: false }]`'
+        mock: なし
+        expected: 空
 lead: '索引と文書のずれの点検を受け持ち、索引の点検で返却するずれを変えるときに参照する。'
 tags:
   - name: topic:検査

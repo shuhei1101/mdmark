@@ -9,6 +9,7 @@ import type { MdmarkParamDefinition } from "../diagram/definition.ts";
 import { splitFrontmatter } from "../frontmatter/frontmatter.logic.ts";
 import type { MdmarkAlias } from "../knowledge/aliases.ts";
 import { type MdmarkIndex, normalizeIndex } from "../knowledge/index-shape.ts";
+import { fileTitle } from "../knowledge/paths.ts";
 import type { MdmarkReferences } from "../knowledge/references.ts";
 import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
 import type { CollectedWarning } from "../shared/syntax-warning.syntax.ts";
@@ -46,6 +47,25 @@ function createNonce(): string {
 /** 解析器: モジュールで 1 つだけ作り、初めて使用するときに作る */
 let parser: MarkdownIt | undefined;
 
+/** 描く索引: 検査した索引の `docs` を参照の表の `docs` に替え（索引が無いときも `docs` だけの索引にする）、`title` の無い文書を拡張子を落としたファイル名で補う */
+function indexOf(
+  value: MdmarkIndex | undefined,
+  references: MdmarkReferences | undefined,
+): MdmarkIndex | undefined {
+  const normalized =
+    value === undefined ? undefined : normalizeIndex(value).index;
+  const docs = references?.docs ?? normalized?.docs;
+  if (docs === undefined) {
+    return undefined;
+  }
+  return {
+    ...(normalized ?? { schema: 2 }),
+    docs: docs.map((doc) =>
+      doc.title === undefined ? { ...doc, title: fileTitle(doc.path) } : doc,
+    ),
+  };
+}
+
 /** Markdown を本文の HTML にし、文書のマーカーで決まった機能のオン・オフと一緒に返却する */
 export function renderDocument(options: {
   /** Markdown */
@@ -68,10 +88,7 @@ export function renderDocument(options: {
   resolveIdLink?: ResolveIdLink | undefined;
 }): RenderedDocument {
   parser ??= createParser();
-  const index =
-    options.index === undefined
-      ? undefined
-      : normalizeIndex(options.index).index;
+  const index = indexOf(options.index, options.references);
   const docId = index?.docs.some((doc) => doc.id === options.docId)
     ? options.docId
     : undefined;

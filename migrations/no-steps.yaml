@@ -95,3 +95,7 @@ entries:
     schema: mdmark.config.schema.json
     sha256: 3f9bbc5e3279d77fc98e0da23391bf55d4cf099b48a6c56402e1b2d10a87c731
     reason: features に省いてよい markdown-buttons を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.index.schema.json
+    sha256: 36ba07893b1540fb58d310654dd1ddb1d740c6c06af3dfe2d102b9be0ec535a8
+    reason: 文書の title を省いてよいキーにしただけで、古い索引もそのまま新しい Schema に合う

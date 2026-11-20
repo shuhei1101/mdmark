@@ -99,7 +99,7 @@ functions:
     kind: 関数
     scope: public
     summary: 索引と文書の本文から、文書ごとの本文の一致と、重なりを除いた参照先を返却する
-    description: '`normalizeIndex` で合う文書・用語だけを使用する。
+    description: '`normalizeIndex` で合う文書・用語だけを使用し、`supplementIndexDocs` で補った文書の並びを索引の `docs` の代わりに使用する。
 
       本文のある索引の文書を `parseDocument` で 1 回ずつ読み込み、`glossary` がオンの文書の用語集の表の用語を集めて（`collectReferences` の `glossary` と同じ並び）、文書ごとに `buildDictionary`（`docId` に照合する文書、`ownGlossary` にその文書の表、`aliases` に `input.aliases`、`features` に文書のマーカーを重ねた機能）で辞書を作る。
 
@@ -116,7 +116,7 @@ functions:
       一致の `text` は、一致した単語を辞書の `written` で参照した索引・用語集の表に記載した表記'
     args:
       - name: input
-        type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig; aliases?: MdmarkAlias[] }'
+        type: '{ index: MdmarkIndex; documents: Record<string, string>; config?: MdmarkConfig; aliases?: MdmarkAlias[]; frontmatter?: Record<string, unknown> }'
         required: true
         description: 索引・文書のパスから本文を参照する表・設定・エイリアス
     returns:
@@ -130,6 +130,7 @@ functions:
       - '#functions[embeddedHtmlMatches]'
       - '#functions[diagramTermMatches]'
       - '#functions[mapTermMatches]'
+      - MOD-472-255#functions[supplementIndexDocs]
     unit_tests:
       - name: test_collect_matches
         case: 正常
@@ -215,6 +216,12 @@ functions:
         condition: '`aliases` に `term` の `公開関数`（`fn`）だけを指定し、索引に用語が無い。`guide` の `<!-- chart -->` の定義の系列の `name` に `{{公開関数}}`、段落に `公開関数`'
         mock: なし
         expected: '`byDocument.guide` が段落の `公開関数` の 1 件だけで、`{{公開関数}}` の位置が無い'
+      - name: test_collect_matches_when_frontmatter_metadata
+        case: 正常
+        summary: フロントマターの別名とタイトルで照合し、参照先に補ったタイトルを返却する
+        condition: '索引の `api` が `id`・`path` だけで、`frontmatter` の `api.md` が `{ title: "公開関数の一覧", aliases: ["公開関数"] }`、`arch` の本文に `公開関数`'
+        mock: なし
+        expected: '`targets` の `api` の `title` が `公開関数の一覧` で、`byDocument.arch` に `公開関数` の一致がある'
     refs:
       - IF-472-36#
   - name: embeddedHtmlMatches

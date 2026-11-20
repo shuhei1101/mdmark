@@ -59,3 +59,25 @@ test("test_is_mark_markdown", async () => {
   // 検証
   expect(results).toEqual([true, true, false, false, false]);
 });
+
+// . と空の要素を除く（正常系）
+test("test_normalize_path", async () => {
+  // 準備
+  const { normalizePath } = await loadPaths();
+  // 実行
+  const paths = ["./a//b.md", "a/./b.md", "a.md"].map(normalizePath);
+  // 検証
+  expect(paths).toEqual(["a/b.md", "a/b.md", "a.md"]);
+});
+
+// フォルダと最後の拡張子を除く（正常系）
+test("test_file_title", async () => {
+  // 準備
+  const { fileTitle } = await loadPaths();
+  // 実行
+  const titles = ["使い方/guide.md", "a.mark.md", ".env", "README"].map(
+    fileTitle,
+  );
+  // 検証
+  expect(titles).toEqual(["guide", "a.mark", ".env", "README"]);
+});

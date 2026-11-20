@@ -230,6 +230,86 @@ scenarios:
       - '`c` の修正漏れの行は返らない'
       - 変わった文書のパスに `a.md` と `b.md` を指定した点検では、ずれの一覧が空
     test: test_normal_when_change_together_missed
+  - name: 正常シナリオ（フロントマターのメタデータを持つ文書）
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常シナリオと同じ
+      - name: フロントマターを持つ索引と文書
+        description: 索引が文書 `arch`（`title` を持たない）と `api`（`title` に `API`）を持つ。`arch` の本文の先頭のフロントマターが `title` に `アーキテクチャ`、`tags` に `設計` を持ち、`api` の本文の先頭のフロントマターが索引と同じ `title` の `API` を持つ
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を指定して点検させる
+        M->>M: 本文の先頭のフロントマターのメタデータを、索引の文書のメタデータと突き合わせる
+        M-->>C: 空のずれの一覧
+      ```
+
+      <!-- /map -->
+    expected:
+      - ずれの一覧が空
+    test: test_normal_when_frontmatter_metadata
+  - name: 正常シナリオ（索引とフロントマターの値が違う）
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常シナリオと同じ
+      - name: 値が違う索引と文書
+        description: 索引が文書 `guide`（`title` に `使用方法`、`tags` に `手順`）と `faq`（`title` に `よくある質問`）を持つ。`guide` の本文の先頭のフロントマターが `title` に `使い方`、`tags` に `手順` を持つ。`faq` の本文の先頭は YAML として解析できないフロントマター
+        notes: 値が違うキーと値が同じキーを 1 つの文書に、解析できないフロントマターを別の文書に配置して決定的に発生させる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を指定して点検させる
+        M->>M: 索引と文書の先頭のフロントマターの両方にあるキーの値を比べる
+        M-->>C: 値の違いのずれの行を持つ一覧
+      ```
+
+      <!-- /map -->
+    expected:
+      - 例外で止まらずに一覧が返る
+      - '`guide` の `title` の値の違いのずれが 1 件返り、索引の `guide` の `title` の場所を持ち、内容が索引の `使用方法` とフロントマターの `使い方` を示す'
+      - '`guide` の `tags` のずれは返らない'
+      - '`faq` のずれは返らない'
+      - 値の違いのずれ以外のずれは返らない
+    test: test_normal_when_frontmatter_mismatch
+  - name: 正常シナリオ（索引に無い文書がフロントマターを持つ）
+    setup:
+      - name: 配布物を読み込む Node の処理
+        description: 正常シナリオと同じ
+      - name: 索引に無い文書を含む索引と文書
+        description: 索引が文書 `arch` だけを持ち、文書の一覧が `arch.md`・`note.md`・`draft.md` を持つ。`note.md` の本文の先頭のフロントマターが `title` に `メモ` を持ち、`draft.md` はフロントマターを持たない
+        notes: 索引に無い文書のうちフロントマターに `title` を持つものと持たないものを並べて、ずれの有無を決定的に発生させる
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: 索引・文書のパスの一覧・本文を指定して点検させる
+        M->>M: 索引に無い文書のうち、先頭のフロントマターに title を持つ文書を、フロントマターのメタデータで索引の文書に加える
+        M-->>C: 索引に無い文書のずれの行を持つ一覧
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`draft.md` の索引に無い文書のずれが 1 件返り、`draft.md` のファイルを持つ'
+      - '`note.md` のずれは返らない'
+      - そのほかのずれは返らない
+    test: test_normal_when_frontmatter_unindexed_document
 lead: 利用側の処理（CLI・MCP・サーバー）が、索引と文書のパスの一覧・本文を mdmark の点検の処理に指定し、索引と文書のずれの一覧を受け取る。
 primary_actor: 利用側の処理
 stakeholders:
@@ -241,7 +321,7 @@ trigger: 利用側の処理が、読み込んだ索引と、索引のフォル�
 preconditions:
   - 利用側の処理が mdmark の配布物の JavaScript を読み込んでいる
   - 利用側の処理が索引の YAML と文書のファイルを読み込んでいる（mdmark はファイルを読み込まない）
-success_guarantee: 索引に無い文書・索引にあって消えた文書・`related` の切れた相手・片側にしか記載していない `change_together`・本文でリンクしている文書と重なる関連・`type` と `when` を持たない文字列の関連・変わった文書のパスを指定したときの `change_together` の修正漏れ・用語の重複・本文に出た用語のやめた言い方・Schema に合わない索引が、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。用語の重複とやめた言い方は、全角と半角・英字の大文字と小文字・前後の空白の違いを区別せずに確認する。
+success_guarantee: 索引に無く、先頭のフロントマターに `title` も持たない文書・索引にあって消えた文書・`related` の切れた相手・片側にしか記載していない `change_together`・本文でリンクしている文書と重なる関連・`type` と `when` を持たない文字列の関連・変わった文書のパスを指定したときの `change_together` の修正漏れ・用語の重複・本文に出た用語のやめた言い方・Schema に合わない索引・索引と文書の先頭のフロントマターの両方にあって値の違うキーが、ファイル・場所・種類・内容の一覧で返る。ずれが無ければ空の一覧が返る。用語の重複とやめた言い方は、全角と半角・英字の大文字と小文字・前後の空白の違いを区別せずに確認する。
 minimal_guarantee: Schema に合わない索引でも例外で止まらず、読み込めた範囲のずれと Schema のずれを返却する。点検は索引と文書を書き換えない。
 refs:
   - SC-472-57#
@@ -250,3 +330,4 @@ tags:
   - name: topic:索引
     main: true
   - name: action:点検
+  - name: topic:フロントマター

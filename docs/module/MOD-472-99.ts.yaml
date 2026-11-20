@@ -62,6 +62,7 @@ functions:
       - MOD-472-106#functions[bundleExtensions]
       - 'MOD-472-102#functions[embedLocalLibraries]'
       - MOD-472-102#functions[embedLocalSyntax]
+      - MOD-472-117#functions[readFrontmatterValues]
     refs:
       - IF-472-15#
       - IF-472-15#constraints[エイリアス]
@@ -71,6 +72,7 @@ functions:
       - SCR-472-1#elements[書き出せない通知]
       - SCR-472-1#elements[バージョンを決められない通知]
     status: planned
+    description: 書き出す HTML の `<title>` は、`readFrontmatterValues` で解析した開いている Markdown のフロントマターの使用できる `title`（空でない文字列）、無ければ Markdown のファイル名。索引は参照しない
 lead: 'HTML への書き出し・ブラウザで開く・PDF への印刷のコマンドの本体を受け持ち、HTML への書き出しや PDF への印刷を変えるときに参照する。'
 tags:
   - name: topic:書き出し

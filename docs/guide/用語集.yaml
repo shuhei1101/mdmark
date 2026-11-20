@@ -133,7 +133,7 @@ terms:
   description: '`<!-- cards -->` で囲んだリストの項目を、アイコン・タイトル・説明のカードにして格子に並べたもの'
 - id: front-matter
   name: フロントマター
-  description: 文書の 1 行目の `---` から次の `---` か `...` までの YAML。本文に出さず、機能 `frontmatter` がオンのときだけ本文の先頭の折りたたみに出す
+  description: 文書の 1 行目の `---` から次の `---` か `...` までの YAML。本文に出さず、機能 `frontmatter` がオンのときだけ本文の先頭の折りたたみに出す。`title`・`description`・`aliases`・`tags` は、索引に無いキーを補う文書のメタデータになる
 - id: page-settings
   name: ページの設定
   description: '文書の先頭の `<!-- page: … -->` に記載する、その文書だけの配色の明暗・テーマ・右側の目次の出し方。設定より優先する'
@@ -235,7 +235,7 @@ terms:
   - 書き方の警告
 - id: doc-index
   name: 索引
-  description: 利用側が記載する YAML のファイル。文書（`docs`）と用語（`terms`）を並べる。利用側が読み込んだオブジェクトを `mount`・`render` に指定する
+  description: 利用側が記載する YAML のファイル。文書（`docs`）と用語（`terms`）を並べる。文書のメタデータは、両方に記載したとき索引の値を優先する。利用側が読み込んだオブジェクトを `mount`・`render` に指定する
 - id: glossary-table
   name: 用語集の表
   description: '`glossary` のマーカーで囲んだ表。用語・意味・別名の列から用語を入れる。表の中の単語には下線を付けない'

@@ -47,7 +47,11 @@ import {
   type LoadedConfig,
   readLayeredConfig,
 } from "./config.ts";
-import { collectBuildDocuments, readIndexWithDocuments } from "./documents.ts";
+import {
+  collectBuildDocuments,
+  readFrontmatterValues,
+  readIndexWithDocuments,
+} from "./documents.ts";
 import { CliError, type CliIo } from "./errors.ts";
 import { changedPathsSince } from "./git.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
@@ -260,6 +264,7 @@ async function checkIndexFile(
     index: read.raw,
     documents: read.documents,
     indexFile: read.indexFile,
+    frontmatter: readFrontmatterValues(read.documents),
     ...(changedPaths !== undefined && { changedPaths }),
   }).map((issue) => ({
     ...issue,
