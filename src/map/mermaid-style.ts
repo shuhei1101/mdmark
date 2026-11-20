@@ -38,11 +38,12 @@ const SHORTHAND_RE =
 /** `fill:#f9f,stroke:#c3c` から色の属性だけを取り出す */
 const readColors = (text: string): MermaidNodeStyle => {
   const out: MermaidNodeStyle = {};
-  for (const part of text.replace(/;\s*$/, "").split(",")) {
+  // mermaid と同じく、`\,` で逃がしていない `,` で属性を区切り、`\,` を `,` に戻す
+  for (const part of text.replace(/;\s*$/, "").split(/(?<!\\),/)) {
     const at = part.indexOf(":");
     if (at < 0) continue;
     const key = part.slice(0, at).trim();
-    const value = part.slice(at + 1).trim();
+    const value = part.slice(at + 1).trim().replaceAll("\\,", ",");
     if ((COLOR_KEYS as readonly string[]).includes(key) && value !== "")
       out[key as (typeof COLOR_KEYS)[number]] = value;
   }
