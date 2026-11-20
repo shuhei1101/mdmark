@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T04:23:00.719971+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: 最初に mode を追加するか（要件.mark.md の案 A・B）をユーザーへ確認する
+    updated_by: planner
+    updated_at: '2026-11-20T04:26:54.408076+00:00'
   - process: モック作成
     status: todo
     note: mode を追加すると決めた場合だけ、layers の見せ方のモックを作る。追加しない場合は skipped にする
