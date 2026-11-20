@@ -30,6 +30,9 @@ export const hideNames = (text: string): string =>
     return TRACE_ALIAS;
   });
 
+/** `style` 要素の開きタグと中身 */
+const STYLE_PATTERN = /(<style\b[^>]*>)([\s\S]*?)<\/style>/g;
+
 /** 開きタグ・閉じタグ（属性の値の `>` はサニタイズで `&gt;` になっている） */
 const TAG_PATTERN = /<(\/?)([^\s/>]+)([^>]*)>/g;
 
@@ -73,18 +76,25 @@ const hideAttributeValue = (name: string, value: string): string => {
     : assets;
 };
 
-/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby` など）・`for`・`headers` の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` だけを別名へ置き換え、HTML のコメントを削除する。テキストのノードと、それ以外の `href`・`src`・`alt`・`title` の値は置き換えない */
+/** 描いた本文の HTML で、要素名・属性名・`class` と `id` と `data-*` の属性の値・文書の中の `id` を指す `href="#…"`・`aria-*`（`aria-describedby` など）・`for`・`headers` の値・`style` の CSS 変数の名前・`mdmark-asset:` の `mdmark` と、範囲の CSS の `style` の中の名前だけを別名へ置き換え、HTML のコメントを削除する。テキストのノード（範囲のスクリプトの `template` の中を含む）と、それ以外の `href`・`src`・`alt`・`title` の値は置き換えない */
 export const hideRenderedHtml = (html: string): string =>
-  html.replace(COMMENT_PATTERN, "").replace(TAG_PATTERN, (...tag: string[]) => {
-    const [, slash = "", name = "", rest = ""] = tag;
-    const attributes = rest.replace(ATTRIBUTE_PATTERN, (...attribute) => {
-      const [, attr = "", equals = "", value = ""] = attribute as string[];
-      const hidden =
-        value === "" ? "" : hideAttributeValue(attr.toLowerCase(), value);
-      return `${hideNames(attr)}${equals ?? ""}${hidden}`;
+  html
+    .replace(COMMENT_PATTERN, "")
+    // 範囲の CSS は mdmark が根の要素の class で範囲に限るため、CSS として名前を置き換える
+    .replace(STYLE_PATTERN, (...style: string[]) => {
+      const [, open = "", css = ""] = style;
+      return `${open}${hideNames(css)}</style>`;
+    })
+    .replace(TAG_PATTERN, (...tag: string[]) => {
+      const [, slash = "", name = "", rest = ""] = tag;
+      const attributes = rest.replace(ATTRIBUTE_PATTERN, (...attribute) => {
+        const [, attr = "", equals = "", value = ""] = attribute as string[];
+        const hidden =
+          value === "" ? "" : hideAttributeValue(attr.toLowerCase(), value);
+        return `${hideNames(attr)}${equals ?? ""}${hidden}`;
+      });
+      return `<${slash}${hideNames(name)}${attributes}>`;
     });
-    return `<${slash}${hideNames(name)}${attributes}>`;
-  });
 
 /** 値を JSON にして名前を置き換え、元の構造に戻す */
 const hideValue = <T>(value: T): T =>

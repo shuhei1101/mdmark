@@ -52,6 +52,7 @@ import {
   type ViewerEmbeds,
 } from "./embed.ts";
 import { CliError, type CliIo } from "./errors.ts";
+import { registerConfigExtensions } from "./export-markdown.ts";
 import { assembleHtml, type ExportPayload } from "./html.ts";
 import { collectIconNodes } from "./icons.ts";
 import { collectIncludes, includeProblemMessage } from "./includes.ts";
@@ -650,6 +651,8 @@ export async function prepareEmbeds(options: EmbedOptions): Promise<{
   warnings.push(...colorThemeWarnings(loaded));
 
   const refs = await prepareReferences({ ...options, markdowns: originals });
+  // 拡張のマーカーをマーカーの場所として描くため、設定の拡張を Node で登録してから描く（読み込めない拡張の警告は bundleExtensions が出す）
+  await registerConfigExtensions(loaded);
   const payloadDocs: ExportPayload["docs"] = [];
   for (const doc of docs) {
     const markdown = inlined.get(doc.path) ?? "";
