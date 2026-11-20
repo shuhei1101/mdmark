@@ -73,6 +73,8 @@ async function openGuide(options: { extra?: string } = {}): Promise<void> {
       "<script>alert(1)</script>",
       "```",
       "",
+      "<!-- 原本だけの目印 6 -->",
+      "",
       options.extra ?? "",
     ].join("\n"),
   );
@@ -257,6 +259,21 @@ suite("HTML に書き出す", () => {
       ["guide.html"],
     );
     assert.ok(!files.some((name) => name.endsWith(".tmp")));
+    // 書き出した HTML は描いた結果と純粋な Markdown を埋め、元の Markdown（目印の HTML コメントと map のマーカー）を埋めない
+    const source = await readFile(
+      join(workspaceDir(), "docs", "guide.html"),
+      "utf8",
+    );
+    assert.ok(!source.includes("原本だけの目印 6"));
+    assert.ok(!source.includes("<!-- map"));
+    const data = JSON.parse(
+      source.match(
+        /<script\b[^>]*type="application\/json"[^>]*>([\s\S]*?)<\/script>/,
+      )?.[1] ?? "{}",
+    ) as Record<string, unknown>;
+    assert.ok(!("markdown" in data));
+    assert.ok("rendered" in data);
+    assert.ok("pureMarkdown" in data);
     const exported = await openExported(
       join(workspaceDir(), "docs", "guide.html"),
     );
