@@ -363,7 +363,7 @@ terms:
   description: 図の部品の表示する枠の右下に配置し、ドラッグと上下キーで枠の高さを縦にだけ変える部品。ダブルクリックで元の高さに戻し、変えた高さは同じタブの中で再読み込みしても保つ。設定の `features.diagram-resize` で削除できる
 - id: er-diagram
   name: ER 図
-  description: map の範囲の `erDiagram` から描く図。テーブルを列の行を持つノードにし、関連の線を FK の列の行から引いて、両端に多重度の記号を配置する
+  description: map の範囲の `erDiagram` から描く図。テーブルを列の行を持つノードにし、関連の線を FK の列の行から引いて、両端に多重度の記号を配置する。テーブル名の行の右端の山形で列を閉じる
 - id: cardinality
   name: 多重度
   description: ER 図の関連の端が表す件数。`erDiagram` の関連の記号（`||`・`|o`・`}|`・`}o`）で、1 つ・0 か 1 つ・1 つ以上・0 以上を表す
@@ -536,7 +536,7 @@ terms:
   - ×n
 - id: data-packet
   name: データの印
-  description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。補足の `layout` の `packet` で色と形を変える
+  description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。ER 図では多重度の多い側から少ない側へ流れる。補足の `layout` の `packet` で色と形を変える
   aliases:
   - パケット
 - id: diagram-frame
