@@ -79,47 +79,69 @@ docs:
   - page: docs/guide/用語集.yaml
     new: false
     change: '`$schema` を `design-schemas/v9.7.0` へ上げ、各用語の `details` に今の用語集の表の `詳細` の列のリンクを記入する。items の概要の「描く表は用語集.mark.md が持つ」を、YAML が原本で用語集.mark.md はマーカーで描くことに修正する。用語集の表・書き出しの用語の description を変更に合わせる'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: glossary のマーカーの、用語の YAML を指す引数を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/記載する-索引と用語集を記載する.mark.md
     new: false
     change: 用語の YAML から用語集の表を描く手順を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/API.mark.md
     new: false
     change: mount の引数の変更（描いた HTML を受け取る引数）と、エイリアスの行を指す用語集の表で aliases に行を持たせる変更があれば追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/設定.mark.md
     new: false
     change: 設定の aliases の行を用語集の表の元にする書き方を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/コアコンセプト-1枚にまとめる仕組み.md
     new: false
     change: 書き出しの中身を、元の Markdown から書き出すときに描いた HTML と純粋な Markdown に変える流れに修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/コアコンセプト-文書を描く仕組み.md
     new: false
     change: 書き出した HTML は描いた HTML に操作だけを付けることを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/書き出す-文書を書き出す.mark.md
     new: false
     change: 書き出した HTML に元の Markdown が入らないことと、Markdown でコピー・エクスポートの元を修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/書き出す-文書を1枚にまとめる.md
     new: false
     change: 同上（まとめた HTML）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/CLI.mark.md
     new: false
     change: export・build の出力の説明を、描いた HTML を埋めることに修正する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: docs/guide/MCP.mark.md
     new: false
     change: export_html・build_site の出力の説明を CLI に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
   - page: mdmark.config.yaml
     new: false
     change: 'docs/guide/用語集.yaml を alias_type: term で読み込む aliases の行を追加する'
@@ -127,7 +149,9 @@ docs:
   - page: project-index.yaml
     new: false
     change: 行 `terms` の `schema.ref` を `design-schemas/v9.7.0` へ上げる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:38:33.948315+00:00'
 scope_out:
   - item: VS Code 拡張機能の HTML への書き出し（インターフェース定義『HTMLに書き出す』IF-472-15）で、元の Markdown を埋め込まない
     reason: '#532 の終了の条件が挙げる対象は export_html・build_site・CLI の export・build だけで、VS Code 拡張機能の書き出しは jsDelivr の配布物で mount に Markdown を指定する別の経路。今の判断はスコープ外だが、同じ「書き出した HTML から元の Markdown を参照できる」事象のため、含めるかをレビューで確定する'
