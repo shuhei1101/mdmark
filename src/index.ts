@@ -54,8 +54,9 @@ export type {
   MdmarkRendered,
   MountHandle,
   MountOptions,
+  RenderForMountOptions,
 } from "./mount.ts";
-export { mount } from "./mount.ts";
+export { mount, renderForMount } from "./mount.ts";
 export { mountComments, mountView } from "./mount-parts.ts";
 export { setPartModuleLoader } from "./part-modules.ts";
 export { render } from "./render/index.ts";

@@ -24,9 +24,7 @@ import {
   type MdmarkReferences,
   readFrontmatterMetadata,
 } from "../knowledge/references.ts";
-import { toPureMarkdown } from "../markdown/pure-markdown.ts";
-import type { MdmarkRendered } from "../mount.ts";
-import { renderDocument } from "../render/index.ts";
+import { type MdmarkRendered, renderForMount } from "../mount.ts";
 import { usedLibraryMarks } from "../render/used.ts";
 import type { MdmarkIconNode } from "../shared/icon-node.logic.ts";
 import { loadAliases } from "./aliases.ts";
@@ -492,7 +490,7 @@ function whenFilled<K extends string, V extends object>(
 /** `bundle` で 1 回だけ埋めた画像を指す `src` の頭 */
 const ASSET_PREFIX = "mdmark-asset:";
 
-/** 画像・動画・音声を置き換えた文書の Markdown を、開いたときに `mount` に指定する値と同じ値で `renderDocument` と `toPureMarkdown` にかけ、書き出しの中身の文書 1 つの描いた結果と純粋な Markdown を作る */
+/** 画像・動画・音声を置き換えた文書の Markdown を、開いたときに `mount` に指定する値と同じ値で公開関数 `renderForMount` にかけ、書き出しの中身の文書 1 つの描いた結果と純粋な Markdown を作る */
 export async function renderPayloadDoc(options: {
   /** 画像・動画・音声を置き換えた文書の Markdown */
   markdown: string;
@@ -513,34 +511,8 @@ export async function renderPayloadDoc(options: {
   /** 文書の、設定ファイルのフォルダからの相対パス */
   path: string;
 }): Promise<{ rendered: MdmarkRendered; pureMarkdown: string }> {
-  const { markdown, config, index, docId, includes } = options;
-  const result = renderDocument({
-    markdown,
-    config: resolveConfig({ config }),
-    index,
-    docId,
-    references: options.references,
-    aliases: options.aliases,
-    includes,
-    icons: options.icons,
-    path: options.path,
-  });
-  const pure = await toPureMarkdown(markdown, {
-    config,
-    index,
-    docId,
-    includes,
-  });
-  return {
-    rendered: {
-      html: result.html,
-      features: result.features,
-      page: result.page,
-      paramDefinitions: result.paramDefinitions,
-      extensionDefinitions: result.extensionDefinitions,
-    },
-    pureMarkdown: pure.markdown,
-  };
+  const { markdown, ...opts } = options;
+  return renderForMount(markdown, opts);
 }
 
 /** `bundle` の画像のキーを `data:` URL に戻した Markdown（`assets` が無ければそのまま） */
