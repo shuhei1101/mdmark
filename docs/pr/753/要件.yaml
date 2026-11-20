@@ -2,31 +2,28 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-72.yaml
     impact: changed
-    detail: 表を囲まず用語の YAML を指すマーカーで、用語集の表を描いて用語を入れる流れを追加
+    detail: 表を囲まず、用語の YAML を読み込んだエイリアスの行を指すマーカーで用語集の表を描く流れと、指した行が無いときの記載の警告を追加
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-65.yaml
     impact: run_only
-    detail: YAML から描いた用語にも同じ下線とツールチップが付くか
+    detail: エイリアスの行を指す用語集の表を持つ文書でも、用語の下線とツールチップが変わらないか
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-70.yaml
-    impact: following
-    detail: YAML から描いた用語のやめた言い方も点検に入る
-    depends_on:
-      - docs/scenario/SC-472-72.yaml
+    impact: run_only
+    detail: エイリアスの行を指す用語集の表のマーカーを持つ文書でも、点検の結果が変わらないか（用語は既にエイリアスとして点検に入るため、記述は変わらない）
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-60.yaml
-    impact: following
-    detail: YAML から描いた用語も本文の参照の取り出しに入る
-    depends_on:
-      - docs/scenario/SC-472-72.yaml
+    impact: run_only
+    detail: エイリアスの行を指す用語集の表のマーカーを持つ文書でも、本文の参照の取り出しが変わらないか（用語は既にエイリアスとして入るため、記述は変わらない）
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-98.yaml
-    impact: following
-    detail: YAML を指す用語集の表のマーカーを持つ文書でも、Claude Code の発言と返答の用語に同じ下線が付く
-    depends_on:
-      - docs/scenario/SC-472-72.yaml
+    impact: run_only
+    detail: エイリアスの行を指す用語集の表のマーカーを持つ文書があっても、Claude Code の発言と返答の用語の下線が変わらないか（用語は既にエイリアスから集めるため、記述は変わらない）
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-56.yaml
     impact: changed
@@ -51,17 +48,14 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-3.yaml
-    impact: following
-    detail: Claude Code から呼んだ書き出し・まとめも、元の Markdown を埋め込まない
-    depends_on:
-      - docs/scenario/SC-472-56.yaml
-      - docs/scenario/SC-472-76.yaml
+    impact: run_only
+    detail: Claude Code から呼んだ書き出し・まとめが CLI と同じ処理で元の Markdown を埋め込まないか（シナリオは CLI と同じ処理を呼ぶことだけを記載し、記述は変わらない）
+    depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-95.yaml
-    impact: following
-    detail: 雛形から配った 1 枚の HTML も、元の Markdown を埋め込まない
-    depends_on:
-      - docs/scenario/SC-472-76.yaml
+    impact: run_only
+    detail: 雛形から配った 1 枚の HTML でも、描いた文書から開いて文書を行き来できるか（流れと期待する結果は単一 UC の変更で足り、記述は変わらない）
+    depends_on: []
   - kind: composite
     scenario: docs/scenario/SC-472-89.yaml
     impact: run_only
@@ -80,7 +74,7 @@ use_cases:
 docs:
   - page: docs/guide/用語集.mark.md
     new: false
-    change: 表を削除し、用語の YAML を指す glossary のマーカーに置き換える。#532 で増える用語（書き出しの中身に埋める描いた HTML など）があれば用語を追加する
+    change: 表を削除し、docs/guide/用語集.yaml を読み込むエイリアスの行を指す glossary のマーカーに置き換える。#532 で増える用語があれば 用語集.yaml に追加する
     status: todo
   - page: docs/guide/用語集.yaml
     new: false
@@ -96,11 +90,11 @@ docs:
     status: todo
   - page: docs/guide/API.mark.md
     new: false
-    change: mount の引数の変更（描いた HTML を受け取る引数・用語の YAML の指定）を追加する
+    change: mount の引数の変更（描いた HTML を受け取る引数）と、エイリアスの行を指す用語集の表で aliases に行を持たせる変更があれば追加する
     status: todo
   - page: docs/guide/設定.mark.md
     new: false
-    change: 設定の aliases の行を用語集の表の元にするときの書き方を追加する（推奨の案 B のとき）
+    change: 設定の aliases の行を用語集の表の元にする書き方を追加する
     status: todo
   - page: docs/guide/コアコンセプト-1枚にまとめる仕組み.md
     new: false
@@ -125,6 +119,10 @@ docs:
   - page: docs/guide/MCP.mark.md
     new: false
     change: export_html・build_site の出力の説明を CLI に合わせる
+    status: todo
+  - page: mdmark.config.yaml
+    new: false
+    change: 'docs/guide/用語集.yaml を alias_type: term で読み込む aliases の行を追加する'
     status: todo
 scope_out:
   - item: VS Code 拡張機能の HTML への書き出し（インターフェース定義『HTMLに書き出す』IF-472-15）で、元の Markdown を埋め込まない

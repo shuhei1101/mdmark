@@ -20,7 +20,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T08:35:27.820540+00:00'
   - process: 複合ユースケース設計
-    status: todo
+    status: skipped
+    reason: 影響する複合 UC（SC-472-95・SC-472-89・SC-472-90・SC-472-94）は単一 UC をつなぐ流れと期待する結果が変わらず、元の Markdown を埋めないことと YAML から表を描くことは単一 UC（SC-472-56・SC-472-76・SC-472-102・SC-472-72）の変更で足りる。今の用語集の表の書き方も残るため、SC-472-95 の用語集の表を持つ文書もそのまま成り立つ
+    updated_by: planner
+    updated_at: '2026-11-20T08:38:36.236606+00:00'
   - process: デザインスタイル選定
     status: skipped
     reason: 新しい画面・外観の追加が無い（用語集の表は今の表と同じ列・種類で描き、書き出した HTML は画面の構成を変えない）
@@ -32,7 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T08:35:27.820540+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T08:45:30.432235+00:00'
   - process: モック作成
     status: skipped
     reason: 外観の変わる画面が無い
