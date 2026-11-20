@@ -39,7 +39,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-20T07:27:20.751568+00:00'
   - process: モック作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-20T12:00:47.880977+00:00'
   - process: データ設計
     status: todo
     note: tree_warning の意味の変更に合わせ、DATA-472-29・ER-477-6 の記述を修正する
