@@ -19,8 +19,10 @@ version:
   pinning: 完全一致で固定
 install: |-
   ```bash
-  npm install --save-exact @huggingface/jinja@0.5.13
+  npm install --save-dev --save-exact @huggingface/jinja@0.5.13
   ```
+
+  CLI の `dist/cli.js` に esbuild でまとめて配るため、MCP の SDK と同じく開発時の依存に入れる。
 catalogs:
   - name: API
     version: 0.5.13
@@ -122,3 +124,5 @@ tags:
   - name: topic:テンプレート
   - name: tool:jinja2
   - name: tool:mcp
+used_in:
+  - src/plugin/prompt.ts
