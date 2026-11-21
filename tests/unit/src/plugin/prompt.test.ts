@@ -15,7 +15,11 @@ type TestPrompt = {
   kind: "instructions" | "tool";
   lang: string;
   vars: Record<string, Record<string, unknown>>;
-  parts: { id: string; when?: string; texts: { lang: string; text: string }[] }[];
+  parts: {
+    id: string;
+    when?: string;
+    texts: { lang: string; text: string }[];
+  }[];
 };
 
 /** テストで使用するプロンプトファイルの値を作る */
@@ -94,7 +98,9 @@ test("test_render_prompt", async () => {
         example: "unit x",
       },
     },
-    parts: [{ id: "body", texts: [{ lang: "ja", text: "{{ location }}で動く\n" }] }],
+    parts: [
+      { id: "body", texts: [{ lang: "ja", text: "{{ location }}で動く\n" }] },
+    ],
   });
   // 実行
   const text = renderPrompt(prompt, { location: "unit x" });

@@ -18,7 +18,9 @@ const REPOSITORY_ROOT = join(import.meta.dirname, "..", "..", "..", "..");
 /** テストで指定する instructions と description */
 const createPrompts = (names: string[]) => ({
   instructions: "テストの instructions",
-  descriptions: Object.fromEntries(names.map((name) => [name, `${name} の説明`])),
+  descriptions: Object.fromEntries(
+    names.map((name) => [name, `${name} の説明`]),
+  ),
 });
 
 const closers: Array<() => Promise<void>> = [];
@@ -158,7 +160,10 @@ test("test_load_server_prompts_when_prompt_missing", async () => {
         },
       },
       parts: [
-        { id: "location", texts: [{ lang: "ja", text: "{{ location }}で動く\n" }] },
+        {
+          id: "location",
+          texts: [{ lang: "ja", text: "{{ location }}で動く\n" }],
+        },
       ],
     }),
   });

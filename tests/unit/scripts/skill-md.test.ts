@@ -55,7 +55,9 @@ test("test_render_skill_md", async () => {
   const frontmatter = readFrontmatter(markdown);
   expect(frontmatter.name).toBe("sample");
   expect(frontmatter.description).toBe("見本の手順を進める");
-  expect(frontmatter["allowed-tools"]).toBe("Bash(node a.js *), Bash(node b.js)");
+  expect(frontmatter["allowed-tools"]).toBe(
+    "Bash(node a.js *), Bash(node b.js)",
+  );
   const steps = markdown.slice(markdown.indexOf("## 手順"));
   const items = steps.split("\n").filter((line) => /^\d+\. /.test(line));
   expect(items).toHaveLength(2);
@@ -73,7 +75,11 @@ test("test_render_skill_md_with_arguments", async () => {
     skill: {
       path: "plugin/skills/sample/SKILL.md",
       arguments: [
-        { name: "dir", hint: "文書のフォルダ", description: "文書のフォルダ。省くと作業のフォルダ" },
+        {
+          name: "dir",
+          hint: "文書のフォルダ",
+          description: "文書のフォルダ。省くと作業のフォルダ",
+        },
       ],
     },
   });
@@ -132,8 +138,12 @@ test("test_skill_md_matches_repository", async () => {
     (name) => name.endsWith(".yaml") && name !== "index.yaml",
   );
   const flows = await Promise.all(
-    names.map(async (name) =>
-      parse(await readFile(join(flowDir, name), "utf8")) as Record<string, unknown>,
+    names.map(
+      async (name) =>
+        parse(await readFile(join(flowDir, name), "utf8")) as Record<
+          string,
+          unknown
+        >,
     ),
   );
   const skills = flows.filter((flow) => flow.type === "skill");
