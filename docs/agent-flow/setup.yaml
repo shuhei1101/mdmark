@@ -18,10 +18,12 @@ skill:
     - Bash(node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js *)
 steps:
   - name: キーの一覧を取得する
-    body: '`setup.js` の結果は標準出力の JSON の 1 行、誤りは標準エラーの文で返る。'
+    body: '`$dir` が空なら、セッションの作業のフォルダの絶対パスを文書のフォルダにする。
+
+      `setup.js` の結果は標準出力の JSON の 1 行、誤りは標準エラーの文で返る。'
     calls:
       - type: command
-        command: node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js keys --target config --dir $dir
+        command: node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js keys --target config --dir {文書のフォルダ}
   - name: キーを確認する
     body: キーを 1 つずつ、今の値・端末の設定で重なる値（`inherited`）・既定と説明を示して、そのままにするか変えるかを利用者に聞く。
   - name: 設定を書き込む
@@ -30,6 +32,6 @@ steps:
       認めたら実行する（`mdmark.config.yaml` が無く変えるキーも無いときは、認めたら `--set` 無しで実行して雛形から作る）。断ったら書き込まない。
     calls:
       - type: command
-        command: node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-config --dir $dir --set {キー}={値} ...
+        command: node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-config --dir {文書のフォルダ} --set {キー}={値} ...
   - name: 結果を示す
     body: 書き込んだパスと変えたキーを示す。
