@@ -1,0 +1,13 @@
+confirmations:
+  - topic: '#780 No 1 の線より長い文字の表示'
+    decision: 文字を線から離して線の横（横の線は上、縦の線は右）に配置する（推奨案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652335929
+  - topic: '#780 No 1 の表示を軸と格子の配置の図の線の文字にも適用するか'
+    decision: 軸と格子の配置の図の線の文字にも適用する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652336197

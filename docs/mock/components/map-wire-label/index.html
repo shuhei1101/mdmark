@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-wire-label（map の図の線の上の文字） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #782 のカタログの並びと表 -->
+  <link rel="stylesheet" href="../../refs/782/assets/mock.css">
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-wire-label
+  </nav>
+  <main class="map-catalog" id="catalog">
+    <h1>map-wire-label</h1>
+    <p class="state-note">配布物の mount で描いた実物の図に、案ごとの線の上の文字の置き方を重ねている</p>
+
+    <h2>線の上の文字の今の設定</h2>
+    <table class="rule-table">
+      <thead>
+        <tr><th>項目</th><th>今の設定</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>記載方法</td><td>Mermaid の <code>A --&gt;|文字| B</code> か <code>A -- 文字 --&gt; B</code>。補足の <code>notes</code> の線の説明はツールチップに出し、線の上には出さない</td></tr>
+        <tr><td>位置（構成図・状態遷移図・アーキテクチャ図・C4 図）</td><td>線の最も長い区間の中点に、文字の中心を重ねる</td></tr>
+        <tr><td>位置（ER 図）</td><td>両端を除いた最も長い区間の中ほどで、横の区間は上へ 8px、縦の区間は右へ 8px 離して置く。ほかのラベルと重なるときは 1 行分ずつ下へずらす</td></tr>
+        <tr><td>位置（クラス図）</td><td>両端を除いた区間を長い順に、中ほど・4 分の 1・4 分の 3 の位置で、縦の区間は右・左、横の区間は上・下を試し、ノードとほかの文字に重ならない最初の場所に置く。全て重なるときは ER 図と同じ置き方</td></tr>
+        <tr><td>位置（軸と格子の配置の図）</td><td>線の中ほどから左へ 28px・上へ 20px の位置に、幅 56px で折り返して置く（ブロック図）</td></tr>
+        <tr><td>大きさ（構成図・状態遷移図・アーキテクチャ図・C4 図）</td><td>11px（map の図の上書き）・行の高さ 1.5。左右に 6px の余白と枠線を持ち、背景の色で塗る（下の線を隠す）</td></tr>
+        <tr><td>大きさ（ER 図・クラス図）</td><td>12px の SVG の文字。枠線は持たず、背景の色の 4px の縁取りで下の線を隠す</td></tr>
+        <tr><td>大きさ（軸と格子の配置の図）</td><td>12px・幅 56px・角の丸み 4px。背景の色で塗る（下の線を隠す）</td></tr>
+        <tr><td>折り返し</td><td>軸と格子の配置の図のほかはしない（1 行のまま線の長さを越えて伸びる）</td></tr>
+        <tr><td>色</td><td>構成図・状態遷移図・アーキテクチャ図・C4 図は控えめな色（<code>linkStyle</code> の <code>color</code> を持つ線はその色）。ER 図・クラス図は本文の色</td></tr>
+      </tbody>
+    </table>
+  </main>
+  <script type="module">
+    import { drawMap, fence, placeLabels } from "../../refs/782/assets/mock.js";
+
+    const SHORT = `flowchart LR
+  a[入力] -->|設定ファイルと索引を読み込んで検査する| b[点検]
+  b -->|結果| c[出力]
+  a --> d[記録]
+  d -->|日付ごとにまとめた変更の一覧を書き出す| c`;
+    const STACK = `flowchart TB
+  a[文書] -->|Markdown の本文と補足を読み取る| b[配置]
+  b --> c[描画]`;
+    const BLOCK = `block-beta
+  columns 3
+  a["入力"] space b["点検"]
+  a -- "設定ファイルと索引を読み込んで検査する" --> b`;
+    const catalog = document.getElementById("catalog");
+    const add = (parent, tag, text) => parent.appendChild(Object.assign(document.createElement(tag), { textContent: text }));
+    const variants = [
+      ["今の見た目", "線より長い文字が線と矢じりを覆い、線の向きが見えない", undefined],
+      ["案 A: 線の横に置く", "横の線は上、縦の線は右に、線から 6〜8px 離して置く。線と矢じりは文字に隠れないが、線より長い文字は両側のノードの上へはみ出す", "beside"],
+      ["案 B: 線の長さで折り返す", "最も長い区間の長さで折り返す。線が短いと行が増え、線の両側は隠れたまま残る", "wrap"],
+    ];
+    const blockVariants = [
+      ["今の見た目", "幅 56px で折り返した文字が、線と矢じりに重なる", undefined],
+      ["案 A: 線の横に置く", "線の上に 1 行で置く。線と矢じりは隠れないが、線より長い文字は両側のブロックの上へはみ出す（案 B は今の見た目と同じく折り返す）", "beside"],
+    ];
+    for (const [key, title, source, list] of [["horizontal", "横に流れる構成図（短い線に長い文字）", SHORT, variants], ["vertical", "縦に流れる構成図", STACK, variants], ["block", "軸と格子の配置の図（ブロック図）", BLOCK, blockVariants]]) {
+      add(catalog, "h2", title);
+      const grid = catalog.appendChild(Object.assign(document.createElement("div"), { className: "variant-grid", id: `scene-${key}` }));
+      for (const [name, note, mode] of list) {
+        const cell = grid.appendChild(document.createElement("section"));
+        add(cell, "h3", name);
+        add(cell, "p", note).className = "state-note";
+        const host = cell.appendChild(document.createElement("div"));
+        drawMap(host, fence(`${title} / ${name}`, source), mode ? (h) => placeLabels(h, mode) : undefined);
+      }
+    }
+    add(catalog, "h2", "案 C: 配置でノードの間を文字の幅まで広げる");
+    add(catalog, "p", "Mermaid の長い線（---->）で、ノードの間を文字の幅まで広げたときの見え方。案 C では、文字の幅から線の長さを自動で決める").className = "state-note";
+    const host = catalog.appendChild(Object.assign(document.createElement("div"), { id: "scene-spread" }));
+    drawMap(host, fence("案 C", SHORT.replaceAll("-->|", "---->|")));
+  </script>
+</body>
+</html>

@@ -1,0 +1,55 @@
+scope_out:
+  - item: フックの注入文の文言の変更
+    reason: '#777 は本文の持ち方だけを変える要望で、注入する文は変えない'
+    plan: none
+  - item: map の図以外（グラフ・mermaid の図）の線の文字とデータの印
+    reason: 要望は map の図の線の操作と表示に限る。グラフと mermaid の図は map の線の部品を使用しない
+    plan: none
+  - item: ER 図などで、ほぼ縦・横に並ぶ線の小さなずれを自動で整える機能（格子に合わせる・曲がりの数を揃える）
+    reason: 利用者が、線を自由に動かせることを優先し、難しければ今のままでよいとした（格子に合わせる方式は取らない）
+    plan: none
+docs:
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    new: false
+    change: 線のドラッグ・線の上の文字（記載方法・位置・大きさ・折り返し）・データの印の動きの説明を、決まった振る舞いに合わせる
+    status: todo
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 線の上の文字の設定の見直しで用語が増えた・変わったときに、用語の行を合わせる
+    status: todo
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 線をドラッグしている間は文書がスクロールしない。動かした後の線の経路を利用者と確認を重ねて決めた決まりで引き直す。線の上の文字が線より長くても線の向きが見え、同じ長さの線が並んでもデータの印の動きが揃わない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: run_only
+    detail: 図の表示する枠の移動と文書のスクロールの扱いは変えないが、線のドラッグ中のスクロールを止める変更が壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-18.yaml
+    impact: run_only
+    detail: データの印の出始めをずらす変更が、シーケンスの再生の見え方を壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-22.yaml
+    impact: run_only
+    detail: 常駐サーバーが待ち受けていないときに伝える文は変えず、文の持ち方だけを変える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-85.yaml
+    impact: run_only
+    detail: 記載する前のガイドの参照の案内の文は変えず、文の持ち方だけを変える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-4.yaml
+    impact: run_only
+    detail: プラグインの配布物にフックが読み込むプロンプトファイルが加わるため、入れたプラグインのフックが動くかを確かめる
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-87.yaml
+    impact: run_only
+    detail: 図を辿って読む流れは変わらないが、線の操作と表示の変更が壊しうる
+    depends_on: []
