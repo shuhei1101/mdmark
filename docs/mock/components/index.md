@@ -48,6 +48,8 @@
 | [map-wire-hit](./map-wire-hit/index.html) | map の図の線の押せる範囲を区間ごとの帯に分けた確認用の図（フォーカスを持つ帯と帯の幅を URL で切り替えて axe の target-size にかける） |
 | [map-mindmap-item](./map-mindmap-item/index.html) | map のマインドマップの項目の枠線・文字・選び方（今の見た目・案 A の名前の上でも選ぶ・案 B の選べる場所を今のまま、短い名前と 30 文字の名前・ポインターを重ねたときと選んだときの面・狭い幅） |
 | [map-group-resize](./map-group-resize/index.html) | map の図のグループの右下の角のハンドル（常に出す案・ポインターを重ねたときだけ出す案・構成図のグループと ER 図の分類の箱・狭い幅） |
+| [map-wire-drag-route](./map-wire-drag-route/index.html) | map の図の線を動かした後の経路（今の経路の決まりの表と、入れ子のグループをまたぐ線・回り込む線・状態遷移図・ER 図を実物で動かして確認する図） |
+| [map-wire-label](./map-wire-label/index.html) | map の図の線の上の文字（今の設定の一覧と、線より長い文字の今の見た目・案 A の線の横に置く・案 B の線の長さで折り返す・案 C のノードの間を広げる、構成図の横と縦とブロック図） |
 | [map-class-arch-c4](./map-class-arch-c4/index.html) | map のクラス図・アーキテクチャ図・C4 図（メンバーの行と関係の端の形・メンバーと namespace の開閉・service のアイコンと group と junction・要素の種類の行と境界・狭い幅） |
 | [map-c4-dynamic-play](./map-c4-dynamic-play/index.html) | map の C4Dynamic の番号つきの関係の再生（実演・始める前・説明を持つ関係・閉じた境界の中の要素・両向きの関係・案内の手順を持つ図・帯を出さないコンテナ図・狭い幅） |
 | [map-dim-contrast](./map-dim-contrast/index.html) | map の図で薄くした要素の文字のコントラスト（案 A・B の薄め方・C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダーク） |
