@@ -55,7 +55,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-21T09:18:14.587152+00:00'
   - process: エージェント・MCP サーバー設計
-    status: todo
+    status: done
+    note: MCP サーバーの定義 MCP-472-1 と外部ライブラリ LIB-472-37 を作成した。エージェントの定義・起動の構成はスコープ外
+    updated_by: planner
+    updated_at: '2026-11-21T09:40:46.055314+00:00'
   - process: エージェントフロー・LLM 呼び出し設計
     status: todo
   - process: 精度評価設計

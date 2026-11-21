@@ -47,7 +47,7 @@ docs:
     status: todo
   - page: docs/index.yaml
     new: false
-    change: MCP サーバーの定義とエージェントフローのフォルダの行を追加する
+    change: MCP サーバーの定義とエージェントフローのフォルダの行を追加する（MCP サーバーの定義の行は追加済み）
     status: todo
 scope_out:
   - item: 精度評価の設計書
