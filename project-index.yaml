@@ -369,7 +369,6 @@ documents:
       source: knowledge
       path: schemas/knowledge-files.schema.yaml
       ref: design-schemas/v8.4.0
-# dev-docs の画面のタブとサイドバー。タブの並びとグループは knowledge の規約『開発ドキュメントのナビゲーション』に従う
   - id: agent
     title: エージェントの定義
     paths: ["docs/agent/*.yaml"]
@@ -483,6 +482,7 @@ documents:
       name: summary
       visibility: visibility
       tags: tags
+# dev-docs の画面のタブとサイドバー。タブの並びとグループは knowledge の規約『開発ドキュメントのナビゲーション』に従う
 nav:
   tabs:
     - title: はじめに
