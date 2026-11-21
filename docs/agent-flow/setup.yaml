@@ -1,0 +1,35 @@
+id: setup
+visibility: internal
+type: skill
+title: mdmark の文書のフォルダのセットアップ
+summary: 文書のフォルダの mdmark.config.yaml を、キーを 1 つずつ利用者に確認しながら作る・修正する。新しい文書のフォルダで mdmark を使用し始めるときと、文書のフォルダの設定を見直すときに使用する
+tags:
+  - topic:セットアップ
+  - topic:設定
+  - topic:スキル
+skill:
+  path: plugin/skills/setup/SKILL.md
+  name: setup
+  arguments:
+    - name: dir
+      hint: 文書のフォルダ
+      description: 設定を作る文書のフォルダ。省くとセッションの作業のフォルダ
+  allowed_tools:
+    - Bash(node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js *)
+steps:
+  - name: キーの一覧を取得する
+    body: '`setup.js` の結果は標準出力の JSON の 1 行、誤りは標準エラーの文で返る。'
+    calls:
+      - type: command
+        command: node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js keys --target config --dir $dir
+  - name: キーを確認する
+    body: キーを 1 つずつ、今の値・端末の設定で重なる値（`inherited`）・既定と説明を示して、そのままにするか変えるかを利用者に聞く。
+  - name: 設定を書き込む
+    body: |-
+      変えるキーと値を示し、書き込んでよいかを利用者に聞く。
+      認めたら実行する（`mdmark.config.yaml` が無く変えるキーも無いときは、認めたら `--set` 無しで実行して雛形から作る）。断ったら書き込まない。
+    calls:
+      - type: command
+        command: node ${CLAUDE_PLUGIN_ROOT}/bin/setup.js write-config --dir $dir --set {キー}={値} ...
+  - name: 結果を示す
+    body: 書き込んだパスと変えたキーを示す。
