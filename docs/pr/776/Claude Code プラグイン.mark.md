@@ -59,6 +59,22 @@
 
 実装の前に直したテスト: 結合テスト [tests/integration/ClaudeCodeプラグイン/serve.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/serve.test.ts) の `test_normal` が削除した定数 `INSTRUCTIONS` を参照して型検査が通らなかったため、期待値を設計書（instructions はプロンプトファイルから描く）に合わせて `loadServerPrompts` で描いた文にした（6c66defc。実装と別の commit）。結合テストの実行は結合テスト作成の工程で行う。
 
+### 結合
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/integration/ClaudeCodeプラグイン/check.test.ts` | 全実行 | 変更 | ✅ | `test_normal_annotations` を追加<br>`テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/export-html.test.ts` | 全実行 | 変更 | ✅ | `test_normal_annotations` を追加<br>`テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts` | 全実行 | 変更 | ✅ | `test_normal_annotations` を追加<br>`テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/build-site.test.ts` | 全実行 | 変更 | ✅ | `test_normal_annotations` を追加<br>`テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/list-templates.test.ts` | 全実行 | 変更 | ✅ | `test_normal_annotations` を追加<br>`テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/add-template.test.ts` | 全実行 | 変更 | ✅ | `test_normal_annotations` を追加<br>`テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | 全実行 | 変更 | ✅ | `test_normal_annotations` を追加<br>`テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | 全実行 | 変更 | ✅ | instructions の期待値をプロンプトファイルから描いた文に変更<br>`テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+| `tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts` | 全実行 | 実行のみ | ✅ | `テスト結果/20261121195841_a6d78fc_結合テスト.log` |
+
+ランナーで Test Files 9・Tests 59 が pass。補助 `tests/integration/plugin.ts`・`built-root.ts` が `content/` をコピーするように修正した。lint: `テスト結果/20261121195659_a6d78fc_lint.log`
+
 ### 結合テストの実行範囲
 
 <!-- table: {"kind": "data"} -->
@@ -106,6 +122,8 @@
 | `docs/pr/776/テスト結果/20261121193908_6c66def_単体テスト.log` | R7 | - | - |
 | `docs/pr/776/テスト結果/20261121194900_b4592ba_lint.log` | R7 | - | - |
 | `docs/pr/776/テスト結果/20261121195115_b4592ba_単体テスト.log` | R7 | - | - |
+| `docs/pr/776/テスト結果/20261121195659_a6d78fc_lint.log` | R7 | - | - |
+| `docs/pr/776/テスト結果/20261121195841_a6d78fc_結合テスト.log` | R7 | - | - |
 | `docs/pr/776/反映作業/index.yaml` | R7 | - | - |
 | `docs/pr/776/反映作業/配信元の設定への種類の行の追加/dry-run.log` | R7 | - | - |
 | `docs/pr/776/反映作業/配信元の設定への種類の行の追加/実行.py` | R7 | - | - |
