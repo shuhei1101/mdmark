@@ -28,12 +28,15 @@
       </thead>
       <tbody>
         <tr><td>記載方法</td><td>Mermaid の <code>A --&gt;|文字| B</code> か <code>A -- 文字 --&gt; B</code>。補足の <code>notes</code> の線の説明はツールチップに出し、線の上には出さない</td></tr>
-        <tr><td>位置（構成図・クラス図・アーキテクチャ図・C4 図）</td><td>線の最も長い区間の中点に、文字の中心を重ねる</td></tr>
-        <tr><td>位置（ER 図・状態遷移図）</td><td>最も長い区間の中ほどに置き、ほかのラベル・多重度と重なるときは 1 行分ずつ下へずらす</td></tr>
+        <tr><td>位置（構成図・状態遷移図・アーキテクチャ図・C4 図）</td><td>線の最も長い区間の中点に、文字の中心を重ねる</td></tr>
+        <tr><td>位置（ER 図）</td><td>両端を除いた最も長い区間の中ほどで、横の区間は上へ 8px、縦の区間は右へ 8px 離して置く。ほかのラベルと重なるときは 1 行分ずつ下へずらす</td></tr>
+        <tr><td>位置（クラス図）</td><td>両端を除いた区間を長い順に、中ほど・4 分の 1・4 分の 3 の位置で、縦の区間は右・左、横の区間は上・下を試し、ノードとほかの文字に重ならない最初の場所に置く。全て重なるときは ER 図と同じ置き方</td></tr>
         <tr><td>位置（軸と格子の配置の図）</td><td>線の中ほどから左へ 28px・上へ 20px の位置に、幅 56px で折り返して置く（ブロック図）</td></tr>
-        <tr><td>大きさ</td><td>12px・行の高さ 1.5。左右に 6px の余白と枠線を持ち、背景の色で塗る（下の線を隠す）</td></tr>
+        <tr><td>大きさ（構成図・状態遷移図・アーキテクチャ図・C4 図）</td><td>11px（map の図の上書き）・行の高さ 1.5。左右に 6px の余白と枠線を持ち、背景の色で塗る（下の線を隠す）</td></tr>
+        <tr><td>大きさ（ER 図・クラス図）</td><td>12px の SVG の文字。枠線は持たず、背景の色の 4px の縁取りで下の線を隠す</td></tr>
+        <tr><td>大きさ（軸と格子の配置の図）</td><td>12px・幅 56px・角の丸み 4px。背景の色で塗る（下の線を隠す）</td></tr>
         <tr><td>折り返し</td><td>軸と格子の配置の図のほかはしない（1 行のまま線の長さを越えて伸びる）</td></tr>
-        <tr><td>色</td><td>文字は控えめな色（<code>linkStyle</code> の <code>color</code> を持つ線はその色）</td></tr>
+        <tr><td>色</td><td>構成図・状態遷移図・アーキテクチャ図・C4 図は控えめな色（<code>linkStyle</code> の <code>color</code> を持つ線はその色）。ER 図・クラス図は本文の色</td></tr>
       </tbody>
     </table>
   </main>
@@ -77,7 +80,7 @@
     add(catalog, "h2", "案 C: 配置でノードの間を文字の幅まで広げる");
     add(catalog, "p", "Mermaid の長い線（---->）で、ノードの間を文字の幅まで広げたときの見え方。案 C では、文字の幅から線の長さを自動で決める").className = "state-note";
     const host = catalog.appendChild(Object.assign(document.createElement("div"), { id: "scene-spread" }));
-    drawMap(host, fence("案 C", SHORT.replaceAll("-->|", "------>|")));
+    drawMap(host, fence("案 C", SHORT.replaceAll("-->|", "---->|")));
   </script>
 </body>
 </html>
