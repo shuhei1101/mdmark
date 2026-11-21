@@ -56,7 +56,7 @@ tasks:
     updated_at: '2026-11-21T09:18:14.587152+00:00'
   - process: エージェント・MCP サーバー設計
     status: done
-    note: MCP サーバーの定義 MCP-472-1 と外部ライブラリ LIB-472-37 を作成した。エージェントの定義・起動の構成はスコープ外
+    note: MCP サーバーの定義 MCP-775-1 と外部ライブラリ LIB-775-1 を作成した。エージェントの定義・起動の構成はスコープ外
     updated_by: planner
     updated_at: '2026-11-21T09:40:46.055314+00:00'
   - process: エージェントフロー・LLM 呼び出し設計
@@ -80,7 +80,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-21T09:12:57.700445+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    note: MOD-775-1（prompt.ts）・MOD-775-2（skill-md.ts）を作成し、mcp.ts・tools.ts・http.ts・build-plugin.ts のモジュール構成とフォルダ構成を合わせた
+    updated_by: planner
+    updated_at: '2026-11-21T10:12:24.695169+00:00'
   - process: ドキュメント修正
     status: todo
   - process: 単体テスト作成

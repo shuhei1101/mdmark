@@ -43,8 +43,10 @@ docs:
     updated_at: '2026-11-21T09:26:04.039269+00:00'
   - page: docs/layout/LAY-472-1.yaml
     new: false
-    change: MCP サーバーの定義とエージェントフローの設計書のフォルダを追加する
-    status: todo
+    change: MCP サーバーの定義・エージェントフローの設計書のフォルダ、プロンプトファイルの `content/prompts/`、`scripts/skill-md.ts` を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-21T10:12:27.324884+00:00'
   - page: docs/index.yaml
     new: false
     change: MCP サーバーの定義とエージェントフローのフォルダの行を追加する
