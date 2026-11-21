@@ -50,7 +50,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-21T09:12:57.700445+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    note: MCP のツール 7 つのインターフェース定義に read_only・destructive を記載した
+    updated_by: planner
+    updated_at: '2026-11-21T09:18:14.587152+00:00'
   - process: エージェント・MCP サーバー設計
     status: todo
   - process: エージェントフロー・LLM 呼び出し設計
