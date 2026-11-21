@@ -1,0 +1,124 @@
+id: LIB-472-37
+visibility: internal
+title: '@huggingface/jinja'
+kind: ライブラリ
+lead: Jinja のテンプレートを TypeScript だけで解析・描画するライブラリ。テンプレートの構文木と、式を評価するインタプリタを公開する。
+supplier: Hugging Face
+purl: pkg:npm/@huggingface/jinja
+dependency_scope: 必須
+adoption: 採用
+upstream: huggingface/huggingface.js
+license: MIT
+official_url: https://github.com/huggingface/huggingface.js/tree/main/packages/jinja
+docs_url: https://github.com/huggingface/huggingface.js/tree/main/packages/jinja#readme
+version:
+  current: 0.5.13
+  latest: 0.5.13
+  checked_on: '2026-11-21'
+  source: package.json
+  pinning: 完全一致で固定
+install: |-
+  ```bash
+  npm install --save-exact @huggingface/jinja@0.5.13
+  ```
+catalogs:
+  - name: API
+    version: 0.5.13
+    entries:
+      - name: Template
+        kind: クラス
+        purpose: テンプレートの文字列を解析し、構文木を持つ
+        params:
+          - name: template
+            type: string
+            required: true
+            description: Jinja のテンプレートの文字列
+            verification_state: verified
+            verified_at: '2026-11-21T18:45:00+09:00'
+        returns:
+          - name: parsed
+            type: Program
+            description: 構文木。各ノードは `type`（`Identifier`・`If`・`For`・`FilterExpression`・`BinaryExpression` など）と子のノードを持つ
+            notes: ノードの型は index から再公開されないため、`Template["parsed"]` で取得する
+        verification_state: verified
+        verified_at: '2026-11-21T18:45:00+09:00'
+      - name: Template.render
+        kind: 関数
+        purpose: 変数を指定してテンプレートを描画する
+        params:
+          - name: items
+            type: Record<string, unknown>
+            required: true
+            description: テンプレートの変数の名前と値
+            verification_state: verified
+            verified_at: '2026-11-21T18:45:00+09:00'
+        returns:
+          - name: '-'
+            type: string
+            description: 描画した文字列
+            notes: 未定義の変数は空文字になる。`length` などのフィルタに未定義の変数を指定したときだけ例外になる
+        params_example: |-
+          ```ts
+          import { Template } from "@huggingface/jinja";
+
+          const text = new Template("{{ location }}で動いている").render({ location: "unit mdmark-mcp" });
+          ```
+        verification_state: verified
+        verified_at: '2026-11-21T18:45:00+09:00'
+      - name: Interpreter.evaluate
+        kind: 関数
+        purpose: 構文木の式 1 つを評価し、実行時の値を返却する
+        params:
+          - name: statement
+            type: Statement
+            required: true
+            description: '`Template.parsed.body` の要素の式'
+            verification_state: verified
+            verified_at: '2026-11-21T18:45:00+09:00'
+          - name: environment
+            type: Environment
+            required: true
+            description: 変数を `set` した環境
+            notes: 同じ `Environment` に同じ名前を 2 回 `set` すると `Variable already declared` の例外になる。`true`・`false`・`none` も自分で `set` する
+            verification_state: verified
+            verified_at: '2026-11-21T18:45:00+09:00'
+        returns:
+          - name: '-'
+            type: AnyRuntimeValue
+            description: 評価した値。`__bool__().value` が Jinja の真偽になる
+        params_example: |-
+          ```ts
+          import { Environment, Interpreter, Template } from "@huggingface/jinja";
+
+          const program = new Template("{{ logs | length > 0 }}").parsed;
+          const env = new Environment();
+          for (const [k, v] of Object.entries({ true: true, false: false, none: null, logs: ["a"] })) env.set(k, v);
+          const shown = new Interpreter(env).evaluate(program.body[0], env).__bool__().value;
+          ```
+        verification_state: verified
+        verified_at: '2026-11-21T18:45:00+09:00'
+limitations:
+  - item: 未定義の変数
+    content: 未定義の変数を例外にする設定が無く、`{{ nope }}` は空文字、`{% if nope %}` は偽になる。描画の前に `Template.parsed` から変数名を集め、指定する変数と突き合わせて弾く
+  - item: 空白の扱い
+    content: '`Template` は `trim_blocks`・`lstrip_blocks` を常に有効にする。project-index の `prompt-doc` が同じプロンプトファイルを描く Python の jinja2 の Environment と同じ設定'
+  - item: 真偽値の出力
+    content: 真偽値を `{{ }}` で出力すると `true`・`false` と小文字になり、Python の jinja2（`True`・`False`）と食い違う。真偽値は `when` と `{% if %}` の条件だけに使用し、本文へ出力しない
+  - item: Environment の再利用
+    content: 同じ `Environment` に同じ名前を 2 回 `set` できない。評価ごとに新規の `Environment` を作る
+  - item: 構文エラーの文言
+    content: "`{% if %}` の閉じ忘れは `Cannot read properties of undefined (reading 'type')` になり、行番号を持たない"
+selection:
+  candidates: minijinja-js 3.1.0・@11ty/nunjucks 3.3.0（mozilla/nunjucks の後継）・`{{ var }}` の置換だけの自作と比べた。
+  decision: 依存が無く、esbuild で 1 ファイルにまとめても約 55KB で、MIT。minijinja-js は未定義の変数と式の評価をそのまま満たすが、wasm で配布物が 1MB 前後増える。@11ty/nunjucks は `{% if %}` の中の未定義の変数を検出できない。自作は `when` の式を評価できない。
+  consequences: StrictUndefined 相当の検査（構文木から変数名を集めて突き合わせ、使用する構文以外を拒否する）を自前で持つ。0.x のため、バージョンを上げるときに挙動を確認し直す。
+verification:
+  state: 済
+  date: '2026-11-21'
+  detail: Node.js 24.14.0 で 0.5.13 を入れ、`{{ location }}` の描画、`{% for %}`、`{{ nope }}` が空文字になること、`{% if nope | length > 0 %}` が例外になること、真偽値が `true` と出ること、`trim_blocks`・`lstrip_blocks` が有効なことを確認した。`Template.parsed.body[0]` が `BinaryExpression` で、`Interpreter.evaluate` の `__bool__().value` が `{{ logs | length > 0 }}` で空の配列のとき false・要素があるとき true、`{{ mode == 'x' and not flag }}` で true になった。同じ `Environment` に同じ名前を 2 回 `set` すると例外になった
+tags:
+  - name: topic:プロンプト
+    main: true
+  - name: topic:テンプレート
+  - name: tool:jinja2
+  - name: tool:mcp

@@ -25,7 +25,7 @@
 | MCP サーバーの定義 | `docs/mcp-server/` に 1 枚作成する。`connection` は `plugin/.mcp.json`、`tools[]` は `src/plugin/tools.ts` が登録するツールから取り、`clients[]` は記載しない | エージェントの定義を持たないため `clients[]` を記載しない |
 | ツールのインターフェース定義 | `tools[].interface` が指す先が無いツールは作成し、既存のものは `read_only`・`destructive` を確認する | - |
 | スキルのエージェントフロー | `docs/agent-flow/` に `global-setup`・`setup` の 2 枚を `type: skill` で作成する。`steps[]` は今の SKILL.md の手順から取り、`steps[].calls` で `setup.js` のサブコマンドと MCP のツールを指す | 判定フローチャート『機能を呼ぶインターフェースの選び方』で、起動の仕組みを持たずプラグインで配布するためスキルにする |
-| モジュール構成 | MCP サーバーとスキルの SKILL.md を作る処理の変更をモジュール構成に反映する | instructions の本文の配置先は [要件](./要件.mark.md) の `未確定` |
+| モジュール構成 | MCP サーバーがプロンプトファイルを読み込んで instructions とツールの description を描く処理と、スキルの SKILL.md を作る処理をモジュール構成に反映する | Jinja の描画は外部ライブラリ『@huggingface/jinja』を使用する |
 | 実装 | MCP サーバーの登録するツール・instructions と SKILL.md を設計書に一致させる | - |
 | テスト | MCP サーバーのツールの一覧と SKILL.md が設計書と一致することを単体テストで確認する | - |
 
@@ -34,6 +34,7 @@
 | 工程 | 範囲 | 補足 |
 | --- | --- | --- |
 | インターフェース定義設計 | `4b89bc42..f3c7107d` | - |
+| エージェント・MCP サーバー設計 | `f3c7107d..{MCP}` | 配信元の設定への種類の行の追加と外部ライブラリの設計書を含む |
 
 ## テスト結果
 
