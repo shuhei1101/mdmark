@@ -37,7 +37,10 @@ type Node = Template["parsed"]["body"][number];
 type AnyNode = Node & Record<string, unknown>;
 
 /** 本文の変数として扱わない組み込みの名前 */
-const BUILTIN_NAMES = new Set(["true", "false", "none", "loop"]);
+const BUILTIN_NAMES = new Set(["true", "false", "none"]);
+
+/** for の中でだけ使用できる組み込みの名前 */
+const LOOP_NAME = "loop";
 
 /** 使用するフィルタ */
 const ALLOWED_FILTER = "length";
@@ -103,7 +106,10 @@ const CHILDREN_OF: Record<string, ChildrenOf> = {
   ],
   For: (node, scope, promptId) => [
     { node: node.iterable, scope },
-    ...visitAll(node.body, new Set([...scope, loopVariable(node, promptId)])),
+    ...visitAll(
+      node.body,
+      new Set([...scope, LOOP_NAME, loopVariable(node, promptId)]),
+    ),
     ...visitAll(node.defaultBlock, scope),
   ],
 };

@@ -33,7 +33,7 @@ functions:
     process: |-
       1. frontmatter を `name`（`skill.name`、無ければ `skill.path` のフォルダ名）・`description`（`summary`）・`arguments` と `argument-hint`（`skill.arguments` があるとき）・`allowed-tools`（`skill.allowed_tools` を `, ` でつなぐ）・`skill.frontmatter` の項目の順に作る
       2. 本文を `# {title}` の見出し、`skill.arguments` があれば `## 引数` の箇条書き（`$名前`: 説明）、`## 手順` の番号付きの箇条書きで作る
-      3. 手順の 1 項目は、`when` があれば `{when}:` で始め、`body` の後ろに `calls[].command` を行内のコードで並べる
+      3. 手順の 1 項目は、`when` があれば `{when}:` で始め、`body` の後ろの行に `calls[].command` を `コマンド: ` に続けて行内のコードで並べる（命令の文にしない。`body` が箇条書きで始まるときは、工程の名前とコマンドの行を箇条書きの前に配置する）
       4. `type` が `skill` でない、または `skill.path` が無ければ `Error` を投げる
     unit_tests:
       - name: test_render_skill_md

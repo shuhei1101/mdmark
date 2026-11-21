@@ -36,35 +36,32 @@ type SkillSpec = {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** 工程で実行するコマンドを 1 文にする。コマンドが無ければ undefined */
-const commandSentence = (calls: FlowCall[]): string | undefined => {
+/** 工程で使用するコマンドを示す行にする。コマンドが無ければ undefined */
+const commandLine = (calls: FlowCall[]): string | undefined => {
   const commands = calls
     .map((call) => call.command)
     .filter((command): command is string => command !== undefined);
   return commands.length > 0
-    ? `${commands.map((command) => `\`${command}\``).join("・")} を実行する。`
+    ? `コマンド: ${commands.map((command) => `\`${command}\``).join("・")}`
     : undefined;
 };
 
-/** 工程の本文の行に、コマンドの文を加える */
-const withCommand = (step: FlowStep, run: string | undefined): string[] => {
+/** 工程の本文の行に、コマンドを示す行を加える */
+const withCommand = (step: FlowStep, command: string | undefined): string[] => {
   const lines = (step.body ?? step.name).split("\n");
+  const commands = command === undefined ? [] : [command];
+  // 本文が箇条書きで始まるときは、工程の名前とコマンドを箇条書きの前に置く
   if (lines[0]?.startsWith("- ") === true) {
-    // 本文が箇条書きで始まるときは、コマンドの文か工程の名前を項目の 1 行目にする
-    return [run ?? `${step.name}。`, ...lines];
+    return [`${step.name}。`, ...commands, ...lines];
   }
-  if (run === undefined) {
-    return lines;
-  }
-  // 1 行の本文は同じ行に、複数行の本文は最後の行の後ろに続ける
-  return lines.length === 1 ? [`${lines[0]}${run}`] : [...lines, run];
+  return [...lines, ...commands];
 };
 
 /** 工程 1 つを番号付きの箇条書きの 1 項目にする */
 const renderStep = (step: FlowStep, index: number): string => {
   const [first = "", ...rest] = withCommand(
     step,
-    commandSentence(step.calls ?? []),
+    commandLine(step.calls ?? []),
   );
   const when = step.when === undefined ? "" : `${step.when}: `;
   return [
