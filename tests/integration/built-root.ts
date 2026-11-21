@@ -45,6 +45,14 @@ export async function createBuiltRoot(): Promise<{
       recursive: true,
     },
   );
+  // `mdmark serve` が instructions とツールの説明を描くプロンプトファイル
+  await cp(
+    resolve(import.meta.dirname, "../../content"),
+    join(root, "content"),
+    {
+      recursive: true,
+    },
+  );
   // 型定義を記載する `tsc` が読み込む設定
   for (const name of ["tsconfig.json", "tsconfig.dist.json"]) {
     await copyFile(
