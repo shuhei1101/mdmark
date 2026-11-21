@@ -7,9 +7,9 @@
 | ドキュメント | [project-index.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/project-index.yaml) | 配信元の設定 | `mcp_server`・`agent_flow` の種類の行が無い。knowledge のスキーマの参照は `design-schemas/v8.4.0` |
 | ドキュメント | [docs/module/MOD-472-2.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/module/MOD-472-2.yaml) | モジュール構成『ClaudeCodeプラグイン / MCPサーバー』 | MCP サーバーの定義から参照される |
 | ドキュメント | [docs/module/MOD-472-9.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/module/MOD-472-9.yaml) | モジュール構成『ClaudeCodeプラグイン / セットアップ / 全体』 | スキルの本文を受け持つ。エージェントフローから参照される |
-| ドキュメント | [docs/interface/IF-472-4.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/interface/IF-472-4.yaml) | インターフェース定義『MCPサーバーを起動・停止する』 | 接続の仕方の根拠 |
-| ドキュメント | [docs/interface/IF-472-9.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/interface/IF-472-9.yaml) ほか | ツールごとのインターフェース定義（`export_html`・`build_site`・`export_markdown`・`list_templates`・`add_template`・`apply_template`） | `tools[].interface` の参照先。`check` のツールのインターフェース定義の有無を設計で確認する |
-| ドキュメント | [docs/interface/IF-472-7.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/interface/IF-472-7.yaml)・[docs/interface/IF-472-11.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/interface/IF-472-11.yaml) | スキルが呼ぶ `setup.js` のサブコマンド | エージェントフローの `steps[].calls` の参照先 |
+| ドキュメント | [docs/interface/IF-472-4.ts.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/interface/IF-472-4.ts.yaml) | インターフェース定義『MCPサーバーを起動・停止する』 | 接続の仕方の根拠 |
+| ドキュメント | [docs/interface/IF-472-9.ts.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/interface/IF-472-9.ts.yaml) ほか | ツールごとのインターフェース定義（`export_html`・`build_site`・`export_markdown`・`check`・`list_templates`・`add_template`・`apply_template`） | `tools[].interface` の参照先 |
+| ドキュメント | [docs/interface/IF-472-7.ts.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/interface/IF-472-7.ts.yaml)・[docs/interface/IF-472-11.ts.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/interface/IF-472-11.ts.yaml) | スキルが呼ぶ `setup.js` のサブコマンド | エージェントフローの `steps[].calls` の参照先 |
 | ドキュメント | [docs/layout/LAY-472-1.yaml](https://github.com/shuhei1101/mdmark/blob/4b89bc42/docs/layout/LAY-472-1.yaml) | フォルダ構成 | 設計書のフォルダを新規追加する |
 | 実装 | [src/plugin/mcp.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/src/plugin/mcp.ts) | MCP サーバーの組み立て・ツールの登録・instructions | 設計書に合わせる |
 | 実装 | [src/plugin/tools.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/src/plugin/tools.ts) | ツールの定義と処理 | 設計書に合わせる |
