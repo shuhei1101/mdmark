@@ -35,8 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-21T11:14:08.818173+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     note: SC-472-8『Mermaidと補足で図を描く』に、線のドラッグ中に文書がスクロールしないこと・ドラッグ後の経路・線より長い文字のときの線の向き・同じ長さの線のデータの印のずれを書き足す
+    updated_by: planner
+    updated_at: '2026-11-21T11:21:13.711405+00:00'
   - process: モック作成
     status: todo
     note: '#778 のドラッグ後の経路の決まりと、#780 No 1 の線の上の文字の設定の一覧・配置を、利用者が OK にするまでモックで確認を重ねる'
