@@ -1,0 +1,14 @@
+配信元の設定への種類の行の追加:
+  説明: 配信元の設定 project-index.yaml の documents[] に、mcp_server・agent_flow などの種類の行を、shuhei1101/ai-monitor の反映作業『配布先の配信元の設定への種類の行の追加』（https://github.com/shuhei1101/ai-monitor/tree/develop/docs/pr/3744/反映作業/配布先の配信元の設定への種類の行の追加）の実行スクリプトを作業ブランチの worktree で実行して追加する。git の変更として入るので revert で戻せる
+  タグ: [配信元の設定]
+  実行者: planner
+  時期: マージの前
+  回数: 1 回限り
+  可逆: true
+  疎通確認: null
+  実行: null
+  確認: null
+  切り戻し: null
+  失敗時: 既定の対処を 1 回、2 回連続で失敗したら依頼元へ返す
+  確認方法: 作業ブランチの worktree で project-index の describe(source) を呼ぶと、種類の一覧に mcp_server・agent_flow が並ぶ
+  状態: todo

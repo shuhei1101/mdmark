@@ -1,0 +1,59 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-3.yaml
+    impact: run_only
+    detail: Claude Code から点検・書き出し・まとめを呼ぶ流れは変わらないが、MCP サーバーの登録の仕方と使用方法の案内を設計書に合わせて変えるため、壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-1.yaml
+    impact: run_only
+    detail: CSS のテンプレートを登録する流れは変わらないが、同じ MCP サーバーのツールの登録を変えるため、壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-2.yaml
+    impact: run_only
+    detail: CSS のテンプレートを配置する流れは変わらないが、同じ MCP サーバーのツールの登録を変えるため、壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-22.yaml
+    impact: run_only
+    detail: セッションの開始で常駐サーバーの状態を受け取る流れは変わらないが、MCP サーバーの使用方法の案内を設計書に合わせて変えるため、壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-69.yaml
+    impact: run_only
+    detail: 端末に mdmark をセットアップする流れは変わらないが、global-setup のスキルの本文を設計書から作り直すため、壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: ガイドを参照する流れは変わらないが、MCP サーバーの使用方法の案内を設計書に合わせて変えるため、壊していないかを確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-4.yaml
+    impact: run_only
+    detail: プラグインを入れる流れは変わらないが、プラグインの配布物（スキル）を設計書から作り直すため、入れて使える状態が保たれるかを確かめる
+    depends_on: []
+docs:
+  - page: project-index.yaml
+    new: false
+    change: documents[] に mcp_server・agent_flow などの種類の行を、shuhei1101/ai-monitor の反映作業『配布先の配信元の設定への種類の行の追加』で追加する
+    status: todo
+  - page: docs/layout/LAY-472-1.yaml
+    new: false
+    change: MCP サーバーの定義とエージェントフローの設計書のフォルダを追加する
+    status: todo
+  - page: docs/index.yaml
+    new: false
+    change: MCP サーバーの定義とエージェントフローのフォルダの行を追加する
+    status: todo
+scope_out:
+  - item: 精度評価の設計書
+    reason: 精度が大事な客が見るものを持たず、Issue 本文で対象外（shuhei1101/ai-monitor#3743 のユーザーの指示）
+    plan: none
+  - item: エージェントの定義・起動の構成・LLM の呼び出しの設計書
+    reason: このリポジトリはエージェントの起動の仕組みと LLM の呼び出しを持たず、MCP サーバーを使用するのは利用者の Claude Code だけのため
+    plan: none
+  - item: mod のプラグイン mdmark-style の設計書
+    reason: MCP サーバーもスキルも持たず、要望の対象に入らない
+    plan: none
