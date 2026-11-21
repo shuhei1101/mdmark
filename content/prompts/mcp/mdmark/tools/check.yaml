@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/prompt.schema.yaml
+id: mcp/mdmark/tools/check
+name: ツール check の説明
+description: MCP のツール check（点検）を呼ぶ場面と、引数・戻り値を伝える
+kind: tool
+lang: ja
+parts:
+  - id: body
+    texts:
+      - lang: ja
+        text: |
+          設定の構造・索引と文書のずれ・build の対象の有無・知らないマーカー・include のマーカーの取り込み先を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返却し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を指定すると、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった修正漏れも返却する。text に Markdown の文字列、または file に YAML のファイルと key にキーのパスを指定すると、設定と索引は点検せず、その Markdown を描いたときの記載の警告・描くときに無視するマーカーの知らない引数・知らないマーカー・図の配置のずれだけを返却する（text は file が -、file は where が YAML のファイルの行）。

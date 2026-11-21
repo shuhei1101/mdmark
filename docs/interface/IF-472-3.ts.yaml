@@ -260,3 +260,5 @@ tags:
     main: true
   - name: topic:css
   - name: action:配置
+read_only: false
+destructive: true

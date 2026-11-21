@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/prompt.schema.yaml
+id: mcp/mdmark/tools/export-markdown
+name: ツール export_markdown の説明
+description: MCP のツール export_markdown（純粋な Markdown への書き出し）を呼ぶ場面と、引数・戻り値を伝える
+kind: tool
+lang: ja
+parts:
+  - id: body
+    texts:
+      - lang: ja
+        text: |
+          mdmark の文書を 1 つ、純粋な Markdown（GFM と Mermaid）と、chart・param・埋め込んだ HTML の SVG に書き出す（mdmark export-markdown と同じ処理）。引数 file は書き出す文書、out は出力のフォルダ（省くと文書と同じフォルダの {名前}-markdown）。書き出した Markdown の絶対パス out・SVG の絶対パスの並び images・警告 warnings を JSON で返却する。

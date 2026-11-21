@@ -15,6 +15,7 @@ import {
   readEmbeddedLicenseBlock,
   readLicenseBlock,
 } from "./bundle.ts";
+import { writeSkills } from "./skill-md.ts";
 
 /** プラグインにまとめるソースと記載する先 */
 const PLUGIN_ENTRY_POINTS = [
@@ -168,6 +169,7 @@ export async function buildPlugin(options: {
   if (guide.problems.length > 0) {
     return guide.problems;
   }
+  await writeSkills({ root });
   const result = await build({
     absWorkingDir: root,
     entryPoints: PLUGIN_ENTRY_POINTS,

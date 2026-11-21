@@ -28,7 +28,8 @@ notes:
   ディレクトリ: |-
     ```tree
     src/plugin/
-    ├── mcp.ts        # MCP サーバーの組み立て・ツールの登録・instructions
+    ├── mcp.ts        # MCP サーバーの組み立て・ツールの登録・プロンプトファイルからの instructions と description
+    ├── prompt.ts     # プロンプトファイルの読み込み・検査・描画
     ├── http.ts       # mdmark serve の HTTP の待ち受け・ポートの読み取り・要求と応答の変換
     ├── tools.ts      # ツールの定義と処理・ツールの結果への変換
     ├── templates.ts  # CSS のテンプレートの索引・一覧・登録・配置（別の設計書）

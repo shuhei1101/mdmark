@@ -90,3 +90,14 @@ test("test_error_when_index_invalid", async () => {
   expect(result.texts[0]).toContain(join(templatesDir, "templates.yaml"));
   expect(result.texts[0]).toContain("templates[0].file");
 });
+
+// ツールの一覧で、list_templates の annotations がインターフェース定義の read_only・destructive と一致する（正常系）
+test("test_normal_annotations", async () => {
+  // 準備
+  const client = await connectHttp({ projectDir: await createTempDir() });
+  // 実行
+  const { tools } = await client.listTools();
+  // 検証（読み取りだけ）
+  const tool = tools.find((item) => item.name === "list_templates");
+  expect(tool?.annotations).toEqual({ readOnlyHint: true });
+});

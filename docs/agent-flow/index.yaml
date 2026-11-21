@@ -1,0 +1,6 @@
+summary: スキルが順に進める工程と工程で呼ぶもの（SKILL.md の生成元）
+items:
+- page: global-setup.yaml
+  summary: 端末の設定を作り、MCP の常駐サーバーを起動してつながりを確認するスキル
+- page: setup.yaml
+  summary: 文書のフォルダの mdmark.config.yaml をキーごとに確認しながら作るスキル

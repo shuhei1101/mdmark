@@ -1,0 +1,106 @@
+id: MOD-775-2
+visibility: internal
+title: ClaudeCodeプラグイン / プラグインのビルド / skill-md.ts
+lead: '`docs/agent-flow/` の `type: skill` のエージェントフローから、`skill.path` の SKILL.md を組み立てて書き出す。プラグインのビルドが使用する。'
+test_files:
+  - tests/unit/scripts/skill-md.test.ts
+constants:
+  - name: AGENT_FLOW_DIR
+    title: エージェントフローのフォルダ
+    container: scripts/skill-md.ts
+    usecase: 共通
+    summary: リポジトリの直下からのエージェントフローのフォルダ
+    value: docs/agent-flow
+    status: planned
+functions:
+  - name: renderSkillMd
+    title: SKILL.md を組み立てる
+    kind: 関数
+    container: scripts/skill-md.ts
+    usecase: 共通
+    role: 処理
+    summary: '`type: skill` のエージェントフロー 1 枚から SKILL.md の文字列を作る'
+    scope: public
+    is_async: false
+    args:
+      - name: flow
+        type: Record<string, unknown>
+        required: true
+        description: エージェントフローの YAML を読み込んだ値
+    returns:
+      type: string
+      description: SKILL.md の本文（末尾に改行を 1 つ持つ）
+    process: |-
+      1. frontmatter を `name`（`skill.name`、無ければ `skill.path` のフォルダ名）・`description`（`summary`）・`arguments` と `argument-hint`（`skill.arguments` があるとき）・`allowed-tools`（`skill.allowed_tools` を `, ` でつなぐ）・`skill.frontmatter` の項目の順に作る
+      2. 本文を `# {title}` の見出し、`skill.arguments` があれば `## 引数` の箇条書き（`$名前`: 説明）、`## 手順` の番号付きの箇条書きで作る
+      3. 手順の 1 項目は、`when` があれば `{when}:` で始め、`body` の後ろの行に `calls[].command` を `コマンド: ` に続けて行内のコードで並べる（命令の文にしない。`body` が箇条書きで始まるときは、工程の名前とコマンドの行を箇条書きの前に配置する）
+      4. `type` が `skill` でない、または `skill.path` が無ければ `Error` を投げる
+    unit_tests:
+      - name: test_render_skill_md
+        case: 正常
+        summary: frontmatter と手順を作る
+        condition: '`skill.name`・`allowed_tools` 2 件・手順 2 つ（1 つは `when` と `calls` あり）'
+        mock: なし
+        expected: frontmatter の `name`・`description`・`allowed-tools` が一致し、`## 手順` の 2 項目目が `{when}:` で始まりコマンドを含む
+      - name: test_render_skill_md_with_arguments
+        case: 正常
+        summary: 引数を frontmatter と本文に出す
+        condition: '`skill.arguments` が `dir` 1 件'
+        mock: なし
+        expected: frontmatter に `arguments` と `argument-hint` があり、`## 引数` に `$dir` の説明がある
+      - name: test_render_skill_md_when_not_skill
+        case: 異常
+        summary: type が skill でなければ誤りにする
+        condition: '`type: flow`'
+        mock: なし
+        expected: '`Error` を投げる'
+    status: planned
+  - name: writeSkills
+    title: SKILL.md を書き出す
+    kind: 関数
+    container: scripts/skill-md.ts
+    usecase: 共通
+    role: 書き込み
+    summary: '`docs/agent-flow/` の `type: skill` のエージェントフローごとに、`skill.path` へ SKILL.md を書き出す'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ root: string }'
+        required: true
+        description: 作業ツリーの場所
+    returns:
+      type: Promise<string[]>
+      description: 書き出した SKILL.md のリポジトリの直下からのパス
+    process: |-
+      1. `{root}/{AGENT_FLOW_DIR}` の `index.yaml` を除く `*.yaml` を `yaml` で読み込む
+      2. `type` が `skill` のものだけを `renderSkillMd` で組み立て、`{root}/{skill.path}` へ書き込む（フォルダが無ければ作る）
+      3. 書き込んだパスを返却する。フォルダが無ければ空の配列を返却する
+    unit_tests:
+      - name: test_write_skills
+        case: 正常
+        summary: skill のエージェントフローだけを書き出す
+        condition: '一時フォルダに `type: skill` 1 枚と `type: flow` 1 枚'
+        mock: なし
+        expected: 返却が 1 件で、`skill.path` に SKILL.md がある
+      - name: test_skill_md_matches_repository
+        case: 正常
+        summary: リポジトリの SKILL.md がエージェントフローと一致する
+        condition: リポジトリの `docs/agent-flow/` の各エージェントフロー
+        mock: なし
+        expected: '`renderSkillMd` の結果が `skill.path` のファイルと一致する'
+    status: planned
+notes:
+  ディレクトリ: |-
+    ```tree
+    scripts/
+    └── skill-md.ts  # エージェントフローから SKILL.md を作る
+    docs/agent-flow/  # type: skill のエージェントフロー（生成元）
+    plugin/skills/{名前}/SKILL.md  # 生成物（git で管理する）
+    ```
+tags:
+  - name: topic:スキル
+    main: true
+  - name: tool:claude-code
+  - name: action:生成
+  - name: action:ビルド

@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/prompt.schema.yaml
+id: mcp/mdmark/tools/add-template
+name: ツール add_template の説明
+description: MCP のツール add_template（CSS のテンプレートの登録）を呼ぶ場面と、引数・戻り値を伝える
+kind: tool
+lang: ja
+parts:
+  - id: body
+    texts:
+      - lang: ja
+        text: |
+          作業のフォルダの CSS を、端末の設定のフォルダの CSS のテンプレートに {name}.css でコピーし、名前・説明・タグを索引 templates.yaml に記載する。作った CSS を使い回すときに呼ぶ。同じ名前があるときは overwrite が true のときだけ置き換える。登録した名前 name・CSS の絶対パス path・置き換えたか replaced を JSON で返却する。

@@ -102,6 +102,9 @@ content_types:
   - name: mdmark_style
     group: feature
     summary: Claude Code の画面を共通スタイルで描く mod のプラグイン mdmark-style
+  - name: prompt
+    group: role
+    summary: MCP の instructions・ツールの description の本文を持つプロンプトファイル
 entries:
   - type: folder
     name: .claude-plugin
@@ -655,6 +658,24 @@ entries:
                   - pr_doc
                 naming:
                   - '{timestamp}_{name}.log'
+      - type: folder
+        name: mcp-server
+        contents: MCP サーバーの定義
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - MCP-{issue}-{n}.yaml
+          - index.yaml
+      - type: folder
+        name: agent-flow
+        contents: スキルのエージェントフロー（SKILL.md の生成元）
+        content_types:
+          - design_doc
+          - index
+        naming:
+          - '{name}.yaml'
+          - index.yaml
   - type: folder
     name: migrations
     contents: mdmark upgrade が適用する、バージョンごとの移行の手順
@@ -899,6 +920,12 @@ entries:
         content_types:
           - script
           - mdmark_style
+      - type: file
+        name: skill-md.ts
+        contents: エージェントフローから Claude Code プラグインの SKILL.md を書き出す
+        content_types:
+          - script
+          - claude_plugin
   - type: folder
     name: src
     contents: ライブラリ本体・CLI・Claude Code プラグインのフックのコード。記法は機能ごとのフォルダに分け、直下は公開関数の起点と、複数のフォルダが使用する処理
@@ -1792,6 +1819,35 @@ entries:
           path: src/mdmark-style/
           command: CMD-472-1#categories[ビルド・生成]
           tracked: まとめた依存のライセンスを mod と一緒に配る
+  - type: folder
+    name: content
+    contents: コードではない原本
+    children:
+      - type: folder
+        name: prompts
+        contents: プロンプトファイル。id は `prompts/` からのパスから `.yaml` を除いたもの
+        children:
+          - type: folder
+            name: mcp
+            contents: MCP サーバーごとのプロンプトファイル
+            children:
+              - type: folder
+                name: mdmark
+                contents: MCP サーバー mdmark の instructions
+                content_types:
+                  - prompt
+                  - claude_plugin
+                naming:
+                  - instructions.yaml
+                children:
+                  - type: folder
+                    name: tools
+                    contents: ツールの description
+                    content_types:
+                      - prompt
+                      - claude_plugin
+                    naming:
+                      - '{ツールの名前の _ を - にしたもの}.yaml'
 gitignore:
   - pattern: docs/generated/
     reason: AI Monitor が YAML の設計書から生成する Markdown（生成物）

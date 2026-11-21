@@ -320,3 +320,14 @@ test("test_normal_when_include_targets_missing", async () => {
   expect(linesOf(cli.stdout).slice(0, -1)).toEqual(issues.map(toLine));
   expect(await snapshot(dir, Object.keys(files))).toEqual(before);
 });
+
+// ツールの一覧で、check の annotations がインターフェース定義の read_only・destructive と一致する（正常系）
+test("test_normal_annotations", async () => {
+  // 準備
+  const client = await connectHttp({ projectDir: await createTempDir() });
+  // 実行
+  const { tools } = await client.listTools();
+  // 検証（読み取りだけ）
+  const tool = tools.find((item) => item.name === "check");
+  expect(tool?.annotations).toEqual({ readOnlyHint: true });
+});

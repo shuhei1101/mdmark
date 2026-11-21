@@ -95,10 +95,10 @@ export async function copyBuiltPlugin(destination: string): Promise<void> {
   await cp(builtPluginDir(), destination, { recursive: true });
 }
 
-/** ビルドしたパッケージ（`dist/`・`plugin/`・`package.json`）を別の場所へコピーし、依存の配置場所をつなぐ。コピー先の `dist/cli.js` を `mdmark serve` として起動できる */
+/** ビルドしたパッケージ（`dist/`・`plugin/`・`content/`・`package.json`）を別の場所へコピーし、依存の配置場所をつなぐ。コピー先の `dist/cli.js` を `mdmark serve` として起動できる */
 export async function copyBuiltPackage(destination: string): Promise<void> {
   const root = inject("builtRoot");
-  for (const name of ["dist", "plugin", "package.json"]) {
+  for (const name of ["dist", "plugin", "content", "package.json"]) {
     await cp(join(root, name), join(destination, name), { recursive: true });
   }
   await symlink(REPO_NODE_MODULES, join(destination, "node_modules"), "dir");

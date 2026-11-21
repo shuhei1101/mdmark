@@ -127,3 +127,4 @@ tags:
     main: true
   - name: topic:css
   - name: tool:mcp
+read_only: true

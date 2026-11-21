@@ -5,6 +5,10 @@ items:
   summary: 単一 / 複合ユースケースの業務フロー設計（E2E テストの元）
 - page: interface/
   summary: サブシステムの外部インターフェースと処理フロー（結合テストの元）
+- page: mcp-server/
+  summary: MCP サーバーの接続の仕方と提供するツール
+- page: agent-flow/
+  summary: スキルが順に進める工程と工程で呼ぶもの（SKILL.md の生成元）
 - page: module/
   summary: クラス / 関数 / 定数を物理ファイルごとにまとめる（単体テストの元）
 - page: component/

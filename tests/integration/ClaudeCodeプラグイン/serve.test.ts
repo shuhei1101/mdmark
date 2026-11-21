@@ -1,9 +1,13 @@
 import { createServer } from "node:net";
+import { join } from "node:path";
 import { expect, test } from "vitest";
-import { INSTRUCTIONS } from "../../../src/plugin/mcp.ts";
+import { loadServerPrompts } from "../../../src/plugin/mcp.ts";
 import { findFreePort, useMcpServers } from "../plugin.ts";
 
 const { startServe, runServeToExit, connectUrl } = useMcpServers();
+
+/** リポジトリの直下（プロンプトファイルを読み込む起点） */
+const REPOSITORY_ROOT = join(import.meta.dirname, "..", "..", "..");
 
 // 空きポートで待ち受ける URL を出し、instructions と 6 つのツールを返却する（正常系）
 test("test_normal", async () => {
@@ -15,9 +19,11 @@ test("test_normal", async () => {
   // 検証
   expect(serve.stdout()).toContain(`http://127.0.0.1:${port}/mcp`);
   const instructions = client.getInstructions() ?? "";
-  expect(instructions).toBe(
-    INSTRUCTIONS.replace("{location}", "tmux のセッション mdmark-mcp"),
-  );
+  const prompts = await loadServerPrompts({
+    root: REPOSITORY_ROOT,
+    serverLocation: "tmux のセッション mdmark-mcp",
+  });
+  expect(instructions).toBe(prompts.instructions);
   expect(instructions).toContain("mdmark-mcp");
   expect(instructions.length).toBeLessThanOrEqual(4096);
   expect(tools.map((tool) => tool.name).sort()).toEqual([

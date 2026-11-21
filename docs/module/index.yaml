@@ -834,3 +834,7 @@ items:
   summary: ライブラリ本体 / map / 描画と操作 / list.part.ts
 - page: MOD-740-3.ts.yaml
   summary: ライブラリ本体 / map / 描画と操作 / list.ts
+- page: MOD-775-1.ts.yaml
+  summary: ClaudeCodeプラグイン / MCPサーバー / prompt.ts
+- page: MOD-775-2.ts.yaml
+  summary: ClaudeCodeプラグイン / プラグインのビルド / skill-md.ts

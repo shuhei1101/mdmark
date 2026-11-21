@@ -106,3 +106,17 @@ test("test_error_when_project_dir_missing", async () => {
   expect(result.texts[0]).toContain("project_dir");
   expect(result.texts[0]).toContain("プラグインを入れた");
 });
+
+// ツールの一覧で、export_html の annotations がインターフェース定義の read_only・destructive と一致する（正常系）
+test("test_normal_annotations", async () => {
+  // 準備
+  const client = await connectHttp({ projectDir: await createTempDir() });
+  // 実行
+  const { tools } = await client.listTools();
+  // 検証（ファイルを書き込む）
+  const tool = tools.find((item) => item.name === "export_html");
+  expect(tool?.annotations).toEqual({
+    readOnlyHint: false,
+    destructiveHint: true,
+  });
+});

@@ -27,9 +27,6 @@ data_models:
       - name: name
         type: "'export_html' | 'build_site' | 'check' | 'list_templates' | 'add_template' | 'apply_template'"
         description: ツールの名前
-      - name: description
-        type: string
-        description: ツールの説明。呼ぶ場面と、引数・戻り値を日本語で記載する
       - name: inputSchema
         type: ToolInputSchema
         description: 引数の構造。`tools/list` に JSON Schema として出し、引数を検査するものにも使用する
@@ -37,8 +34,8 @@ data_models:
         type: '(args: Record<string, unknown>, context: ToolContext) => Promise<ToolOutput>'
         description: 検査を通った引数で処理し、結果を返却する。利用者に見せる誤りは `CliError` を投げる
       - name: annotations
-        type: '{ readOnlyHint: boolean } | undefined'
-        description: '`tools/list` に出すツールの annotations。何も書き換えない `check` と `list_templates` だけが `{ readOnlyHint: true }` を持つ'
+        type: '{ readOnlyHint: true } | { readOnlyHint: false; destructiveHint: boolean }'
+        description: '`tools/list` に出すツールの annotations。全てのツールが持ち、インターフェース定義の `read_only`・`destructive` から導く。`check` と `list_templates` は `{ readOnlyHint: true }`、ほかは `{ readOnlyHint: false, destructiveHint: true }`。説明はプロンプトファイルが持ち、ツールの定義は持たない'
     status: planned
   - name: ToolOutput
     title: ツールの処理の結果

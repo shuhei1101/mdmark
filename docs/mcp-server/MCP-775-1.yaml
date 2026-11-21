@@ -1,0 +1,35 @@
+id: MCP-775-1
+visibility: internal
+title: mdmark の MCP
+lead: mdmark の文書の点検・HTML と純粋な Markdown への書き出し・1 枚へのまとめと、利用側の CSS のテンプレートの一覧・登録・配置を、Claude Code から呼ぶ常駐の MCP サーバー。
+server: mdmark
+repository: shuhei1101/mdmark
+connection:
+  type: http
+  url: http://127.0.0.1:{MDMARK_PORT}/mcp
+tools:
+  - name: check
+    interface: IF-472-10#
+  - name: export_html
+    interface: IF-472-9#
+  - name: export_markdown
+    interface: IF-472-50#
+  - name: build_site
+    interface: IF-472-13#
+  - name: list_templates
+    interface: IF-472-1#
+  - name: add_template
+    interface: IF-472-2#
+  - name: apply_template
+    interface: IF-472-3#
+notes:
+  クライアント: |-
+    このリポジトリはエージェントの定義を持たず、サーバーを使用するのはプラグインを入れた利用者の Claude Code だけのため、`clients` を記載しない。
+    接続の設定はプラグインの `.mcp.json` が持ち、作業のフォルダは PreToolUse のフックが引数 `project_dir` に入れる。
+  ポート: '`MDMARK_PORT` を設定しないときは既定のポートで待ち受ける。既定の値は設定の設計書『設定: Claude Code プラグイン』（CFG-472-1）が持つ。'
+tags:
+  - name: tool:mcp
+    main: true
+  - name: topic:サーバー
+  - name: topic:常駐
+  - name: topic:プラグイン

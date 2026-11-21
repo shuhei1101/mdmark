@@ -134,3 +134,17 @@ test("test_error_when_file_missing", async () => {
   expect(result.texts[0]).toContain("missing.css");
   expect(existsSync(templatesDir)).toBe(false);
 });
+
+// ツールの一覧で、add_template の annotations がインターフェース定義の read_only・destructive と一致する（正常系）
+test("test_normal_annotations", async () => {
+  // 準備
+  const client = await connectHttp({ projectDir: await createTempDir() });
+  // 実行
+  const { tools } = await client.listTools();
+  // 検証（ファイルを書き込む）
+  const tool = tools.find((item) => item.name === "add_template");
+  expect(tool?.annotations).toEqual({
+    readOnlyHint: false,
+    destructiveHint: true,
+  });
+});

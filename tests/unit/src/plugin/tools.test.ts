@@ -25,7 +25,7 @@ function textsOf(result: { content: unknown[] }): string[] {
 function createTool(run: ToolDefinition["run"]): ToolDefinition {
   return {
     name: "check",
-    description: "テスト用のツール",
+    annotations: { readOnlyHint: true },
     inputSchema: {
       type: "object",
       properties: {},

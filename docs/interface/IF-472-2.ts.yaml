@@ -213,3 +213,5 @@ tags:
     main: true
   - name: topic:css
   - name: action:登録
+read_only: false
+destructive: true
