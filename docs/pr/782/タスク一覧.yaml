@@ -1,0 +1,82 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存のリポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 対象の設計書（部品設計・モジュール構成・シナリオ）が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めの依頼ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: ポインターイベント・SVG のアニメーション・プロンプトファイルの描画はどれも既に実装で使っている仕組みで、未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 変わるのは単一 UC『Mermaidと補足で図を描く』の中の線の操作と表示だけで、複合 UC の流れは変わらない
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: 既存の map の図の配色と外観の中で線の文字とデータの印を直すだけで、デザインスタイルは変えない
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 新しい画面・遷移を足さない（map の図の部品の中の操作と表示の変更）
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: 単一ユースケース設計
+    status: todo
+    note: SC-472-8『Mermaidと補足で図を描く』に、線のドラッグ中に文書がスクロールしないこと・ドラッグ後の経路・線より長い文字のときの線の向き・同じ長さの線のデータの印のずれを書き足す
+  - process: モック作成
+    status: todo
+    note: '#778 のドラッグ後の経路の決まりと、#780 No 1 の線の上の文字の設定の一覧・配置を、利用者が OK にするまでモックで確認を重ねる'
+  - process: データ設計
+    status: todo
+    note: '#780 No 1 の文字の設定の見直しで補足（ER-472-2）のキーを変えるときと、プロンプトファイルの kind に hook を加えるときに見直す。変えないと決まったら skipped にする'
+  - process: インターフェース定義設計
+    status: todo
+    note: IF-472-35『文書を描く』の線の経路・線の上の文字・データの印の期待結果
+  - process: エージェント・MCP サーバー設計
+    status: skipped
+    reason: MCP サーバー・エージェントの機能を足さない。フックの注入文は文言を変えずに持ち方だけを変える
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: エージェントフロー・LLM 呼び出し設計
+    status: skipped
+    reason: エージェントフロー・LLM の呼び出しを足さない・変えない
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: 精度評価設計
+    status: skipped
+    reason: LLM の出力の精度を評価する対象が無い
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: 部品設計
+    status: todo
+    note: CMP-472-5『mapの構成図』（ドラッグ中のスクロール・ドラッグ後の経路・線の上の文字・データの印）と、同じ線を使う ER 図・状態遷移図・シーケンス図の部品
+  - process: 画面設計
+    status: skipped
+    reason: 文書の画面（SCR-472-4）の構成は変わらず、変わるのは map の図の部品の中だけ。部品設計とストーリーで確かめる
+    updated_by: planner
+    updated_at: '2026-11-21T11:14:08.818173+00:00'
+  - process: モジュール構成設計
+    status: todo
+    note: MOD-472-134 drag.ts・MOD-472-141 layout.ts・MOD-472-133 map.part.ts・MOD-472-170 index.css・MOD-472-3 session-start.ts・MOD-472-349 guide-notice.ts・MOD-775-1 prompt.ts とプラグインのビルド
+  - process: ドキュメント修正
+    status: todo
+  - process: 単体テスト作成
+    status: todo
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo
