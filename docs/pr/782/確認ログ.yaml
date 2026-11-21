@@ -11,3 +11,21 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652336197
+  - topic: '#778 の線の区間を動かした後の前後の区間の扱い'
+    decision: 動かした区間の位置だけを保ち、前後の区間はノードの辺までの直角の経路で計算し直す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652495871
+  - topic: '#780 色を指定したノードが無い図でのデータの印の色と形状'
+    decision: 形状と色の両方を線ごとに順に使う（推奨案 C）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652496266
+  - topic: '#780 色を指定したノードがある図でのデータの印の形状'
+    decision: 色の指定によらず、形状を線ごとに順に使う（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652496570
