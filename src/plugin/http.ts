@@ -14,7 +14,12 @@ import {
   type McpHttpHandler,
   originValidationResponse,
 } from "@modelcontextprotocol/server";
-import { createMcpServer, describeServerLocation } from "./mcp.ts";
+import {
+  createMcpServer,
+  describeServerLocation,
+  loadServerPrompts,
+} from "./mcp.ts";
+import { PromptError } from "./prompt.ts";
 import {
   DEFAULT_PORT,
   INVALID_PORT_MESSAGE,
@@ -197,9 +202,20 @@ export async function runServe(options: {
     distDir: join(packageDir, "dist"),
   };
   const serverLocation = await readServeLocation(env);
+  // instructions とツールの description は待ち受ける前に 1 回だけ描く
+  let prompts: Awaited<ReturnType<typeof loadServerPrompts>>;
+  try {
+    prompts = await loadServerPrompts({ root: packageDir, serverLocation });
+  } catch (error) {
+    if (error instanceof PromptError) {
+      stderr(error.message);
+      return 1;
+    }
+    throw error;
+  }
   // 要求ごとに MCP サーバーを作る（セッションの状態を持たない）
   const handler = createMcpHandler(
-    () => createMcpServer({ roots, version, serverLocation, stderr }),
+    () => createMcpServer({ roots, version, prompts, stderr }),
     { onerror: (error) => stderr(`[error] ${error.message}`) },
   );
   const server = createServer((req, res) => {

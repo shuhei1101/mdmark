@@ -54,8 +54,6 @@ export type ToolDefinition = {
     | "list_templates"
     | "add_template"
     | "apply_template";
-  /** ツールの説明。呼ぶ場面と、引数・戻り値を日本語で記載する */
-  description: string;
   /** 引数の構造。`tools/list` に JSON Schema として出し、引数を検査するものにも使用する */
   inputSchema: ToolInputSchema;
   /** 検査を通った引数で処理し、結果を返却する。利用者に見せる誤りは `CliError` を投げる */
@@ -63,8 +61,10 @@ export type ToolDefinition = {
     args: Record<string, unknown>,
     context: ToolContext,
   ) => Promise<ToolOutput>;
-  /** `tools/list` に出すツールの annotations。何も書き換えないツールだけが持つ */
-  annotations?: { readOnlyHint: boolean };
+  /** `tools/list` に出すツールの annotations。インターフェース定義の `read_only`・`destructive` から導く */
+  annotations:
+    | { readOnlyHint: true }
+    | { readOnlyHint: false; destructiveHint: boolean };
 };
 
 /** PreToolUse のフックが作業のフォルダの絶対パスを入れる引数の名前 */
@@ -233,8 +233,7 @@ export async function runApplyTemplate(
 export const TOOLS: ToolDefinition[] = [
   {
     name: "export_html",
-    description:
-      "Markdown の文書を 1 つ、外へ要求しない 1 枚の HTML に書き出す（mdmark export と同じ処理）。引数 file は書き出す文書、out は書き出す HTML のパス（省くと文書と同じフォルダの .html）。書き出した HTML の絶対パス out と警告 warnings を JSON で返却する。",
+    annotations: { readOnlyHint: false, destructiveHint: true },
     inputSchema: {
       type: "object",
       properties: {
@@ -263,8 +262,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "export_markdown",
-    description:
-      "mdmark の文書を 1 つ、純粋な Markdown（GFM と Mermaid）と、chart・param・埋め込んだ HTML の SVG に書き出す（mdmark export-markdown と同じ処理）。引数 file は書き出す文書、out は出力のフォルダ（省くと文書と同じフォルダの {名前}-markdown）。書き出した Markdown の絶対パス out・SVG の絶対パスの並び images・警告 warnings を JSON で返却する。",
+    annotations: { readOnlyHint: false, destructiveHint: true },
     inputSchema: {
       type: "object",
       properties: {
@@ -287,8 +285,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "build_site",
-    description:
-      "設定の build で決めた文書を、行き来できる 1 枚の HTML にまとめる（mdmark build と同じ処理）。書き出した HTML の絶対パス out・入れた文書の数 docs・警告 warnings を JSON で返却する。",
+    annotations: { readOnlyHint: false, destructiveHint: true },
     inputSchema: {
       type: "object",
       properties: {
@@ -303,8 +300,6 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "check",
-    description:
-      "設定の構造・索引と文書のずれ・build の対象の有無・知らないマーカー・include のマーカーの取り込み先を点検する（mdmark check と同じ処理）。設定・索引・文書は書き換えない。ずれの一覧 issues（file・where・kind・message）を JSON で返却し、ずれがあってもエラーにしない。base に比べる基準の git の ref（例 origin/develop）を指定すると、基準と HEAD の merge-base から変わった文書を比べ、change_together の組のうち片方だけが変わった修正漏れも返却する。text に Markdown の文字列、または file に YAML のファイルと key にキーのパスを指定すると、設定と索引は点検せず、その Markdown を描いたときの記載の警告・描くときに無視するマーカーの知らない引数・知らないマーカー・図の配置のずれだけを返却する（text は file が -、file は where が YAML のファイルの行）。",
     inputSchema: {
       type: "object",
       properties: {
@@ -350,8 +345,6 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "list_templates",
-    description:
-      "端末の設定のフォルダの templates/css/ にある CSS のテンプレートを、名前 name・説明 description・タグ tags・CSS の絶対パス path の一覧 templates で JSON にして返却する。利用側の CSS を探すときに呼ぶ。テンプレートが無ければ空の一覧を返却する。何も書き換えない。",
     inputSchema: {
       type: "object",
       properties: {},
@@ -363,8 +356,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "add_template",
-    description:
-      "作業のフォルダの CSS を、端末の設定のフォルダの CSS のテンプレートに {name}.css でコピーし、名前・説明・タグを索引 templates.yaml に記載する。作った CSS を使い回すときに呼ぶ。同じ名前があるときは overwrite が true のときだけ置き換える。登録した名前 name・CSS の絶対パス path・置き換えたか replaced を JSON で返却する。",
+    annotations: { readOnlyHint: false, destructiveHint: true },
     inputSchema: {
       type: "object",
       properties: {
@@ -412,8 +404,7 @@ export const TOOLS: ToolDefinition[] = [
   },
   {
     name: "apply_template",
-    description:
-      "CSS のテンプレートを配置先のフォルダへ {name}.css でコピーし、配置した絶対パス path・設定の theme に記載する値 theme・置き換えたか replaced を JSON で返却する。dir を省くと、作業のフォルダから上へ探して最も近い mdmark.config.yaml のフォルダに配置する。theme は書き換えないので、返った theme の値を設定の theme に記載する。配置先に中身の違う同じ名前のファイルがあるときは overwrite が true のときだけ置き換える。",
+    annotations: { readOnlyHint: false, destructiveHint: true },
     inputSchema: {
       type: "object",
       properties: {

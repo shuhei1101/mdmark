@@ -12,6 +12,12 @@ files:
     related:
       - to: MOD-472-14
         type: implements
+  - path: skill-md.ts
+    description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド / skill-md.ts』の「エージェントフローから SKILL.md を作る」を受け持つ。スキルの SKILL.md の作り方を変えるときに参照する。
+    tags: [topic:スキル, tool:claude-code]
+    related:
+      - to: MOD-775-2
+        type: implements
   - path: build.ts
     description: モジュール構成『ライブラリ本体 / ビルド』のうち「バージョンの決定と検査・esbuild の呼び出し・まとめたライブラリのライセンスの書き出し・サイズの検査」を受け持つ。配布物のビルドや検査を変えるときに参照する。
     tags: [topic:バンドル, tool:esbuild]

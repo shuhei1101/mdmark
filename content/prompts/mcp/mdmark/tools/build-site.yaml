@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/prompt.schema.yaml
+id: mcp/mdmark/tools/build-site
+name: ツール build_site の説明
+description: MCP のツール build_site（1 枚へのまとめ）を呼ぶ場面と、引数・戻り値を伝える
+kind: tool
+lang: ja
+parts:
+  - id: body
+    texts:
+      - lang: ja
+        text: |
+          設定の build で決めた文書を、行き来できる 1 枚の HTML にまとめる（mdmark build と同じ処理）。書き出した HTML の絶対パス out・入れた文書の数 docs・警告 warnings を JSON で返却する。

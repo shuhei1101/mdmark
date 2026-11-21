@@ -1533,6 +1533,12 @@ files:
     related:
       - to: MOD-472-50
         type: implements
+  - path: plugin/prompt.ts
+    description: モジュール構成『ClaudeCodeプラグイン / MCPサーバー / prompt.ts』の「プロンプトファイルの読み込み・検査・描画」を受け持つ。MCP サーバーの instructions とツールの description の描き方を変えるときに参照する。
+    tags: [tool:mcp, topic:プロンプト]
+    related:
+      - to: MOD-775-1
+        type: implements
   - path: plugin/port.ts
     description: モジュール構成『ClaudeCodeプラグイン / ポート』の「`127.0.0.1` のポートが待ち受けているかの確認と、待ち受けるポートの読み取り」を受け持つ。`mdmark serve`・SessionStart のフック・`setup.js` のポートの扱いを変えるときに参照する。
     tags: [tool:claude-code, topic:設定]
