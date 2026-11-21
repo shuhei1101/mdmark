@@ -746,6 +746,12 @@ files:
     related:
       - to: scripts/build-plugin.ts
         type: tests
+  - path: unit/scripts/skill-md.test.ts
+    description: scripts/skill-md.ts（「エージェントフローから SKILL.md を作る」）を確認する単体テスト。skill-md.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:スキル, tool:claude-code]
+    related:
+      - to: scripts/skill-md.ts
+        type: tests
   - path: unit/scripts/build.test.ts
     description: scripts/build.ts（「バージョンの決定と検査・esbuild の呼び出し・まとめたライブラリのライセンスの書き出し・サイズの検査」）を確認する単体テスト。build.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:バンドル, tool:esbuild]
@@ -1603,6 +1609,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, tool:mcp, tool:claude-code]
     related:
       - to: src/plugin/mcp.ts
+        type: tests
+  - path: unit/src/plugin/prompt.test.ts
+    description: src/plugin/prompt.ts（「プロンプトファイルの読み込み・検査・描画」）を確認する単体テスト。prompt.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:プロンプト, tool:mcp]
+    related:
+      - to: src/plugin/prompt.ts
         type: tests
   - path: unit/src/plugin/guide-notice.test.ts
     description: src/plugin/guide-notice.ts（「記法のルールの参照の案内のフックの入口」）を確認する単体テスト。guide-notice.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
