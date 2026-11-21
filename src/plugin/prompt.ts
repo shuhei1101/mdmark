@@ -36,25 +36,77 @@ type Node = Template["parsed"]["body"][number];
 /** 子のノードを読むために、ノードを辞書として扱う */
 type AnyNode = Node & Record<string, unknown>;
 
-/** 使用する構文のノードの種類（変数・文字列・数・属性・length・比較・論理演算・if・for） */
-const ALLOWED_NODE_TYPES = new Set([
-  "Program",
-  "Identifier",
-  "StringLiteral",
-  "IntegerLiteral",
-  "MemberExpression",
-  "FilterExpression",
-  "BinaryExpression",
-  "UnaryExpression",
-  "If",
-  "For",
-]);
-
 /** 本文の変数として扱わない組み込みの名前 */
 const BUILTIN_NAMES = new Set(["true", "false", "none", "loop"]);
 
 /** 使用するフィルタ */
 const ALLOWED_FILTER = "length";
+
+/** たどるノードと、その中で使用できるループ変数 */
+type Visit = { node: unknown; scope: ReadonlySet<string> };
+
+/** ノードの子と、子の中で使用できるループ変数を返却する */
+type ChildrenOf = (
+  node: AnyNode,
+  scope: ReadonlySet<string>,
+  promptId: string,
+) => Visit[];
+
+/** ノードの並びを、同じループ変数でたどる子にする */
+const visitAll = (nodes: unknown, scope: ReadonlySet<string>): Visit[] =>
+  (nodes as unknown[]).map((node) => ({ node, scope }));
+
+/** フィルタが `length` か確かめる */
+const assertFilter = (node: AnyNode, promptId: string): void => {
+  const filter = node.filter as AnyNode;
+  if (filter.type !== "Identifier" || filter.value !== ALLOWED_FILTER) {
+    throw new PromptError(
+      `プロンプト ${promptId} に使用しないフィルタがあります（使用できるのは ${ALLOWED_FILTER} だけです）`,
+    );
+  }
+};
+
+/** for のループ変数の名前を返却する */
+const loopVariable = (node: AnyNode, promptId: string): string => {
+  const loopvar = node.loopvar as AnyNode;
+  if (loopvar.type !== "Identifier") {
+    throw new PromptError(
+      `プロンプト ${promptId} の for のループ変数は 1 つの名前にしてください`,
+    );
+  }
+  return loopvar.value as string;
+};
+
+/** 使用する構文（変数・文字列・数・属性・length・比較・論理演算・if・for）のノードの子 */
+const CHILDREN_OF: Record<string, ChildrenOf> = {
+  Program: (node, scope) => visitAll(node.body, scope),
+  Identifier: () => [],
+  StringLiteral: () => [],
+  IntegerLiteral: () => [],
+  MemberExpression: (node, scope) => [
+    { node: node.object, scope },
+    ...(node.computed === true ? [{ node: node.property, scope }] : []),
+  ],
+  FilterExpression: (node, scope, promptId) => {
+    assertFilter(node, promptId);
+    return [{ node: node.operand, scope }];
+  },
+  BinaryExpression: (node, scope) => [
+    { node: node.left, scope },
+    { node: node.right, scope },
+  ],
+  UnaryExpression: (node, scope) => [{ node: node.argument, scope }],
+  If: (node, scope) => [
+    { node: node.test, scope },
+    ...visitAll(node.body, scope),
+    ...visitAll(node.alternate, scope),
+  ],
+  For: (node, scope, promptId) => [
+    { node: node.iterable, scope },
+    ...visitAll(node.body, new Set([...scope, loopVariable(node, promptId)])),
+    ...visitAll(node.defaultBlock, scope),
+  ],
+};
 
 /** 構文木から、指定されていない変数の名前を集める。使用しない構文があれば誤りにする */
 const collectUndefinedNames = (options: {
@@ -64,79 +116,28 @@ const collectUndefinedNames = (options: {
 }): string[] => {
   const { program, defined, promptId } = options;
   const missing = new Set<string>();
-  const walk = (node: unknown, bound: ReadonlySet<string>): void => {
-    if (node === undefined || node === null) {
-      return;
-    }
-    const current = node as AnyNode;
-    if (!ALLOWED_NODE_TYPES.has(current.type)) {
+  const pending: Visit[] = [{ node: program, scope: new Set() }];
+  for (let visit = pending.pop(); visit !== undefined; visit = pending.pop()) {
+    const node = visit.node as AnyNode;
+    const childrenOf = CHILDREN_OF[node.type];
+    if (childrenOf === undefined) {
       throw new PromptError(
-        `プロンプト ${promptId} に使用しない構文 ${current.type} があります`,
+        `プロンプト ${promptId} に使用しない構文 ${node.type} があります`,
       );
     }
-    const walkAll = (nodes: unknown, scope: ReadonlySet<string>) => {
-      for (const child of nodes as unknown[]) {
-        walk(child, scope);
-      }
-    };
-    switch (current.type) {
-      case "Program":
-        walkAll(current.body, bound);
-        return;
-      case "Identifier": {
-        const name = current.value as string;
-        if (!bound.has(name) && !BUILTIN_NAMES.has(name) && !defined.has(name)) {
-          missing.add(name);
-        }
-        return;
-      }
-      case "StringLiteral":
-      case "IntegerLiteral":
-        return;
-      case "MemberExpression":
-        walk(current.object, bound);
-        if (current.computed === true) {
-          walk(current.property, bound);
-        }
-        return;
-      case "FilterExpression": {
-        const filter = current.filter as AnyNode;
-        if (filter.type !== "Identifier" || filter.value !== ALLOWED_FILTER) {
-          throw new PromptError(
-            `プロンプト ${promptId} に使用しないフィルタがあります（使用できるのは ${ALLOWED_FILTER} だけです）`,
-          );
-        }
-        walk(current.operand, bound);
-        return;
-      }
-      case "BinaryExpression":
-        walk(current.left, bound);
-        walk(current.right, bound);
-        return;
-      case "UnaryExpression":
-        walk(current.argument, bound);
-        return;
-      case "If":
-        walk(current.test, bound);
-        walkAll(current.body, bound);
-        walkAll(current.alternate, bound);
-        return;
-      case "For": {
-        const loopvar = current.loopvar as AnyNode;
-        if (loopvar.type !== "Identifier") {
-          throw new PromptError(
-            `プロンプト ${promptId} の for のループ変数は 1 つの名前にしてください`,
-          );
-        }
-        walk(current.iterable, bound);
-        walkAll(current.body, new Set([...bound, loopvar.value as string]));
-        walkAll(current.defaultBlock, bound);
-        return;
-      }
+    const name =
+      node.type === "Identifier" ? (node.value as string) : undefined;
+    if (
+      name !== undefined &&
+      !visit.scope.has(name) &&
+      !BUILTIN_NAMES.has(name) &&
+      !defined.has(name)
+    ) {
+      missing.add(name);
     }
-  };
-  walk(program, new Set());
-  return [...missing];
+    pending.push(...childrenOf(node, visit.scope, promptId));
+  }
+  return [...missing].sort();
 };
 
 /** テンプレートを解析し、未定義の変数と使用しない構文を確かめる */
@@ -181,7 +182,12 @@ const evaluateWhen = (options: {
   });
   const body = template.parsed.body;
   const expression = body[0];
-  if (body.length !== 1 || expression === undefined || expression.type === "If" || expression.type === "For") {
+  if (
+    body.length !== 1 ||
+    expression === undefined ||
+    expression.type === "If" ||
+    expression.type === "For"
+  ) {
     throw new PromptError(
       `プロンプト ${promptId} の when は {{ 式 }} を 1 つだけにしてください: ${when}`,
     );
@@ -220,7 +226,9 @@ export const loadPrompt = async (options: {
   }
   const value: unknown = parse(raw);
   if (!isRecord(value) || !Array.isArray(value.parts)) {
-    throw new PromptError(`プロンプトファイル ${relative} に parts がありません`);
+    throw new PromptError(
+      `プロンプトファイル ${relative} に parts がありません`,
+    );
   }
   if (value.id !== id) {
     throw new PromptError(
@@ -244,54 +252,65 @@ export const loadPrompt = async (options: {
   return prompt;
 };
 
-/** 変数を指定して、`when` が真の部品の `lang` の本文を並び順につなぐ */
-export const renderPrompt = (
+/** 必須の変数を確かめ、指定されていない任意の変数を既定値（無ければ null）で埋める */
+const fillValues = (
   prompt: PromptFile,
   vars: Record<string, unknown>,
-): string => {
-  const definitions = prompt.vars ?? {};
-  for (const [name, definition] of Object.entries(definitions)) {
-    if (definition.required === true && !(name in vars)) {
-      throw new PromptError(
-        `プロンプト ${prompt.id} の必須の変数 ${name} が指定されていません`,
-      );
-    }
+): Record<string, unknown> => {
+  const definitions = Object.entries(prompt.vars ?? {});
+  const missing = definitions.find(
+    ([name, definition]) => definition.required === true && !(name in vars),
+  );
+  if (missing !== undefined) {
+    throw new PromptError(
+      `プロンプト ${prompt.id} の必須の変数 ${missing[0]} が指定されていません`,
+    );
   }
-  const values: Record<string, unknown> = {
+  return {
     ...Object.fromEntries(
-      Object.entries(definitions).map(([name, definition]) => [
+      definitions.map(([name, definition]) => [
         name,
         definition.default ?? null,
       ]),
     ),
     ...vars,
   };
-  const defined = new Set(Object.keys(values));
-  const rendered: string[] = [];
-  for (const part of prompt.parts) {
-    if (
-      part.when !== undefined &&
-      !evaluateWhen({ when: part.when, values, promptId: prompt.id })
-    ) {
-      continue;
-    }
-    const text = part.texts.find((item) => item.lang === prompt.lang)?.text;
-    if (text === undefined) {
-      throw new PromptError(
-        `プロンプト ${prompt.id} の部品 ${part.id} に ${prompt.lang} の本文がありません`,
-      );
-    }
-    const template = parseChecked({
-      source: text,
-      defined,
-      promptId: prompt.id,
-    });
-    const output = template.render(values);
-    // project-index の prompt-doc（keep_trailing_newline）と同じく、本文の末尾の改行を残す
-    rendered.push(
-      text.endsWith("\n") && !output.endsWith("\n") ? `${output}\n` : output,
+};
+
+/** 部品 1 つの `lang` の本文を描く。本文の末尾の改行は残す（project-index の prompt-doc の keep_trailing_newline と同じ） */
+const renderPart = (options: {
+  prompt: PromptFile;
+  part: PromptPart;
+  values: Record<string, unknown>;
+}): string => {
+  const { prompt, part, values } = options;
+  const text = part.texts.find((item) => item.lang === prompt.lang)?.text;
+  if (text === undefined) {
+    throw new PromptError(
+      `プロンプト ${prompt.id} の部品 ${part.id} に ${prompt.lang} の本文がありません`,
     );
   }
+  const output = parseChecked({
+    source: text,
+    defined: new Set(Object.keys(values)),
+    promptId: prompt.id,
+  }).render(values);
+  return text.endsWith("\n") && !output.endsWith("\n") ? `${output}\n` : output;
+};
+
+/** 変数を指定して、`when` が真の部品の `lang` の本文を並び順につなぐ */
+export const renderPrompt = (
+  prompt: PromptFile,
+  vars: Record<string, unknown>,
+): string => {
+  const values = fillValues(prompt, vars);
+  const rendered = prompt.parts
+    .filter(
+      (part) =>
+        part.when === undefined ||
+        evaluateWhen({ when: part.when, values, promptId: prompt.id }),
+    )
+    .map((part) => renderPart({ prompt, part, values }));
   // project-index の prompt-doc と同じく、区切り無しでつないで末尾の改行を除く
   return rendered.join("").replace(/\n+$/, "");
 };

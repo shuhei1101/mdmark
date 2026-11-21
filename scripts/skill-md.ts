@@ -36,27 +36,36 @@ type SkillSpec = {
 const isRecord = (value: unknown): value is Record<string, unknown> =>
   typeof value === "object" && value !== null && !Array.isArray(value);
 
-/** 工程 1 つを番号付きの箇条書きの 1 項目にする */
-const renderStep = (step: FlowStep, index: number): string => {
-  const commands = (step.calls ?? [])
+/** 工程で実行するコマンドを 1 文にする。コマンドが無ければ undefined */
+const commandSentence = (calls: FlowCall[]): string | undefined => {
+  const commands = calls
     .map((call) => call.command)
     .filter((command): command is string => command !== undefined);
+  return commands.length > 0
+    ? `${commands.map((command) => `\`${command}\``).join("・")} を実行する。`
+    : undefined;
+};
+
+/** 工程の本文の行に、コマンドの文を加える */
+const withCommand = (step: FlowStep, run: string | undefined): string[] => {
   const lines = (step.body ?? step.name).split("\n");
-  const run =
-    commands.length > 0
-      ? `${commands.map((command) => `\`${command}\``).join("・")} を実行する。`
-      : undefined;
   if (lines[0]?.startsWith("- ") === true) {
     // 本文が箇条書きで始まるときは、コマンドの文か工程の名前を項目の 1 行目にする
-    lines.unshift(run ?? `${step.name}。`);
-  } else if (run !== undefined && lines.length === 1) {
-    // 1 行の本文は同じ行に続ける
-    lines[0] = `${lines[0]}${run}`;
-  } else if (run !== undefined) {
-    // 複数行の本文は最後の行の後ろに続ける
-    lines.push(run);
+    return [run ?? `${step.name}。`, ...lines];
   }
-  const [first = "", ...rest] = lines;
+  if (run === undefined) {
+    return lines;
+  }
+  // 1 行の本文は同じ行に、複数行の本文は最後の行の後ろに続ける
+  return lines.length === 1 ? [`${lines[0]}${run}`] : [...lines, run];
+};
+
+/** 工程 1 つを番号付きの箇条書きの 1 項目にする */
+const renderStep = (step: FlowStep, index: number): string => {
+  const [first = "", ...rest] = withCommand(
+    step,
+    commandSentence(step.calls ?? []),
+  );
   const when = step.when === undefined ? "" : `${step.when}: `;
   return [
     `${index + 1}. ${when}${first}`,
@@ -67,7 +76,11 @@ const renderStep = (step: FlowStep, index: number): string => {
 /** `type: skill` のエージェントフロー 1 枚から SKILL.md の文字列を作る */
 export const renderSkillMd = (flow: Record<string, unknown>): string => {
   const skill = flow.skill;
-  if (flow.type !== "skill" || !isRecord(skill) || typeof skill.path !== "string") {
+  if (
+    flow.type !== "skill" ||
+    !isRecord(skill) ||
+    typeof skill.path !== "string"
+  ) {
     throw new Error(
       `エージェントフロー ${String(flow.id)} は type: skill と skill.path を持つ必要があります`,
     );

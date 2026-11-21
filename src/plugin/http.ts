@@ -19,13 +19,13 @@ import {
   describeServerLocation,
   loadServerPrompts,
 } from "./mcp.ts";
-import { PromptError } from "./prompt.ts";
 import {
   DEFAULT_PORT,
   INVALID_PORT_MESSAGE,
   PORT_ENV,
   readPort,
 } from "./port.ts";
+import { PromptError } from "./prompt.ts";
 import {
   readSessionName,
   readUnitName,
