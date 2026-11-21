@@ -1,0 +1,154 @@
+id: MOD-775-1
+visibility: internal
+title: ClaudeCodeプラグイン / MCPサーバー / prompt.ts
+lead: プロンプトファイル（`content/prompts/{id}.yaml`）を読み込み・検査し、変数を指定して本文を描く。MCP サーバーの instructions とツールの description が使用する。
+test_files:
+  - tests/unit/src/plugin/prompt.test.ts
+data_models:
+  - name: PromptFile
+    title: プロンプトファイル
+    container: src/plugin/prompt.ts
+    usecase: 共通
+    role: DTO
+    summary: プロンプトファイル 1 枚を読み込んだ値
+    properties:
+      - name: id
+        type: string
+        description: '`content/prompts/` からのパスから `.yaml` を除いたもの'
+      - name: kind
+        type: "'instructions' | 'tool'"
+        description: 文の種類
+      - name: lang
+        type: string
+        description: 描く言語（BCP 47）
+      - name: vars
+        type: 'Record<string, { required?: boolean; default?: unknown }>'
+        description: 本文で使用する変数の定義
+      - name: parts
+        type: '{ id: string; when?: string; texts: { lang: string; text: string }[] }[]'
+        description: 部品の並び
+    status: planned
+constants:
+  - name: PROMPTS_DIR
+    title: プロンプトファイルのフォルダ
+    container: src/plugin/prompt.ts
+    usecase: 共通
+    summary: パッケージの直下からのプロンプトファイルのフォルダ
+    value: content/prompts
+    status: planned
+functions:
+  - name: loadPrompt
+    title: プロンプトファイルを読み込む
+    kind: 関数
+    container: src/plugin/prompt.ts
+    usecase: 共通
+    role: 読み込み
+    summary: '`{root}/content/prompts/{id}.yaml` を読み込み、構造を検査して返却する'
+    scope: public
+    is_async: true
+    args:
+      - name: options
+        type: '{ root: string; id: string }'
+        required: true
+        description: パッケージの直下の絶対パスとプロンプトの id
+    returns:
+      type: Promise<PromptFile>
+      description: 読み込んだプロンプトファイル
+    process: |-
+      1. `{root}/{PROMPTS_DIR}/{id}.yaml` を `yaml` で読み込む
+      2. `id` がファイルのパスと一致し、`lang` の本文がどの部品にもあり、同じ部品で `texts[].lang` が重ならないかを確認する
+      3. 合わなければ `PromptError`（`Error` を継承し、文にプロンプトの id と理由を含む）を投げる
+    unit_tests:
+      - name: test_load_prompt
+        case: 正常
+        summary: 合うプロンプトファイルを返却する
+        condition: 一時フォルダに `mcp/x/instructions.yaml` を配置する
+        mock: なし
+        expected: '`id` が `mcp/x/instructions`、`parts` がファイルと一致する'
+      - name: test_load_prompt_when_lang_missing
+        case: 異常
+        summary: lang の本文が無い部品を誤りにする
+        condition: '`lang: ja` で、ある部品の `texts` が `en` だけ'
+        mock: なし
+        expected: '`PromptError` を投げ、文に部品の id を含む'
+      - name: test_load_prompt_when_file_missing
+        case: 異常
+        summary: ファイルが無いと誤りにする
+        condition: 存在しない id
+        mock: なし
+        expected: '`PromptError` を投げ、文にパスを含む'
+    status: planned
+  - name: renderPrompt
+    title: プロンプトの本文を描く
+    kind: 関数
+    container: src/plugin/prompt.ts
+    usecase: 共通
+    role: 処理
+    summary: 変数を指定して、`when` が真の部品の `lang` の本文を並び順につなぐ
+    scope: public
+    is_async: false
+    args:
+      - name: prompt
+        type: PromptFile
+        required: true
+        description: 読み込んだプロンプトファイル
+      - name: vars
+        type: Record<string, unknown>
+        required: true
+        description: 変数の名前と値
+    returns:
+      type: string
+      description: 描いた本文
+    process: |-
+      1. `vars` の定義の `required` の変数が指定されているかを確認し、指定されていない任意の変数は `default`（無ければ `null`）で埋める
+      2. 部品ごとに、`when` と本文を `Template` で解析し、構文木の変数名が埋めた変数か `for` のループ変数にあるかと、使用する構文（変数・`if`・`for`・`length`・比較・論理演算）だけかを確認する
+      3. `when` があれば、評価ごとに新規の `Environment` を作って `Interpreter.evaluate` で評価し、真の部品だけを残す
+      4. 残った部品の `lang` の本文を `Template.render` で描き、改行でつなぐ
+      5. 確認に合わなければ `PromptError` を投げる
+    unit_tests:
+      - name: test_render_prompt
+        case: 正常
+        summary: 変数を入れて本文を描く
+        condition: "本文 `{{ location }}で動く`、`location: 'unit x'`"
+        mock: なし
+        expected: '`unit xで動く`'
+      - name: test_render_prompt_when_part_hidden
+        case: 正常
+        summary: when が偽の部品を除く
+        condition: '2 部品で 2 つ目の `when` が `{{ items | length > 0 }}`、`items: []`'
+        mock: なし
+        expected: 1 つ目の部品の本文だけ
+      - name: test_render_prompt_when_variable_undefined
+        case: 異常
+        summary: 未定義の変数を誤りにする
+        condition: 本文が `{{ nope }}`、`vars` の定義に `nope` が無い
+        mock: なし
+        expected: '`PromptError` を投げ、文に `nope` を含む'
+      - name: test_render_prompt_when_required_missing
+        case: 異常
+        summary: 必須の変数が無いと誤りにする
+        condition: '`location` が `required: true` で、指定しない'
+        mock: なし
+        expected: '`PromptError` を投げ、文に `location` を含む'
+      - name: test_render_prompt_when_syntax_unsupported
+        case: 異常
+        summary: 使用しない構文を誤りにする
+        condition: 本文が `{% set x = 1 %}`
+        mock: なし
+        expected: '`PromptError` を投げる'
+    status: planned
+notes:
+  ディレクトリ: |-
+    ```tree
+    src/plugin/
+    └── prompt.ts  # プロンプトファイルの読み込み・検査・描画
+    content/prompts/mcp/mdmark/
+    ├── instructions.yaml  # MCP サーバーの instructions
+    └── tools/             # ツールの description（{ツールの名前}.yaml。_ は -）
+    ```
+tags:
+  - name: topic:プロンプト
+    main: true
+  - name: tool:mcp
+  - name: action:描画
+  - name: action:検査

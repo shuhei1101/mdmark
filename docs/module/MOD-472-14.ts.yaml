@@ -272,9 +272,10 @@ functions:
     process: |-
       1. `src/plugin/pre-tool-use.ts` が無ければ空を返却する
       2. ガイドの索引を検査し、問題があれば返却する（ガイドの索引を検査する）
-      3. `PLUGIN_ENTRY_POINTS` を esbuild でまとめる。`platform: node`・target は CLI と同じ Node・先頭に CLI と同じ行・バージョンを `__MDMARK_VERSION__` に埋める・`metafile` を取る
-      4. `src/mdmark-style/mod.tsx` があれば `MDMARK_STYLE_ENTRY` を esbuild でまとめ、`metafile` を取る
-      5. `CONFIG_TEMPLATE` をコピーし、`plugin/` と `mdmark-style/` のそれぞれにまとめた依存のライセンスを記載して、空を返却する（プラグインの依存のライセンスを記載する）
+      3. `docs/agent-flow/` の `type: skill` のエージェントフローから SKILL.md を書き出す（`writeSkills`）
+      4. `PLUGIN_ENTRY_POINTS` を esbuild でまとめる。`platform: node`・target は CLI と同じ Node・先頭に CLI と同じ行・バージョンを `__MDMARK_VERSION__` に埋める・`metafile` を取る
+      5. `src/mdmark-style/mod.tsx` があれば `MDMARK_STYLE_ENTRY` を esbuild でまとめ、`metafile` を取る
+      6. `CONFIG_TEMPLATE` をコピーし、`plugin/` と `mdmark-style/` のそれぞれにまとめた依存のライセンスを記載して、空を返却する（プラグインの依存のライセンスを記載する）
     unit_tests:
       - name: test_build_plugin_when_source_missing
         case: 正常

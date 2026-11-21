@@ -1,4 +1,4 @@
 summary: MCP サーバーの接続の仕方と提供するツール
 items:
-- page: MCP-472-1.yaml
+- page: MCP-775-1.yaml
   summary: Claude Code から点検・書き出し・まとめ・CSS のテンプレートを呼ぶ常駐の MCP サーバー

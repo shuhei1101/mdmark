@@ -159,11 +159,12 @@ functions:
     process: |-
       1. ポートを読み込む（`CliError` は呼び出し元の CLI が終了コード 1 にする）
       2. `{packageDir}/dist` でサーバーの読み込む場所を作り、端末の設定（`resolveSettingsPath`）の `serve.systemdUnit`・`serve.tmuxSession`（無ければどちらも `mdmark-mcp`）と `MDMARK_LAUNCHER` を `describeServerLocation` に指定して、常駐サーバーが動いている場所の文にする。端末の設定を読み込めなければ既定の名前にする
-      3. `createMcpHandler` に、要求ごとに MCP サーバーを作る関数を指定してハンドラーを作る
-      4. `node:http` のサーバーで、要求ごとに要求を変換し、要求を振り分け、応答を記載する
-      5. `LISTEN_HOST` とポートで待ち受ける。`EADDRINUSE` なら `PORT_IN_USE_MESSAGE` を標準エラーに書き込んで 1 を返却する
-      6. 待ち受けたら `MCP サーバーを起動しました: http://{LISTEN_HOST}:{port}{MCP_PATH}` を標準出力に 1 行書く
-      7. `signal` が止める合図になったらサーバーを閉じ、0 を返却する
+      3. `loadServerPrompts` に `packageDir` と常駐サーバーが動いている場所の文を指定して、instructions と description を 1 回だけ描く。`PromptError` ならその文を標準エラーに書き込んで 1 を返却する（待ち受けない）
+      4. `createMcpHandler` に、要求ごとに描いた文で MCP サーバーを作る関数を指定してハンドラーを作る
+      5. `node:http` のサーバーで、要求ごとに要求を変換し、要求を振り分け、応答を記載する
+      6. `LISTEN_HOST` とポートで待ち受ける。`EADDRINUSE` なら `PORT_IN_USE_MESSAGE` を標準エラーに書き込んで 1 を返却する
+      7. 待ち受けたら `MCP サーバーを起動しました: http://{LISTEN_HOST}:{port}{MCP_PATH}` を標準出力に 1 行書く
+      8. `signal` が止める合図になったらサーバーを閉じ、0 を返却する
     unit_tests:
       - name: test_run_serve
         case: 正常
