@@ -178,10 +178,10 @@ categories:
 
       下限に無い API で止まったときは、標準エラーの API を `if (typeof {API} !== "undefined")` のブロックの中で使用する構造に修正する（早期 return の後ろと三項演算子では使用しない）。
 
-      続けて Claude Code プラグインの生成物（`plugin/scripts/`・`plugin/THIRD_PARTY_LICENSES.txt`）も前回の分を削除して記載し、ガイドの索引（`plugin/guide-index.yaml`）の構造・指すページ、取り込まれたパッケージのライセンスの本文（`scripts/licenses/`）に問題があると、終了コード 1 で終わり `dist/` も `plugin/` の生成物も残らない'
+      続けて `docs/agent-flow/` の `type: skill` のエージェントフローから `plugin/skills/{名前}/SKILL.md` を上書きし、Claude Code プラグインの生成物（`plugin/scripts/`・`plugin/THIRD_PARTY_LICENSES.txt`）も前回の分を削除して記載し、ガイドの索引（`plugin/guide-index.yaml`）の構造・指すページ、取り込まれたパッケージのライセンスの本文（`scripts/licenses/`）に問題があると、終了コード 1 で終わり `dist/` も `plugin/` の生成物も残らない'
     verification:
       state: 済
-      date: '2026-10-24'
+      date: '2026-11-21'
       detail: '`npm run build` が終了コード 0 で終わり、`dist/` に `index.js`・`index.css`・`THIRD_PARTY_LICENSES.txt`・`cli.js` と型定義が書き込まれることを確認した。
 
         スキーマをタグ v0.3.0 から変えたのに `migrations/no-steps.yaml` の合う行が無いと終了コード 1 で `dist/` が残らず、行を配置すると通ること、`--version v0.4.0` のビルドで `migrations/next/` が残ると終了コード 1 で終わることを確認した。
@@ -191,6 +191,9 @@ categories:
         2026-10-23 に、`npm run build` が終了コード 0 で `plugin/` の生成物を記載することを確認した。
 
         `plugin/` の失敗の分岐は単体テストで確認した。
+
+
+        2026-11-21 に、`npm run build` が終了コード 0 で `plugin/skills/global-setup/SKILL.md`・`plugin/skills/setup/SKILL.md` をエージェントフローから作成し（commit 済みの内容と差分なし）、書き出した `dist/cli.js` の `serve` が `content/prompts/` のプロンプトファイルから instructions とツールの説明を描いて待ち受けることを確認した。
 
         VS Code 拡張機能のコマンドは `vscode/` を実装して走らせた（2026-10-23）。
 
