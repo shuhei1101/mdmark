@@ -42,12 +42,11 @@
         <tr><th>案</th><th>塗り方</th></tr>
       </thead>
       <tbody>
-        <tr><td>塗り A: ベタ塗り</td><td>今のとおり、形状の中を 1 色で塗る</td></tr>
+        <tr><td>塗り A: 今のとおり</td><td>形状の中を 1 色で塗り、周りに背景の色の 1.5px の縁を付ける</td></tr>
         <tr><td>塗り B: 二重の輪</td><td>形状を一回り小さく塗り、外側に同じ色の薄い輪郭を重ねる</td></tr>
-        <tr><td>塗り C: 背景の色の縁</td><td>形状の周りに背景の色の縁を付け、線から浮き出して見せる</td></tr>
-        <tr><td>塗り D: 淡い面と濃い輪郭</td><td>中を色の淡い面にし、輪郭を濃い色の線にする</td></tr>
-        <tr><td>塗り E: 淡い光</td><td>形状の周りに同じ色の淡い広がりを重ねる</td></tr>
-        <tr><td>塗り F: 照り</td><td>ベタ塗りの左上に小さな白い照りを入れる</td></tr>
+        <tr><td>塗り C: 淡い面と濃い輪郭</td><td>中を色の淡い面にし、輪郭を濃い色の線にする</td></tr>
+        <tr><td>塗り D: 淡い光</td><td>形状の周りに同じ色の淡い広がりを重ねる</td></tr>
+        <tr><td>塗り E: 照り</td><td>塗り A の左上に小さな白い照りを入れる</td></tr>
       </tbody>
     </table>
     <div class="variant-grid" id="scene-looks"></div>
@@ -78,7 +77,7 @@
         shape === "triangle" ? `<polygon points="${8 * s},0 ${-6 * s},${-7 * s} ${-6 * s},${7 * s}"` :
         `<circle r="${7 * s}"`;
       const tag = shape === "square" ? "rect" : shape === "circle" ? "circle" : "polygon";
-      return `${body} style="fill:${fill}">${motion}</${tag}>`;
+      return `${body} style="fill:${fill};stroke:var(--mdmark-color-bg-opaque);stroke-width:1.5">${motion}</${tag}>`;
     };
 
     /** 塗り方を変えた印（丸・四角・ひし形・三角を同じ塗り方で描く） */
@@ -87,10 +86,10 @@
       const close = shape === "square" ? "</rect>" : shape === "circle" ? "</circle>" : "</polygon>";
       const layers =
         look === "ring" ? [outline(1.25, `fill:none;stroke:${fill};stroke-width:1.5;opacity:0.45`) + close, outline(0.8, `fill:${fill}`) + close] :
-        look === "edge" ? [outline(0.8, `fill:${fill};stroke:var(--mdmark-color-bg-opaque);stroke-width:2`) + close] :
+        look === "edge" ? [outline(0.8, `fill:${fill};stroke:var(--mdmark-color-bg-opaque);stroke-width:1.5`) + close] :
         look === "hollow" ? [outline(0.8, `fill:color-mix(in srgb, ${fill} 25%, var(--mdmark-color-bg-opaque));stroke:${fill};stroke-width:2`) + close] :
         look === "glow" ? [outline(1.3, `fill:${fill};opacity:0.2`) + close, outline(0.8, `fill:${fill}`) + close] :
-        look === "shine" ? [outline(0.8, `fill:${fill}`) + close, `<circle r="1.8" cx="-1.6" cy="-1.6" style="fill:#ffffff;opacity:0.85"></circle>`] :
+        look === "shine" ? [outline(0.8, `fill:${fill};stroke:var(--mdmark-color-bg-opaque);stroke-width:1.5`) + close, `<circle r="1.8" cx="-1.6" cy="-1.6" style="fill:#ffffff;opacity:0.85"></circle>`] :
         [outline(0.8, `fill:${fill}`) + close];
       return `<g>${layers.join("")}${motion}</g>`;
     };
@@ -150,12 +149,11 @@
     for (const [title, note, packetOf] of variants) cell(grid("scene-variants"), title, note, fan(packetOf));
 
     for (const [title, note, look] of [
-      ["塗り A: ベタ塗り", "今のとおり 1 色で塗る", "flat"],
+      ["塗り A: 今のとおり", "1 色で塗り、背景の色の 1.5px の縁を付ける", "edge"],
       ["塗り B: 二重の輪", "一回り小さく塗り、外側に薄い輪郭を重ねる", "ring"],
-      ["塗り C: 背景の色の縁", "周りに背景の色の縁を付ける", "edge"],
-      ["塗り D: 淡い面と濃い輪郭", "中を淡い面、輪郭を濃い線にする", "hollow"],
-      ["塗り E: 淡い光", "周りに同じ色の淡い広がりを重ねる", "glow"],
-      ["塗り F: 照り", "左上に小さな白い照りを入れる", "shine"],
+      ["塗り C: 淡い面と濃い輪郭", "中を淡い面、輪郭を濃い線にする", "hollow"],
+      ["塗り D: 淡い光", "周りに同じ色の淡い広がりを重ねる", "glow"],
+      ["塗り E: 照り", "塗り A の左上に小さな白い照りを入れる", "shine"],
     ]) cell(grid("scene-looks"), title, note, fan((i) => ({ shape: SHAPES[i % SHAPES.length], scale: 0.8, fill: COLORS[i % COLORS.length], offset: i / 3, speed: SPEEDS[i], look })));
 
     const sourceColors = { src: "var(--mdmark-color-accent-blue-text)" };
