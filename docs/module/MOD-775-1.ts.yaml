@@ -43,7 +43,7 @@ functions:
     container: src/plugin/prompt.ts
     usecase: 共通
     role: 読み込み
-    summary: '`{root}/content/prompts/{id}.yaml` を読み込み、構造を検査して返却する'
+    summary: '`{root}/content/prompts/{id}.yaml` を読み込み、実行時に要る確認をして返却する'
     scope: public
     is_async: true
     args:
@@ -103,7 +103,7 @@ functions:
       1. `vars` の定義の `required` の変数が指定されているかを確認し、指定されていない任意の変数は `default`（無ければ `null`）で埋める
       2. 部品ごとに、`when` と本文を `Template` で解析し、構文木の変数名が埋めた変数か `for` のループ変数にあるかと、使用する構文（変数・`if`・`for`・`length`・比較・論理演算）だけかを確認する
       3. `when` があれば、評価ごとに新規の `Environment` を作って `Interpreter.evaluate` で評価し、真の部品だけを残す
-      4. 残った部品の `lang` の本文を `Template.render` で描き、改行でつなぐ
+      4. 残った部品の `lang` の本文を `Template.render` で描き、区切り無しでつないで末尾の改行を除く（project-index の `prompt-doc` と同じ）
       5. 確認に合わなければ `PromptError` を投げる
     unit_tests:
       - name: test_render_prompt
@@ -136,6 +136,12 @@ functions:
         condition: 本文が `{% set x = 1 %}`
         mock: なし
         expected: '`PromptError` を投げる'
+      - name: test_render_prompt_joins_parts
+        case: 正常
+        summary: 部品を区切り無しでつなぎ、末尾の改行を除く
+        condition: 本文が `a\n` と `b\n` の 2 部品（ブロックスカラー `|` で記載したときと同じ）
+        mock: なし
+        expected: '`a\nb`（project-index の `"".join(rendered).rstrip("\n")` と同じ）'
     status: planned
 notes:
   ディレクトリ: |-
@@ -146,6 +152,10 @@ notes:
     ├── instructions.yaml  # MCP サーバーの instructions
     └── tools/             # ツールの description（{ツールの名前}.yaml。_ は -）
     ```
+  検査の分担: |-
+    プロンプトファイルは 1 行目のモードラインで knowledge の `schemas/prompt.schema.yaml` を指す。
+    構造の検査（必須のキー・`vars` の型・知らないキー）は、`project-index.yaml` の `content/prompts/**/*.yaml` の行がそのスキーマで受け持ち、`converter: prompt-doc` で dev-docs の画面に表示する。
+    `loadPrompt`・`renderPrompt` は、実行時に要る確認（`id` とパスの一致・`lang` の本文の有無・未定義の変数・使用する構文）だけをする。
 tags:
   - name: topic:プロンプト
     main: true
