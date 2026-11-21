@@ -147,3 +147,5 @@ tags:
     main: true
   - name: topic:markdown
   - name: tool:mcp
+read_only: false
+destructive: true

@@ -169,3 +169,5 @@ tags:
     main: true
   - name: action:まとめ
   - name: tool:mcp
+read_only: false
+destructive: true

@@ -308,3 +308,4 @@ tags:
   - name: action:点検
     main: true
   - name: tool:mcp
+read_only: true

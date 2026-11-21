@@ -176,3 +176,5 @@ tags:
     main: true
   - name: tool:html
   - name: tool:mcp
+read_only: false
+destructive: true
