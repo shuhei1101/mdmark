@@ -482,6 +482,21 @@ documents:
       name: summary
       visibility: visibility
       tags: tags
+  - id: prompts
+    title: プロンプト
+    paths: ["content/prompts/**/*.yaml"]
+    schema:
+      source: knowledge
+      path: schemas/prompt.schema.yaml
+      ref: design-schemas/v8.4.0
+    converter: prompt-doc
+    metadata:
+      name: name
+      description: description
+      tags: tags
+converters:
+  - id: prompt-doc
+    run: [project-index, prompt-doc]
 # dev-docs の画面のタブとサイドバー。タブの並びとグループは knowledge の規約『開発ドキュメントのナビゲーション』に従う
 nav:
   tabs:

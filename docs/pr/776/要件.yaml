@@ -38,9 +38,9 @@ docs:
   - page: project-index.yaml
     new: false
     change: 'documents[] に mcp_server・agent_flow などの種類の行を、shuhei1101/ai-monitor の反映作業『配布先の配信元の設定への種類の行の追加』で追加する（済）。あわせて `content/prompts/**/*.yaml` を knowledge の `schemas/prompt.schema.yaml` で検査し `converter: prompt-doc` で表示する documents[] の行と、converters[] の `prompt-doc` の行を追加する'
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-21T10:17:03.695680+00:00'
+    updated_at: '2026-11-21T10:20:53.558389+00:00'
   - page: docs/layout/LAY-472-1.yaml
     new: false
     change: MCP サーバーの定義・エージェントフローの設計書のフォルダ、プロンプトファイルの `content/prompts/`、`scripts/skill-md.ts` を追加する
