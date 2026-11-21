@@ -104,15 +104,15 @@
     const catalog = document.getElementById("catalog");
     const add = (tag, text) => catalog.appendChild(Object.assign(document.createElement(tag), { textContent: text }));
     add("h2", "動かして確認する図");
-    for (const [title, note, source] of [
-      ["入れ子のグループをまたぐ線", "グループの外へ出る線（mount → 保存先・配布物の CDN）の真ん中の区間と端の区間を動かす", FLOW],
-      ["ほかのノードを回り込む線", "入力 → 描画の線は途中のノードを回り込む。回り込む区間を内側へ動かす", DETOUR],
-      ["状態遷移図", "待機と実行中の間の 2 本の遷移の区間を動かす", STATE],
-      ["ER 図", "関連の線を動かす（多重度の記号は線の端に付いたまま動く）", ER],
+    for (const [key, title, note, source] of [
+      ["nested", "入れ子のグループをまたぐ線", "グループの外へ出る線（mount → 保存先・配布物の CDN）の真ん中の区間と端の区間を動かす", FLOW],
+      ["detour", "ほかのノードを回り込む線", "入力 → 描画の線は途中のノードを回り込む。回り込む区間を内側へ動かす", DETOUR],
+      ["state", "状態遷移図", "待機と実行中の間の 2 本の遷移の区間を動かす", STATE],
+      ["er", "ER 図", "関連の線を動かす（多重度の記号は線の端に付いたまま動く）", ER],
     ]) {
       add("h3", title);
       add("p", note).className = "state-note";
-      const host = document.createElement("div");
+      const host = Object.assign(document.createElement("div"), { id: `route-${key}` });
       catalog.append(host);
       drawMap(host, fence(title, source));
     }

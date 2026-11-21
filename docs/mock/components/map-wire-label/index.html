@@ -56,16 +56,16 @@
     const add = (parent, tag, text) => parent.appendChild(Object.assign(document.createElement(tag), { textContent: text }));
     const variants = [
       ["今の見た目", "線より長い文字が線と矢じりを覆い、線の向きが見えない", undefined],
-      ["案 A: 線の横に置く", "横の線は上、縦の線は右に、線から 6〜8px 離して置く。線と矢じりが文字に隠れない", "beside"],
+      ["案 A: 線の横に置く", "横の線は上、縦の線は右に、線から 6〜8px 離して置く。線と矢じりは文字に隠れないが、線より長い文字は両側のノードの上へはみ出す", "beside"],
       ["案 B: 線の長さで折り返す", "最も長い区間の長さで折り返す。線が短いと行が増え、線の両側は隠れたまま残る", "wrap"],
     ];
     const blockVariants = [
       ["今の見た目", "幅 56px で折り返した文字が、線と矢じりに重なる", undefined],
       ["案 A: 線の横に置く", "線の上に 1 行で置く。線と矢じりは隠れないが、線より長い文字は両側のブロックの上へはみ出す（案 B は今の見た目と同じく折り返す）", "beside"],
     ];
-    for (const [title, source, list] of [["横に流れる構成図（短い線に長い文字）", SHORT, variants], ["縦に流れる構成図", STACK, variants], ["軸と格子の配置の図（ブロック図）", BLOCK, blockVariants]]) {
+    for (const [key, title, source, list] of [["horizontal", "横に流れる構成図（短い線に長い文字）", SHORT, variants], ["vertical", "縦に流れる構成図", STACK, variants], ["block", "軸と格子の配置の図（ブロック図）", BLOCK, blockVariants]]) {
       add(catalog, "h2", title);
-      const grid = catalog.appendChild(Object.assign(document.createElement("div"), { className: "variant-grid" }));
+      const grid = catalog.appendChild(Object.assign(document.createElement("div"), { className: "variant-grid", id: `scene-${key}` }));
       for (const [name, note, mode] of list) {
         const cell = grid.appendChild(document.createElement("section"));
         add(cell, "h3", name);
@@ -76,7 +76,7 @@
     }
     add(catalog, "h2", "案 C: 配置でノードの間を文字の幅まで広げる");
     add(catalog, "p", "Mermaid の長い線（---->）で、ノードの間を文字の幅まで広げたときの見え方。案 C では、文字の幅から線の長さを自動で決める").className = "state-note";
-    const host = catalog.appendChild(document.createElement("div"));
+    const host = catalog.appendChild(Object.assign(document.createElement("div"), { id: "scene-spread" }));
     drawMap(host, fence("案 C", SHORT.replaceAll("-->|", "------>|")));
   </script>
 </body>
