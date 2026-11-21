@@ -46,3 +46,31 @@
 ### ドキュメント修正
 
 なし（配信元の設定 `project-index.yaml` への `prompts` の行と `converters[]` の追加だけで、規約『V字モデル』の対応表で対応する単体・結合テストが無い）
+
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| `tests/unit/src/plugin/prompt.test.ts` | 全実行 | 新規 | ✅ | 9 テスト pass<br>`テスト結果/20261121193908_6c66def_単体テスト.log` |
+| `tests/unit/scripts/skill-md.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass<br>`テスト結果/20261121193908_6c66def_単体テスト.log` |
+| [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/unit/src/plugin/mcp.test.ts) | 全実行 | 変更 | ✅ | `test_create_mcp_server` を設計書に合わせ、`test_load_server_prompts`・`test_load_server_prompts_when_prompt_missing` を追加<br>`テスト結果/20261121193908_6c66def_単体テスト.log` |
+| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | ツールの定義から `description` を外し `annotations` を必須にしたことに合わせ、補助関数を修正<br>`テスト結果/20261121193908_6c66def_単体テスト.log` |
+| 単体テスト（フロント）の全件 | 全実行 | 実行のみ | ✅ | ランナーで Test Files 333・Tests 2798 が pass<br>Red: `テスト結果/20261121192830_653a3c5_単体テスト.log`<br>lint: `テスト結果/20261121193631_6c66def_lint.log` |
+
+実装の前に直したテスト: 結合テスト [tests/integration/ClaudeCodeプラグイン/serve.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/serve.test.ts) の `test_normal` が削除した定数 `INSTRUCTIONS` を参照して型検査が通らなかったため、期待値を設計書（instructions はプロンプトファイルから描く）に合わせて `loadServerPrompts` で描いた文にした（6c66defc。実装と別の commit）。結合テストの実行は結合テスト作成の工程で行う。
+
+### 結合テストの実行範囲
+
+| 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無いエントリーポイント |
+| --- | --- | --- | --- |
+| `content/prompts/mcp/mdmark/instructions.yaml`・`content/prompts/mcp/mdmark/tools/*.yaml`（8 ファイル） | R7（層に `excluded_paths`・`folder_map` が無い） | `tests/integration/ClaudeCodeプラグイン/` の serve・check・export-html・export-markdown・build-site・list-templates・add-template・apply-template の 8 ファイル（`mdmark serve` が起動時に読み込み、instructions とツールの説明に描く） | - |
+| `src/plugin/prompt.ts`・`src/plugin/mcp.ts`・`src/plugin/http.ts`・`src/plugin/tools.ts` | R7（同上） | `tests/integration/ClaudeCodeプラグイン/` の serve・check・export-html・export-markdown・build-site・list-templates・add-template・apply-template の 8 ファイル | - |
+| `package.json`・`package-lock.json` | R7（同上） | `tests/integration/ClaudeCodeプラグイン/` の serve・check・export-html・export-markdown・build-site・list-templates・add-template・apply-template の 8 ファイル（追加した `@huggingface/jinja` は `dist/cli.js` にまとめて `mdmark serve` が使用する） | - |
+| `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | R2 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | - |
+| `scripts/build-plugin.ts`・`scripts/skill-md.ts`・`plugin/skills/global-setup/SKILL.md`・`plugin/skills/setup/SKILL.md` | R7（同上） | -（SKILL.md を参照する結合テストは無い。SKILL.md とエージェントフローの一致は単体テスト `test_skill_md_matches_repository` で確認する） | スキルの SKILL.md: 単体テスト |
+| `project-index.yaml`・`src/files.yaml`・`scripts/files.yaml`・`tests/files.yaml` | R7（同上） | -（配信元の設定と管理用の YAML で、実行に影響しない） | - |
+| `docs/` の設計書・目次・開発コマンドと `docs/pr/776/` の PR ドキュメント | R7（同上） | -（文書で、実行に影響しない） | - |
+| `tests/unit/` の 4 ファイル | R7（同上） | -（単体テストで、結合テストに影響しない） | - |
+
+実行する結合テストは `tests/integration/ClaudeCodeプラグイン/` の serve・check・export-html・export-markdown・build-site・list-templates・add-template・apply-template の 8 ファイル（重なりを除いた合計）。
+結合テストの補助 `tests/integration/plugin.ts` はビルドした `dist/`・`plugin/`・`package.json` だけをコピーして `mdmark serve` を起動するため、`content/prompts/` もコピーするよう結合テスト作成の工程で直してから実行する。

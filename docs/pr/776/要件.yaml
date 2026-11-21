@@ -66,3 +66,6 @@ scope_out:
   - item: 反映作業『配布先の配信元の設定への種類の行の追加』の実行スクリプトが、次の最上位のキーを説明するコメントの後ろに種類の行を挿入する不具合（shuhei1101/ai-monitor の `docs/pr/3744/反映作業/` の `実行.py` の `documents_end`）
     reason: ai-monitor の配布物の不具合で、今回の要望に含まれない。この PR では挿入後にコメントを手で `nav:` の直前へ戻した
     plan: shuhei1101/ai-monitor#3754
+  - item: Claude Code プラグインのフックの注入文（`src/plugin/session-start.ts` の `NOT_LISTENING_CONTEXT`・`PORT_INVALID_CONTEXT`、`src/plugin/guide-notice.ts` の `NOTICE_BODY`・`noticeHead`）の本文をプロンプトファイルへ移す
+    reason: 規約『プロンプトファイル』の `layout-04`（本文をコードに埋め込まない）から外れているが、今回の要望（MCP サーバーとスキルの設計書）に含まれない
+    plan: '#777'
