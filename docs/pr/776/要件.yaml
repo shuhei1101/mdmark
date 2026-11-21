@@ -47,8 +47,10 @@ docs:
     status: todo
   - page: docs/index.yaml
     new: false
-    change: MCP サーバーの定義とエージェントフローのフォルダの行を追加する（MCP サーバーの定義の行は追加済み）
-    status: todo
+    change: MCP サーバーの定義とエージェントフローのフォルダの行を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-21T09:51:52.689414+00:00'
 scope_out:
   - item: 精度評価の設計書
     reason: 精度が大事な客が見るものを持たず、Issue 本文で対象外（shuhei1101/ai-monitor#3743 のユーザーの指示）
