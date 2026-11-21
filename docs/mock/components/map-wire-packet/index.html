@@ -53,6 +53,7 @@
 
     <h2>印の色合いの案</h2>
     <p class="state-note">案 C（形状と色を線ごとに変える）の色の並びを、色合いの案ごとに描いている。塗り方は塗り A（今のとおり）。色は配色（明るい・暗い）ごとに CSS 変数で持ち、利用側のテーマで上書きできるようにする。どの色も、図の線以外の要素の基準（背景とのコントラスト比 3:1 以上）に届くよう、同じ色相で明るさを調整している</p>
+    <div class="table-scroll" tabindex="0" role="region" aria-label="色合いの案とコントラスト比">
     <table class="rule-table">
       <thead>
         <tr><th>案</th><th>色合い</th><th>明るい配色の背景（#ffffff）とのコントラスト比</th><th>暗い配色の背景（#131316）とのコントラスト比</th></tr>
@@ -65,6 +66,7 @@
         <tr><td>色 E: 寒色寄り</td><td>青・水色・青緑・藍・紫。明るい配色では水色と青緑を少し濃くした</td><td>3.12〜5.17</td><td>3.59〜7.45</td></tr>
       </tbody>
     </table>
+    </div>
     <h3>明るい配色</h3>
     <div class="variant-grid" id="scene-palettes"></div>
     <h3>暗い配色</h3>
