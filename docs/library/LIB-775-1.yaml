@@ -110,6 +110,8 @@ limitations:
     content: 同じ `Environment` に同じ名前を 2 回 `set` できない。評価ごとに新規の `Environment` を作る
   - item: 構文エラーの文言
     content: "`{% if %}` の閉じ忘れは `Cannot read properties of undefined (reading 'type')` になり、行番号を持たない"
+  - item: 末尾の改行
+    content: '`Template.render` は本文の末尾の改行を 1 つ落とす（`a\n` を描くと `a`）。project-index の `prompt-doc` は Python の jinja2 を `keep_trailing_newline=True` で描くため、本文が改行で終わるときは描いた結果に改行を足して合わせる'
 selection:
   candidates: minijinja-js 3.1.0・@11ty/nunjucks 3.3.0（mozilla/nunjucks の後継）・`{{ var }}` の置換だけの自作と比べた。
   decision: 依存が無く、esbuild で 1 ファイルにまとめても約 55KB で、MIT。minijinja-js は未定義の変数と式の評価をそのまま満たすが、wasm で配布物が 1MB 前後増える。@11ty/nunjucks は `{% if %}` の中の未定義の変数を検出できない。自作は `when` の式を評価できない。
@@ -117,7 +119,7 @@ selection:
 verification:
   state: 済
   date: '2026-11-21'
-  detail: Node.js 24.14.0 で 0.5.13 を入れ、`{{ location }}` の描画、`{% for %}`、`{{ nope }}` が空文字になること、`{% if nope | length > 0 %}` が例外になること、真偽値が `true` と出ること、`trim_blocks`・`lstrip_blocks` が有効なことを確認した。`Template.parsed.body[0]` が `BinaryExpression` で、`Interpreter.evaluate` の `__bool__().value` が `{{ logs | length > 0 }}` で空の配列のとき false・要素があるとき true、`{{ mode == 'x' and not flag }}` で true になった。同じ `Environment` に同じ名前を 2 回 `set` すると例外になった
+  detail: Node.js 24.14.0 で 0.5.13 を入れ、`{{ location }}` の描画、`{% for %}`、`{{ nope }}` が空文字になること、`{% if nope | length > 0 %}` が例外になること、真偽値が `true` と出ること、`trim_blocks`・`lstrip_blocks` が有効なことを確認した。`Template.parsed.body[0]` が `BinaryExpression` で、`Interpreter.evaluate` の `__bool__().value` が `{{ logs | length > 0 }}` で空の配列のとき false・要素があるとき true、`{{ mode == 'x' and not flag }}` で true になった。同じ `Environment` に同じ名前を 2 回 `set` すると例外になった。本文 `a\n` の `render` が `a` になり、末尾の改行を落とすことを単体テスト `test_render_prompt_joins_parts` で確認した
 tags:
   - name: topic:プロンプト
     main: true
