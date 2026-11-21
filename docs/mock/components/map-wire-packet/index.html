@@ -82,7 +82,7 @@
 
     /** 塗り方を変えた印（丸・四角・ひし形・三角を同じ塗り方で描く） */
     const styledSvg = (shape, fill, look, motion) => {
-      const outline = (scale, style) => shapeSvg(shape, scale, "none", "").replace('style="fill:none"', `style="${style}"`).replace(/<\/(circle|rect|polygon)>$/, "");
+      const outline = (scale, style) => shapeSvg(shape, scale, "none", "").replace(/style="[^"]*"/, `style="${style}"`).replace(/<\/(circle|rect|polygon)>$/, "");
       const close = shape === "square" ? "</rect>" : shape === "circle" ? "</circle>" : "</polygon>";
       const layers =
         look === "ring" ? [outline(1.25, `fill:none;stroke:${fill};stroke-width:1.5;opacity:0.45`) + close, outline(0.8, `fill:${fill}`) + close] :
