@@ -2,9 +2,9 @@ scope_out:
   - item: フックの注入文の文言の変更
     reason: '#777 は本文の持ち方だけを変える要望で、注入する文は変えない'
     plan: none
-  - item: map の図以外（グラフ・mermaid の図・軸と格子の配置の図）の線の文字とデータの印
-    reason: 要望は map の構成図と、同じ線の部品を使う図の線の操作と表示に限る。軸と格子の配置の図の線のラベル（map-axis-wire-label）を合わせるかは、#780 No 1 の文字の設定の見直しで判断が分かれるため、モック作成のレビューで確定する
-    plan: to_file
+  - item: map の図以外（グラフ・mermaid の図）の線の文字とデータの印
+    reason: 要望は map の図の線の操作と表示に限る。グラフと mermaid の図は map の線の部品を使用しない
+    plan: none
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
