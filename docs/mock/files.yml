@@ -1423,7 +1423,7 @@ files:
     tags: [topic:モック, topic:図]
   - path: components/map-wire-packet/index.html
     visibility: internal
-    description: '部品『mapの構成図』のモック: データの印の大きさと、線ごとの形状・色の変え方（今の見た目・案 A の形状・案 B の色・案 C の形状と色）、色を指定したノードがある図の出発点のノードの色と灰色、線の文字とノードの下を通す重なりを、SVG で並べる。データの印の見た目を決めるときに参照する。'
+    description: '部品『mapの構成図』のモック: データの印の大きさと、線ごとの形状・色の変え方（今の見た目・案 A の形状・案 B の色・案 C の形状と色）、塗り方の案 5 つ、色合いの案 5 つ、色を指定したノードがある図の出発点のノードの色と灰色、線の文字とノードの下を通す重なりを、SVG で並べる。データの印の見た目を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: refs/782/index.md
     visibility: internal
