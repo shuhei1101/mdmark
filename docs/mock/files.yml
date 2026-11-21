@@ -1415,11 +1415,15 @@ files:
     tags: [topic:モック, topic:図]
   - path: components/map-wire-drag-route/index.html
     visibility: internal
-    description: '部品『mapの構成図』のモック: 線を動かした後の経路の今の決まり（固定するものと計算し直すもの）の表と、入れ子のグループをまたぐ線・ほかのノードを回り込む線・状態遷移図・ER 図を配布物で描いた、マウスで線とノードを動かして確認する図。線を動かした後の経路の決まりを決めるときに参照する。'
+    description: '部品『mapの構成図』のモック: 線を動かした後の経路の今の決まり（固定するものと計算し直すもの）の表と、入れ子のグループをまたぐ線・ほかのノードを回り込む線・状態遷移図・ER 図を配布物で描いた、マウスで線とノードを動かして確認する図と、L 字の線の端が接続先のノードから浮く不具合の今の見え方と修正した後の見え方。線を動かした後の経路の決まりを決めるときに参照する。'
     tags: [topic:モック, topic:図, action:移動]
   - path: components/map-wire-label/index.html
     visibility: internal
     description: '部品『mapの構成図』のモック: 線の上の文字の今の設定（記載方法・位置・大きさ・折り返し・色）の一覧と、線より長い文字の今の見た目・案 A（線の横に置く）・案 B（線の長さで折り返す）・案 C（ノードの間を文字の幅まで広げる）を、横と縦の構成図とブロック図で並べる。線の上の文字の見せ方を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: components/map-wire-packet/index.html
+    visibility: internal
+    description: '部品『mapの構成図』のモック: データの印の大きさと、線ごとの形状・色の変え方（今の見た目・案 A の形状・案 B の色・案 C の形状と色）、色を指定したノードがある図の出発点のノードの色と灰色、線の文字とノードの下を通す重なりを、SVG で並べる。データの印の見た目を決めるときに参照する。'
     tags: [topic:モック, topic:図]
   - path: refs/782/index.md
     visibility: internal

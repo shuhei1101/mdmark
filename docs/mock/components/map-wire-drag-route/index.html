@@ -55,6 +55,58 @@
       </tbody>
     </table>
     <p class="state-note">期待と違う形状になる図と操作（どの線のどの区間を、どの向きへ動かしたか）と、期待した形状を教えてください。指摘を反映したモックを作り直して確認を重ねます</p>
+
+    <h2>2 回目: 線の端がノードから浮く不具合の直し方（L 字の線）</h2>
+    <p class="state-note">入力の右の辺から出て、直角に曲がって点検の下の辺に入る線の、縦の区間を右へ動かしていく。点検の右端を越えたら、点検の右の辺へ回り込んでつなぐ。線の端はどの操作でも接続先のノードの辺に付き、ノードから浮かない</p>
+    <h3>今の見た目</h3>
+    <div class="variant-grid" id="route-float-now">
+      <figure class="route-frame">
+        <svg viewBox="0 0 460 240" width="100%" style="max-width:460px;background:var(--mdmark-color-bg-opaque);border:1px solid var(--mdmark-color-border);border-radius:8px" role="img" aria-label="1. 動かす前（点検の下の辺に入る）">
+          <defs><marker id="route-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--mdmark-color-diagram-line, #8a8a94)"></path></marker></defs>
+          <rect x="20" y="180" width="100" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="32" y="206.0" style="font-size:13px;fill:var(--mdmark-color-text)">入力</text><rect x="260" y="30" width="110" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="272" y="56.0" style="font-size:13px;fill:var(--mdmark-color-text)">点検</text><path d="M120,202 L315,202 L315,74" style="fill:none;stroke:var(--mdmark-color-diagram-line, #8a8a94);stroke-width:1.5" marker-end="url(#route-head)"></path>
+        </svg>
+        <figcaption class="state-note">1. 動かす前（点検の下の辺に入る）</figcaption>
+      </figure>
+      <figure class="route-frame">
+        <svg viewBox="0 0 460 240" width="100%" style="max-width:460px;background:var(--mdmark-color-bg-opaque);border:1px solid var(--mdmark-color-border);border-radius:8px" role="img" aria-label="2. 点検の幅の中で右へ動かす（下の辺に入ったまま）">
+          <defs><marker id="route-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--mdmark-color-diagram-line, #8a8a94)"></path></marker></defs>
+          <rect x="20" y="180" width="100" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="32" y="206.0" style="font-size:13px;fill:var(--mdmark-color-text)">入力</text><rect x="260" y="30" width="110" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="272" y="56.0" style="font-size:13px;fill:var(--mdmark-color-text)">点検</text><path d="M120,202 L350,202 L350,74" style="fill:none;stroke:var(--mdmark-color-diagram-line, #8a8a94);stroke-width:1.5" marker-end="url(#route-head)"></path>
+        </svg>
+        <figcaption class="state-note">2. 点検の幅の中で右へ動かす（下の辺に入ったまま）</figcaption>
+      </figure>
+      <figure class="route-frame">
+        <svg viewBox="0 0 460 240" width="100%" style="max-width:460px;background:var(--mdmark-color-bg-opaque);border:1px solid var(--mdmark-color-border);border-radius:8px" role="img" aria-label="3. 点検の右端を越える（線の端が点検に付かず、空中を指す）">
+          <defs><marker id="route-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--mdmark-color-diagram-line, #8a8a94)"></path></marker></defs>
+          <rect x="20" y="180" width="100" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="32" y="206.0" style="font-size:13px;fill:var(--mdmark-color-text)">入力</text><rect x="260" y="30" width="110" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="272" y="56.0" style="font-size:13px;fill:var(--mdmark-color-text)">点検</text><path d="M120,202 L420,202 L420,74" style="fill:none;stroke:var(--mdmark-color-diagram-line, #8a8a94);stroke-width:1.5" marker-end="url(#route-head)"></path>
+        </svg>
+        <figcaption class="state-note">3. 点検の右端を越える（線の端が点検に付かず、空中を指す）</figcaption>
+      </figure>
+    </div>
+    <h3>修正した後</h3>
+    <div class="variant-grid" id="route-float-fixed">
+      <figure class="route-frame">
+        <svg viewBox="0 0 460 240" width="100%" style="max-width:460px;background:var(--mdmark-color-bg-opaque);border:1px solid var(--mdmark-color-border);border-radius:8px" role="img" aria-label="1. 動かす前（点検の下の辺に入る）">
+          <defs><marker id="route-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--mdmark-color-diagram-line, #8a8a94)"></path></marker></defs>
+          <rect x="20" y="180" width="100" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="32" y="206.0" style="font-size:13px;fill:var(--mdmark-color-text)">入力</text><rect x="260" y="30" width="110" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="272" y="56.0" style="font-size:13px;fill:var(--mdmark-color-text)">点検</text><path d="M120,202 L315,202 L315,74" style="fill:none;stroke:var(--mdmark-color-diagram-line, #8a8a94);stroke-width:1.5" marker-end="url(#route-head)"></path>
+        </svg>
+        <figcaption class="state-note">1. 動かす前（点検の下の辺に入る）</figcaption>
+      </figure>
+      <figure class="route-frame">
+        <svg viewBox="0 0 460 240" width="100%" style="max-width:460px;background:var(--mdmark-color-bg-opaque);border:1px solid var(--mdmark-color-border);border-radius:8px" role="img" aria-label="2. 点検の幅の中で右へ動かす（下の辺に入ったまま）">
+          <defs><marker id="route-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--mdmark-color-diagram-line, #8a8a94)"></path></marker></defs>
+          <rect x="20" y="180" width="100" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="32" y="206.0" style="font-size:13px;fill:var(--mdmark-color-text)">入力</text><rect x="260" y="30" width="110" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="272" y="56.0" style="font-size:13px;fill:var(--mdmark-color-text)">点検</text><path d="M120,202 L350,202 L350,74" style="fill:none;stroke:var(--mdmark-color-diagram-line, #8a8a94);stroke-width:1.5" marker-end="url(#route-head)"></path>
+        </svg>
+        <figcaption class="state-note">2. 点検の幅の中で右へ動かす（下の辺に入ったまま）</figcaption>
+      </figure>
+      <figure class="route-frame">
+        <svg viewBox="0 0 460 240" width="100%" style="max-width:460px;background:var(--mdmark-color-bg-opaque);border:1px solid var(--mdmark-color-border);border-radius:8px" role="img" aria-label="3. 点検の右端を越える（点検の右の辺へ回り込んで入る）">
+          <defs><marker id="route-head" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" style="fill:var(--mdmark-color-diagram-line, #8a8a94)"></path></marker></defs>
+          <rect x="20" y="180" width="100" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="32" y="206.0" style="font-size:13px;fill:var(--mdmark-color-text)">入力</text><rect x="260" y="30" width="110" height="44" rx="8" style="fill:var(--mdmark-color-bg-opaque);stroke:var(--mdmark-color-border);stroke-width:1.5"></rect><text x="272" y="56.0" style="font-size:13px;fill:var(--mdmark-color-text)">点検</text><path d="M120,202 L420,202 L420,52 L370,52" style="fill:none;stroke:var(--mdmark-color-diagram-line, #8a8a94);stroke-width:1.5" marker-end="url(#route-head)"></path>
+        </svg>
+        <figcaption class="state-note">3. 点検の右端を越える（点検の右の辺へ回り込んで入る）</figcaption>
+      </figure>
+    </div>
+    <p class="state-note">線を動かした結果、つながっていないノードの上を通るときは避けない（今のまま。線はノードの下を通る）。自動配置の経路がほかのノードを避ける計算は今のまま</p>
   </main>
   <script type="module">
     import { drawMap, fence } from "../../refs/782/assets/mock.js";

@@ -5,6 +5,9 @@ scope_out:
   - item: map の図以外（グラフ・mermaid の図）の線の文字とデータの印
     reason: 要望は map の図の線の操作と表示に限る。グラフと mermaid の図は map の線の部品を使用しない
     plan: none
+  - item: ER 図などで、ほぼ縦・横に並ぶ線の小さなずれを自動で整える機能（格子に合わせる・曲がりの数を揃える）
+    reason: 利用者が、線を自由に動かせることを優先し、難しければ今のままでよいとした（格子に合わせる方式は取らない）
+    plan: none
 docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
