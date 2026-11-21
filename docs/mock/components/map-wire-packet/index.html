@@ -27,7 +27,7 @@
         <tr><th>案</th><th>大きさ</th><th>形状</th><th>色</th></tr>
       </thead>
       <tbody>
-        <tr><td>今の見た目</td><td>丸の半径 7px</td><td>丸（補足の <code>packet</code> で四角・ひし形を指定できる）</td><td>線の色</td></tr>
+        <tr><td>今の見た目</td><td>丸の半径 7px</td><td>丸（補足の <code>packet</code> で四角・ひし形を指定できる）</td><td>線の色（補足の <code>packet</code> の色で <code>source</code>（出発点のノードの色）・<code>target</code>（行き先のノードの色）・色の名前を指定できる）</td></tr>
         <tr><td>案 A: 形状を線ごとに変える</td><td>今の 8 割</td><td>丸・四角・ひし形・三角を線ごとに順に使う</td><td>線の色</td></tr>
         <tr><td>案 B: 色を線ごとに変える</td><td>今の 8 割</td><td>丸</td><td>青・緑・橙・紫・赤を線ごとに順に使う</td></tr>
         <tr><td>案 C: 形状と色を線ごとに変える</td><td>今の 8 割</td><td>案 A と同じ</td><td>案 B と同じ</td></tr>
@@ -36,7 +36,7 @@
     <div class="variant-grid" id="scene-variants"></div>
 
     <h2>ノードに色を指定した図</h2>
-    <p class="state-note">色を指定したノードが 1 つでもある図では、色を指定したノードから出る印はそのノードの色、指定の無いノードから出る印は灰色にする。色を指定したノードが 1 つも無い図では、上の案のとおり線ごとに色と形状を変える</p>
+    <p class="state-note">色を指定したノードが 1 つでもある図では、色を指定したノードから出る印はそのノードの色、指定の無いノードから出る印は灰色にする。色を指定したノードが 1 つも無い図では、上の案のとおり線ごとに色と形状を変える。下の 2 つの図は、形状を線ごとに変える案（要件の未確定の論点の推奨案 A）で描いている</p>
     <div class="variant-grid" id="scene-source"></div>
 
     <h2>線のラベルとノードとの重なり</h2>
@@ -86,9 +86,12 @@
     const fan = (packetOf, colors = {}) => {
       const parts = [node(20, 110, 100, 44, "mount", colors.src)];
       const targets = [["表", 30], ["図", 110], ["注意書き", 190]];
+      // 3 本とも長さ 290 にする（まっすぐ横に進む「図」への線は、下へ 40 回り込んで長さを合わせる）
       const wires = targets.map(([name, y], index) => {
-        const d = `M120,132 L180,132 L180,${y + 22} L330,${y + 22}`;
-        const length = 60 + Math.abs(y + 22 - 132) + 150;
+        const d = y + 22 === 132
+          ? "M120,132 L180,132 L180,172 L260,172 L260,132 L330,132"
+          : `M120,132 L180,132 L180,${y + 22} L330,${y + 22}`;
+        const length = 290;
         parts.push(node(330, y, 110, 44, name, colors[name]));
         return wire(d, length, packetOf(index, name));
       });
