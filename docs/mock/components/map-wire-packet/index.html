@@ -52,20 +52,23 @@
     <div class="variant-grid" id="scene-looks"></div>
 
     <h2>印の色合いの案</h2>
-    <p class="state-note">案 C（形状と色を線ごとに変える）の色の並びを、色合いの案ごとに描いている。塗り方は塗り A（今のとおり）。色は配色ごと（明るい・暗い・テーマ）に CSS 変数で持ち、利用側のテーマで上書きできるようにする</p>
+    <p class="state-note">案 C（形状と色を線ごとに変える）の色の並びを、色合いの案ごとに描いている。塗り方は塗り A（今のとおり）。色は配色（明るい・暗い）ごとに CSS 変数で持ち、利用側のテーマで上書きできるようにする。どの色も、図の線以外の要素の基準（背景とのコントラスト比 3:1 以上）に届くよう、同じ色相で明るさを調整している</p>
     <table class="rule-table">
       <thead>
-        <tr><th>案</th><th>色合い</th></tr>
+        <tr><th>案</th><th>色合い</th><th>明るい配色の背景（#ffffff）とのコントラスト比</th><th>暗い配色の背景（#131316）とのコントラスト比</th></tr>
       </thead>
       <tbody>
-        <tr><td>色 A: 今のアクセントの文字の色</td><td>mdmark のアクセントの文字の色（青・緑・橙・紫・赤）。濃く、細い線の上でも見える</td></tr>
-        <tr><td>色 B: 鮮やか</td><td>彩度の高い 5 色。小さくても目に留まる</td></tr>
-        <tr><td>色 C: パステル</td><td>明るく淡い 5 色。柔らかく見えるが、白い背景では薄い</td></tr>
-        <tr><td>色 D: くすみ</td><td>彩度を落とした 5 色。落ち着いて見え、文書の色と馴染む</td></tr>
-        <tr><td>色 E: 寒色寄り</td><td>青・水色・青緑・藍・紫の 5 色。色の違いは小さいが、図全体がまとまって見える</td></tr>
+        <tr><td>色 A: 今のアクセントの文字の色</td><td>mdmark のアクセントの文字の色（青・緑・橙・紫・赤）</td><td>5.88〜7.13</td><td>6.70〜10.64</td></tr>
+        <tr><td>色 B: 鮮やか</td><td>彩度の高い 5 色。明るい配色では緑と橙を少し濃くした</td><td>3.13〜3.96</td><td>4.69〜8.14</td></tr>
+        <tr><td>色 C: パステル</td><td>明るく淡い 5 色。明るい配色では 3:1 に届かせるため濃くし、淡さが残らない</td><td>3.12〜3.16</td><td>9.77〜13.21</td></tr>
+        <tr><td>色 D: くすみ</td><td>彩度を落とした 5 色</td><td>3.14〜4.17</td><td>4.44〜5.90</td></tr>
+        <tr><td>色 E: 寒色寄り</td><td>青・水色・青緑・藍・紫。明るい配色では水色と青緑を少し濃くした</td><td>3.12〜5.17</td><td>3.59〜7.45</td></tr>
       </tbody>
     </table>
+    <h3>明るい配色</h3>
     <div class="variant-grid" id="scene-palettes"></div>
+    <h3>暗い配色</h3>
+    <div class="variant-grid" id="scene-palettes-dark" style="--mdmark-color-bg-opaque:#131316;--mdmark-color-border:#3f3f46;--mdmark-color-text:#e4e4e7;--mdmark-color-muted:#a1a1aa;padding:12px;border-radius:8px;background:#131316;color:#e4e4e7"></div>
 
     <h2>ノードに色を指定した図</h2>
     <p class="state-note">色を指定したノードが 1 つでもある図では、色を指定したノードから出る印はそのノードの色、指定の無いノードから出る印は灰色にする。色を指定したノードが 1 つも無い図では、上の案のとおり線ごとに色と形状を変える。下の 2 つの図は、形状を線ごとに変える案（要件の未確定の論点の推奨案 A）で描いている</p>
@@ -172,14 +175,18 @@
       ["塗り E: 照り", "塗り A の左上に小さな白い照りを入れる", "shine"],
     ]) cell(grid("scene-looks"), title, note, fan((i) => ({ shape: SHAPES[i % SHAPES.length], scale: 0.8, fill: COLORS[i % COLORS.length], offset: i / 3, speed: SPEEDS[i], look })));
 
+    // 色合いの案（明るい配色・暗い配色。どの色も背景とのコントラスト比 3:1 以上）
     const PALETTES = [
-      ["色 A: 今のアクセントの文字の色", "濃く、細い線の上でも見える", COLORS],
-      ["色 B: 鮮やか", "彩度の高い 5 色", ["#3b82f6", "#22c55e", "#f97316", "#a855f7", "#ef4444"]],
-      ["色 C: パステル", "明るく淡い 5 色", ["#93c5fd", "#86efac", "#fdba74", "#d8b4fe", "#fca5a5"]],
-      ["色 D: くすみ", "彩度を落とした 5 色", ["#5b7fa6", "#6b9080", "#c08457", "#8e7cc3", "#b56576"]],
-      ["色 E: 寒色寄り", "青・水色・青緑・藍・紫", ["#0ea5e9", "#14b8a6", "#6366f1", "#06b6d4", "#8b5cf6"]],
+      ["色 A: 今のアクセントの文字の色", "濃く、細い線の上でも見える", ["#1d4ed8", "#166534", "#b53a0a", "#6d28d9", "#b91c1c"], ["#7aa2ff", "#4ade80", "#fb923c", "#c4a7ff", "#f87171"]],
+      ["色 B: 鮮やか", "彩度の高い 5 色", ["#3b82f6", "#1da74f", "#f26706", "#a855f7", "#ef4444"], ["#3b82f6", "#22c55e", "#f97316", "#a855f7", "#ef4444"]],
+      ["色 C: パステル", "明るく淡い 5 色（明るい配色では濃くした）", ["#3693fb", "#16a74b", "#df7403", "#b570fd", "#fa5b5b"], ["#93c5fd", "#86efac", "#fdba74", "#d8b4fe", "#fca5a5"]],
+      ["色 D: くすみ", "彩度を落とした 5 色", ["#5b7fa6", "#6b9080", "#c08457", "#8e7cc3", "#b56576"], ["#5b7fa6", "#6b9080", "#c08457", "#8e7cc3", "#b56576"]],
+      ["色 E: 寒色寄り", "青・水色・青緑・藍・紫", ["#2563eb", "#0d9bdb", "#12a393", "#6366f1", "#8b5cf6"], ["#2563eb", "#0ea5e9", "#14b8a6", "#6366f1", "#8b5cf6"]],
     ];
-    for (const [title, note, colors] of PALETTES) cell(grid("scene-palettes"), title, note, fan((i) => ({ shape: SHAPES[i % SHAPES.length], scale: 0.8, fill: colors[i % colors.length], offset: i / 3, speed: SPEEDS[i], look: "edge" })));
+    for (const [title, note, light, dark] of PALETTES) {
+      cell(grid("scene-palettes"), title, note, fan((i) => ({ shape: SHAPES[i % SHAPES.length], scale: 0.8, fill: light[i % light.length], offset: i / 3, speed: SPEEDS[i], look: "edge" })));
+      cell(grid("scene-palettes-dark"), title, note, fan((i) => ({ shape: SHAPES[i % SHAPES.length], scale: 0.8, fill: dark[i % dark.length], offset: i / 3, speed: SPEEDS[i], look: "edge" })));
+    }
 
     const sourceColors = { src: "var(--mdmark-color-accent-blue-text)" };
     cell(grid("scene-source"), "出発点のノードに色がある", "mount に青を指定した図。mount から出る印は 3 本とも青", fan((i) => ({ shape: SHAPES[i % SHAPES.length], scale: 0.8, fill: sourceColors.src, offset: i / 3 }), sourceColors));
