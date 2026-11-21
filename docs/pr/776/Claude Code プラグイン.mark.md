@@ -51,26 +51,89 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| `tests/unit/src/plugin/prompt.test.ts` | 全実行 | 新規 | ✅ | 9 テスト pass<br>`テスト結果/20261121193908_6c66def_単体テスト.log` |
-| `tests/unit/scripts/skill-md.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass<br>`テスト結果/20261121193908_6c66def_単体テスト.log` |
-| [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/unit/src/plugin/mcp.test.ts) | 全実行 | 変更 | ✅ | `test_create_mcp_server` を設計書に合わせ、`test_load_server_prompts`・`test_load_server_prompts_when_prompt_missing` を追加<br>`テスト結果/20261121193908_6c66def_単体テスト.log` |
-| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | ツールの定義から `description` を外し `annotations` を必須にしたことに合わせ、補助関数を修正<br>`テスト結果/20261121193908_6c66def_単体テスト.log` |
-| 単体テスト（フロント）の全件 | 全実行 | 実行のみ | ✅ | ランナーで Test Files 333・Tests 2798 が pass<br>Red: `テスト結果/20261121192830_653a3c5_単体テスト.log`<br>lint: `テスト結果/20261121193631_6c66def_lint.log` |
+| `tests/unit/src/plugin/prompt.test.ts` | 全実行 | 新規 | ✅ | 9 テスト pass<br>`テスト結果/20261121195115_b4592ba_単体テスト.log` |
+| `tests/unit/scripts/skill-md.test.ts` | 全実行 | 新規 | ✅ | 5 テスト pass（レビューの指摘でコマンドの行の期待値を修正）<br>`テスト結果/20261121195115_b4592ba_単体テスト.log` |
+| [tests/unit/src/plugin/mcp.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/unit/src/plugin/mcp.test.ts) | 全実行 | 変更 | ✅ | `test_create_mcp_server` を設計書に合わせ、`test_load_server_prompts`・`test_load_server_prompts_when_prompt_missing` を追加<br>`テスト結果/20261121195115_b4592ba_単体テスト.log` |
+| [tests/unit/src/plugin/tools.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/unit/src/plugin/tools.test.ts) | 全実行 | 変更 | ✅ | ツールの定義から `description` を外し `annotations` を必須にしたことに合わせ、補助関数を修正<br>`テスト結果/20261121195115_b4592ba_単体テスト.log` |
+| 単体テスト（フロント）の全件 | 全実行 | 実行のみ | ✅ | ランナーで Test Files 333・Tests 2798 が pass<br>Red: `テスト結果/20261121192830_653a3c5_単体テスト.log`<br>lint: `テスト結果/20261121194900_b4592ba_lint.log` |
 
 実装の前に直したテスト: 結合テスト [tests/integration/ClaudeCodeプラグイン/serve.test.ts](https://github.com/shuhei1101/mdmark/blob/4b89bc42/tests/integration/ClaudeCode%E3%83%97%E3%83%A9%E3%82%B0%E3%82%A4%E3%83%B3/serve.test.ts) の `test_normal` が削除した定数 `INSTRUCTIONS` を参照して型検査が通らなかったため、期待値を設計書（instructions はプロンプトファイルから描く）に合わせて `loadServerPrompts` で描いた文にした（6c66defc。実装と別の commit）。結合テストの実行は結合テスト作成の工程で行う。
 
 ### 結合テストの実行範囲
 
+<!-- table: {"kind": "data"} -->
+
 | 変更したファイル | 結果 | 実行する結合テスト | 結合テストが無いエントリーポイント |
 | --- | --- | --- | --- |
-| `content/prompts/mcp/mdmark/instructions.yaml`・`content/prompts/mcp/mdmark/tools/*.yaml`（8 ファイル） | R7（層に `excluded_paths`・`folder_map` が無い） | `tests/integration/ClaudeCodeプラグイン/` の serve・check・export-html・export-markdown・build-site・list-templates・add-template・apply-template の 8 ファイル（`mdmark serve` が起動時に読み込み、instructions とツールの説明に描く） | - |
-| `src/plugin/prompt.ts`・`src/plugin/mcp.ts`・`src/plugin/http.ts`・`src/plugin/tools.ts` | R7（同上） | `tests/integration/ClaudeCodeプラグイン/` の serve・check・export-html・export-markdown・build-site・list-templates・add-template・apply-template の 8 ファイル | - |
-| `package.json`・`package-lock.json` | R7（同上） | `tests/integration/ClaudeCodeプラグイン/` の serve・check・export-html・export-markdown・build-site・list-templates・add-template・apply-template の 8 ファイル（追加した `@huggingface/jinja` は `dist/cli.js` にまとめて `mdmark serve` が使用する） | - |
+| `content/prompts/mcp/mdmark/instructions.yaml` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `content/prompts/mcp/mdmark/tools/add-template.yaml` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `content/prompts/mcp/mdmark/tools/apply-template.yaml` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `content/prompts/mcp/mdmark/tools/build-site.yaml` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `content/prompts/mcp/mdmark/tools/check.yaml` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `content/prompts/mcp/mdmark/tools/export-html.yaml` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `content/prompts/mcp/mdmark/tools/export-markdown.yaml` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `content/prompts/mcp/mdmark/tools/list-templates.yaml` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `docs/agent-flow/global-setup.yaml` | R7 | - | - |
+| `docs/agent-flow/index.yaml` | R7 | - | - |
+| `docs/agent-flow/setup.yaml` | R7 | - | - |
+| `docs/dev-command/CMD-472-1.yaml` | R7 | - | - |
+| `docs/index.yaml` | R7 | - | - |
+| `docs/interface/IF-472-1.ts.yaml` | R7 | - | - |
+| `docs/interface/IF-472-10.ts.yaml` | R7 | - | - |
+| `docs/interface/IF-472-13.ts.yaml` | R7 | - | - |
+| `docs/interface/IF-472-2.ts.yaml` | R7 | - | - |
+| `docs/interface/IF-472-3.ts.yaml` | R7 | - | - |
+| `docs/interface/IF-472-50.ts.yaml` | R7 | - | - |
+| `docs/interface/IF-472-9.ts.yaml` | R7 | - | - |
+| `docs/layout/LAY-472-1.yaml` | R7 | - | - |
+| `docs/library/LIB-775-1.yaml` | R7 | - | - |
+| `docs/library/index.yaml` | R7 | - | - |
+| `docs/mcp-server/MCP-775-1.yaml` | R7 | - | - |
+| `docs/mcp-server/index.yaml` | R7 | - | - |
+| `docs/module/MOD-472-14.ts.yaml` | R7 | - | - |
+| `docs/module/MOD-472-2.yaml` | R7 | - | - |
+| `docs/module/MOD-472-48.ts.yaml` | R7 | - | - |
+| `docs/module/MOD-472-50.ts.yaml` | R7 | - | - |
+| `docs/module/MOD-472-51.ts.yaml` | R7 | - | - |
+| `docs/module/MOD-775-1.ts.yaml` | R7 | - | - |
+| `docs/module/MOD-775-2.ts.yaml` | R7 | - | - |
+| `docs/module/index.yaml` | R7 | - | - |
+| `docs/pr/776/Claude Code プラグイン.mark.md` | R7 | - | - |
+| `docs/pr/776/README.mark.md` | R7 | - | - |
+| `docs/pr/776/タスク一覧.yaml` | R7 | - | - |
+| `docs/pr/776/テスト結果/20261121192830_653a3c5_単体テスト.log` | R7 | - | - |
+| `docs/pr/776/テスト結果/20261121193631_6c66def_lint.log` | R7 | - | - |
+| `docs/pr/776/テスト結果/20261121193908_6c66def_単体テスト.log` | R7 | - | - |
+| `docs/pr/776/テスト結果/20261121194900_b4592ba_lint.log` | R7 | - | - |
+| `docs/pr/776/テスト結果/20261121195115_b4592ba_単体テスト.log` | R7 | - | - |
+| `docs/pr/776/反映作業/index.yaml` | R7 | - | - |
+| `docs/pr/776/反映作業/配信元の設定への種類の行の追加/dry-run.log` | R7 | - | - |
+| `docs/pr/776/反映作業/配信元の設定への種類の行の追加/実行.py` | R7 | - | - |
+| `docs/pr/776/反映作業/配信元の設定への種類の行の追加/疎通確認.py` | R7 | - | - |
+| `docs/pr/776/反映作業/配信元の設定への種類の行の追加/確認.py` | R7 | - | - |
+| `docs/pr/776/要件.mark.md` | R7 | - | - |
+| `docs/pr/776/要件.yaml` | R7 | - | - |
+| `package-lock.json` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `package.json` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `plugin/skills/global-setup/SKILL.md` | R7 | - | スキルの SKILL.md（単体テスト `test_skill_md_matches_repository` で確認する） |
+| `plugin/skills/setup/SKILL.md` | R7 | - | スキルの SKILL.md（単体テスト `test_skill_md_matches_repository` で確認する） |
+| `project-index.yaml` | R7 | - | - |
+| `scripts/build-plugin.ts` | R7 | - | スキルの SKILL.md（単体テスト `test_skill_md_matches_repository` で確認する） |
+| `scripts/files.yaml` | R7 | - | - |
+| `scripts/skill-md.ts` | R7 | - | スキルの SKILL.md（単体テスト `test_skill_md_matches_repository` で確認する） |
+| `src/files.yaml` | R7 | - | - |
+| `src/plugin/http.ts` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `src/plugin/mcp.ts` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `src/plugin/prompt.ts` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `src/plugin/tools.ts` | R7 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/setup-start-server.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/check.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-html.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/export-markdown.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/build-site.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/list-templates.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/add-template.test.ts`<br>`tests/integration/ClaudeCodeプラグイン/apply-template.test.ts` | - |
+| `tests/files.yaml` | R7 | - | - |
 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | R2 | `tests/integration/ClaudeCodeプラグイン/serve.test.ts` | - |
-| `scripts/build-plugin.ts`・`scripts/skill-md.ts`・`plugin/skills/global-setup/SKILL.md`・`plugin/skills/setup/SKILL.md` | R7（同上） | -（SKILL.md を参照する結合テストは無い。SKILL.md とエージェントフローの一致は単体テスト `test_skill_md_matches_repository` で確認する） | スキルの SKILL.md: 単体テスト |
-| `project-index.yaml`・`src/files.yaml`・`scripts/files.yaml`・`tests/files.yaml` | R7（同上） | -（配信元の設定と管理用の YAML で、実行に影響しない） | - |
-| `docs/` の設計書・目次・開発コマンドと `docs/pr/776/` の PR ドキュメント | R7（同上） | -（文書で、実行に影響しない） | - |
-| `tests/unit/` の 4 ファイル | R7（同上） | -（単体テストで、結合テストに影響しない） | - |
+| `tests/unit/scripts/skill-md.test.ts` | R7 | - | - |
+| `tests/unit/src/plugin/mcp.test.ts` | R7 | - | - |
+| `tests/unit/src/plugin/prompt.test.ts` | R7 | - | - |
+| `tests/unit/src/plugin/tools.test.ts` | R7 | - | - |
 
-実行する結合テストは `tests/integration/ClaudeCodeプラグイン/` の serve・check・export-html・export-markdown・build-site・list-templates・add-template・apply-template の 8 ファイル（重なりを除いた合計）。
-結合テストの補助 `tests/integration/plugin.ts` はビルドした `dist/`・`plugin/`・`package.json` だけをコピーして `mdmark serve` を起動するため、`content/prompts/` もコピーするよう結合テスト作成の工程で直してから実行する。
+<!-- /table -->
+
+層に `excluded_paths`・`folder_map` が無く全てのファイルが R7 になるため、`mdmark serve` の起動時にプロンプトファイルを読み込んで instructions とツールの説明を描くファイルに、`mdmark serve` を起動する結合テストを当てた。文書・管理用の YAML・単体テストは実行に影響しない。
+結合テストの補助 `tests/integration/plugin.ts` の `copyBuiltPackage` と `tests/integration/built-root.ts` の `createBuiltRoot` は `content/prompts/` をコピーしないため、結合テスト作成の工程で直してから実行する。
