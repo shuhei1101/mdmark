@@ -62,7 +62,8 @@ test("test_render_skill_md", async () => {
   const items = steps.split("\n").filter((line) => /^\d+\. /.test(line));
   expect(items).toHaveLength(2);
   expect(items[1]).toMatch(/^2\. 設定があるとき:/);
-  expect(items[1]).toContain("`node a.js write`");
+  expect(steps).toContain("\n   コマンド: `node a.js write`");
+  expect(steps).not.toContain("を実行する。");
   expect(markdown.endsWith("\n")).toBe(true);
   expect(markdown.endsWith("\n\n")).toBe(false);
 });
