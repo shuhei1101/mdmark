@@ -286,7 +286,11 @@ export const renderPrompt = (
       defined,
       promptId: prompt.id,
     });
-    rendered.push(template.render(values));
+    const output = template.render(values);
+    // project-index の prompt-doc（keep_trailing_newline）と同じく、本文の末尾の改行を残す
+    rendered.push(
+      text.endsWith("\n") && !output.endsWith("\n") ? `${output}\n` : output,
+    );
   }
   // project-index の prompt-doc と同じく、区切り無しでつないで末尾の改行を除く
   return rendered.join("").replace(/\n+$/, "");
