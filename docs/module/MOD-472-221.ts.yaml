@@ -21,7 +21,7 @@ functions:
       対象は `root` の中の `thead` を持ち本文の行（`tBodies[0].rows`）が 1 つ以上ある全ての `table` で、表の部品（`.mdmark-table`）で包むかを問わない。
       表ごとの留める要素は、表を包む `.mdmark-table-scroll` があればそれ、無ければ `table`。属性と `view-timeline` は留める要素に付け、CSS 変数は `table` に入れる。
       スクロールする場所は、留める要素の親から祖先へたどって最初に `overflow-y` の計算値が `auto`・`scroll`・`hidden` で `scrollHeight > clientHeight` の要素で、無ければ画面（インターフェース定義『文書を描く』の制約『見出し行と集計の行を留める』）。横にだけスクロールする `.mdmark-wide-range`・`.mdmark-html` などは縦にはみ出さないため選ばない。
-      留め方は表ごとに決める。iPad・iPhone の Safari（`CSS.supports("-webkit-touch-callout", "none")` が真）では全ての表を `script` にする。それ以外で `CSS.supports(...)` が真で、留める要素の親から最初に `overflow-y` の計算値が `visible`・`clip` でない祖先（`view-timeline` が従う要素。無ければ画面）がスクロールする場所と同じ表だけ `timeline`、それ以外は `script` にする。
+      留め方は表ごとに決める。`CSS.supports(...)` が真で、留める要素の親から最初に `overflow-y` の計算値が `visible`・`clip` でない祖先（`view-timeline` が従う要素。無ければ画面）がスクロールする場所と同じ表だけ `timeline`、それ以外は `script` にする。
       スクロールする場所と留め方は、付けたときと `ResizeObserver` の通知のたびに再選択し、留め方が変わった表は前の留め方の CSS 変数を取り除く。
 
       | 表ごとの留め方 | 留める要素の `data-mdmark-sticky` | 表ごとに入れる値 |
@@ -88,12 +88,6 @@ functions:
         condition: '`root` に `--mdmark-sticky-top: calc(.25rem * 24)` を適用し、本文 60 行の表を付け、見出し行の上端が画面の上端より 300px 上になるまでスクロールして 1 フレーム待つ'
         mock: '`CSS.supports` を `false` を返却する関数に差し替える'
         expected: 見出し行の上端が画面の上端から 96px ±1px
-      - name: test_attach_sticky_rows_when_touch_webkit
-        case: 正常
-        summary: iPad・iPhone の Safari では animation-timeline を持っていても JS でずらす
-        condition: 本文 60 行の表を付ける
-        mock: '`CSS.supports` を、`-webkit-touch-callout` と `animation-timeline` のどちらにも `true` を返却する関数に差し替える'
-        expected: '表を包む `.mdmark-table-scroll` が `data-mdmark-sticky="script"`'
     callees:
       - 'MOD-472-371#functions[readStickyTop]'
       - 'MOD-472-218#functions[stickyShift]'
