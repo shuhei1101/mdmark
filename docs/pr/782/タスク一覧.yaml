@@ -45,8 +45,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-22T06:23:33.612947+00:00'
   - process: データ設計
-    status: todo
+    status: done
     note: '#780 No 1 の文字の設定の見直しで補足（ER-472-2）のキーを変えるときと、プロンプトファイルの kind に hook を加えるときに見直す。変えないと決まったら skipped にする'
+    updated_by: planner
+    updated_at: '2026-11-22T06:26:41.715543+00:00'
   - process: インターフェース定義設計
     status: todo
     note: IF-472-35『文書を描く』の線の経路・線の上の文字・データの印の期待結果
