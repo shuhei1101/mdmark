@@ -16,8 +16,8 @@ data_models:
         type: string
         description: '`content/prompts/` からのパスから `.yaml` を除いたもの'
       - name: kind
-        type: "'instructions' | 'tool'"
-        description: 文の種類
+        type: "'instructions' | 'tool' | 'hook'"
+        description: 文の種類（`hook` はプラグインのフックが `additionalContext` に入れる文で、プラグインのルートの `content/prompts/hooks/` に置く）
       - name: lang
         type: string
         description: 描く言語（BCP 47）

@@ -5,21 +5,21 @@ lead: プラグインの `hooks/hooks.json` の SessionStart が `node` で起�
 test_files:
   - tests/unit/src/plugin/session-start.test.ts
 constants:
-  - name: NOT_LISTENING_CONTEXT
-    title: 待ち受けていないときの文
+  - name: PROMPT_NOT_LISTENING
+    title: 待ち受けていないときの文のプロンプト
     container: src/plugin/session-start.ts
     usecase: セッションの開始で常駐サーバーの状態を受け取る
-    summary: '`additionalContext` に指定する 1 行の事実の文'
-    value: mdmark の MCP の常駐サーバーが 127.0.0.1:{port} で待ち受けていないため、mdmark の MCP のツールは使用できない。/mdmark:global-setup で起動できる。
+    summary: 'プロンプトファイル `plugin/content/prompts/hooks/session-start-not-listening.yaml`（`kind: hook`、変数 `port`）の ID。文は今の `NOT_LISTENING_CONTEXT` のまま移す'
+    value: hooks/session-start-not-listening
     refs:
       - IF-472-6#constraints[出す文]
     status: planned
-  - name: PORT_INVALID_CONTEXT
-    title: ポートが使用できない値のときの文
+  - name: PROMPT_PORT_INVALID
+    title: ポートが使用できない値のときの文のプロンプト
     container: src/plugin/session-start.ts
     usecase: セッションの開始で常駐サーバーの状態を受け取る
-    summary: '`MDMARK_PORT` が使用できない値のときの 1 行'
-    value: MDMARK_PORT の値 {value} はポートとして使用できないため、mdmark の MCP のツールは使用できない。1〜65535 の整数を設定する。
+    summary: 'プロンプトファイル `plugin/content/prompts/hooks/session-start-port-invalid.yaml`（`kind: hook`、変数 `value`）の ID。文は今の `PORT_INVALID_CONTEXT` のまま移す'
+    value: hooks/session-start-port-invalid
     refs:
       - IF-472-6#constraints[終了コード]
     status: planned
@@ -36,19 +36,22 @@ functions:
     is_async: true
     args:
       - name: options
-        type: '{ env: NodeJS.ProcessEnv; stdout: (line: string) => void }'
+        type: '{ env: NodeJS.ProcessEnv; stdout: (line: string) => void; root: string }'
         required: true
-        description: 環境変数と標準出力へ 1 行書く関数
+        description: 環境変数・標準出力へ 1 行書く関数・プラグインのルート（エントリーポイントでは `scripts/` の 1 つ上のフォルダ。`import.meta.url` から求める）
     returns:
       type: Promise<0>
       description: 常に 0
     process: |-
-      1. `readPort` でポートを読み込む。使用できない値なら `PORT_INVALID_CONTEXT` を `additionalContext` に記載して 0 を返却する
+      1. `readPort` でポートを読み込む。使用できない値なら `PROMPT_PORT_INVALID` を `value` で描いた文を `additionalContext` に記載して 0 を返却する（プロンプトファイルを読み込む・プロンプトを描く）
       2. `isPortListening`（モジュール構成『ポート』の `CONNECT_TIMEOUT_MS`）が真なら何も書き込まずに 0 を返却する
-      3. `{ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: NOT_LISTENING_CONTEXT（ポートを埋める） } }` を JSON の 1 行で標準出力に書き込んで 0 を返却する
+      3. `{ hookSpecificOutput: { hookEventName: "SessionStart", additionalContext: PROMPT_NOT_LISTENING を port で描いた文 } }` を JSON の 1 行で標準出力に書き込んで 0 を返却する
+      4. プロンプトファイルを読み込めない・描けない場合、何も書き込まずに 0 を返却する
     callees:
       - MOD-472-15#functions[readPort]
       - MOD-472-15#functions[isPortListening]
+      - MOD-775-1#functions[loadPrompt]
+      - MOD-775-1#functions[renderPrompt]
     unit_tests:
       - name: test_run_session_start
         case: 正常
@@ -74,6 +77,18 @@ functions:
         condition: '`plugin/hooks/hooks.json` を読み込む'
         mock: なし
         expected: '`SessionStart` の行が 1 つあり、`matcher` を持たず、コマンドが `node` で引数が `${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js`'
+      - name: test_run_session_start_when_prompt_files
+        case: 正常
+        summary: 注入する文をプロンプトファイルから描く
+        condition: '`root` が `plugin/`、待ち受けるプロセスの無いポート 8782'
+        mock: 行を配列に貯める `stdout`
+        expected: '`additionalContext` が変更前の `NOT_LISTENING_CONTEXT` の `{port}` を 8782 にした文と同じ'
+      - name: test_run_session_start_when_prompt_missing
+        case: 異常
+        summary: プロンプトファイルが無い
+        condition: '`root` が空の一時フォルダ'
+        mock: 行を配列に貯める `stdout`
+        expected: 0 を返却し、`stdout` が空
     refs:
       - IF-472-6#
     status: planned
