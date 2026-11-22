@@ -1,0 +1,65 @@
+id: CMP-472-67
+visibility: internal
+title: 左右に並べる差分
+lead: 差分の場所に、前のリビジョンを左、後のリビジョンを右に描いた本文を並べ、変えていないブロックと変更したブロックの対を同じ高さで向かい合わせる。描く先の要素の幅が 48rem 未満のときは、変えたブロックだけ前の下に後を縦に並べる。HTML 文字列を返却する。
+implementation: src/diff/diff-side-by-side.part.ts#renderDiffSideBySide
+story: Parts/DiffSideBySide
+test_file: tests/integration/lib/diff-side-by-side.story.test.ts
+status: planned
+args:
+  - name: before.label
+    type: 文字列
+    required: true
+    description: '前のリビジョンの日時（JST）と `label`。左の列の見出し `前: {before.label}` と、狭い幅の小さい見出しに使用する'
+  - name: after.label
+    type: 文字列
+    required: true
+    description: '後のリビジョンの日時（JST）と `label`。右の列の見出し `後: {after.label}` と、狭い幅の小さい見出しに使用する'
+  - name: rows
+    type: オブジェクトの配列
+    required: true
+    description: 向かい合う 1 組のブロックの並び（変更後の文書の順。削除したブロックは変更前の位置）
+  - name: rows[].kind
+    type: 列挙
+    required: true
+    choices: '`same`・`change`・`add`・`del`'
+    description: '`same` は変えていないブロック、`change` は変更したブロックの対（左を削除、右を追加の差分のブロック）、`add` は右だけの追加したブロック、`del` は左だけの削除したブロック'
+  - name: rows[].before
+    type: 文字列
+    required: false
+    enabled_when: '`kind` が `same`・`change`・`del` のとき'
+    description: 前のリビジョンのブロックの描いた HTML
+  - name: rows[].after
+    type: 文字列
+    required: false
+    enabled_when: '`kind` が `same`・`change`・`add` のとき'
+    description: 後のリビジョンのブロックの描いた HTML
+states:
+  - name: Wide
+    description: 幅 1280px。見出し・段落・表を変えず、段落の単語を書き換え、1 つ追加し、1 つ削除した。対の無い向かいは斜線の空き
+  - name: LongBlock
+    description: 幅 1280px。右の追加した段落が長く、向かいの空きが段落の高さに合わせて伸びる
+  - name: Narrow
+    description: 幅 390px。変えたブロックだけ `前:` の小さい見出しと削除の色の下に `後:` と追加の色を並べ、変えていないブロックは 1 回だけ出す
+  - name: Dark
+    description: ダークの配色で Wide と同じ差分
+accessibility:
+  - 左右の列はそれぞれ `section` で、列の見出しを `aria-labelledby` で指す。DOM の順は前の列の全てのブロックの後に後の列のブロックで、読み上げは前の本文を最後まで読み上げた後に後の本文を読み上げる
+  - 変更・追加・削除したブロックは差分のブロックの `追加:`・`削除:` と記号を使用し、色だけで伝えない
+  - 向かいの斜線の空きは `aria-hidden` にする
+  - 幅の切り替えで中身と読み上げの順を変えない（狭い幅の小さい見出し `前:`・`後:` も読み上げる）
+uses:
+  - component: CMP-472-43#
+    how: 変更・追加・削除したブロックの面の色と左の余白の + / −
+refs:
+  - IF-472-35#constraints[左右に並べる差分]
+notes:
+  補足: |-
+    左右の列は `div.mdmark-diff-side` の grid の 2 列で、列ごとの `section.mdmark-diff-side-col` が親の行を subgrid で受け継ぎ、同じ行のセルの上端を合わせる。列の中のブロックの上下の余白はなくし、セルの余白で行を分ける。
+    列の見出しはスクロールする場所の上端から `--mdmark-sticky-top` だけ下に留める。
+    幅の切り替えは描く先の要素のコンテナクエリ（48rem）で行い、狭い幅では `same` の行の右のセルと列の見出しを隠し、変えた行の左右のセルの前に小さい見出しを出す。
+    モックは `docs/mock/components/diff-side-by-side/`（狭い幅は案 A。確認ログ）
+tags:
+  - name: topic:差分
+    main: true
+  - name: topic:ブロック

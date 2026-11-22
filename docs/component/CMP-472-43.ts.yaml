@@ -76,6 +76,15 @@ states:
         value: block
       - name: html
         value: <p>https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.9.0/dist/index.js?cache-bust=20261030-feature-vscode-diff-view-preview</p>
+  - name: ListItemAddWrapped
+    description: 箇条書きの追加した項目で、2 行目に折り返す長い項目。左の余白の `+` が項目の 1 行目の高さにある
+    args:
+      - name: kind
+        value: add
+      - name: unit
+        value: item
+      - name: html
+        value: <li>添付したファイル。2 行目に折り返す長い項目でも、記号は 1 行目の高さに描きます</li>
 lead: 描いた文書の上で、追加・変更したブロックと削除したブロックを面の色と左の余白の + / − で示す。本文のブロック・リストの項目・表の行の HTML を受け、色を適用した HTML 文字列を返却する。
 args:
   - name: kind
@@ -118,7 +127,7 @@ refs:
   - IF-472-35#constraints[色を適用したブロックの要素]
 status: planned
 notes:
-  補足: 外観は確認ログの決定（面の色と左の余白の + / −、リストと表は項目・行の単位）。モックは `docs/mock/components/diff-blocks/` の案 A。対応テストファイルはテスト作成で `tests/integration/lib/diff-blocks.story.test.ts` を作った後に `test_file` へ記載する
+  補足: 外観は確認ログの決定（面の色と左の余白の + / −、リストと表は項目・行の単位）。モックは `docs/mock/components/diff-blocks/` の案 A。`+`・`−` はどの `unit` もブロックの上の余白（`--mdmark-diff-block-pad-block`）の位置、つまり中身の 1 行目の高さに配置し、リストの項目でもそこから下へずらさない（`.mdmark-diff-block` の規則で修正し、項目の包み方は変えない。モック `docs/mock/components/diff-side-by-side/` の「箇条書きの項目の記号の位置」）。対応テストファイルはテスト作成で `tests/integration/lib/diff-blocks.story.test.ts` を作った後に `test_file` へ記載する
 test_file: tests/integration/lib/diff-blocks.story.test.ts
 tags:
   - name: topic:差分

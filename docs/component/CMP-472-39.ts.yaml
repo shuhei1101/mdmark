@@ -220,6 +220,8 @@ states:
         value: 'true'
     notes:
       定義: MapExportOpen と同じ図で、PNG にできなかった後の状態（`role="status"` の文を入れた要素）を描く。`HTMLCanvasElement.prototype.toBlob` を `null` を渡す関数に差し替えて PNG を押す動きは、単体テスト `test_attach_map_export_when_png_unavailable` で確認する
+  - name: FitTall
+    description: 縦に長い図を `--mdmark-diagram-max-height` で切られた表示する枠で開いたとき。全体が収まる倍率でも図が枠に縦に収まらず、表示する枠は `data-at-fit` を持たずに縦にもスクロールする（指の縦の移動で図の中を動かせる）
 lead: |-
   図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、表示する枠の右上に重ねたボタンのパネルと、拡大・縮小・移動・ピンチ・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
   パネルと表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方（図の枠の幅が 30rem 未満のとき 1.5rem）、パネルの余白は 0.125rem。
@@ -248,7 +250,7 @@ args:
   - name: zoom
     type: 数値
     default: 全体が収まる倍率
-    description: 今の倍率（定義の大きさを 1 とする）。全体が収まる倍率の 0.25 倍から 5 倍まで。全体が収まる倍率以下のときは表示する枠に `data-at-fit` を付け、縦にスクロールさせない
+    description: 今の倍率（定義の大きさを 1 とする）。全体が収まる倍率の 0.25 倍から 5 倍まで。全体が収まる倍率以下で、図の高さが表示する枠の高さに収まるときは表示する枠に `data-at-fit` を付け、縦にスクロールさせない
   - name: fit
     type: 数値
     default: '1'

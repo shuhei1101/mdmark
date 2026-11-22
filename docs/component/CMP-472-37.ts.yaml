@@ -150,7 +150,7 @@ args:
   - name: current
     type: 文字列
     required: false
-    description: 今いるセクションの見出しの ID。その項目に `aria-current="location"`、右端の線の対応する線に `data-current` を付け、狭い幅の帯にその見出しの文字を出す。省くと付けない
+    description: 今いるセクションの見出しの ID。その項目に `aria-current="location"`、右端の線の対応する線に `data-current` を付ける。省くと付けない
   - name: markdownButtons
     type: 真偽値
     required: false
@@ -175,7 +175,7 @@ args:
     description: パネルの入力欄に入れる変換した Markdown
 events:
   - name: 目次を出す・隠す
-    when: 目次を出すボタン（三点リーダー）を押す、または出している目次の中で Esc を押す
+    when: 目次を出すボタン（広い幅は三点リーダー、狭い幅は右側のパネルのアイコン）を押す、または出している目次の中で Esc を押す
     value: ボタンの `aria-expanded`
     description: '`mount` が aside の `data-open` を付与・解除し、Esc のときは目次を出すボタンへフォーカスを戻す'
   - name: ピン止めする
@@ -230,7 +230,7 @@ css_properties:
   - name: --mdmark-sticky-top
     syntax: <length>
     default: 0px
-    description: 右側の目次（右端の線を含む）と狭い幅の帯を画面に留める位置と、hover で開く目次の枠の上端の、画面（スクロールする場所）の上端からのずれ
+    description: 右側の目次（右端の線を含む）と狭い幅の目次を出すボタンを画面に留める位置と、hover で開く目次の枠の上端の、画面（スクロールする場所）の上端からのずれ
   - name: --mdmark-space
     syntax: <length>
     default: 0.875rem
@@ -269,7 +269,9 @@ notes:
 
     まとめて開閉するボタンの並びは `sections` がオフのとき配置せず、ピン止めのボタンは fixed の出し方では CSS で隠す。
 
-    狭い幅の帯は描く先の要素の幅で切り替えるため、ストーリーではなく `mount` の結合テスト（`test_normal_when_side_toc_in_narrow_width`）で確認する。
+    描く先の要素の幅が 48rem 未満のときは、右端の線と今いるセクションの見出しの文字（`mdmark-side-toc-current`）を配置せず、目次を出すボタンだけを本文の右上の端に `--mdmark-sticky-top` の位置で留める。そのボタンは lucide の panel-right（16px）で、押せる範囲は 44px 四方の透明なボタン、見た目はその中央の 32px 四方の枠線と面と影にする（モック `docs/mock/components/side-toc-narrow-band/` の案 C・大きさの案 A。確認ログ）。
+
+    狭い幅の見せ方は描く先の要素の幅で切り替えるため、ストーリーではなく `mount` の結合テスト（`test_normal_when_side_toc_in_narrow_width`）で確認する。
 
     ストーリーの結合テストは `tests/integration/lib/side-toc.story.test.ts`。
 
