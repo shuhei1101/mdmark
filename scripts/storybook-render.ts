@@ -1635,18 +1635,7 @@ const mapFlowStory = (args: PartArgs): string => {
         shape: data.layout[wire]?.packet?.shape,
         fill: data.layout[wire]?.packet?.fill,
       })),
-      packetStyle: {
-        fill: (PACKET_FILLS as readonly string[]).includes(
-          String(args.packet_fill),
-        )
-          ? (args.packet_fill as PacketFill)
-          : DEFAULT_PACKET_STYLE.fill,
-        palette: (PACKET_PALETTES as readonly string[]).includes(
-          String(args.packet_palette),
-        )
-          ? (args.packet_palette as PacketPalette)
-          : DEFAULT_PACKET_STYLE.palette,
-      },
+      packetStyle: mapFlowStoryPacketStyle(args),
       colors: mapFlowStoryColors(data, changes),
       dragging: undefined,
       id: "story-map",
@@ -1677,6 +1666,18 @@ const mapFlowStories = (args: PartArgs): string => {
     ).join("");
   return mapFlowStory(args);
 };
+
+/** ストーリーの引数 `packet_fill`・`packet_palette` の塗り方と色合い（一覧に無い値は既定） */
+const mapFlowStoryPacketStyle = (args: PartArgs) => ({
+  fill: (PACKET_FILLS as readonly string[]).includes(String(args.packet_fill))
+    ? (args.packet_fill as PacketFill)
+    : DEFAULT_PACKET_STYLE.fill,
+  palette: (PACKET_PALETTES as readonly string[]).includes(
+    String(args.packet_palette),
+  )
+    ? (args.packet_palette as PacketPalette)
+    : DEFAULT_PACKET_STYLE.palette,
+});
 
 /** 構成図のストーリーの配置の上書き（`route` は L 字の線の図の位置と端、`ends` は mount->marker の端） */
 const mapFlowStoryOverrides = (args: PartArgs): Record<string, MapOverride> => {
