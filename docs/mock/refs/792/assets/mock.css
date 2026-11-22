@@ -1,7 +1,8 @@
 /* #792 のモックだけの規則: 配布物の CSS の上に、カタログの並び・左右に並べる差分・狭い幅の目次のバーの案を重ねる */
 
-/* カタログの並び: 案ごとに見出しと見本を縦に並べる */
+/* カタログの並び: 案ごとに見出しと見本を縦に並べる（共有の scene.css の grid は、中身の最小の幅で列が広がるため block に戻す） */
 .catalog {
+  display: block;
   box-sizing: border-box;
   max-width: 1200px;
   margin: 0 auto;
@@ -37,6 +38,11 @@
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   column-gap: 32px;
 
+  /* 向かい合う左右のブロックの上端を合わせるため、配布物の CSS のブロックの間の余白を外す */
+  & > * {
+    margin-block: 0;
+  }
+
   /* 列の見出し: 比べるリビジョンの名前と日時 */
   & .side-head {
     position: sticky;
@@ -64,11 +70,21 @@
   }
 }
 
+/* 広い幅の見本: 狭い画面では見本の中だけを横にスクロールする */
+.wide-sample {
+  overflow-x: auto;
+  padding-inline-start: calc(20px + var(--mdmark-diff-block-gutter, 1.75rem));
+
+  & .side-by-side {
+    min-width: 960px;
+  }
+}
+
 /* 狭い幅の見本: スマートフォンの画面の幅（390px）の枠 */
 .phone {
   box-sizing: border-box;
-  width: 390px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 390px;
   height: 640px;
   overflow: hidden;
   position: relative;
@@ -82,11 +98,16 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr));
   gap: 24px;
-  justify-items: start;
+  > * {
+    min-width: 0;
+  }
 }
 
 /* 狭い幅の案 A（縦に並べる）: 前と後の見出しを付けて上下に配置する */
 .stacked-pair {
+  /* 差分のブロックの左の余白の記号が見本の端で切れないよう、記号の幅だけ内側に配置する */
+  padding-inline: var(--mdmark-diff-block-gutter, 1.75rem) 0.75rem;
+
   & .stacked-label {
     margin: 8px 0 2px;
     color: var(--mdmark-color-muted);
@@ -97,6 +118,8 @@
 /* 狭い幅の案 B（左右のまま横にスクロール）: 各列を読める幅で並べ、枠の中で横にスクロールする */
 .side-scroll {
   overflow-x: auto;
+  /* 差分のブロックの左の余白の記号と右の面が見本の端に接しないよう、内側に余白を配置する */
+  padding-inline: var(--mdmark-diff-block-gutter, 1.75rem) 0.75rem;
 
   & .side-by-side {
     width: 640px;
