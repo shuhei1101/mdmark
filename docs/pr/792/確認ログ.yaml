@@ -1,0 +1,7 @@
+confirmations:
+  - topic: '#788 の、開いたときの倍率の図の上の縦の指の操作'
+    decision: 表示する枠に縦に収まらない図だけ、指の縦の動きで図の中を動かし、図の端を越えた分は文書をスクロールする。枠に縦に収まる図は今のまま文書をスクロールする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: f03b3436
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4658318064
