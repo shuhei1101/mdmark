@@ -2391,7 +2391,7 @@ scenarios:
     setup:
       - name: 固定のヘッダーを持つページ
         description: 正常シナリオ（iPad の Safari で見出し行を留める）と同じページで、右側の目次を出す設定で描く
-        notes: Playwright の WebKit を iPhone の端末設定（画面の幅 390px とタッチ）で開く。右側の目次は狭い幅の帯で出る
+        notes: Playwright の WebKit を iPhone の端末設定（画面の幅 390px とタッチ）で開く。右側の目次は狭い幅の目次を開くボタンで出る
       - name: 大きい表を持つ Markdown
         description: 見出しを持ち、正常シナリオ（見出し行を画面の上端に留める）の表を持つ文書
       - name: Mock
@@ -2409,7 +2409,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 表の途中を出したとき、見出し行の全体が画面に見えていて、固定のヘッダーと右側の目次の帯に覆われていない
+      - 表の途中を出したとき、見出し行の全体が画面に見えていて、固定のヘッダーに覆われず、目次を開くボタンのある右上の端を除いて見えている
     test: test_normal_when_header_stuck_on_iphone_width
 lead: '文書の作成者が `<!-- table: {JSON のオブジェクト} -->` 〜 `<!-- /table -->` で表を囲み、読者が描かれた表を見出し行を見ながらページのスクロールで読み込み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
 primary_actor: 読者

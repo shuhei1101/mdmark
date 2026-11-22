@@ -5,3 +5,15 @@ confirmations:
     approver: shuhei1101
     commit: f03b3436
     thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4658318064
+  - topic: '#783 の左右に並べる差分の、狭い幅での見せ方'
+    decision: 狭い幅では、変えたブロックだけ前（削除の色）の下に後（追加の色）を縦に並べ、変えていないブロックは 1 回だけ出す。広い幅では左右の列を 1 つのスクロールで動かす（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 030b4004
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4658406081
+  - topic: '#790 の狭い幅の右側の目次のバーの見せ方'
+    decision: 目次を開くボタンだけを右上の端に固定する（案 C。ボタンのアイコンは案を複数出して選んでもらう）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 030b4004
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4658456891
