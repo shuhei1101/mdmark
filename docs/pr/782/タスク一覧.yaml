@@ -70,8 +70,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-21T11:14:08.818173+00:00'
   - process: 部品設計
-    status: todo
+    status: done
     note: CMP-472-5『mapの構成図』（ドラッグ中のスクロール・ドラッグ後の経路・線の上の文字・データの印）と、同じ線を使う ER 図・状態遷移図・シーケンス図の部品
+    updated_by: planner
+    updated_at: '2026-11-22T06:45:41.771390+00:00'
   - process: 画面設計
     status: skipped
     reason: 文書の画面（SCR-472-4）の構成は変わらず、変わるのは map の図の部品の中だけ。部品設計とストーリーで確かめる
