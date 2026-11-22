@@ -10179,44 +10179,210 @@
     pointer-events: none;
   }
 
-  /* データの印の色合い: 印の層の data-packet-palette ごとの 5 色と灰色。明るい配色と暗い配色の値を color-scheme で切り替え、利用側のテーマで上書きできる */
-  [data-packet-palette] {
-    --mdmark-map-packet-gray: var(--mdmark-color-accent-gray-text);
+  /* データの印の色合いの値: 色合いごとの 5 色。明るい配色を既定にし、ダークの配色（OS の設定と、描く先かその祖先の class）では暗い配色の値にする */
+  :root {
+    --mdmark-map-packet-vivid-1: #3b82f6;
+    --mdmark-map-packet-vivid-2: #1ca34d;
+    --mdmark-map-packet-vivid-3: #ed6506;
+    --mdmark-map-packet-vivid-4: #a855f7;
+    --mdmark-map-packet-vivid-5: #ef4444;
+    --mdmark-map-packet-pastel-1: #2e8ffb;
+    --mdmark-map-packet-pastel-2: #15a249;
+    --mdmark-map-packet-pastel-3: #da7103;
+    --mdmark-map-packet-pastel-4: #b26bfd;
+    --mdmark-map-packet-pastel-5: #fa5454;
+    --mdmark-map-packet-muted-1: #5b7fa6;
+    --mdmark-map-packet-muted-2: #6b9080;
+    --mdmark-map-packet-muted-3: #bf8153;
+    --mdmark-map-packet-muted-4: #8e7cc3;
+    --mdmark-map-packet-muted-5: #b56576;
+    --mdmark-map-packet-cool-1: #2563eb;
+    --mdmark-map-packet-cool-2: #0d98d6;
+    --mdmark-map-packet-cool-3: #119e8f;
+    --mdmark-map-packet-cool-4: #6366f1;
+    --mdmark-map-packet-cool-5: #8b5cf6;
   }
+  @media screen and (prefers-color-scheme: dark) {
+    :root {
+      --mdmark-map-packet-vivid-1: #3b82f6;
+      --mdmark-map-packet-vivid-2: #22c55e;
+      --mdmark-map-packet-vivid-3: #f97316;
+      --mdmark-map-packet-vivid-4: #a855f7;
+      --mdmark-map-packet-vivid-5: #ef4444;
+      --mdmark-map-packet-pastel-1: #93c5fd;
+      --mdmark-map-packet-pastel-2: #86efac;
+      --mdmark-map-packet-pastel-3: #fdba74;
+      --mdmark-map-packet-pastel-4: #d8b4fe;
+      --mdmark-map-packet-pastel-5: #fca5a5;
+      --mdmark-map-packet-muted-1: #5b7fa6;
+      --mdmark-map-packet-muted-2: #6b9080;
+      --mdmark-map-packet-muted-3: #c08457;
+      --mdmark-map-packet-muted-4: #8e7cc3;
+      --mdmark-map-packet-muted-5: #b56576;
+      --mdmark-map-packet-cool-1: #2563eb;
+      --mdmark-map-packet-cool-2: #0ea5e9;
+      --mdmark-map-packet-cool-3: #14b8a6;
+      --mdmark-map-packet-cool-4: #6366f1;
+      --mdmark-map-packet-cool-5: #8b5cf6;
+    }
+  }
+  @media screen {
+    :root:has(
+        .mdmark:is(.mdmark-theme-dark, .mdmark-theme-dark *):not(
+            :is(
+              .mdmark-theme-dark .mdmark-theme-light,
+              .mdmark-theme-dark .mdmark-theme-light *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark:is(
+            :is(
+              .vscode-dark,
+              .vscode-high-contrast:not(.vscode-high-contrast-light)
+            ),
+            :is(
+                .vscode-dark,
+                .vscode-high-contrast:not(.vscode-high-contrast-light)
+              )
+              *
+          ):not(
+            :is(
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light),
+              :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                :is(.vscode-light, .vscode-high-contrast-light)
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-map-packet-vivid-1: #3b82f6;
+      --mdmark-map-packet-vivid-2: #22c55e;
+      --mdmark-map-packet-vivid-3: #f97316;
+      --mdmark-map-packet-vivid-4: #a855f7;
+      --mdmark-map-packet-vivid-5: #ef4444;
+      --mdmark-map-packet-pastel-1: #93c5fd;
+      --mdmark-map-packet-pastel-2: #86efac;
+      --mdmark-map-packet-pastel-3: #fdba74;
+      --mdmark-map-packet-pastel-4: #d8b4fe;
+      --mdmark-map-packet-pastel-5: #fca5a5;
+      --mdmark-map-packet-muted-1: #5b7fa6;
+      --mdmark-map-packet-muted-2: #6b9080;
+      --mdmark-map-packet-muted-3: #c08457;
+      --mdmark-map-packet-muted-4: #8e7cc3;
+      --mdmark-map-packet-muted-5: #b56576;
+      --mdmark-map-packet-cool-1: #2563eb;
+      --mdmark-map-packet-cool-2: #0ea5e9;
+      --mdmark-map-packet-cool-3: #14b8a6;
+      --mdmark-map-packet-cool-4: #6366f1;
+      --mdmark-map-packet-cool-5: #8b5cf6;
+    }
+    :root:has(
+        .mdmark:is(.mdmark-theme-light, .mdmark-theme-light *):not(
+            :is(
+              .mdmark-theme-light .mdmark-theme-dark,
+              .mdmark-theme-light .mdmark-theme-dark *
+            )
+          )
+      ),
+    :root:has(
+        .mdmark:is(
+            :is(.vscode-light, .vscode-high-contrast-light),
+            :is(.vscode-light, .vscode-high-contrast-light) *
+          ):not(
+            :is(
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                ),
+              :is(.vscode-light, .vscode-high-contrast-light)
+                :is(
+                  .vscode-dark,
+                  .vscode-high-contrast:not(.vscode-high-contrast-light)
+                )
+                *
+            )
+          ):not(
+            :is(
+              .mdmark-theme-light,
+              .mdmark-theme-light *,
+              .mdmark-theme-dark,
+              .mdmark-theme-dark *
+            )
+          )
+      ) {
+      --mdmark-map-packet-vivid-1: #3b82f6;
+      --mdmark-map-packet-vivid-2: #1ca34d;
+      --mdmark-map-packet-vivid-3: #ed6506;
+      --mdmark-map-packet-vivid-4: #a855f7;
+      --mdmark-map-packet-vivid-5: #ef4444;
+      --mdmark-map-packet-pastel-1: #2e8ffb;
+      --mdmark-map-packet-pastel-2: #15a249;
+      --mdmark-map-packet-pastel-3: #da7103;
+      --mdmark-map-packet-pastel-4: #b26bfd;
+      --mdmark-map-packet-pastel-5: #fa5454;
+      --mdmark-map-packet-muted-1: #5b7fa6;
+      --mdmark-map-packet-muted-2: #6b9080;
+      --mdmark-map-packet-muted-3: #bf8153;
+      --mdmark-map-packet-muted-4: #8e7cc3;
+      --mdmark-map-packet-muted-5: #b56576;
+      --mdmark-map-packet-cool-1: #2563eb;
+      --mdmark-map-packet-cool-2: #0d98d6;
+      --mdmark-map-packet-cool-3: #119e8f;
+      --mdmark-map-packet-cool-4: #6366f1;
+      --mdmark-map-packet-cool-5: #8b5cf6;
+    }
+  }
+
+  /* データの印の色合い: 印の層の data-packet-palette で色合いの 5 色を選ぶ。印の色は利用側の --mdmark-map-packet-{1〜5}・--mdmark-map-packet-gray を先に参照し、無ければこの値にする */
   [data-packet-palette="accent"] {
-    --mdmark-map-packet-1: var(--mdmark-color-accent-blue-text);
-    --mdmark-map-packet-2: var(--mdmark-color-accent-green-text);
-    --mdmark-map-packet-3: var(--mdmark-color-accent-orange-text);
-    --mdmark-map-packet-4: var(--mdmark-color-accent-purple-text);
-    --mdmark-map-packet-5: var(--mdmark-color-accent-red-text);
+    --mdmark-map-packet-palette-1: var(--mdmark-color-accent-blue-text);
+    --mdmark-map-packet-palette-2: var(--mdmark-color-accent-green-text);
+    --mdmark-map-packet-palette-3: var(--mdmark-color-accent-orange-text);
+    --mdmark-map-packet-palette-4: var(--mdmark-color-accent-purple-text);
+    --mdmark-map-packet-palette-5: var(--mdmark-color-accent-red-text);
   }
   [data-packet-palette="vivid"] {
-    --mdmark-map-packet-1: light-dark(#3b82f6, #3b82f6);
-    --mdmark-map-packet-2: light-dark(#1ca34d, #22c55e);
-    --mdmark-map-packet-3: light-dark(#ed6506, #f97316);
-    --mdmark-map-packet-4: light-dark(#a855f7, #a855f7);
-    --mdmark-map-packet-5: light-dark(#ef4444, #ef4444);
+    --mdmark-map-packet-palette-1: var(--mdmark-map-packet-vivid-1);
+    --mdmark-map-packet-palette-2: var(--mdmark-map-packet-vivid-2);
+    --mdmark-map-packet-palette-3: var(--mdmark-map-packet-vivid-3);
+    --mdmark-map-packet-palette-4: var(--mdmark-map-packet-vivid-4);
+    --mdmark-map-packet-palette-5: var(--mdmark-map-packet-vivid-5);
   }
   [data-packet-palette="pastel"] {
-    --mdmark-map-packet-1: light-dark(#2e8ffb, #93c5fd);
-    --mdmark-map-packet-2: light-dark(#15a249, #86efac);
-    --mdmark-map-packet-3: light-dark(#da7103, #fdba74);
-    --mdmark-map-packet-4: light-dark(#b26bfd, #d8b4fe);
-    --mdmark-map-packet-5: light-dark(#fa5454, #fca5a5);
+    --mdmark-map-packet-palette-1: var(--mdmark-map-packet-pastel-1);
+    --mdmark-map-packet-palette-2: var(--mdmark-map-packet-pastel-2);
+    --mdmark-map-packet-palette-3: var(--mdmark-map-packet-pastel-3);
+    --mdmark-map-packet-palette-4: var(--mdmark-map-packet-pastel-4);
+    --mdmark-map-packet-palette-5: var(--mdmark-map-packet-pastel-5);
   }
   [data-packet-palette="muted"] {
-    --mdmark-map-packet-1: light-dark(#5b7fa6, #5b7fa6);
-    --mdmark-map-packet-2: light-dark(#6b9080, #6b9080);
-    --mdmark-map-packet-3: light-dark(#bf8153, #c08457);
-    --mdmark-map-packet-4: light-dark(#8e7cc3, #8e7cc3);
-    --mdmark-map-packet-5: light-dark(#b56576, #b56576);
+    --mdmark-map-packet-palette-1: var(--mdmark-map-packet-muted-1);
+    --mdmark-map-packet-palette-2: var(--mdmark-map-packet-muted-2);
+    --mdmark-map-packet-palette-3: var(--mdmark-map-packet-muted-3);
+    --mdmark-map-packet-palette-4: var(--mdmark-map-packet-muted-4);
+    --mdmark-map-packet-palette-5: var(--mdmark-map-packet-muted-5);
   }
   [data-packet-palette="cool"] {
-    --mdmark-map-packet-1: light-dark(#2563eb, #2563eb);
-    --mdmark-map-packet-2: light-dark(#0d98d6, #0ea5e9);
-    --mdmark-map-packet-3: light-dark(#119e8f, #14b8a6);
-    --mdmark-map-packet-4: light-dark(#6366f1, #6366f1);
-    --mdmark-map-packet-5: light-dark(#8b5cf6, #8b5cf6);
+    --mdmark-map-packet-palette-1: var(--mdmark-map-packet-cool-1);
+    --mdmark-map-packet-palette-2: var(--mdmark-map-packet-cool-2);
+    --mdmark-map-packet-palette-3: var(--mdmark-map-packet-cool-3);
+    --mdmark-map-packet-palette-4: var(--mdmark-map-packet-cool-4);
+    --mdmark-map-packet-palette-5: var(--mdmark-map-packet-cool-5);
   }
 
   /* シーケンス図の参加者: 押すとその参加者のメッセージを強調する */

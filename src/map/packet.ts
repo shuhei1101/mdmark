@@ -74,6 +74,14 @@ const CORE_RATIO = 0.6;
 const SPEED_MIN = 0.9;
 const SPEED_SPAN = 0.2;
 
+/** 色を指定したノードのある図で、色の無いノードから出る印の色（利用側の変数を先に参照する） */
+export const PACKET_GRAY =
+  "var(--mdmark-map-packet-gray, var(--mdmark-color-accent-gray-text))";
+
+/** 色合いの n 番目の色（利用側の変数を先に参照し、無ければ印の層の色合いの値） */
+export const paletteColor = (n: number): string =>
+  `var(--mdmark-map-packet-${n}, var(--mdmark-map-packet-palette-${n}))`;
+
 /** 文字列の 32 ビットの FNV-1a のハッシュ */
 export const packetHash = (text: string): number => {
   let hash = 0x811c9dc5;
@@ -113,8 +121,8 @@ export const resolvePacketMark = (options: {
   const color =
     override?.color ??
     (colored
-      ? (sourceColor ?? "var(--mdmark-map-packet-gray)")
-      : `var(--mdmark-map-packet-${(index % 5) + 1})`);
+      ? (sourceColor ?? PACKET_GRAY)
+      : paletteColor((index % 5) + 1));
   const chosen = override?.fill ?? style.fill;
   const fill =
     chosen === "random"
@@ -132,26 +140,29 @@ export const resolvePacketMark = (options: {
   };
 };
 
-/** 形状の大きさの割合と縁・輪郭の太さから描く形状の要素（丸は縁の外側を半径に収める） */
+/** 形状の大きさの割合と縁・輪郭の太さから描く形状の要素。縁は角を丸めて、縁の外側を印の大きさに収める */
 const shapeSvg = (
   shape: PacketShape,
   options: { ratio: number; stroke: number; style: string },
 ): string => {
-  const { ratio, stroke, style } = options;
+  const { ratio, stroke } = options;
+  const inset = stroke / 2;
+  const style =
+    stroke > 0 ? `${options.style};stroke-linejoin:round` : options.style;
   if (shape === "circle") {
-    const r = PACKET_SIZE.circle * ratio - stroke / 2;
+    const r = PACKET_SIZE.circle * ratio - inset;
     return `<circle r="${r}" style="${style}"></circle>`;
   }
   if (shape === "square") {
-    const half = (PACKET_SIZE.square / 2) * ratio;
+    const half = (PACKET_SIZE.square / 2) * ratio - inset;
     const corner = 1.6 * ratio;
     return `<rect x="${-half}" y="${-half}" width="${half * 2}" height="${half * 2}" rx="${corner}" style="${style}"></rect>`;
   }
   if (shape === "diamond") {
-    const half = PACKET_SIZE.diamond * ratio;
+    const half = PACKET_SIZE.diamond * ratio - inset;
     return `<polygon points="0,${-half} ${half},0 0,${half} ${-half},0" style="${style}"></polygon>`;
   }
-  const half = (PACKET_SIZE.triangle / 2) * ratio;
+  const half = (PACKET_SIZE.triangle / 2) * ratio - inset;
   return `<polygon points="0,${-half} ${half},${half} ${-half},${half}" style="${style}"></polygon>`;
 };
 
