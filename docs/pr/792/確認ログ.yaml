@@ -17,3 +17,9 @@ confirmations:
     approver: shuhei1101
     commit: 030b4004
     thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4658456891
+  - topic: '#790 で右上の端に固定する目次を開くボタンのアイコン'
+    decision: 右側のパネル（Lucide の `panel-right`。案 D）。ボタンの大きさは小さくする案を出して選んでもらう
+    decided_by: reply
+    approver: shuhei1101
+    commit: e8f45b71
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659228677
