@@ -1016,6 +1016,19 @@ test("test_attach_map_flow_when_wire_moved_beyond_edge", async () => {
   window.dispatchEvent(new PointerEvent("pointermove", end));
   window.dispatchEvent(new PointerEvent("pointerup", end));
   // 検証
-  expect(saved().attachments?.["a->c"]?.to).toBe("right");
+  // 回り込んだ端は記録せず、動かした区間のずらしを保つ。描いた線の端は c の右の辺
+  expect(saved().attachments?.["a->c"]?.to).toBeUndefined();
+  expect(saved().wireShifts?.["a->c"]?.length).toBe(1);
+  const path = root.querySelector(
+    'path.mdmark-diagram-wire[data-wire="a->c"]',
+  ) as SVGPathElement;
+  const ends = [
+    ...(path.getAttribute("d") ?? "").matchAll(/([\d.]+)[ ,]([\d.]+)/g),
+  ];
+  const last = ends.at(-1) as RegExpMatchArray;
+  const c = root.querySelector(
+    '.mdmark-diagram-node[data-node="c"]',
+  ) as HTMLElement;
+  expect(Number(last[1])).toBe(c.offsetLeft + c.offsetWidth);
   expect(viewport.scrollLeft).toBe(before);
 });

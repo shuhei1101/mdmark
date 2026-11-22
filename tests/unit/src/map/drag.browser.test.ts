@@ -574,7 +574,8 @@ test("test_apply_wire_shifts_when_beyond_edge", async () => {
   const points = wires[0]?.points as Array<[number, number]>;
   const c = layout.nodes[1];
   expect(sideOn(c as never, points.at(-1) as [number, number])).toBe("right");
-  expect(attachments["A->C"]?.to).toBe("right");
+  // 回り込んだ端は記録しない（次に描くときも自動配置の経路にずらしを当てる）
+  expect(attachments["A->C"]?.to).toBeUndefined();
   expect(points.some(([x, y]) => x === 450 && y < 230)).toBe(true);
   expect(orthogonal(points)).toBe(true);
 });
