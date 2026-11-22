@@ -90,7 +90,7 @@
 
       <section>
         <h3>案 C: 目次を開くボタンだけを右上の端に固定する</h3>
-        <p class="state-note">バーの代わりに 44px のボタンだけを残す。今いるセクションの見出しは出さず、ボタンが本文の右上の一部に重なる</p>
+        <p class="state-note">バーの代わりにボタンだけを残す（アイコンは右側のパネル、大きさは推奨の見た目 32px・押せる範囲 44px で描いている）。今いるセクションの見出しは出さず、ボタンが本文の右上の一部に重なる</p>
         <div class="phone" aria-label="案 C の見本">
           <div class="host-header">利用側のアプリ</div>
           <div class="phone-body mdmark">
@@ -100,7 +100,7 @@
             <h2>使用方法</h2>
             <p>配布物を読み込んだページで <code>mount</code> を呼び、要素の中に Markdown を描きます。</p>
           </div>
-          <button type="button" class="toc-button toc-fab" aria-label="目次を表示"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12h-8"/><path d="M21 6H8"/><path d="M21 18h-8"/><path d="M3 6v4c0 1.1.9 2 2 2h3"/><path d="M3 10v6c0 1.1.9 2 2 2h3"/></svg></button>
+          <button type="button" class="toc-fab-size" style="width: 44px; height: 44px;" aria-label="目次を表示"><span class="toc-fab-face" style="width: 32px; height: 32px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M15 3v18"/></svg></span></button>
           <div class="gesture-note">下へスクロール中</div>
         </div>
       </section>
