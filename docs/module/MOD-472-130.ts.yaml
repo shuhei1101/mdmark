@@ -326,6 +326,18 @@ functions:
         condition: 構成図を描いてパネルを開く
         mock: なし（Chromium）
         expected: パネルに `[data-tool="list"]`（`aria-pressed="false"`）と `[data-tool="export"]`（`aria-expanded="false"`）があり、一覧の表示のボタンを押すと表示する枠に `role="tree"` の一覧がある
+      - name: test_attach_map_flow_when_packet_style
+        case: 正常
+        summary: 設定の塗り方と色合い
+        condition: '`config.map.packets` に `{ fill: "glow", palette: "vivid" }` を指定して描き、`mount` を押して選ぶ'
+        mock: なし
+        expected: 図の要素の `data-packet-palette` が `vivid` で、`.map-packet` の `data-fill` が `glow`
+      - name: test_attach_map_flow_when_wire_moved_beyond_edge
+        case: 正常
+        summary: 区間をノードの端の外へ動かす
+        condition: 部品設計『mapの構成図』の状態 `WireRouteAfterDrag` の L 字の線の縦の区間を、右上のノードの右端より右へマウスでドラッグする
+        mock: なし
+        expected: 線の端が右上のノードの右の辺にあり、表示する枠の `scrollLeft` が押す前と同じ
     notes:
       計画した変更・書き出し・一覧の表示: '補足の `changes`（`parseMapData` と `collectMapProblems` で使用できない値・種類・キーを除いたもの）を `renderMapFlow` の `changes` に指定する。ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図は `extension` を通して同じ経路を通る。`renderDiagramFrame` に `exportable: true`・`listable: true` を指定し、`attachMapList` を `flowListItems`（今の図・`notes`・`changes`・種類の名前）で付け、片付ける関数を `destroy` で呼ぶ。描き直しても一覧の表示の状態は保たない'
 lead: 'map の構成図の描画と、選んだノードの線と経路の強調を受け持ち、構成図の描画と操作を変えるときに参照する。'
