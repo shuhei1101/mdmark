@@ -10173,12 +10173,50 @@
     transition: opacity 0.15s;
   }
 
-  /* データの印: 線の上を元から先へ流れる */
+  /* データの印: 線の上を元から先へ流れる。塗り方（data-fill）ごとの塗りと縁は印の要素が持ち、色は --packet-color で受ける */
   .map-packet {
-    stroke: var(--mdmark-color-bg);
-    stroke-width: 1.5;
     /* 印の上にポインターが来ても、線のホバーを外さない */
     pointer-events: none;
+  }
+
+  /* データの印の色合い: 印の層の data-packet-palette ごとの 5 色と灰色。明るい配色と暗い配色の値を color-scheme で切り替え、利用側のテーマで上書きできる */
+  [data-packet-palette] {
+    --mdmark-map-packet-gray: var(--mdmark-color-accent-gray-text);
+  }
+  [data-packet-palette="accent"] {
+    --mdmark-map-packet-1: var(--mdmark-color-accent-blue-text);
+    --mdmark-map-packet-2: var(--mdmark-color-accent-green-text);
+    --mdmark-map-packet-3: var(--mdmark-color-accent-orange-text);
+    --mdmark-map-packet-4: var(--mdmark-color-accent-purple-text);
+    --mdmark-map-packet-5: var(--mdmark-color-accent-red-text);
+  }
+  [data-packet-palette="vivid"] {
+    --mdmark-map-packet-1: light-dark(#3b82f6, #3b82f6);
+    --mdmark-map-packet-2: light-dark(#1ca34d, #22c55e);
+    --mdmark-map-packet-3: light-dark(#ed6506, #f97316);
+    --mdmark-map-packet-4: light-dark(#a855f7, #a855f7);
+    --mdmark-map-packet-5: light-dark(#ef4444, #ef4444);
+  }
+  [data-packet-palette="pastel"] {
+    --mdmark-map-packet-1: light-dark(#2e8ffb, #93c5fd);
+    --mdmark-map-packet-2: light-dark(#15a249, #86efac);
+    --mdmark-map-packet-3: light-dark(#da7103, #fdba74);
+    --mdmark-map-packet-4: light-dark(#b26bfd, #d8b4fe);
+    --mdmark-map-packet-5: light-dark(#fa5454, #fca5a5);
+  }
+  [data-packet-palette="muted"] {
+    --mdmark-map-packet-1: light-dark(#5b7fa6, #5b7fa6);
+    --mdmark-map-packet-2: light-dark(#6b9080, #6b9080);
+    --mdmark-map-packet-3: light-dark(#bf8153, #c08457);
+    --mdmark-map-packet-4: light-dark(#8e7cc3, #8e7cc3);
+    --mdmark-map-packet-5: light-dark(#b56576, #b56576);
+  }
+  [data-packet-palette="cool"] {
+    --mdmark-map-packet-1: light-dark(#2563eb, #2563eb);
+    --mdmark-map-packet-2: light-dark(#0d98d6, #0ea5e9);
+    --mdmark-map-packet-3: light-dark(#119e8f, #14b8a6);
+    --mdmark-map-packet-4: light-dark(#6366f1, #6366f1);
+    --mdmark-map-packet-5: light-dark(#8b5cf6, #8b5cf6);
   }
 
   /* シーケンス図の参加者: 押すとその参加者のメッセージを強調する */
@@ -11839,6 +11877,14 @@
     font-size: 12px;
     text-align: center;
   }
+  /* 線より長いラベル: 線の横に置き、幅を文字に合わせる（位置はラベルの中心） */
+  .map-axis-wire-label[data-beside] {
+    width: auto;
+    padding: 0 6px;
+    transform: translate(-50%, -50%);
+    white-space: nowrap;
+  }
+
   .map-axis-today-label {
     width: 32px;
     color: var(--mdmark-color-accent-red-text);

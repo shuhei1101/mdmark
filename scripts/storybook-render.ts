@@ -108,6 +108,7 @@ import {
   noteTexts,
   parseMapData,
 } from "../src/map/data.ts";
+import { applyWireShifts } from "../src/map/drag.ts";
 import {
   erColumnNotes,
   erFanouts,
@@ -122,6 +123,8 @@ import {
   estimateTextWidth,
   layoutMap,
   MAP_LAYOUT,
+  type MapLayout,
+  type MapOverride,
   separateWires,
   spreadWireEnds,
 } from "../src/map/layout.ts";
@@ -146,6 +149,13 @@ import {
 } from "../src/map/map.part.ts";
 import { mindmapItemOf, parseMindmap } from "../src/map/mindmap.ts";
 import { layoutMindmap } from "../src/map/mindmap-layout.ts";
+import {
+  DEFAULT_PACKET_STYLE,
+  PACKET_FILLS,
+  PACKET_PALETTES,
+  type PacketFill,
+  type PacketPalette,
+} from "../src/map/packet.ts";
 import { parseSequence } from "../src/map/sequence.ts";
 import { sequenceRows } from "../src/map/sequence-rows.ts";
 import {
@@ -918,6 +928,38 @@ const MAP_FLOW_STYLED = `flowchart LR
   linkStyle 1 stroke:#d33`;
 
 /** 部品設計『mapの構成図』の状態 WireEndsAndShapes の Mermaid */
+/** 1 つのノードから同じ長さの 3 本の線が出る図（データの印の見た目のストーリー） */
+const MAP_FLOW_PACKET_VARIETY = `flowchart LR
+  hub[hub] --> a[A]
+  hub --> b[B]
+  hub --> c[C]`;
+
+/** ノード 1 つに色を指定し、線のラベルを持つ図（出発点のノードの色の印のストーリー） */
+const MAP_FLOW_PACKET_SOURCE = `flowchart LR
+  hub[hub] -->|設定を読む| a[A]
+  hub --> b[B]
+  a --> c[C]
+  style hub fill:#dbeafe,stroke:#1d4ed8`;
+
+/** 横の線と縦の線に、線より長いラベルを持つ図 */
+const MAP_FLOW_LONG_LABEL = `flowchart LR
+  a[入力] -->|設定ファイルと索引を読み込んで検査する| b[点検]
+  b -->|結果| c[出力]
+  b -->|Markdown の本文と補足を読み取る| d[配置]`;
+
+/** 左下のノードの右の辺から右上のノードの下の辺へ入る L 字の線と、つながらないノードの図 */
+const MAP_FLOW_ROUTE = `flowchart LR
+  a[左下] --> c[右上]
+  x[つながらない]`;
+
+/** L 字の線の図のノードの位置と線の端 */
+const MAP_FLOW_ROUTE_OVERRIDES = {
+  a: { pos: { x: 0, y: 200 } },
+  c: { pos: { x: 280, y: 0 } },
+  x: { pos: { x: 520, y: 100 } },
+  "a->c": { ends: { from: "right" as const, to: "bottom" as const } },
+};
+
 const MAP_FLOW_WIRE_ENDS = `flowchart LR
   A[受付] --o B[確認]
   A --x C[却下]
@@ -1239,6 +1281,10 @@ const mapFlowStorySource = (
     "shared-side": MAP_FLOW_SHARED_SIDE,
     styled: MAP_FLOW_STYLED,
     "wire-ends": MAP_FLOW_WIRE_ENDS,
+    "packet-variety": MAP_FLOW_PACKET_VARIETY,
+    "packet-source": MAP_FLOW_PACKET_SOURCE,
+    "long-label": MAP_FLOW_LONG_LABEL,
+    route: MAP_FLOW_ROUTE,
   };
   return sources[String(source)] ?? MAP_FLOW;
 };
@@ -1526,6 +1572,143 @@ function itemOrGroupTipStory(args: PartArgs, open: boolean): string {
   return `<div style="padding-block-end:${open ? "8rem" : "0"}"><div class="mdmark-diagram-box" style="min-height:11rem;padding:1rem">${owner}${tip}</div></div>`;
 }
 
+/** 部品『mapの構成図』の 1 つの図の枠 */
+const mapFlowStory = (args: PartArgs): string => {
+  const entered = typeof args.entered === "string" ? args.entered : undefined;
+  const collapsed = jsonList(args.collapsed);
+  const { data } = parseMapData(MAP_DATA);
+  const changes = jsonObject<Record<string, MapChange>>(args.changes);
+  const chart = parseFlowchart(mapFlowStorySource(args.source, changes));
+  const placed = layoutMap(
+    chart,
+    { collapsed, entered },
+    {
+      overrides: mapFlowStoryOverrides(args),
+      nodeFit: args.node_fit === "width" ? "width" : "height",
+      measureText: estimateTextWidth,
+    },
+  );
+  // 図に描くときと同じく、同じ辺の線の端を並べてから、同じ区間を通る線を並べる
+  const separated = {
+    ...placed,
+    wires: separateWires({ ...placed, wires: spreadWireEnds(placed) }).wires,
+  };
+  const layout =
+    args.source === "route" && args.moved === true
+      ? { ...separated, wires: routeAfterDrag(separated) }
+      : separated;
+  const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
+  const selected = jsonList(args.selected);
+  return mapFrame(
+    typeof args.title === "string" ? args.title : "全体の構成",
+    renderMapFlow({
+      layout,
+      kinds: MAP_CONFIG.kinds,
+      lines: MAP_CONFIG.lines,
+      // 範囲の外の純粋な Mermaid は補足を持たない
+      notes: ["plain", "styled", "wire-ends"].includes(String(args.source))
+        ? {}
+        : {
+            ...noteTexts(data.notes),
+            ...jsonObject<Record<string, string>>(args.notes),
+          },
+      links: jsonObject<Record<string, string>>(args.links),
+      hints: hintsOf(args.hints),
+      collapsed,
+      entered,
+      selected,
+      focus,
+      // 選んだノードの線か、強調する線にデータの印を流す（mount の attachMapFlow と同じ）
+      packets: (selected.length > 0
+        ? layout.wires
+            .filter((wire) =>
+              selected.length === 1
+                ? selected.includes(wire.from) || selected.includes(wire.to)
+                : selected.includes(wire.from) && selected.includes(wire.to),
+            )
+            .map((wire) => wire.id)
+        : (focus?.wires ?? [])
+      ).map((wire) => ({
+        wire,
+        direction: "forward" as const,
+        color: data.layout[wire]?.packet?.color,
+        shape: data.layout[wire]?.packet?.shape,
+        fill: data.layout[wire]?.packet?.fill,
+      })),
+      packetStyle: {
+        fill: (PACKET_FILLS as readonly string[]).includes(
+          String(args.packet_fill),
+        )
+          ? (args.packet_fill as PacketFill)
+          : DEFAULT_PACKET_STYLE.fill,
+        palette: (PACKET_PALETTES as readonly string[]).includes(
+          String(args.packet_palette),
+        )
+          ? (args.packet_palette as PacketPalette)
+          : DEFAULT_PACKET_STYLE.palette,
+      },
+      colors: mapFlowStoryColors(data, changes),
+      dragging: undefined,
+      id: "story-map",
+      changes,
+      styles: mapFlowStoryStyles(chart),
+    }),
+    {
+      width: layout.width,
+      height: layout.height,
+      ...mapStoryPanel(args, entered !== undefined),
+    },
+  );
+};
+
+/** ストーリーの引数 `packet_fills`・`packet_palettes` が `all` なら塗り方・色合いごとの図を並べ、それ以外は 1 つの図 */
+const mapFlowStories = (args: PartArgs): string => {
+  if (args.packet_fills === "all")
+    return PACKET_FILLS.map((fill) =>
+      mapFlowStory({ ...args, packet_fill: fill, title: `塗り方 ${fill}` }),
+    ).join("");
+  if (args.packet_palettes === "all")
+    return PACKET_PALETTES.map((palette) =>
+      mapFlowStory({
+        ...args,
+        packet_palette: palette,
+        title: `色合い ${palette}`,
+      }),
+    ).join("");
+  return mapFlowStory(args);
+};
+
+/** 構成図のストーリーの配置の上書き（`route` は L 字の線の図の位置と端、`ends` は mount->marker の端） */
+const mapFlowStoryOverrides = (args: PartArgs): Record<string, MapOverride> => {
+  if (args.source === "route") return MAP_FLOW_ROUTE_OVERRIDES;
+  const ends = jsonObject(args.ends);
+  return ends === undefined
+    ? {}
+    : { "mount->marker": { ends: ends as MapOverride["ends"] } };
+};
+
+/** L 字の線の縦の区間を、右上のノードの右端より 30px 右へ動かした線 */
+const routeAfterDrag = (layout: MapLayout): MapLayout["wires"] => {
+  const wire = layout.wires.find((item) => item.id === "a->c");
+  const target = layout.nodes.find((node) => node.id === "c");
+  if (!wire || !target) return layout.wires;
+  const segment = wire.points.findIndex(
+    (point, index) => point[0] === wire.points[index + 1]?.[0],
+  );
+  const x = wire.points[segment]?.[0] ?? 0;
+  return applyWireShifts(layout, {
+    wireShifts: {
+      [wire.id]: [
+        {
+          segment,
+          offset: target.x + target.w + 30 - x,
+          count: wire.points.length,
+        },
+      ],
+    },
+  }).wires;
+};
+
 /** ノードのマーカー・線のラベル・用語のツールチップのストーリー */
 function plainTipStory(args: PartArgs, open: boolean): string {
   const kind = args.kind === "hint" ? "hint" : "wire";
@@ -1563,79 +1746,7 @@ function plainTipStory(args: PartArgs, open: boolean): string {
 }
 
 const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
-  "map-flow": (args) => {
-    const entered = typeof args.entered === "string" ? args.entered : undefined;
-    const collapsed = jsonList(args.collapsed);
-    const { data } = parseMapData(MAP_DATA);
-    const changes = jsonObject<Record<string, MapChange>>(args.changes);
-    const chart = parseFlowchart(mapFlowStorySource(args.source, changes));
-    const placed = layoutMap(
-      chart,
-      { collapsed, entered },
-      {
-        overrides:
-          jsonObject(args.ends) === undefined
-            ? {}
-            : { "mount->marker": { ends: jsonObject(args.ends) } },
-        nodeFit: args.node_fit === "width" ? "width" : "height",
-        measureText: estimateTextWidth,
-      },
-    );
-    // 図に描くときと同じく、同じ辺の線の端を並べてから、同じ区間を通る線を並べる
-    const layout = {
-      ...placed,
-      wires: separateWires({ ...placed, wires: spreadWireEnds(placed) }).wires,
-    };
-    const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
-    const selected = jsonList(args.selected);
-    return mapFrame(
-      "全体の構成",
-      renderMapFlow({
-        layout,
-        kinds: MAP_CONFIG.kinds,
-        lines: MAP_CONFIG.lines,
-        // 範囲の外の純粋な Mermaid は補足を持たない
-        notes: ["plain", "styled", "wire-ends"].includes(String(args.source))
-          ? {}
-          : {
-              ...noteTexts(data.notes),
-              ...jsonObject<Record<string, string>>(args.notes),
-            },
-        links: jsonObject<Record<string, string>>(args.links),
-        hints: hintsOf(args.hints),
-        collapsed,
-        entered,
-        selected,
-        focus,
-        // 選んだノードの線か、強調する線にデータの印を流す（mount の attachMapFlow と同じ）
-        packets: (selected.length > 0
-          ? layout.wires
-              .filter((wire) =>
-                selected.length === 1
-                  ? selected.includes(wire.from) || selected.includes(wire.to)
-                  : selected.includes(wire.from) && selected.includes(wire.to),
-              )
-              .map((wire) => wire.id)
-          : (focus?.wires ?? [])
-        ).map((wire) => ({
-          wire,
-          direction: "forward" as const,
-          color: data.layout[wire]?.packet?.color,
-          shape: data.layout[wire]?.packet?.shape ?? "circle",
-        })),
-        colors: mapFlowStoryColors(data, changes),
-        dragging: undefined,
-        id: "story-map",
-        changes,
-        styles: mapFlowStoryStyles(chart),
-      }),
-      {
-        width: layout.width,
-        height: layout.height,
-        ...mapStoryPanel(args, entered !== undefined),
-      },
-    );
-  },
+  "map-flow": mapFlowStories,
   "map-er": (args) => {
     const er = parseErDiagram(MAP_ER);
     const { data } = parseMapData(MAP_ER_DATA);

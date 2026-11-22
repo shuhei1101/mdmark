@@ -131,3 +131,43 @@ export const WireEndsAndShapes: Story = {
   parameters: { server: { id: "map-flow" } },
   args: { source: "wire-ends" },
 };
+
+export const PacketVariety: Story = {
+  name: "PacketVariety",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "packet-variety", selected: '["hub"]' },
+};
+
+export const PacketFills: Story = {
+  name: "PacketFills",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "packet-variety", selected: '["hub"]', packet_fills: "all" },
+};
+
+export const PacketPalettes: Story = {
+  name: "PacketPalettes",
+  parameters: { server: { id: "map-flow" } },
+  args: {
+    source: "packet-variety",
+    selected: '["hub"]',
+    packet_palettes: "all",
+  },
+};
+
+export const PacketSourceColor: Story = {
+  name: "PacketSourceColor",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "packet-source", selected: '["hub"]' },
+};
+
+export const LongWireLabel: Story = {
+  name: "LongWireLabel",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "long-label" },
+};
+
+export const WireRouteAfterDrag: Story = {
+  name: "WireRouteAfterDrag",
+  parameters: { server: { id: "map-flow" } },
+  args: { source: "route", moved: "true" },
+};

@@ -344,6 +344,7 @@ export const renderMapPackets = (
     const node = layout.nodes.find((item) => item.id === id);
     return (
       colorVar(kindOf(args.kinds, node?.classes)?.color) ??
+      args.styles?.nodes[id]?.stroke ??
       args.styles?.nodes[id]?.fill
     );
   };
