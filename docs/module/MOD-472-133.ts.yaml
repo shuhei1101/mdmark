@@ -300,9 +300,9 @@ functions:
 
       ドラッグを受け持つ要素（ノードの `span.mdmark-diagram-node-hit` と `a.mdmark-diagram-node-link`・`.map-group-head`・`.map-group-bar`・`.map-group-resize`・`g.map-wire-hit`）に `data-drag-owner` を付ける（図の移動はその上で始めない。`attachZoom` の `dragOwner`）。
 
-      データの印は `resolvePacketMark` で線ごとの見た目を決め（線の番号は `layout.wires` の順、出発点のノードの色は `styles` と種類の色、色を指定したノードの有無はそのどちらかを持つノードが 1 つでもあるか）、`renderPackets` で描く。図の要素に `data-packet-palette` を `packetStyle.palette` の値で付ける。印の SVG は線の SVG の後、ノードと線のラベルの前に置き、重なりを線 → 印 → ノード → 線のラベルの順にする。
+      データの印は `resolvePacketMark` で線ごとの見た目を決め（線の番号は `layout.wires` の順、出発点のノードの色は種類の色、無ければ `styles` の枠線の色か塗りの色、色を指定したノードの有無はそのどちらかを持つノードが 1 つでもあるか）、`renderPackets` で描く。データの印の層（`svg.map-packets`）に `data-packet-palette` を `packetStyle.palette` の値で付ける。印の SVG は線の SVG の後、ノードと線のラベルの前に置き、重なりを線 → 印 → ノード → 線のラベルの順にする。
 
-      線のラベルの幅（縦の区間は高さ）が置く区間の長さより長いときは、線に重ねず、横の区間は線の上、縦の区間は線の右に 6px 離して置き、`data-beside` を付ける（線より短いラベルは今のまま）。軸と格子の配置の図の線のラベル（`renderMapAxisGrid`）も同じ置き方にする
+      線のラベルの幅が、ラベルを配置する区間（線の最も長い区間）の長さより長いときは、線に重ねず、横の区間は線の上、縦の区間は線の右に 6px 離して置き、`data-beside` を付ける（線より短いラベルは今のまま）。軸と格子の配置の図の線のラベル（`renderMapAxisGrid`）も同じ置き方にする
     scope: public
     callees:
       - MOD-747-1#functions[textColorOn]
@@ -470,7 +470,7 @@ functions:
     role: 処理
     summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを `mdmark-diagram-seq-*` の class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・ノート・活性化の帯・参加者の選択を重ねる
     description: |-
-      メッセージの線のデータの印は、`packet.ts` の `resolvePacketMark` で見た目を決めて `renderPackets` で描く。線の番号はメッセージの記載の順（0 から）、線の ID はメッセージの ID（`data-message`）、`colored` は偽（参加者は色を持たない）にし、`packetStyle` の塗り方と色合いを構成図と同じく当てる。図の要素に `data-packet-palette` を付ける。
+      メッセージの線のデータの印は、`packet.ts` の `resolvePacketMark` で見た目を決めて `renderPackets` で描く。線の番号はメッセージの記載の順（0 から）、線の ID はメッセージの ID（`data-message`）、`colored` は偽（参加者は色を持たない）にし、`packetStyle` の塗り方と色合いを構成図と同じく当てる。データの印の層（`g.map-packets`）に `data-packet-palette` を付ける。
       寸法は `MAP_SEQ` で決める。参加者の行の背景は、CSS（`src/index.css`）で表示する枠の枠線とツールの行の線の内側に収める。ライフラインごとに、同じ座標の透明な判定の線（`line.map-lifeline-hit[data-lifeline]`。幅と `pointer-events` は CSS で `.map-wire-hit` と同じ）を、メッセージの線より前（下）に描く
     scope: public
     args:
