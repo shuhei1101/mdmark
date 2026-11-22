@@ -50,8 +50,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-22T06:26:41.715543+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
     note: IF-472-35『文書を描く』の線の経路・線の上の文字・データの印の期待結果
+    updated_by: planner
+    updated_at: '2026-11-22T06:38:19.323590+00:00'
   - process: エージェント・MCP サーバー設計
     status: skipped
     reason: MCP サーバー・エージェントの機能を足さない。フックの注入文は文言を変えずに持ち方だけを変える
