@@ -1,3 +1,9 @@
+import {
+  PACKET_FILLS,
+  PACKET_SHAPES,
+  type PacketFill,
+  type PacketShape,
+} from "./packet.ts";
 import type { MapProblem } from "./spec.ts";
 
 /** 案内の 1 手順 */
@@ -12,7 +18,8 @@ export type MapStep = {
 /** データの印の色と形状 */
 export type MapPacket = {
   color?: string | undefined;
-  shape?: "circle" | "square" | "diamond" | undefined;
+  shape?: PacketShape | undefined;
+  fill?: PacketFill | undefined;
 };
 
 /** 線の端をつなぐノードの辺 */
@@ -105,7 +112,6 @@ const LAYOUT_KEYS = [
   "via",
   "collapsed",
 ];
-const PACKET_SHAPES = ["circle", "square", "diamond"];
 const SIDES = ["top", "right", "bottom", "left"];
 const JUSTIFIES = ["start", "center", "end"];
 
@@ -352,7 +358,7 @@ const readPacket = (
   path: string,
 ): MapPacket | undefined => {
   if (!isObject(value)) {
-    invalid(reader, path, ' `{"color", "shape"}` ');
+    invalid(reader, path, ' `{"color", "shape", "fill"}` ');
     return undefined;
   }
   const out: MapPacket = {};
@@ -361,7 +367,12 @@ const readPacket = (
   if (value.shape !== undefined)
     out.shape = readChoice(reader, value.shape, {
       path: `${path}.shape`,
-      choices: PACKET_SHAPES,
+      choices: [...PACKET_SHAPES],
+    });
+  if (value.fill !== undefined)
+    out.fill = readChoice(reader, value.fill, {
+      path: `${path}.fill`,
+      choices: [...PACKET_FILLS],
     });
   return out;
 };

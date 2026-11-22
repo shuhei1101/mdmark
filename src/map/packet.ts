@@ -221,10 +221,7 @@ export const renderPackets = (paths: PacketPath[]): string =>
   paths
     .flatMap((path) => {
       const { mark } = path;
-      const seconds = Math.max(
-        0.6,
-        path.length / (PACKET_SPEED * mark.speed),
-      );
+      const seconds = Math.max(0.6, path.length / (PACKET_SPEED * mark.speed));
       const count = Math.max(
         1,
         Math.min(PACKET_MAX, Math.floor(path.length / PACKET_GAP)),

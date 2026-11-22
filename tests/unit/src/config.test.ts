@@ -87,7 +87,13 @@ test("test_resolve_config", async () => {
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },
-    map: { node_fit: "height", url_state: true, kinds: {}, lines: {} },
+    map: {
+      node_fit: "height",
+      url_state: true,
+      kinds: {},
+      lines: {},
+      packets: { fill: "tinted", palette: "accent" },
+    },
   });
 });
 

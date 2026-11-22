@@ -1,3 +1,4 @@
+import type { PacketStyle } from "./packet.ts";
 /** map の書き方の誤りの項目の種類（点検のずれの種類と同じ名前） */
 export type MapProblemKind =
   | "map_invalid"
@@ -45,6 +46,7 @@ export type ResolvedMapConfig = {
   url_state: boolean;
   kinds: Record<string, MapKind>;
   lines: Record<string, MapLine>;
+  packets: PacketStyle;
 };
 
 /** マーカーの引数（A-128 の構成の JSON のオブジェクト） */
