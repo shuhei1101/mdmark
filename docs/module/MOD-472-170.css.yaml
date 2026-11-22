@@ -373,6 +373,18 @@ styles:
       - class_name: .map-mindmap-item・.map-mindmap-root
         target: map のマインドマップの項目
         value: '名前を `font-size: 13px; font-weight: 400`、根の名前を `font-size: 15px; font-weight: 600` にする。`data-shape="plain"` の項目は `border: 1px solid var(--node-color); border-radius: 6px; background: var(--mdmark-color-bg-opaque)`（下線だけの規則を削除する）。名前は `overflow-wrap: break-word; word-break: keep-all` で文節の切れ目でだけ折り返す。`:hover` は面を `color-mix(in srgb, var(--node-color) 10%, var(--mdmark-color-bg-opaque))`、`[data-selected]` は 18% にし、名前の上のポインターの形状を `pointer` にする（モック `docs/mock/refs/772/assets/mock.css` の `.mind-a`）'
+      - class_name: '[data-packet-palette]'
+        target: map の図のデータの印の色合い
+        value: '層の内部の変数 `--mdmark-map-packet-palette-1`〜`-5` を `data-packet-palette` の値（`accent`・`vivid`・`pastel`・`muted`・`cool`）ごとに定義する。`accent` は `--mdmark-color-accent-{blue,green,orange,purple,red}-text` を指し、ほかは `:root` の `--mdmark-map-packet-{色合い}-{1〜5}` を指す。`:root` の値は部品設計『mapの構成図』の補足『データの印の色合い』の明るい配色の値を既定にし、ダークの配色の規則（画面で OS の設定がダークのときと、描く先かその祖先の class で暗くしたとき）と同じセレクタで暗い配色の値にする（対応ブラウザの下限で使えない `light-dark()` は使わない）。属性はデータの印の層（`.map-packets`）が持つ。印の色は利用側の `--mdmark-map-packet-1`〜`-5`・`--mdmark-map-packet-gray` を先に参照する（`packet.ts` が `var()` の代わりの値で指定する）ため、利用側のテーマは `.mdmark`・`:root` でこれらの変数を上書きできる'
+      - class_name: .map-packet[data-fill]
+        target: map の図のデータの印の塗り方
+        value: '`solid`・`shine` は印の色で塗り `stroke: var(--mdmark-color-bg-opaque)` 1.5px、`tinted` は `fill: color-mix(in srgb, {印の色} 30%, var(--mdmark-color-bg-opaque))` と印の色の `stroke` 1.5px、`ring` の外側の輪郭は `opacity: 0.6`、`glow` の広がりは `opacity: 0.3`。印の色は要素の `--packet-color` で渡す。強調しない要素の薄い表示には入れない'
+      - class_name: .mdmark-diagram-label[data-beside]
+        target: 線より長い線のラベル
+        value: '線の横に置くラベルは、今の線のラベルと同じ文字の大きさ・背景の色で塗り、線を隠さない位置（`renderMapFlow` が決める）に置く。`white-space: nowrap` のまま'
+      - class_name: .map-axis-wire-label[data-beside]
+        target: 線より長い軸と格子の配置の図の線のラベル
+        value: '`width: auto; padding: 0 6px; transform: translate(-50%, -50%); white-space: nowrap`。位置は `renderMapAxisGrid` が決めるラベルの中心'
     refs:
       - SCR-472-4#
       - CMP-472-65#

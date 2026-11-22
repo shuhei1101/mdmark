@@ -78,6 +78,8 @@ export type MdmarkDiagramWire = {
   label?: string;
   /** ラベルの中心 */
   labelAt?: [number, number];
+  /** ラベルを線に重ねず線の横に置くか（`data-beside` を付ける） */
+  beside?: boolean;
   /** ラベルの詳細。持つラベルにツールチップを付ける */
   tip?: string;
   /** 設定の map.lines の線の種類（模様・太さ・矢じり・色） */

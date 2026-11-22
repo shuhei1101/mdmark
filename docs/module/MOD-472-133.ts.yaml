@@ -59,6 +59,9 @@ data_models:
       - name: changes
         type: Record<string, "added" | "changed" | "removed"> | undefined
         description: 部品設計『mapの構成図』の `changes`。ノード・グループに class `map-change-{値}` と右上のバッジ `span.mdmark-map-change`（`data-change`、`aria-hidden`）を付け、押せる要素のスクリーンリーダー向けの名前の末尾に「、{変更の名前}」を追加する。線は線の `path` に class `map-change-{値}` を付ける。色・破線・取り消し線は CSS が持ち、`layout` の `color` と種類の色のインラインの値より優先する
+      - name: packetStyle
+        type: PacketStyle | undefined
+        description: '設定の `map.packets`（`{ fill, palette }`。無いときは `{ fill: "tinted", palette: "accent" }`）'
   - name: MapSequenceArgs
     title: mapのシーケンス図の引数
     container: src/map/map.part.ts
@@ -90,6 +93,9 @@ data_models:
       - name: hints
         type: boolean | undefined
         description: '`false` のとき、`notes` の説明と注記のツールチップとメッセージの線の `data-tip-owner` を作らず、注記の持ち主の `id` だけをメッセージの線の `.map-wire-hit` に付ける。既定は `true`'
+      - name: packetStyle
+        type: PacketStyle | undefined
+        description: '設定の `map.packets`（`{ fill, palette }`。無いときは `{ fill: "tinted", palette: "accent" }`）'
   - name: MapBandArgs
     title: 案内の帯の引数
     container: src/map/map.part.ts
@@ -291,10 +297,18 @@ functions:
       `styles` の色は、ノードの `div` の `style` 属性の `--map-node-fill`・`--map-node-stroke`・`--map-node-text` と、線の `path` の `stroke`・ラベルの `color` に入れる（明るい配色と暗い配色で変えない）。
       線の `ends` は線の端に線の色の円（`circle`）か×（`cross`）の `marker` を付け、`invisible` の線は線・ラベル・押せる帯を描かない。
       ノードの形状は `data-shape` に持たせ、追加した形状（`lean-right`・`lean-left`・`trapezoid`・`trapezoid-alt`・`double-circle`・`@{ shape }` の形状）は CSS の `clip-path` と外側の枠線で描く（文書など `clip-path` で表せない形状はノードの下に SVG の形状を重ねる）
+
+      ドラッグを受け持つ要素（ノードの `span.mdmark-diagram-node-hit` と `a.mdmark-diagram-node-link`・`.map-group-head`・`.map-group-bar`・`.map-group-resize`・`g.map-wire-hit`）に `data-drag-owner` を付ける（図の移動はその上で始めない。`attachZoom` の `dragOwner`）。
+
+      データの印は `resolvePacketMark` で線ごとの見た目を決め（線の番号は `layout.wires` の順、出発点のノードの色は種類の色、無ければ `styles` の枠線の色か塗りの色、色を指定したノードの有無はそのどちらかを持つノードが 1 つでもあるか）、`renderPackets` で描く。データの印の層（`svg.map-packets`）に `data-packet-palette` を `packetStyle.palette` の値で付ける。印の SVG は線の SVG の後、ノードと線のラベルの前に置き、重なりを線 → 印 → ノード → 線のラベルの順にする。
+
+      線のラベルの幅が、ラベルを配置する区間（線の最も長い区間）の長さより長いときは、線に重ねず、横の区間は線の上、縦の区間は線の右に 6px 離して置き、`data-beside` を付ける（線より短いラベルは今のまま）。軸と格子の配置の図の線のラベル（`renderMapAxisGrid`）も同じ置き方にする
     scope: public
     callees:
       - MOD-747-1#functions[textColorOn]
       - MOD-472-172#functions[renderFlow]
+      - MOD-472-370#functions[resolvePacketMark]
+      - MOD-472-370#functions[renderPackets]
     args:
       - name: args
         type: MapFlowArgs
@@ -430,6 +444,24 @@ functions:
         condition: 点が `[[0,0],[0,40],[100,40],[100,60]]`（区間の長さ 40・100・20）の線 1 本
         mock: なし
         expected: '`g.map-wire-hit[data-wire]` が 1 つで、中に `rect.map-wire-hit-segment` が 3 つあり、それぞれの矩形が区間を幅 14px で囲む（1 つ目は `x=-7 y=-7 width=14 height=54`）。`tabindex="0"`・`role="button"`・`aria-label` を持つのは 2 つ目（長さ 100）の帯だけで、ほかの帯は `aria-hidden="true"` を持ち `tabindex` を持たない。帯は `data-segment`（区間の番号）と、区間の向きの `data-axis`（`x`・`y`）を持つ'
+      - name: test_render_map_flow_when_packet_layer
+        case: 正常
+        summary: 印を線のラベルとノードの下に描く
+        condition: 部品設計『mapの構成図』の状態 `PacketVariety` の引数
+        mock: なし
+        expected: '`g.map-packet` が線の `path` より後、ノードと線のラベルより前にあり、3 つの `data-shape` が `circle`・`square`・`diamond`、`data-fill` が `tinted`、図の要素の `data-packet-palette` が `accent`'
+      - name: test_render_map_flow_when_long_label
+        case: 正常
+        summary: 線より長いラベルを線の横に置く
+        condition: 部品設計『mapの構成図』の状態 `LongWireLabel` の引数
+        mock: なし
+        expected: 横の線のラベルの下端が線より 6px 上、縦の線のラベルの左端が線より 6px 右で、どちらも `data-beside` を持つ。線より短いラベルは `data-beside` を持たず、今の位置
+      - name: test_render_map_flow_when_drag_owner
+        case: 正常
+        summary: ドラッグを受け持つ要素
+        condition: 部品設計『mapの構成図』の Default と LinkedNode の引数
+        mock: なし
+        expected: ノードの押せる要素・ノードのリンク・グループのタイトルの行と縁・角・線の押せる帯が `data-drag-owner` を持ち、グループの面は持たない
   - name: renderMapSequence
     title: mapのシーケンス図のHTML
     kind: 関数
@@ -437,7 +469,9 @@ functions:
     usecase: Mermaidと補足で図を描く
     role: 処理
     summary: 部品設計『mapのシーケンス図』の HTML。参加者の箱・ライフライン・メッセージの線とラベルを `mdmark-diagram-seq-*` の class で描き、ブロックの枠とタブの開閉と名前のボタン・区間・ノート・活性化の帯・参加者の選択を重ねる
-    description: 寸法は `MAP_SEQ` で決める。参加者の行の背景は、CSS（`src/index.css`）で表示する枠の枠線とツールの行の線の内側に収める。ライフラインごとに、同じ座標の透明な判定の線（`line.map-lifeline-hit[data-lifeline]`。幅と `pointer-events` は CSS で `.map-wire-hit` と同じ）を、メッセージの線より前（下）に描く
+    description: |-
+      メッセージの線のデータの印は、`packet.ts` の `resolvePacketMark` で見た目を決めて `renderPackets` で描く。線の番号はメッセージの記載の順（0 から）、線の ID はメッセージの ID（`data-message`）、`colored` は偽（参加者は色を持たない）にし、`packetStyle` の塗り方と色合いを構成図と同じく当てる。データの印の層（`g.map-packets`）に `data-packet-palette` を付ける。
+      寸法は `MAP_SEQ` で決める。参加者の行の背景は、CSS（`src/index.css`）で表示する枠の枠線とツールの行の線の内側に収める。ライフラインごとに、同じ座標の透明な判定の線（`line.map-lifeline-hit[data-lifeline]`。幅と `pointer-events` は CSS で `.map-wire-hit` と同じ）を、メッセージの線より前（下）に描く
     scope: public
     args:
       - name: args
@@ -490,6 +524,12 @@ functions:
         condition: 自分へのメッセージ（折り返しの 3 区間）が補足の `notes` の説明を持つ
         mock: なし
         expected: '`g.map-wire-hit[data-message]` の中に帯が 3 つあり、どの帯も `tabindex`・`role`・`aria-label` を持たず、最も長い区間の帯だけが `data-tip-owner` を持つ'
+      - name: test_render_map_sequence_when_packet_style
+        case: 正常
+        summary: メッセージの印の見た目
+        condition: 'メッセージ 3 通を `packets` に指定し、`packetStyle` を `{ fill: "ring", palette: "cool" }` にする'
+        mock: なし
+        expected: 3 つの `g.map-packet` の `data-shape` が `circle`・`square`・`diamond`、`data-fill` が `ring`、図の要素の `data-packet-palette` が `cool`
   - name: renderMapErDiagram
     title: mapのER図のHTML
     kind: 関数
@@ -1066,6 +1106,12 @@ functions:
         condition: 部品の GanttSelected・GitBranchSelected・JourneyActorSelected の引数
         mock: なし
         expected: 「設計する」と `after` の前後の 3 つ、feat の commit 2 つ、AI のタスク 3 つのほかの項目が `map-dim` を持ち、「設計する」の押せる要素の名前が「設計する（選択中）」
+      - name: test_render_map_axis_grid_when_long_label
+        case: 正常
+        summary: 線より長いラベルを線の横に置く
+        condition: 線より長いラベルを持つ `block-beta` の線
+        mock: なし
+        expected: ラベルが線と矢じりに重ならず、`data-beside` を持つ
     refs:
       - IF-472-35#constraints[map のガントチャート]
       - IF-472-35#constraints[map の section の開閉と中へ入る]

@@ -16,7 +16,7 @@ export type PromptPart = {
 /** プロンプトファイル 1 枚を読み込んだ値 */
 export type PromptFile = {
   id: string;
-  kind: "instructions" | "tool";
+  kind: "instructions" | "tool" | "hook";
   lang: string;
   vars?: Record<string, { required?: boolean; default?: unknown }>;
   parts: PromptPart[];

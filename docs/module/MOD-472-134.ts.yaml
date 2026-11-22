@@ -43,7 +43,7 @@ functions:
       type: void
       description: なし
     process: |-
-      1. 押した要素からノード・グループ・線の区間を決める（グループの面と余白は図の移動に任せて何もしない）
+      1. 押した要素からノード・グループ・線の区間を決める（グループの面と余白は図の移動に任せて何もしない）。`pointerType` が `touch` でなければ、押した要素で `setPointerCapture` を呼び、`pointerdown` を `preventDefault` する（文書のスクロールと文字の選択を始めない）
       2. 4px 動くまでは待ち、離したら `onClick` を呼ぶ
       3. 動いたら全てのノードとグループの今の位置を `positions` に入れ、ノード・グループは動いた分を追加し、線の区間は `wireShifts` に追加する。ほかとの間が `minGap` より狭くなる位置と、グループの左端・上端より外へは進めない
       4. 線の端の区間がノードの辺の端を越えたら、越えた側の辺へつなぎ替える
@@ -79,6 +79,12 @@ functions:
         condition: 線の真ん中の区間を相手のノードの上まで動かす
         mock: '`onMove`'
         expected: 線の端がそのノードの上の辺に付く
+      - name: test_start_drag_when_mouse_captured
+        case: 正常
+        summary: マウスではポインターを捕まえる
+        condition: ノードに `pointerType` が `mouse` の `pointerdown`
+        mock: '`setPointerCapture`'
+        expected: '`setPointerCapture` を押したポインターの ID で 1 回呼び、イベントの `defaultPrevented` が `true`。`touch` ではどちらもしない'
   - name: moveByKey
     title: キーで動かす
     kind: 関数
@@ -156,6 +162,58 @@ functions:
         condition: '右のノードとの間が 20px のグループ `page` を `dw: 32`'
         mock: なし
         expected: '`groupSizes.page` の幅が今の幅に 4 を加えた値'
+  - name: applyWireShifts
+    title: 線の区間のずらしを当てる
+    kind: 関数
+    container: src/map/drag.ts
+    usecase: Mermaidと補足で図を描く
+    role: 処理
+    summary: 動かした線の区間のずらしを線の点に当て、動かした区間の位置だけを保って前後の区間をノードの辺までの直角の経路で引き直し、端のつなぐ辺を決め直す。点の数が変わった線のずらしは捨てる
+    scope: public
+    args:
+      - name: layout
+        type: MapLayout
+        required: true
+        description: 配置の結果（ノード・グループを動かした後の位置を含む）
+      - name: state
+        type: Pick<MapState, "wireShifts">
+        required: true
+        description: 線の ID ごとの区間のずらし
+    returns:
+      type: '{ wires: PlacedWire[]; attachments: MapState["attachments"]; wireShifts: MapState["wireShifts"] }'
+      description: ずらしを当てた線・線の両端がつなぐ辺・当てたずらし
+    process: |-
+      1. ずらしを持たない線と、点の数が変わった線はそのまま返す
+      2. ずらした区間をその位置に置き、前後の区間を両端のノードの辺までの直角の経路で引き直す（区間の前後を引き直す）
+         - 縦（横）の区間が接続先のノードの左右（上下）の端の内側にある場合、そのノードの上下（左右）の辺につなぐ
+         - 端より外にある場合、越えた側の辺（右の端を越えたら右の辺）へ、区間から直角に曲がってつなぐ
+      3. 両端の点がノードの辺の上にあることを保ち、端のつなぐ辺を `attachments` に入れる。越えた側の辺へ回り込んだ端は入れない（自動配置の経路を変えず、次に描くときもずらしを当てて同じ経路にする）。ドラッグとキーでの移動は、線ごとに記録した端の辺へこの辺を重ねる（入れなかった端は前の辺のまま）
+      4. つながっていないノードは避けずに経路を引く
+    unit_tests:
+      - name: test_apply_wire_shifts_when_inside_edge
+        case: 正常
+        summary: 動かした区間を保つ
+        condition: 左下のノードの右の辺から右上のノードの下の辺への L 字の線の縦の区間を、右上のノードの左右の端の内側で右へ 20px ずらす
+        mock: なし
+        expected: 縦の区間の x 座標が 20 増え、線の端が右上のノードの下の辺と左下のノードの右の辺の上にあり、全ての区間が水平か垂直
+      - name: test_apply_wire_shifts_when_beyond_edge
+        case: 正常
+        summary: 越えた側の辺へ回り込む
+        condition: 同じ L 字の線の縦の区間を、右上のノードの右端より 30px 右へずらす
+        mock: なし
+        expected: 線の端が右上のノードの右の辺の上にあり、回り込んだ端のため `attachments` の `to` を持たず、縦の区間の x 座標がずらした位置のまま
+      - name: test_apply_wire_shifts_when_node_moved
+        case: 正常
+        summary: ノードを動かした後も浮かない
+        condition: 区間をずらした線の接続先のノードを上へ 40px 動かした配置
+        mock: なし
+        expected: 線の両端がノードの辺の上にある
+      - name: test_apply_wire_shifts_when_points_changed
+        case: 正常
+        summary: 点の数が変わった線のずらしは捨てる
+        condition: ずらしの `count` と線の点の数が違う
+        mock: なし
+        expected: 線がそのままで、戻り値の `wireShifts` にその線が無い
 lead: 'ノード・グループ・線の区間のドラッグとキーでの移動を受け持ち、構成図の移動の操作を変えるときに参照する。'
 tags:
   - name: topic:map

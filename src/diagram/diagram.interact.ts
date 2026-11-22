@@ -219,6 +219,7 @@ function attachView(
     // 文書の中は幅だけで決め、リサイズハンドルで高さを変えた後は高さでも決める
     fitHeight: () => modal || userHeight !== null,
     dragIgnore: TEXT_SELECTOR,
+    dragOwner: "[data-drag-owner]",
     keyTargets: [box],
     percentBase: "fit",
     touchPan: "native",

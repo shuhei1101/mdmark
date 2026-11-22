@@ -113,6 +113,7 @@ export const CONFIG = {
     "==>": { width: "thick" as const, color: "orange" },
     back: { dash: "dotted" as const, head: "open" as const },
   },
+  packets: { fill: "tinted" as const, palette: "accent" as const },
 };
 
 /** map の範囲の Markdown を組み立てる */

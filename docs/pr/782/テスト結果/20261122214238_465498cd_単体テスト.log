@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts
+
+
+ Test Files  334 passed (334)
+      Tests  2826 passed (2826)
+   Start at  21:42:38
+   Duration  31.17s (worker 81%, tests 13%, import 5%, transform 1%)
+
+exit=0

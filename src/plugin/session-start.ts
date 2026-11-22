@@ -1,13 +1,14 @@
+import { dirname } from "node:path";
+import { fileURLToPath } from "node:url";
 import { CliError } from "../cli/errors.ts";
 import { CONNECT_TIMEOUT_MS, isPortListening, readPort } from "./port.ts";
+import { loadPrompt, PromptError, renderPrompt } from "./prompt.ts";
 
-/** 常駐サーバーが待ち受けていないときに `additionalContext` に指定する 1 行。`{port}` をポートに置き換える */
-export const NOT_LISTENING_CONTEXT =
-  "mdmark の MCP の常駐サーバーが 127.0.0.1:{port} で待ち受けていないため、mdmark の MCP のツールは使用できない。/mdmark:global-setup で起動できる。";
+/** 常駐サーバーが待ち受けていないときの文のプロンプト（変数 `port`） */
+export const PROMPT_NOT_LISTENING = "hooks/session-start-not-listening";
 
-/** `MDMARK_PORT` が使用できない値のときの 1 行。`{value}` を受け取った値に置き換える */
-export const PORT_INVALID_CONTEXT =
-  "MDMARK_PORT の値 {value} はポートとして使用できないため、mdmark の MCP のツールは使用できない。1〜65535 の整数を設定する。";
+/** `MDMARK_PORT` が使用できない値のときの文のプロンプト（変数 `value`） */
+export const PROMPT_PORT_INVALID = "hooks/session-start-port-invalid";
 
 /** `additionalContext` を JSON の 1 行で標準出力に書き込む */
 const writeContext = (
@@ -24,20 +25,43 @@ const writeContext = (
   );
 };
 
+/** プロンプトを描いた文を `additionalContext` に書き込む。プロンプトファイルを読み込めない・描けないときは何も書き込まない */
+const writePrompt = async (options: {
+  root: string;
+  id: string;
+  vars: Record<string, unknown>;
+  stdout: (line: string) => void;
+}): Promise<void> => {
+  let context: string;
+  try {
+    const prompt = await loadPrompt({ root: options.root, id: options.id });
+    context = renderPrompt(prompt, options.vars);
+  } catch (error) {
+    if (error instanceof PromptError) return;
+    throw error;
+  }
+  writeContext(options.stdout, context);
+};
+
 /** ポートが待ち受けていなければ、そのことと `/mdmark:global-setup` で起動できることを 1 行で標準出力に書き込む。どの場合も 0 を返却する */
 export const runSessionStart = async (options: {
   env: NodeJS.ProcessEnv;
   stdout: (line: string) => void;
+  /** プラグインのルート */
+  root: string;
 }): Promise<0> => {
+  const { root, stdout } = options;
   let port: number;
   try {
     port = readPort({ env: options.env });
   } catch (error) {
     if (error instanceof CliError) {
-      writeContext(
-        options.stdout,
-        PORT_INVALID_CONTEXT.replace("{value}", options.env.MDMARK_PORT ?? ""),
-      );
+      await writePrompt({
+        root,
+        id: PROMPT_PORT_INVALID,
+        vars: { value: options.env.MDMARK_PORT ?? "" },
+        stdout,
+      });
       return 0;
     }
     throw error;
@@ -45,10 +69,7 @@ export const runSessionStart = async (options: {
   if (await isPortListening({ port, timeoutMs: CONNECT_TIMEOUT_MS })) {
     return 0;
   }
-  writeContext(
-    options.stdout,
-    NOT_LISTENING_CONTEXT.replace("{port}", String(port)),
-  );
+  await writePrompt({ root, id: PROMPT_NOT_LISTENING, vars: { port }, stdout });
   return 0;
 };
 
@@ -57,5 +78,6 @@ if (import.meta.main) {
   process.exitCode = await runSessionStart({
     env: process.env,
     stdout: (line) => console.log(line),
+    root: dirname(dirname(fileURLToPath(import.meta.url))),
   });
 }

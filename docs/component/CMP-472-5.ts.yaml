@@ -94,6 +94,30 @@ states:
     description: 1 つのノードの下の辺から 4 本、上の辺に 2 本の線が出入りする。端が辺の中点 1 か所に集まらず、相手のノードの並びの順に 16px 間隔で並び、並んで同じ向きに走る区間も 16px 離れる
     notes:
       定義: モック `docs/mock/components/map-wire-ports/` の「1 つのノードの上下の辺に 4 本と 2 本」（`FAN`）
+  - name: PacketVariety
+    description: 1 つのノードから同じ長さの 3 本の線が出て、そのノードを選んだ。印の形状が丸・四角・ひし形、色が色合い `accent` の 1〜3 番目、塗り方が `tinted` で、3 本の印が同じ位置に並ばずに流れる
+    notes:
+      定義: モック `docs/mock/components/map-wire-packet/` の「今の見た目と案」の図（同じ長さの 3 本）
+  - name: PacketFills
+    description: PacketVariety の図を、`packetStyle.fill` を `solid`・`ring`・`tinted`・`glow`・`shine`・`random` にして並べた。どの塗り方も、外側の輪郭・光を含めた印の大きさが `shine` と同じ
+    notes:
+      定義: モック `docs/mock/components/map-wire-packet/` の「印の塗り方の案」。ストーリーの引数で `packetStyle.fill` を切り替える
+  - name: PacketPalettes
+    description: PacketVariety の図を、`packetStyle.palette` を 5 つの色合いにして、明るい配色と暗い配色で並べた。どの色も背景とのコントラスト比が 3:1 以上
+    notes:
+      定義: モック `docs/mock/components/map-wire-packet/` の「印の色合いの案」
+  - name: PacketSourceColor
+    description: ノード 1 つに `style` で色を指定した図。そのノードから出る線の印がノードの色、指定の無いノードから出る線の印が `--mdmark-map-packet-gray` で、形状は線ごとに順に変わる。印は線のラベルとノードの下を通る
+    notes:
+      定義: モック `docs/mock/components/map-wire-packet/` の「ノードに色を指定した図」「線のラベルとノードとの重なり」
+  - name: LongWireLabel
+    description: 横の線と縦の線に、置く区間より長いラベルを持つ。ラベルは線に重ならず、横の線は線の上、縦の線は線の右に 6px 離れてあり、線と矢じりが見える
+    notes:
+      定義: モック `docs/mock/components/map-wire-label/` の案 A
+  - name: WireRouteAfterDrag
+    description: 左下のノードの右の辺から出て右上のノードの下の辺に入る L 字の線の縦の区間を、右上のノードの右端より右へ動かした。線は右上のノードの右の辺へ回り込んでつながり、端はどちらもノードの辺に付き、つながらないノードの下を通る
+    notes:
+      定義: モック `docs/mock/components/map-wire-drag-route/` の 2 回目の図（直した後）
 lead: map の `flowchart` を自動配置した結果のノードと線（線の交差の飛び越えを含む）を描き、その上に入れ子のグループの面を重ねる。グループの開閉と中へ入るボタン、ノードと線の選択・移動、強調しない要素を薄くする表示、線の上を流れるデータの印を持つ。
 args:
   - name: layout
@@ -166,7 +190,7 @@ args:
     type: オブジェクトの配列
     required: false
     default: '[]'
-    description: データの印を流す線（`{ wire, direction, color, shape }`。`direction` は `forward`・`backward`・`both`、`shape` は `circle`・`square`・`diamond`）。指定している間、元から先へ繰り返し流す。`color` は色の名前か `line`・`source`・`target` で、省く・知らない値は線の色
+    description: データの印を流す線（`{ wire, direction, color, shape, fill }`。`direction` は `forward`・`backward`・`both`、`shape` は `circle`・`square`・`diamond`・`triangle`、`fill` は `packetStyle.fill` と同じ値）。指定している間、元から先へ繰り返し流す。`color` は色の名前か `line`・`source`・`target`。省いた `shape`・`color`・`fill` は、図の中の線の記載の順番（線の番号）と `packetStyle` から決める（補足『データの印の見た目』）。知らない値は省いたときと同じ
   - name: groupSizes
     type: オブジェクト
     required: false
@@ -214,6 +238,11 @@ args:
     default: '{}'
     status: planned
     description: '補足の `changes` のノード・グループ・線の ID から `added`・`changed`・`removed` への対応（使用できない値・種類のものは除いた後）。`added` は `--mdmark-color-diff-add-sign`、`changed` は色の名前 `orange`、`removed` は `--mdmark-color-diff-del-sign` の色をノード・グループの枠線と線に適用し（`layout` の `color` と種類の色より優先。種類のアイコンと名前の行は種類の色のまま）、`removed` は枠線と線を破線、名前を 2px の取り消し線（`word-break: normal`）にする。ノードとグループのタイトルの右上に、枠線をまたいで変更の名前のバッジ（`span.mdmark-map-change`、`data-change` に値）を配置する。ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図の map も同じ'
+  - name: packetStyle
+    type: オブジェクト
+    required: false
+    default: '`{ fill: "tinted", palette: "accent" }`'
+    description: 設定の `map.packets`（`{ fill, palette }`）。`fill` は `solid`・`ring`・`tinted`・`glow`・`shine`・`random`、`palette` は `accent`・`vivid`・`pastel`・`muted`・`cool`。図の要素に `data-packet-palette` を付け、色合いの CSS 変数を切り替える
 events:
   - name: 開閉する
     when: グループの左上の山形のボタンか、閉じたグループの開くボタンを押す（Shift を押しながら押すと中のグループも）
@@ -248,6 +277,14 @@ css_properties:
     syntax: <color>
     default: color-mix(in srgb, var(--mdmark-color-muted) 70%, transparent)
     description: 色を持たないグループの枠線の色
+  - name: --mdmark-map-packet-1
+    syntax: <color>
+    default: 色合いの 1 番目の色（`accent` は `var(--mdmark-color-accent-blue-text)`）
+    description: 色を指定したノードの無い図で、線の番号を 5 で割った余りが 0 の線の印の色。`--mdmark-map-packet-2`〜`-5` も同じく余り 1〜4 の線の色で、色合いごとの値は補足『データの印の色合い』。利用側のテーマで上書きできる
+  - name: --mdmark-map-packet-gray
+    syntax: <color>
+    default: var(--mdmark-color-accent-gray-text)
+    description: 色を指定したノードがある図で、色の指定の無いノードから出る線の印の色
 uses:
   - component: CMP-472-38#
     how: 置き場所の無い線のラベル・ノード・グループ・線の補足の `notes`・まとめた線の元の線
@@ -267,6 +304,7 @@ accessibility:
   - ノードの右上とグループのタイトルの右の説明のマーカーは、押せる大きさを 24px 四方以上にする（閉じたグループのタイトルの行と、ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図のノードも同じ）。ノードの種類の行は、マーカーと重ならないよう右にマーカーの幅の余白を取る
   - 計画した変更は色だけで伝えず、変更の名前のバッジ（`removed` は破線の枠線のバッジと名前の取り消し線）で示す。ノードの押せる要素のスクリーンリーダー向けの名前の末尾に「、{変更の名前}」を追加し、バッジは `aria-hidden`
   - ノードの名前は 13px・種類の行と線のラベルは 11px で、どれも標準の太さ（400）にする（確認ログ『map の図のノードの名前・種類の行・線のラベルの文字の大きさと太さ』）。ノードの幅と名前の行の数は、この大きさで測る。ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図・軸と格子の配置の図のノードの名前と種類の行も同じ値にする
+  - データの印の色は、どの色合いも明るい配色・暗い配色の背景とのコントラスト比 3:1 以上。色だけで線を見分けさせず、形状も線ごとに変える
 refs:
   - IF-472-35#
   - IF-472-35#constraints[範囲の外の map の図に付く操作]
@@ -277,3 +315,23 @@ tags:
     main: true
   - name: topic:構成
   - name: topic:図
+notes:
+  データの印の見た目: |-
+    - 大きさ: 外側の輪郭・光を含めて、丸は半径 5.6px、四角は 9.6px 四方（角の丸み 1.6px）、ひし形は中心から頂点まで 6.4px、三角は上向きで高さと幅 11.2px（今の 8 割）。どの塗り方もこの大きさの中に収める
+    - 塗り方: `solid` は印の色で塗り、背景の色の 1.5px の縁を内側に付ける。`ring` は 6 割の大きさで塗り、外側に同じ色の 1px の輪郭を `opacity` 0.6 で重ねる。`tinted` は印の色を背景の色と 30% : 70% で混ぜた面に、印の色の 1.5px の輪郭を付ける。`glow` は 6 割の大きさで塗り、外側に同じ色の広がりを `opacity` 0.3 で重ねる。`shine` は `solid` の左上に半径 1.6px の白の照りを `opacity` 0.8 で入れる
+    - 形状と色の順番: 線の番号（Mermaid に記載した順、0 から）を 4 で割った余りで形状（丸・四角・ひし形・三角）、5 で割った余りで色を決める
+    - 速さ: 今の速さ（毎秒 60px）に、線の ID の FNV-1a のハッシュから求めた 0.9〜1.1 の倍率（0.9 + 0.2 × (ハッシュ mod 1001) / 1000）を掛ける。線の中の印の出始めは、同じハッシュから求めた 1 周の時間の割合だけずらす
+    - `random`: 線の ID に `:fill` を続けた文字列の FNV-1a のハッシュを 5 で割った余りで、`solid`・`ring`・`tinted`・`glow`・`shine` から選ぶ。同じ図を描き直しても同じ塗り方になる
+    - 重なりの順: 線 → データの印 → ノード → 線のラベルの順に重ね、印をラベルとノードの下に描く
+  データの印の色合い: |-
+    値は明るい配色 / 暗い配色の順。どの色も、選べるテーマの背景（明るい配色 `#ffffff`・`#fbf8f1`・`#f8fafc`、暗い配色 `#131316`・`#1c1915`・`#0f172a`・`#000000`）とのコントラスト比 3:1 以上。明るい配色の値は、最も暗い明るい背景 `#fbf8f1` で 3:1 以上になるまで、色相と彩度を保って明度を下げた
+
+    | 色合い | 1 | 2 | 3 | 4 | 5 |
+    | --- | --- | --- | --- | --- | --- |
+    | `accent` | アクセントの青の文字の色 | 緑 | 橙 | 紫 | 赤 |
+    | `vivid` | `#3b82f6` / `#3b82f6` | `#1ca34d` / `#22c55e` | `#ed6506` / `#f97316` | `#a855f7` / `#a855f7` | `#ef4444` / `#ef4444` |
+    | `pastel` | `#2e8ffb` / `#93c5fd` | `#15a249` / `#86efac` | `#da7103` / `#fdba74` | `#b26bfd` / `#d8b4fe` | `#fa5454` / `#fca5a5` |
+    | `muted` | `#5b7fa6` / `#5b7fa6` | `#6b9080` / `#6b9080` | `#bf8153` / `#c08457` | `#8e7cc3` / `#8e7cc3` | `#b56576` / `#b56576` |
+    | `cool` | `#2563eb` / `#2563eb` | `#0d98d6` / `#0ea5e9` | `#119e8f` / `#14b8a6` | `#6366f1` / `#6366f1` | `#8b5cf6` / `#8b5cf6` |
+
+    `accent` は各色の `--mdmark-color-accent-{色}-text` を指し、配色で切り替わる

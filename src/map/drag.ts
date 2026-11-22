@@ -195,13 +195,40 @@ const sideOf = (rect: Rect, [x, y]: [number, number]): MapSide | undefined => {
 const fixEnd = (
   points: Array<[number, number]>,
   rect: Rect | undefined,
-): Array<[number, number]> => {
-  if (!rect || points.length < 3) return points;
+): { points: Array<[number, number]>; around: boolean } => {
+  if (!rect || points.length < 3) return { points, around: false };
   let body = points.slice(0, -1);
   while (body.length > 1 && inside(rect, body.at(-1) as [number, number]))
     body = body.slice(0, -1);
-  const end = enterFrom(rect, body.at(-1) as [number, number]);
-  return end ? [...body, end] : points;
+  const last = body.at(-1) as [number, number];
+  const end = enterFrom(rect, last);
+  return end
+    ? { points: [...body, end], around: false }
+    : { points: [...body, ...enterAround(rect, last)], around: true };
+};
+
+/** まっすぐ入れない点から、越えた側の辺の中央へ縦横に曲げて入れる点（左右を越えたら左右の辺、それ以外は上下の辺） */
+const enterAround = (
+  rect: Rect,
+  [x, y]: [number, number],
+): Array<[number, number]> => {
+  const cx = rect.x + rect.w / 2;
+  const cy = rect.y + rect.h / 2;
+  if (x >= rect.x + rect.w)
+    return [
+      [x, cy],
+      [rect.x + rect.w, cy],
+    ];
+  if (x <= rect.x)
+    return [
+      [x, cy],
+      [rect.x, cy],
+    ];
+  const edge = y <= rect.y ? rect.y : rect.y + rect.h;
+  return [
+    [cx, y],
+    [cx, edge],
+  ];
 };
 
 /** 線の区間のずらし */
@@ -275,12 +302,29 @@ export const applyWireShifts = (
     wireShifts[wire.id] = shifts;
     const from = rectOf(wire.from);
     const to = rectOf(wire.to);
-    let points = fixEnd(shiftPoints(wire, shifts), to);
-    points = fixEnd([...points].reverse(), from).reverse();
-    attachments[wire.id] = attachmentOf(points, { from, to });
+    const toEnd = fixEnd(shiftPoints(wire, shifts), to);
+    const fromEnd = fixEnd([...toEnd.points].reverse(), from);
+    const points = fromEnd.points.reverse();
+    // 越えた側の辺へ回り込んだ端は記録しない（自動配置の経路を変えず、次に描くときもずらしを当てて同じ経路にする）
+    attachments[wire.id] = attachmentOf(points, {
+      from: fromEnd.around ? undefined : from,
+      to: toEnd.around ? undefined : to,
+    });
     return { ...wire, points };
   });
   return { wires, attachments, wireShifts };
+};
+
+/** 線ごとに、記録した端の辺に新しい端の辺を重ねる（記録しなかった端は前の辺のまま） */
+const mergeAttachments = (
+  before: MapState["attachments"],
+  after: MapState["attachments"],
+): MapState["attachments"] => {
+  const merged = { ...before };
+  for (const [id, ends] of Object.entries(after)) {
+    merged[id] = { ...before[id], ...ends };
+  }
+  return merged;
 };
 
 /** ドラッグで動かすノード・グループか、線と区間 */
@@ -407,7 +451,7 @@ const dragWire = (
   return {
     ...state,
     wireShifts,
-    attachments: { ...state.attachments, ...applied.attachments },
+    attachments: mergeAttachments(state.attachments, applied.attachments),
   };
 };
 
@@ -458,6 +502,12 @@ export const startDrag = (options: {
   const target = dragTargetOf(layout, { event, pointOf: options.pointOf });
   const startX = event.clientX;
   const startY = event.clientY;
+  // マウスとペンはポインターを押した要素に捕まえ、ブラウザのドラッグとスクロールを始めない（指はスクロールに任せる）
+  if (event.pointerType !== "touch") {
+    if (event.target instanceof Element)
+      event.target.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  }
   let moved = false;
   let state = options.state;
   const move = (next: PointerEvent) => {
@@ -541,7 +591,7 @@ const moveWireByKey = (
   return {
     ...state,
     wireShifts,
-    attachments: { ...state.attachments, ...applied.attachments },
+    attachments: mergeAttachments(state.attachments, applied.attachments),
   };
 };
 

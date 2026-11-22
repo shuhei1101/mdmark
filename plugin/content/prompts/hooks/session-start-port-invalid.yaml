@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/prompt.schema.yaml
+id: hooks/session-start-port-invalid
+name: MDMARK_PORT が使用できない値のときの文
+description: SessionStart で、MDMARK_PORT の値がポートとして使用できないことと直し方を伝える
+kind: hook
+lang: ja
+vars:
+  value:
+    type: string
+    required: true
+    description: MDMARK_PORT に設定された値
+    example: abc
+parts:
+  - id: body
+    texts:
+      - lang: ja
+        text: |
+          MDMARK_PORT の値 {{ value }} はポートとして使用できないため、mdmark の MCP のツールは使用できない。1〜65535 の整数を設定する。

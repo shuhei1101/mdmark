@@ -12,7 +12,12 @@ import {
   termsOf,
 } from "./flow-view.ts";
 import { attachMapList, sequenceListItems } from "./list.ts";
-import { renderMapSequence, renderPackets } from "./map.part.ts";
+import { renderMapSequence } from "./map.part.ts";
+import {
+  type PacketStyle,
+  renderPackets,
+  resolvePacketMark,
+} from "./packet.ts";
 import { parseSequence, SEQ_ARROW_STYLES, type Sequence } from "./sequence.ts";
 import { sequenceRows } from "./sequence-rows.ts";
 import type { MapArgs } from "./spec.ts";
@@ -145,18 +150,23 @@ const placeInsertLine = (
 /** 指している線に流すデータの印の層 */
 const hoverPacketLayer = (
   wire: SVGPathElement,
-  message: { at: number; both: boolean },
+  message: { at: number; both: boolean; style: PacketStyle },
 ): SVGGElement => {
-  const { at, both } = message;
+  const { at, both, style } = message;
   const layer = document.createElementNS("http://www.w3.org/2000/svg", "g");
   layer.setAttribute("class", "map-packets map-packets-hover");
+  layer.setAttribute("data-packet-palette", style.palette);
   layer.innerHTML = renderPackets([
     {
       owner: `data-message="${at}"`,
       d: wire.getAttribute("d") ?? "",
       length: wire.getTotalLength(),
-      fill: "var(--mdmark-color-diagram-line)",
-      shape: "circle",
+      mark: resolvePacketMark({
+        index: at,
+        wire: String(at),
+        style,
+        colored: false,
+      }),
       direction: both ? "both" : "forward",
     },
   ]);
@@ -212,9 +222,13 @@ const dimExceptParticipant = (
 /** 参加者が送る・受けるメッセージの線に、指している間のデータの印を流す */
 const addParticipantPackets = (
   figure: HTMLElement,
-  participant: { id: string; messages: Sequence["messages"] },
+  participant: {
+    id: string;
+    messages: Sequence["messages"];
+    style: PacketStyle;
+  },
 ): void => {
-  const { id, messages } = participant;
+  const { id, messages, style } = participant;
   for (const wire of figure.querySelectorAll<SVGPathElement>(
     "path.mdmark-diagram-wire[data-message]",
   )) {
@@ -225,6 +239,7 @@ const addParticipantPackets = (
       hoverPacketLayer(wire, {
         at,
         both: SEQ_ARROW_STYLES[message.arrow].both,
+        style,
       }),
     );
   }
@@ -312,6 +327,7 @@ export const attachMapSequence = (
       entered: state.entered === undefined ? undefined : Number(state.entered),
     });
     const part = renderMapSequence({
+      packetStyle: config.map.packets,
       sequence,
       rows: rows.rows,
       participants: rows.participants,
@@ -634,7 +650,10 @@ export const attachMapSequence = (
     clearHover();
     const participant = { id, messages: sequence.messages };
     dimExceptParticipant(figure, participant);
-    addParticipantPackets(figure, participant);
+    addParticipantPackets(figure, {
+      ...participant,
+      style: config.map.packets,
+    });
   };
   // メッセージの線を指している間は、その線にデータの印を流す（選択・再生で流している線には重ねない）
   const hoverMessage = (target: Element | undefined) => {
@@ -651,6 +670,7 @@ export const attachMapSequence = (
       hoverPacketLayer(wire, {
         at,
         both: SEQ_ARROW_STYLES[message.arrow].both,
+        style: config.map.packets,
       }),
     );
     // 選択と再生の強調が無いときは、その線と送り手・受け手のほかを薄くする

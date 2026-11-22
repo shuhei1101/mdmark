@@ -1413,6 +1413,30 @@ files:
     visibility: internal
     description: '部品『map-dim-contrast』のモック: map の図の再生・選択・中へ入る操作で薄くした要素の文字のコントラストを 4.5:1 以上に保つ薄め方を、案 A（opacity を上げる）と案 B（文字の色を変え、面と枠を背景と混ぜる）で、C4Dynamic の再生・ER 図とクラス図と C4 の配置図の中へ入った状態・状態遷移図の再生・シーケンス図の参加者の選択と再生・狭い幅・紙のテーマのライトとダークに並べる。薄くした要素の外観を決めるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: components/map-wire-drag-route/index.html
+    visibility: internal
+    description: '部品『mapの構成図』のモック: 線を動かした後の経路の今の決まり（固定するものと計算し直すもの）の表と、入れ子のグループをまたぐ線・ほかのノードを回り込む線・状態遷移図・ER 図を配布物で描いた、マウスで線とノードを動かして確認する図と、L 字の線の端が接続先のノードから浮く不具合の今の見え方と修正した後の見え方。線を動かした後の経路の決まりを決めるときに参照する。'
+    tags: [topic:モック, topic:図, action:移動]
+  - path: components/map-wire-label/index.html
+    visibility: internal
+    description: '部品『mapの構成図』のモック: 線の上の文字の今の設定（記載方法・位置・大きさ・折り返し・色）の一覧と、線より長い文字の今の見た目・案 A（線の横に置く）・案 B（線の長さで折り返す）・案 C（ノードの間を文字の幅まで広げる）を、横と縦の構成図とブロック図で並べる。線の上の文字の見せ方を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: components/map-wire-packet/index.html
+    visibility: internal
+    description: '部品『mapの構成図』のモック: データの印の大きさと、線ごとの形状・色の変え方（今の見た目・案 A の形状・案 B の色・案 C の形状と色）、塗り方の案 5 つ、色合いの案 5 つ、色を指定したノードがある図の出発点のノードの色と灰色、線の文字とノードの下を通す重なりを、SVG で並べる。データの印の見た目を決めるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/782/index.md
+    visibility: internal
+    description: '#782（map の図の線を動かした後の経路と、線の上の文字の見せ方）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/782/assets/mock.css
+    visibility: internal
+    description: '#782 のモックの規則: 配布物の CSS の上に、カタログの並び・今の決まりと設定の一覧の表・案を並べる格子を重ねる。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:図]
+  - path: refs/782/assets/mock.js
+    visibility: internal
+    description: '#782 のモック: 配布物の mount で map の図を描き、線の上の文字を線の横に置く案と線の長さで折り返す案だけを重ねる。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック, topic:図]
   - path: refs/772/index.md
     visibility: internal
     description: '#772（map の図の文字・同じ辺の線の端・マインドマップの項目の見た目と選び方）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'

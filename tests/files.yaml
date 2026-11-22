@@ -2228,6 +2228,12 @@ files:
     related:
       - to: src/map/drag.ts
         type: tests
+  - path: unit/src/map/packet.test.ts
+    description: src/map/packet.ts を確認する単体テスト。packet.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図]
+    related:
+      - to: src/map/packet.ts
+        type: tests
   - path: unit/src/map/band.browser.test.ts
     description: src/map/band.ts を確認する単体テスト。band.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図]

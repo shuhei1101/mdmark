@@ -12,6 +12,24 @@ files:
     related:
       - to: MOD-472-14
         type: implements
+  - path: content/prompts/hooks/session-start-not-listening.yaml
+    description: モジュール構成『ClaudeCodeプラグイン / SessionStartのフック』のうち「常駐サーバーが待ち受けていないときの文」を受け持つプロンプトファイル。SessionStart で入れる文を変えるときに参照する。
+    tags: [topic:プラグイン, topic:フック, topic:プロンプト, tool:claude-code]
+    related:
+      - to: MOD-472-3
+        type: implements
+  - path: content/prompts/hooks/session-start-port-invalid.yaml
+    description: モジュール構成『ClaudeCodeプラグイン / SessionStartのフック』のうち「MDMARK_PORT が使用できない値のときの文」を受け持つプロンプトファイル。SessionStart で入れる文を変えるときに参照する。
+    tags: [topic:プラグイン, topic:フック, topic:プロンプト, tool:claude-code]
+    related:
+      - to: MOD-472-3
+        type: implements
+  - path: content/prompts/hooks/guide-notice.yaml
+    description: モジュール構成『ClaudeCodeプラグイン / フック / guide-notice.ts』のうち「記法のルールの参照の案内の文」を受け持つプロンプトファイル。案内の文を変えるときに参照する。
+    tags: [topic:プラグイン, topic:フック, topic:プロンプト, tool:claude-code]
+    related:
+      - to: MOD-472-349
+        type: implements
   - path: guide-index.yaml
     description: モジュール構成『ClaudeCodeプラグイン / プラグインのビルド』のうち「ガイドの索引の原本」を受け持つ。プラグインの配布物の作り方を変えるときに参照する。
     tags: [topic:プラグイン, tool:claude-code, tool:esbuild, topic:ガイド]

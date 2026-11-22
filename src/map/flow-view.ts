@@ -942,6 +942,7 @@ export const attachMapFlow = (
       collapsedTag: extension?.collapsedTag,
       changes,
       styles,
+      packetStyle: config.map.packets,
     });
     return {
       html: part.html,
@@ -1089,7 +1090,8 @@ export const attachMapFlow = (
             ? "both"
             : (extension?.packetDirection?.(id) ?? "forward"),
           color: packet?.color,
-          shape: packet?.shape ?? "circle",
+          shape: packet?.shape,
+          fill: packet?.fill,
         },
       ];
     });
@@ -1116,6 +1118,8 @@ export const attachMapFlow = (
           lines,
           wireLines,
           colors,
+          styles,
+          packetStyle: config.map.packets,
         },
         packetsOf(kept?.wires ?? []),
       );

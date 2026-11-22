@@ -414,9 +414,12 @@ function renderLabel(options: {
   annotations?: DiagramAnnotation[] | undefined;
   /** Mermaid の `linkStyle` の `color` */
   text?: string | undefined;
+  /** 線の横に置くラベルか */
+  beside?: boolean | undefined;
 }): string {
   const { wireId, label, tip, at, tips, annotations } = options;
   const line = "map";
+  const beside = options.beside ? " data-beside" : "";
   if (label === undefined || label === "") {
     return "";
   }
@@ -427,7 +430,7 @@ function renderLabel(options: {
     ...(text === undefined ? {} : { inset: `;color: ${escapeHtml(text)}` }),
   });
   if (tip === undefined || tip === "") {
-    return `<span class="mdmark-diagram-label" data-line="${line}" data-wire="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
+    return `<span class="mdmark-diagram-label" data-line="${line}"${beside} data-wire="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
   }
   const id = tips.add({
     kind: "wire",
@@ -436,7 +439,7 @@ function renderLabel(options: {
     owner: wireId,
     annotations,
   });
-  return `<span class="mdmark-diagram-label has-tip" data-line="${line}" data-wire="${escapeHtml(wireId)}" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
+  return `<span class="mdmark-diagram-label has-tip" data-line="${line}"${beside} data-wire="${escapeHtml(wireId)}" tabindex="0" aria-describedby="${id}" data-tip-owner="${escapeHtml(wireId)}"${style}>${escapeHtml(label)}</span>`;
 }
 
 /** 折れ線の最も長い区間の中点（`labelAt` を省いたときのラベルの位置） */
@@ -608,6 +611,8 @@ export function renderFlow(
     hints: boolean;
     lookup?: TermLookup;
     annotations?: DiagramAnnotations;
+    /** 線の SVG の後、ノードの前に置く HTML（データの印の層） */
+    underNodes?: string;
   },
 ): DiagramPart {
   const { hints, lookup, annotations } = options;
@@ -630,6 +635,7 @@ export function renderFlow(
   parts.push(
     `<svg class="mdmark-diagram-wires" width="${num(definition.width)}" height="${num(definition.height)}" aria-hidden="true">${wires}</svg>`,
   );
+  if (options.underNodes !== undefined) parts.push(options.underNodes);
   for (const node of definition.nodes) {
     parts.push(
       renderNode({ node, box: node, tips, lookup, found, hints, annotations }),
@@ -645,6 +651,7 @@ export function renderFlow(
         tips,
         annotations: annotations?.items[wire.id],
         text: wire.style.text,
+        beside: wire.beside,
       }),
     );
   }

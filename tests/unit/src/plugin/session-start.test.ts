@@ -1,12 +1,16 @@
-import { readFile } from "node:fs/promises";
+import { mkdtemp, readFile } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
 import { createServer, type Server } from "node:net";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
 
 /** SessionStart のフックを読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadSessionStart = () =>
   import("../../../../src/plugin/session-start.ts");
+
+/** プラグインのルート（プロンプトファイルを持つ） */
+const PLUGIN_ROOT = join(process.cwd(), "plugin");
 
 const servers: Server[] = [];
 
@@ -48,6 +52,7 @@ test("test_run_session_start", async () => {
   const code = await runSessionStart({
     env: { MDMARK_PORT: String(port) },
     stdout: (line) => stdout.push(line),
+    root: PLUGIN_ROOT,
   });
   // 検証
   expect(code).toBe(0);
@@ -64,6 +69,7 @@ test("test_run_session_start_when_not_listening", async () => {
   const code = await runSessionStart({
     env: { MDMARK_PORT: String(port) },
     stdout: (line) => stdout.push(line),
+    root: PLUGIN_ROOT,
   });
   // 検証
   expect(code).toBe(0);
@@ -85,6 +91,7 @@ test("test_run_session_start_when_port_invalid", async () => {
   const code = await runSessionStart({
     env: { MDMARK_PORT: "abc" },
     stdout: (line) => stdout.push(line),
+    root: PLUGIN_ROOT,
   });
   // 検証
   expect(code).toBe(0);
@@ -111,4 +118,42 @@ test("test_run_session_start_when_hooks_json", async () => {
       args: ["${CLAUDE_PLUGIN_ROOT}/scripts/session-start.js"],
     },
   ]);
+});
+
+// 注入する文をプロンプトファイルから描く（正常系）
+test("test_run_session_start_when_prompt_files", async () => {
+  // 準備
+  const { runSessionStart } = await loadSessionStart();
+  const port = await closedPort();
+  const stdout: string[] = [];
+  // 実行
+  const code = await runSessionStart({
+    env: { MDMARK_PORT: String(port) },
+    stdout: (line) => stdout.push(line),
+    root: PLUGIN_ROOT,
+  });
+  // 検証: 変更前の NOT_LISTENING_CONTEXT の {port} を埋めた文と同じ
+  expect(code).toBe(0);
+  const output = JSON.parse(stdout[0] ?? "{}");
+  expect(output.hookSpecificOutput.additionalContext).toBe(
+    `mdmark の MCP の常駐サーバーが 127.0.0.1:${port} で待ち受けていないため、mdmark の MCP のツールは使用できない。/mdmark:global-setup で起動できる。`,
+  );
+});
+
+// プロンプトファイルが無い（異常系）
+test("test_run_session_start_when_prompt_missing", async () => {
+  // 準備
+  const { runSessionStart } = await loadSessionStart();
+  const port = await closedPort();
+  const root = await mkdtemp(join(tmpdir(), "mdmark-hook-"));
+  const stdout: string[] = [];
+  // 実行
+  const code = await runSessionStart({
+    env: { MDMARK_PORT: String(port) },
+    stdout: (line) => stdout.push(line),
+    root,
+  });
+  // 検証
+  expect(code).toBe(0);
+  expect(stdout).toEqual([]);
 });

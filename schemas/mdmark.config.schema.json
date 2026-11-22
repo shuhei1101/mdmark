@@ -445,7 +445,7 @@
     },
     "map": {
       "title": "map の設定",
-      "description": "map の図の、名前の長いノードの広げ方・状態をクエリ文字列に保つか・ノードの種類・線の種類。",
+      "description": "map の図の、名前の長いノードの広げ方・状態をクエリ文字列に保つか・データの印の見た目・ノードの種類・線の種類。",
       "type": "object",
       "properties": {
         "node_fit": {
@@ -460,6 +460,26 @@
           "description": "中へ入ったグループと、シーケンス図の中だけを描くブロックを、URL のクエリ文字列 `map-{図の番号}` にも保つか。`false` ではクエリ文字列を読みも書きもせず、sessionStorage だけに保つ。",
           "type": "boolean",
           "default": true
+        },
+        "packets": {
+          "title": "データの印の見た目",
+          "description": "強調する線の上を流れるデータの印の塗り方と色合い。補足の `layout` の `packet` が線ごとに優先する。",
+          "type": "object",
+          "properties": {
+            "fill": {
+              "type": "string",
+              "enum": ["solid", "ring", "tinted", "glow", "shine", "random"],
+              "default": "tinted",
+              "description": "塗り方。`random` は線ごとにほかの 5 つから選ぶ（描き直しても同じ）。"
+            },
+            "palette": {
+              "type": "string",
+              "enum": ["accent", "vivid", "pastel", "muted", "cool"],
+              "default": "accent",
+              "description": "線の番号で順に使う 5 色の色合い。色を指定したノードがある図では、出発点のノードの色（無ければ灰色）を使う。"
+            }
+          },
+          "additionalProperties": false
         },
         "kinds": {
           "title": "ノードの種類",

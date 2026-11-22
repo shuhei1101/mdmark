@@ -1,3 +1,9 @@
+import {
+  DEFAULT_PACKET_STYLE,
+  PACKET_FILLS,
+  PACKET_PALETTES,
+  type PacketStyle,
+} from "./map/packet.ts";
 import type { MapKind, MapLine, ResolvedMapConfig } from "./map/spec.ts";
 import { DEFAULT_LONG_COLUMN_MIN_EM } from "./table/table.logic.ts";
 
@@ -37,6 +43,7 @@ export type MdmarkConfig = {
     url_state?: unknown;
     kinds?: Record<string, MapKind>;
     lines?: Record<string, MapLine>;
+    packets?: { fill?: unknown; palette?: unknown };
   };
 };
 
@@ -423,6 +430,18 @@ export const resolveMapConfig = (value: unknown): ResolvedMapConfig => {
     url_state: typeof map.url_state === "boolean" ? map.url_state : true,
     kinds,
     lines,
+    packets: resolvePacketStyle(map.packets),
+  };
+};
+
+/** 設定の map.packets に既定を当てる（塗り方・色合いの一覧に無い値は既定にする） */
+const resolvePacketStyle = (value: unknown): PacketStyle => {
+  const packets = isRecord(value) ? value : {};
+  const fill = PACKET_FILLS.find((item) => item === packets.fill);
+  const palette = PACKET_PALETTES.find((item) => item === packets.palette);
+  return {
+    fill: fill ?? DEFAULT_PACKET_STYLE.fill,
+    palette: palette ?? DEFAULT_PACKET_STYLE.palette,
   };
 };
 

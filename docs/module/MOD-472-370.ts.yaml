@@ -1,0 +1,157 @@
+id: MOD-472-370
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / packet.ts
+test_files:
+  - tests/unit/src/map/packet.test.ts
+constants:
+  - name: PACKET_SPEED
+    title: データの印の既定の速さ
+    container: src/map/packet.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: 印が線の上を進む既定の速さ（px / 秒）
+    value: '60'
+  - name: PACKET_SIZE
+    title: データの印の大きさ
+    container: src/map/packet.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: 外側の輪郭・光を含めた印の大きさ（px）。部品設計『mapの構成図』の補足『データの印の見た目』の値
+    value: '{ circle: 5.6, square: 9.6, diamond: 6.4, triangle: 11.2 }'
+  - name: PACKET_SHAPES
+    title: 線ごとに順に使う形状
+    container: src/map/packet.ts
+    usecase: Mermaidと補足で図を描く
+    role: 定数
+    summary: 線の番号を 4 で割った余りで選ぶ形状
+    value: '["circle", "square", "diamond", "triangle"]'
+functions:
+  - name: packetHash
+    title: 線の ID のハッシュ
+    kind: 関数
+    container: src/map/packet.ts
+    usecase: Mermaidと補足で図を描く
+    role: 変換
+    summary: 文字列の 32 ビットの FNV-1a のハッシュを返却する。速さ・出始め・`random` の塗り方を、描き直しても同じにするために使う
+    scope: public
+    args:
+      - name: text
+        type: string
+        required: true
+        description: 線の ID（`random` は `{線の ID}:fill`）
+    returns:
+      type: number
+      description: 0 以上 2^32 未満の整数
+    unit_tests:
+      - name: test_packet_hash_when_same_text
+        case: 正常
+        summary: 同じ文字列
+        condition: '`a->b` を 2 回'
+        mock: なし
+        expected: 同じ値
+      - name: test_packet_hash_when_known_value
+        case: 正常
+        summary: 既知の値
+        condition: 空文字列
+        mock: なし
+        expected: '`2166136261`'
+  - name: resolvePacketMark
+    title: 線のデータの印の見た目を決める
+    kind: 関数
+    container: src/map/packet.ts
+    usecase: Mermaidと補足で図を描く
+    role: 変換
+    summary: 線の番号・線の ID・`packetStyle`・補足の `packet`・色を指定したノードの有無から、印の形状・色・塗り方・速さの倍率・出始めの割合を決める
+    scope: public
+    args:
+      - name: options
+        type: '{ index: number; wire: string; style: PacketStyle; override?: { color?: string; shape?: PacketShape; fill?: PacketFill }; sourceColor?: string; colored: boolean }'
+        required: true
+        description: 線の番号（記載の順、0 から）・線の ID・設定の `map.packets`・補足の `packet`・出発点のノードの色・色を指定したノードが図にあるか
+    returns:
+      type: '{ shape: PacketShape; color: string; fill: Exclude<PacketFill, "random">; speed: number; offset: number }'
+      description: '`color` は CSS の色（`var(--mdmark-map-packet-{n}, var(--mdmark-map-packet-palette-{n}))`（n は 1〜5）・`var(--mdmark-map-packet-gray, var(--mdmark-color-accent-gray-text))`・ノードの色。利用側のテーマの変数を先に参照する）、`speed` は 0.9〜1.1、`offset` は 0 以上 1 未満'
+    process: |-
+      1. 形状は `override.shape`、無ければ `PACKET_SHAPES[index % 4]`
+      2. 色は `override.color`、無ければ次で決める
+         - `colored` が真の場合、`sourceColor`、無ければ `var(--mdmark-map-packet-gray, var(--mdmark-color-accent-gray-text))`
+         - それ以外の場合、`var(--mdmark-map-packet-{n}, var(--mdmark-map-packet-palette-{n}))`（n は `index % 5 + 1`）
+      3. 塗り方は `override.fill`、無ければ `style.fill`。`random` の場合、`{wire}:fill` のハッシュを 5 で割った余りで `solid`・`ring`・`tinted`・`glow`・`shine` から選ぶ（線の ID のハッシュ）
+      4. 速さの倍率は 0.9 + 0.2 × (線の ID のハッシュ mod 1001) / 1000、出始めの割合は (ハッシュ mod 997) / 997（線の ID のハッシュ）
+    callees:
+      - '#functions[packetHash]'
+    unit_tests:
+      - name: test_resolve_packet_mark_when_rotating
+        case: 正常
+        summary: 形状と色を順に使う
+        condition: '`index` 0・1・4・5、`colored` が偽'
+        mock: なし
+        expected: 形状が丸・四角・丸・四角、色が `var(--mdmark-map-packet-{n}, var(--mdmark-map-packet-palette-{n}))` の n が 1・2・5・1
+      - name: test_resolve_packet_mark_when_colored
+        case: 正常
+        summary: 色を指定したノードがある図
+        condition: '`colored` が真で、`sourceColor` が `#ff0000` と無い'
+        mock: なし
+        expected: 色が `#ff0000` と `var(--mdmark-map-packet-gray, var(--mdmark-color-accent-gray-text))`
+      - name: test_resolve_packet_mark_when_override
+        case: 正常
+        summary: 補足の packet が優先
+        condition: '`override` に `{ shape: "triangle", fill: "ring" }`、`style.fill` が `glow`'
+        mock: なし
+        expected: 形状が `triangle`、塗り方が `ring`
+      - name: test_resolve_packet_mark_when_random
+        case: 正常
+        summary: random は描き直しても同じ
+        condition: '`style.fill` が `random` で同じ線を 2 回'
+        mock: なし
+        expected: 同じ塗り方で、`random` でない
+      - name: test_resolve_packet_mark_when_speed
+        case: 正常
+        summary: 速さの範囲と固定
+        condition: ID の違う 3 本の線
+        mock: なし
+        expected: どの `speed` も 0.9 以上 1.1 以下で互いに違い、同じ ID なら同じ値
+  - name: renderPackets
+    title: データの印の SVG
+    kind: 関数
+    container: src/map/packet.ts
+    usecase: Mermaidと補足で図を描く
+    role: 描画
+    summary: 経路の上を元から先へ繰り返し流れる印の SVG を返却する（`src/map/map.part.ts` から移す）。形状・塗り方ごとの描き方は部品設計『mapの構成図』の補足『データの印の見た目』
+    scope: public
+    args:
+      - name: paths
+        type: 'Array<{ owner: string; d: string; length: number; mark: ReturnType<typeof resolvePacketMark>; direction: "forward" | "backward" | "both" }>'
+        required: true
+        description: 印を流す線の経路・長さ・見た目・向き
+    returns:
+      type: string
+      description: '`g.map-packet` を並べた SVG の文字列。各 `g` は `aria-hidden="true"`・`data-fill`・`data-shape` を持つ'
+    process: |-
+      1. 1 周の秒数を `max(0.6, length / (PACKET_SPEED × mark.speed))` にし、印の数を今と同じく線の長さから 1〜4 個にする
+      2. 印ごとの `begin` を `-(秒数 × (index / count + mark.offset))` にし、同じ長さの線でも出始めをずらす
+      3. 形状と塗り方ごとの要素を、`PACKET_SIZE` の大きさの中に収めて描く（どの形状も縁・輪郭の太さの半分を内側へ寄せ、角を丸めて縁の外側を収める）
+      4. 向きが `backward` は `keyPoints="1;0"`、`both` は両方を描く
+    unit_tests:
+      - name: test_render_packets_when_same_length
+        case: 正常
+        summary: 同じ長さの線でもずれる
+        condition: 長さ 290 の 3 本を ID を変えて描く
+        mock: なし
+        expected: 3 本の `dur` と `begin` が互いに違う
+      - name: test_render_packets_when_fill
+        case: 正常
+        summary: 塗り方ごとの大きさ
+        condition: 丸・四角・ひし形・三角を `solid`・`ring`・`tinted`・`glow`・`shine` で描く
+        mock: なし
+        expected: どの形状・塗り方も、中心から縁・輪郭の外側までが `PACKET_SIZE`（丸は半径、四角・三角は半分、ひし形はそのまま）以下で、`data-fill` が指定の値
+      - name: test_render_packets_when_triangle
+        case: 正常
+        summary: 三角
+        condition: 形状 `triangle`
+        mock: なし
+        expected: 点の高さと幅に縁の太さを足すと 11.2 の `polygon` を描く
+tags:
+  - name: topic:map
+  - name: topic:図
+  - name: action:描画

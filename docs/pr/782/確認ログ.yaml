@@ -1,0 +1,49 @@
+confirmations:
+  - topic: '#780 No 1 の線より長い文字の表示'
+    decision: 文字を線から離して線の横（横の線は上、縦の線は右）に配置する（推奨案 A）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652335929
+  - topic: '#780 No 1 の表示を軸と格子の配置の図の線の文字にも適用するか'
+    decision: 軸と格子の配置の図の線の文字にも適用する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652336197
+  - topic: '#778 の線の区間を動かした後の前後の区間の扱い'
+    decision: 動かした区間の位置だけを保ち、前後の区間はノードの辺までの直角の経路で計算し直す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652495871
+  - topic: '#780 色を指定したノードが無い図でのデータの印の色と形状'
+    decision: 形状と色の両方を線ごとに順に使う（推奨案 C）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652496266
+  - topic: '#780 色を指定したノードがある図でのデータの印の形状'
+    decision: 色の指定によらず、形状を線ごとに順に使う（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652496570
+  - topic: '#780 のデータの印の塗り方'
+    decision: 塗り方 A〜E とランダムをオプションで選べるようにし、既定は C（淡い面と濃い輪郭）にする。外側の輪郭・光を含めた大きさを、どの塗り方も E と同じ小ささに揃える
+    decided_by: reply
+    approver: shuhei1101
+    commit: b38cf52f
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4656926299
+  - topic: '#780 のデータの印の色合い'
+    decision: 既定は今のアクセントの文字の色（案 A）のままにし、色合い A〜E をオプションで選べるようにする
+    decided_by: reply
+    approver: shuhei1101
+    commit: b38cf52f
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4656926601
+  - topic: '#780 のデータの印の塗り方と色合いのオプションの指定の方法'
+    decision: 図全体は設定の `map.packets`（`fill`・`palette`）、線ごとは補足の `packet` の `fill` で上書きする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 28fba82b
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4657014415

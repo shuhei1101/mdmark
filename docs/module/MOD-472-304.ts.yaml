@@ -449,11 +449,12 @@ functions:
         required: true
         description: 利用側の `config.map`
     returns:
-      type: '{ node_fit: "height" | "width"; url_state: boolean; kinds: Record<string, MapKind>; lines: Record<string, MapLine> }'
+      type: '{ node_fit: "height" | "width"; url_state: boolean; kinds: Record<string, MapKind>; lines: Record<string, MapLine>; packets: PacketStyle }'
       description: 既定を適用した設定
     process: |-
       1. `node_fit` が `height`・`width` でなければ `height`、`url_state` が真偽値でなければ `true` にする
       2. `kinds`・`lines` のオブジェクトの値ごとに、`MAP_SHAPES`・`MAP_DASHES`・`MAP_WIDTHS`・`MAP_HEADS`・色の名前に無い値のキーを捨てる（`icon` は文字列ならそのまま残し、描くときに無い名前を捨てる）
+      3. `packets.fill` が `solid`・`ring`・`tinted`・`glow`・`shine`・`random` でなければ `tinted`、`packets.palette` が `accent`・`vivid`・`pastel`・`muted`・`cool` でなければ `accent` にする
     unit_tests:
       - name: test_resolve_map_config
         case: 正常
@@ -467,6 +468,12 @@ functions:
         condition: '`node_fit: tall`・`url_state: "no"`・`kinds.a.shape: hexagon`'
         mock: なし
         expected: '`node_fit` が `height`、`url_state` が `true`、`kinds.a` に `shape` が無い'
+      - name: test_resolve_map_config_when_packets
+        case: 正常
+        summary: データの印の塗り方と色合い
+        condition: '`packets` なしと、`{ fill: "ring", palette: "cool" }` と、`{ fill: "x", palette: 1 }`'
+        mock: なし
+        expected: '`{ fill: "tinted", palette: "accent" }`・`{ fill: "ring", palette: "cool" }`・`{ fill: "tinted", palette: "accent" }`'
 lead: '設定の型・既定・既定の適用を受け持ち、設定のキーや既定の値を変えるときに参照する。'
 tags:
   - name: topic:機能フラグ

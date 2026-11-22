@@ -1,0 +1,487 @@
+$ npx vitest run --project 'unit*' tests/unit/src/map/packet.test.ts tests/unit/src/map/drag.browser.test.ts tests/unit/src/shared/zoom.interact.browser.test.ts tests/unit/src/map/map.part.test.ts tests/unit/src/map/flow-view.browser.test.ts tests/unit/src/map/sequence-view.browser.test.ts tests/unit/src/config.test.ts tests/unit/src/plugin/session-start.test.ts tests/unit/src/plugin/guide-notice.test.ts
+
+# 実装の前から pass したテスト（振る舞いが作業ブランチに既にある）
+# - test_apply_wire_shifts_when_inside_edge・test_apply_wire_shifts_when_node_moved・test_apply_wire_shifts_when_points_changed: src/map/drag.ts の applyWireShifts（fixEnd・appliesTo。f2adfd45 より前の commit から）
+# - test_run_session_start_when_prompt_files と guide-notice の既存のテスト: 注入する文を変えないため、src/plugin/session-start.ts・guide-notice.ts の今の文と同じ
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts
+
+ ❯ |unit| tests/unit/src/config.test.ts (20 tests | 2 failed) 83ms
+   × test_resolve_map_config 14ms
+   × test_resolve_map_config_when_packets 1ms
+ ❯ |unit| tests/unit/src/map/packet.test.ts (10 tests | 10 failed) 162ms
+   × test_packet_hash_when_same_text 37ms
+   × test_packet_hash_when_known_value 7ms
+   × test_resolve_packet_mark_when_rotating 10ms
+   × test_resolve_packet_mark_when_colored 11ms
+   × test_resolve_packet_mark_when_override 32ms
+   × test_resolve_packet_mark_when_random 16ms
+   × test_resolve_packet_mark_when_speed 4ms
+   × test_render_packets_when_same_length 17ms
+   × test_render_packets_when_fill 14ms
+   × test_render_packets_when_triangle 13ms
+ ❯ |unit| tests/unit/src/plugin/session-start.test.ts (6 tests | 1 failed) 119ms
+   × test_run_session_start_when_prompt_missing 17ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts (18 tests | 2 failed) 500ms
+   × test_start_drag_when_mouse_captured 278ms
+   × test_apply_wire_shifts_when_beyond_edge 135ms
+ ❯ |unit-browser (chromium)| tests/unit/src/shared/zoom.interact.browser.test.ts (28 tests | 1 failed) 440ms
+   × test_attach_zoom_when_drag_owner 212ms
+ ❯ |unit| tests/unit/src/map/map.part.test.ts (73 tests | 8 failed) 1778ms
+   × test_render_map_flow_when_packets 13ms
+   × test_render_map_flow_when_packets_backward 8ms
+   × test_render_map_flow_when_unknown_color 4ms
+   × test_render_map_flow_when_packet_layer 2ms
+   × test_render_map_flow_when_long_label 5ms
+   × test_render_map_flow_when_drag_owner 6ms
+   × test_render_map_axis_grid_when_long_label 1ms
+   × test_render_map_sequence_when_packet_style 3ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts (14 tests | 1 failed) 589ms
+   × test_attach_map_sequence_when_packet_style 143ms
+ ❯ |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts (25 tests | 2 failed) 3503ms
+   × test_attach_map_flow_when_packet_style 250ms
+   × test_attach_map_flow_when_wire_moved_beyond_edge 129ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 27 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts > test_start_drag_when_mouse_captured
+AssertionError: expected "setPointerCapture" to be called 1 times, but got 0 times
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/drag.browser.test.ts/test_start_drag_when_mouse_captured.png
+
+ ❯ tests/unit/src/map/drag.browser.test.ts:461:19
+    459|   );
+    460|   // 検証
+    461|   expect(capture).toHaveBeenCalledTimes(1);
+       |                   ^
+    462|   expect(capture).toHaveBeenCalledWith(7);
+    463|   expect(events[0]?.defaultPrevented).toBe(true);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=74b96fbf:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/27]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/drag.browser.test.ts > test_apply_wire_shifts_when_beyond_edge
+AssertionError: expected undefined to be 'right' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/drag.browser.test.ts/test_apply_wire_shifts_when_beyond_edge.png
+
+- Expected:
+"right"
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/map/drag.browser.test.ts:574:65
+    572|   const points = wires[0]?.points as Array<[number, number]>;
+    573|   const c = layout.nodes[1];
+    574|   expect(sideOn(c as never, points.at(-1) as [number, number])).toBe("…
+       |                                                                 ^
+    575|   expect(attachments["A->C"]?.to).toBe("right");
+    576|   expect(points.some(([x, y]) => x === 450 && y < 230)).toBe(true);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=74b96fbf:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/27]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_packet_style
+AssertionError: expected null not to be null
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_packet_style.png
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:916:67
+    914|   window.dispatchEvent(new PointerEvent("pointerup", point));
+    915|   // 検証
+    916|   expect(root.querySelector('[data-packet-palette="vivid"]')).not.toBe…
+       |                                                                   ^
+    917|   const packets = root.querySelectorAll(".map-packet");
+    918|   expect(packets.length).toBeGreaterThan(0);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=74b96fbf:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/27]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_wire_moved_beyond_edge
+AssertionError: expected 'bottom' to be 'right' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/flow-view.browser.test.ts/test_attach_map_flow_when_wire_moved_beyond_edge.png
+
+Expected: "right"
+Received: "bottom"
+
+ ❯ tests/unit/src/map/flow-view.browser.test.ts:976:45
+    974|   window.dispatchEvent(new PointerEvent("pointerup", end));
+    975|   // 検証
+    976|   expect(saved().attachments?.["a->c"]?.to).toBe("right");
+       |                                             ^
+    977|   expect(viewport.scrollLeft).toBe(before);
+    978| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=74b96fbf:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/27]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/sequence-view.browser.test.ts > test_attach_map_sequence_when_packet_style
+AssertionError: expected null to be 'glow' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/sequence-view.browser.test.ts/test_attach_map_sequence_when_packet_style.png
+
+- Expected:
+"glow"
+
++ Received:
+null
+
+ ❯ tests/unit/src/map/sequence-view.browser.test.ts:430:46
+    428|   expect(packets.length).toBeGreaterThan(0);
+    429|   for (const packet of packets) {
+    430|     expect(packet.getAttribute("data-fill")).toBe("glow");
+       |                                              ^
+    431|   }
+    432|   expect(root.querySelector('[data-packet-palette="vivid"]')).not.toBe…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=74b96fbf:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/27]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/shared/zoom.interact.browser.test.ts > test_attach_zoom_when_drag_owner
+AssertionError: expected 249 to be 169 // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/zoom.interact.browser.test.ts/test_attach_zoom_when_drag_owner.png
+
+- Expected
++ Received
+
+- 169
++ 249
+
+ ❯ tests/unit/src/shared/zoom.interact.browser.test.ts:846:31
+    844|   dragOn(root.querySelector(".mdmark-diagram-node-link") as Element);
+    845|   // 検証
+    846|   expect(viewport.scrollLeft).toBe(before);
+       |                               ^
+    847|   expect(onPanStart).not.toHaveBeenCalled();
+    848| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=74b96fbf:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/27]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_map_config
+AssertionError: expected { node_fit: 'height', …(3) } to deeply equal { node_fit: 'height', …(4) }
+
+- Expected
++ Received
+
+  {
+    "kinds": {},
+    "lines": {},
+    "node_fit": "height",
+-   "packets": {
+-     "fill": "tinted",
+-     "palette": "accent",
+-   },
+    "url_state": true,
+  }
+
+ ❯ tests/unit/src/config.test.ts:421:15
+    419|   const map = resolveMapConfig(undefined);
+    420|   // 検証
+    421|   expect(map).toEqual({
+       |               ^
+    422|     node_fit: "height",
+    423|     url_state: true,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/27]⎯
+
+ FAIL  |unit| tests/unit/src/config.test.ts > test_resolve_map_config_when_packets
+AssertionError: expected undefined to deeply equal { fill: 'tinted', palette: 'accent' }
+
+- Expected:
+{
+  "fill": "tinted",
+  "palette": "accent",
+}
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/config.test.ts:455:27
+    453|   const unknown = resolveMapConfig({ packets: { fill: "x", palette: 1 …
+    454|   // 検証
+    455|   expect(omitted.packets).toEqual({ fill: "tinted", palette: "accent" …
+       |                           ^
+    456|   expect(given.packets).toEqual({ fill: "ring", palette: "cool" });
+    457|   expect(unknown.packets).toEqual({ fill: "tinted", palette: "accent" …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_packets
+AssertionError: expected 0 to be greater than or equal to 2
+ ❯ tests/unit/src/map/map.part.test.ts:459:23
+    457|   // 検証: 指定した色と形状はそのまま、省いた色は色を持たないノードから出るため灰色
+    458|   const both = packetsOf(html, "mount->marker");
+    459|   expect(both.length).toBeGreaterThanOrEqual(2);
+       |                       ^
+    460|   for (const item of both) {
+    461|     expect(item).toContain('data-shape="square"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_packets_backward
+AssertionError: expected 0 to be greater than or equal to 1
+ ❯ tests/unit/src/map/map.part.test.ts:495:27
+    493|   // 検証
+    494|   const backward = packetsOf(html, "marker->data");
+    495|   expect(backward.length).toBeGreaterThanOrEqual(1);
+       |                           ^
+    496|   for (const item of backward) expect(item).toContain('keyPoints="1;0"…
+    497| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_unknown_color
+AssertionError: expected 0 to be greater than or equal to 1
+ ❯ tests/unit/src/map/map.part.test.ts:536:24
+    534|   // 検証
+    535|   const items = packetsOf(html, "mount->marker");
+    536|   expect(items.length).toBeGreaterThanOrEqual(1);
+       |                        ^
+    537|   // 知らない色は省いたときと同じ（色を持つ種類のある図で、色を持たない mount から出るため灰色）
+    538|   expect(items[0]).toContain("var(--mdmark-map-packet-gray)");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_packet_layer
+AssertionError: expected 1596 to be greater than 4701
+ ❯ tests/unit/src/map/map.part.test.ts:2716:18
+    2714|   expect(wiresAt).toBeGreaterThanOrEqual(0);
+    2715|   expect(packetsAt).toBeGreaterThan(wiresAt);
+    2716|   expect(nodeAt).toBeGreaterThan(packetsAt);
+       |                  ^
+    2717|   const shapes = ["hub->a", "hub->b", "hub->c"].map(
+    2718|     (wire) => /data-shape="([^"]+)"/.exec(packetsOf(html, wire)[0] ?? …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_long_label
+AssertionError: expected '<span class="mdmark-diagram-label" da…' to contain 'data-beside'
+
+Expected: "data-beside"
+Received: "<span class="mdmark-diagram-label" data-line="map" data-wire="a-&gt;b" style="left:176px;top:55px">"
+
+ ❯ tests/unit/src/map/map.part.test.ts:2744:35
+    2742|       tag.includes(`data-wire="${wire.replace(/>/g, "&gt;")}"`),
+    2743|     ) ?? "";
+    2744|   expect(labelOf(across, "a->b")).toContain("data-beside");
+       |                                   ^
+    2745|   expect(labelOf(across, "b->c")).not.toContain("data-beside");
+    2746|   expect(labelOf(down, "a->b")).toContain("data-beside");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_flow_when_drag_owner
+AssertionError: mdmark-diagram-node-hit: expected '<span class="mdmark-diagram-node-hit"…' to contain 'data-drag-owner'
+
+Expected: "data-drag-owner"
+Received: "<span class="mdmark-diagram-node-hit" role="button" tabindex="0" aria-roledescription="ノード" aria-keyshortcuts="Enter Space Alt+ArrowLeft Alt+ArrowUp Alt+ArrowDown Alt+ArrowRight" aria-label="索引">"
+
+ ❯ tests/unit/src/map/map.part.test.ts:2772:47
+    2770|     );
+    2771|     expect(tags.length, name).toBeGreaterThan(0);
+    2772|     for (const tag of tags) expect(tag, name).toContain("data-drag-own…
+       |                                               ^
+    2773|   }
+    2774|   for (const tag of matches(html, /<div class="map-group[ "][^>]*>/g))…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_axis_grid_when_long_label
+AssertionError: expected '<span class="map-axis-wire-label" ari…' to contain 'data-beside'
+
+Expected: "data-beside"
+Received: "<span class="map-axis-wire-label" aria-hidden="true" style="left:246px;top:20px">"
+
+ ❯ tests/unit/src/map/map.part.test.ts:2807:45
+    2805|   const labels = findTags(html, "map-axis-wire-label");
+    2806|   expect(labels.length).toBeGreaterThan(0);
+    2807|   for (const label of labels) expect(label).toContain("data-beside");
+       |                                             ^
+    2808| });
+    2809|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/map.part.test.ts > test_render_map_sequence_when_packet_style
+AssertionError: expected [ undefined, undefined, undefined ] to deeply equal [ 'circle', 'square', 'diamond' ]
+
+- Expected
++ Received
+
+  [
+-   "circle",
+-   "square",
+-   "diamond",
++   undefined,
++   undefined,
++   undefined,
+  ]
+
+ ❯ tests/unit/src/map/map.part.test.ts:2846:18
+    2844|       )?.[1],
+    2845|   );
+    2846|   expect(shapes).toEqual(["circle", "square", "diamond"]);
+       |                  ^
+    2847|   for (const group of groups) expect(group).toContain('data-fill="ring…
+    2848|   expect(html).toContain('data-packet-palette="cool"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_packet_hash_when_same_text
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:20:26
+     18| test("test_packet_hash_when_same_text", async () => {
+     19|   // 準備
+     20|   const { packetHash } = await loadPacket();
+       |                          ^
+     21|   // 実行
+     22|   const first = packetHash("a->b");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_packet_hash_when_known_value
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:31:26
+     29| test("test_packet_hash_when_known_value", async () => {
+     30|   // 準備
+     31|   const { packetHash } = await loadPacket();
+       |                          ^
+     32|   // 実行
+     33|   const value = packetHash("");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_resolve_packet_mark_when_rotating
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:41:33
+     39| test("test_resolve_packet_mark_when_rotating", async () => {
+     40|   // 準備
+     41|   const { resolvePacketMark } = await loadPacket();
+       |                                 ^
+     42|   // 実行
+     43|   const marks = [0, 1, 4, 5].map((index) =>
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_resolve_packet_mark_when_colored
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:69:33
+     67| test("test_resolve_packet_mark_when_colored", async () => {
+     68|   // 準備
+     69|   const { resolvePacketMark } = await loadPacket();
+       |                                 ^
+     70|   // 実行
+     71|   const withColor = resolvePacketMark({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_resolve_packet_mark_when_override
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:92:33
+     90| test("test_resolve_packet_mark_when_override", async () => {
+     91|   // 準備
+     92|   const { resolvePacketMark } = await loadPacket();
+       |                                 ^
+     93|   // 実行
+     94|   const mark = resolvePacketMark({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_resolve_packet_mark_when_random
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:109:33
+    107| test("test_resolve_packet_mark_when_random", async () => {
+    108|   // 準備
+    109|   const { resolvePacketMark } = await loadPacket();
+       |                                 ^
+    110|   const options = {
+    111|     index: 2,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_resolve_packet_mark_when_speed
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:127:33
+    125| test("test_resolve_packet_mark_when_speed", async () => {
+    126|   // 準備
+    127|   const { resolvePacketMark } = await loadPacket();
+       |                                 ^
+    128|   const resolve = (wire: string) =>
+    129|     resolvePacketMark({ index: 0, wire, style: STYLE, colored: false }…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_render_packets_when_same_length
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:146:48
+    144| test("test_render_packets_when_same_length", async () => {
+    145|   // 準備
+    146|   const { renderPackets, resolvePacketMark } = await loadPacket();
+       |                                                ^
+    147|   const wires = ["hub->a", "hub->b", "hub->c"];
+    148|   const paths = wires.map((wire, index) => ({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_render_packets_when_fill
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:170:29
+    168| test("test_render_packets_when_fill", async () => {
+    169|   // 準備
+    170|   const { renderPackets } = await loadPacket();
+       |                             ^
+    171|   const fills = ["solid", "ring", "tinted", "glow", "shine"] as const;
+    172|   // 実行
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/27]⎯
+
+ FAIL  |unit| tests/unit/src/map/packet.test.ts > test_render_packets_when_triangle
+Error: Cannot find module '/src/map/packet.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-map-wire-drag-label-packet-and-hook-prompts/tests/unit/src/map/packet.test.ts
+ ❯ tests/unit/src/map/packet.test.ts:208:29
+    206| test("test_render_packets_when_triangle", async () => {
+    207|   // 準備
+    208|   const { renderPackets } = await loadPacket();
+       |                             ^
+    209|   // 実行
+    210|   const svg = renderPackets([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/27]⎯
+
+ FAIL  |unit| tests/unit/src/plugin/session-start.test.ts > test_run_session_start_when_prompt_missing
+AssertionError: expected [ Array(1) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   "{\"hookSpecificOutput\":{\"hookEventName\":\"SessionStart\",\"additionalContext\":\"mdmark の MCP の常駐サーバーが 127.0.0.1:46259 で待ち受けていないため、mdmark の MCP のツールは使用できない。/mdmark:global-setup で起動できる。\"}}",
++ ]
+
+ ❯ tests/unit/src/plugin/session-start.test.ts:158:18
+    156|   // 検証
+    157|   expect(code).toBe(0);
+    158|   expect(stdout).toEqual([]);
+       |                  ^
+    159| });
+    160|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/27]⎯
+
+
+ Test Files  8 failed | 1 passed (9)
+      Tests  27 failed | 176 passed (203)
+   Start at  16:26:01
+   Duration  5.45s (tests 68%, import 23%, worker 7%, transform 2%)
+

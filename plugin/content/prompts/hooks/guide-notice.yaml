@@ -1,0 +1,35 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/prompt.schema.yaml
+id: hooks/guide-notice
+name: 記法のルールの参照の案内
+description: .mark.md の記載と mdmark を含む発言で、ガイドの参照と記載後の点検をセッションに 1 回伝える
+kind: hook
+lang: ja
+vars:
+  trigger:
+    type: string
+    required: true
+    description: 案内するきっかけ（file は .mark.md の記載、prompt は mdmark を含む発言）
+    enum: [file, prompt]
+    example: file
+  file_name:
+    type: string
+    description: 記載する .mark.md のファイル名（trigger が file のとき）
+    example: a.mark.md
+parts:
+  - id: head-file
+    when: "{{ trigger == 'file' }}"
+    texts:
+      - lang: ja
+        text: |-
+          {{ file_name }} は mdmark の記法で記載する文書。
+  - id: head-prompt
+    when: "{{ trigger == 'prompt' }}"
+    texts:
+      - lang: ja
+        text: |-
+          利用者が mdmark で記載するよう指示した。
+  - id: body
+    texts:
+      - lang: ja
+        text: |
+          記載する前に、mdmark の MCP の instructions のとおりにガイドを参照し、記載した後は check で点検する。

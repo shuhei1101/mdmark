@@ -1022,6 +1022,20 @@ settings:
     status: planned
     notes:
       実装: src/config.ts#resolveConfig
+  - key: map.packets
+    title: map のデータの印の塗り方と色合い
+    type: '{ fill?: "solid" | "ring" | "tinted" | "glow" | "shine" | "random"; palette?: "accent" | "vivid" | "pastel" | "muted" | "cool" }'
+    default: '`{ fill: "tinted", palette: "accent" }`'
+    allowed: 記載の値だけ。`mount` は他の値を無視して既定にし、CLI は他の値を設定ファイルの誤りにする
+    description: データの印の塗り方（`solid` は 1 色で塗り背景の色の縁を付ける・`ring` は二重の輪・`tinted` は淡い面と濃い輪郭・`glow` は淡い光・`shine` は照り・`random` は線ごとにほかの 5 つから選ぶ）と、色を指定したノードの無い図で線ごとに順に使う色合い（`accent` は今のアクセントの文字の色・`vivid` は鮮やか・`pastel` はパステル・`muted` はくすみ・`cool` は寒色寄り）。補足の `layout` の線の `packet` はこれより優先する
+    file: mdmark.config.yaml
+    required: false
+    reload: reload
+    status: planned
+    notes:
+      実装: src/config.ts#resolveMapConfig
+    refs:
+      - IF-472-35#request[opts.config.map.packets]
 refs:
   - IF-472-35#
 tags:

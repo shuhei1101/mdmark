@@ -42,6 +42,7 @@ functions:
       `wheelToScroller` が `true` のとき、表示する枠を縦にスクロールできる間（`data-at-fit` を持たず `scrollHeight` が `clientHeight` より大きい）は、`ctrlKey` を持たない `wheel`（`passive: false`）を `preventDefault` し、`wheelDelta` で px に換算した縦の量を `scrollParentOf` の要素の `scrollBy` に、横の量を表示する枠の `scrollLeft` に加える。縦にスクロールできない間は `wheel` を受け取らない。
 
       `.mdmark-diagram-node-link` の上からもドラッグを始める（文字を選ばせず、リンクの `dragstart` を `preventDefault` してブラウザのリンクのドラッグを始めない）。
+      `dragOwner` に当たる要素（部品が自分でドラッグを受け持つ要素。リンクを持つノードを含む）の上では、`.mdmark-diagram-node-link` でも移動のドラッグを始めない（map の要素を動かす間、表示する枠をスクロールさせない。インターフェース定義『文書を描く』の制約『map の要素のドラッグとスクロール』）。
       `DRAG_THRESHOLD` を超えて動いたときだけ動かしたことにする。
       ドラッグを始めたとき（`DRAG_THRESHOLD` を超えたとき）に `onPanStart` を 1 回呼ぶ（超えないまま離したら動かさない）。
 
@@ -61,7 +62,7 @@ functions:
       付けた表示する枠と戻り値を `zoomControlOf` で引けるように登録し、`detach` で登録を削除する
     args:
       - name: options
-        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content"; fitMin?: number; touchPan?: "native" | "pointer"; wheelToScroller?: boolean }'
+        type: '{ viewport: HTMLElement; content: HTMLElement; size: { width: number; height: number }; tools: HTMLElement; onChange?: (zoom: number, fit: number) => void; onPanStart?: () => void; fitHeight?: boolean | (() => boolean); dragIgnore?: string; dragOwner?: string; keyTargets?: HTMLElement[]; percentBase?: "fit" | "content"; fitMin?: number; touchPan?: "native" | "pointer"; wheelToScroller?: boolean }'
         required: true
         description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）・全体が収まる倍率の下限（既定は下限なし。`attachDiagrams` が図の `data-fit-min` を指定する）・指の移動の扱い（既定 `pointer`。`attachDiagrams` は `native`）・拡大中のホイールをスクロールする祖先へ指定するか（既定 `false`。`attachDiagrams` は `true`）
     returns:
@@ -220,6 +221,12 @@ functions:
         condition: '`percentBase: "fit"` で同じ枠と中身を全体が収まる倍率のまま `resize({ width: 2400, height: 800 })`'
         mock: なし
         expected: 倍率が 0.25、倍率の文字が `100%`、`scrollLeft`・`scrollTop` が 0
+      - name: test_attach_zoom_when_drag_owner
+        case: 正常
+        summary: 部品が受け持つ要素の上では動かさない
+        condition: '`dragOwner: "[data-drag-owner]"` で付け、拡大してから `data-drag-owner` を持つ要素と、その中の `.mdmark-diagram-node-link` をそれぞれマウスで左へ 40px ドラッグする'
+        mock: なし
+        expected: どちらも表示する枠の `scrollLeft` が変わらず、`onPanStart` を呼ばない
     status: planned
   - name: zoomControlOf
     title: 表示する枠の拡大・縮小の操作を引く

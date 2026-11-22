@@ -1,0 +1,18 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/knowledge/design-schemas/v8.4.0/schemas/prompt.schema.yaml
+id: hooks/session-start-not-listening
+name: 常駐サーバーが待ち受けていないときの文
+description: SessionStart で、mdmark の MCP の常駐サーバーが待ち受けていないことと起動方法を伝える
+kind: hook
+lang: ja
+vars:
+  port:
+    type: integer
+    required: true
+    description: 常駐サーバーのポート
+    example: 8782
+parts:
+  - id: body
+    texts:
+      - lang: ja
+        text: |
+          mdmark の MCP の常駐サーバーが 127.0.0.1:{{ port }} で待ち受けていないため、mdmark の MCP のツールは使用できない。/mdmark:global-setup で起動できる。

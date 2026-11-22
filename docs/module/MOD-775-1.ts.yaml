@@ -1,7 +1,7 @@
 id: MOD-775-1
 visibility: internal
 title: ClaudeCodeプラグイン / MCPサーバー / prompt.ts
-lead: プロンプトファイル（`content/prompts/{id}.yaml`）を読み込み・検査し、変数を指定して本文を描く。MCP サーバーの instructions とツールの description が使用する。
+lead: プロンプトファイル（`content/prompts/{id}.yaml`）を読み込み・検査し、変数を指定して本文を描く。MCP サーバーの instructions とツールの description、プラグインのフックの文が使用する。
 test_files:
   - tests/unit/src/plugin/prompt.test.ts
 data_models:
@@ -16,8 +16,8 @@ data_models:
         type: string
         description: '`content/prompts/` からのパスから `.yaml` を除いたもの'
       - name: kind
-        type: "'instructions' | 'tool'"
-        description: 文の種類
+        type: "'instructions' | 'tool' | 'hook'"
+        description: 文の種類（`hook` はプラグインのフックが `additionalContext` に入れる文で、プラグインのルートの `content/prompts/hooks/` に置く）
       - name: lang
         type: string
         description: 描く言語（BCP 47）
@@ -151,6 +151,10 @@ notes:
     content/prompts/mcp/mdmark/
     ├── instructions.yaml  # MCP サーバーの instructions
     └── tools/             # ツールの description（{ツールの名前}.yaml。_ は -）
+    plugin/content/prompts/hooks/
+    ├── session-start-not-listening.yaml  # SessionStart の文（常駐サーバーが待ち受けていない）
+    ├── session-start-port-invalid.yaml   # SessionStart の文（MDMARK_PORT が使用できない）
+    └── guide-notice.yaml                 # 記法のルールの参照の案内
     ```
   検査の分担: |-
     プロンプトファイルは 1 行目のモードラインで knowledge の `schemas/prompt.schema.yaml` を指す。

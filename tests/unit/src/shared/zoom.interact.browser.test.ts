@@ -793,3 +793,56 @@ test("test_attach_zoom_when_resize_at_fit", async () => {
   expect(viewport.scrollLeft).toBe(0);
   expect(viewport.scrollTop).toBe(0);
 });
+
+// 部品が受け持つ要素の上では動かさない（正常系）
+test("test_attach_zoom_when_drag_owner", async () => {
+  // 準備: dragOwner を付け、中身に部品が受け持つ要素とその中のノードのリンクを配置して 2 回拡大する
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 400px; overflow: auto"><div class="sizer"><div class="content" style="width: 1100px; height: 300px"><div class="owned" data-drag-owner style="width: 200px; height: 100px"></div><div data-drag-owner><a class="mdmark-diagram-node-link" href="#owned-link">ノード</a></div></div></div></div>`,
+  );
+  const tools = root.querySelector<HTMLElement>(".tools");
+  const viewport = root.querySelector<HTMLElement>(".viewport");
+  const content = root.querySelector<HTMLElement>(".content");
+  if (!tools || !viewport || !content) {
+    throw new Error("枠が無い");
+  }
+  const onPanStart = vi.fn();
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 1100, height: 300 },
+    tools,
+    onPanStart,
+    dragOwner: "[data-drag-owner]",
+  });
+  detachers.push(() => zoom.detach());
+  button(root, "拡大").click();
+  button(root, "拡大").click();
+  const before = viewport.scrollLeft;
+  const dragOn = (target: Element) => {
+    const point = {
+      bubbles: true,
+      pointerId: 1,
+      button: 0,
+      clientY: 50,
+      pointerType: "mouse",
+    };
+    target.dispatchEvent(
+      new PointerEvent("pointerdown", { ...point, clientX: 300 }),
+    );
+    target.dispatchEvent(
+      new PointerEvent("pointermove", { ...point, clientX: 260 }),
+    );
+    target.dispatchEvent(
+      new PointerEvent("pointerup", { ...point, clientX: 260 }),
+    );
+  };
+  // 実行
+  dragOn(root.querySelector(".owned") as Element);
+  dragOn(root.querySelector(".mdmark-diagram-node-link") as Element);
+  // 検証
+  expect(viewport.scrollLeft).toBe(before);
+  expect(onPanStart).not.toHaveBeenCalled();
+});
