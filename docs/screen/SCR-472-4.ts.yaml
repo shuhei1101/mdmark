@@ -773,8 +773,6 @@ elements:
         value: 読者が選んだ手順の番号。始める前と停止の後は無し
       - name: playing
         value: 手順を選んでから停止するまで `true`
-      - name: fill
-        value: 今の手順の 1 周の進み
       - name: label
         value: '`{図のタイトル}の案内`・`{図のタイトル}の再生`'
     position: 描く先の要素 > map の構成図・map のシーケンス図・map の ER 図・map の状態遷移図・map のクラス図・map のアーキテクチャ図・map の C4 図・map のマインドマップ・map の軸と格子の配置の図の図の枠の下
@@ -897,9 +895,9 @@ elements:
     position: 描く先の要素 > 本文の列 > タイトルの後ろ（右側の目次を配置しないときは描く先の要素 > タイトルの後ろ）
     description: 本文の直下の最初の `h1`（文書のタイトル）の後ろ、`h1` が無ければ本文の先頭に、右に詰めて配置する。タイトルがセクションのときはタイトルとそのセクションの中身の間に配置し、H1 のセクションを閉じても隠れない
     label: 変更表示
-    visible_when: '`opts.diffSource` を指定し、`opts.diffMode` が `blocks` でないとき'
+    visible_when: '`opts.diffSource` を指定し、`opts.diffMode` が `blocks` でなく、`opts.diffControls` が `false` でないとき'
     initial_state: 活性
-    initial_value: 閉じた状態（`aria-expanded="false"`）。`opts.diffMode` が `open` のときは開いた状態（`aria-expanded="true"`）
+    initial_value: 閉じた状態（`aria-expanded="false"`）。`opts.diffMode` が `open` のときは開いた状態（`aria-expanded="true"`）。`side-by-side` のときは `button` と同じく閉じた状態
     action: 押すと、タイトルを残して本文と右側の目次を隠し、差分の場所を開く。差分を開いている間はセクションの開閉で本文を出さない。もう一度押すと差分を片付け、本文（セクションは今の開閉の状態）と右側の目次に戻す
     refs:
       - IF-472-35#constraints[差分を開く UI]
@@ -908,8 +906,8 @@ elements:
     id: diff-panel
     kind: region
     position: 描く先の要素 > 本文の列 > タイトルの後ろ（右側の目次を配置しないときは描く先の要素 > タイトルの後ろ）
-    description: 差分を開いている間、隠した本文と右側の目次の代わりに出す場所。差分を開くボタンの直後に配置する。リビジョンの選択・差分の行・差分の状態の文・差分の通知ブロックを入れる
-    visible_when: 差分を開いている間
+    description: 差分を開いている間、隠した本文と右側の目次の代わりに出す場所。差分を開くボタンの直後（`opts.diffControls` が `false` のときはタイトルの後ろ）に配置する。リビジョンの選択・差分の行・左右に並べる差分・差分の状態の文・差分の通知ブロックを入れる
+    visible_when: 差分を開いている間（`opts.diffControls` が `false` のときは描いた時点から）
     initial_value: '`hidden`'
     refs:
       - IF-472-35#constraints[差分を開く UI]
@@ -928,7 +926,7 @@ elements:
     position: 描く先の要素 > 差分の場所
     description: 比べる前と後のリビジョンを選ぶ 2 つの欄と、削除した行と追加した行の数。幅が狭いときは 2 つの欄を縦に並べる
     io: 入力
-    visible_when: リビジョンが 2 つ以上あるとき
+    visible_when: リビジョンが 2 つ以上あり、`opts.diffControls` が `false` でないとき
     initial_value: 前に 2 番目、後に 1 番目のリビジョン
     options: 取り出し元が返却した順（新しい順）。前の欄では最新のリビジョン、後の欄では前に選んだもの以前のリビジョンを選べない
     display_format: '`2026/10/19 16:40 件数を修正する（鈴木）`（JST。`label`・`author` が無ければ出さない）'
@@ -950,9 +948,27 @@ elements:
     position: 描く先の要素 > 差分の場所
     description: 前と後の Markdown のソースを比べた行。削除した行を赤と `-`、追加した行を緑と `+`、対の行で変わった単語を濃い色で出す
     io: 表示
-    visible_when: 選んだ 2 つの本文を取り出せ、変更があるとき
+    visible_when: '選んだ 2 つの本文を取り出せ、変更があり、`opts.diffMode` が `side-by-side` でないとき'
     refs:
       - IF-472-35#constraints[差分の行]
+    status: planned
+  - name: 左右に並べる差分
+    id: diff-side-by-side
+    kind: region
+    component: CMP-472-67#
+    args:
+      - name: before.label
+        value: 前のリビジョンの日時（JST）と `label`
+      - name: after.label
+        value: 後のリビジョンの日時（JST）と `label`
+      - name: rows
+        value: 選んだ 2 つの `DiffSource.content` の戻り値を描き、制約「描いた文書のブロックの色分け」と同じ比べ方で対応づけたブロックの組
+    position: 描く先の要素 > 差分の場所
+    description: 前のリビジョンを左、後のリビジョンを右に描いた本文を並べ、変えていないブロックと変更したブロックの対を同じ高さで向かい合わせる。描く先の要素の幅が 48rem 未満のときは、変えたブロックだけ前の下に後を縦に並べる
+    io: 表示
+    visible_when: '選んだ 2 つの本文を取り出せ、変更があり、`opts.diffMode` が `side-by-side` のとき'
+    refs:
+      - IF-472-35#constraints[左右に並べる差分]
     status: planned
   - name: 埋め込んだ HTML の差分
     id: diff-html
@@ -1306,7 +1322,7 @@ elements:
         value: 文書を描く.request.opts.config.features.markdown-buttons（文書の `features` のマーカーが上書きする。既定 `true`）
       - name: markdownCopy
         value: Markdown でコピーのボタンを押した結果（描いた直後は idle）
-    position: 描く先の要素 > 本文の列の右（hover でピン止めしていない間の右端の線と重ねて出す枠は、スクロールする場所の右端。狭い幅では本文の列の上の帯）
+    position: 描く先の要素 > 本文の列の右（hover でピン止めしていない間の右端の線と重ねて出す枠は、スクロールする場所の右端。狭い幅では本文の列の右上の端）
     description: |-
       本文の列の右に配置し、画面に留める目次。
       hover でピン止めしていない間は、右端の線と重ねて出す目次の枠を、描く先の要素の幅によらず見えている枠の右端（スクロールバーを除く）から 1rem に配置し、ページの差分のミニマップの帯と横の範囲が重なる間はその左端から 8px 左へずらす。
@@ -1317,7 +1333,7 @@ elements:
       目次の上端にはタイトルを配置せず、すべて展開・すべて折りたたむを左、ピン止めを右に 1 行で並べる。
       本文を色分けしたときは、変わったセクションの項目の右端に変更のマーカー（橙の塗った円）を出し、読み上げでは項目の名前に続けて `（変更）` と伝え、hover の右端の線もその見出しの線を橙にする。
       fixed は目次を出すボタンでサイドバーを開閉する。
-      描く先の要素の幅が 48rem 未満のときは、`--mdmark-sticky-top` の位置に留める帯で今いるセクションの見出しと目次を出すボタンを出し、目次は帯の下に本文へ重ねて開く。
+      描く先の要素の幅が 48rem 未満のときは、右端の線と今いるセクションの見出しを出さず、目次を出すボタンだけを本文の右上の端に `--mdmark-sticky-top` の位置で留め、目次はボタンの下に本文へ重ねて開く。
       パネルの `nav` は `aria-label="右側の目次"` で、本文の目次（`aria-label="目次"`）とランドマークの名前を分ける。
       印刷では出さない
     label: 右側の目次（パネルの `nav` の `aria-label`。見えるタイトルは持たない）
@@ -1338,7 +1354,7 @@ elements:
     id: side-toc-toggle
     kind: button
     position: 描く先の要素 > 右側の目次
-    description: 三点リーダーのアイコンのボタン。`aria-expanded`・`aria-controls` で目次を出しているかを示す。狭い幅では帯いっぱいに広げ、今いるセクションの見出しの文字を並べる（1 行に収め、収まらない分は `…` で省く）
+    description: 三点リーダーのアイコンのボタン。`aria-expanded`・`aria-controls` で目次を出しているかを示す。狭い幅では今いるセクションの見出しの文字を出さず、右側のパネルのアイコン（lucide の `panel-right`・16px）の見た目 32px 四方・押せる範囲 44px 四方のボタンにして、本文の右上の端に留める
     label: 目次を表示（`aria-label`・`title`）
     visible_when: 'fixed の出し方、ポインターを配置できない端末（`hover: none`）の hover の出し方、または狭い幅のとき'
     initial_value: '`aria-expanded="false"`'
