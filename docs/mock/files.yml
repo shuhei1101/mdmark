@@ -1417,6 +1417,22 @@ files:
     visibility: internal
     description: '部品『mapの構成図』のモック: 線を動かした後の経路の今の決まり（固定するものと計算し直すもの）の表と、入れ子のグループをまたぐ線・ほかのノードを回り込む線・状態遷移図・ER 図を配布物で描いた、マウスで線とノードを動かして確認する図と、L 字の線の端が接続先のノードから浮く不具合の今の見え方と修正した後の見え方。線を動かした後の経路の決まりを決めるときに参照する。'
     tags: [topic:モック, topic:図, action:移動]
+  - path: components/diff-side-by-side/index.html
+    visibility: internal
+    description: '部品『差分のブロック』のモック: 前のリビジョンを左・後のリビジョンを右に描いてブロックを向かい合わせる差分の広い幅の見本と、狭い幅の案 A（縦に並べる）・案 B（横にスクロールする）、追加した箇条書きの項目の記号の位置の今と修正後を並べる。左右に並べる差分の見せ方を決めるときに参照する。'
+    tags: [topic:モック, topic:差分]
+  - path: components/side-toc-narrow-band/index.html
+    visibility: internal
+    description: '部品『右側の目次』のモック: 狭い幅の目次のバーを留める位置に固定する今の見せ方と、案 A（本文の先頭にだけ配置する）・案 B（下へスクロール中は隠す）・案 C（目次を開くボタンだけを固定する）を、スマートフォンの幅の見本で並べる。狭い幅の目次の見せ方を決めるときに参照する。'
+    tags: [topic:モック, topic:目次]
+  - path: refs/792/index.md
+    visibility: internal
+    description: '#792（左右に並べる差分と箇条書きの記号の位置、狭い幅の右側の目次のバーの見せ方）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/792/assets/mock.css
+    visibility: internal
+    description: '#792 のモックの規則: 配布物の CSS の上に、カタログの並び・左右に並べる差分の 2 列・スマートフォンの幅の見本と目次のバーの案を重ねる。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック]
   - path: components/map-wire-label/index.html
     visibility: internal
     description: '部品『mapの構成図』のモック: 線の上の文字の今の設定（記載方法・位置・大きさ・折り返し・色）の一覧と、線より長い文字の今の見た目・案 A（線の横に置く）・案 B（線の長さで折り返す）・案 C（ノードの間を文字の幅まで広げる）を、横と縦の構成図とブロック図で並べる。線の上の文字の見せ方を決めるときに参照する。'

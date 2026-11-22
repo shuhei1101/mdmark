@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>diff-side-by-side（左右に並べる差分） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体。差分のブロックの色と記号を含む） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #792 のカタログの並びと左右に並べる差分の規則 -->
+  <link rel="stylesheet" href="../../refs/792/assets/mock.css">
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / diff-side-by-side
+  </nav>
+  <main class="catalog">
+    <h1>diff-side-by-side</h1>
+    <p class="state-note">前のリビジョン（r1）を左、後のリビジョン（r2）を右に描き、変えていないブロックを同じ高さで向かい合わせる。追加・削除・変更したブロックは差分のブロックの色と記号で示す（#783）。変更表示のボタンとリビジョンを選ぶ欄を出さない指定で描いた状態（#784）</p>
+
+    <h2>広い幅（1280px）</h2>
+    <p class="state-note">r1 → r2 で、段落の単語を書き換え、表の後に段落を 1 つ追加し、別の段落を 1 つ削除した。見出しと表は変えていない。向かいに対の無いブロックの向かいは斜線の空きにする</p>
+    <div class="sample">
+      <div class="side-by-side mdmark" role="group" aria-label="前と後のリビジョンを左右に並べた差分">
+        <div class="side-head" id="col-before">前: r1（2026-11-20）</div>
+        <div class="side-head" id="col-after">後: r2（2026-11-21）</div>
+
+        <!-- 変えていない見出し -->
+        <div class="side-cell" aria-describedby="col-before"><h2>リリースの手順</h2></div>
+        <div class="side-cell" aria-describedby="col-after"><h2>リリースの手順</h2></div>
+
+        <!-- 変えていない段落 -->
+        <div class="side-cell"><p>タグを打ってから配布物が届くまでの手順をまとめます。</p></div>
+        <div class="side-cell"><p>タグを打ってから配布物が届くまでの手順をまとめます。</p></div>
+
+        <!-- 削除した段落: 向かい（右）は空き -->
+        <div class="side-cell">
+          <div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p></div>
+        </div>
+        <div class="side-cell side-gap" aria-hidden="true"></div>
+
+        <!-- 単語を書き換えた段落: 左は削除の色、右は追加の色で同じ高さに向かい合う -->
+        <div class="side-cell">
+          <div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>確認する項目は表のとおりです。</p></div>
+        </div>
+        <div class="side-cell">
+          <div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>確認する項目は次の表のとおりです。</p></div>
+        </div>
+
+        <!-- 変えていない表 -->
+        <div class="side-cell">
+          <table><thead><tr><th>項目</th><th>確認する人</th></tr></thead><tbody><tr><td>変更履歴</td><td>planner</td></tr><tr><td>配布物</td><td>tester</td></tr></tbody></table>
+        </div>
+        <div class="side-cell">
+          <table><thead><tr><th>項目</th><th>確認する人</th></tr></thead><tbody><tr><td>変更履歴</td><td>planner</td></tr><tr><td>配布物</td><td>tester</td></tr></tbody></table>
+        </div>
+
+        <!-- 追加した段落: 向かい（左）は空き -->
+        <div class="side-cell side-gap" aria-hidden="true"></div>
+        <div class="side-cell">
+          <div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>表の項目が全て済んだら、タグを push します。長い段落でも、向かいの空きは段落の高さに合わせて伸びます。</p></div>
+        </div>
+
+        <!-- 変えていない段落 -->
+        <div class="side-cell"><p>手順は上から順に進めます。</p></div>
+        <div class="side-cell"><p>手順は上から順に進めます。</p></div>
+      </div>
+    </div>
+
+    <h2>狭い幅（390px）の見せ方</h2>
+    <p class="state-note">同じ差分を、スマートフォンの幅で描いたときの案（要件の `未確定`）</p>
+    <div class="phone-grid">
+      <section>
+        <h3>案 A: 前と後を縦に並べる（推奨）</h3>
+        <p class="state-note">変えたブロックだけ、前（削除の色）の下に後（追加の色）を置く。変えていないブロックは 1 回だけ出す</p>
+        <div class="phone" style="height: auto; padding: 12px 16px;">
+          <div class="mdmark stacked-pair">
+            <h2>リリースの手順</h2>
+            <p>タグを打ってから配布物が届くまでの手順をまとめます。</p>
+            <p class="stacked-label">前: r1</p>
+            <div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p></div>
+            <p class="stacked-label">前: r1</p>
+            <div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>確認する項目は表のとおりです。</p></div>
+            <p class="stacked-label">後: r2</p>
+            <div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>確認する項目は次の表のとおりです。</p></div>
+            <table><thead><tr><th>項目</th><th>確認する人</th></tr></thead><tbody><tr><td>変更履歴</td><td>planner</td></tr><tr><td>配布物</td><td>tester</td></tr></tbody></table>
+            <p class="stacked-label">後: r2</p>
+            <div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>表の項目が全て済んだら、タグを push します。</p></div>
+            <p>手順は上から順に進めます。</p>
+          </div>
+        </div>
+      </section>
+      <section>
+        <h3>案 B: 左右のまま、横にスクロールする</h3>
+        <p class="state-note">各列を 300px 前後の幅で並べ、差分の中だけを横にスクロールする。右の列は横にスクロールしないと見えない</p>
+        <div class="phone" style="height: auto; padding: 12px 16px;">
+          <div class="side-scroll">
+            <div class="side-by-side mdmark">
+              <div class="side-head">前: r1</div>
+              <div class="side-head">後: r2</div>
+              <div class="side-cell"><h2>リリースの手順</h2></div>
+              <div class="side-cell"><h2>リリースの手順</h2></div>
+              <div class="side-cell"><div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p></div></div>
+              <div class="side-cell side-gap" aria-hidden="true"></div>
+              <div class="side-cell"><div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>確認する項目は表のとおりです。</p></div></div>
+              <div class="side-cell"><div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>確認する項目は次の表のとおりです。</p></div></div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <h2>箇条書きの項目の記号の位置（#786）</h2>
+    <p class="state-note">追加・削除した箇条書きの項目の +・− を、項目の 1 行目の高さに描く。左が今の描き方の再現、右が修正後</p>
+    <div class="side-by-side">
+      <section>
+        <h3>今: 記号が項目の行より下にずれる</h3>
+        <div class="sample mdmark">
+          <ul>
+            <li>記録の YAML</li>
+            <li>本文の Markdown</li>
+            <li class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true" style="inset-block-start: calc(var(--mdmark-diff-block-pad-block) + 0.6em);">+</span>添付したファイル</li>
+          </ul>
+        </div>
+      </section>
+      <section>
+        <h3>修正後: 記号を項目の 1 行目の高さに描く</h3>
+        <div class="sample mdmark">
+          <ul>
+            <li>記録の YAML</li>
+            <li>本文の Markdown</li>
+            <li class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true" style="inset-block-start: var(--mdmark-diff-block-pad-block);">+</span>添付したファイル。2 行目に折り返す長い項目でも、記号は 1 行目の高さに描きます</li>
+          </ul>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

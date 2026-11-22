@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>side-toc-narrow-band（狭い幅の右側の目次のバー） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #792 のカタログの並びと狭い幅の目次のバーの案の規則 -->
+  <link rel="stylesheet" href="../../refs/792/assets/mock.css">
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / side-toc-narrow-band
+  </nav>
+  <main class="catalog">
+    <h1>side-toc-narrow-band</h1>
+    <p class="state-note">描く先の要素の幅が 48rem 未満のときの、右側の目次のバー（今いるセクションの見出しと目次を出すボタン）の固定の見せ方の案（#790）。どの見本も、利用側の高さ 48px の固定のヘッダーの下で、表の途中までスクロールした場面</p>
+
+    <h2>今の見せ方と案</h2>
+    <div class="phone-grid">
+      <section>
+        <h3>今: バーを `--mdmark-sticky-top` に固定する</h3>
+        <p class="state-note">スクロールしている間もバーが残り、同じ位置に留めた表の見出し行がバーの裏に隠れる</p>
+        <div class="phone" aria-label="今の見せ方の見本">
+          <div class="host-header">利用側のアプリ</div>
+          <div class="phone-body mdmark">
+            <div style="height: 44px"></div>
+            <div class="table-rows"><div><span>変更履歴</span><span>planner</span></div><div><span>配布物</span><span>tester</span></div><div><span>タグ</span><span>planner</span></div><div><span>リリースノート</span><span>planner</span></div></div>
+            <p>表の項目が全て済んだら、タグを push します。配布物は jsDelivr から届きます。</p>
+            <h2>使用方法</h2>
+            <p>配布物を読み込んだページで <code>mount</code> を呼び、要素の中に Markdown を描きます。</p>
+          </div>
+          <div class="toc-band"><span class="toc-band-title">要素一覧</span><button type="button" class="toc-button" aria-label="目次を出す">≡</button></div>
+          <div class="gesture-note">下へスクロール中</div>
+        </div>
+      </section>
+
+      <section>
+        <h3>案 A: 固定せず、本文の先頭にだけ置く</h3>
+        <p class="state-note">スクロールするとバーは本文と一緒に上へ流れて消える。目次を出すには文書の先頭まで戻る</p>
+        <div class="phone" aria-label="案 A の見本">
+          <div class="host-header">利用側のアプリ</div>
+          <div class="phone-body mdmark">
+            <div class="stuck-head"><span>項目</span><span>確認する人</span></div>
+            <div class="table-rows"><div><span>変更履歴</span><span>planner</span></div><div><span>配布物</span><span>tester</span></div><div><span>タグ</span><span>planner</span></div><div><span>リリースノート</span><span>planner</span></div></div>
+            <p>表の項目が全て済んだら、タグを push します。配布物は jsDelivr から届きます。</p>
+            <h2>使用方法</h2>
+            <p>配布物を読み込んだページで <code>mount</code> を呼び、要素の中に Markdown を描きます。</p>
+          </div>
+          <div class="gesture-note">下へスクロール中</div>
+        </div>
+      </section>
+
+      <section>
+        <h3>案 B: 下へスクロール中は隠し、上へスクロールしたら出す（推奨）</h3>
+        <p class="state-note">読んでいる間はバーを隠して見出し行を留める位置に出す。少し上へスクロールすると、バーが留める位置に出て見出し行はその下へ移る</p>
+        <div class="phone-grid" style="grid-template-columns: 1fr;">
+          <div class="phone" aria-label="案 B の下へスクロール中の見本">
+            <div class="host-header">利用側のアプリ</div>
+            <div class="phone-body mdmark">
+              <div class="stuck-head"><span>項目</span><span>確認する人</span></div>
+              <div class="table-rows"><div><span>変更履歴</span><span>planner</span></div><div><span>配布物</span><span>tester</span></div><div><span>タグ</span><span>planner</span></div><div><span>リリースノート</span><span>planner</span></div></div>
+              <p>表の項目が全て済んだら、タグを push します。配布物は jsDelivr から届きます。</p>
+              <h2>使用方法</h2>
+              <p>配布物を読み込んだページで <code>mount</code> を呼び、要素の中に Markdown を描きます。</p>
+            </div>
+            <div class="toc-band" data-state="hidden" aria-hidden="true"><span class="toc-band-title">要素一覧</span><button type="button" class="toc-button" tabindex="-1">≡</button></div>
+            <div class="gesture-note">下へスクロール中</div>
+          </div>
+          <div class="phone" aria-label="案 B の上へスクロールした後の見本">
+            <div class="host-header">利用側のアプリ</div>
+            <div class="phone-body mdmark">
+              <div style="height: 44px"></div>
+              <div class="stuck-head"><span>項目</span><span>確認する人</span></div>
+              <div class="table-rows"><div><span>変更履歴</span><span>planner</span></div><div><span>配布物</span><span>tester</span></div><div><span>タグ</span><span>planner</span></div></div>
+              <p>表の項目が全て済んだら、タグを push します。配布物は jsDelivr から届きます。</p>
+              <h2>使用方法</h2>
+              <p>配布物を読み込んだページで <code>mount</code> を呼び、要素の中に Markdown を描きます。</p>
+            </div>
+            <div class="toc-band"><span class="toc-band-title">要素一覧</span><button type="button" class="toc-button" aria-label="目次を出す">≡</button></div>
+            <div class="gesture-note">上へ少しスクロールした後</div>
+          </div>
+        </div>
+      </section>
+
+      <section>
+        <h3>案 C: 目次を開くボタンだけを右上の端に固定する</h3>
+        <p class="state-note">バーの代わりに 44px のボタンだけを残す。今いるセクションの見出しは出さず、ボタンが本文の右上の一部に重なる</p>
+        <div class="phone" aria-label="案 C の見本">
+          <div class="host-header">利用側のアプリ</div>
+          <div class="phone-body mdmark">
+            <div class="stuck-head"><span>項目</span><span>確認する人</span></div>
+            <div class="table-rows"><div><span>変更履歴</span><span>planner</span></div><div><span>配布物</span><span>tester</span></div><div><span>タグ</span><span>planner</span></div><div><span>リリースノート</span><span>planner</span></div></div>
+            <p>表の項目が全て済んだら、タグを push します。配布物は jsDelivr から届きます。</p>
+            <h2>使用方法</h2>
+            <p>配布物を読み込んだページで <code>mount</code> を呼び、要素の中に Markdown を描きます。</p>
+          </div>
+          <button type="button" class="toc-button toc-fab" aria-label="目次を出す">≡</button>
+          <div class="gesture-note">下へスクロール中</div>
+        </div>
+      </section>
+    </div>
+
+    <h2>案ごとの違い</h2>
+    <table class="rule-table">
+      <thead><tr><th>案</th><th>読んでいる間の本文</th><th>今いるセクションの確認</th><th>目次を出す操作</th></tr></thead>
+      <tbody>
+        <tr><td>A</td><td>隠さない</td><td>できない（先頭に戻ったときだけ）</td><td>文書の先頭まで戻る</td></tr>
+        <tr><td>B</td><td>隠さない</td><td>上へ少しスクロールすると出る</td><td>上へ少しスクロールしてボタンを押す</td></tr>
+        <tr><td>C</td><td>右上の 44px だけ隠す</td><td>できない</td><td>いつでもボタンを押す</td></tr>
+      </tbody>
+    </table>
+  </main>
+</body>
+</html>
