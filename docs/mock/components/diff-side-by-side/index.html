@@ -24,49 +24,28 @@
     <h2>広い幅（1280px）</h2>
     <p class="state-note">r1 → r2 で、段落の単語を書き換え、表の後に段落を 1 つ追加し、別の段落を 1 つ削除した。見出しと表は変えていない。向かいに対の無いブロックの向かいは斜線の空きにする</p>
     <div class="sample wide-sample" tabindex="0" aria-label="広い幅の見本（狭い画面では横にスクロールする）">
-      <div class="side-by-side mdmark" role="group" aria-label="前と後のリビジョンを左右に並べた差分">
-        <div class="side-head" id="col-before">前: r1（2026-11-20）</div>
-        <div class="side-head" id="col-after">後: r2（2026-11-21）</div>
-
-        <!-- 変えていない見出し -->
-        <div class="side-cell" aria-describedby="col-before"><h2>リリースの手順</h2></div>
-        <div class="side-cell" aria-describedby="col-after"><h2>リリースの手順</h2></div>
-
-        <!-- 変えていない段落 -->
-        <div class="side-cell"><p>タグを打ってから配布物が届くまでの手順をまとめます。</p></div>
-        <div class="side-cell"><p>タグを打ってから配布物が届くまでの手順をまとめます。</p></div>
-
-        <!-- 削除した段落: 向かい（右）は空き -->
-        <div class="side-cell">
-          <div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p></div>
-        </div>
-        <div class="side-cell side-gap" aria-hidden="true"></div>
-
-        <!-- 単語を書き換えた段落: 左は削除の色、右は追加の色で同じ高さに向かい合う -->
-        <div class="side-cell">
-          <div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>確認する項目は表のとおりです。</p></div>
-        </div>
-        <div class="side-cell">
-          <div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>確認する項目は次の表のとおりです。</p></div>
-        </div>
-
-        <!-- 変えていない表 -->
-        <div class="side-cell">
-          <table><thead><tr><th>項目</th><th>確認する人</th></tr></thead><tbody><tr><td>変更履歴</td><td>planner</td></tr><tr><td>配布物</td><td>tester</td></tr></tbody></table>
-        </div>
-        <div class="side-cell">
-          <table><thead><tr><th>項目</th><th>確認する人</th></tr></thead><tbody><tr><td>変更履歴</td><td>planner</td></tr><tr><td>配布物</td><td>tester</td></tr></tbody></table>
-        </div>
-
-        <!-- 追加した段落: 向かい（左）は空き -->
-        <div class="side-cell side-gap" aria-hidden="true"></div>
-        <div class="side-cell">
-          <div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>表の項目が全て済んだら、タグを push します。長い段落でも、向かいの空きは段落の高さに合わせて伸びます。</p></div>
-        </div>
-
-        <!-- 変えていない段落 -->
-        <div class="side-cell"><p>手順は上から順に進めます。</p></div>
-        <div class="side-cell"><p>手順は上から順に進めます。</p></div>
+      <!-- 左右の列はそれぞれ名前を持つ領域。行の高さは subgrid で合わせ、読み上げは前の本文を通して読んだ後に後の本文を読む -->
+      <div class="side-by-side mdmark" style="--side-rows: 8;">
+        <section class="side-col" aria-labelledby="col-before">
+          <div class="side-head" id="col-before">前: r1（2026-11-20）</div>
+          <div class="side-cell"><h2>リリースの手順</h2></div>
+          <div class="side-cell"><p>タグを打ってから配布物が届くまでの手順をまとめます。</p></div>
+          <div class="side-cell"><div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p></div></div>
+          <div class="side-cell"><div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>確認する項目は表のとおりです。</p></div></div>
+          <div class="side-cell"><table><thead><tr><th>項目</th><th>確認する人</th></tr></thead><tbody><tr><td>変更履歴</td><td>planner</td></tr><tr><td>配布物</td><td>tester</td></tr></tbody></table></div>
+          <div class="side-cell side-gap" aria-hidden="true"></div>
+          <div class="side-cell"><p>手順は上から順に進めます。</p></div>
+        </section>
+        <section class="side-col" aria-labelledby="col-after">
+          <div class="side-head" id="col-after">後: r2（2026-11-21）</div>
+          <div class="side-cell"><h2>リリースの手順</h2></div>
+          <div class="side-cell"><p>タグを打ってから配布物が届くまでの手順をまとめます。</p></div>
+          <div class="side-cell side-gap" aria-hidden="true"></div>
+          <div class="side-cell"><div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>確認する項目は次の表のとおりです。</p></div></div>
+          <div class="side-cell"><table><thead><tr><th>項目</th><th>確認する人</th></tr></thead><tbody><tr><td>変更履歴</td><td>planner</td></tr><tr><td>配布物</td><td>tester</td></tr></tbody></table></div>
+          <div class="side-cell"><div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>表の項目が全て済んだら、タグを push します。長い段落でも、向かいの空きは段落の高さに合わせて伸びます。</p></div></div>
+          <div class="side-cell"><p>手順は上から順に進めます。</p></div>
+        </section>
       </div>
     </div>
 
@@ -98,15 +77,19 @@
         <p class="state-note">各列を 300px 前後の幅で並べ、差分の中だけを横にスクロールする。右の列は横にスクロールしないと見えない</p>
         <div class="phone" style="height: auto; padding: 12px 16px;">
           <div class="side-scroll" tabindex="0" aria-label="左右に並べた差分（横にスクロールする）">
-            <div class="side-by-side mdmark">
-              <div class="side-head">前: r1</div>
-              <div class="side-head">後: r2</div>
-              <div class="side-cell"><h2>リリースの手順</h2></div>
-              <div class="side-cell"><h2>リリースの手順</h2></div>
-              <div class="side-cell"><div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p></div></div>
-              <div class="side-cell side-gap" aria-hidden="true"></div>
-              <div class="side-cell"><div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>確認する項目は表のとおりです。</p></div></div>
-              <div class="side-cell"><div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>確認する項目は次の表のとおりです。</p></div></div>
+            <div class="side-by-side mdmark" style="--side-rows: 4;">
+              <section class="side-col" aria-labelledby="col-before-b">
+                <div class="side-head" id="col-before-b">前: r1</div>
+                <div class="side-cell"><h2>リリースの手順</h2></div>
+                <div class="side-cell"><div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>リリースの前日までに、変更履歴の下書きを用意しておきます。</p></div></div>
+                <div class="side-cell"><div class="mdmark-diff-block" data-kind="del"><span class="mdmark-visually-hidden">削除:</span><span class="mdmark-diff-block-sign" aria-hidden="true">−</span><p>確認する項目は表のとおりです。</p></div></div>
+              </section>
+              <section class="side-col" aria-labelledby="col-after-b">
+                <div class="side-head" id="col-after-b">後: r2</div>
+                <div class="side-cell"><h2>リリースの手順</h2></div>
+                <div class="side-cell side-gap" aria-hidden="true"></div>
+                <div class="side-cell"><div class="mdmark-diff-block" data-kind="add"><span class="mdmark-visually-hidden">追加:</span><span class="mdmark-diff-block-sign" aria-hidden="true">+</span><p>確認する項目は次の表のとおりです。</p></div></div>
+              </section>
             </div>
           </div>
         </div>

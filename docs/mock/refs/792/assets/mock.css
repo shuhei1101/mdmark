@@ -36,10 +36,20 @@
 .side-by-side {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: repeat(var(--side-rows), auto);
   column-gap: 32px;
 
+  /* 1 列分の領域: 親の行を subgrid で受け継ぎ、左右で向かい合うブロックの高さを合わせる */
+  & > .side-col {
+    display: grid;
+    grid-row: 1 / span var(--side-rows);
+    grid-template-rows: subgrid;
+    min-width: 0;
+    margin: 0;
+  }
+
   /* 向かい合う左右のブロックの上端を合わせるため、配布物の CSS のブロックの間の余白を外す */
-  & > * {
+  & .side-col > * {
     margin-block: 0;
   }
 
