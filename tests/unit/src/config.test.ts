@@ -449,7 +449,9 @@ test("test_resolve_map_config_when_packets", async () => {
   const { resolveMapConfig } = await loadConfig();
   // 実行
   const omitted = resolveMapConfig({});
-  const given = resolveMapConfig({ packets: { fill: "ring", palette: "cool" } });
+  const given = resolveMapConfig({
+    packets: { fill: "ring", palette: "cool" },
+  });
   const unknown = resolveMapConfig({ packets: { fill: "x", palette: 1 } });
   // 検証
   expect(omitted.packets).toEqual({ fill: "tinted", palette: "accent" });

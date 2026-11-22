@@ -950,7 +950,9 @@ test("test_attach_map_flow_when_wire_moved_beyond_edge", async () => {
   const before = viewport.scrollLeft;
   // 縦の区間の帯（高さが幅より大きい帯）
   const band = [
-    ...root.querySelectorAll('.map-wire-hit[data-wire="a->c"] .map-wire-hit-segment'),
+    ...root.querySelectorAll(
+      '.map-wire-hit[data-wire="a->c"] .map-wire-hit-segment',
+    ),
   ].find((item) => {
     const rect = item.getBoundingClientRect();
     return rect.height > rect.width;

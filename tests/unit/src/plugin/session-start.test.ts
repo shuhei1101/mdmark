@@ -1,7 +1,7 @@
 import { mkdtemp, readFile } from "node:fs/promises";
-import { tmpdir } from "node:os";
 import type { AddressInfo } from "node:net";
 import { createServer, type Server } from "node:net";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, expect, test } from "vitest";
 
