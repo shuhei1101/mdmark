@@ -2330,6 +2330,87 @@ scenarios:
       - 横にスクロールした後、囲まない表と行見出しを持つ表は 1 列目が見えなくなっていて、全てのピン止めのボタンの `aria-pressed` が `false`
       - 横にスクロールした後、3 つ目の表は `物理名` の列だけが左端に見えていて、`物理名` のピン止めのボタンの `aria-pressed` が `true`、`No` の列は見えていない
     test: test_normal_when_not_pinned_by_default
+  - name: 正常シナリオ（px 以外の長さで留める位置を指定する）
+    setup:
+      - name: 固定のヘッダーを持つページ
+        description: 画面の上端に高さ 96px の固定のヘッダーを配置し、描く先の要素に `--mdmark-sticky-top` を指定して文書を描く HTML。ページがスクロールする
+        notes: '`--mdmark-sticky-top` は `calc(.25rem * 24)` と `6rem` の 2 通り（どちらも 96px）。`@property` では登録しない'
+      - name: 大きい表を持つ Markdown
+        description: 正常シナリオ（見出し行を画面の上端に留める）と同じ
+      - name: Mock
+        description: 正常シナリオと同じ。ページを開く前に `CSS.supports` が `animation-timeline` を偽と返すようにして `script` の方式にした開き方と、差し替えない開き方（`timeline` の方式）の 2 通りで開く
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: --mdmark-sticky-top を calc() か rem で指定して描かせる
+        M-->>P: 表を描く
+        U->>P: 表の上端から 150px ページをスクロールする
+        P-->>U: 見出し行を固定のヘッダーの下に留めた表
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`script` の方式でも `timeline` の方式でも、見出し行の上端が画面の上端から 96px の位置にあり、固定のヘッダーに隠れていない'
+      - '`calc(.25rem * 24)` と `6rem` のどちらで指定しても、見出し行の位置が `96px` で指定したときと同じ'
+    test: test_normal_when_sticky_top_not_px
+  - name: 正常シナリオ（iPad の Safari で見出し行を留める）
+    setup:
+      - name: 固定のヘッダーを持つページ
+        description: 正常シナリオ（px 以外の長さで留める位置を指定する）と同じページで、`--mdmark-sticky-top` は `96px`
+        notes: Playwright の WebKit を iPad Pro 11 の端末設定（画面の幅とタッチ）で開く。ページのスクロールと、正常シナリオ（スクロールする区画の中で見出し行を留める）と同じ区画のスクロールの 2 通り
+      - name: 大きい表を 2 つ持つ Markdown
+        description: 正常シナリオ（見出し行を画面の上端に留める）の表を、長い段落を挟んで 2 つ並べた文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        U->>P: 2 つ目の表の上端が画面の中ほどに来るまでスクロールする
+        P-->>U: 見出し行を表の上端に配置した表
+        U->>P: 2 つ目の表の上端が留める位置を越えるまでスクロールする
+        P-->>U: 見出し行を留める位置に留めた表
+      ```
+
+      <!-- /map -->
+    expected:
+      - 2 つ目の表の上端が留める位置より下にある間、その表の見出し行の上端が表の上端と同じ位置にある
+      - 1 つ目の表の見出し行は、表の末尾を越えて下にはみ出さない
+      - 2 つ目の表の上端が留める位置を越えた後、見出し行の上端がページのスクロールでは画面の上端から 96px、区画のスクロールでは区画の上端の位置にある
+      - 同じ操作を Chromium で開いたときと、見出し行の位置が同じ
+    test: test_normal_when_header_stuck_on_ipad_safari
+  - name: 正常シナリオ（iPhone の幅で見出し行を留める）
+    setup:
+      - name: 固定のヘッダーを持つページ
+        description: 正常シナリオ（iPad の Safari で見出し行を留める）と同じページで、右側の目次を出す設定で描く
+        notes: Playwright の WebKit を iPhone の端末設定（画面の幅 390px とタッチ）で開く。右側の目次は狭い幅の帯で出る
+      - name: 大きい表を持つ Markdown
+        description: 見出しを持ち、正常シナリオ（見出し行を画面の上端に留める）の表を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        U->>P: 表の途中が出るまで下へスクロールする
+        P-->>U: 見出し行を留める位置に留めた表
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表の途中を出したとき、見出し行の全体が画面に見えていて、固定のヘッダーと右側の目次の帯に覆われていない
+    test: test_normal_when_header_stuck_on_iphone_width
 lead: '文書の作成者が `<!-- table: {JSON のオブジェクト} -->` 〜 `<!-- /table -->` で表を囲み、読者が描かれた表を見出し行を見ながらページのスクロールで読み込み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
 primary_actor: 読者
 stakeholders:
