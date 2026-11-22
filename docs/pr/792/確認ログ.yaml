@@ -41,3 +41,9 @@ confirmations:
     approver: shuhei1101
     commit: 33f791aa
     thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659340068
+  - topic: '#790 の iPad の Safari の見出し行のずれを、再現しないまま直すか'
+    decision: 2 つの方式を切り替えられる確認用のページを shuhdev-gateway の一時の登録で配信し、利用者が iPad の実機でどちらがずれるかを確認してから直す（推奨案 B。配信は Tailscale ではなく shuhdev-gateway）
+    decided_by: reply
+    approver: shuhei1101
+    commit: c968d756
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4660055409
