@@ -42,14 +42,14 @@ data_models:
     usecase: 利用側のページが差分の取り出し元を指定する
     role: DTO
     summary: '`mount` の `opts.diffMode` の値（公開の型）'
-    description: '`(typeof diffModes)[number]`（`"button" | "open" | "blocks"`）'
+    description: '`(typeof diffModes)[number]`（`"button" | "open" | "blocks" | "side-by-side"`）'
     status: planned
 constants:
   - name: diffModes
     title: 対応する差分の出し方
     container: src/diff/source.ts
     summary: 配布物が対応する `opts.diffMode` の値の並び。`src/index.ts` が名前付きで公開し、利用側が差分の出し方に対応するバージョンかを見分ける
-    value: '["button", "open", "blocks"] as const'
+    value: '["button", "open", "blocks", "side-by-side"] as const'
     status: planned
 functions:
   - name: checkRevisions

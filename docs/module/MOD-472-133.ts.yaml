@@ -281,6 +281,8 @@ functions:
       | 置き場所 | タイトルのボタンの外 |
 
       ノードと線を押す場所はフォーカスできるボタンにする。
+
+      説明（`notes` の `tip`）とラベルを持つ線は、描いたラベル（`span.mdmark-diagram-label.has-tip`）だけをツールチップの持ち主にし、線の押せる帯（`g.map-wire-hit`）には `data-tip-owner` を付けない。ラベルを持たない線と、ラベルの置き場所が無くラベルを描かない線と、注記だけを持つ線は、押せる帯を持ち主にする。
       リンク先を持たず形状が開始・終了・分岐でないノードは、ノードの `div` に `tabindex`・`role` を付けず、ノードの `div` の先頭にノードの全体を覆う `span.mdmark-diagram-node-hit` を入れる。
 
       | `span.mdmark-diagram-node-hit` の属性 | 値 |
@@ -318,6 +320,12 @@ functions:
       type: '{ html: string; tips: string }'
       description: 図の HTML（`html`）と、ノードの説明と用語のツールチップの HTML（`tips`。図の枠の `.mdmark-diagram-box` に配置する）
     unit_tests:
+      - name: test_render_map_flow_when_labeled_wire_tip
+        case: 正常
+        summary: ラベルと説明を持つ線は、ラベルだけをツールチップの持ち主にする
+        condition: 'ラベル `保存` と `notes` の説明を持つ線 `a->b` と、ラベルを持たず説明を持つ線 `b->c`'
+        mock: なし
+        expected: '`a->b` のラベルの `span` が `data-tip-owner="a->b"` と `aria-describedby` を持ち、`a->b` の `g.map-wire-hit` の帯はどれも `data-tip-owner` を持たない。`b->c` の最も長い区間の帯が `data-tip-owner="b->c"` を持つ'
       - name: test_render_map_flow_when_styles
         case: 正常
         summary: style・classDef・linkStyle の色をノードと線に適用し、文字の色をコントラストで決める

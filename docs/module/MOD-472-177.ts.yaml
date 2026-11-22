@@ -35,7 +35,7 @@ functions:
 
       - 端のボタンの `disabled`（縮小は下限、拡大は上限）
       - 倍率の文字とスクリーンリーダー向けの名前（`percentBase` が `fit` なら全体が収まる倍率を 100%、`content` なら中身の大きさを 100% とする）
-      - 表示する枠の `data-at-fit`（倍率が全体が収まる倍率以下の間だけ付ける）
+      - 表示する枠の `data-at-fit`（倍率が全体が収まる倍率以下で、倍率を掛けた中身の高さが表示する枠の `clientHeight` 以下の間だけ付ける。表示する枠の大きさが変わったときも付け直す）
 
       ピンチは、表示する枠の `touchstart`・`touchmove`（`passive: false`）で指が 2 本の間、始めの 2 本の指の距離と倍率を覚え、`touchmove` ごとに「始めの倍率 × 今の距離 ÷ 始めの距離」を下限・上限に収め、今の 2 本の指の中点の下の中身の点が中点の下に残る位置へ倍率と位置を変えて `preventDefault` する。指が 2 本の間はドラッグを止める。表示する枠の上の Safari の `gesturestart`・`gesturechange` は `preventDefault` する。
 
@@ -167,6 +167,12 @@ functions:
         condition: 開いた直後、拡大を 1 回押した後、`0` の後に縮小を 1 回押した後
         mock: なし
         expected: 表示する枠が `data-at-fit` を持ち、拡大の後に持たず、縮小の後に持つ
+      - name: test_attach_zoom_when_tall_at_fit
+        case: 正常
+        summary: 全体が収まる倍率でも、中身が枠に縦に収まらなければ data-at-fit を付けない
+        condition: 幅 600px・高さ 300px の枠に、幅 600・高さ 1200 の中身。`fit` は幅で決めた 1（高さを `--mdmark-diagram-max-height` で切った枠）。開いた直後
+        mock: なし
+        expected: 倍率が全体が収まる倍率のまま、表示する枠が `data-at-fit` を持たない
       - name: test_attach_zoom_when_pinched
         case: 正常
         summary: 2 本の指の間隔の変化で、中点を保って倍率を変える

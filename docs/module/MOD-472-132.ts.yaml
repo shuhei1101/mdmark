@@ -65,6 +65,7 @@ constants:
     usecase: 図を巡回する
     summary: 手順を繰り返すときの 1 周の時間（ミリ秒）。今の区切りをこの時間で塗り、塗り終えたら最初から再描画する
     value: '2000'
+    status: removed
   - name: BAND_DENSE_PX
     title: 細い区切りの幅
     container: src/map/band.ts
@@ -96,10 +97,10 @@ functions:
       description: 止める関数と片付ける関数
     process: |-
       1. `renderMapBand`（`titles` は手順の `title`）で帯を描き、手順のバーの幅を `ResizeObserver` で見て、区切りの幅（バーの幅から区切りの間を引いて手順の数で割った幅）が `BAND_DENSE_PX` より細いときだけバーに `is-dense` を付ける
-      2. 区切りの押下・左右の矢印のボタン・バーの ← → Home End で手順へ移る（矢印のボタンと ← → は端で反対の端へ回し、始める前の左は最後、右は最初）。移ったら `apply` で強調を適用して `onStep` を呼び、`requestAnimationFrame` で今の区切りを `STEP_MS` の 1 周で塗り、塗り終えたら最初から再描画する（次の手順へは進めない）。今の手順の区切りを押したときは、塗りを最初からにして `apply` を再度呼び出す
+      2. 区切りの押下・左右の矢印のボタン・バーの ← → Home End で手順へ移る（矢印のボタンと ← → は端で反対の端へ回し、始める前の左は最後、右は最初）。移ったら `apply` で強調を適用して `onStep` を呼び、今の区切りの全体を塗る（`renderMapBand` の `playing` を `true` にする。`requestAnimationFrame` で少しずつ塗らず、次の手順へは進めない）。今の手順の区切りを押したときは、`apply` を再度呼び出す
       3. 再描画する前にフォーカスが帯の中にあれば、矢印のボタンなら同じ向きのボタンへ、それ以外ならバーへ、再描画した後にフォーカスを戻す
       4. 帯の中のバーと矢印のボタンの外の押下・バーの Esc・図の枠の表示する枠の中でノード（`[data-node]`・`[data-participant]`）・線の押せる帯（`.map-wire-hit`）・ボタン・リンクの外を押して `DRAG_THRESHOLD` 未満の動きで離したときに停止する。停止で塗りを止め、`apply(undefined)` を呼び、始めた段に戻して帯をバーと矢印のボタンだけにし、始めたときに表示する枠に見えていた範囲へ `zoomControlOf` の `focusRect`（余白 0・時間 0）で倍率と位置を戻す
-      5. `update` で手順を差し替えたときは、塗りを止めて番号を無しに戻す（`apply` は呼ばない）
+      5. `update` で手順を差し替えたときは、番号を無しに戻す（`apply` は呼ばない）
     unit_tests:
       - name: test_attach_band_when_segment
         case: 正常
@@ -109,16 +110,16 @@ functions:
         expected: '`apply` と `onStep` に手順 2 が 1 回ずつ渡り、バーの `aria-valuenow` が 3、帯が `is-idle` を持たない'
       - name: test_attach_band_when_loop
         case: 正常
-        summary: 手順を繰り返す
-        condition: 3 つ目の区切りを押し、時計を `STEP_MS` の 1.5 倍進める
+        summary: 区切りを押した時点で今の区切りの全体を塗る
+        condition: 3 つ目の区切りを押し、時計を 3 秒進める
         mock: '`requestAnimationFrame`・時計'
-        expected: '`apply` が手順 2 の 1 回だけで、今の区切りの塗りが 50%'
+        expected: '`apply` が手順 2 の 1 回だけで、押した直後も 3 秒後も今の区切りの塗りが 100% で、`requestAnimationFrame` が塗りのために呼ばれない'
       - name: test_attach_band_when_repressed
         case: 正常
         summary: 同じ区切りをもう一度押す
-        condition: 3 つ目の区切りを押し、時計を `STEP_MS` の半分進めてから、同じ区切りを押す
-        mock: '`requestAnimationFrame`・時計・`apply`'
-        expected: '`apply` に手順 2 が 2 回渡り、塗りが 0% に戻る'
+        condition: 3 つ目の区切りを押し、時計を 1 秒進めてから、同じ区切りを押す
+        mock: '時計・`apply`'
+        expected: '`apply` に手順 2 が 2 回渡り、今の区切りの塗りが 100% のまま'
       - name: test_attach_band_when_arrows
         case: 正常
         summary: 左右の矢印のボタン
