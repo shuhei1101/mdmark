@@ -29,3 +29,15 @@ confirmations:
     approver: shuhei1101
     commit: 5b409045
     thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659259663
+  - topic: '#784 の変更表示のボタンとリビジョンを選ぶ欄を出さない指定の名前と値の型'
+    decision: 真偽値の `opts.diffControls`（既定 `true`。`false` でボタンと欄を出さない。推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 33f791aa
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659339804
+  - topic: '#785 でラベルの置き場所が無くラベルを描かない線の説明を出す場所'
+    decision: ラベルを描かない線だけは、今までどおり線そのもの（押せる帯）の上とフォーカスで説明を出す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 33f791aa
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659340068
