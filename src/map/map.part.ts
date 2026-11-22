@@ -1178,6 +1178,8 @@ const fragmentTitle = (fragment: SequenceFragment): string =>
 /** シーケンス図を描くときに繰り返し引く値 */
 type SeqContext = {
   args: MapSequenceArgs;
+  /** データの印の塗り方と色合い（設定が無ければ既定） */
+  packetStyle: PacketStyle;
   /** 矢じりの id の頭 */
   id: string;
   /** 参加者の縦線の左右の位置 */
@@ -1248,7 +1250,7 @@ export const renderMapSequence = (args: MapSequenceArgs): MapPart => {
     .map((name) => renderSeqHead(context, name))
     .join("");
   const html = [
-    `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${renderSeqMarkers(context.id)}</defs><g class="map-seq-under">${under}</g>${lifelineHits}${lifelines}${wires}<g class="map-seq-above">${above}</g><g class="map-packets" data-packet-palette="${(args.packetStyle ?? DEFAULT_PACKET_STYLE).palette}" aria-hidden="true">${renderPackets(packetPaths)}</g></svg>`,
+    `<svg class="mdmark-diagram-wires" width="${width}" height="${height}" aria-hidden="true"><defs>${renderSeqMarkers(context.id)}</defs><g class="map-seq-under">${under}</g>${lifelineHits}${lifelines}${wires}<g class="map-seq-above">${above}</g><g class="map-packets" data-packet-palette="${context.packetStyle.palette}" aria-hidden="true">${renderPackets(packetPaths)}</g></svg>`,
     labels,
     overlay,
     `<div class="mdmark-diagram-seq-heads" style="width:${width}px;height:${MAP_SEQ.headTop + MAP_SEQ.headH + 8}px">${heads}</div>`,
@@ -1269,6 +1271,7 @@ const seqContextOf = (args: MapSequenceArgs): SeqContext => {
   });
   return {
     args,
+    packetStyle: args.packetStyle ?? DEFAULT_PACKET_STYLE,
     id: args.id ?? "map-seq",
     x: new Map(
       participants.map((name, index) => [
@@ -1655,7 +1658,7 @@ const renderSeqMessage = (
             message,
             geometry,
             style,
-            packetStyle: args.packetStyle ?? DEFAULT_PACKET_STYLE,
+            packetStyle: context.packetStyle,
           })
         : undefined,
   };

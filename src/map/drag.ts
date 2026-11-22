@@ -200,8 +200,33 @@ const fixEnd = (
   let body = points.slice(0, -1);
   while (body.length > 1 && inside(rect, body.at(-1) as [number, number]))
     body = body.slice(0, -1);
-  const end = enterFrom(rect, body.at(-1) as [number, number]);
-  return end ? [...body, end] : points;
+  const last = body.at(-1) as [number, number];
+  const end = enterFrom(rect, last);
+  return end ? [...body, end] : [...body, ...enterAround(rect, last)];
+};
+
+/** まっすぐ入れない点から、越えた側の辺の中央へ縦横に曲げて入れる点（左右を越えたら左右の辺、それ以外は上下の辺） */
+const enterAround = (
+  rect: Rect,
+  [x, y]: [number, number],
+): Array<[number, number]> => {
+  const cx = rect.x + rect.w / 2;
+  const cy = rect.y + rect.h / 2;
+  if (x >= rect.x + rect.w)
+    return [
+      [x, cy],
+      [rect.x + rect.w, cy],
+    ];
+  if (x <= rect.x)
+    return [
+      [x, cy],
+      [rect.x, cy],
+    ];
+  const edge = y <= rect.y ? rect.y : rect.y + rect.h;
+  return [
+    [cx, y],
+    [cx, edge],
+  ];
 };
 
 /** 線の区間のずらし */
@@ -458,6 +483,12 @@ export const startDrag = (options: {
   const target = dragTargetOf(layout, { event, pointOf: options.pointOf });
   const startX = event.clientX;
   const startY = event.clientY;
+  // マウスとペンはポインターを押した要素に捕まえ、ブラウザのドラッグとスクロールを始めない（指はスクロールに任せる）
+  if (event.pointerType !== "touch") {
+    if (event.target instanceof Element)
+      event.target.setPointerCapture(event.pointerId);
+    event.preventDefault();
+  }
   let moved = false;
   let state = options.state;
   const move = (next: PointerEvent) => {

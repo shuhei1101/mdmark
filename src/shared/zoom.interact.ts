@@ -179,6 +179,8 @@ export function attachZoom(options: {
   fitHeight?: boolean | (() => boolean);
   /** ドラッグを始めない要素のセレクタ（押せる所に加える） */
   dragIgnore?: string;
+  /** 部品が自分でドラッグを受け持つ要素のセレクタ（ノードのリンクの上でもドラッグを始めない） */
+  dragOwner?: string;
   /** キーを受ける要素（既定は表示する枠とボタンを持つ要素） */
   keyTargets?: HTMLElement[];
   /** 倍率の文字の基準（`fit` は全体が収まる倍率、`content` は中身の大きさを 100% とする。既定 `content`） */
@@ -199,6 +201,7 @@ export function attachZoom(options: {
     onPanStart,
     fitHeight = true,
     dragIgnore,
+    dragOwner,
     keyTargets = [viewport, tools],
     percentBase = "content",
     fitMin = 0,
@@ -409,6 +412,7 @@ export function attachZoom(options: {
         pinch ||
         (touchPan === "native" && event.pointerType === "touch") ||
         event.button !== 0 ||
+        (dragOwner !== undefined && target.closest(dragOwner)) ||
         (!target.closest(NODE_LINK_SELECTOR) && target.closest(ignore))
       ) {
         return;

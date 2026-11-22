@@ -524,11 +524,13 @@ const sideOn = (
 ): string | undefined => {
   const inX = x >= rect.x && x <= rect.x + rect.w;
   const inY = y >= rect.y && y <= rect.y + rect.h;
-  if (y === rect.y && inX) return "top";
-  if (y === rect.y + rect.h && inX) return "bottom";
-  if (x === rect.x && inY) return "left";
-  if (x === rect.x + rect.w && inY) return "right";
-  return undefined;
+  const sides: Array<[string, boolean]> = [
+    ["top", y === rect.y && inX],
+    ["bottom", y === rect.y + rect.h && inX],
+    ["left", x === rect.x && inY],
+    ["right", x === rect.x + rect.w && inY],
+  ];
+  return sides.find(([, on]) => on)?.[0];
 };
 
 /** 全ての区間が水平か垂直か */
