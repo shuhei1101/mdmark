@@ -52,23 +52,29 @@ import {
   type SequenceMessage,
   type SequenceNote,
 } from "./sequence.ts";
+import {
+  DEFAULT_PACKET_STYLE,
+  type PacketFill,
+  type PacketPath,
+  type PacketShape,
+  type PacketStyle,
+  renderPackets,
+  resolvePacketMark,
+} from "./packet.ts";
 import type { SequenceRow } from "./sequence-rows.ts";
 import type { MapKind, MapLine } from "./spec.ts";
 
-/** 線の上を流れるデータの印。color は色の名前か line・source・target（省く・知らない値は線の色） */
+/** 線の上を流れるデータの印。color は色の名前か line・source・target（省く・知らない値は線の番号の色）、shape・fill を省くと線の番号と設定で決める */
 export type MapPacketMark = {
   wire: string;
   direction: "forward" | "backward" | "both";
   color: string | undefined;
-  shape: "circle" | "square" | "diamond";
+  shape: PacketShape | undefined;
+  fill?: PacketFill | undefined;
 };
 
 /** 線の既定の色 */
 const LINE_FILL = "var(--mdmark-color-diagram-line)";
-/** 印が線の上を進む速さ（px/秒）と、印の間隔（px）と、1 本の線に流す印の数の上限 */
-const PACKET_SPEED = 60;
-const PACKET_GAP = 100;
-const PACKET_MAX = 4;
 
 /** 色の名前を CSS 変数にする。色の名前の一覧に無い値は undefined（利用側の文字を CSS の値にそのまま埋めない） */
 export const colorVar = (
@@ -78,45 +84,6 @@ export const colorVar = (
   name !== undefined && isColorName(name)
     ? `var(--mdmark-color-accent-${name}-${tone})`
     : undefined;
-
-/** 印を描く 1 本の経路 */
-export type PacketPath = {
-  /** 印の要素に付ける属性（`data-wire="…"` か `data-message="…"`） */
-  owner: string;
-  d: string;
-  length: number;
-  fill: string;
-  shape: MapPacketMark["shape"];
-  direction: MapPacketMark["direction"];
-};
-
-/** 経路の上を元から先へ繰り返し流れる印の SVG。線の長さによらず同じ速さで動かし、長い線ほど印を多く流す */
-export const renderPackets = (paths: PacketPath[]): string =>
-  paths
-    .flatMap((path) => {
-      const seconds = Math.max(0.6, path.length / PACKET_SPEED);
-      const count = Math.max(
-        1,
-        Math.min(PACKET_MAX, Math.floor(path.length / PACKET_GAP)),
-      );
-      const ways =
-        path.direction === "both"
-          ? [false, true]
-          : [path.direction === "backward"];
-      return ways.flatMap((backward) =>
-        Array.from({ length: count }, (_item, index) => {
-          const begin = -((seconds * index) / count);
-          const motion = `<animateMotion dur="${seconds}s" begin="${begin}s" repeatCount="indefinite" path="${path.d}"${backward ? ' keyPoints="1;0" keyTimes="0;1" calcMode="linear"' : ""}></animateMotion>`;
-          const attributes = `class="map-packet" ${path.owner} style="fill:${path.fill}"`;
-          return path.shape === "square"
-            ? `<rect x="-6" y="-6" width="12" height="12" rx="2" ${attributes}>${motion}</rect>`
-            : path.shape === "diamond"
-              ? `<polygon points="0,-8 8,0 0,8 -8,0" ${attributes}>${motion}</polygon>`
-              : `<circle r="7" ${attributes}>${motion}</circle>`;
-        }),
-      );
-    })
-    .join("");
 
 /** 折れ線の SVG の経路と長さ */
 const polyline = (points: Array<[number, number]>) => ({
@@ -350,50 +317,51 @@ const wireLineOf = (
   );
 };
 
-/** データの印の色（source・target はノードの種類の色、それ以外は色の名前か線の色） */
-const packetFill = (parts: {
-  color: string | undefined;
-  wire: MapWire;
-  nodeFill: (id: string) => string;
-  lineFill: string;
-}): string => {
-  const { color, wire, nodeFill, lineFill } = parts;
-  if (color === "source") return nodeFill(wire.from);
-  if (color === "target") return nodeFill(wire.to);
-  return colorVar(color) ?? lineFill;
-};
-
-/** 構成図の線の上のデータの印の SVG。色の名前・line・source・target を、線とノードの種類の色の変数にする */
+/** 構成図の線の上のデータの印の SVG。線の番号・出発点のノードの色・設定の塗り方から見た目を決める */
 export const renderMapPackets = (
   args: Pick<
     MapFlowArgs,
-    "layout" | "kinds" | "lines" | "wireLines" | "colors"
+    "layout" | "kinds" | "lines" | "wireLines" | "colors" | "styles" | "packetStyle"
   >,
   marks: MapPacketMark[],
 ): string => {
   const { layout } = args;
-  const nodeFill = (id: string): string =>
-    colorVar(
-      kindOf(args.kinds, layout.nodes.find((node) => node.id === id)?.classes)
-        ?.color,
-    ) ?? LINE_FILL;
+  const style = args.packetStyle ?? DEFAULT_PACKET_STYLE;
+  const nodeColor = (id: string): string | undefined => {
+    const node = layout.nodes.find((item) => item.id === id);
+    return (
+      colorVar(kindOf(args.kinds, node?.classes)?.color) ??
+      args.styles?.nodes[id]?.fill
+    );
+  };
+  const colored = layout.nodes.some((node) => nodeColor(node.id) !== undefined);
   const packetPaths = marks.flatMap((packet): PacketPath[] => {
-    const wire = layout.wires.find((item) => item.id === packet.wire);
+    const index = layout.wires.findIndex((item) => item.id === packet.wire);
+    const wire = layout.wires[index];
     if (!wire) return [];
     const lineColor = colorVar(
       args.colors?.[wire.id] ?? wireLineOf(args, wire)?.color,
     );
+    const color =
+      packet.color === "source"
+        ? nodeColor(wire.from)
+        : packet.color === "target"
+          ? nodeColor(wire.to)
+          : packet.color === "line"
+            ? (lineColor ?? LINE_FILL)
+            : colorVar(packet.color);
     return [
       {
         owner: `data-wire="${escapeHtml(wire.id)}"`,
         ...polyline(wire.points),
-        fill: packetFill({
-          color: packet.color,
-          wire,
-          nodeFill,
-          lineFill: lineColor ?? LINE_FILL,
+        mark: resolvePacketMark({
+          index,
+          wire: wire.id,
+          style,
+          override: { color, shape: packet.shape, fill: packet.fill },
+          sourceColor: nodeColor(wire.from),
+          colored,
         }),
-        shape: packet.shape,
         direction: packet.direction,
       },
     ];

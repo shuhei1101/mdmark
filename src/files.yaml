@@ -593,6 +593,12 @@ files:
     related:
       - to: MOD-472-134
         type: implements
+  - path: map/packet.ts
+    description: モジュール構成『ライブラリ本体 / map / データの印』を受け持つ。線の上のデータの印の形状・色・塗り方・速さを決めて SVG にする処理を変えるときに参照する。
+    tags: [topic:図, topic:map]
+    related:
+      - to: MOD-472-370
+        type: implements
   - path: map/flow-view.ts
     description: モジュール構成『ライブラリ本体 / map / 描画と操作』のうち「構成図の描画と、選んだノードの線と経路の強調」を受け持つ。構成図の描画と操作を変えるときに参照する。
     tags: [topic:図, topic:map]
