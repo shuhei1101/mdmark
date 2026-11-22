@@ -33,10 +33,9 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-18.yaml
-    impact: following
-    detail: 再生の手順のバーの区切りの見せ方を、図を巡回するの変更に合わせる（#787）
-    depends_on:
-      - docs/scenario/SC-472-41.yaml
+    impact: run_only
+    detail: 再生の手順のバーの区切りの描き分けは『図を巡回する』と同じと記載しており、記述は変わらない。区切りの塗りの変更（#787）で再生が壊れないかを確認する
+    depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-40.yaml
     impact: changed
