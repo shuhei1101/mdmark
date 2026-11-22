@@ -120,9 +120,7 @@ export const resolvePacketMark = (options: {
     (PACKET_SHAPES[index % PACKET_SHAPES.length] as PacketShape);
   const color =
     override?.color ??
-    (colored
-      ? (sourceColor ?? PACKET_GRAY)
-      : paletteColor((index % 5) + 1));
+    (colored ? (sourceColor ?? PACKET_GRAY) : paletteColor((index % 5) + 1));
   const chosen = override?.fill ?? style.fill;
   const fill =
     chosen === "random"
