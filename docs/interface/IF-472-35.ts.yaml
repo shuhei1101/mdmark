@@ -8404,6 +8404,8 @@ flows:
       - もう一度 mount しても、動かした位置と並び順のまま描かれ、Markdown は変わらない。「配置と選択を元に戻す」で自動配置に戻る
       - ドラッグできる場所はポインターが `grab`、名前の文字の上は `text`
       - シーケンス図の参加者の箱の名前の文字の外の `touch-action` の計算値が `pan-y` で、`pointerType` が `touch` のポインターで左右へ動かしても列を移る。構成図のノードは `pointerType` が `touch` のポインターで動かしても位置が変わらない
+      - 図を拡大して表示する枠が横にスクロールできるときも、マウスでノード・グループのタイトルの行・グループの縁・線の区間をドラッグしている間と離した後に、表示する枠の `scrollLeft`・`scrollTop` と文書の `scrollY` が押す前と同じ（制約『map の要素のドラッグとスクロール』）
+      - L 字の線の縦の区間を接続先のノードの右端より右へ動かした後、線の端がそのノードの右の辺にあり、動かした区間の x 座標が離した位置のままで、前後の区間が水平か垂直。ノードとグループを動かした後も、どの線の両端も接続先のノードの辺の上にある（制約『map の線の区間を動かした後の経路』）
     test: test_normal_when_map_items_moved
   - name: 正常系（map のシーケンス図のブロックを開閉する）
     summary: シーケンス図のブロックをタブの山形で開閉し、タブの名前で中だけを描き、状態をクエリ文字列に保つ
@@ -11012,6 +11014,43 @@ flows:
     test: test_normal_when_map_fullscreen
     refs:
       - SC-472-42#scenarios[正常シナリオ（全画面で map の図を操作する）]
+  - name: 正常系（map の線の長い文字とデータの印）
+    summary: 線より長い線のラベルを線の横に置き、データの印を線ごとの形状・色・速さと設定の塗り方で、ラベルとノードの下に流す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系（map の構成図を描く）と同じ
+      - name: 長いラベルと同じ長さの線を持つ Markdown
+        description: '1 つのノードから同じ長さの 3 本の線が出る `flowchart LR` の map の範囲（色を指定したノードは無い）と、横の線と縦の線に線より長いラベルを持つ `flowchart` の map の範囲と、線より長いラベルを持つ `block-beta` の map の範囲。もう 1 つの `flowchart` の範囲はノード 1 つに `style` で色を指定し、補足の `layout` で線 1 本に `packet` の `fill: ring` を指定する'
+      - name: 設定
+        description: '1 回目は `opts.config` に `map.packets` を指定しない。2 回目は `opts.config.map.packets` に `{ fill: "glow", palette: "vivid" }`'
+      - name: Mock
+        description: 差し替える依存は無い。データの印はノードを選んで流す
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as ユーザー
+        participant M as mdmark
+        U->>M: mount(el, { markdown, config })
+        M-->>U: 長いラベルを線の横に置いた map の図
+        U->>M: 3 本の線を持つノードを選ぶ
+        M-->>U: 線ごとに形状・色・速さの違うデータの印を流す
+        U->>M: 設定を変えて mount し直し、同じノードを選ぶ
+        M-->>U: 設定の塗り方と色合いの印を流す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 線より長いラベルを囲む矩形が、横の線では線より上、縦の線では線より右にあり、線と矢じりの矩形と重ならない。`block-beta` の線のラベルも同じ
+      - 3 本の線の印の形状が丸・四角・ひし形、色が色合い `accent` の 1・2・3 番目の CSS 変数の色で、塗り方が `tinted`。印の外側を含めた大きさが今の 8 割
+      - 3 本の線の印の 1 周の時間がどれも既定の 0.9〜1.1 倍で互いに違い、同じ時刻に同じ位置に並ばない。もう一度 mount しても同じ線は同じ 1 周の時間
+      - 印の要素が、線のラベルとノードの要素より後ろ（重なりの下）に描かれている
+      - '色を指定したノードを持つ図では、そのノードから出る線の印がノードの色、指定の無いノードから出る線の印が灰色で、`packet` に `fill: ring` を指定した線だけ塗り方が `ring`'
+      - '`map.packets` に `{ fill: "glow", palette: "vivid" }` を指定した後、印の塗り方が `glow`、色が色合い `vivid` の CSS 変数の色で、外側の光を含めた大きさが `tinted` のときと同じ'
+    test: test_normal_when_map_wire_label_and_packets
+    refs:
+      - SC-472-8#scenarios[正常シナリオ（ノードを選んで強調する）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -11418,6 +11457,15 @@ request:
     location: argument
     description: 範囲で記載した拡張のマーカーから読み込んだ部品の定義。マーカーの場所の `data-mdmark-definition` の番号で参照する。`opts.rendered.html` には含まれない
     notes: 範囲の拡張のマーカーを持たない文書は空の並び
+  - name: opts.config.map.packets
+    type: '{ fill?: "solid" | "ring" | "tinted" | "glow" | "shine" | "random"; palette?: "accent" | "vivid" | "pastel" | "muted" | "cool" }'
+    required: false
+    default: '`{ fill: "tinted", palette: "accent" }`'
+    location: argument
+    description: データの印の塗り方（`fill`）と、色を指定したノードの無い図で線ごとに順に使う色合い（`palette`）
+    constraints: 知らない値は無視して既定にする。補足の `layout` の線の `packet` の `fill`・`color`・`shape` はこれより優先する
+    example: '{ "fill": "ring", "palette": "vivid" }'
+    notes: '`mdmark.config.yaml` の `map.packets` と同じ値。既定は確認ログで決定した'
 request_example: |-
   ```json
   {
@@ -12723,6 +12771,21 @@ constraints:
       ポインターを重ねたときの強調・ツールチップ・選択は線ごとの `g` を単位にし、ドラッグで動かす区間は押した帯の区間にする。シーケンス図のライフライン（`.map-lifeline-hit`）は縦の直線で、今の 1 つの帯のままにする
     decided_by: SC-472-8#scenarios[正常シナリオ]
     notes: axe の target-size は要素を囲む矩形で判定するため、折れ線 1 本を 1 つの要素（`path` も `g` も）で持つと、線全体を囲む矩形の中のノードが近すぎると検出される（#764）。モック `docs/mock/components/map-wire-hit/` で、端を 16px ずらした同じ辺の 6 本・入れ子のグループ・ER 図（#764 の例）を、フォーカスを持つ帯を最初の区間・最も長い区間、帯の幅を 14px・24px にして axe 4.13 の target-size にかけ、どれも 0 件（1280x800・390x844）。最も短い最初の区間の帯は 20x14px だった。区間が短い線でも帯が小さくなりにくい最も長い区間を選ぶ
+  - item: map の要素のドラッグとスクロール
+    constraint: マウス・ペンで構成図のノード・グループ（タイトルの行と縁）・線の区間を押してから離すまで、図の枠の表示する枠（`.mdmark-diagram-viewport`）の `scrollLeft`・`scrollTop` と文書の `scrollY` を変えず、動かしている要素だけをポインターに付けて動かす。グループの面と余白のドラッグで表示する枠の中をスクロールする操作と、`pointerType` が `touch` のポインターの操作は今のまま
+    decided_by: SC-472-8#scenarios[正常シナリオ（ノードと線を動かす）]
+  - item: map の線の区間を動かした後の経路
+    constraint: 線の区間を動かした後は、動かした区間の位置だけを保ち、前後の区間は両端のノードの辺までの直角の経路で引き直す。線の端は、区間・ノード・グループのどれを動かした後も接続先のノードの辺に付ける。L 字の線の縦（横）の区間を接続先のノードの左右（上下）の端より外へ動かしたときは、越えた側の辺へ回り込んでつなぐ。動かした線は、つながっていないノードを避けずにノードの下を通す（自動配置の経路が避ける決まり（制約『map の線の通り道』）は今のまま）
+    decided_by: SC-472-8#scenarios[正常シナリオ（ノードと線を動かす）]
+    notes: モック `docs/mock/components/map-wire-drag-route/`（確認ログ）
+  - item: map の線の上の長い文字
+    constraint: 線のラベルの幅（縦の区間は高さ）が置く区間より長いときは、ラベルを線に重ねず、線から離して線の横（横の区間は上、縦の区間は右）に置き、線と矢じりを隠さない。軸と格子の配置の図の線のラベルも同じ置き方にする。線より短いラベルの置き方は今のまま
+    decided_by: SC-472-8#scenarios[正常シナリオ]
+    notes: モック `docs/mock/components/map-wire-label/`（確認ログ）
+  - item: map のデータの印
+    constraint: データの印は今の 8 割の大きさで、外側の輪郭・光を含めた大きさをどの塗り方も塗り方 `shine` と同じにする。1 本の線の印は 1 つの形状と色にし、形状（丸・四角・ひし形・三角）は線ごとに順に使う。色を指定したノードが無い図では、色も設定の `map.packets.palette` の 5 色を線ごとに順に使い、色を指定したノードが 1 つでもある図では、出発点のノードの色（指定の無いノードからは灰色）にする。塗り方は設定の `map.packets.fill`（`random` は線ごとにほかの 5 つから選ぶ）。印の速さは線ごとに既定の 0.9〜1.1 倍の範囲で変え、同じ図を描き直しても同じ線は同じ速さと塗り方にする。同じ長さの線が並んでも、印が同じ位置に並んで流れない。印は線のラベルとノードの下に描き、線がノードの下を通る所では印もノードに隠れる。色の並びは配色（明るい・暗い）ごとに CSS 変数で持ち、どの色も背景とのコントラスト比を 3:1 以上にする。補足の `layout` の線の `packet` の指定は、これより優先する
+    decided_by: SC-472-8#scenarios[正常シナリオ（ノードを選んで強調する）]
+    notes: モック `docs/mock/components/map-wire-packet/`（確認ログ）
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画

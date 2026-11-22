@@ -1034,6 +1034,8 @@ settings:
     status: planned
     notes:
       実装: src/config.ts#resolveMapConfig
+    refs:
+      - IF-472-35#request[opts.config.map.packets]
 refs:
   - IF-472-35#
 tags:
