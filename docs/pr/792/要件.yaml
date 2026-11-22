@@ -88,6 +88,14 @@ docs:
     new: false
     change: 差分の出し方・手順のバー・右側の目次の用語の説明を、左右に並べる見せ方（#783）・区切りの見せ方（#787）・狭い幅の帯の見せ方（#790）に合わせる
     status: todo
+  - page: docs/guide/構成図の決まり.mark.md
+    new: false
+    change: '`## ツールチップ` の線の行から押せる帯を外して線のラベルだけにし（#785）、`移動` の行のタッチの端末の縦の指の動きを図の中の移動に合わせる（#788）'
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 狭い幅の右側の目次の帯が `--mdmark-sticky-top` の位置に留まる記述を、利用者が選んだ固定の見せ方に合わせる（#790）
+    status: todo
 scope_out:
   - item: mindstella 側で、変更表示のボタンとリビジョンの欄を出さない指定を有効にする変更
     reason: 別のリポジトリの変更で、この作業 PR が入った後に mindstella 側で起票する（#784 の補足）
