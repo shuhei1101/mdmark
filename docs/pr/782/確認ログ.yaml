@@ -41,3 +41,9 @@ confirmations:
     approver: shuhei1101
     commit: b38cf52f
     thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4656926601
+  - topic: '#780 のデータの印の塗り方と色合いのオプションの指定の方法'
+    decision: 図全体は設定の `map.packets`（`fill`・`palette`）、線ごとは補足の `packet` の `fill` で上書きする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 28fba82b
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4657014415
