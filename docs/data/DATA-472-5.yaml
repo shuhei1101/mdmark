@@ -37,7 +37,7 @@ fields:
 - key: packet
   title: データの印
   type: object
-  description: 線の ID のときだけ。データの印の色と形状（`{ color, shape }`。`shape` は `circle`・`square`・`diamond`）
+  description: 線の ID のときだけ。データの印の色と形状と塗り方（`{ color, shape, fill }`。`shape` は `circle`・`square`・`diamond`・`triangle`、`fill` は設定の `map.packets.fill` と同じ値）
   example: '{"color": "orange", "shape": "square"}'
 - key: justify
   title: 寄せる
