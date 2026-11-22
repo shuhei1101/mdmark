@@ -27,4 +27,17 @@
 
 ## テスト結果
 
-なし（テスト作成・実装で記入する）
+### 単体
+
+| ファイル | メソッド | 変更種別 | 結果 | 補足 |
+| --- | --- | --- | --- | --- |
+| [tests/unit/src/plugin/session-start.test.ts](https://github.com/shuhei1101/mdmark/blob/feat/map/wire-drag-label-packet-and-hook-prompts/tests/unit/src/plugin/session-start.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261122201936_3c456c62_単体テスト.log` |
+| [tests/unit/src/plugin/guide-notice.test.ts](https://github.com/shuhei1101/mdmark/blob/feat/map/wire-drag-label-packet-and-hook-prompts/tests/unit/src/plugin/guide-notice.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261122201936_3c456c62_単体テスト.log` |
+
+### 結合テストの実行範囲
+
+[ライブラリ本体.mark.md](./ライブラリ本体.mark.md) の `### 結合テストの実行範囲` の表にまとめた（プラグインの分は `tests/integration/ClaudeCodeプラグイン/session-start.test.ts`・`tests/integration/ClaudeCodeプラグイン/guide-notice.test.ts`）。
+
+### 結合
+
+なし（reviewer の確認を受けた後、結合テスト作成で記入する）
