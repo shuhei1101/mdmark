@@ -17740,6 +17740,77 @@ test("test_normal_when_map_items_selected", async () => {
   expect(seq().querySelectorAll(".map-packets-hover")).toHaveLength(0);
 });
 
+/** 拡大して表示する枠をスクロールできるとき、マウスでノード・グループのタイトルの行と縁・線の区間を動かしても、表示する枠と文書をスクロールしないことを確かめる */
+function expectNoScrollWhileDragging(figure: HTMLElement): void {
+  for (let i = 0; i < 3; i++) {
+    find<HTMLButtonElement>(figure, '[data-tool="in"]').click();
+  }
+  const viewport = find<HTMLElement>(figure, ".mdmark-diagram-viewport");
+  expect(viewport.scrollWidth).toBeGreaterThan(viewport.clientWidth);
+  viewport.scrollLeft = 40;
+  const scrolls = () => [
+    viewport.scrollLeft,
+    viewport.scrollTop,
+    window.scrollY,
+  ];
+  const still = scrolls();
+  const dragged = [
+    find<HTMLElement>(mapNode(figure, "route"), ".mdmark-diagram-node-kind"),
+    find<HTMLElement>(figure, '.map-group[data-group="place"] .map-group-head'),
+    find<HTMLElement>(figure, '.map-group[data-group="place"] .map-group-bar'),
+    find<Element>(figure, ".map-wire-hit-segment"),
+  ];
+  for (const target of dragged) {
+    pressMap(target, -30, 30);
+    expect(scrolls()).toEqual(still);
+  }
+}
+
+/** L 字の線の縦の区間を右上のノードの右端より右へ動かし、線がそのノードの右の辺へ回り込み、動かした区間の位置を保つことを確かめる */
+async function expectWireRoutedAround(
+  points: (path: SVGPathElement) => Array<[number, number]>,
+): Promise<void> {
+  const lShape = await mountMap(MAP_L_SHAPE);
+  const lFigure = () => lShape.figures()[0] as HTMLElement;
+  const vertical = [
+    ...lFigure().querySelectorAll(
+      '.map-wire-hit[data-wire="a->c"] .map-wire-hit-segment',
+    ),
+  ].find((band) => {
+    const rect = band.getBoundingClientRect();
+    return rect.height > rect.width;
+  }) as Element;
+  expect(vertical).toBeDefined();
+  const target = mapNode(lFigure(), "c").getBoundingClientRect();
+  const [bandX] = mapCenter(vertical);
+  pressMap(vertical, target.right + 40 - bandX, 0);
+  // 検証: 線の端が右上のノードの右の辺にあり、動かした区間が離した位置のままで、どの区間も水平か垂直
+  const lStage = find<HTMLElement>(lFigure(), ".mdmark-diagram-stage");
+  const scale =
+    lStage.getBoundingClientRect().width / (lStage.offsetWidth || 1);
+  const lPoints = points(
+    find<SVGPathElement>(lFigure(), '.mdmark-diagram-wire[data-wire="a->c"]'),
+  ).map(([x, y]) => [
+    lStage.getBoundingClientRect().left + x * scale,
+    lStage.getBoundingClientRect().top + y * scale,
+  ]);
+  const last = lPoints.at(-1) as number[];
+  const targetAfter = mapNode(lFigure(), "c").getBoundingClientRect();
+  expect(Math.abs((last[0] as number) - targetAfter.right)).toBeLessThanOrEqual(
+    12,
+  );
+  expect(last[1]).toBeGreaterThan(targetAfter.top);
+  expect(last[1]).toBeLessThan(targetAfter.bottom);
+  expect(
+    lPoints.some(([x]) => Math.abs((x as number) - (target.right + 40)) <= 1),
+  ).toBe(true);
+  for (let index = 1; index < lPoints.length; index++) {
+    const [x0, y0] = lPoints[index - 1] as number[];
+    const [x1, y1] = lPoints[index] as number[];
+    expect(x0 === x1 || y0 === y1).toBe(true);
+  }
+}
+
 // map のノード・グループ・線を動かす（正常系）
 test("test_normal_when_map_items_moved", async () => {
   // 準備
@@ -17987,68 +18058,9 @@ test("test_normal_when_map_items_moved", async () => {
   find<HTMLButtonElement>(flow(), '[data-tool="reset"]').click();
   expect(Math.abs(box("route").top - route.top)).toBeLessThanOrEqual(1);
   // 実行・検証: 拡大して表示する枠をスクロールできるとき、マウスで要素を動かしても表示する枠と文書をスクロールしない
-  for (let i = 0; i < 3; i++) {
-    find<HTMLButtonElement>(flow(), '[data-tool="in"]').click();
-  }
-  const viewport = find<HTMLElement>(flow(), ".mdmark-diagram-viewport");
-  expect(viewport.scrollWidth).toBeGreaterThan(viewport.clientWidth);
-  viewport.scrollLeft = 40;
-  const scrolls = () => [
-    viewport.scrollLeft,
-    viewport.scrollTop,
-    window.scrollY,
-  ];
-  const still = scrolls();
-  const dragged = [
-    find<HTMLElement>(mapNode(flow(), "route"), ".mdmark-diagram-node-kind"),
-    find<HTMLElement>(flow(), '.map-group[data-group="place"] .map-group-head'),
-    find<HTMLElement>(flow(), '.map-group[data-group="place"] .map-group-bar'),
-    find<Element>(flow(), ".map-wire-hit-segment"),
-  ];
-  for (const target of dragged) {
-    pressMap(target, -30, 30);
-    expect(scrolls()).toEqual(still);
-  }
-  // 実行: L 字の線の縦の区間を、右上のノードの右端より右へ動かす
-  const lShape = await mountMap(MAP_L_SHAPE);
-  const lFigure = () => lShape.figures()[0] as HTMLElement;
-  const vertical = [
-    ...lFigure().querySelectorAll(
-      '.map-wire-hit[data-wire="a->c"] .map-wire-hit-segment',
-    ),
-  ].find((band) => {
-    const rect = band.getBoundingClientRect();
-    return rect.height > rect.width;
-  }) as Element;
-  expect(vertical).toBeDefined();
-  const target = mapNode(lFigure(), "c").getBoundingClientRect();
-  const [bandX] = mapCenter(vertical);
-  pressMap(vertical, target.right + 40 - bandX, 0);
-  // 検証: 線の端が右上のノードの右の辺にあり、動かした区間が離した位置のままで、どの区間も水平か垂直
-  const lStage = find<HTMLElement>(lFigure(), ".mdmark-diagram-stage");
-  const scale =
-    lStage.getBoundingClientRect().width / (lStage.offsetWidth || 1);
-  const lPoints = points(
-    find<SVGPathElement>(lFigure(), '.mdmark-diagram-wire[data-wire="a->c"]'),
-  ).map(([x, y]) => [
-    lStage.getBoundingClientRect().left + x * scale,
-    lStage.getBoundingClientRect().top + y * scale,
-  ]);
-  const last = lPoints.at(-1) as number[];
-  const targetAfter = mapNode(lFigure(), "c").getBoundingClientRect();
-  expect(Math.abs((last[0] as number) - targetAfter.right)).toBeLessThanOrEqual(
-    12,
-  );
-  expect(last[1]).toBeGreaterThan(targetAfter.top);
-  expect(last[1]).toBeLessThan(targetAfter.bottom);
-  expect(
-    lPoints.some(([x]) => Math.abs((x as number) - (target.right + 40)) <= 1),
-  ).toBe(true);
-  for (let index = 1; index < lPoints.length; index++) {
-    const [x0, y0] = lPoints[index - 1] as number[];
-    const [x1, y1] = lPoints[index] as number[];
-    expect(x0 === x1 || y0 === y1).toBe(true);
-  }
+  expectNoScrollWhileDragging(flow());
+  // 実行・検証: L 字の線の縦の区間を、右上のノードの右端より右へ動かす
+  await expectWireRoutedAround(points);
 });
 
 // map の線の長い文字とデータの印（正常系）
