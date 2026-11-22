@@ -55,12 +55,13 @@ test("test_resolve_packet_mark_when_rotating", async () => {
     "circle",
     "square",
   ]);
-  expect(marks.map((mark) => mark.color)).toEqual([
-    "var(--mdmark-map-packet-1)",
-    "var(--mdmark-map-packet-2)",
-    "var(--mdmark-map-packet-5)",
-    "var(--mdmark-map-packet-1)",
-  ]);
+  // 利用側の変数を先に参照し、無ければ印の層の色合いの値
+  expect(marks.map((mark) => mark.color)).toEqual(
+    [1, 2, 5, 1].map(
+      (n) =>
+        `var(--mdmark-map-packet-${n}, var(--mdmark-map-packet-palette-${n}))`,
+    ),
+  );
 });
 
 // 色を指定したノードがある図（正常系）
@@ -83,7 +84,9 @@ test("test_resolve_packet_mark_when_colored", async () => {
   });
   // 検証
   expect(withColor.color).toBe("#ff0000");
-  expect(withoutColor.color).toBe("var(--mdmark-map-packet-gray)");
+  expect(withoutColor.color).toBe(
+    "var(--mdmark-map-packet-gray, var(--mdmark-color-accent-gray-text))",
+  );
 });
 
 // 補足の packet が優先（正常系）
@@ -164,42 +167,67 @@ test("test_render_packets_when_same_length", async () => {
   expect(new Set(firsts.map((first) => first.begin)).size).toBe(3);
 });
 
+/** 描いた印の要素ごとの、縁の外側を含めた中心からの最大の広がり（x・y の大きい方） */
+const extentOf = (svg: string): number => {
+  const tags = [...svg.matchAll(/<(circle|rect|polygon) [^>]*>/g)];
+  const extents = tags.map(([tag, name]) => {
+    const half = Number(/stroke-width:\s*([\d.]+)/.exec(tag)?.[1] ?? "0") / 2;
+    if (name === "circle") return Number(attrOf(tag, "r") ?? "0") + half;
+    if (name === "rect")
+      return Math.abs(Number(attrOf(tag, "x") ?? "0")) + half;
+    const values = (attrOf(tag, "points") ?? "")
+      .trim()
+      .split(/[\s,]+/)
+      .map((value) => Math.abs(Number(value)));
+    return Math.max(...values) + half;
+  });
+  return Math.max(...extents);
+};
+
+/** 形状ごとの、中心から外側の線までの許される広がり（三角は高さと幅の半分） */
+const SIZE_LIMIT = {
+  circle: 5.6,
+  square: 9.6 / 2,
+  diamond: 6.4,
+  triangle: 11.2 / 2,
+} as const;
+
 // 塗り方ごとの大きさ（正常系）
 test("test_render_packets_when_fill", async () => {
   // 準備
   const { renderPackets } = await loadPacket();
   const fills = ["solid", "ring", "tinted", "glow", "shine"] as const;
+  const shapes = ["circle", "square", "diamond", "triangle"] as const;
   // 実行
-  const svgs = fills.map((fill) =>
-    renderPackets([
-      {
-        owner: 'data-wire="a->b"',
-        d: "M0 0L100 0",
-        length: 100,
-        mark: {
-          shape: "circle",
-          color: "var(--mdmark-map-packet-1)",
-          fill,
-          speed: 1,
-          offset: 0,
+  const cases = shapes.flatMap((shape) =>
+    fills.map((fill) => ({
+      shape,
+      fill,
+      svg: renderPackets([
+        {
+          owner: 'data-wire="a->b"',
+          d: "M0 0L100 0",
+          length: 100,
+          mark: {
+            shape,
+            color: "var(--mdmark-map-packet-1)",
+            fill,
+            speed: 1,
+            offset: 0,
+          },
+          direction: "forward",
         },
-        direction: "forward",
-      },
-    ]),
+      ]),
+    })),
   );
-  // 検証: 最も外の円の半径と輪郭の太さの半分の和が 5.6 以下
-  svgs.forEach((svg, index) => {
+  // 検証: どの形状・塗り方も、縁と輪郭の外側が形状の大きさに収まる
+  for (const { shape, fill, svg } of cases) {
     const group = groupsOf(svg)[0] ?? "";
-    expect(attrOf(group, "data-fill")).toBe(fills[index]);
-    const radii = [...svg.matchAll(/<circle [^>]*>/g)].map((match) => {
-      const tag = match[0];
-      const r = Number(attrOf(tag, "r") ?? "0");
-      const stroke = Number(/stroke-width:\s*([\d.]+)/.exec(tag)?.[1] ?? "0");
-      return r + stroke / 2;
-    });
-    expect(radii.length).toBeGreaterThan(0);
-    expect(Math.max(...radii)).toBeLessThanOrEqual(5.6 + 1e-9);
-  });
+    expect(attrOf(group, "data-fill")).toBe(fill);
+    expect(extentOf(svg), `${shape} ${fill}`).toBeLessThanOrEqual(
+      SIZE_LIMIT[shape] + 1e-9,
+    );
+  }
 });
 
 // 三角（正常系）
@@ -222,15 +250,17 @@ test("test_render_packets_when_triangle", async () => {
       direction: "forward",
     },
   ]);
-  // 検証: polygon の点の幅と高さが 11.2
-  const points = attrOf(/<polygon [^>]*>/.exec(svg)?.[0] ?? "", "points") ?? "";
+  // 検証: polygon の点の幅と高さに縁の太さを足すと 11.2
+  const polygon = /<polygon [^>]*>/.exec(svg)?.[0] ?? "";
+  const stroke = Number(/stroke-width:\s*([\d.]+)/.exec(polygon)?.[1] ?? "0");
+  const points = attrOf(polygon, "points") ?? "";
   const pairs = points
     .trim()
     .split(/\s+/)
     .map((pair) => pair.split(",").map(Number) as [number, number]);
   const xs = pairs.map(([x]) => x);
   const ys = pairs.map(([, y]) => y);
-  expect(Math.max(...xs) - Math.min(...xs)).toBeCloseTo(11.2, 5);
-  expect(Math.max(...ys) - Math.min(...ys)).toBeCloseTo(11.2, 5);
+  expect(Math.max(...xs) - Math.min(...xs) + stroke).toBeCloseTo(11.2, 5);
+  expect(Math.max(...ys) - Math.min(...ys) + stroke).toBeCloseTo(11.2, 5);
   expect(attrOf(groupsOf(svg)[0] ?? "", "data-shape")).toBe("triangle");
 });

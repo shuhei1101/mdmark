@@ -921,6 +921,47 @@ test("test_attach_map_flow_when_packet_style", async () => {
   }
 });
 
+// 利用側のテーマで印の色を上書きする（正常系）
+test("test_attach_map_flow_when_packet_color_overridden", async () => {
+  // 準備: 描いた文書の CSS を当て、描く先の .mdmark に印の灰色の変数を書く
+  addStyles();
+  const { attachMapFlow } = await loadFlowView();
+  const { parseMapArgs } = await loadSpec();
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(
+    renderDoc(mapRange({ mermaid: FLOW, data: DATA })).html,
+  );
+  const doc = (root.querySelector<HTMLElement>(".mdmark") ??
+    root) as HTMLElement;
+  doc.style.setProperty("--mdmark-map-packet-gray", "rgb(1, 2, 3)");
+  const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
+  handles.push(
+    attachMapFlow(range, resolveConfig({ config: { map: CONFIG } }), {
+      args: parseMapArgs("").args,
+    }),
+  );
+  const node = root.querySelector<HTMLElement>(
+    '.mdmark-diagram-node[data-node="mount"] .mdmark-diagram-node-kind',
+  ) as HTMLElement;
+  const box = node.getBoundingClientRect();
+  const point = {
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    clientX: box.x + box.width / 2,
+    clientY: box.y + box.height / 2,
+  };
+  // 実行: 色を持たない mount を押して選ぶ
+  node.dispatchEvent(new PointerEvent("pointerdown", point));
+  window.dispatchEvent(new PointerEvent("pointerup", point));
+  // 検証: mount から出る線の印の縁が、.mdmark に書いた色
+  const shape = root.querySelector(
+    '.map-packet[data-wire^="mount-"] :is(circle, rect, polygon)',
+  ) as SVGElement;
+  expect(shape).not.toBeNull();
+  expect(getComputedStyle(shape).stroke).toBe("rgb(1, 2, 3)");
+});
+
 // 区間をノードの端の外へ動かす（正常系）
 test("test_attach_map_flow_when_wire_moved_beyond_edge", async () => {
   // 準備: 左下の a の右の辺から出て、右上の c の下の辺に入る L 字の線。拡大して表示する枠を横にスクロールできるようにする

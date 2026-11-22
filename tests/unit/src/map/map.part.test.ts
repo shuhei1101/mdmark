@@ -467,7 +467,9 @@ test("test_render_map_flow_when_packets", async () => {
   const forward = packetsOf(html, "marker->data");
   expect(forward.length).toBeGreaterThanOrEqual(1);
   for (const item of forward) {
-    expect(item).toContain("var(--mdmark-map-packet-gray)");
+    expect(item).toContain(
+      "var(--mdmark-map-packet-gray, var(--mdmark-color-accent-gray-text))",
+    );
     expect(item).toContain('data-fill="tinted"');
     expect(item).not.toContain('keyPoints="1;0"');
   }
@@ -535,7 +537,9 @@ test("test_render_map_flow_when_unknown_color", async () => {
   const items = packetsOf(html, "mount->marker");
   expect(items.length).toBeGreaterThanOrEqual(1);
   // 知らない色は省いたときと同じ（色を持つ種類のある図で、色を持たない mount から出るため灰色）
-  expect(items[0]).toContain("var(--mdmark-map-packet-gray)");
+  expect(items[0]).toContain(
+    "var(--mdmark-map-packet-gray, var(--mdmark-color-accent-gray-text))",
+  );
   expect(html).not.toContain(";x:y");
   expect(html).not.toContain(";x");
 });
