@@ -876,3 +876,103 @@ test("test_attach_map_flow_when_mermaid_styles", async () => {
       ?.classList.contains("map-closed-group"),
   ).toBe(true);
 });
+
+// 設定の塗り方と色合い（正常系）
+test("test_attach_map_flow_when_packet_style", async () => {
+  // 準備: map.packets を指定して描く
+  const { attachMapFlow } = await loadFlowView();
+  const { parseMapArgs } = await loadSpec();
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(
+    renderDoc(mapRange({ mermaid: FLOW, data: DATA })).html,
+  );
+  const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
+  handles.push(
+    attachMapFlow(
+      range,
+      resolveConfig({
+        config: {
+          map: { ...CONFIG, packets: { fill: "glow", palette: "vivid" } },
+        },
+      }),
+      { args: parseMapArgs("").args },
+    ),
+  );
+  const node = root.querySelector<HTMLElement>(
+    '.mdmark-diagram-node[data-node="mount"] .mdmark-diagram-node-kind',
+  ) as HTMLElement;
+  const box = node.getBoundingClientRect();
+  const point = {
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    clientX: box.x + box.width / 2,
+    clientY: box.y + box.height / 2,
+  };
+  // 実行: mount を押して選ぶ
+  node.dispatchEvent(new PointerEvent("pointerdown", point));
+  window.dispatchEvent(new PointerEvent("pointerup", point));
+  // 検証
+  expect(root.querySelector('[data-packet-palette="vivid"]')).not.toBeNull();
+  const packets = root.querySelectorAll(".map-packet");
+  expect(packets.length).toBeGreaterThan(0);
+  for (const packet of packets) {
+    expect(packet.getAttribute("data-fill")).toBe("glow");
+  }
+});
+
+// 区間をノードの端の外へ動かす（正常系）
+test("test_attach_map_flow_when_wire_moved_beyond_edge", async () => {
+  // 準備: 左下の a の右の辺から出て、右上の c の下の辺に入る L 字の線。拡大して表示する枠を横にスクロールできるようにする
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const data = JSON.stringify({
+    version: 1,
+    layout: {
+      a: { pos: { x: 0, y: 200 } },
+      c: { pos: { x: 280, y: 0 } },
+      x: { pos: { x: 520, y: 100 } },
+      "a->c": { ends: { from: { side: "right" }, to: { side: "bottom" } } },
+    },
+  });
+  const root = await setUpWithData(
+    data,
+    `flowchart LR
+  a[左下] --> c[右上]
+  x[つながらない]
+`,
+  );
+  for (let i = 0; i < 3; i++) {
+    root.querySelector<HTMLButtonElement>('[data-tool="in"]')?.click();
+  }
+  const viewport = root.querySelector(
+    ".mdmark-diagram-viewport",
+  ) as HTMLElement;
+  const before = viewport.scrollLeft;
+  // 縦の区間の帯（高さが幅より大きい帯）
+  const band = [
+    ...root.querySelectorAll('.map-wire-hit[data-wire="a->c"] .map-wire-hit-segment'),
+  ].find((item) => {
+    const rect = item.getBoundingClientRect();
+    return rect.height > rect.width;
+  }) as Element;
+  const nodeC = root.querySelector('.mdmark-diagram-node[data-node="c"]');
+  const box = band.getBoundingClientRect();
+  const right = (nodeC as Element).getBoundingClientRect().right;
+  const start = {
+    bubbles: true,
+    cancelable: true,
+    pointerId: 1,
+    button: 0,
+    pointerType: "mouse",
+    clientX: box.x + box.width / 2,
+    clientY: box.y + box.height / 2,
+  };
+  const end = { ...start, clientX: right + 60 };
+  // 実行: 縦の区間を c の右端より右へドラッグする
+  band.dispatchEvent(new PointerEvent("pointerdown", start));
+  window.dispatchEvent(new PointerEvent("pointermove", end));
+  window.dispatchEvent(new PointerEvent("pointerup", end));
+  // 検証
+  expect(saved().attachments?.["a->c"]?.to).toBe("right");
+  expect(viewport.scrollLeft).toBe(before);
+});

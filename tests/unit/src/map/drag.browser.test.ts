@@ -415,3 +415,194 @@ test("test_resize_by_key_when_blocked", async () => {
   // 検証: 間が 16px になる手前まで
   expect(next?.groupSizes?.page).toEqual({ w: 172, h: 144 });
 });
+
+// マウスではポインターを捕まえる（正常系）
+test("test_start_drag_when_mouse_captured", async () => {
+  // 準備
+  const { startDrag } = await loadDrag();
+  const root = createRootFromHtml('<div data-node="A"></div>');
+  const target = root.querySelector('[data-node="A"]') as Element;
+  const capture = vi
+    .spyOn(Element.prototype, "setPointerCapture")
+    .mockImplementation(() => undefined);
+  const events: PointerEvent[] = [];
+  target.addEventListener("pointerdown", (event) => {
+    events.push(event as PointerEvent);
+    startDrag({
+      event: event as PointerEvent,
+      layout: LAYOUT,
+      state: STATE,
+      onMove: () => undefined,
+      onClick: () => undefined,
+    });
+  });
+  const press = (pointerType: string, pointerId: number) =>
+    target.dispatchEvent(
+      new PointerEvent("pointerdown", {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        pointerId,
+        pointerType,
+        clientX: 50,
+        clientY: 50,
+      }),
+    );
+  // 実行: マウスで押してから離し、指で押す
+  press("mouse", 7);
+  window.dispatchEvent(
+    new PointerEvent("pointerup", { bubbles: true, pointerId: 7 }),
+  );
+  press("touch", 8);
+  window.dispatchEvent(
+    new PointerEvent("pointercancel", { bubbles: true, pointerId: 8 }),
+  );
+  // 検証
+  expect(capture).toHaveBeenCalledTimes(1);
+  expect(capture).toHaveBeenCalledWith(7);
+  expect(events[0]?.defaultPrevented).toBe(true);
+  expect(events[1]?.defaultPrevented).toBe(false);
+});
+
+/** 左下のノード A の右の辺から出て、右上のノード C の下の辺に入る L 字の線の配置 */
+const lLayout = (cTop = 24) => ({
+  width: 600,
+  height: 400,
+  nodes: [
+    {
+      id: "A",
+      x: 24,
+      y: 200,
+      w: 120,
+      h: 60,
+      lines: ["A"],
+      faded: false,
+      ancestors: [],
+    },
+    {
+      id: "C",
+      x: 300,
+      y: cTop,
+      w: 120,
+      h: 60,
+      lines: ["C"],
+      faded: false,
+      ancestors: [],
+    },
+    {
+      id: "X",
+      x: 440,
+      y: 120,
+      w: 80,
+      h: 40,
+      lines: ["X"],
+      faded: false,
+      ancestors: [],
+    },
+  ],
+  groups: [],
+  wires: [
+    {
+      id: "A->C",
+      from: "A",
+      to: "C",
+      label: undefined,
+      merged: undefined,
+      points: [
+        [144, 230],
+        [360, 230],
+        [360, cTop + 60],
+      ] as Array<[number, number]>,
+    },
+  ],
+});
+
+/** 点が矩形のどの辺の上にあるか */
+const sideOn = (
+  rect: { x: number; y: number; w: number; h: number },
+  [x, y]: [number, number],
+): string | undefined => {
+  const inX = x >= rect.x && x <= rect.x + rect.w;
+  const inY = y >= rect.y && y <= rect.y + rect.h;
+  if (y === rect.y && inX) return "top";
+  if (y === rect.y + rect.h && inX) return "bottom";
+  if (x === rect.x && inY) return "left";
+  if (x === rect.x + rect.w && inY) return "right";
+  return undefined;
+};
+
+/** 全ての区間が水平か垂直か */
+const orthogonal = (points: Array<[number, number]>): boolean =>
+  points
+    .slice(1)
+    .every(
+      ([x, y], index) =>
+        x === (points[index] as [number, number])[0] ||
+        y === (points[index] as [number, number])[1],
+    );
+
+// 動かした区間を保つ（正常系）
+test("test_apply_wire_shifts_when_inside_edge", async () => {
+  // 準備
+  const { applyWireShifts } = await loadDrag();
+  const layout = lLayout();
+  // 実行: 縦の区間（番号 1）を C の左右の端の内側で右へ 20px
+  const { wires } = applyWireShifts(layout, {
+    wireShifts: { "A->C": [{ segment: 1, offset: 20, count: 3 }] },
+  });
+  // 検証
+  const points = wires[0]?.points as Array<[number, number]>;
+  const [a, c] = [layout.nodes[0], layout.nodes[1]];
+  expect(points.some(([x, y]) => x === 380 && y < 230)).toBe(true);
+  expect(sideOn(a as never, points[0] as [number, number])).toBe("right");
+  expect(sideOn(c as never, points.at(-1) as [number, number])).toBe("bottom");
+  expect(orthogonal(points)).toBe(true);
+});
+
+// 越えた側の辺へ回り込む（正常系）
+test("test_apply_wire_shifts_when_beyond_edge", async () => {
+  // 準備
+  const { applyWireShifts } = await loadDrag();
+  const layout = lLayout();
+  // 実行: 縦の区間を C の右端（420）より 30px 右（450）へ
+  const { wires, attachments } = applyWireShifts(layout, {
+    wireShifts: { "A->C": [{ segment: 1, offset: 90, count: 3 }] },
+  });
+  // 検証
+  const points = wires[0]?.points as Array<[number, number]>;
+  const c = layout.nodes[1];
+  expect(sideOn(c as never, points.at(-1) as [number, number])).toBe("right");
+  expect(attachments["A->C"]?.to).toBe("right");
+  expect(points.some(([x, y]) => x === 450 && y < 230)).toBe(true);
+  expect(orthogonal(points)).toBe(true);
+});
+
+// ノードを動かした後も浮かない（正常系）
+test("test_apply_wire_shifts_when_node_moved", async () => {
+  // 準備: C を上へ 40px 動かした配置（自動の経路は C の新しい下の辺 44 まで）
+  const { applyWireShifts } = await loadDrag();
+  const layout = lLayout(-16);
+  // 実行
+  const { wires } = applyWireShifts(layout, {
+    wireShifts: { "A->C": [{ segment: 1, offset: 20, count: 3 }] },
+  });
+  // 検証
+  const points = wires[0]?.points as Array<[number, number]>;
+  const [a, c] = [layout.nodes[0], layout.nodes[1]];
+  expect(sideOn(a as never, points[0] as [number, number])).toBeDefined();
+  expect(sideOn(c as never, points.at(-1) as [number, number])).toBeDefined();
+});
+
+// 点の数が変わった線のずらしは捨てる（正常系）
+test("test_apply_wire_shifts_when_points_changed", async () => {
+  // 準備
+  const { applyWireShifts } = await loadDrag();
+  const layout = lLayout();
+  // 実行
+  const { wires, wireShifts } = applyWireShifts(layout, {
+    wireShifts: { "A->C": [{ segment: 1, offset: 20, count: 5 }] },
+  });
+  // 検証
+  expect(wires[0]?.points).toEqual(layout.wires[0]?.points);
+  expect(wireShifts["A->C"]).toBeUndefined();
+});

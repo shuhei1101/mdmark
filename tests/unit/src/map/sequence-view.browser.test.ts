@@ -399,3 +399,35 @@ test("test_attach_map_sequence_when_list", async () => {
   ]);
   expect(items.some((item) => item.hasAttribute("aria-expanded"))).toBe(false);
 });
+
+// 設定の塗り方と色合いを参加者のホバーの印にも当てる（正常系）
+test("test_attach_map_sequence_when_packet_style", async () => {
+  // 準備: map.packets を指定して描く
+  const { attachMapSequence } = await loadSequenceView();
+  const { parseMapArgs } = await loadSpec();
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(
+    renderDoc(mapRange({ mermaid: SEQUENCE })).html,
+  );
+  const range = root.querySelector<HTMLElement>(".mdmark-map") as HTMLElement;
+  handles.push(
+    attachMapSequence(
+      range,
+      resolveConfig({
+        config: {
+          map: { ...CONFIG, packets: { fill: "glow", palette: "vivid" } },
+        },
+      }),
+      { args: parseMapArgs("").args },
+    ),
+  );
+  // 実行: mount の参加者の箱にポインターを乗せる
+  point(lifelineHitOf(root, "mount"), "pointerover");
+  // 検証
+  const packets = root.querySelectorAll(".map-packets-hover .map-packet");
+  expect(packets.length).toBeGreaterThan(0);
+  for (const packet of packets) {
+    expect(packet.getAttribute("data-fill")).toBe("glow");
+  }
+  expect(root.querySelector('[data-packet-palette="vivid"]')).not.toBeNull();
+});

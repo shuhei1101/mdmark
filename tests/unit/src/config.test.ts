@@ -423,6 +423,7 @@ test("test_resolve_map_config", async () => {
     url_state: true,
     kinds: {},
     lines: {},
+    packets: { fill: "tinted", palette: "accent" },
   });
 });
 
@@ -440,4 +441,18 @@ test("test_resolve_map_config_when_unknown_values", async () => {
   expect(map.node_fit).toBe("height");
   expect(map.url_state).toBe(true);
   expect(map.kinds.a).toEqual({ label: "A" });
+});
+
+// データの印の塗り方と色合い（正常系）
+test("test_resolve_map_config_when_packets", async () => {
+  // 準備
+  const { resolveMapConfig } = await loadConfig();
+  // 実行
+  const omitted = resolveMapConfig({});
+  const given = resolveMapConfig({ packets: { fill: "ring", palette: "cool" } });
+  const unknown = resolveMapConfig({ packets: { fill: "x", palette: 1 } });
+  // 検証
+  expect(omitted.packets).toEqual({ fill: "tinted", palette: "accent" });
+  expect(given.packets).toEqual({ fill: "ring", palette: "cool" });
+  expect(unknown.packets).toEqual({ fill: "tinted", palette: "accent" });
 });

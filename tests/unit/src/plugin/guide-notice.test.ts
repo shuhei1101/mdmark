@@ -47,6 +47,7 @@ async function run(options: {
         : JSON.stringify(options.input),
     stdout: (line) => stdout.push(line),
     tmpdir: () => tmpdir(),
+    root: join(process.cwd(), "plugin"),
   });
   return { code, stdout };
 }
@@ -62,7 +63,6 @@ const writeMarkMd = (sessionId: string) => ({
 // .mark.md への Write で案内し、記録を作る（正常系）
 test("test_run_guide_notice", async () => {
   // 準備
-  const { NOTICE_BODY } = await loadGuideNotice();
   const { dir } = await createNoticeDir();
   // 実行
   const { code, stdout } = await run({ dir, input: writeMarkMd("s1") });
@@ -72,7 +72,7 @@ test("test_run_guide_notice", async () => {
   const output = JSON.parse(stdout[0] ?? "");
   expect(output.hookSpecificOutput.hookEventName).toBe("PreToolUse");
   expect(output.hookSpecificOutput.additionalContext).toBe(
-    `a.mark.md は mdmark の記法で記載する文書。${NOTICE_BODY}`,
+    `a.mark.md は mdmark の記法で記載する文書。記載する前に、mdmark の MCP の instructions のとおりにガイドを参照し、記載した後は check で点検する。`,
   );
   expect(output.hookSpecificOutput.permissionDecision).toBeUndefined();
   expect(output.hookSpecificOutput.updatedInput).toBeUndefined();
@@ -101,7 +101,6 @@ test("test_run_guide_notice_when_already_noticed", async () => {
 // 語 mdmark を含む発言で案内する（正常系）
 test("test_run_guide_notice_when_prompt", async () => {
   // 準備
-  const { NOTICE_BODY } = await loadGuideNotice();
   const { dir } = await createNoticeDir();
   // 実行
   const { code, stdout } = await run({
@@ -117,7 +116,7 @@ test("test_run_guide_notice_when_prompt", async () => {
   const output = JSON.parse(stdout[0] ?? "");
   expect(output.hookSpecificOutput.hookEventName).toBe("UserPromptSubmit");
   expect(output.hookSpecificOutput.additionalContext).toBe(
-    `利用者が mdmark で記載するよう指示した。${NOTICE_BODY}`,
+    `利用者が mdmark で記載するよう指示した。記載する前に、mdmark の MCP の instructions のとおりにガイドを参照し、記載した後は check で点検する。`,
   );
   expect(output.decision).toBeUndefined();
   expect(await exists(join(dir, "s3"))).toBe(true);

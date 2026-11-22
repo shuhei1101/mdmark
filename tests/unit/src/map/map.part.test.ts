@@ -426,7 +426,7 @@ const packetsOf = (html: string, wire: string): string[] =>
   matches(
     html,
     new RegExp(
-      `<(circle|rect|polygon)[^>]*class="map-packet"[^>]*data-wire="${wire.replace(/>/g, "&gt;")}"[^>]*>[\\s\\S]*?</\\1>`,
+      `<g [^>]*class="map-packet"[^>]*data-wire="${wire.replace(/>/g, "&gt;")}"[^>]*>[\\s\\S]*?</g>`,
       "g",
     ),
   );
@@ -450,15 +450,15 @@ test("test_render_map_flow_when_packets", async () => {
         wire: "marker->data",
         direction: "forward",
         color: undefined,
-        shape: "circle",
+        shape: undefined,
       },
     ],
   });
-  // 検証
+  // 検証: 指定した色と形状はそのまま、省いた色は色を持たないノードから出るため灰色
   const both = packetsOf(html, "mount->marker");
   expect(both.length).toBeGreaterThanOrEqual(2);
   for (const item of both) {
-    expect(item).toMatch(/^<rect/);
+    expect(item).toContain('data-shape="square"');
     expect(item).toContain("var(--mdmark-color-accent-orange-text)");
     expect(item).toContain('repeatCount="indefinite"');
   }
@@ -467,8 +467,8 @@ test("test_render_map_flow_when_packets", async () => {
   const forward = packetsOf(html, "marker->data");
   expect(forward.length).toBeGreaterThanOrEqual(1);
   for (const item of forward) {
-    expect(item).toMatch(/^<circle/);
-    expect(item).toContain("var(--mdmark-color-diagram-line)");
+    expect(item).toContain("var(--mdmark-map-packet-gray)");
+    expect(item).toContain('data-fill="tinted"');
     expect(item).not.toContain('keyPoints="1;0"');
   }
 });
@@ -534,7 +534,8 @@ test("test_render_map_flow_when_unknown_color", async () => {
   // 検証
   const items = packetsOf(html, "mount->marker");
   expect(items.length).toBeGreaterThanOrEqual(1);
-  expect(items[0]).toContain("var(--mdmark-color-diagram-line)");
+  // 知らない色は省いたときと同じ（色を持つ種類のある図で、色を持たない mount から出るため灰色）
+  expect(items[0]).toContain("var(--mdmark-map-packet-gray)");
   expect(html).not.toContain(";x:y");
   expect(html).not.toContain(";x");
 });
@@ -2659,4 +2660,190 @@ test("test_render_map_flow_when_wire_ends_and_shapes", async () => {
     "double-circle",
     "doc",
   ]);
+});
+
+/** Mermaid の flowchart から、部品『mapの構成図』の引数を作る（色を指定したノードを持たない） */
+async function plainFlowArgs(source: string) {
+  const { parseFlowchart } = await loadFlowchart();
+  const { layoutMap, estimateTextWidth } = await loadLayout();
+  const chart = parseFlowchart(source);
+  const layout = layoutMap(
+    chart,
+    { collapsed: [], entered: undefined },
+    { overrides: {}, nodeFit: "height", measureText: estimateTextWidth },
+  );
+  return {
+    layout,
+    kinds: {},
+    lines: {},
+    collapsed: [],
+    entered: undefined,
+    selected: [],
+    focus: undefined,
+    packets: [],
+    dragging: undefined,
+  };
+}
+
+/** 1 つのノードから同じ長さの 3 本の線が出る図（部品設計の状態 PacketVariety） */
+const VARIETY = `flowchart LR
+  hub[hub] --> a[A]
+  hub --> b[B]
+  hub --> c[C]`;
+
+// 印を線のラベルとノードの下に描く（正常系）
+test("test_render_map_flow_when_packet_layer", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const args = await plainFlowArgs(VARIETY);
+  // 実行
+  const { html } = renderMapFlow({
+    ...args,
+    selected: ["hub"],
+    packets: ["hub->a", "hub->b", "hub->c"].map((wire) => ({
+      wire,
+      direction: "forward" as const,
+      color: undefined,
+      shape: undefined,
+    })),
+  });
+  // 検証: 重なりは線 → 印 → ノード → 線のラベル
+  const wiresAt = html.indexOf("mdmark-diagram-wire");
+  const packetsAt = html.indexOf('class="map-packets"');
+  const nodeAt = html.indexOf('class="mdmark-diagram-node');
+  expect(wiresAt).toBeGreaterThanOrEqual(0);
+  expect(packetsAt).toBeGreaterThan(wiresAt);
+  expect(nodeAt).toBeGreaterThan(packetsAt);
+  const shapes = ["hub->a", "hub->b", "hub->c"].map(
+    (wire) => /data-shape="([^"]+)"/.exec(packetsOf(html, wire)[0] ?? "")?.[1],
+  );
+  expect(shapes).toEqual(["circle", "square", "diamond"]);
+  for (const wire of ["hub->a", "hub->b", "hub->c"]) {
+    expect(packetsOf(html, wire)[0]).toContain('data-fill="tinted"');
+  }
+  expect(html).toContain('data-packet-palette="accent"');
+});
+
+// 線より長いラベルを線の横に置く（正常系）
+test("test_render_map_flow_when_long_label", async () => {
+  // 準備: 横の線と縦の線に線より長いラベル、短いラベルの線も 1 本
+  const { renderMapFlow } = await loadParts();
+  const horizontal = await plainFlowArgs(`flowchart LR
+  a[入力] -->|設定ファイルと索引を読み込んで検査する| b[点検]
+  b -->|結果| c[出力]`);
+  const vertical = await plainFlowArgs(`flowchart TB
+  a[文書] -->|Markdown の本文と補足を読み取る| b[配置]`);
+  // 実行
+  const across = renderMapFlow(horizontal).html;
+  const down = renderMapFlow(vertical).html;
+  // 検証
+  const labelOf = (html: string, wire: string) =>
+    findTags(html, "mdmark-diagram-label").find((tag) =>
+      tag.includes(`data-wire="${wire.replace(/>/g, "&gt;")}"`),
+    ) ?? "";
+  expect(labelOf(across, "a->b")).toContain("data-beside");
+  expect(labelOf(across, "b->c")).not.toContain("data-beside");
+  expect(labelOf(down, "a->b")).toContain("data-beside");
+});
+
+// ドラッグを受け持つ要素（正常系）
+test("test_render_map_flow_when_drag_owner", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  const args = await flowArgs();
+  // 実行
+  const { html } = renderMapFlow({
+    ...args,
+    links: { mount: "https://example.com/spec" },
+  });
+  // 検証
+  for (const name of [
+    "mdmark-diagram-node-hit",
+    "mdmark-diagram-node-link",
+    "map-group-head",
+    "map-group-bar",
+    "map-group-resize",
+    "map-wire-hit",
+  ]) {
+    const tags = findTags(html, name).filter(
+      (tag) => name !== "map-wire-hit" || tag.startsWith("<g "),
+    );
+    expect(tags.length, name).toBeGreaterThan(0);
+    for (const tag of tags) expect(tag, name).toContain("data-drag-owner");
+  }
+  for (const tag of matches(html, /<div class="map-group[ "][^>]*>/g)) {
+    expect(tag).not.toContain("data-drag-owner");
+  }
+});
+
+// 線より長いラベルを線の横に置く（軸と格子の配置の図）（正常系）
+test("test_render_map_axis_grid_when_long_label", async () => {
+  // 準備: ブロック図の線に線より長いラベル
+  const { renderMapAxisGrid } = await loadParts();
+  const { parseAxisGrid } = await import("../../../../src/map/axis-grid.ts");
+  const { layoutAxisGrid } = await import(
+    "../../../../src/map/axis-grid-layout.ts"
+  );
+  const base = await axisGridArgs({ kind: "block" });
+  const grid = parseAxisGrid({
+    kind: "block",
+    source: `block-beta
+  columns 3
+  a["入力"] space b["点検"]
+  a -- "設定ファイルと索引を読み込んで検査する" --> b`,
+  });
+  const layout = layoutAxisGrid({
+    grid,
+    entered: undefined,
+    collapsed: new Set(),
+    today: "2026-11-12",
+    selected: undefined,
+  });
+  // 実行
+  const { html } = renderMapAxisGrid({ ...base, grid, layout });
+  // 検証
+  const labels = findTags(html, "map-axis-wire-label");
+  expect(labels.length).toBeGreaterThan(0);
+  for (const label of labels) expect(label).toContain("data-beside");
+});
+
+// メッセージの印の見た目（正常系）
+test("test_render_map_sequence_when_packet_style", async () => {
+  // 準備: node が送るメッセージ 3 通、node を選ぶ
+  const { renderMapSequence } = await loadParts();
+  const { parseSequence } = await loadSequence();
+  const { sequenceRows } = await loadRows();
+  const sequence = parseSequence(`sequenceDiagram
+  participant node as 送り手
+  participant am as 受け手
+  node->>am: 1 通目
+  node->>am: 2 通目
+  node->>am: 3 通目`);
+  const rows = sequenceRows(sequence, {
+    order: sequence.participants.map((item) => item.id),
+    collapsed: [],
+    entered: undefined,
+  });
+  // 実行
+  const { html } = renderMapSequence({
+    sequence,
+    rows: rows.rows,
+    participants: rows.participants,
+    collapsed: [],
+    entered: undefined,
+    selected: ["node"],
+    focus: undefined,
+    packetStyle: { fill: "ring", palette: "cool" },
+  });
+  // 検証
+  const groups = matches(html, /<g [^>]*class="map-packet"[^>]*>/g);
+  const shapes = ["0", "1", "2"].map(
+    (message) =>
+      /data-shape="([^"]+)"/.exec(
+        groups.find((tag) => tag.includes(`data-message="${message}"`)) ?? "",
+      )?.[1],
+  );
+  expect(shapes).toEqual(["circle", "square", "diamond"]);
+  for (const group of groups) expect(group).toContain('data-fill="ring"');
+  expect(html).toContain('data-packet-palette="cool"');
 });
