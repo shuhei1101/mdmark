@@ -36,6 +36,8 @@ functions:
       - MOD-472-133#functions[renderMapSequence]
       - MOD-562-2#functions[readMapAnnotations]
       - MOD-562-2#functions[linkAnnotationOwners]
+      - MOD-472-370#functions[resolvePacketMark]
+      - MOD-472-370#functions[renderPackets]
     args:
       - name: range
         type: HTMLElement
@@ -69,7 +71,7 @@ functions:
       2. 表示する行のメッセージを `attachBand`（モード `playback`）の手順にする。開閉・中だけを描くで表示するメッセージが変わったら `update` で手順を差し替え、再生していれば `onStep(undefined)` を呼ぶ。`attachBand` の `onStep` で、シーケンス図の図を今のメッセージの線へ `createFollow` の `reveal` で移し、`follow` に手順のメッセージの番号を指定する
       3. 参加者の箱の名前の文字の外を押すと選び、4px 動かすと並べ替えのドラッグにして、移す先の列に縦の線（`.map-insert-line`）を出し、離した位置に最も近い列へ移す。ドラッグの直後の押した扱いは選ばない。`pointercancel` では並び順を変えず、縦の線と箱の移動を戻して、`window` の `pointermove`・`pointerup`・`pointercancel` の受け取りを削除する
       4. 参加者の箱の押せる要素（`span.mdmark-diagram-node-hit`）にフォーカスして Enter か Space を押すとその参加者を選び、Alt + 左右の矢印キーで 1 列ずつ移して、再描画した後に移した参加者の押せる要素へフォーカスを戻す（中だけを描いているときは移さない）
-      5. 参加者の箱（`div.map-participant`。名前の文字と種類の行の上を含む）かライフラインの判定の線（`.map-lifeline-hit`）の `pointerover` で、参加者を選んでおらず再生していないときだけ、その参加者が送信する・受けるメッセージの線とラベル・その参加者の箱とライフラインのほかに `map-dim`（と指している間だけの class）を付け、そのメッセージの線に指している間のデータの印の層（`.map-packets-hover`）を追加する。`pointerout` でポインターが同じ参加者の箱と判定の線の外へ出たら解く。`writeMapState` は呼ばない。`pointerType` が `touch` のときと、並べ替えのドラッグの間は付けない。選択中・再生中もポインターがいる参加者を記録し、箱を押すか Esc で選択を解いたときにポインターがいた参加者は、ポインターがその参加者の箱と判定の線の外へ出るまで、その参加者の強調を付けない
+      5. 参加者の箱（`div.map-participant`。名前の文字と種類の行の上を含む）かライフラインの判定の線（`.map-lifeline-hit`）の `pointerover` で、参加者を選んでおらず再生していないときだけ、その参加者が送信する・受けるメッセージの線とラベル・その参加者の箱とライフラインのほかに `map-dim`（と指している間だけの class）を付け、そのメッセージの線に指している間のデータの印の層（`.map-packets-hover`。`packet.ts` の `resolvePacketMark` と `renderPackets` で、`renderMapSequence` と同じ見た目にする）を追加する。`pointerout` でポインターが同じ参加者の箱と判定の線の外へ出たら解く。`writeMapState` は呼ばない。`pointerType` が `touch` のときと、並べ替えのドラッグの間は付けない。選択中・再生中もポインターがいる参加者を記録し、箱を押すか Esc で選択を解いたときにポインターがいた参加者は、ポインターがその参加者の箱と判定の線の外へ出るまで、その参加者の強調を付けない
     unit_tests:
       - name: test_attach_map_sequence_when_reorder_cancelled
         case: 正常
@@ -149,6 +151,12 @@ functions:
         condition: メッセージ 4 つのシーケンス図で一覧の表示のボタンを押す
         mock: なし（Chromium）
         expected: '一覧の項目が記載順の「{送信元} → {送信先}: {メッセージ}」の 4 つで、子を持つ項目が無い'
+      - name: test_attach_map_sequence_when_packet_style
+        case: 正常
+        summary: 設定の塗り方と色合いを参加者のホバーの印にも当てる
+        condition: '`config.map.packets` に `{ fill: "glow", palette: "vivid" }` を指定して描き、`mount` の参加者の箱にポインターを乗せる'
+        mock: なし
+        expected: '`.map-packets-hover` の中の `.map-packet` の `data-fill` が `glow` で、図の要素の `data-packet-palette` が `vivid`'
     notes:
       書き出し・一覧の表示: '`renderDiagramFrame` に `exportable: true`・`listable: true` を指定し、`attachMapList` を `sequenceListItems`（今のシーケンス図）で付け、片付ける関数を片付けのときに呼ぶ'
 lead: 'map のシーケンス図の描画と操作を受け持ち、シーケンス図の描画と操作を変えるときに参照する。'
