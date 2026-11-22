@@ -30,7 +30,7 @@ plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━
     Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
   
 
-Checked 992 files in 1078ms. No fixes applied.
+Checked 992 files in 1215ms. No fixes applied.
 Found 1 warning.
 Found 1 info.
 

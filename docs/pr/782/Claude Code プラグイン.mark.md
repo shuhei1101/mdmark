@@ -31,8 +31,8 @@
 
 | ファイル | メソッド | 変更種別 | 結果 | 補足 |
 | --- | --- | --- | --- | --- |
-| [tests/unit/src/plugin/session-start.test.ts](https://github.com/shuhei1101/mdmark/blob/feat/map/wire-drag-label-packet-and-hook-prompts/tests/unit/src/plugin/session-start.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261122201936_3c456c62_単体テスト.log` |
-| [tests/unit/src/plugin/guide-notice.test.ts](https://github.com/shuhei1101/mdmark/blob/feat/map/wire-drag-label-packet-and-hook-prompts/tests/unit/src/plugin/guide-notice.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261122201936_3c456c62_単体テスト.log` |
+| [tests/unit/src/plugin/session-start.test.ts](https://github.com/shuhei1101/mdmark/blob/feat/map/wire-drag-label-packet-and-hook-prompts/tests/unit/src/plugin/session-start.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261122210526_53070f6c_単体テスト.log` |
+| [tests/unit/src/plugin/guide-notice.test.ts](https://github.com/shuhei1101/mdmark/blob/feat/map/wire-drag-label-packet-and-hook-prompts/tests/unit/src/plugin/guide-notice.test.ts) | 全実行 | 変更 | ✅ | `テスト結果/20261122210526_53070f6c_単体テスト.log` |
 
 ### 結合テストの実行範囲
 
