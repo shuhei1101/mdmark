@@ -15249,7 +15249,7 @@ var mdmark_config_schema_default = {
     },
     map: {
       title: "map \u306E\u8A2D\u5B9A",
-      description: "map \u306E\u56F3\u306E\u3001\u540D\u524D\u306E\u9577\u3044\u30CE\u30FC\u30C9\u306E\u5E83\u3052\u65B9\u30FB\u72B6\u614B\u3092\u30AF\u30A8\u30EA\u6587\u5B57\u5217\u306B\u4FDD\u3064\u304B\u30FB\u30CE\u30FC\u30C9\u306E\u7A2E\u985E\u30FB\u7DDA\u306E\u7A2E\u985E\u3002",
+      description: "map \u306E\u56F3\u306E\u3001\u540D\u524D\u306E\u9577\u3044\u30CE\u30FC\u30C9\u306E\u5E83\u3052\u65B9\u30FB\u72B6\u614B\u3092\u30AF\u30A8\u30EA\u6587\u5B57\u5217\u306B\u4FDD\u3064\u304B\u30FB\u30C7\u30FC\u30BF\u306E\u5370\u306E\u898B\u305F\u76EE\u30FB\u30CE\u30FC\u30C9\u306E\u7A2E\u985E\u30FB\u7DDA\u306E\u7A2E\u985E\u3002",
       type: "object",
       properties: {
         node_fit: {
@@ -15264,6 +15264,26 @@ var mdmark_config_schema_default = {
           description: "\u4E2D\u3078\u5165\u3063\u305F\u30B0\u30EB\u30FC\u30D7\u3068\u3001\u30B7\u30FC\u30B1\u30F3\u30B9\u56F3\u306E\u4E2D\u3060\u3051\u3092\u63CF\u304F\u30D6\u30ED\u30C3\u30AF\u3092\u3001URL \u306E\u30AF\u30A8\u30EA\u6587\u5B57\u5217 `map-{\u56F3\u306E\u756A\u53F7}` \u306B\u3082\u4FDD\u3064\u304B\u3002`false` \u3067\u306F\u30AF\u30A8\u30EA\u6587\u5B57\u5217\u3092\u8AAD\u307F\u3082\u66F8\u304D\u3082\u305B\u305A\u3001sessionStorage \u3060\u3051\u306B\u4FDD\u3064\u3002",
           type: "boolean",
           default: true
+        },
+        packets: {
+          title: "\u30C7\u30FC\u30BF\u306E\u5370\u306E\u898B\u305F\u76EE",
+          description: "\u5F37\u8ABF\u3059\u308B\u7DDA\u306E\u4E0A\u3092\u6D41\u308C\u308B\u30C7\u30FC\u30BF\u306E\u5370\u306E\u5857\u308A\u65B9\u3068\u8272\u5408\u3044\u3002\u88DC\u8DB3\u306E `layout` \u306E `packet` \u304C\u7DDA\u3054\u3068\u306B\u512A\u5148\u3059\u308B\u3002",
+          type: "object",
+          properties: {
+            fill: {
+              type: "string",
+              enum: ["solid", "ring", "tinted", "glow", "shine", "random"],
+              default: "tinted",
+              description: "\u5857\u308A\u65B9\u3002`random` \u306F\u7DDA\u3054\u3068\u306B\u307B\u304B\u306E 5 \u3064\u304B\u3089\u9078\u3076\uFF08\u63CF\u304D\u76F4\u3057\u3066\u3082\u540C\u3058\uFF09\u3002"
+            },
+            palette: {
+              type: "string",
+              enum: ["accent", "vivid", "pastel", "muted", "cool"],
+              default: "accent",
+              description: "\u7DDA\u306E\u756A\u53F7\u3067\u9806\u306B\u4F7F\u3046 5 \u8272\u306E\u8272\u5408\u3044\u3002\u8272\u3092\u6307\u5B9A\u3057\u305F\u30CE\u30FC\u30C9\u304C\u3042\u308B\u56F3\u3067\u306F\u3001\u51FA\u767A\u70B9\u306E\u30CE\u30FC\u30C9\u306E\u8272\uFF08\u7121\u3051\u308C\u3070\u7070\u8272\uFF09\u3092\u4F7F\u3046\u3002"
+            }
+          },
+          additionalProperties: false
         },
         kinds: {
           title: "\u30CE\u30FC\u30C9\u306E\u7A2E\u985E",
@@ -41066,7 +41086,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: localVersionOf("v0.14.0+develop.7245536"),
+    version: localVersionOf("v0.14.0+develop.adb270e"),
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)

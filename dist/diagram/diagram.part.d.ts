@@ -152,6 +152,8 @@ export declare function renderFlow(definition: MdmarkFlowDefinition, id: string,
     hints: boolean;
     lookup?: TermLookup;
     annotations?: DiagramAnnotations;
+    /** 線の SVG の後、ノードの前に置く HTML（データの印の層） */
+    underNodes?: string;
 }): DiagramPart;
 /** 図の定義 */
 type LegendDefinition = MdmarkChartDefinition;

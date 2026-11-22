@@ -17401,6 +17401,27 @@ function parseDefinitionJson(text2) {
   }
 }
 
+// src/map/packet.ts
+var PACKET_FILLS = [
+  "solid",
+  "ring",
+  "tinted",
+  "glow",
+  "shine",
+  "random"
+];
+var PACKET_PALETTES = [
+  "accent",
+  "vivid",
+  "pastel",
+  "muted",
+  "cool"
+];
+var DEFAULT_PACKET_STYLE = {
+  fill: "tinted",
+  palette: "accent"
+};
+
 // src/table/table.logic.ts
 var FILTER_KINDS = ["select", "text", "date"];
 var collator = new Intl.Collator("ja", { numeric: true });
@@ -17618,7 +17639,17 @@ var resolveMapConfig = (value) => {
     node_fit: map3.node_fit === "width" ? "width" : "height",
     url_state: typeof map3.url_state === "boolean" ? map3.url_state : true,
     kinds,
-    lines
+    lines,
+    packets: resolvePacketStyle(map3.packets)
+  };
+};
+var resolvePacketStyle = (value) => {
+  const packets = isRecord2(value) ? value : {};
+  const fill = PACKET_FILLS.find((item) => item === packets.fill);
+  const palette = PACKET_PALETTES.find((item) => item === packets.palette);
+  return {
+    fill: fill ?? DEFAULT_PACKET_STYLE.fill,
+    palette: palette ?? DEFAULT_PACKET_STYLE.palette
   };
 };
 

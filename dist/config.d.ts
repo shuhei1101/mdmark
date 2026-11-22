@@ -52,6 +52,10 @@ export type MdmarkConfig = {
         url_state?: unknown;
         kinds?: Record<string, MapKind>;
         lines?: Record<string, MapLine>;
+        packets?: {
+            fill?: unknown;
+            palette?: unknown;
+        };
     };
 };
 /** mermaid の図のテーマの名前。`mdmark` は描く先の要素の CSS 変数から作る mdmark の外観のテーマ、ほかは mermaid のテーマの名前 */

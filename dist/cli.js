@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.7245536";
+  return "v0.14.0+develop.adb270e";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -66764,6 +66764,33 @@ function localVersionOf(version2) {
 function isLocalVersion(value) {
   return typeof value === "string" && (value === DEVELOP_VERSION || VERSION_PATTERN.test(value));
 }
+
+// src/map/packet.ts
+var PACKET_FILLS = [
+  "solid",
+  "ring",
+  "tinted",
+  "glow",
+  "shine",
+  "random"
+];
+var PACKET_PALETTES = [
+  "accent",
+  "vivid",
+  "pastel",
+  "muted",
+  "cool"
+];
+var DEFAULT_PACKET_STYLE = {
+  fill: "tinted",
+  palette: "accent"
+};
+var PACKET_SHAPES = [
+  "circle",
+  "square",
+  "diamond",
+  "triangle"
+];
 
 // src/table/table.logic.ts
 var FILTER_KINDS = ["select", "text", "date"];
@@ -67141,7 +67168,17 @@ var resolveMapConfig = (value) => {
     node_fit: map.node_fit === "width" ? "width" : "height",
     url_state: typeof map.url_state === "boolean" ? map.url_state : true,
     kinds,
-    lines
+    lines,
+    packets: resolvePacketStyle(map.packets)
+  };
+};
+var resolvePacketStyle = (value) => {
+  const packets = isRecord3(value) ? value : {};
+  const fill = PACKET_FILLS.find((item) => item === packets.fill);
+  const palette = PACKET_PALETTES.find((item) => item === packets.palette);
+  return {
+    fill: fill ?? DEFAULT_PACKET_STYLE.fill,
+    palette: palette ?? DEFAULT_PACKET_STYLE.palette
   };
 };
 
@@ -93354,7 +93391,6 @@ var LAYOUT_KEYS = [
   "via",
   "collapsed"
 ];
-var PACKET_SHAPES = ["circle", "square", "diamond"];
 var SIDES2 = ["top", "right", "bottom", "left"];
 var JUSTIFIES = ["start", "center", "end"];
 var emptyMapData = () => ({
@@ -93526,7 +93562,7 @@ var readEnds = (reader, value, path) => {
 };
 var readPacket = (reader, value, path) => {
   if (!isObject4(value)) {
-    invalid2(reader, path, ' `{"color", "shape"}` ');
+    invalid2(reader, path, ' `{"color", "shape", "fill"}` ');
     return void 0;
   }
   const out = {};
@@ -93535,7 +93571,12 @@ var readPacket = (reader, value, path) => {
   if (value.shape !== void 0)
     out.shape = readChoice(reader, value.shape, {
       path: `${path}.shape`,
-      choices: PACKET_SHAPES
+      choices: [...PACKET_SHAPES]
+    });
+  if (value.fill !== void 0)
+    out.fill = readChoice(reader, value.fill, {
+      path: `${path}.fill`,
+      choices: [...PACKET_FILLS]
     });
   return out;
 };
