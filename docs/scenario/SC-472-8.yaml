@@ -350,6 +350,9 @@ scenarios:
         description: 正常シナリオと同じ（グループの中のノードと、折れ点が 2 つ以上ある線を持ち、図が図の枠より広い）
       - name: Mock
         description: 正常シナリオと同じ
+      - name: L 字の線を持つ構成図の map を持つ Markdown
+        description: 左下のノードの右の辺から出て、折れ点 1 つで右上のノードの下の辺に入る L 字の線と、その線とつながらないノードを持つ構成図の map の範囲
+        notes: 利用者が報告した図（モック `docs/mock/components/map-wire-drag-route/`）と同じ形状。縦の区間を右上のノードの右端より右へ動かす
     flow: |-
       <!-- map -->
 
