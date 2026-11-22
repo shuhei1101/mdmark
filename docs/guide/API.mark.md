@@ -1042,6 +1042,8 @@ mdmark.mount(document.querySelector("#doc"), { markdown });
 | `--mdmark-tooltip-max-height` | `18rem` | ツールチップの高さの上限。画面の高さの 60% を超えない。超える分はツールチップの中でスクロールする |
 | `--mdmark-diagram-max-height` | `36rem` | 文書の中の図の表示する枠の最初の高さの上限。開いたときと全体が収まる倍率に戻したときは、図の高さ × 全体が収まる倍率とこの値の小さいほうにする（全体が収まる倍率は枠の幅で決める）。利用側が高さを変えたときはこの値で止めず、図の高さ × 今の倍率まで広げられる |
 | `--mdmark-diagram-box-shadow` | `inset 0 0 0 1px var(--mdmark-color-border)` | 図の表示するノード（右上に重ねたボタンのパネルと表示する枠をまとめたノード）の線（`box-shadow` の値）。枠を持つ面に文書を描く利用側は、面で `none` を指定して線を削除する。操作できる部品の中の図は線を描かず、全画面のモーダルの中の図はこの値を受け継がず既定の線で描く |
+| `--mdmark-map-packet-1`〜`--mdmark-map-packet-5` | 設定の `map.packets.palette` の色合いの 5 色（既定 `accent` はアクセントの青・緑・橙・紫・赤の文字の色） | 色を指定したノードの無い map の図で、線ごとに順に使うデータの印の色。明るい配色と暗い配色で値が変わる |
+| `--mdmark-map-packet-gray` | `var(--mdmark-color-accent-gray-text)` | 色を指定したノードがある map の図で、色の指定の無いノードから出る線のデータの印の色 |
 | `--mdmark-diff-minimap-width` | `14px` | 差分のミニマップの帯の幅 |
 | `--mdmark-diff-minimap-z-index` | `10` | 差分のミニマップの帯の重なり順。利用側のページの固定のヘッダーなどに隠れるときに上げる |
 | `--mdmark-code-fold-width` | `2.75ch` | 畳める行を持つコードブロックで、行番号の右に取る開閉のボタンの列の幅 |

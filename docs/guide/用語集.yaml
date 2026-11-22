@@ -995,7 +995,7 @@ terms:
     href: ./記法.mark.md#map
 - id: data-packet
   name: データの印
-  description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。ER 図では多重度の多い側から少ない側へ流れる。補足の `layout` の `packet` で色と形を変える
+  description: map の図で強調する線の上を、元から先へ流れ続ける丸などの印。ER 図では多重度の多い側から少ない側へ流れる。設定の `map.packets` で塗り方と色合いを選び、補足の `layout` の `packet` で線ごとに色と形を変える
   aliases:
   - パケット
   details:

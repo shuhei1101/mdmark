@@ -12,11 +12,35 @@ docs:
   - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
     new: false
     change: 線のドラッグ・線の上の文字（記載方法・位置・大きさ・折り返し）・データの印の動きの説明を、決まった振る舞いに合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-22T07:17:54.954380+00:00'
   - page: docs/guide/用語集.yaml
     new: false
     change: 線の上の文字の設定の見直しで用語が増えた・変わったときに、用語の行を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-22T07:17:54.954380+00:00'
+  - page: docs/guide/設定.mark.md
+    change: map の設定の表に `map.packets` の行を足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-22T07:17:54.954380+00:00'
+  - page: docs/guide/記法.mark.md
+    change: 補足のキーの `packet` に `fill` と形状 `triangle` を足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-22T07:17:54.954380+00:00'
+  - page: docs/guide/API.mark.md
+    change: テーマの CSS 変数に `--mdmark-map-packet-1`〜`5`・`--mdmark-map-packet-gray` を足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-22T07:17:54.954380+00:00'
+  - page: docs/guide/カスタマイズ-テーマを上書きする.md
+    change: データの印の色合いの変え方を足す
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-22T07:17:54.954380+00:00'
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
