@@ -58,6 +58,33 @@ scenarios:
     test: test_error_when_content_unavailable
     uses:
       - SC-472-47#scenarios[異常シナリオ（本文を取り出せない）]
+  - name: 正常シナリオ（ボタンと欄を出さずに左右に並べる）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: 見本の文書の 3 つのリビジョン
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        A[差分の取り出し元を指定する:正常シナリオ（変更表示のボタンと欄を出さない）] --> B[文書の差分を確認する:正常シナリオ（左右に並べる）]
+        click A "id:SC-472-47#scenarios[正常シナリオ（変更表示のボタンと欄を出さない）]"
+        click B "id:SC-472-55#scenarios[正常シナリオ（左右に並べる）]"
+      ```
+
+      <!-- /map -->
+    expected:
+      - 描いた時点で、変更表示のボタンとリビジョンを選ぶ欄が無く、最新の `r3` とその 1 つ前の `r2` の差分が出る
+      - 左に `r2`、右に `r3` を描いた本文が並び、変えていないブロックが同じ高さで向かい合う
+      - '`<!-- html -->` の範囲の表のセルの値を変えたブロックが、左右とも差分のブロックの色で示される'
+    test: test_normal_when_side_by_side_without_controls
+    uses:
+      - SC-472-47#scenarios[正常シナリオ（変更表示のボタンと欄を出さない）]
+      - SC-472-55#scenarios[正常シナリオ（左右に並べる）]
 lead: 利用側のページが差分の取り出し元を指定して文書を描き、読者が 2 つのリビジョンを比べて、本文と埋め込んだ HTML の変更を読み込む。
 primary_actor: 読者
 stakeholders:
