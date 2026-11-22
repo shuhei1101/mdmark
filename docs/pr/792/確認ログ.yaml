@@ -23,3 +23,9 @@ confirmations:
     approver: shuhei1101
     commit: e8f45b71
     thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659228677
+  - topic: '#790 で右上の端に固定する目次を開くボタンの大きさ'
+    decision: 見た目は 32px 四方（アイコン 16px）に小さくし、押せる範囲は周りの透明な余白で 44px 四方に保つ（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 5b409045
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659259663
