@@ -80,8 +80,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-21T11:14:08.818173+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
     note: MOD-472-134 drag.ts・MOD-472-141 layout.ts・MOD-472-133 map.part.ts・MOD-472-170 index.css・MOD-472-3 session-start.ts・MOD-472-349 guide-notice.ts・MOD-775-1 prompt.ts とプラグインのビルド
+    updated_by: planner
+    updated_at: '2026-11-22T07:08:35.811808+00:00'
   - process: ドキュメント修正
     status: todo
   - process: 単体テスト作成
