@@ -337,7 +337,7 @@ functions:
         summary: 区間をノードの端の外へ動かす
         condition: 部品設計『mapの構成図』の状態 `WireRouteAfterDrag` の L 字の線の縦の区間を、右上のノードの右端より右へマウスでドラッグする
         mock: なし
-        expected: 線の端が右上のノードの右の辺にあり、表示する枠の `scrollLeft` が押す前と同じ
+        expected: 線の端が右上のノードの右の辺にあり、表示する枠の `scrollLeft` が押す前と同じ。保存した状態はその線の区間のずらしを持ち、回り込んだ端の `attachments` を持たない
       - name: test_attach_map_flow_when_packet_color_overridden
         case: 正常
         summary: 利用側のテーマで印の色を上書きする
