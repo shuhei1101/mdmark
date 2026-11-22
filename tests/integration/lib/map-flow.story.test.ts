@@ -903,3 +903,220 @@ test("test_wire_hit_target_size", async () => {
   // 検証
   await expect(targetSizeViolations(page)).resolves.toEqual([]);
 });
+
+/** データの印の線ごとの形状・塗り方・色（縁の計算値）・1 周の時間・SVG の座標での幅と高さ */
+function packetsOf(page: Page) {
+  return page.locator(".map-packets .map-packet").evaluateAll((packets) =>
+    packets.map((packet) => {
+      const shape = packet.querySelector("circle, rect, polygon");
+      const box = (packet as SVGGElement).getBBox();
+      return {
+        wire: packet.getAttribute("data-wire") ?? "",
+        shape: packet.getAttribute("data-shape") ?? "",
+        fill: packet.getAttribute("data-fill") ?? "",
+        stroke: shape ? getComputedStyle(shape).stroke : "",
+        // 塗りを持つ形状の要素の塗り（ring の外側の輪郭は塗らない）
+        paint:
+          [...packet.querySelectorAll("circle, rect, polygon")]
+            .map((item) => getComputedStyle(item).fill)
+            .find((fill) => fill !== "none") ?? "",
+        dur: packet.querySelector("animateMotion")?.getAttribute("dur") ?? "",
+        width: box.width,
+        height: box.height,
+      };
+    }),
+  );
+}
+
+/** 色の計算値のうち、描かれていない（黒・透明・無し）もの */
+const UNPAINTED = ["", "none", "rgb(0, 0, 0)", "rgba(0, 0, 0, 0)"];
+
+// 1 つのノードから出る同じ長さの 3 本の線の印が、形状・色・速さで分かれ、ノードの下を通る（PacketVariety）
+test("test_packet_variety", async () => {
+  // 準備・実行
+  const page = await openMap("packet-variety");
+  // 検証
+  const packets = await packetsOf(page);
+  const first = (wire: string) =>
+    packets.find((packet) => packet.wire === wire);
+  const marks = ["hub->a", "hub->b", "hub->c"].map(first);
+  expect(marks.map((mark) => mark?.shape)).toEqual([
+    "circle",
+    "square",
+    "diamond",
+  ]);
+  for (const mark of marks) {
+    expect(mark?.fill).toBe("tinted");
+    expect(UNPAINTED).not.toContain(mark?.stroke);
+  }
+  expect(new Set(marks.map((mark) => mark?.stroke)).size).toBe(3);
+  expect(new Set(marks.map((mark) => mark?.dur)).size).toBe(3);
+  // 印の層は線の後、ノードの前（重なりはノードが上）
+  const order = await page.evaluate(() => {
+    const stage = document.querySelector(".mdmark-diagram-stage");
+    const children = [...(stage?.children ?? [])];
+    const at = (selector: string) =>
+      children.findIndex((child) => child.matches(selector));
+    return {
+      wires: at("svg.mdmark-diagram-wires"),
+      packets: at("svg.map-packets"),
+      node: at(".mdmark-diagram-node"),
+    };
+  });
+  expect(order.packets).toBeGreaterThan(order.wires);
+  expect(order.node).toBeGreaterThan(order.packets);
+});
+
+// 塗り方ごとの印が、外側の縁・光を含めて形状の大きさに収まる（PacketFills）
+test("test_packet_fills", async () => {
+  // 準備・実行
+  const page = await openMap("packet-fills");
+  // 検証
+  const packets = await packetsOf(page);
+  const fills = new Set(packets.map((packet) => packet.fill));
+  for (const fill of ["solid", "ring", "tinted", "glow", "shine"]) {
+    expect(fills).toContain(fill);
+  }
+  // 形状ごとの外側の大きさ（丸は直径、四角は 1 辺、ひし形は対角線、三角は高さと幅）
+  const limit: Record<string, number> = {
+    circle: 11.2,
+    square: 9.6,
+    diamond: 12.8,
+    triangle: 11.2,
+  };
+  for (const packet of packets) {
+    expect(UNPAINTED).not.toContain(packet.paint);
+    expect(Math.max(packet.width, packet.height)).toBeLessThanOrEqual(
+      (limit[packet.shape] ?? 0) + 0.01,
+    );
+  }
+});
+
+// 色合いごとに、印が背景と見分けられる 3 色で描かれる（PacketPalettes）
+test("test_packet_palettes", async () => {
+  // 準備・実行
+  const page = await openMap("packet-palettes");
+  // 検証: 色合いごとの図の、3 本の線の縁の色
+  const palettes = await page
+    .locator("svg.map-packets[data-packet-palette]")
+    .evaluateAll((layers) =>
+      layers.map((layer) => ({
+        palette: layer.getAttribute("data-packet-palette") ?? "",
+        strokes: [...layer.querySelectorAll(".map-packet")].map((packet) => {
+          const shape = packet.querySelector("circle, rect, polygon");
+          return shape ? getComputedStyle(shape).stroke : "";
+        }),
+      })),
+    );
+  expect(palettes.map((item) => item.palette)).toEqual([
+    "accent",
+    "vivid",
+    "pastel",
+    "muted",
+    "cool",
+  ]);
+  for (const { strokes } of palettes) {
+    for (const stroke of strokes) expect(UNPAINTED).not.toContain(stroke);
+    expect(new Set(strokes).size).toBe(3);
+  }
+  const background = await resolveColorIn(
+    page,
+    ".mdmark",
+    "var(--mdmark-color-bg-opaque)",
+  );
+  for (const { strokes } of palettes) {
+    for (const stroke of strokes) {
+      expect(contrastRatio(stroke, background)).toBeGreaterThanOrEqual(3);
+    }
+  }
+});
+
+// 色を指定したノードから出る線の印はノードの色で、印は線のラベルの下を通る（PacketSourceColor）
+test("test_packet_source_color", async () => {
+  // 準備・実行
+  const page = await openMap("packet-source-color");
+  // 検証
+  const packets = await packetsOf(page);
+  const hubStroke = await page
+    .locator('.mdmark-diagram-node[data-node="hub"]')
+    .evaluate((node) => getComputedStyle(node).borderTopColor);
+  const fromHub = packets.filter((packet) => packet.wire.startsWith("hub->"));
+  expect(fromHub.length).toBeGreaterThan(0);
+  for (const packet of fromHub) expect(packet.stroke).toBe(hubStroke);
+  const shapes = new Set(fromHub.map((packet) => packet.shape));
+  expect(shapes.size).toBe(new Set(fromHub.map((p) => p.wire)).size);
+  const order = await page.evaluate(() => {
+    const stage = document.querySelector(".mdmark-diagram-stage");
+    const children = [...(stage?.children ?? [])];
+    return {
+      packets: children.findIndex((child) => child.matches("svg.map-packets")),
+      label: children.findIndex((child) =>
+        child.matches(".mdmark-diagram-label"),
+      ),
+    };
+  });
+  expect(order.label).toBeGreaterThan(order.packets);
+});
+
+// 線より長いラベルを線の横に置き、線と矢じりを隠さない（LongWireLabel）
+test("test_long_wire_label", async () => {
+  // 準備・実行
+  const page = await openMap("long-wire-label");
+  // 検証
+  const besides = await page
+    .locator(".mdmark-diagram-label[data-beside]")
+    .evaluateAll((labels) =>
+      labels.map((label) => {
+        const wire = label.getAttribute("data-wire") ?? "";
+        const path = document.querySelector(
+          `path.mdmark-diagram-wire[data-wire="${CSS.escape(wire)}"]`,
+        ) as SVGPathElement | null;
+        const box = label.getBoundingClientRect();
+        const line = path?.getBoundingClientRect();
+        return {
+          wire,
+          box: { top: box.top, bottom: box.bottom, left: box.left },
+          line: line
+            ? { top: line.top, bottom: line.bottom, right: line.right }
+            : undefined,
+        };
+      }),
+    );
+  expect(besides.map((item) => item.wire).sort()).toEqual(["a->b", "b->d"]);
+  const across = besides.find((item) => item.wire === "a->b");
+  // 横の線: ラベルの下端が線より上
+  expect(across?.box.bottom).toBeLessThanOrEqual(across?.line?.top ?? 0);
+  const short = await page
+    .locator('.mdmark-diagram-label[data-wire="b->c"]')
+    .getAttribute("data-beside");
+  expect(short).toBeNull();
+});
+
+// L 字の線の縦の区間を右上のノードの右端より右へ動かした線が、そのノードの右の辺へ回り込む（WireRouteAfterDrag）
+test("test_wire_route_after_drag", async () => {
+  // 準備・実行
+  const page = await openMap("wire-route-after-drag");
+  // 検証
+  const points = await page
+    .locator('path.mdmark-diagram-wire[data-wire="a->c"]')
+    .evaluate((path) => {
+      const svg = (path as SVGPathElement).ownerSVGElement;
+      const box = svg?.getBoundingClientRect();
+      const scale = box && svg ? box.width / svg.width.baseVal.value : 1;
+      const length = (path as SVGPathElement).getTotalLength();
+      const at = (distance: number) => {
+        const point = (path as SVGPathElement).getPointAtLength(distance);
+        return {
+          x: (box?.left ?? 0) + point.x * scale,
+          y: (box?.top ?? 0) + point.y * scale,
+        };
+      };
+      return { start: at(0), end: at(length) };
+    });
+  const target = await rectOf(page, '.mdmark-diagram-node[data-node="c"]');
+  const source = await rectOf(page, '.mdmark-diagram-node[data-node="a"]');
+  expect(Math.abs(points.end.x - target.right)).toBeLessThanOrEqual(12);
+  expect(points.end.y).toBeGreaterThan(target.top);
+  expect(points.end.y).toBeLessThan(target.bottom);
+  expect(Math.abs(points.start.x - source.right)).toBeLessThanOrEqual(1);
+});

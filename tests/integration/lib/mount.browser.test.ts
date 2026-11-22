@@ -16654,6 +16654,68 @@ async function remountMap(
 /** 構成図とシーケンス図の 2 つの map を持つ Markdown（シーケンス図は構成図の上で再生する） */
 const MAP_BOTH = `${mapRange({ args: '{"title": "全体の構成"}', mermaid: MAP_FLOW, data: MAP_DATA })}\n${mapRange({ args: '{"title": "描くまでの流れ"}', mermaid: MAP_SEQUENCE, data: '{"version": 1, "plays_over": 1}' })}`;
 
+/** 左下のノードの右の辺から出て右上のノードの下の辺に入る L 字の線と、つながらないノードの構成図 */
+const MAP_L_SHAPE = mapRange({
+  args: '{"title": "L 字の線"}',
+  mermaid: `flowchart LR
+  a[左下] --> c[右上]
+  x[つながらない]
+`,
+  data: JSON.stringify({
+    version: 1,
+    layout: {
+      a: { pos: { x: 0, y: 200 } },
+      c: { pos: { x: 280, y: 0 } },
+      x: { pos: { x: 520, y: 100 } },
+      "a->c": { ends: { from: { side: "right" }, to: { side: "bottom" } } },
+    },
+  }),
+});
+
+/** 1 つのノードから同じ長さの 3 本の線が出る構成図（色を指定したノードは無い） */
+const MAP_PACKET_VARIETY = mapRange({
+  args: '{"title": "同じ長さの線"}',
+  mermaid: `flowchart LR
+  hub[hub] --> a[A]
+  hub --> b[B]
+  hub --> c[C]
+`,
+});
+
+/** 横の線と縦の線に線より長いラベルを持つ構成図 */
+const MAP_LONG_LABEL = mapRange({
+  args: '{"title": "長いラベル"}',
+  mermaid: `flowchart LR
+  a[入力] -->|設定ファイルと索引を読み込んで検査する| b[点検]
+  b -->|結果| c[出力]
+`,
+});
+
+/** 線より長いラベルを持つブロック図 */
+const MAP_LONG_LABEL_BLOCK = mapRange({
+  args: '{"title": "長いラベルのブロック図"}',
+  mermaid: `block-beta
+  columns 3
+  a["入力"] space b["点検"]
+  a -- "設定ファイルと索引を読み込んで検査する" --> b
+`,
+});
+
+/** ノード 1 つに色を指定し、線 1 本の印の塗り方を ring にした構成図 */
+const MAP_PACKET_SOURCE = mapRange({
+  args: '{"title": "色を持つノード"}',
+  mermaid: `flowchart LR
+  hub[hub] --> a[A]
+  hub --> b[B]
+  a --> c[C]
+  style hub fill:#dbeafe,stroke:#1d4ed8
+`,
+  data: JSON.stringify({
+    version: 1,
+    layout: { "hub->b": { packet: { fill: "ring" } } },
+  }),
+});
+
 /** 要素の矩形の中心 */
 const mapCenter = (element: Element): [number, number] => {
   const box = element.getBoundingClientRect();
@@ -17924,6 +17986,201 @@ test("test_normal_when_map_items_moved", async () => {
   // 実行・検証: 「配置と選択を元に戻す」で自動配置に戻る
   find<HTMLButtonElement>(flow(), '[data-tool="reset"]').click();
   expect(Math.abs(box("route").top - route.top)).toBeLessThanOrEqual(1);
+  // 実行・検証: 拡大して表示する枠をスクロールできるとき、マウスで要素を動かしても表示する枠と文書をスクロールしない
+  for (let i = 0; i < 3; i++) {
+    find<HTMLButtonElement>(flow(), '[data-tool="in"]').click();
+  }
+  const viewport = find<HTMLElement>(flow(), ".mdmark-diagram-viewport");
+  expect(viewport.scrollWidth).toBeGreaterThan(viewport.clientWidth);
+  viewport.scrollLeft = 40;
+  const scrolls = () => [
+    viewport.scrollLeft,
+    viewport.scrollTop,
+    window.scrollY,
+  ];
+  const still = scrolls();
+  const dragged = [
+    find<HTMLElement>(mapNode(flow(), "route"), ".mdmark-diagram-node-kind"),
+    find<HTMLElement>(flow(), '.map-group[data-group="place"] .map-group-head'),
+    find<HTMLElement>(flow(), '.map-group[data-group="place"] .map-group-bar'),
+    find<Element>(flow(), ".map-wire-hit-segment"),
+  ];
+  for (const target of dragged) {
+    pressMap(target, -30, 30);
+    expect(scrolls()).toEqual(still);
+  }
+  // 実行: L 字の線の縦の区間を、右上のノードの右端より右へ動かす
+  const lShape = await mountMap(MAP_L_SHAPE);
+  const lFigure = () => lShape.figures()[0] as HTMLElement;
+  const vertical = [
+    ...lFigure().querySelectorAll(
+      '.map-wire-hit[data-wire="a->c"] .map-wire-hit-segment',
+    ),
+  ].find((band) => {
+    const rect = band.getBoundingClientRect();
+    return rect.height > rect.width;
+  }) as Element;
+  expect(vertical).toBeDefined();
+  const target = mapNode(lFigure(), "c").getBoundingClientRect();
+  const [bandX] = mapCenter(vertical);
+  pressMap(vertical, target.right + 40 - bandX, 0);
+  // 検証: 線の端が右上のノードの右の辺にあり、動かした区間が離した位置のままで、どの区間も水平か垂直
+  const lStage = find<HTMLElement>(lFigure(), ".mdmark-diagram-stage");
+  const scale =
+    lStage.getBoundingClientRect().width / (lStage.offsetWidth || 1);
+  const lPoints = points(
+    find<SVGPathElement>(lFigure(), '.mdmark-diagram-wire[data-wire="a->c"]'),
+  ).map(([x, y]) => [
+    lStage.getBoundingClientRect().left + x * scale,
+    lStage.getBoundingClientRect().top + y * scale,
+  ]);
+  const last = lPoints.at(-1) as number[];
+  const targetAfter = mapNode(lFigure(), "c").getBoundingClientRect();
+  expect(Math.abs((last[0] as number) - targetAfter.right)).toBeLessThanOrEqual(
+    12,
+  );
+  expect(last[1]).toBeGreaterThan(targetAfter.top);
+  expect(last[1]).toBeLessThan(targetAfter.bottom);
+  expect(
+    lPoints.some(([x]) => Math.abs((x as number) - (target.right + 40)) <= 1),
+  ).toBe(true);
+  for (let index = 1; index < lPoints.length; index++) {
+    const [x0, y0] = lPoints[index - 1] as number[];
+    const [x1, y1] = lPoints[index] as number[];
+    expect(x0 === x1 || y0 === y1).toBe(true);
+  }
+});
+
+// map の線の長い文字とデータの印（正常系）
+test("test_normal_when_map_wire_label_and_packets", async () => {
+  // 準備: 設定の map.packets を指定せずに描く
+  const markdown = [
+    MAP_PACKET_VARIETY,
+    MAP_LONG_LABEL,
+    MAP_LONG_LABEL_BLOCK,
+    MAP_PACKET_SOURCE,
+  ].join("\n");
+  const { el, figures } = await mountMap(markdown);
+  await vi.waitFor(() => expect(figures()).toHaveLength(4), {
+    timeout: MAP_WAIT_MS,
+  });
+  const [variety, label, block, source] = figures() as HTMLElement[];
+  // 検証: 線より長いラベルは線の上に置き、線と矢じりに重ならない
+  const beside = find<HTMLElement>(
+    label as HTMLElement,
+    '.mdmark-diagram-label[data-beside][data-wire="a->b"]',
+  ).getBoundingClientRect();
+  const line = find<SVGPathElement>(
+    label as HTMLElement,
+    'path.mdmark-diagram-wire[data-wire="a->b"]',
+  ).getBoundingClientRect();
+  expect(beside.bottom).toBeLessThanOrEqual(line.top);
+  expect(
+    (label as HTMLElement).querySelector(
+      '.mdmark-diagram-label[data-wire="b->c"][data-beside]',
+    ),
+  ).toBeNull();
+  const blockLabel = find<HTMLElement>(
+    block as HTMLElement,
+    ".map-axis-wire-label",
+  );
+  expect(blockLabel.hasAttribute("data-beside")).toBe(true);
+  // 実行: 3 本の線を持つノードを選ぶ
+  const select = (figure: HTMLElement, id: string) =>
+    pressMap(
+      find<HTMLElement>(mapNode(figure, id), ".mdmark-diagram-node-kind"),
+    );
+  select(variety as HTMLElement, "hub");
+  // 検証: 線ごとに形状・色・速さが違い、塗り方が tinted で、印はノードと線のラベルの下
+  const marks = (figure: HTMLElement) =>
+    ["hub->a", "hub->b", "hub->c"].map((wire) => {
+      const packet = figure.querySelector(
+        `.map-packet[data-wire="${wire}"]`,
+      ) as SVGGElement | null;
+      const shape = packet?.querySelector("circle, rect, polygon");
+      return {
+        shape: packet?.getAttribute("data-shape"),
+        fill: packet?.getAttribute("data-fill"),
+        stroke: shape ? getComputedStyle(shape).stroke : "",
+        dur: packet?.querySelector("animateMotion")?.getAttribute("dur"),
+        // 外側の縁を含めた幅（getBBox は縁の太さを含まない）
+        size: packet
+          ? packet.getBBox().width +
+            Math.max(
+              0,
+              ...[...packet.querySelectorAll("circle, rect, polygon")]
+                .filter((item) => getComputedStyle(item).stroke !== "none")
+                .map((item) =>
+                  Number.parseFloat(getComputedStyle(item).strokeWidth),
+                ),
+            )
+          : 0,
+      };
+    });
+  const first = marks(variety as HTMLElement);
+  expect(first.map((mark) => mark.shape)).toEqual([
+    "circle",
+    "square",
+    "diamond",
+  ]);
+  for (const mark of first) expect(mark.fill).toBe("tinted");
+  expect(new Set(first.map((mark) => mark.stroke)).size).toBe(3);
+  const accent = (name: string) =>
+    resolveColorIn(
+      variety as HTMLElement,
+      `var(--mdmark-color-accent-${name}-text)`,
+    );
+  expect(first.map((mark) => mark.stroke)).toEqual([
+    accent("blue"),
+    accent("green"),
+    accent("orange"),
+  ]);
+  const durations = first.map((mark) => Number.parseFloat(mark.dur ?? "0"));
+  expect(new Set(durations).size).toBe(3);
+  const stage = find<HTMLElement>(
+    variety as HTMLElement,
+    ".mdmark-diagram-stage",
+  );
+  const children = [...stage.children];
+  const at = (selector: string) =>
+    children.findIndex((child) => child.matches(selector));
+  expect(at(".mdmark-diagram-node")).toBeGreaterThan(at("svg.map-packets"));
+  // 実行・検証: 色を指定したノードから出る線の印はノードの色、ring を指定した線だけ塗り方が ring
+  select(source as HTMLElement, "hub");
+  const fromHub = [
+    ...(source as HTMLElement).querySelectorAll<SVGGElement>(
+      '.map-packet[data-wire^="hub-"]',
+    ),
+  ];
+  expect(fromHub.length).toBeGreaterThan(0);
+  for (const packet of fromHub) {
+    const shape = packet.querySelector("circle, rect, polygon") as Element;
+    expect(getComputedStyle(shape).stroke).toBe("rgb(29, 78, 216)");
+    expect(packet.getAttribute("data-fill")).toBe(
+      packet.getAttribute("data-wire") === "hub->b" ? "ring" : "tinted",
+    );
+  }
+  // 実行: 設定を変えて mount し直し、同じノードを選ぶ
+  await remountMap(el, markdown, {
+    map: { ...MAP_CONFIG, packets: { fill: "glow", palette: "vivid" } },
+  });
+  await vi.waitFor(() => expect(figures()).toHaveLength(4), {
+    timeout: MAP_WAIT_MS,
+  });
+  // 選んだ状態は保たれるため、印が無いときだけ選ぶ
+  if (!(figures()[0] as HTMLElement).querySelector(".map-packet")) {
+    select(figures()[0] as HTMLElement, "hub");
+  }
+  // 検証: 塗り方が glow、色が色合い vivid の色で、同じ線は同じ 1 周の時間
+  const second = marks(figures()[0] as HTMLElement);
+  for (const mark of second) expect(mark.fill).toBe("glow");
+  expect(second.map((mark) => mark.dur)).toEqual(first.map((mark) => mark.dur));
+  expect(
+    second.map((mark) => mark.stroke).every((stroke) => stroke !== ""),
+  ).toBe(true);
+  for (const [index, mark] of second.entries()) {
+    expect(mark.size).toBeLessThanOrEqual((first[index]?.size ?? 0) + 0.01);
+  }
 });
 
 // map のシーケンス図のブロックを開閉する（正常系）
