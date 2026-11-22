@@ -40,8 +40,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-21T11:21:13.711405+00:00'
   - process: モック作成
-    status: todo
+    status: done
     note: '#778 のドラッグ後の経路の決まりと、#780 No 1 の線の上の文字の設定の一覧・配置を、利用者が OK にするまでモックで確認を重ねる'
+    updated_by: planner
+    updated_at: '2026-11-22T06:23:33.612947+00:00'
   - process: データ設計
     status: todo
     note: '#780 No 1 の文字の設定の見直しで補足（ER-472-2）のキーを変えるときと、プロンプトファイルの kind に hook を加えるときに見直す。変えないと決まったら skipped にする'

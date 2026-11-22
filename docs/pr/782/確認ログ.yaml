@@ -29,3 +29,15 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4652496570
+  - topic: '#780 のデータの印の塗り方'
+    decision: 塗り方 A〜E とランダムをオプションで選べるようにし、既定は C（淡い面と濃い輪郭）にする。外側の輪郭・光を含めた大きさを、どの塗り方も E と同じ小ささに揃える
+    decided_by: reply
+    approver: shuhei1101
+    commit: b38cf52f
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4656926299
+  - topic: '#780 のデータの印の色合い'
+    decision: 既定は今のアクセントの文字の色（案 A）のままにし、色合い A〜E をオプションで選べるようにする
+    decided_by: reply
+    approver: shuhei1101
+    commit: b38cf52f
+    thread: https://github.com/shuhei1101/mdmark/pull/782#discussion_r4656926601
