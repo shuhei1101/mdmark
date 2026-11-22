@@ -31,6 +31,7 @@ functions:
 
       `timeline` は `view-timeline` が留める要素の最も近いスクロールする祖先に従うため、スクロールする場所を求めない。
       値は付けたときと、各表とスクロールする場所の要素の `ResizeObserver`（絞り込み・集計の出し入れ・幅の変化で表や区画の高さが変わったとき）でもう一度求める。
+      `readStickyTop(table)` の値は付けたときと `resize`・`ResizeObserver` の通知のときだけ求めて表ごとに保持し、`scroll` では保持した値を使用する（測るための要素を毎フレーム配置しない）。
       `script` の表が 1 つでもあり得るため、`window` の `scroll`（capture・passive のため、スクロールする場所の要素の `scroll` も受け取る。もう一度求めるのは `requestAnimationFrame` で 1 フレームに 1 回）と `resize` でももう一度求める。
       本文の行が 1 つもない表は留めない
     kind: 関数
