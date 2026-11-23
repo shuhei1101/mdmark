@@ -57,6 +57,16 @@
   text-underline-offset: 4px;
 }
 
+/* 編集できるセルの上にポインターがある・フォーカスがある（案 A） */
+.mock-cell-hover {
+  background: var(--mdmark-color-surface-raised, rgb(0 0 0 / 4%));
+  cursor: text;
+}
+.mock-cell-focus {
+  outline: 2px solid var(--mdmark-color-accent);
+  outline-offset: -2px;
+}
+
 /* 編集中のセル（案 A: 表の部品が入力欄を描く） */
 .mock-cell-editing {
   padding: 4px;

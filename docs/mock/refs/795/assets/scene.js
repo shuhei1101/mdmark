@@ -75,6 +75,14 @@ const scenes = {
     cell.innerHTML =
       '<input class="mock-cell-input" type="text" value="鈴木" aria-label="担当（2 行目）を編集する"><span class="mock-cell-hint">Enter で確定・Esc で取り消す</span>';
   },
+  "edit-a-hover": (root) => {
+    markEditable(root, 2);
+    const bodyRows = root.querySelectorAll(DATA_ROWS);
+    bodyRows[2].children[2].classList.add("mock-cell-hover");
+    const focused = bodyRows[3].children[2];
+    focused.tabIndex = 0;
+    focused.classList.add("mock-cell-focus");
+  },
   "edit-b": (root) => {
     const cell = ownerCell(root);
     cell.classList.add("mock-cell-editing");

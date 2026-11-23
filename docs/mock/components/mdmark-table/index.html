@@ -33,7 +33,7 @@
     <div class="app-slot" data-mock-scene="normal"></div>
 
     <h2>行を押す</h2>
-    <p class="state-note">行全体が押せる。3 行目はポインターを乗せた状態、4 行目はフォーカスした状態（Enter で押したことになる）。並べ替え・ピン止め・絞り込みのボタンを押しても行の押下にはならない</p>
+    <p class="state-note">編集できない列のセルを押すと行の押下になる。3 行目はポインターを乗せた状態、4 行目はフォーカスした状態（行にフォーカスして Enter で行の押下、F2 で行の中の最初の編集できるセルの編集を始める）。並べ替え・ピン止め・絞り込みのボタンを押しても行の押下にはならない</p>
     <div class="app-slot" data-mock-scene="row-press"></div>
 
     <h2>セルを編集する（要件の <code>未確定</code>）</h2>
@@ -41,8 +41,10 @@
     <div class="choice-grid">
       <section>
         <h3>案 A: 表の部品が入力欄を描く（推奨）</h3>
-        <p class="state-note">編集できる列のセルは破線の下線で示す。セルを押すか、フォーカスして Enter・F2 で入力欄になる。Enter で確定するとセルの編集のイベントを通知し、Esc で取り消すと前の値に戻る</p>
+        <p class="state-note">編集できる列のセルは破線の下線で示す。編集できる列のセルを押すと、行の押下は通知せずに入力欄になる。キーボードでは、行にフォーカスして F2 で行の中の最初の編集できるセルが入力欄になる。Enter で確定するとセルの編集のイベントを通知し、Esc で取り消すと前の値に戻る</p>
         <div class="app-slot" data-mock-scene="edit-a"></div>
+        <p class="state-note">編集できるセルの上にポインターがある場面（3 行目の担当）と、フォーカスがある場面（4 行目の担当）</p>
+        <div class="app-slot" data-mock-scene="edit-a-hover"></div>
       </section>
       <section>
         <h3>案 B: アプリがセルの中身の差し替えで入力欄を描く</h3>
@@ -60,7 +62,7 @@
     <div class="app-slot" data-mock-scene="badges"></div>
 
     <h2>データの誤り</h2>
-    <p class="state-note">行のデータに配列でない値を指定したとき、表の場所に誤りの通知を出す。ページのほかの要素は動く</p>
+    <p class="state-note">行のデータに配列でない値を指定したとき、表の場所に誤りの通知を出す。ページのほかの要素は動く。通知のタイトルは文言の論点（既存の「この箇所を表示できません」を使うか、新規に「この表を表示できません」を追加するか）で、本文のプロパティ名（<code>rows</code>）はインターフェース定義設計で決定した名前に後で差し替える</p>
     <div class="app-slot" data-mock-scene="error"></div>
   </main>
   <script type="module" src="../../refs/795/assets/scene.js"></script>
