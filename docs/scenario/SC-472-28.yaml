@@ -204,7 +204,7 @@ primary_actor: mdmark を使用するアプリのページ
 trigger: 利用者が、mdmark を読み込むページをブラウザで開く
 preconditions:
   - 読み込むバージョンのタグ・メジャーバージョンの範囲の最新のタグか develop が指す commit に `dist/` が入っている
-  - ページが `https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグか develop}/dist/index.js` と `index.css` を読み込む記述を持つか、`dist/` の配布ファイルを埋めて持つ
+  - ページが `https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグ・メジャーバージョンの範囲か develop}/dist/index.js` と `index.css` を読み込む記述を持つか、`dist/` の配布ファイルを埋めて持つ
 success_guarantee: ページに CSS が該当し、JavaScript の公開関数が、タグを指定したときはそのタグ、develop を指定したときは develop のビルドのバージョン、メジャーバージョンの範囲（`@0`）を指定したときはその範囲の最新のタグのバージョンを返却する。配布ファイルを埋めたページは、埋めた部品と mermaid のモジュールを外部へ要求せずに読み込み、map・ビュー・コメント・mermaid の図を描く。
 minimal_guarantee: 配布物を読み込めなかったときも、ページの本文はそのまま表示され、読み込めなかったことがブラウザのコンソールに出る。
 test_file: tests/e2e/単一ユースケース/配布物を読み込む.spec.ts
