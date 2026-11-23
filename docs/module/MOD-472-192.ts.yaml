@@ -125,7 +125,7 @@ functions:
         summary: layout が side-by-side なら、行の代わりに左右に並べる差分を描く
         condition: '`layout: "side-by-side"`・`controls: false`。`r2` は `r1` の段落の単語を 1 つ書き換えた本文'
         mock: '`renderMarkdown` は Markdown を段落の HTML にする偽物'
-        expected: '`div.mdmark-diff-side` と `div.mdmark-diff-side-stacked` があり、`mdmark-diff-line` とミニマップの帯が無く、狭い幅の並びの中の `id` が `{場所の id}-stacked-` で始まる'
+        expected: '`div.mdmark-diff-pair` と `div.mdmark-diff-pair-stacked` があり、`mdmark-diff-line` とミニマップの帯が無く、狭い幅の並びの中の `id` が `{場所の id}-stacked-` で始まる'
     callees:
       - 'MOD-472-191#functions[pairSideBySide]'
       - 'MOD-472-372#functions[renderDiffSideBySide]'

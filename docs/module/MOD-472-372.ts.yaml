@@ -9,10 +9,10 @@ functions:
     container: src/diff/diff-side-by-side.part.ts
     summary: 部品設計『左右に並べる差分』の HTML 文字列を返却する。広い幅の 2 列と狭い幅の 1 列の 2 つの並びを描き、CSS がどちらかを隠す
     description: |-
-      広い幅は `div.mdmark-diff-side` の中に `section.mdmark-diff-side-col` を前・後の順に 2 つ配置し、それぞれの先頭に列の見出し（`id` は `{idPrefix}-before`・`{idPrefix}-after`）、続けて `rows` の順に行のセル（`div.mdmark-diff-side-cell`）を並べる。
-      セルの中身は、`same` は `before`・`after` をそのまま、`change` は前の列に `renderDiffBlock({ kind: "del", unit: "block", html: before })`・後の列に `renderDiffBlock({ kind: "add", unit: "block", html: after })`、`add` は前の列に `div.mdmark-diff-side-gap`（`aria-hidden="true"`）・後の列に追加のブロック、`del` は前の列に削除のブロック・後の列に空きにする。
-      列の `section` には `style="--mdmark-diff-side-rows: {行の数 + 1}"` を付け、CSS が subgrid の行の数に使用する。
-      狭い幅は `div.mdmark-diff-side-stacked` の中に `rows` の順に、`same` は `after` を 1 回、`change` は `前: {before.label}` の小さい見出し（`p.mdmark-diff-side-label`）と削除のブロック、`後: {after.label}` の小さい見出しと追加のブロック、`add` は `後:` の見出しと追加のブロック、`del` は `前:` の見出しと削除のブロックを並べる。
+      広い幅は `div.mdmark-diff-pair` の中に `section.mdmark-diff-pair-col` を前・後の順に 2 つ配置し、それぞれの先頭に列の見出し（`id` は `{idPrefix}-before`・`{idPrefix}-after`）、続けて `rows` の順に行のセル（`div.mdmark-diff-pair-cell`）を並べる。
+      セルの中身は、`same` は `before`・`after` をそのまま、`change` は前の列に `renderDiffBlock({ kind: "del", unit: "block", html: before })`・後の列に `renderDiffBlock({ kind: "add", unit: "block", html: after })`、`add` は前の列に `div.mdmark-diff-pair-gap`（`aria-hidden="true"`）・後の列に追加のブロック、`del` は前の列に削除のブロック・後の列に空きにする。
+      列の `section` には `style="--mdmark-diff-pair-rows: {行の数 + 1}"` を付け、CSS が subgrid の行の数に使用する。
+      狭い幅は `div.mdmark-diff-pair-stacked` の中に `rows` の順に、`same` は `after` を 1 回、`change` は `前: {before.label}` の小さい見出し（`p.mdmark-diff-pair-label`）と削除のブロック、`後: {after.label}` の小さい見出しと追加のブロック、`add` は `後:` の見出しと追加のブロック、`del` は `前:` の見出しと削除のブロックを並べる。
       狭い幅の並びの中のブロックの `id` は、`scopeIds` と同じ書き方で `{idPrefix}-stacked-` を頭に付ける（呼ぶ側の `attachDiff` が付ける）。
     kind: 関数
     scope: internal
@@ -36,7 +36,7 @@ functions:
         summary: 狭い幅の 1 列は、変えた行ごとに前の下に後を並べる
         condition: '`test_render_diff_side_by_side` と同じ 4 行'
         mock: なし
-        expected: '`div.mdmark-diff-side-stacked` の子が、変えていないブロック、`前:`・削除の色・`後:`・追加の色、`後:`・追加の色、`前:`・削除の色の順'
+        expected: '`div.mdmark-diff-pair-stacked` の子が、変えていないブロック、`前:`・削除の色・`後:`・追加の色、`後:`・追加の色、`前:`・削除の色の順'
     callees:
       - 'MOD-472-200#functions[renderDiffBlock]'
     refs:

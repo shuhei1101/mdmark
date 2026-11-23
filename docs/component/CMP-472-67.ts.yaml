@@ -55,9 +55,9 @@ refs:
   - IF-472-35#constraints[左右に並べる差分]
 notes:
   補足: |-
-    左右の列は `div.mdmark-diff-side` の grid の 2 列で、列ごとの `section.mdmark-diff-side-col` が親の行を subgrid で受け継ぎ、同じ行のセルの上端を合わせる。列の中のブロックの上下の余白はなくし、セルの余白で行を分ける。
+    左右の列は `div.mdmark-diff-pair` の grid の 2 列で、列ごとの `section.mdmark-diff-pair-col` が親の行を subgrid で受け継ぎ、同じ行のセルの上端を合わせる。列の中のブロックの上下の余白はなくし、セルの余白で行を分ける。
     列の見出しはスクロールする場所の上端から `--mdmark-sticky-top` だけ下に留める。
-    狭い幅の並びは、同じ `rows` から別の `div.mdmark-diff-side-stacked`（`same` の行はブロックを 1 回、変えた行は `前:` の小さい見出しと前のブロック、`後:` の小さい見出しと後のブロックの順）を描き、描く先の要素のコンテナクエリ（48rem）で広い幅の `div.mdmark-diff-side` とどちらかを `display: none` にする。両方の中の要素の `id` は重ならないように振り分ける。
+    狭い幅の並びは、同じ `rows` から別の `div.mdmark-diff-pair-stacked`（`same` の行はブロックを 1 回、変えた行は `前:` の小さい見出しと前のブロック、`後:` の小さい見出しと後のブロックの順）を描き、描く先の要素のコンテナクエリ（48rem）で広い幅の `div.mdmark-diff-pair` とどちらかを `display: none` にする。両方の中の要素の `id` は重ならないように振り分ける。
     モックは `docs/mock/components/diff-side-by-side/`（狭い幅は案 A。確認ログ）
 tags:
   - name: topic:差分
