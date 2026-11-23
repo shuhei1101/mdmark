@@ -1,0 +1,366 @@
+$ npx vitest run --project 'unit*' tests/unit/src/table/mdmark-table.logic.test.ts tests/unit/src/table/mdmark-table.interact.browser.test.ts tests/unit/src/table/mdmark-table.element.browser.test.ts tests/unit/src/elements.browser.test.ts tests/unit/src/table/table.part.test.ts tests/unit/src/shared/notice.part.test.ts tests/unit/src/table/table.interact.browser.test.ts
+# Red: fail は全て実装（src/table/mdmark-table.*.ts・src/elements.ts・renderCellEditor・renderAddRow・captureTableState・restoreTableState・notice の table-data）が無いことによるもの
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element
+
+ ❯ |unit| tests/unit/src/shared/notice.part.test.ts (7 tests | 1 failed) 917ms
+   × test_render_notice_when_table_data 15ms
+ ❯ |unit| tests/unit/src/table/mdmark-table.logic.test.ts (12 tests | 12 failed) 936ms
+   × test_check_table_spec 25ms
+   × test_check_table_spec_when_rows_not_array 743ms
+   × test_check_table_spec_when_title_duplicated 33ms
+   × test_check_table_spec_when_feature_unknown 69ms
+   × test_check_table_spec_when_feature_enabled_invalid 17ms
+   × test_check_table_spec_when_value_invalid 2ms
+   × test_check_table_spec_when_first_column_hidden 5ms
+   × test_check_table_spec_when_row_key_duplicated 8ms
+   × test_to_table_options 6ms
+   × test_to_table_options_when_html 14ms
+   × test_to_table_options_when_feature_removed 9ms
+   × test_cell_text 2ms
+ ❯ |unit| tests/unit/src/table/table.part.test.ts (41 tests | 2 failed) 1230ms
+   × test_render_cell_editor 7ms
+   × test_render_add_row 0ms
+3:11:19 AM [vite] Internal server error: Failed to resolve import "../../../src/elements.ts" from "tests/unit/src/elements.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/elements.browser.test.ts:4:34
+  1  |  import { expect, test } from "vitest";
+  2  |  /** カスタム要素の登録を読み込む（実装が無い間は各テストが個別に失敗する） */
+  3  |  const loadElements = () => import("../../../src/elements.ts");
+     |                                    ^
+  4  |  /** 表のカスタム要素を読み込む */
+  5  |  const loadTableElement = () => import("../../../src/table/mdmark-table.element.ts");
+      at TransformPluginContext._formatLog (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 1)
+      at async TransformPluginContext.transform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:20328:20)
+3:11:19 AM [vite] Internal server error: Failed to resolve import "../../../../src/table/mdmark-table.element.ts" from "tests/unit/src/table/mdmark-table.element.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.element.browser.test.ts:6:9
+  2  |  import { addStyles } from "../../helpers/dom.ts";
+  3  |  /** 表のカスタム要素を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadElement = () => import("../../../../src/table/mdmark-table.element.ts");
+     |                                   ^
+  5  |  const elements = [];
+  6  |  beforeAll(async () => {
+      at TransformPluginContext._formatLog (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:20328:20)
+3:11:19 AM [vite] Internal server error: Failed to resolve import "../../../../src/table/mdmark-table.interact.ts" from "tests/unit/src/table/mdmark-table.interact.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.interact.browser.test.ts:5:30
+  2  |  import { createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+  3  |  /** 表のカスタム要素の行とセルの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  4  |  const loadRows = () => import("../../../../src/table/mdmark-table.interact.ts");
+     |                                ^
+  5  |  /** 表の部品を読み込む */
+  6  |  const loadPart = () => import("../../../../src/table/table.part.ts");
+      at TransformPluginContext._formatLog (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 2)
+      at async TransformPluginContext.transform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/node_modules/vite/dist/node/chunks/node.js:20328:20)
+ ❯ |unit-browser (chromium)| tests/unit/src/table/mdmark-table.element.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/table/mdmark-table.interact.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/elements.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts (83 tests | 3 failed) 2345ms
+   × test_capture_table_state 400ms
+   × test_restore_table_state 148ms
+   × test_restore_table_state_when_column_removed 138ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/elements.browser.test.ts [ tests/unit/src/elements.browser.test.ts ]
+Error: Failed to import test file /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/elements.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63317/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/elements.browser.test.ts?import&browserv=1795457479630
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/21]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/mdmark-table.element.browser.test.ts [ tests/unit/src/table/mdmark-table.element.browser.test.ts ]
+Error: Failed to import test file /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.element.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63317/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.element.browser.test.ts?import&browserv=1795457479632
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/21]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/mdmark-table.interact.browser.test.ts [ tests/unit/src/table/mdmark-table.interact.browser.test.ts ]
+Error: Failed to import test file /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.interact.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63317/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.interact.browser.test.ts?import&browserv=1795457479634
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/21]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 18 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/shared/notice.part.test.ts > test_render_notice_when_table_data
+AssertionError: expected '<div class="mdmark-notice" role="stat…' to contain '<strong class="mdmark-notice-title">こ…'
+
+Expected: "<strong class="mdmark-notice-title">この表を表示できません</strong>"
+Received: "<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">この図を表示できません</strong><p>表示に使用するundefined（<code>rows</code>）を読み込めませんでした。ネットワークにつながっているかを確認して、ページを再読み込みしてください。</p></div>"
+
+ ❯ tests/unit/src/shared/notice.part.test.ts:98:16
+     96|   });
+     97|   // 検証
+     98|   expect(html).toContain(
+       |                ^
+     99|     '<strong class="mdmark-notice-title">この表を表示できません</strong>',
+    100|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_check_table_spec
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:29:30
+     27| test("test_check_table_spec", async () => {
+     28|   // 準備
+     29|   const { checkTableSpec } = await loadLogic();
+       |                              ^
+     30|   // 実行
+     31|   const issue = checkTableSpec({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_check_table_spec_when_rows_not_array
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:43:30
+     41| test("test_check_table_spec_when_rows_not_array", async () => {
+     42|   // 準備
+     43|   const { checkTableSpec } = await loadLogic();
+       |                              ^
+     44|   // 実行
+     45|   const issue = checkTableSpec({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_check_table_spec_when_title_duplicated
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:57:30
+     55| test("test_check_table_spec_when_title_duplicated", async () => {
+     56|   // 準備
+     57|   const { checkTableSpec } = await loadLogic();
+       |                              ^
+     58|   const duplicated = [
+     59|     { key: "a", title: "担当" },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_check_table_spec_when_feature_unknown
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:75:30
+     73| test("test_check_table_spec_when_feature_unknown", async () => {
+     74|   // 準備
+     75|   const { checkTableSpec } = await loadLogic();
+       |                              ^
+     76|   // 実行
+     77|   const issue = checkTableSpec({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_check_table_spec_when_feature_enabled_invalid
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:89:30
+     87| test("test_check_table_spec_when_feature_enabled_invalid", async () =>…
+     88|   // 準備
+     89|   const { checkTableSpec } = await loadLogic();
+       |                              ^
+     90|   // 実行
+     91|   const issue = checkTableSpec({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_check_table_spec_when_value_invalid
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:103:30
+    101| test("test_check_table_spec_when_value_invalid", async () => {
+    102|   // 準備
+    103|   const { checkTableSpec } = await loadLogic();
+       |                              ^
+    104|   const withObject = rows();
+    105|   withObject[0] = {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_check_table_spec_when_first_column_hidden
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:133:30
+    131| test("test_check_table_spec_when_first_column_hidden", async () => {
+    132|   // 準備
+    133|   const { checkTableSpec } = await loadLogic();
+       |                              ^
+    134|   const hidden = columns();
+    135|   hidden[0] = { ...hidden[0], hidden: true } as (typeof hidden)[0];
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_check_table_spec_when_row_key_duplicated
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:149:30
+    147| test("test_check_table_spec_when_row_key_duplicated", async () => {
+    148|   // 準備
+    149|   const { checkTableSpec } = await loadLogic();
+       |                              ^
+    150|   const duplicated = rows();
+    151|   duplicated[1] = { ...duplicated[1], key: "R1" };
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_to_table_options
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:165:30
+    163| test("test_to_table_options", async () => {
+    164|   // 準備
+    165|   const { toTableOptions } = await loadLogic();
+       |                              ^
+    166|   const spec = {
+    167|     columns: [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_to_table_options_when_html
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:205:30
+    203| test("test_to_table_options_when_html", async () => {
+    204|   // 準備
+    205|   const { toTableOptions } = await loadLogic();
+       |                              ^
+    206|   const spec = {
+    207|     columns: [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_to_table_options_when_feature_removed
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:234:30
+    232| test("test_to_table_options_when_feature_removed", async () => {
+    233|   // 準備
+    234|   const { toTableOptions } = await loadLogic();
+       |                              ^
+    235|   // 実行
+    236|   const options = toTableOptions({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/mdmark-table.logic.test.ts > test_cell_text
+Error: Cannot find module '/src/table/mdmark-table.logic.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-table-mdmark-table-element/tests/unit/src/table/mdmark-table.logic.test.ts
+ ❯ tests/unit/src/table/mdmark-table.logic.test.ts:248:24
+    246| test("test_cell_text", async () => {
+    247|   // 準備
+    248|   const { cellText } = await loadLogic();
+       |                        ^
+    249|   // 実行
+    250|   const texts = [cellText("佐藤"), cellText(12.5), cellText(null), cellT…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_cell_editor
+TypeError: renderCellEditor is not a function
+ ❯ tests/unit/src/table/table.part.test.ts:1200:16
+    1198|   const { renderCellEditor } = await loadTable();
+    1199|   // 実行
+    1200|   const html = renderCellEditor({
+       |                ^
+    1201|     value: "<b>鈴木",
+    1202|     label: "担当（2 行目）を編集する",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/21]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_add_row
+TypeError: renderAddRow is not a function
+ ❯ tests/unit/src/table/table.part.test.ts:1217:16
+    1215|   const { renderAddRow } = await loadTable();
+    1216|   // 実行
+    1217|   const html = renderAddRow();
+       |                ^
+    1218|   // 検証
+    1219|   expect(html).toContain('class="mdmark-table-add-button"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/21]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_capture_table_state
+TypeError: captureTableState is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_capture_table_state.png
+
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2933:17
+    2931|   operateKeyedTable(root);
+    2932|   // 実行
+    2933|   const state = captureTableState(wrapper);
+       |                 ^
+    2934|   // 検証
+    2935|   expect(state.sort).toEqual({ key: "updated", direction: "descending"…
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/21]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_restore_table_state
+TypeError: captureTableState is not a function
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_restore_table_state.png
+
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2947:17
+    2945|   const first = await keyedTable(keyedColumns);
+    2946|   operateKeyedTable(first.root);
+    2947|   const state = captureTableState(first.wrapper);
+       |                 ^
+    2948|   const second = await keyedTable(keyedColumns);
+    2949|   // 実行
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/21]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_restore_table_state_when_column_removed
+AssertionError: expected [Function call] to not throw an error but 'TypeError: restoreTableState is not a…' was thrown
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_restore_table_state_when_column_removed.png
+
+- Expected:
+undefined
+
++ Received:
+"TypeError: restoreTableState is not a function"
+
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=c90d627c:2772:114
+ ❯ Proxy.<anonymous> node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/index.uwTEEBsB-Cm3Wu9lp.js?v=c90d627c:2435:14
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2982:20
+    2980|     });
+    2981|   // 検証
+    2982|   expect(call).not.toThrow();
+       |                    ^
+    2983|   expect(bodyRows(root).map((row) => row.children[0]?.textContent)).to…
+    2984| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=c90d627c:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/21]⎯
+
+
+ Test Files  7 failed (7)
+      Tests  18 failed | 125 passed (143)
+   Start at  03:11:16
+   Duration  6.08s (tests 47%, worker 36%, transform 12%, import 5%)
+
