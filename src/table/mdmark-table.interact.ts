@@ -76,9 +76,13 @@ const keepFocusRow = (wrapper: HTMLElement): void => {
   }
 };
 
-/** セルの列の位置（行の子の順番） */
-const columnOf = (cell: HTMLTableCellElement): number =>
+/** セルの今の並びの位置（行の子の順番） */
+const positionOf = (cell: HTMLTableCellElement): number =>
   [...(cell.parentElement?.children ?? [])].indexOf(cell);
+
+/** セルの記載した順の列の位置（列を並べ替えた後も `data-col` で引く。無ければ今の並びの位置） */
+const columnOf = (cell: HTMLTableCellElement): number =>
+  cell.dataset.col === undefined ? positionOf(cell) : Number(cell.dataset.col);
 
 /** 最下段の見出しの列のキーと列名 */
 const headOf = (
@@ -128,7 +132,7 @@ export const attachTableRows = (
     } else {
       const accepted = handlers.onCellEdit({
         key,
-        column: headOf(wrapper, current.column).key,
+        column: headOf(wrapper, positionOf(current.cell)).key,
         oldValue,
         value,
       });
@@ -165,7 +169,7 @@ export const attachTableRows = (
     cell.innerHTML = renderCellEditor({
       value: cellText(handlers.valueOf(key, column)),
       label: cellEditorLabel(
-        headOf(wrapper, column).label,
+        headOf(wrapper, positionOf(cell)).label,
         rows.indexOf(row) + 1,
       ),
       hintId: `mdmark-cell-hint-${key}-${column}`,
