@@ -1840,3 +1840,200 @@ export function attachTables(
     }
   };
 }
+
+/** 表の操作の状態（列を列のキーで指す） */
+export type TableState = {
+  /** 並べ替えた列と向き */
+  sort: { key: string; direction: "ascending" | "descending" } | undefined;
+  /** 適用している絞り込み */
+  filters: Array<{ key: string; value: Omit<FilterValue, "column"> }>;
+  /** 隠している列 */
+  hidden: string[];
+  /** 今の列の順 */
+  order: string[];
+  /** つまみで変えた列の幅（px） */
+  widths: Array<{ key: string; width: number }>;
+  /** ピン止めのボタンが押された列 */
+  pinned: string[];
+};
+
+/** 最下段の見出しのセル（今の並び） */
+const keyedHeads = (wrapper: HTMLElement): HTMLTableCellElement[] => [
+  ...wrapper.querySelectorAll<HTMLTableCellElement>("thead tr:last-child th"),
+];
+
+/** 記載した順の列の位置ごとの列のキー（列の並べ替えのパネルがあれば、その並びから引く） */
+const keysByOriginal = (wrapper: HTMLElement): string[] => {
+  const heads = keyedHeads(wrapper);
+  const items = [
+    ...wrapper.querySelectorAll<HTMLElement>(".mdmark-table-settings-item"),
+  ];
+  if (items.length !== heads.length) {
+    return heads.map((head) => head.dataset.columnKey ?? "");
+  }
+  const keys: string[] = [];
+  for (const [position, item] of items.entries()) {
+    keys[Number(item.dataset.column)] = heads[position]?.dataset.columnKey ?? "";
+  }
+  return keys;
+};
+
+/** 絞り込みのドロワーに入れた値（絞り込んでいなければ `undefined`） */
+const drawerValue = (
+  drawer: HTMLElement,
+): Omit<FilterValue, "column"> | undefined => {
+  const kind = drawer.dataset.filterKind;
+  if (kind === "select") {
+    const values = [
+      ...drawer.querySelectorAll<HTMLInputElement>("input[type=checkbox]"),
+    ]
+      .filter((input) => input.checked)
+      .map((input) => input.value);
+    return values.length > 0 ? { values } : undefined;
+  }
+  if (kind === "text") {
+    const text = drawer.querySelector<HTMLInputElement>("input[type=text]")?.value ?? "";
+    return text === "" ? undefined : { text };
+  }
+  const [from, to] = [
+    ...drawer.querySelectorAll<HTMLInputElement>("input[type=date]"),
+  ].map((input) => input.value);
+  return from || to ? { from: from ?? "", to: to ?? "" } : undefined;
+};
+
+/** `attachTables` を付けた表から、並べ替え・絞り込み・列の表示と順・列の幅・ピン止めを記録する */
+export function captureTableState(wrapper: HTMLElement): TableState {
+  const heads = keyedHeads(wrapper).filter((head) => head.dataset.columnKey);
+  const sorted = heads.find((head) => head.hasAttribute("aria-sort"));
+  const direction = sorted?.getAttribute("aria-sort");
+  const original = keysByOriginal(wrapper);
+  const filters = [
+    ...wrapper.querySelectorAll<HTMLElement>(".mdmark-filter-drawer[data-column]"),
+  ].flatMap((drawer) => {
+    const key = original[Number(drawer.dataset.column)];
+    const value = drawerValue(drawer);
+    return key && value ? [{ key, value }] : [];
+  });
+  return {
+    sort:
+      sorted?.dataset.columnKey &&
+      (direction === "ascending" || direction === "descending")
+        ? { key: sorted.dataset.columnKey, direction }
+        : undefined,
+    filters,
+    hidden: heads.filter((head) => head.hidden).map((head) => head.dataset.columnKey ?? ""),
+    order: heads.map((head) => head.dataset.columnKey ?? ""),
+    widths: heads
+      .filter((head) => head.classList.contains("is-resized"))
+      .map((head) => ({ key: head.dataset.columnKey ?? "", width: head.offsetWidth })),
+    pinned: heads
+      .filter((head) => head.querySelector(".mdmark-pin")?.getAttribute("aria-pressed") === "true")
+      .map((head) => head.dataset.columnKey ?? ""),
+  };
+}
+
+/** キーを押す */
+const pressKey = (target: Element, key: string): void => {
+  target.dispatchEvent(
+    new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }),
+  );
+};
+
+/** 列のキーの見出しのセル（今の並び） */
+const headOfKey = (wrapper: HTMLElement, key: string): HTMLTableCellElement | undefined =>
+  keyedHeads(wrapper).find((head) => head.dataset.columnKey === key);
+
+/** 記録した列の順に、列の並べ替えのつまみの ↑ キーで並べ直す */
+const restoreOrder = (wrapper: HTMLElement, state: TableState, original: string[]): void => {
+  const wanted = state.order.filter((key) => original.includes(key));
+  for (const [position, key] of wanted.entries()) {
+    const grip = wrapper.querySelector<HTMLElement>(
+      `.mdmark-table-settings-item[data-column="${original.indexOf(key)}"] .mdmark-table-settings-grip`,
+    );
+    for (let tries = 0; grip && tries < original.length; tries += 1) {
+      const current = keyedHeads(wrapper).findIndex((head) => head.dataset.columnKey === key);
+      if (current <= position) {
+        break;
+      }
+      pressKey(grip, "ArrowUp");
+    }
+  }
+};
+
+/** 記録した絞り込みをドロワーの入力欄に入れて適用する */
+const restoreFilters = (wrapper: HTMLElement, state: TableState, original: string[]): void => {
+  for (const { key, value } of state.filters) {
+    const drawer = wrapper.querySelector<HTMLElement>(
+      `.mdmark-filter-drawer[data-column="${original.indexOf(key)}"]`,
+    );
+    if (!drawer || original.indexOf(key) < 0) {
+      continue;
+    }
+    for (const input of drawer.querySelectorAll<HTMLInputElement>("input[type=checkbox]")) {
+      if ((value.values ?? []).includes(input.value) !== input.checked) {
+        input.click();
+      }
+    }
+    const fields: Array<[string, string | undefined]> = [
+      ["input[type=text]", value.text],
+      ["input[type=date]:first-of-type", value.from],
+    ];
+    const dates = drawer.querySelectorAll<HTMLInputElement>("input[type=date]");
+    for (const [selector, text] of fields) {
+      const input = drawer.querySelector<HTMLInputElement>(selector);
+      if (input && text !== undefined) {
+        input.value = text;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    }
+    if (dates[1] && value.to !== undefined) {
+      dates[1].value = value.to;
+      dates[1].dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+};
+
+/** 記録した列の幅に、列の幅のつまみの ←・→ キーで近づける */
+const restoreWidths = (wrapper: HTMLElement, state: TableState): void => {
+  for (const { key, width } of state.widths) {
+    const head = headOfKey(wrapper, key);
+    const handle = head?.querySelector<HTMLElement>(".mdmark-col-resize");
+    for (let tries = 0; head && handle && tries < 200; tries += 1) {
+      const difference = width - head.offsetWidth;
+      if (Math.abs(difference) < 8) {
+        break;
+      }
+      pressKey(handle, difference > 0 ? "ArrowRight" : "ArrowLeft");
+    }
+  }
+};
+
+/** `attachTables` を付けた直後の表に、記録した状態のうち今の表にある列の状態を、利用者の操作と同じ処理で適用する */
+export function restoreTableState(wrapper: HTMLElement, state: TableState): void {
+  const original = keysByOriginal(wrapper);
+  restoreOrder(wrapper, state, original);
+  for (const key of state.hidden) {
+    const eye = wrapper.querySelector<HTMLButtonElement>(
+      `.mdmark-table-settings-item[data-column="${original.indexOf(key)}"] .mdmark-table-settings-eye`,
+    );
+    if (original.includes(key) && eye?.getAttribute("aria-pressed") === "false") {
+      eye.click();
+    }
+  }
+  restoreWidths(wrapper, state);
+  for (const key of state.pinned) {
+    const pin = headOfKey(wrapper, key)?.querySelector<HTMLButtonElement>(".mdmark-pin");
+    if (pin && pin.getAttribute("aria-pressed") !== "true") {
+      pin.click();
+    }
+  }
+  restoreFilters(wrapper, state, original);
+  const sortHead = state.sort ? headOfKey(wrapper, state.sort.key) : undefined;
+  const sortButton = sortHead?.querySelector<HTMLButtonElement>(".mdmark-sort");
+  for (let tries = 0; sortHead && sortButton && tries < 3; tries += 1) {
+    if (sortHead.getAttribute("aria-sort") === state.sort?.direction) {
+      break;
+    }
+    sortButton.click();
+  }
+}

@@ -186,6 +186,20 @@ export type TableOptions = {
   rawCsv?: string | undefined;
   /** 元の CSV を出しているか（既定 `false`） */
   rawShown?: boolean;
+  /** 列ごとの列のキー（最下段の `th` の `data-column-key`） */
+  columnKeys?: string[];
+  /** 本文の行ごとの行のキー（`tr` の `data-key`） */
+  rowKeys?: string[];
+  /** 行を押せる表か（行に `mdmark-row-pressable` と `tabindex` を付ける） */
+  pressable?: boolean;
+  /** `tabindex="0"` にする本文の行の位置（既定は先頭の行） */
+  focusRow?: number;
+  /** 編集できる列の位置 */
+  editable?: number[];
+  /** 編集しているセル（ストーリーで使用する） */
+  editing?: { row: number; column: number; value: string };
+  /** 表の下の左端に `行追加` のボタンを配置するか */
+  addRow?: boolean;
 };
 
 /** CSV の表の RAW のボタンを右端に配置する帯の HTML を返却する */
@@ -997,6 +1011,32 @@ export function renderCheckCell(value: "true" | "false"): string {
     : '<span class="mdmark-visually-hidden">いいえ</span>';
 }
 
+/** 編集中のセルの案内 */
+export const CELL_EDITOR_HINT = "Enter で確定・Esc で取り消す";
+
+/** 編集中のセルの中身（入力欄と案内）の HTML を返却する */
+export function renderCellEditor(options: {
+  /** 入力欄の文字 */
+  value: string;
+  /** 入力欄のスクリーンリーダー向けの名前 */
+  label: string;
+  /** 案内の `id` */
+  hintId: string;
+}): string {
+  const hintId = escapeHtml(options.hintId);
+  return `<input class="mdmark-cell-input" type="text" value="${escapeHtml(options.value)}" aria-label="${escapeHtml(options.label)}" aria-describedby="${hintId}"><span class="mdmark-cell-hint" id="${hintId}">${CELL_EDITOR_HINT}</span>`;
+}
+
+/** 表の下の左端に配置する `行追加` のボタンの HTML を返却する */
+export function renderAddRow(): string {
+  return `<div class="mdmark-table-add"><button class="mdmark-table-add-button" type="button">${iconSvg("plus")}行追加</button></div>`;
+}
+
+/** 編集中のセルの入力欄の名前（`{列名}（{行の番号} 行目）を編集する`） */
+export function cellEditorLabel(column: string, rowNumber: number): string {
+  return `${column}（${rowNumber} 行目）を編集する`;
+}
+
 /** セルの文字が真偽値か */
 export function isCheckValue(text: string): text is "true" | "false" {
   return text === "true" || text === "false";
@@ -1084,7 +1124,7 @@ function renderTableBody(options: TableOptions, id: string): string {
     ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback })
     : "";
   const tableHtml = `<table tabindex="0" aria-label="表"${autoWidthAttribute(context.autoWidthOf)}><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
-  return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${menus}${drawers.join("")}`;
+  return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${options.addRow ? renderAddRow() : ""}${menus}${drawers.join("")}`;
 }
 
 /** 列と行から表の HTML を作るときに繰り返し引く値を返却する */
@@ -1145,6 +1185,51 @@ function columnStateOf(options: TableOptions): ColumnState {
       (options.autoWidths ?? []).map((item) => [item.column, item.width]),
     ),
   };
+}
+
+/** 最下段の見出しのセルの列のキーの属性（列のキーが無ければ空） */
+function columnKeyAttribute(options: TableOptions, column: number): string {
+  const key = options.columnKeys?.[column];
+  return key === undefined ? "" : ` data-column-key="${escapeHtml(key)}"`;
+}
+
+/** 本文の行の行のキー・押せる行の属性（行のキーが無ければ空） */
+function rowKeyAttributes(options: TableOptions, rowIndex: number): string {
+  const key = options.rowKeys?.[rowIndex];
+  if (key === undefined) {
+    return "";
+  }
+  const pressable = options.pressable
+    ? ` class="mdmark-row-pressable" tabindex="${rowIndex === (options.focusRow ?? 0) ? 0 : -1}"`
+    : "";
+  return ` data-key="${escapeHtml(key)}"${pressable}`;
+}
+
+/** 編集できる列のセルのクラス */
+function editableClasses(
+  options: TableOptions,
+  column: number,
+  editing: boolean,
+): string[] {
+  if (!(options.editable ?? []).includes(column)) {
+    return [];
+  }
+  return editing
+    ? ["mdmark-cell-editable", "mdmark-cell-editing"]
+    : ["mdmark-cell-editable"];
+}
+
+/** 編集しているセルなら入力欄の文字（編集していなければ `undefined`） */
+function editingValue(
+  context: BodyContext,
+  cell: { index: number; rowIndex?: number },
+): string | undefined {
+  const editing = context.options.editing;
+  return editing &&
+    editing.row === cell.rowIndex &&
+    editing.column === cell.index
+    ? editing.value
+    : undefined;
 }
 
 /** 列が留まっているか（選んだ列のうち、留めない列を除く） */
@@ -1222,7 +1307,7 @@ function renderHeadCell(
         )
       : header;
   return {
-    html: `<th${cellClass(context, index)}${headWidthStyle(context, index)}${sorted}${hiddenAttribute(context, index)}>${resizedHeader}</th>`,
+    html: `<th${cellClass(context, index)}${columnKeyAttribute(options, index)}${headWidthStyle(context, index)}${sorted}${hiddenAttribute(context, index)}>${resizedHeader}</th>`,
     drawer: tools.drawer,
   };
 }
@@ -1351,7 +1436,9 @@ function renderBodyRow(
   const link = rowLinkOf(context, rowIndex);
   const spans = spanOf.get(rowIndex);
   const cells = row
-    .map((text, index) => renderBodyCell(context, { text, index, link, spans }))
+    .map((text, index) =>
+      renderBodyCell(context, { text, index, link, spans, rowIndex }),
+    )
     .join("");
   const hidden = rowMatches(context, row) ? "" : " hidden";
   return `<tr${rowAttributes(context, { rowIndex, link })}${hidden}>${cells}</tr>`;
@@ -1367,7 +1454,7 @@ function rowAttributes(
   const target = targeted ? " data-target" : "";
   const rowColor = context.options.rowColors?.[row.rowIndex];
   const colorAttribute = rowColor ? ` data-color="${rowColor}"` : "";
-  return `${idAttribute}${target}${colorAttribute}`;
+  return `${idAttribute}${target}${colorAttribute}${rowKeyAttributes(context.options, row.rowIndex)}`;
 }
 
 /** 本文のセル 1 つの HTML を返却する */
@@ -1378,12 +1465,30 @@ function renderBodyCell(
     index: number;
     link: RowLink;
     spans: number[] | undefined;
+    rowIndex?: number;
   },
 ): string {
   const { index } = cell;
-  const { content, valueAttribute } = bodyCellContent(context, cell);
+  const editing = editingValue(context, cell);
+  const { content, valueAttribute } =
+    editing === undefined
+      ? bodyCellContent(context, cell)
+      : {
+          content: renderCellEditor({
+            value: editing,
+            label: cellEditorLabel(
+              context.labels[index] ?? "",
+              (context.options.editing?.row ?? 0) + 1,
+            ),
+            hintId: `${context.id}-cell-hint`,
+          }),
+          valueAttribute: "",
+        };
   const { spanAttribute, mergedHidden } = mergeAttributes(context, cell);
-  const classes = cellClass(context, index, spanAttribute ? ["is-merged"] : []);
+  const classes = cellClass(context, index, [
+    ...(spanAttribute ? ["is-merged"] : []),
+    ...editableClasses(context.options, index, editing !== undefined),
+  ]);
   const tag = index < context.rowHeader ? "th" : "td";
   const scope = tag === "th" ? ' scope="row"' : "";
   return `<${tag}${scope}${classes}${spanAttribute}${valueAttribute} data-label="${escapeHtml(context.labels[index] ?? "")}"${hiddenAttribute(context, index)}${mergedHidden}>${content}</${tag}>`;
@@ -1927,7 +2032,7 @@ function columnAttributes(options: TableOptions): string {
 function tableContent(options: TableOptions): string {
   return options.body === undefined
     ? renderTableBody(options, options.id ?? "mdmark-table")
-    : `<div class="mdmark-table-scroll">${options.body}</div>`;
+    : `<div class="mdmark-table-scroll">${options.body}</div>${options.addRow ? renderAddRow() : ""}`;
 }
 
 /** 表を畳むときは、表の中身を `details` で包む */
@@ -1967,4 +2072,30 @@ function hideTableOf(inner: string): string {
         '<div class="mdmark-table-scroll" hidden>',
       )
     : inner.replace(/^<table(?=[\s>])/, "<table hidden");
+}
+
+/** 列の見出しと行のセルの HTML から、記法の表と同じ構造の操作を付ける前の表の HTML を返却する（`<mdmark-table>` が `renderTable` の `body` に指定する） */
+export function renderPlainTable(options: TableOptions): string {
+  const columns = options.columns ?? [];
+  const labels = columns.map(plainText);
+  const head = columns
+    .map(
+      (column, index) =>
+        `<th${columnKeyAttribute(options, index)}>${column}</th>`,
+    )
+    .join("");
+  const body = (options.rows ?? [])
+    .map((row, rowIndex) => {
+      const cells = row
+        .map((cell, index) => {
+          const classes = editableClasses(options, index, false);
+          const classAttribute =
+            classes.length > 0 ? ` class="${classes.join(" ")}"` : "";
+          return `<td${classAttribute} data-label="${escapeHtml(labels[index] ?? "")}">${cell}</td>`;
+        })
+        .join("");
+      return `<tr${rowKeyAttributes(options, rowIndex)}>${cells}</tr>`;
+    })
+    .join("");
+  return `<table tabindex="0" aria-label="表"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>`;
 }

@@ -303,6 +303,12 @@ files:
     related:
       - to: MOD-472-169
         type: implements
+  - path: elements.ts
+    description: モジュール構成『ライブラリ本体 / 公開の入口』のうち「配布物が登録するカスタム要素の一覧と登録」を受け持つ。部品のカスタム要素を追加するときに参照する。
+    tags: [topic:api, topic:エントリポイント, topic:部品]
+    related:
+      - to: MOD-793-4
+        type: implements
   - path: inline-icons.ts
     description: モジュール構成『ライブラリ本体 / 描く』のうち「まとめていない名前のアイコンを jsDelivr から読み込む loadInlineIcons」を受け持つ。mount の描く流れやアイコンの読み込みを変えるときに参照する。
     tags: [topic:dom, topic:アイコン]
@@ -340,6 +346,24 @@ files:
     tags: [topic:dom, topic:イベント, topic:表]
     related:
       - to: MOD-472-243
+        type: implements
+  - path: table/mdmark-table.logic.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「表のカスタム要素の指定の確認と表の部品の引数への変換」を受け持つ。`<mdmark-table>` が受け付ける指定を変えるときに参照する。
+    tags: [topic:表, topic:api]
+    related:
+      - to: MOD-793-1
+        type: implements
+  - path: table/mdmark-table.interact.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「表のカスタム要素の行の押下・行のフォーカス・セルの編集・行の追加・セルの中身の差し替え」を受け持つ。`<mdmark-table>` の行とセルの操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:表]
+    related:
+      - to: MOD-793-2
+        type: implements
+  - path: table/mdmark-table.element.ts
+    description: モジュール構成『ライブラリ本体 / 表』のうち「カスタム要素 `<mdmark-table>` のプロパティ・描画・描き直し・イベントの送信・登録」を受け持つ。`<mdmark-table>` の振る舞いを変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:表, topic:api]
+    related:
+      - to: MOD-793-3
         type: implements
   - path: diagram/diagram-resize.interact.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「表示する枠の高さを変えるリサイズハンドルと高さの保持」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
