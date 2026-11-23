@@ -23,3 +23,9 @@ confirmations:
     approver: shuhei1101
     commit: 61d42218
     thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4667023235
+  - topic: '#793 の表のカスタム要素に、アプリが指定するデータの構造'
+    decision: データの設計書（DATA-793-1）の構造で進める。列の定義・行のデータ（値は文字列・数値・null）・表の機能（sort・pin・filter・resize・count・columns・reorder・add）（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: f5f6005a
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4667328097
