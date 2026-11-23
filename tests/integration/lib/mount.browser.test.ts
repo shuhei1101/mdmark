@@ -4111,7 +4111,7 @@ test("test_normal_when_diagram_tooltip", async () => {
     () => find<HTMLElement>(el, 'figure.mdmark-diagram[data-diagram="map"]'),
     { timeout: MAP_WAIT_MS },
   );
-  // 説明を持つ線にポインターを乗せ、ツールチップの上へ動かしても出したままにする
+  // 説明とラベルを持つ線は、押せる帯の上では出さず、ラベルにポインターを乗せると出し、ツールチップの上へ動かしても出したままにする
   const wireLabel = find<HTMLElement>(
     figure,
     '.mdmark-diagram-label.has-tip[data-wire="user->classify"]',
@@ -4123,6 +4123,8 @@ test("test_normal_when_diagram_tooltip", async () => {
   hit.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
   hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
   const wireTip = tipOf(wireLabel);
+  expect(wireTip.hidden).toBe(true);
+  await userEvent.hover(wireLabel);
   expect(wireTip.hidden).toBe(false);
   expect(wireTip.textContent).toContain("件名・本文・送信者のアドレス");
   await userEvent.hover(wireTip);
@@ -5416,6 +5418,196 @@ test("test_normal_when_diff_opened_on_mount", async () => {
   expect(
     find(el, "aside.mdmark-side-toc").hasAttribute(DIFF_HIDDEN_ATTRIBUTE),
   ).toBe(false);
+});
+
+// `diffControls: false` で、「変更表示」と選ぶ欄を配置せず、描いた時点で一番新しい 2 つのリビジョンの差分を出す（正常系（ボタンと欄を出さずに差分を出す））
+test("test_normal_when_diff_controls_hidden", async () => {
+  // 準備
+  const source = createDiffSource();
+  const el = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: "# ガイド\n\n本文の段落。\n",
+    docId: "guide",
+    diffSource: source,
+    diffControls: false,
+  });
+  await waitForDiffLines(el);
+  // 検証
+  expect(el.querySelector(".mdmark-diff-toggle")).toBeNull();
+  expect(el.querySelector(".mdmark-diff select")).toBeNull();
+  expect(source.revisionsCalls).toEqual(["guide"]);
+  expect(source.contentCalls).toHaveLength(2);
+  expect(source.contentCalls).toContainEqual({
+    docId: "guide",
+    revisionId: "r2",
+  });
+  expect(source.contentCalls).toContainEqual({
+    docId: "guide",
+    revisionId: "r3",
+  });
+  expect(find(el, "h1").hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(false);
+  expect(diffSectionBody(el).hasAttribute(DIFF_HIDDEN_ATTRIBUTE)).toBe(true);
+  expect(
+    find(el, "aside.mdmark-side-toc").hasAttribute(DIFF_HIDDEN_ATTRIBUTE),
+  ).toBe(true);
+  // 実行・検証: 真偽値でない値は、指定しないときと同じくボタンを配置する
+  const other = createElement();
+  const otherSource = createDiffSource();
+  await mountTracked(other, {
+    markdown: "# ガイド\n\n本文の段落。\n",
+    docId: "guide",
+    diffSource: otherSource,
+    diffControls: "no" as unknown as boolean,
+  });
+  expect(diffToggle(other).getAttribute("aria-expanded")).toBe("false");
+  expect(otherSource.revisionsCalls).toEqual([]);
+});
+
+// 左右に並べる差分を試すリビジョンの本文。`r1` から `r2` で、段落の単語を 1 つ書き換え、表の後に段落を 1 つ追加し、別の段落を 1 つ削除する。見出しと表は変えない
+const SIDE_BEFORE = [
+  "# ガイド",
+  "",
+  "## 手順",
+  "",
+  "配布物を読み込んでから文書を描きます。",
+  "",
+  "古い設定の説明を残します。",
+  "",
+  "| 名前 | 値 |",
+  "| --- | --- |",
+  "| 行一 | 1 |",
+  "",
+].join("\n");
+const SIDE_AFTER = [
+  "# ガイド",
+  "",
+  "## 手順",
+  "",
+  "配布物を読み込んでから差分を描きます。",
+  "",
+  "| 名前 | 値 |",
+  "| --- | --- |",
+  "| 行一 | 1 |",
+  "",
+  "新しい段落を足しました。",
+  "",
+].join("\n");
+
+/** 左右に並べる差分を描き、差分の場所を返却する */
+async function mountSideBySide(width: number): Promise<HTMLElement> {
+  const el = createElement();
+  el.style.width = `${width}px`;
+  await mountTracked(el, {
+    markdown: SIDE_AFTER,
+    docId: "guide",
+    diffSource: createBlocksSource({ r1: SIDE_BEFORE, r2: SIDE_AFTER }),
+    diffMode: "side-by-side",
+    diffControls: false,
+  });
+  await vi.waitFor(() => {
+    expect(el.querySelector(".mdmark-diff-pair")).not.toBeNull();
+  });
+  return find<HTMLElement>(el, ".mdmark-diff");
+}
+
+/** 列の中で、文字を含むセル */
+function pairCell(column: Element, text: string): HTMLElement {
+  const cell = [
+    ...column.querySelectorAll<HTMLElement>(".mdmark-diff-pair-cell"),
+  ].find((item) => item.textContent?.includes(text));
+  if (!cell) throw new Error(`セルが無い: ${text}`);
+  return cell;
+}
+
+// `diffMode: "side-by-side"` で、前と後のリビジョンを描いた本文を左右に並べ、変えたブロックを差分のブロックの色で示す（正常系（左右に並べる差分））
+test("test_normal_when_side_by_side", async () => {
+  // 実行: 幅 1280px
+  const wide = await mountSideBySide(1280);
+  // 検証: 2 つの列が、前と後の列の見出しを指す
+  const columns = [...wide.querySelectorAll("section.mdmark-diff-pair-col")];
+  expect(columns).toHaveLength(2);
+  const [before, after] = columns as [Element, Element];
+  const headOf = (column: Element) =>
+    document.getElementById(column.getAttribute("aria-labelledby") ?? "")
+      ?.textContent ?? "";
+  expect(headOf(before).startsWith("前:")).toBe(true);
+  expect(headOf(after).startsWith("後:")).toBe(true);
+  const topGap = (text: string) =>
+    Math.abs(
+      pairCell(before, text).getBoundingClientRect().top -
+        pairCell(after, text).getBoundingClientRect().top,
+    );
+  // 検証: 見出しと表は色を持たず、左右の上端がそろう
+  for (const text of ["手順", "行一"]) {
+    expect(
+      pairCell(before, text).querySelector(".mdmark-diff-block"),
+    ).toBeNull();
+    expect(
+      pairCell(after, text).querySelector(".mdmark-diff-block"),
+    ).toBeNull();
+    expect(topGap(text)).toBeLessThanOrEqual(1);
+  }
+  // 検証: 書き換えた段落は左が削除、右が追加の色で、上端がそろう
+  const beforeChanged = pairCell(before, "文書を描きます");
+  const afterChanged = pairCell(after, "差分を描きます");
+  expect(beforeChanged.querySelector('[data-kind="del"]')).not.toBeNull();
+  expect(afterChanged.querySelector('[data-kind="add"]')).not.toBeNull();
+  expect(
+    Math.abs(
+      beforeChanged.getBoundingClientRect().top -
+        afterChanged.getBoundingClientRect().top,
+    ),
+  ).toBeLessThanOrEqual(1);
+  // 検証: 追加した段落は右だけで左の同じ行に空き、削除した段落は左だけで右の同じ行に空き
+  const cells = (column: Element) => [
+    ...column.querySelectorAll(".mdmark-diff-pair-cell"),
+  ];
+  const addedRow = cells(after).indexOf(pairCell(after, "新しい段落"));
+  expect(
+    pairCell(after, "新しい段落").querySelector('[data-kind="add"]'),
+  ).not.toBeNull();
+  expect(
+    cells(before)[addedRow]?.querySelector(
+      '.mdmark-diff-pair-gap[aria-hidden="true"]',
+    ),
+  ).not.toBeNull();
+  const deletedRow = cells(before).indexOf(pairCell(before, "古い設定"));
+  expect(
+    pairCell(before, "古い設定").querySelector('[data-kind="del"]'),
+  ).not.toBeNull();
+  expect(
+    cells(after)[deletedRow]?.querySelector(".mdmark-diff-pair-gap"),
+  ).not.toBeNull();
+  // 実行: 幅 390px
+  const narrow = await mountSideBySide(390);
+  // 検証: 列が 1 つで、書き換えた段落は前の見出しと削除の色の下に後の見出しと追加の色が続き、見出しと表は 1 回だけ出る
+  expect(getComputedStyle(find(narrow, ".mdmark-diff-pair")).display).toBe(
+    "none",
+  );
+  const stacked = find<HTMLElement>(narrow, ".mdmark-diff-pair-stacked");
+  expect(getComputedStyle(stacked).display).not.toBe("none");
+  const order = [...stacked.children].map((child) =>
+    child.matches(".mdmark-diff-pair-label")
+      ? (child.textContent ?? "").slice(0, 2)
+      : (child.getAttribute("data-kind") ?? child.tagName),
+  );
+  const changedAt = order.indexOf("del");
+  expect(order.slice(changedAt - 1, changedAt + 3)).toEqual([
+    "前:",
+    "del",
+    "後:",
+    "add",
+  ]);
+  expect(stacked.querySelectorAll("table")).toHaveLength(1);
+  expect(
+    [...stacked.querySelectorAll("h2")].filter((h) =>
+      h.textContent?.includes("手順"),
+    ),
+  ).toHaveLength(1);
+  // 検証: 配布物の diffModes が side-by-side を含む
+  const built = await loadBuilt();
+  expect(built.diffModes).toContain("side-by-side");
 });
 
 // 描いた文書のブロックを色分けして試すリビジョンの本文。`BLOCKS_BEFORE` から `BLOCKS_AFTER` で、段落 A の単語を 1 つ書き換え、表の後に段落 B を追加し、段落 C を削除し、段落 D を共通する単語の無い段落 E に入れ替える
@@ -7622,32 +7814,40 @@ test("test_normal_when_nested_sections_toggled_with_shift", async () => {
   expect(expandedOf(el, ["概要"])).toEqual(["true"]);
 });
 
-// 描く先の要素が狭いとき、本文の上端の帯から右側の目次を開き、項目を押すと閉じる（正常系（狭い幅の右側の目次））
+// 描く先の要素が狭いとき、本文の右上の端に留めた目次を出すボタンから右側の目次を開き、項目を押すと閉じる（正常系（狭い幅の右側の目次））
 test("test_normal_when_side_toc_in_narrow_width", async () => {
   await withViewport(390, async () => {
     // 準備
     const el = createElement();
     await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
     const { aside, content, panel, toggle, rail, linkOf } = sideTocOf(el);
-    const label = find(aside, ".mdmark-side-toc-current");
-    // 検証: 描いた直後
-    await vi.waitFor(() => {
-      expect(label.textContent).toBe("手引き");
-    });
-    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    // 検証: 描いた直後は、目次を出すボタンだけが本文の右上の端にある
+    expect(aside.querySelector(".mdmark-side-toc-current")).toBeNull();
     expect(getComputedStyle(rail).display).toBe("none");
-    expect(aside.getBoundingClientRect().top).toBeLessThanOrEqual(
-      content.getBoundingClientRect().top,
-    );
+    expect(toggle.getAttribute("aria-label")).toBe("目次を表示");
+    expect(toggle.getAttribute("aria-expanded")).toBe("false");
+    const hit = toggle.getBoundingClientRect();
+    expect(Math.round(hit.width)).toBe(44);
+    expect(Math.round(hit.height)).toBe(44);
+    const face = find(
+      toggle,
+      ".mdmark-side-toc-toggle-narrow",
+    ).getBoundingClientRect();
+    expect(Math.round(face.width)).toBe(32);
+    expect(Math.round(face.height)).toBe(32);
+    expect(
+      Math.abs(hit.right - content.getBoundingClientRect().right),
+    ).toBeLessThanOrEqual(1);
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
       document.documentElement.clientWidth,
     );
     // 実行・検証: 目次を出すボタンを押す
     await userEvent.click(toggle);
     expect(toggle.getAttribute("aria-expanded")).toBe("true");
-    const bandBottom = toggle.getBoundingClientRect().bottom;
     const panelRect = panel.getBoundingClientRect();
-    expect(panelRect.top).toBeGreaterThanOrEqual(bandBottom - 1);
+    expect(panelRect.top).toBeGreaterThanOrEqual(
+      toggle.getBoundingClientRect().bottom - 1,
+    );
     expect(panelRect.right).toBeLessThanOrEqual(
       el.getBoundingClientRect().right,
     );
@@ -7658,13 +7858,21 @@ test("test_normal_when_side_toc_in_narrow_width", async () => {
     await userEvent.click(linkOf("使用方法"));
     await vi.waitFor(() => {
       expect(toggle.getAttribute("aria-expanded")).toBe("false");
-      expect(label.textContent).toBe("使用方法");
     });
-    const heading = find(el, '[id="使用方法"]').getBoundingClientRect();
-    expect(heading.top).toBeGreaterThanOrEqual(
-      toggle.getBoundingClientRect().bottom,
-    );
-    expect(heading.top).toBeLessThan(window.innerHeight);
+    await vi.waitFor(() => {
+      const heading = find(el, '[id="使用方法"]').getBoundingClientRect();
+      expect(heading.top).toBeGreaterThanOrEqual(
+        toggle.getBoundingClientRect().bottom - 1,
+      );
+      expect(heading.top).toBeLessThan(window.innerHeight);
+    });
+    // 実行・検証: 下へスクロールしても、ボタンは留める位置（既定 0px）に留まる
+    window.scrollBy(0, 200);
+    await vi.waitFor(() => {
+      expect(Math.abs(toggle.getBoundingClientRect().top)).toBeLessThanOrEqual(
+        1,
+      );
+    });
   });
 });
 
@@ -10180,10 +10388,6 @@ test("test_normal_when_side_toc_marked", async () => {
       .filter(Boolean)
       .sort(),
   ).toEqual(["b", "c", "d", "文書"].sort());
-  // 検証: 目次を出すボタンの今いる見出しの文字に（変更）が無い
-  expect(find(el, ".mdmark-side-toc-current").textContent).not.toContain(
-    "（変更）",
-  );
   // 実行: 比較元を解除する
   handle.update(TOC_TARGET, { baseMarkdown: null });
   await settle();
@@ -16783,7 +16987,7 @@ function pressMap(target: Element, dx = 0, dy = 0): void {
   );
 }
 
-/** 帯の 1 つの手順を繰り返す時間（ミリ秒。band.ts の STEP_MS） */
+/** 手順を繰り返している間に進める時間（ミリ秒）。区切りを塗るアニメーションが無く、次の手順へ進まないことを確かめる */
 const MAP_STEP_MS = 2000;
 
 /** 手順へ図の枠の中を移す時間（ミリ秒。band.ts の FOCUS_MS） */
@@ -17221,12 +17425,12 @@ test("test_normal_when_map_walkthrough_played", async () => {
       '.mdmark-diagram-wire[data-wire="user->mount"]',
     );
     expect(getComputedStyle(kept).opacity).not.toBe("0");
-    // 実行・検証: 1 周の時間に合わせて今の区切りを塗り、塗り終えると最初から塗り直し、次の手順へ進まない
+    // 実行・検証: 押した時点で今の区切りの全体を塗り、時間が経っても塗りは変わらず、次の手順へ進まない
+    expect(bandFill(figure())).toBe(100);
     vi.advanceTimersByTime(MAP_STEP_MS / 2);
-    expect(bandFill(figure())).toBeGreaterThan(40);
-    expect(bandFill(figure())).toBeLessThan(60);
+    expect(bandFill(figure())).toBe(100);
     vi.advanceTimersByTime(MAP_STEP_MS * 0.75);
-    expect(bandFill(figure())).toBeLessThan(35);
+    expect(bandFill(figure())).toBe(100);
     expect(bandStep(figure())).toBe(1);
     // 実行・検証: 右の矢印で手順 2 へ移り、説明の文は改行のまま。説明の行数によらずバーの位置が変わらない
     const position = () => [
@@ -17266,12 +17470,12 @@ test("test_normal_when_map_walkthrough_played", async () => {
     expect(mapScale(figure())).toBeCloseTo(fit, 3);
     expect(mapNodesShown(figure(), ["doc", "index", "data"])).toBe(true);
     expect([window.scrollX, window.scrollY]).toEqual(page);
-    // 実行・検証: 同じ区切りをもう一度押すと、最初から塗り直す。ノードが見えているので位置は変わらない
+    // 実行・検証: 同じ区切りをもう一度押すと、その手順の最初から再描画し、区切りの全体を塗ったまま。ノードが見えているので位置は変わらない
     const shown = position();
     vi.advanceTimersByTime(MAP_STEP_MS / 4);
     pressSegment(figure(), 2);
     expect(bandStep(figure())).toBe(2);
-    expect(bandFill(figure())).toBeLessThan(5);
+    expect(bandFill(figure())).toBe(100);
     vi.advanceTimersByTime(MAP_FOCUS_MS * 2);
     expect(position()).toEqual(shown);
     // 実行・検証: 手順 3 で「配置」の中へ入り、両方の手順で残す線が消えない
@@ -18449,9 +18653,9 @@ test("test_normal_when_map_args", async () => {
   });
   try {
     pressSegment(seq(), 1);
+    expect(bandFill(seq())).toBe(100);
     vi.advanceTimersByTime(1000);
-    expect(bandFill(seq())).toBeGreaterThan(40);
-    expect(bandFill(seq())).toBeLessThan(60);
+    expect(bandFill(seq())).toBe(100);
     expect(bandStep(seq())).toBe(1);
     pressBlank(seq());
   } finally {

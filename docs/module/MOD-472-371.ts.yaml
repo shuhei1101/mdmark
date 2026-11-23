@@ -1,0 +1,52 @@
+id: MOD-472-371
+visibility: internal
+title: ライブラリ本体 / 記法の共通 / sticky-top.ts
+test_files:
+  - tests/unit/src/shared/sticky-top.browser.test.ts
+functions:
+  - name: readStickyTop
+    title: 留める位置のずれを px で読み込む
+    container: src/shared/sticky-top.ts
+    summary: 要素に効いている `--mdmark-sticky-top` を px に換算して返却する
+    description: |-
+      `getComputedStyle` の `--mdmark-sticky-top` は `@property` で登録していないと指定した文字列のまま返るため、`Number.parseFloat` では `calc()`・`rem`・`em`・`vh` を読み込めない。
+      `el` の中に `position: absolute`・`visibility: hidden`・`block-size: var(--mdmark-sticky-top, 0px)` の測るための要素を 1 つ配置し、`getBoundingClientRect().height` を読み込んでから取り除く。
+      `el` の中に配置するため、`em` は `el` の文字の大きさ、`%` は `el` の高さを基準にする。
+    kind: 関数
+    scope: internal
+    side_effects: '`el` に測るための要素を一時的に配置して取り除く'
+    args:
+      - name: el
+        type: HTMLElement
+        required: true
+        description: '`--mdmark-sticky-top` を受け継ぐ要素（描いた要素か、その中の表など）'
+    returns:
+      type: number
+      description: '`--mdmark-sticky-top` の px。指定が無いときは 0'
+    unit_tests:
+      - name: test_read_sticky_top_when_px
+        case: 正常
+        summary: px の指定をそのまま返却する
+        condition: '`--mdmark-sticky-top: 48px` を適用した要素'
+        mock: なし
+        expected: '`48`'
+      - name: test_read_sticky_top_when_calc
+        case: 正常
+        summary: calc() と rem の指定を px に換算する
+        condition: 'ルートの文字の大きさが 16px のページで、`calc(.25rem * 24)` と `6rem` を適用した要素の 2 通り'
+        mock: なし
+        expected: 'どちらも `96` で、要素の子の数が呼ぶ前と同じ'
+      - name: test_read_sticky_top_when_unset
+        case: 正常
+        summary: 指定が無いときは 0 を返却する
+        condition: '`--mdmark-sticky-top` を適用していない要素'
+        mock: なし
+        expected: '`0`'
+    refs:
+      - IF-472-35#constraints[本文の幅と見出し行を留める位置]
+    status: planned
+lead: '利用側が指定した `--mdmark-sticky-top` を長さの書き方によらず px で読み込む処理を受け持ち、留める位置を JS で使用する処理を変えるときに参照する。'
+tags:
+  - name: topic:css
+    main: true
+  - name: action:読み込み

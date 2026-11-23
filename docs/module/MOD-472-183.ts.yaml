@@ -42,7 +42,7 @@ functions:
       表示する枠の上端からの下げ幅は、次の 2 つの大きいほうにする（表示する枠の下端から参加者の行の高さを引いた位置を上限にする）。
 
       - 表示する枠の `scrollTop`
-      - スクロールする場所の上端に `--mdmark-sticky-top` の計算値を加算した位置から、表示する枠の上端までの距離
+      - スクロールする場所の上端に `--mdmark-sticky-top` を `readStickyTop` で px にした値（付けたときと `resize` のときに求めて保持し、`scroll` では保持した値を使用する）を加算した位置から、表示する枠の上端までの距離
 
       下げ幅は図の座標に換算して `transform` に入れ、下げたときは `is-stuck` を付ける。
       全画面のモーダルの中は表示する枠の `scrollTop` だけで決める。
@@ -57,6 +57,7 @@ functions:
       type: () => void
       description: 付けた操作と監視を解除し、開いている全画面を閉じる関数
     callees:
+      - 'MOD-472-371#functions[readStickyTop]'
       - 'MOD-472-173#functions[fitScale]'
       - '#functions[openDiagramDialog]'
       - 'MOD-472-177#functions[attachZoom]'

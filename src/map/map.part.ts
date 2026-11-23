@@ -667,9 +667,9 @@ const flowWireTips = (context: {
   for (const wire of wires) {
     const notes = args.annotations?.[wire.id];
     if (wire.tip === undefined && !notes?.length) continue;
-    tipped.add(wire.id);
-    // ラベルと説明を持つ線は、ラベルのツールチップが説明と注記を出す
+    // ラベルと説明を持つ線は、ラベルのツールチップが説明と注記を出し、押せる帯は持ち主にしない
     if (wire.label !== undefined && wire.tip !== undefined) continue;
+    tipped.add(wire.id);
     const shown = args.layout.wires.find((item) => item.id === wire.id);
     tips.add({
       kind: "wire",
@@ -1076,10 +1076,8 @@ export type MapBandArgs = {
   titles: string[];
   title: string;
   text: string;
-  /** 今の手順を繰り返しているか */
+  /** 今の手順を繰り返しているか（今の区切りの全体を塗る） */
   playing: boolean;
-  /** 今の手順の 1 周の進み（0〜1） */
-  fill: number;
   label: string;
 };
 
@@ -1117,7 +1115,7 @@ export const renderMapBand = (args: MapBandArgs): string => {
       .join(" ");
   const fill = (i: number): string =>
     i === index && args.playing
-      ? `<span class="map-band-fill" style="width: ${Math.round(Math.min(1, Math.max(0, args.fill)) * 100)}%"></span>`
+      ? '<span class="map-band-fill" style="width: 100%"></span>'
       : "";
   const segments = Array.from(
     { length: args.total },

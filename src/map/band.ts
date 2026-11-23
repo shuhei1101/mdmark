@@ -37,9 +37,6 @@ export type FollowHandle = {
   destroy: () => void;
 };
 
-/** 手順を繰り返すときの 1 周の時間（ミリ秒）。今の区切りをこの時間で塗り、塗り終えたら最初から塗り直す */
-export const STEP_MS = 2000;
-
 /** 区切りの幅がこの px より細いとき、手順のバーに is-dense を付けて今の区切りを広げる */
 export const BAND_DENSE_PX = 12;
 
@@ -149,8 +146,6 @@ export const attachBand = (options: {
     options.label ??
     `${figure.querySelector(".mdmark-diagram-title")?.textContent ?? ""}の${mode === "playback" ? "再生" : "案内"}`;
   let index: number | undefined;
-  let started = 0;
-  let frame: number | undefined;
   const holder = document.createElement("div");
   holder.className = "map-band-holder";
   (figure.querySelector(".mdmark-diagram-box") ?? figure).after(holder);
@@ -166,10 +161,6 @@ export const attachBand = (options: {
     const width = (bar.clientWidth - SEGMENT_GAP_PX * (count - 1)) / count;
     bar.classList.toggle("is-dense", count > 0 && width < BAND_DENSE_PX);
   };
-  const fill = () =>
-    index === undefined
-      ? 0
-      : ((performance.now() - started) % STEP_MS) / STEP_MS;
   /** 帯の中でフォーカスしている要素 */
   const focusedInBand = (): HTMLElement | undefined =>
     document.activeElement instanceof HTMLElement &&
@@ -197,37 +188,22 @@ export const attachBand = (options: {
       title: step?.title ?? "",
       text: step?.text ?? "",
       playing: index !== undefined,
-      fill: fill(),
       label,
     });
     applyDensity();
     if (active) restoreFocus(active.dataset.dir);
   };
-  /** 今の区切りの塗りだけを書き換える（描き直さない） */
-  const paint = () => {
-    const bar = holder.querySelector<HTMLElement>(".map-band-fill");
-    if (bar) bar.style.width = `${Math.round(fill() * 100)}%`;
-    frame = requestAnimationFrame(paint);
-  };
-  const stopFrame = () => {
-    if (frame !== undefined) cancelAnimationFrame(frame);
-    frame = undefined;
-  };
   // 始めたときに表示していた範囲（停止でその倍率と位置へ戻す）
   let shown: FocusRect | undefined;
   const play = (next: number) => {
     if (index === undefined && viewport) shown = visibleRectOf(viewport);
-    stopFrame();
     index = next;
-    started = performance.now();
     const step = steps[next];
     apply(step);
     render();
     if (step) options.onStep?.(step, next);
-    frame = requestAnimationFrame(paint);
   };
   const stop = () => {
-    stopFrame();
     index = undefined;
     apply(undefined);
     render();
@@ -304,13 +280,11 @@ export const attachBand = (options: {
   return {
     stop,
     update: (next) => {
-      stopFrame();
       steps = next;
       index = undefined;
       render();
     },
     destroy: () => {
-      stopFrame();
       resize.disconnect();
       holder.removeEventListener("click", onClick);
       holder.removeEventListener("keydown", onKey);

@@ -107,7 +107,7 @@ test("test_render_side_toc_when_current", async () => {
     true,
     false,
   ]);
-  expect(innerHtml(html, "mdmark-side-toc-current")).toBe("前提");
+  expect(html).not.toContain("mdmark-side-toc-current");
 });
 
 // 見出しの文字と ID をエスケープする（正常系）

@@ -1,0 +1,13 @@
+# #790 iPad の見出し行の測定（Playwright 1.64.0。devices['iPad Pro 11']。固定のヘッダー 96px・--mdmark-sticky-top: 96px・表 2 つ。off は 2 つ目の表の上端から留める位置までのスクロール量の差。th は各表の見出し行の上端・table は表の上端・bottom は表の下端（画面の上端からの px））
+webkit [{"mode":"timeline","top":1175.03125},{"mode":"timeline","top":3800.5625}] timeline true touch-callout false maxTouchPoints 0 ua Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1
+ off -300 [{"th":-677,"table":-2229,"bottom":-639},{"th":398,"table":397,"bottom":1987}]
+ off -50 [{"th":-927,"table":-2479,"bottom":-889},{"th":148,"table":147,"bottom":1737}]
+ off 50 [{"th":-1027,"table":-2579,"bottom":-989},{"th":96,"table":47,"bottom":1637}]
+ off 300 [{"th":-1277,"table":-2829,"bottom":-1239},{"th":96,"table":-203,"bottom":1387}]
+ off 800 [{"th":-1777,"table":-3329,"bottom":-1739},{"th":96,"table":-703,"bottom":887}]
+chromium [{"mode":"timeline","top":1175.03125},{"mode":"timeline","top":3800.5625}] timeline true touch-callout false maxTouchPoints 1 ua Mozilla/5.0 (iPad; CPU OS 12_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/27.2 Mobile/15E148 Safari/604.1
+ off -300 [{"th":-678,"table":-2230,"bottom":-640},{"th":397,"table":396,"bottom":1986}]
+ off -50 [{"th":-928,"table":-2480,"bottom":-890},{"th":147,"table":146,"bottom":1736}]
+ off 50 [{"th":-1028,"table":-2580,"bottom":-990},{"th":96,"table":46,"bottom":1636}]
+ off 300 [{"th":-1278,"table":-2830,"bottom":-1240},{"th":96,"table":-204,"bottom":1386}]
+ off 800 [{"th":-1778,"table":-3330,"bottom":-1740},{"th":96,"table":-704,"bottom":886}]

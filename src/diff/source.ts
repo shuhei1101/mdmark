@@ -1,5 +1,5 @@
 /** `mount` の `opts.diffMode` に指定できる差分の出し方。利用側が差分の出し方に対応するバージョンかを見分けるため、配布物が公開する */
-export const diffModes = ["button", "open", "blocks"] as const;
+export const diffModes = ["button", "open", "blocks", "side-by-side"] as const;
 
 /** `mount` の `opts.diffMode` の値 */
 export type DiffMode = (typeof diffModes)[number];

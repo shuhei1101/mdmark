@@ -37,7 +37,10 @@ data_models:
         description: エイリアス（`buildAliases` の戻り値の `aliases`）。`glossary` がオンのとき、名前と別名に下線と種類ごとのツールチップを付ける。使用できないエイリアス（`env` を含む）は照合せず、通知ブロックも出さない
       - name: diffMode
         type: DiffMode | undefined
-        description: 差分の出し方。`button`（既定）・`open`・`blocks`。`diffSource` を指定しないときは使用しない。知らない値は `button` にする
+        description: 差分の出し方。`button`（既定）・`open`・`blocks`・`side-by-side`。`diffSource` を指定しないときは使用しない。知らない値は `button` にする
+      - name: diffControls
+        type: boolean | undefined
+        description: '「変更表示」のボタンとリビジョンの選択を配置するか（既定 `true`）。真偽値でない値は `true` にする。`diffSource` を指定しないときと、差分の出し方が `blocks` のときは使用しない'
       - name: baseMarkdown
         type: string | null | undefined
         description: 比較元の Markdown。文字列なら、本文の中で比較元から変えたブロックを `diffMode` の `blocks` と同じ色で塗り分ける。`null` は省いたのと同じ
@@ -180,7 +183,7 @@ functions:
          - 機能の `html-scripts` がオンなら範囲のスクリプトを動かす（範囲のスクリプトを動かす。既定を適用した設定の `htmlScripts.url`・同じ `isCurrent`・`mount` ごとに 1 つ作る読み込みの記録を指定する）。戻りの Promise は待たず、解決した関数を範囲の `destroy` として記録し、再描画する前・`destroy`・同じ要素への 2 回目の `mount` で呼ぶ（解決する前に再描画したときは、解決したときに呼ぶ）
          - ビューとコメントの部品を付け（描いた文書に部品を付ける。機能のオン・オフ・`commentStore`・`docId`・`isCurrent` と、`mount` ごとに 1 つ作る `warned` を指定する）、戻りの `PartsHandle` を記録する。前の `PartsHandle` の `detach` は再描画する前に呼ぶ
          - 機能の `code` がオンなら、記法の操作・外部ライブラリ・mermaid の図・ビューとコメントの部品を付け終えた後に、描いた要素の言語 markdown のコードブロックに描いた結果を付け（`attachCodePreviews`）、削除する関数を記録する。`renderPreview` には、描いた結果の要素と Markdown を受け、その要素を `previewTargets` に加えて（URL の `#ID` で外の文書の開いた位置を描いた結果の中へ動かさないため）、`opts` の `index`・`references`・`aliases`・`icons`・`resolveIdLink`・`includes` と、`opts.config` の `features` に `PREVIEW_CUT_FEATURES` を `false` で重ねた設定でその要素に `mount` を呼び、戻りの `destroy` を返却する関数を指定する。外の文書の操作は描いた結果が無いうちに付け終えるため、描いた結果の中には入れ子の `mount` の操作だけが付く
-         - `diffSource` を指定し、差分の出し方が `button` か `open` なら、前の差分を削除する関数を呼んでから差分を付け（差分を付ける。`open` には差分の出し方が `open` かを指定する。右側の目次を付けたときは `hideWith` にその要素を指定する。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に経由し、得た埋め込んだ HTML の範囲の中身と、配置した要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返却する関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを適用し、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返却する）、削除する関数を記録する
+         - `diffSource` を指定し、差分の出し方が `button`・`open`・`side-by-side` なら、前の差分を削除する関数を呼んでから差分を付け（差分を付ける。`open` には差分の出し方が `open` か、`controls` には `diffControls` が `false` でないか、`layout` には差分の出し方が `side-by-side` なら `side-by-side`、ほかは `lines` を指定し、`renderMarkdown` には Markdown を今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に経由した HTML を返却する関数を指定する。右側の目次を付けたときは `hideWith` にその要素を指定する。`renderHtml` は、範囲の HTML を `html` のコードブロックに入れ `<!-- html -->` で囲んだ Markdown を、今の設定・`index`・`docId`・`references`・`aliases` で文書を描く処理に経由し、得た埋め込んだ HTML の範囲の中身と、配置した要素にその描画の機能のオン・オフと操作できる部品の定義、今の設定の `tooltips.placement` で記法の操作を付ける `attach` を返却する関数（`DiffHtmlRenderer`）。文書と同じく図の部品を図の HTML にし、許可の検査とヒントを適用し、図の拡大・ツールチップ・操作できる部品も文書と同じく動かす。`html` の機能がオフのときは空の文字と何もしない `attach` を返却する）、削除する関数を記録する
          - `diffSource` を指定し、差分の出し方が `blocks` で、比較元が無く、色分けせずに描いたときは、比べる 2 つの本文を取り出す（`loadDiffPair`。戻りの Promise は待たない）。解決したときに世代が変わっているか片付けていれば何もしない。`pair` で前と後が違えば、後の Markdown をこの手順 4 で再描画する（`update` から始まったかは、取り出した描画の値を引き継ぐ）。そのときは本文の HTML を `el` に配置する前に、後と前の Markdown を、機能 `frontmatter` だけをオンにした同じ引数で描いた `template` の中身を、元の機能 `frontmatter` のオン・オフと一緒に `colorDiffBlocks` に経由し（`segmenter` は `Intl.Segmenter` があれば `ja`・`word` で作る）、後の中身を `el` に配置する。色分けして描いたときは取り出し元をもう一度呼ばない。`single` と同じ本文のときは描いたまま残す。`failed` なら本文の列の先頭に `renderNotice({ name: docId, source: "diff-blocks" })` の通知ブロックを配置する
          - 機能の `back-to-top` がオンなら先頭へ戻るボタンを付け（先頭へ戻るボタンを付ける。`el` と、ここまでで決定した本文の列を指定する）、削除する関数を記録する。描くたびにもう一度付け、スクロールする場所を `update` の後にももう一度決める
       5. 印刷の受け取りを付ける（印刷の前後で折り畳みと記法を開く）。`isEnabled` は記録した機能のオン・オフの `print` を返却する
@@ -368,6 +371,12 @@ functions:
         condition: '`config` に `{ colorTheme: "sepia" }` を指定して描く要素と、`config` を省いて描く要素'
         mock: なし
         expected: どちらの `el` も `data-mdmark-color-theme` が `dev-swiss`。例外を投げない
+      - name: test_mount_when_diff_controls_hidden
+        case: 正常
+        summary: diffControls が false なら、ボタンと選択を出さずに描いた時点で差分を出し、真偽値でない値はボタンを出す
+        condition: '`# 見出し` と `docId: "guide"`・`diffSource` を指定し、`diffControls: false` で描く要素と、`diffControls: "no"` で描く要素'
+        mock: 取り出し元は `r2`・`r1` を返却し、呼ばれた引数を記録する関数
+        expected: '`false` の要素は「変更表示」のボタンと `select` が無く、`content` が `r1`・`r2` で呼ばれ、差分の行がある。`"no"` の要素は「変更表示」のボタンがあり、`revisions` が呼ばれない'
       - name: test_mount_when_diff_mode_open
         case: 正常
         summary: open では描いた時点で差分を開き、update の後も開いたままにする

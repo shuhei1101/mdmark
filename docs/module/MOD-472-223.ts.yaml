@@ -32,9 +32,10 @@ functions:
       1. ボタンを配置し、スクロールする場所を決める
       2. もう一度配置する処理: スクロールする場所の矩形（スクロールバーを除き、右端と下端は画面の中に収める）の上端から `el` の上端までの量が、スクロールする場所の `clientHeight` 未満ならボタンに `hidden` を付けて終える。そうでなければ `hidden` を削除し、`--mdmark-back-to-top-right` に `calc({画面の右端からスクロールする場所の右端までの px} + var(--mdmark-back-to-top-gap))`、`--mdmark-back-to-top-bottom` に同じく下端の値を入れる。続けて、ページの差分のミニマップの帯（`document.body` の全ての `.mdmark-diff-minimap`）と `el` の子の余白の列（`div.mdmark-comment-margin`）の順に、ボタンの矩形と横の範囲（部品の左端から `BACK_TO_TOP_AVOID_GAP_PX` 左までを含む）が重なれば、`--mdmark-back-to-top-right` を `{画面の右端から部品の左端までの px + BACK_TO_TOP_AVOID_GAP_PX}px` にする。縦の位置は比べない
       3. 手順 2 を、スクロールと `resize`、`document.body` の子の追加・削除（ミニマップの帯）と `el` の子の追加・削除（余白の列）のたびに `requestAnimationFrame` で 1 フレームに 1 回だけ行い、付けた直後にも 1 回行う
-      4. ボタンを押すと、`matchMedia("(prefers-reduced-motion: reduce)")` が該当すれば `behavior: "auto"`、ほかは `smooth` で、スクロールする場所を `el` の上端へ `scrollTo` する（画面全体なら `window.scrollTo` で、`el` の `--mdmark-sticky-top` の px を参照する）。続けて `content` に `tabindex="-1"` を付け、`focus({ preventScroll: true })` する
+      4. ボタンを押すと、`matchMedia("(prefers-reduced-motion: reduce)")` が該当すれば `behavior: "auto"`、ほかは `smooth` で、スクロールする場所を `el` の上端へ `scrollTo` する（画面全体なら `window.scrollTo` で、`el` の `--mdmark-sticky-top` を `readStickyTop` で px にした値（押したときに 1 回求める）を参照する）。続けて `content` に `tabindex="-1"` を付け、`focus({ preventScroll: true })` する
       5. 削除する関数は、受け取り・`MutationObserver` の監視・予約したフレームを削除し、ボタンを取り除き、付けた `tabindex` を削除する
     callees:
+      - 'MOD-472-371#functions[readStickyTop]'
       - 'MOD-472-234#functions[findScrollContainer]'
       - MOD-472-324#functions[renderBackToTop]
     refs:

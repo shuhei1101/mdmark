@@ -73,6 +73,12 @@ export const ResizeOff: Story = {
   args: { resizable: false },
 };
 
+export const FitTall: Story = {
+  name: "FitTall",
+  parameters: { server: { id: "diagram-frame" } },
+  args: { kind: "mermaid", svg: "er", title: "データの関係", maxHeight: 160 },
+};
+
 export const Mermaid: Story = {
   name: "Mermaid",
   parameters: { server: { id: "diagram-frame" } },

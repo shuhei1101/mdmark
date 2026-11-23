@@ -355,7 +355,6 @@ test("test_render_map_band", async () => {
     title: "",
     text: "",
     playing: false,
-    fill: 0,
     label: "全体の構成の案内",
   });
   // 検証
@@ -382,7 +381,6 @@ test("test_render_map_band_when_playing", async () => {
     title: "記法を読む",
     text: "",
     playing: true,
-    fill: 0.5,
     label: "全体の構成の案内",
   });
   // 検証
@@ -390,7 +388,7 @@ test("test_render_map_band_when_playing", async () => {
   expect(segments[0]).toContain("is-done");
   expect(segments[1]).toContain("is-current");
   expect(segments[1]).toContain("is-playing");
-  expect(html).toMatch(/class="map-band-fill" style="width: ?50%/);
+  expect(html).toMatch(/class="map-band-fill" style="width: ?100%/);
   expect(html).toContain('aria-valuetext="手順 2/4 記法を読む"');
   expect(html).not.toMatch(/class="map-band[^"-]*\bis-idle\b/);
 });
@@ -408,7 +406,6 @@ test("test_render_map_band_when_playback", async () => {
     title: "mount を呼ぶ",
     text: "",
     playing: true,
-    fill: 0,
     label: "文書を描くまでの再生",
   });
   // 検証
@@ -909,6 +906,42 @@ test("test_render_map_flow_when_annotations", async () => {
   }
 });
 
+// ラベルと説明を持つ線は、ラベルだけをツールチップの持ち主にする（正常系）
+test("test_render_map_flow_when_labeled_wire_tip", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  // 実行
+  const { html } = renderMapFlow({
+    ...(await flowArgs()),
+    notes: {
+      "marker->data": "補足の JSON を渡す",
+      "mount->marker": "Markdown を渡す",
+    },
+  });
+  // 検証
+  const label =
+    findTags(html, 'data-wire="marker-&gt;data"').find((tag) =>
+      tag.includes("mdmark-diagram-label"),
+    ) ?? "";
+  expect(label).toContain('data-tip-owner="marker-&gt;data"');
+  expect(label).toContain("aria-describedby=");
+  const labeledHit =
+    html.match(
+      /<g class="map-wire-hit" data-wire="marker-&gt;data"[\s\S]*?<\/g>/,
+    )?.[0] ?? "";
+  expect(labeledHit).toContain("map-wire-hit-segment");
+  expect(labeledHit).not.toContain("data-tip-owner");
+  const unlabeledHit =
+    html.match(
+      /<g class="map-wire-hit" data-wire="mount-&gt;marker"[\s\S]*?<\/g>/,
+    )?.[0] ?? "";
+  const owners = matches(
+    unlabeledHit,
+    /<rect class="map-wire-hit-segment"[^>]*data-tip-owner="mount-&gt;marker"[^>]*>/g,
+  );
+  expect(owners).toHaveLength(1);
+});
+
 // まとめた線の説明（正常系）
 test("test_render_map_flow_when_merged_notes", async () => {
   // 準備
@@ -955,7 +988,6 @@ test("test_render_map_band_when_transition", async () => {
     title: "判定 → 差し戻しの理由を確認する：差し戻し",
     text: "",
     playing: true,
-    fill: 0,
     label: "作業の状態の再生",
   });
   // 検証
@@ -980,7 +1012,6 @@ test("test_render_map_band_when_relation", async () => {
     title: "2: 注文の画面 → 注文の API：注文を送る",
     text: "画面の入力を JSON にして API へ送る",
     playing: true,
-    fill: 0,
     label: "注文の流れの再生",
   });
   // 検証

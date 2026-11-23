@@ -5986,6 +5986,8 @@
     .mdmark-diff-block-sign {
       position: absolute;
       inset-block-start: var(--mdmark-diff-block-pad-block);
+      /* 前のスクリーンリーダー向けの名前の後ろに続くブロックの間の余白を外し、中身の 1 行目の高さからずらさない */
+      margin: 0;
       inset-inline-start: 0;
       width: var(--mdmark-diff-block-gutter);
       font-family: var(--mdmark-font-mono);
@@ -6375,6 +6377,84 @@
       border-radius: var(--mdmark-radius);
       background: var(--mdmark-color-surface);
       color: var(--mdmark-color-muted);
+    }
+  }
+
+  /* 左右に並べる差分（`diffMode: "side-by-side"`）: 前と後の 2 列で行の高さを揃えてブロックを向かい合わせ、描く先の要素が 48rem 未満のときは変えたブロックだけ前の下に後を縦に並べる */
+  .mdmark {
+    .mdmark-diff-pair {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      column-gap: 2rem;
+    }
+
+    /* 1 列分の領域: 親の行を subgrid で受け継ぎ、左右で向かい合うブロックの上端を合わせる */
+    .mdmark-diff-pair-col {
+      display: grid;
+      grid-row: 1 / span var(--mdmark-diff-pair-rows);
+      grid-template-rows: subgrid;
+      min-width: 0;
+      margin: 0;
+
+      /* 向かい合う左右のブロックの上端を合わせるため、ブロックの間の余白を外す */
+      > * {
+        margin-block: 0;
+      }
+    }
+
+    /* 列の見出し: 比べるリビジョンの名前と日時。利用側が留めた帯の下に留める */
+    .mdmark-diff-pair-head {
+      position: sticky;
+      inset-block-start: var(--mdmark-sticky-top, 0px);
+      z-index: 1;
+      padding-block: 0.375rem;
+      border-block-end: 1px solid var(--mdmark-color-border);
+      background: var(--mdmark-color-bg-opaque);
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+    }
+
+    /* 向かい合う 1 組のブロック: 同じ行に置き、低い方の下に空きを入れる */
+    .mdmark-diff-pair-cell {
+      min-width: 0;
+      padding-block: 0.25rem;
+
+      > :not(.mdmark-diff-pair-gap) {
+        margin-block: 0;
+      }
+    }
+
+    /* 向かいに対のブロックが無いときの斜線の空き */
+    .mdmark-diff-pair-gap {
+      block-size: 100%;
+      min-block-size: 1.5rem;
+      border-radius: 4px;
+      background: repeating-linear-gradient(
+        135deg,
+        transparent 0 6px,
+        var(--mdmark-color-border) 6px 7px
+      );
+    }
+
+    /* 狭い幅の並び: 前と後の小さい見出しを付けて上下に配置する */
+    .mdmark-diff-pair-stacked {
+      display: none;
+    }
+
+    .mdmark-diff-pair-label {
+      margin: 0.5rem 0 0.125rem;
+      color: var(--mdmark-color-muted);
+      font-size: 0.75rem;
+    }
+
+    @container mdmark (width < 48rem) {
+      .mdmark-diff-pair {
+        display: none;
+      }
+
+      .mdmark-diff-pair-stacked {
+        display: block;
+      }
     }
   }
 
@@ -8061,8 +8141,12 @@
       }
     }
 
-    /* 今いるセクションの見出し（狭い幅の帯だけで出す） */
-    .mdmark-side-toc-current {
+    /* 目次を出すボタンのアイコン: 広い幅は三点リーダー、狭い幅は右側のパネル */
+    .mdmark-side-toc-toggle-wide {
+      display: contents;
+    }
+
+    .mdmark-side-toc-toggle-narrow {
       display: none;
     }
 
@@ -8427,36 +8511,54 @@
       }
     }
 
-    /* 狭い幅（描く先の要素が 48rem 未満）: どちらの出し方も、文書の上端に留めた帯に今いるセクションの見出しと目次を出すボタンを配置し、押すと帯の下に本文へ重ねて開く */
+    /* 狭い幅（描く先の要素が 48rem 未満）: どちらの出し方も、右端の線を出さず、本文の右上の端に留めた目次を出すボタンだけを配置し、押すとボタンの下に本文へ重ねて開く */
     @container mdmark (width < 48rem) {
-      /* 帯: 本文の列の上の 1 行を幅いっぱいに取り、文書をスクロールしても利用側が留めた帯の下に留める */
+      /* 高さを取らない行を本文の列の上に置き、文書をスクロールしても利用側が留めた帯の下に留める（本文の列に場所を取らない） */
       .mdmark-side-toc[data-mode] {
         order: -1;
         flex-basis: 100%;
         min-width: 0;
+        height: 0;
         inset-block-start: var(--mdmark-sticky-top, 0px);
-        padding-block: 0.25rem;
-        background: var(--mdmark-color-bg-opaque);
 
-        /* 目次を出すボタン: 帯の幅いっぱいに広げ、今いるセクションの見出しを左、三点リーダーを右に配置する */
+        /* 目次を出すボタン: 押せる範囲は 44px 四方の透明な枠で、中の 32px 四方の枠が見た目のボタン */
         .mdmark-side-toc-toggle {
-          display: flex;
-          gap: 0.5rem;
-          align-items: center;
-          justify-content: space-between;
-          width: 100%;
+          position: absolute;
+          inset-block-start: 0;
+          inset-inline-end: 0;
+          display: grid;
+          place-items: center;
+          width: 2.75rem;
           height: 2.75rem;
-          padding: 0 0.75rem;
+          border: 0;
+          background: transparent;
+          color: var(--mdmark-color-muted);
+
+          &:hover {
+            background: transparent;
+            color: var(--mdmark-color-text);
+          }
+
+          &[aria-expanded="true"] {
+            background: transparent;
+            color: var(--mdmark-color-link);
+          }
         }
 
-        /* 今いるセクションの見出し: 1 行に収め、収まらない分は省く（押すと開く目次で全文を読み込める） */
-        .mdmark-side-toc-current {
-          display: block;
-          min-width: 0;
-          overflow: hidden;
-          color: var(--mdmark-color-text);
-          text-overflow: ellipsis;
-          white-space: nowrap;
+        .mdmark-side-toc-toggle-wide {
+          display: none;
+        }
+
+        .mdmark-side-toc-toggle-narrow {
+          display: grid;
+          place-items: center;
+          box-sizing: border-box;
+          width: 2rem;
+          height: 2rem;
+          border: 1px solid var(--mdmark-color-border);
+          border-radius: 6px;
+          background: var(--mdmark-color-bg-opaque);
+          box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
         }
 
         .mdmark-side-toc-rail,
@@ -8464,10 +8566,10 @@
           display: none;
         }
 
-        /* 目次の枠: 帯の下に、帯と同じ幅で重ねる */
+        /* 目次の枠: ボタンの下に、本文の列の幅で重ねる */
         .mdmark-side-toc-panel {
           position: absolute;
-          inset-block-start: calc(100% - 0.25rem);
+          inset-block-start: 2.75rem;
           inset-inline: 0;
           display: none;
           width: auto;
@@ -8476,21 +8578,24 @@
           pointer-events: auto;
         }
 
-        /* 開いたとき: ポインターを配置できない端末の hover の出し方でも帯の下に重ねる */
+        /* 開いたとき: ポインターを配置できない端末の hover の出し方でもボタンの下に重ねる */
         &[data-open] .mdmark-side-toc-panel {
-          inset-block-start: calc(100% - 0.25rem);
+          inset-block-start: 2.75rem;
           display: flex;
         }
 
-        /* 広い幅でピン止めしたまま狭くなったとき: ピン止めを有効にしず、帯の下に重ねる */
+        /* 広い幅でピン止めしたまま狭くなったとき: ピン止めを有効にせず、ボタンの下に重ねる */
         &[data-pinned] .mdmark-side-toc-panel {
           position: absolute;
         }
       }
 
-      /* 移る先の見出し: 上端に留めた帯に隠れない位置で止める */
+      /* 移る先の見出し: 右上の端に留めたボタンに隠れない位置で止める */
       .mdmark-content [id] {
-        scroll-margin-block-start: calc(var(--mdmark-sticky-top, 0px) + 3.5rem);
+        scroll-margin-block-start: calc(
+          var(--mdmark-sticky-top, 0px) +
+          2.75rem
+        );
       }
     }
   }
@@ -11300,6 +11405,10 @@
     inset: 0 auto auto 0;
     overflow: visible;
     pointer-events: none;
+  }
+  /* 説明を持つ線のラベル: 線を押す・指す場所の層より上に置き、ラベルの上でツールチップを開く */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-label.has-tip {
+    z-index: 1;
   }
   /* 選んだノード・参加者 */
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.is-selected {

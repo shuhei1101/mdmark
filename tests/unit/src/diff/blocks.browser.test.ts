@@ -685,3 +685,58 @@ test("test_is_rewrite_when_half", async () => {
   // 検証
   expect(rewrite).toBe(true);
 });
+
+// 変えていない・書き換えた・追加した・削除したブロックを行にする（正常系）
+test("test_pair_side_by_side", async () => {
+  // 準備
+  const { pairSideBySide } = await loadBlocks();
+  const before = [
+    "# 手順",
+    "",
+    "配布物を読み込んでから文書を描きます。",
+    "",
+    "古い設定の説明を残します。",
+    "",
+    "| 列 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+  ].join("\n");
+  const after = [
+    "# 手順",
+    "",
+    "配布物を読み込んでから差分を描きます。",
+    "",
+    "| 列 | 値 |",
+    "| --- | --- |",
+    "| a | 1 |",
+    "",
+    "新しい段落を足しました。",
+    "",
+  ].join("\n");
+  // 実行
+  const rows = pairSideBySide({
+    before: { root: renderFragment(before), markdown: before },
+    after: { root: renderFragment(after), markdown: after },
+    segmenter: createSegmenter(),
+  });
+  // 検証
+  expect(rows.map((row) => row.kind)).toEqual([
+    "same",
+    "change",
+    "del",
+    "same",
+    "add",
+  ]);
+  const text = (html: string | undefined) => {
+    const holder = document.createElement("div");
+    holder.innerHTML = html ?? "";
+    return holder.textContent ?? "";
+  };
+  expect(text(rows[1]?.before)).toContain("文書を描きます");
+  expect(text(rows[1]?.after)).toContain("差分を描きます");
+  expect(text(rows[2]?.before)).toContain("古い設定の説明");
+  expect(rows[2]?.after).toBeUndefined();
+  expect(text(rows[4]?.after)).toContain("新しい段落");
+  expect(rows[4]?.before).toBeUndefined();
+});

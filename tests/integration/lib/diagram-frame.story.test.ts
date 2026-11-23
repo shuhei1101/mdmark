@@ -116,6 +116,25 @@ test("test_fit", async () => {
   await expect(boxShadow(page)).resolves.toBe(await defaultBoxShadow(page));
 });
 
+// 縦に長い図は、全体が収まる倍率でも表示する枠に縦に収まらないため、data-at-fit を持たずに縦にもスクロールする（FitTall）
+test("test_fit_tall", async () => {
+  // 準備・実行
+  const page = await openFrame("fit-tall", true);
+  // 検証
+  await expect(viewportState(page)).resolves.toEqual({
+    atFit: false,
+    overflowY: "auto",
+  });
+  const sizes = await page
+    .locator(".mdmark-diagram-viewport")
+    .evaluate((viewport) => ({
+      client: viewport.clientHeight,
+      scroll: viewport.scrollHeight,
+    }));
+  expect(sizes.client).toBe(160);
+  expect(sizes.scroll).toBeGreaterThan(sizes.client);
+});
+
 // 1 段拡大してパネルを開いた状態は、縮小・倍率・拡大・全画面・開閉のボタンを 1 行に並べ、縦にもスクロールできる（Zoomed）
 test("test_zoomed", async () => {
   // 準備・実行

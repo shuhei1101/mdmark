@@ -116,14 +116,17 @@ test("test_attach_band_when_loop", async () => {
   vi.useFakeTimers({
     toFake: ["requestAnimationFrame", "performance", "Date"],
   });
-  const { STEP_MS } = await loadBand();
   const { applied, segment, fill } = await setUp();
   // 実行
   segment(2).click();
-  vi.advanceTimersByTime(STEP_MS * 1.5);
+  const filledAtPress = fill();
+  const framesAtPress = vi.getTimerCount();
+  vi.advanceTimersByTime(3000);
   // 検証
   expect(applied).toEqual([2]);
-  expect(fill()).toBeCloseTo(50, -1);
+  expect(filledAtPress).toBe(100);
+  expect(fill()).toBe(100);
+  expect(framesAtPress).toBe(0);
 });
 
 // 同じ区切りをもう一度押す（正常系）
@@ -132,15 +135,14 @@ test("test_attach_band_when_repressed", async () => {
   vi.useFakeTimers({
     toFake: ["requestAnimationFrame", "performance", "Date"],
   });
-  const { STEP_MS } = await loadBand();
   const { applied, segment, fill } = await setUp();
   segment(2).click();
-  vi.advanceTimersByTime(STEP_MS / 2);
+  vi.advanceTimersByTime(1000);
   // 実行
   segment(2).click();
   // 検証
   expect(applied).toEqual([2, 2]);
-  expect(fill()).toBe(0);
+  expect(fill()).toBe(100);
 });
 
 // 左右の矢印のボタン（正常系）

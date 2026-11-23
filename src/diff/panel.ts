@@ -1,7 +1,9 @@
 import { renderNotice } from "../shared/notice.part.ts";
+import { pairSideBySide } from "./blocks.ts";
 import { computeDiff, type DiffBlock } from "./compute.ts";
 import { renderDiffLines } from "./diff-lines.part.ts";
 import { renderDiffMessage } from "./diff-message.part.ts";
+import { renderDiffSideBySide } from "./diff-side-by-side.part.ts";
 import { renderDiffToggle } from "./diff-toggle.part.ts";
 import { attachMinimap } from "./minimap.ts";
 import {
@@ -26,6 +28,15 @@ export type DiffHtmlRenderer = (html: string) => {
 type RangeAttaches = {
   before: ReturnType<DiffHtmlRenderer>["attach"] | null;
   after: ReturnType<DiffHtmlRenderer>["attach"] | null;
+};
+
+/** 差分を描く場所と、選んだ前と後のリビジョン */
+type DiffView = {
+  revisions: DiffRevision[];
+  /** 選んだ前と後のリビジョンの `id` */
+  selected: () => [string, string];
+  summary: HTMLElement;
+  result: HTMLElement;
 };
 
 /** `id` を指す、空白で区切った `id` を持つ属性 */
@@ -159,6 +170,12 @@ export function attachDiff(options: {
   hideWith?: HTMLElement[];
   /** 配置した時点で開くか（既定 `false`。`mount` の `diffMode` が `open` のとき `true`） */
   open?: boolean;
+  /** 「変更表示」のボタンとリビジョンの選択を配置するか（既定 `true`。`false` のときは配置せず、配置した時点で開く） */
+  controls?: boolean;
+  /** 差分の出し方（既定 `lines`。`side-by-side` は `renderMarkdown` を指定したときだけ左右に並べる） */
+  layout?: "lines" | "side-by-side";
+  /** 前と後の本文を文書と同じ描き方で描いた HTML を返却する関数 */
+  renderMarkdown?: (markdown: string) => string;
 }): () => void {
   const {
     root,
@@ -166,8 +183,12 @@ export function attachDiff(options: {
     docId,
     renderHtml,
     hideWith = [],
-    open: openAtStart = false,
+    controls = true,
+    renderMarkdown,
   } = options;
+  const openAtStart = options.open === true || !controls;
+  const sideBySide =
+    options.layout === "side-by-side" && renderMarkdown !== undefined;
   serial += 1;
   const panelId = `${ID_PREFIX}${serial}`;
   const bar = parseElement(renderDiffToggle({ controls: panelId }));
@@ -180,10 +201,11 @@ export function attachDiff(options: {
     throw new Error("差分を開くボタンが無い");
   }
   const title = [...root.children].find((child) => child.tagName === "H1");
+  const placed = controls ? [bar, panel] : [panel];
   if (title === undefined) {
-    root.prepend(bar, panel);
+    root.prepend(...placed);
   } else {
-    title.after(bar, panel);
+    title.after(...placed);
   }
 
   // 開いている間に隠した本文の要素
@@ -244,20 +266,17 @@ export function attachDiff(options: {
   };
 
   /** 選んだ 2 つのリビジョンの本文を取り出して差分を描く */
-  const refresh = async (view: {
-    revisions: DiffRevision[];
-    before: HTMLSelectElement;
-    after: HTMLSelectElement;
-    summary: HTMLElement;
-    result: HTMLElement;
-  }): Promise<void> => {
-    const { revisions, before, after, summary, result } = view;
+  const refresh = async (view: DiffView): Promise<void> => {
+    const { revisions, summary, result } = view;
     selectGeneration += 1;
     const mine = selectGeneration;
     const current = openGeneration;
-    const pair = [before.value, after.value].map((id) =>
-      revisions.find((revision) => revision.id === id),
-    ) as [DiffRevision, DiffRevision];
+    const pair = view
+      .selected()
+      .map((id) => revisions.find((revision) => revision.id === id)) as [
+      DiffRevision,
+      DiffRevision,
+    ];
     // 本文の待ちが長いときは、前の差分に替えて読み込み中を出す
     clearTimers();
     loadingTimer = setTimeout(() => {
@@ -302,6 +321,15 @@ export function attachDiff(options: {
       });
       return;
     }
+    if (sideBySide) {
+      renderSideBySide({
+        texts: texts as [string, string],
+        pair,
+        result,
+        render: renderMarkdown,
+      });
+      return;
+    }
     const diff = computeDiff({
       before: texts[0] as string,
       after: texts[1] as string,
@@ -326,6 +354,124 @@ export function attachDiff(options: {
     if (lines !== null) {
       detachMinimap = attachMinimap(lines);
     }
+  };
+
+  /** 前と後を文書と同じ描き方で描いて向かい合う行にし、左右に並べる差分を描く（ミニマップと数の文は付けない） */
+  const renderSideBySide = (target: {
+    texts: [string, string];
+    pair: [DiffRevision, DiffRevision];
+    result: HTMLElement;
+    render: (markdown: string) => string;
+  }): void => {
+    const { texts, pair, result, render } = target;
+    const sides = texts.map((markdown) => {
+      const template = document.createElement("template");
+      template.innerHTML = render(markdown);
+      return { root: template.content, markdown };
+    }) as [
+      { root: DocumentFragment; markdown: string },
+      { root: DocumentFragment; markdown: string },
+    ];
+    const rows = pairSideBySide({
+      before: sides[0],
+      after: sides[1],
+      segmenter: createSegmenter(),
+    });
+    if (rows.every((row) => row.kind === "same")) {
+      result.innerHTML = renderDiffMessage({ kind: "same" });
+      return;
+    }
+    result.innerHTML = renderDiffSideBySide({
+      before: { label: describeRevision(pair[0]) },
+      after: { label: describeRevision(pair[1]) },
+      rows,
+      idPrefix: panelId,
+    });
+    // 隠した本文と、広い幅の前の列・後の列と、狭い幅の並びの `id` を重ならせない（列ごとに付け、列の中で別のセルを指す参照もそろえる）
+    result
+      .querySelectorAll<HTMLElement>(".mdmark-diff-pair-col")
+      .forEach((column, side) => {
+        scopeIds({
+          root: column,
+          prefix: `${panelId}-${side === 0 ? "before" : "after"}-`,
+        });
+      });
+    const stacked = result.querySelector<HTMLElement>(
+      ".mdmark-diff-pair-stacked",
+    );
+    if (stacked !== null) {
+      scopeIds({ root: stacked, prefix: `${panelId}-stacked-` });
+    }
+    const { attach } = renderHtml("");
+    for (const layout of result.querySelectorAll<HTMLElement>(
+      ".mdmark-diff-pair, .mdmark-diff-pair-stacked",
+    )) {
+      detachPreviews.push(attach(layout));
+    }
+  };
+
+  /** リビジョンの選択を配置し、選び直すと差分を描き直す。差分を描く場所を返却する */
+  const placePicker = (revisions: DiffRevision[]): DiffView => {
+    const [newest, previous] = revisions as [DiffRevision, DiffRevision];
+    panel.innerHTML = `${renderRevisionPicker({
+      revisions,
+      before: previous.id,
+      after: newest.id,
+      idPrefix: `${panelId}-picker`,
+    })}<div class="mdmark-diff-result"></div>`;
+    const before = panel.querySelector<HTMLSelectElement>(
+      `#${CSS.escape(`${panelId}-picker-before`)}`,
+    );
+    const after = panel.querySelector<HTMLSelectElement>(
+      `#${CSS.escape(`${panelId}-picker-after`)}`,
+    );
+    const summary = panel.querySelector<HTMLElement>(".mdmark-diff-summary");
+    const result = panel.querySelector<HTMLElement>(".mdmark-diff-result");
+    if (!before || !after || !summary || !result) {
+      throw new Error("リビジョンの選択が描かれていない");
+    }
+    const view: DiffView = {
+      revisions,
+      selected: () => [before.value, after.value],
+      summary,
+      result,
+    };
+    /** 前の欄の選択に合わせて、後の欄の選べない項目を修正する。後が前以前になったら、前の 1 つ新しいリビジョンに移す */
+    const constrain = (): void => {
+      const limit = before.selectedIndex;
+      for (const option of after.options) {
+        option.disabled = option.index >= limit;
+      }
+      if (after.selectedIndex >= limit) {
+        after.selectedIndex = limit - 1;
+      }
+    };
+    before.addEventListener("change", () => {
+      constrain();
+      void refresh(view);
+    });
+    after.addEventListener("change", () => {
+      void refresh(view);
+    });
+    return view;
+  };
+
+  /** ボタンと選択を配置しないときの、一番新しいリビジョンとその 1 つ前の差分を描く場所を返却する */
+  const placeLatest = (revisions: DiffRevision[]): DiffView => {
+    const [newest, previous] = revisions as [DiffRevision, DiffRevision];
+    panel.innerHTML =
+      '<div class="mdmark-diff-summary" role="status"></div><div class="mdmark-diff-result"></div>';
+    const summary = panel.querySelector<HTMLElement>(".mdmark-diff-summary");
+    const result = panel.querySelector<HTMLElement>(".mdmark-diff-result");
+    if (!summary || !result) {
+      throw new Error("差分の場所が描かれていない");
+    }
+    return {
+      revisions,
+      selected: () => [previous.id, newest.id],
+      summary,
+      result,
+    };
   };
 
   /** 開く: 本文を隠し、取り出し元からリビジョンの一覧を受けて選ぶ欄と差分を出す */
@@ -376,42 +522,7 @@ export function attachDiff(options: {
       panel.innerHTML = renderDiffMessage({ kind: "single" });
       return;
     }
-    const [newest, previous] = revisions as [DiffRevision, DiffRevision];
-    panel.innerHTML = `${renderRevisionPicker({
-      revisions,
-      before: previous.id,
-      after: newest.id,
-      idPrefix: `${panelId}-picker`,
-    })}<div class="mdmark-diff-result"></div>`;
-    const before = panel.querySelector<HTMLSelectElement>(
-      `#${CSS.escape(`${panelId}-picker-before`)}`,
-    );
-    const after = panel.querySelector<HTMLSelectElement>(
-      `#${CSS.escape(`${panelId}-picker-after`)}`,
-    );
-    const summary = panel.querySelector<HTMLElement>(".mdmark-diff-summary");
-    const result = panel.querySelector<HTMLElement>(".mdmark-diff-result");
-    if (!before || !after || !summary || !result) {
-      throw new Error("リビジョンの選択が描かれていない");
-    }
-    const view = { revisions, before, after, summary, result };
-    /** 前の欄の選択に合わせて、後の欄の選べない項目を修正する。後が前以前になったら、前の 1 つ新しいリビジョンに移す */
-    const constrain = (): void => {
-      const limit = before.selectedIndex;
-      for (const option of after.options) {
-        option.disabled = option.index >= limit;
-      }
-      if (after.selectedIndex >= limit) {
-        after.selectedIndex = limit - 1;
-      }
-    };
-    before.addEventListener("change", () => {
-      constrain();
-      void refresh(view);
-    });
-    after.addEventListener("change", () => {
-      void refresh(view);
-    });
+    const view = controls ? placePicker(revisions) : placeLatest(revisions);
     await refresh(view);
   };
 

@@ -425,7 +425,6 @@ test("test_attach_side_toc_when_scrolled", async () => {
     expect(currentHrefs(aside)).toEqual(["#二つ目"]);
   });
   expect(currentBars(aside)).toEqual([false, true, false]);
-  expect(find(aside, ".mdmark-side-toc-current").textContent).toBe("二つ目");
 });
 
 // 削除すると包む前の子の並びへ戻す（正常系）

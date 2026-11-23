@@ -1,3 +1,4 @@
+import { readStickyTop } from "../shared/sticky-top.ts";
 import { stickyRange, stickyShift } from "./table.logic.ts";
 
 /** `attachStickyRows` が表ごとの留める要素（表を包む横のスクロールの要素。無ければ `table`）に付ける属性。値は `timeline`（`animation-timeline` でずらす）か `script`（JS でずらす量を入れる）で、CSS はこの属性で適用する規則を分ける */
@@ -19,12 +20,6 @@ const SCRIPT_VARIABLES = [
   "--mdmark-sticky-foot-shift",
   "--mdmark-sticky-foot-reach",
 ] as const;
-
-/** 見出し行を留める位置の、スクロールする場所の上端からのずれ（px）。利用側が指定した `--mdmark-sticky-top` を読み込む */
-function stickyTopOf(table: HTMLElement): number {
-  const value = getComputedStyle(table).getPropertyValue("--mdmark-sticky-top");
-  return Number.parseFloat(value) || 0;
-}
 
 /** 表を包む横のスクロールの要素の class（部品『表』の HTML） */
 const SCROLL_CLASS = "mdmark-table-scroll";
@@ -142,7 +137,7 @@ function updateTimelineRange(table: HTMLTableElement): void {
 }
 
 /** `animation-timeline` を持たないブラウザで、見出し行と集計の行をずらす量を CSS 変数に入れる */
-function updateShift(table: HTMLTableElement): void {
+function updateShift(table: HTMLTableElement, stickyTop: number): void {
   const measured = measure(table);
   if (!measured) {
     return;
@@ -150,7 +145,7 @@ function updateShift(table: HTMLTableElement): void {
   const { head, body, foot } = measured;
   const edges = scrollEdges(scrollContainerOf(timelineSubject(table)));
   const shift = stickyShift({
-    stickyTop: edges.top + stickyTopOf(table),
+    stickyTop: edges.top + stickyTop,
     viewportBottom: edges.bottom,
     headTop: head.top,
     headBottom: head.bottom,
@@ -178,6 +173,8 @@ export function attachStickyRows(root: HTMLElement): () => void {
   );
   /** 表ごとの留め方。スクロールする場所が変わると選び直す */
   const modes = new Map<HTMLTableElement, StickyMode>();
+  /** 表ごとの留める位置（px）。付けたときと大きさが変わったときだけ求め、スクロールでは保持した値を使用する */
+  const stickyTops = new Map<HTMLTableElement, number>();
   const observer = new ResizeObserver(() => updateAll());
   const observed = new Set<Element>();
   /** 表の留め方とスクロールする場所を選び直し、留め方が変わった表は前の留め方の CSS 変数を取り除く */
@@ -206,7 +203,13 @@ export function attachStickyRows(root: HTMLElement): () => void {
   const updateAll = (): void => {
     for (const table of tables) {
       const mode = chooseMode(table);
-      (mode === "timeline" ? updateTimelineRange : updateShift)(table);
+      if (mode === "timeline") {
+        updateTimelineRange(table);
+      } else {
+        const stickyTop = readStickyTop(table);
+        stickyTops.set(table, stickyTop);
+        updateShift(table, stickyTop);
+      }
     }
   };
   for (const table of tables) {
@@ -223,17 +226,25 @@ export function attachStickyRows(root: HTMLElement): () => void {
       frame = undefined;
       for (const [table, mode] of modes) {
         if (mode === "script") {
-          updateShift(table);
+          updateShift(table, stickyTops.get(table) ?? 0);
         }
       }
     });
   };
   window.addEventListener("scroll", onScroll, { capture: true, passive: true });
-  window.addEventListener("resize", onScroll);
+  const onResize = (): void => {
+    for (const [table, mode] of modes) {
+      if (mode === "script") {
+        stickyTops.set(table, readStickyTop(table));
+      }
+    }
+    onScroll();
+  };
+  window.addEventListener("resize", onResize);
   return () => {
     observer.disconnect();
     window.removeEventListener("scroll", onScroll, { capture: true });
-    window.removeEventListener("resize", onScroll);
+    window.removeEventListener("resize", onResize);
     if (frame !== undefined) {
       cancelAnimationFrame(frame);
     }

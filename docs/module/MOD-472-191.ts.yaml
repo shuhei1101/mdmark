@@ -227,6 +227,39 @@ functions:
       - IF-472-35#constraints[色を適用したブロックの要素]
       - IF-472-35#constraints[フロントマターの色分け]
     status: planned
+  - name: pairSideBySide
+    title: 左右に並べる行にする
+    container: src/diff/blocks.ts
+    summary: 前と後の文書を描いた中身を、`colorDiffBlocks` と同じ比べ方で、向かい合う 1 組のブロックの並びにする
+    description: |-
+      ブロックの対応づけは `colorDiffBlocks` の手順 2〜4（`computeDiff` の行の対応・`collectBlockRanges`・削除の候補・`isRewrite`）と同じ処理を使用し、2 つの関数で 1 つの内部の関数（変えたブロックの分類）を共有する。
+      後のブロックを上から並べ、追加のブロックで `isRewrite` の対になった削除の候補を持つものは `change`、対を持たないものは `add`、変えていないブロックは対応する前のブロックと組にして `same` にする。
+      削除したブロックは、`colorDiffBlocks` の手順 6 と同じ場所（前の文書で直前にあった変えていないブロックの後ろ）の行に `del` で入れる。
+      リスト・表は項目・行ではなくリスト・表のブロックを 1 行にする（項目・行の単位の色分けは行の中の `renderDiffBlock` に任せず、変えたリスト・表を `change` にする）。
+    kind: 関数
+    scope: internal
+    args:
+      - name: options
+        type: '{ before: { root: ParentNode; markdown: string }; after: { root: ParentNode; markdown: string }; segmenter: Intl.Segmenter | undefined }'
+        required: true
+        description: '`colorDiffBlocks` と同じ。`root` は書き換えない'
+    returns:
+      type: SideBySideRow[]
+      description: 後の文書の順に並べた行（ブロックの HTML は `outerHTML`）
+    unit_tests:
+      - name: test_pair_side_by_side
+        case: 正常
+        summary: 変えていない・書き換えた・追加した・削除したブロックを行にする
+        condition: '`# 手順`・段落 A・段落 B・表の前の文書と、`# 手順`・単語を書き換えた段落 A・表・段落 C の後の文書'
+        mock: なし
+        expected: '`same`（見出し）・`change`（段落 A）・`del`（段落 B）・`same`（表）・`add`（段落 C）の順'
+    callees:
+      - '#functions[collectBlockRanges]'
+      - '#functions[isRewrite]'
+      - 'MOD-472-190#functions[computeDiff]'
+    refs:
+      - IF-472-35#constraints[左右に並べる差分]
+    status: planned
   - name: isRewrite
     title: 書き換えかを見分ける
     container: src/diff/blocks.ts

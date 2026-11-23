@@ -263,7 +263,12 @@ export function attachZoom(options: {
     if (zoomIn) {
       zoomIn.disabled = scale >= ceil() - ZOOM_EPSILON;
     }
-    viewport.toggleAttribute("data-at-fit", scale <= state.fit + ZOOM_EPSILON);
+    // 全体が収まる倍率でも、中身が表示する枠に縦に収まらない間は付けない（指の縦の動きを図の中の移動にする）
+    viewport.toggleAttribute(
+      "data-at-fit",
+      scale <= state.fit + ZOOM_EPSILON &&
+        size.height * scale <= viewport.clientHeight + 1,
+    );
     keepFocus();
   };
   /** 倍率の文字とスクリーンリーダー向けの名前を合わせる */

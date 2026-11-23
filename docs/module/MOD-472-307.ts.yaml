@@ -50,6 +50,8 @@ functions:
       | 押す前 | `panel-right-dashed` | `mdmark-side-toc-pin-off` |
       | 押した後 | `panel-right` | `mdmark-side-toc-pin-on` |
 
+      目次を出すボタンには `ellipsis`（`mdmark-side-toc-toggle-wide`）と `panel-right`（`mdmark-side-toc-toggle-narrow`）の 2 つのアイコンを両方置き、CSS が描く先の要素の幅（48rem）で片方を出す。
+
       アイコンは lucide の ellipsis・panel-right-dashed・panel-right・chevrons-up-down・chevrons-down-up。
       `src/shared/icons.part.ts` に PanelRightDashed と PanelRight を追加する。
       `pin` は表のピン止めで使用するため残す
@@ -92,10 +94,10 @@ functions:
         expected: '`#手引き`・`#使用方法` のリンクが `data-changed` と `aria-label="手引き（変更）"`・`aria-label="使用方法（変更）"` を持ち、リンクの文字が `手引き`・`使用方法` のままで、末尾に `aria-hidden="true"` の `span.mdmark-side-toc-changed` を持つ。`#導入` のリンクは `data-changed`・`aria-label`・`span.mdmark-side-toc-changed` を持たない。右端の線の 1 本目と 3 本目だけが `data-changed` を持つ'
       - name: test_render_side_toc_when_current
         case: 正常
-        summary: 今いるセクションの項目・線・狭い幅の帯の文字を付ける
+        summary: 今いるセクションの項目と線を付ける
         condition: '`test_render_side_toc` の見出しに `current: "前提"`'
         mock: なし
-        expected: '`#前提` のリンクだけが `aria-current="location"`、3 本目の線だけが `data-current`、`mdmark-side-toc-current` が `前提`'
+        expected: '`#前提` のリンクだけが `aria-current="location"`、3 本目の線だけが `data-current`、`mdmark-side-toc-current` が無い'
       - name: test_render_side_toc_when_text_has_html
         case: 正常
         summary: 見出しの文字と ID をエスケープする

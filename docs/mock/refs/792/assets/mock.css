@@ -1,0 +1,313 @@
+/* #792 のモックだけの規則: 配布物の CSS の上に、カタログの並び・左右に並べる差分・狭い幅の目次のバーの案を重ねる */
+
+/* カタログの並び: 案ごとに見出しと見本を縦に並べる（共有の scene.css の grid は、中身の最小の幅で列が広がるため block に戻す） */
+.catalog {
+  display: block;
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+
+  & h2 {
+    margin: 48px 0 8px;
+    font-size: 22px;
+  }
+  & h3 {
+    margin: 24px 0 4px;
+    font-size: 17px;
+  }
+  & p.state-note {
+    margin: 0 0 8px;
+    color: var(--mdmark-color-muted);
+    font-size: 13px;
+  }
+}
+
+/* 見本を囲む枠: 描いた文書の外側の境界を示す */
+.sample {
+  box-sizing: border-box;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 6px;
+  padding: 16px 20px;
+  background: var(--mdmark-color-bg);
+}
+
+/* 左右に並べる差分: 前と後の 2 列で、行の高さを揃えてブロックを向かい合わせる */
+.side-by-side {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-rows: repeat(var(--side-rows), auto);
+  column-gap: 32px;
+
+  /* 1 列分の領域: 親の行を subgrid で受け継ぎ、左右で向かい合うブロックの高さを合わせる */
+  & > .side-col {
+    display: grid;
+    grid-row: 1 / span var(--side-rows);
+    grid-template-rows: subgrid;
+    min-width: 0;
+    margin: 0;
+  }
+
+  /* 向かい合う左右のブロックの上端を合わせるため、配布物の CSS のブロックの間の余白を外す */
+  & .side-col > * {
+    margin-block: 0;
+  }
+
+  /* 列の見出し: 比べるリビジョンの名前と日時 */
+  & .side-head {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    padding: 6px 0;
+    border-block-end: 1px solid var(--mdmark-color-border);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-muted);
+    font-size: 13px;
+  }
+  /* 向かい合う 1 組のブロック: 同じ行に置き、低い方の下に空きを入れる */
+  & .side-cell {
+    min-width: 0;
+    padding-block: 4px;
+  }
+  /* 向かいに対のブロックが無いときの空き */
+  & .side-gap {
+    border-radius: 4px;
+    background: repeating-linear-gradient(
+      135deg,
+      transparent 0 6px,
+      var(--mdmark-color-border) 6px 7px
+    );
+  }
+}
+
+/* 広い幅の見本: 狭い画面では見本の中だけを横にスクロールする */
+.wide-sample {
+  overflow-x: auto;
+  padding-inline-start: calc(20px + var(--mdmark-diff-block-gutter, 1.75rem));
+
+  & .side-by-side {
+    min-width: 960px;
+  }
+}
+
+/* 狭い幅の見本: スマートフォンの画面の幅（390px）の枠 */
+.phone {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 390px;
+  height: 640px;
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 12px;
+  background: var(--mdmark-color-bg);
+}
+
+/* 狭い幅の見本を横に並べる格子: 入らない幅では折り返す */
+.phone-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 390px), 1fr));
+  gap: 24px;
+  > * {
+    min-width: 0;
+  }
+}
+
+/* 狭い幅の案 A（縦に並べる）: 前と後の見出しを付けて上下に配置する */
+.stacked-pair {
+  /* 差分のブロックの左の余白の記号が見本の端で切れないよう、記号の幅だけ内側に配置する */
+  padding-inline: var(--mdmark-diff-block-gutter, 1.75rem) 0.75rem;
+
+  & .stacked-label {
+    margin: 8px 0 2px;
+    color: var(--mdmark-color-muted);
+    font-size: 12px;
+  }
+}
+
+/* 狭い幅の案 B（左右のまま横にスクロール）: 各列を読める幅で並べ、枠の中で横にスクロールする */
+.side-scroll {
+  overflow-x: auto;
+  /* 差分のブロックの左の余白の記号と右の面が見本の端に接しないよう、内側に余白を配置する */
+  padding-inline: var(--mdmark-diff-block-gutter, 1.75rem) 0.75rem;
+
+  & .side-by-side {
+    width: 640px;
+  }
+}
+
+/* 利用側の固定のヘッダー（狭い幅の目次の見本） */
+.host-header {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  padding-inline: 16px;
+  background: #1f2937;
+  color: #fff;
+  font-size: 15px;
+}
+
+/* 見本の中の本文（スクロールした途中の位置を描く） */
+.phone-body {
+  position: absolute;
+  inset: 48px 0 0;
+  overflow: hidden;
+  padding: 12px 16px;
+  font-size: 15px;
+  line-height: 1.7;
+
+  & h2 {
+    margin: 12px 0 6px;
+    font-size: 18px;
+  }
+  & p {
+    margin: 0 0 10px;
+  }
+}
+
+/* 狭い幅の右側の目次のバー（今いるセクションの見出しと目次を出すボタン） */
+.toc-band {
+  position: absolute;
+  inset: 48px 0 auto;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  padding-inline: 16px;
+  border-block-end: 1px solid var(--mdmark-color-border);
+  background: var(--mdmark-color-bg);
+  font-size: 14px;
+
+  & .toc-band-title {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* バーを出したり隠したりする動き（案 B）の目印 */
+  &[data-state="hidden"] {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+}
+
+/* 案 A: 本文の先頭にだけ置くバー（固定しない） */
+.toc-band-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  height: 44px;
+  margin: 0 -16px 8px;
+  padding-inline: 16px;
+  border-block: 1px solid var(--mdmark-color-border);
+  font-size: 14px;
+}
+
+/* 目次を出すボタン（44px 四方） */
+.toc-button {
+  display: inline-grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 8px;
+  background: var(--mdmark-color-bg);
+  color: inherit;
+  font: inherit;
+}
+
+/* 案 C: 画面の右上の端に固定する目次を開くボタンだけ */
+.toc-fab {
+  position: absolute;
+  top: 56px;
+  right: 12px;
+  z-index: 2;
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+}
+
+/* 表の見出し行（見本の中で留めた見出し行） */
+.stuck-head {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  margin: 0 -16px;
+  padding: 6px 16px;
+  border-block: 1px solid var(--mdmark-color-border);
+  background: var(--mdmark-color-bg-subtle, #f3f4f6);
+  font-size: 13px;
+  font-weight: 600;
+}
+
+/* 見本の中の表の行 */
+.table-rows {
+  margin: 0 -16px 10px;
+  font-size: 13px;
+
+  & div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    padding: 6px 16px;
+    border-block-end: 1px solid var(--mdmark-color-border);
+  }
+}
+
+/* 見本の上に重ねる操作の説明（スクロールの向き） */
+.gesture-note {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 3;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background: rgb(0 0 0 / 0.65);
+  color: #fff;
+  font-size: 12px;
+}
+
+/* 説明の表 */
+.rule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+
+  & th,
+  & td {
+    padding: 6px 10px;
+    border: 1px solid var(--mdmark-color-border);
+    text-align: left;
+    vertical-align: top;
+  }
+}
+
+/* 案 C のボタンの大きさの案: 見た目の大きさと押せる範囲を分けて示す */
+.toc-fab-size {
+  position: absolute;
+  top: 56px;
+  right: 12px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: inherit;
+
+  /* 見た目のボタン */
+  & .toc-fab-face {
+    display: grid;
+    place-items: center;
+    box-sizing: border-box;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: 6px;
+    background: var(--mdmark-color-bg);
+    box-shadow: 0 2px 8px rgb(0 0 0 / 0.15);
+  }
+  /* 押せる範囲の目印（見本だけの破線） */
+  &[data-show-hit] {
+    outline: 1px dashed #d33;
+    outline-offset: 0;
+  }
+}

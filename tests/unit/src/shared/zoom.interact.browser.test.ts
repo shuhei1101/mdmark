@@ -320,7 +320,7 @@ test("test_attach_zoom_when_refit", async () => {
   zoom.refit();
   // 検証
   expect(fitBefore).toBe(1);
-  expect(atFitBefore).toBe(true);
+  expect(atFitBefore).toBe(false);
   expect(zoom.fit()).toBeCloseTo(viewport.clientHeight / 1600, 5);
   expect(zooms.at(-1) ?? 1).toBe(1);
   expect(viewport.hasAttribute("data-at-fit")).toBe(false);
@@ -484,6 +484,30 @@ test("test_attach_zoom_when_at_fit", async () => {
   expect(opened).toBe(true);
   expect(zoomed).toBe(false);
   expect(viewport.hasAttribute("data-at-fit")).toBe(true);
+});
+
+// 全体が収まる倍率でも、中身が枠に縦に収まらなければ data-at-fit を付けない（正常系）
+test("test_attach_zoom_when_tall_at_fit", async () => {
+  // 準備: 全体が収まる倍率は幅で決める（高さを --mdmark-diagram-max-height で切った枠）
+  const { attachZoom } = await loadZoom();
+  const root = createRootFromHtml(
+    `${TOOLS_HTML}<div class="viewport" tabindex="0" style="width: 600px; height: 300px; overflow: auto"><div class="sizer"><div class="content" style="width: 600px; height: 1200px"></div></div></div>`,
+  );
+  const tools = root.querySelector<HTMLElement>(".tools") as HTMLElement;
+  const viewport = root.querySelector<HTMLElement>(".viewport") as HTMLElement;
+  const content = root.querySelector<HTMLElement>(".content") as HTMLElement;
+  // 実行
+  const zoom = attachZoom({
+    viewport,
+    content,
+    size: { width: 600, height: 1200 },
+    tools,
+    fitHeight: false,
+  });
+  detachers.push(() => zoom.detach());
+  // 検証
+  expect(zoomText(root)).toBe("100%");
+  expect(viewport.hasAttribute("data-at-fit")).toBe(false);
 });
 
 /** 表示する枠の上の点に指を置いた Touch を作る */

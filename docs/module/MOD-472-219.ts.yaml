@@ -26,7 +26,7 @@ constants:
   - name: NARROW_WIDTH_REM
     title: 狭い幅の境目
     container: src/section/side-toc.interact.ts
-    summary: 描く先の要素の幅がこの値（rem）未満のとき、右側の目次を狭い幅の帯で出す。CSS のコンテナクエリと同じ値で、項目を押した後にパネルを隠すかを決めるのに使用する
+    summary: 描く先の要素の幅がこの値（rem）未満のとき、右側の目次を狭い幅の見せ方（右上の端に留めた目次を出すボタンだけ）で出す。CSS のコンテナクエリと同じ値で、項目を押した後にパネルを隠すかを決めるのに使用する
     value: '48'
     status: planned
   - name: SIDE_TOC_HEADING_SELECTOR
@@ -192,7 +192,7 @@ functions:
 
       IntersectionObserver・`hashchange`・本文の列の `click` と `keyup`・すべて展開とすべて折りたたむの押下を受けて、次の描画のタイミングに今いるセクションをもう一度決める。
       もう一度決めるときは、祖先に `hidden` を持つ見出し（閉じたセクションの中身と選ばれていないタブの中身の中の見出し）を除いて `pickCurrentHeading` に指定する。
-      決定した見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付け、目次を出すボタンの `mdmark-side-toc-current`（狭い幅の帯に出る文字）に見出しの文字を配置する。
+      決定した見出しの項目に `aria-current="location"`、右端の線のその見出しの線に `data-current` を付ける。
 
       hover の出し方では、次のたびに、hover で開く目次の枠の位置と右端の線の位置を aside の CSS 変数に px で入れる。
 
@@ -282,7 +282,7 @@ functions:
         summary: スクロールすると今いるセクションの項目を付け替える
         condition: 見出しが 3 つある長い本文で、2 つ目の見出しを線より上へスクロールして次の描画を待つ
         mock: なし
-        expected: 2 つ目の項目だけが `aria-current="location"`、右端の線の 2 本目だけが `data-current` を持ち、目次を出すボタンに 2 つ目の見出しの文字が出る
+        expected: 2 つ目の項目だけが `aria-current="location"`、右端の線の 2 本目だけが `data-current` を持つ
       - name: test_attach_side_toc_when_detached
         case: 正常
         summary: 削除すると包む前の子の並びへ戻す

@@ -278,6 +278,37 @@ scenarios:
       - 右側の目次の見出し B の項目に変更のマーカーがあり、見出し A の項目には無い
       - 変更のマーカーの付いた項目は、読み上げで項目の名前に続けて `変更` と読み取られる
     test: test_normal_when_blocks_side_toc_marked
+  - name: 正常シナリオ（変更表示のボタンと欄を出さない）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じページで、取り出し元と、変更表示のボタンとリビジョンを選ぶ欄を出さない指定を指定して文書を描く
+      - name: 見本の文書の 3 つのリビジョン
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        participant S as 取り出し元
+        P->>M: 要素・Markdown・docId・取り出し元・ボタンと欄を出さない指定を指定して描かせる
+        M->>S: revisions(docId)
+        S-->>M: リビジョンの一覧（新しい順）
+        M->>S: content({ docId, revisionId: 最新のリビジョン })・content({ docId, revisionId: その 1 つ前 })
+        S-->>M: 2 つの Markdown
+        M-->>U: 変更表示のボタンとリビジョンを選ぶ欄を持たずに、2 つのリビジョンの差分を出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 文書の中に、変更表示のボタンと、前と後のリビジョンを選ぶ欄が無い
+      - '`revisions` が `guide` を受けて 1 回呼ばれ、`content` が `{ docId: guide, revisionId: r3 }` と `{ docId: guide, revisionId: r2 }` を受けて呼ばれる'
+      - 描き終えた時点で、`r2` と `r3` の差分が出る
+    test: test_normal_when_controls_hidden
 lead: 利用側のページが、要素と Markdown と差分の取り出し元（`DiffSource`）を mdmark に指定して文書を描く。読者が差分を開くと、mdmark が取り出し元からリビジョンの一覧と本文を受けて差分を出す。差分を開いた状態で描く指定を指定したときは、読者が開かなくても描いた時点で差分を出す。
 primary_actor: mdmark を使用するアプリのページ
 stakeholders:
@@ -289,7 +320,7 @@ trigger: 利用側のページが、取り出し元を指定して文書を描�
 preconditions:
   - ページがバージョンを固定した URL で mdmark の JavaScript と CSS を読み込んでいる
   - 描く先の要素がページにある
-success_guarantee: 読者が差分を開くと、取り出し元が返却したリビジョンが新しい順に選べ、一番新しいリビジョンとその 1 つ前の差分が出る。差分を開いた状態で描く指定を指定したときは、描いた時点で一番新しいリビジョンとその 1 つ前の差分が出る。
+success_guarantee: 読者が差分を開くと、取り出し元が返却したリビジョンが新しい順に選べ、一番新しいリビジョンとその 1 つ前の差分が出る。差分を開いた状態で描く指定を指定したときは、描いた時点で一番新しいリビジョンとその 1 つ前の差分が出る。変更表示のボタンとリビジョンを選ぶ欄を出さない指定を指定したときは、ボタンと欄を配置せずに、描いた時点で同じ 2 つのリビジョンの差分が出る。
 minimal_guarantee: 取り出し元がリビジョンの一覧か本文を返却できないときは、差分の場所に通知ブロックを出し、文書の本文は描いたまま残す。
 test_file: tests/e2e/単一ユースケース/差分の取り出し元を指定する.spec.ts
 tags:

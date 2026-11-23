@@ -55,6 +55,10 @@ import {
   type DiffMinimapMark,
   renderDiffMinimap,
 } from "../src/diff/diff-minimap.part.ts";
+import {
+  renderDiffSideBySide,
+  type SideBySideRow,
+} from "../src/diff/diff-side-by-side.part.ts";
 import { renderDiffToggle } from "../src/diff/diff-toggle.part.ts";
 import { renderRevisionPicker } from "../src/diff/revision-picker.part.ts";
 import { renderEmbeddedHtml } from "../src/embedded-html/embedded-html.part.ts";
@@ -508,6 +512,20 @@ function invalidDefinition(directive: DiagramDirective, name: string): string {
 /** `zoom` を指定しないストーリーは、描いた直後に全体が収まる倍率にするマーカーを追加する */
 function fitted(html: string, args: PartArgs): string {
   return typeof args.zoom === "number" ? html : html + DIAGRAM_FIT_MARKER;
+}
+
+/** 種類 `mermaid` の図の枠のストーリー。`svg` は見本の名前、`maxHeight` は表示する枠の高さの上限（`--mdmark-diagram-max-height`）を縮め、縦に長い図を枠で切る */
+function mermaidFrameStory(args: PartArgs): string {
+  const frame = fitted(
+    renderMermaidStory({
+      svg: typeof args.svg === "string" ? args.svg : "flowchart",
+      title: typeof args.title === "string" ? args.title : "",
+    }) ?? "",
+    args,
+  );
+  return typeof args.maxHeight === "number"
+    ? `<div style="--mdmark-diagram-max-height: ${args.maxHeight}px">${frame}</div>`
+    : frame;
 }
 
 /** 図の部品のストーリーの引数: 見本・状態 */
@@ -2111,7 +2129,6 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       title: typeof args.title === "string" ? args.title : "",
       text: typeof args.text === "string" ? args.text : "",
       playing: args.playing === true,
-      fill: typeof args.fill === "number" ? args.fill : 0,
       label: "全体の構成の案内",
     }),
   "diff-toggle": (args) =>
@@ -2138,6 +2155,16 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       marks: args.marks as DiffMinimapMark[],
       view: args.view as { top: number; height: number },
     }),
+  // 描く先の要素のコンテナクエリ（48rem）で広い幅と狭い幅を切り替えるため、`frameWidth` の幅の要素をコンテナにする
+  "diff-side-by-side": (args) =>
+    `<div style="container: mdmark / inline-size">${renderDiffSideBySide({
+      before: {
+        label: String(args.beforeLabel ?? "2026/10/19 16:40 件数を修正する"),
+      },
+      after: { label: String(args.afterLabel ?? "2026/10/20 11:05 追加する") },
+      rows: Array.isArray(args.rows) ? (args.rows as SideBySideRow[]) : [],
+      idPrefix: "story-diff-pair",
+    })}</div>`,
   "diff-blocks": (args) => {
     const unit = args.unit as "block" | "item" | "row";
     const html = renderDiffBlock({
@@ -2530,13 +2557,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       return narrowed(mapFrameStory(args), args);
     }
     if (args.kind === "mermaid") {
-      return fitted(
-        renderMermaidStory({
-          svg: "flowchart",
-          title: typeof args.title === "string" ? args.title : "",
-        }) ?? "",
-        args,
-      );
+      return mermaidFrameStory(args);
     }
     const html = renderDiagram({
       kind: "chart",

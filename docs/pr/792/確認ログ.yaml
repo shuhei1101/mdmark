@@ -1,0 +1,55 @@
+confirmations:
+  - topic: '#788 の、開いたときの倍率の図の上の縦の指の操作'
+    decision: 表示する枠に縦に収まらない図だけ、指の縦の動きで図の中を動かし、図の端を越えた分は文書をスクロールする。枠に縦に収まる図は今のまま文書をスクロールする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: f03b3436
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4658318064
+  - topic: '#783 の左右に並べる差分の、狭い幅での見せ方'
+    decision: 狭い幅では、変えたブロックだけ前（削除の色）の下に後（追加の色）を縦に並べ、変えていないブロックは 1 回だけ出す。広い幅では左右の列を 1 つのスクロールで動かす（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 030b4004
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4658406081
+  - topic: '#790 の狭い幅の右側の目次のバーの見せ方'
+    decision: 目次を開くボタンだけを右上の端に固定する（案 C。ボタンのアイコンは案を複数出して選んでもらう）
+    decided_by: reply
+    approver: shuhei1101
+    commit: 030b4004
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4658456891
+  - topic: '#790 で右上の端に固定する目次を開くボタンのアイコン'
+    decision: 右側のパネル（Lucide の `panel-right`。案 D）。ボタンの大きさは小さくする案を出して選んでもらう
+    decided_by: reply
+    approver: shuhei1101
+    commit: e8f45b71
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659228677
+  - topic: '#790 で右上の端に固定する目次を開くボタンの大きさ'
+    decision: 見た目は 32px 四方（アイコン 16px）に小さくし、押せる範囲は周りの透明な余白で 44px 四方に保つ（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 5b409045
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659259663
+  - topic: '#784 の変更表示のボタンとリビジョンを選ぶ欄を出さない指定の名前と値の型'
+    decision: 真偽値の `opts.diffControls`（既定 `true`。`false` でボタンと欄を出さない。推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 33f791aa
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659339804
+  - topic: '#785 でラベルの置き場所が無くラベルを描かない線の説明を出す場所'
+    decision: ラベルを描かない線だけは、今までどおり線そのもの（押せる帯）の上とフォーカスで説明を出す（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 33f791aa
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4659340068
+  - topic: '#790 の iPad の Safari の見出し行のずれを、再現しないまま直すか'
+    decision: 2 つの方式を切り替えられる確認用のページを shuhdev-gateway の一時の登録で配信し、利用者が iPad の実機でどちらがずれるかを確認してから直す（推奨案 B。配信は Tailscale ではなく shuhdev-gateway）
+    decided_by: reply
+    approver: shuhei1101
+    commit: c968d756
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4660055409
+  - topic: '#790 の iPad の Safari の見出し行のずれの直し方（実機の確認の結果）'
+    decision: 確認用のページで、今の `animation-timeline` の方式は iPad の実機でずれず、JS でずらす方式は遅かった。iPad・iPhone の Safari でも今の方式のままにし、JS でずらす方式に切り替えない
+    decided_by: reply
+    approver: shuhei1101
+    commit: 9bbf87b7
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4660762538

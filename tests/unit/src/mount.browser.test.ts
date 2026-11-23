@@ -877,6 +877,59 @@ test("test_mount_when_diff_mode_open", async () => {
   expect(expanded()).toBe("true");
 });
 
+// diffControls が false なら、ボタンと選択を出さずに描いた時点で差分を出し、真偽値でない値はボタンを出す（正常系）
+test("test_mount_when_diff_controls_hidden", async () => {
+  // 準備
+  const recording = () => {
+    const revisionsCalls: string[] = [];
+    const contentCalls: string[] = [];
+    const contents: Record<string, string> = {
+      r1: "# 見出し\n\n前の段落\n",
+      r2: "# 見出し\n\n後の段落\n",
+    };
+    return {
+      revisionsCalls,
+      contentCalls,
+      source: {
+        revisions: async (docId: string) => {
+          revisionsCalls.push(docId);
+          return DIFF_REVISIONS;
+        },
+        content: async (target: { docId: string; revisionId: string }) => {
+          contentCalls.push(target.revisionId);
+          return contents[target.revisionId] ?? "";
+        },
+      },
+    };
+  };
+  const hidden = recording();
+  const invalid = recording();
+  const hiddenEl = createElement();
+  const invalidEl = createElement();
+  // 実行
+  await mountTracked(hiddenEl, {
+    markdown: "# 見出し",
+    docId: "guide",
+    diffSource: hidden.source,
+    diffControls: false,
+  });
+  await mountTracked(invalidEl, {
+    markdown: "# 見出し",
+    docId: "guide",
+    diffSource: invalid.source,
+    diffControls: "no" as unknown as boolean,
+  });
+  // 検証
+  await vi.waitFor(() => {
+    expect(hiddenEl.querySelector(".mdmark-diff-line")).not.toBeNull();
+  });
+  expect(hiddenEl.querySelector(".mdmark-diff-toggle")).toBeNull();
+  expect(hiddenEl.querySelector("select")).toBeNull();
+  expect([...hidden.contentCalls].sort()).toEqual(["r1", "r2"]);
+  expect(invalidEl.querySelector(".mdmark-diff-toggle")).not.toBeNull();
+  expect(invalid.revisionsCalls).toEqual([]);
+});
+
 // blocks ではボタンを配置せず、取り出した 2 つの本文で色分けして再描画する（正常系）
 test("test_mount_when_diff_blocks", async () => {
   // 準備

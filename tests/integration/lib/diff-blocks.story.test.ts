@@ -149,6 +149,38 @@ test("test_list_item_del", async () => {
   }
 });
 
+// 2 行目に折り返す追加した項目でも、左の余白の + は項目の 1 行目の高さにある（ListItemAddWrapped）
+test("test_list_item_add_wrapped", async () => {
+  // 準備・実行
+  const page = await holder.openStory(
+    "parts-diffblocks--list-item-add-wrapped",
+  );
+  // 検証
+  const item = page.locator(`li${BLOCK}`);
+  await expect(item.getAttribute("data-kind")).resolves.toBe("add");
+  const box = await item.evaluate((li) => {
+    const sign = li.querySelector(".mdmark-diff-block-sign") as HTMLElement;
+    const text = [...li.childNodes].find(
+      (node) => node.nodeType === Node.TEXT_NODE,
+    ) as Text;
+    const range = document.createRange();
+    range.setStart(text, 0);
+    range.setEnd(text, 1);
+    const first = range.getBoundingClientRect();
+    const signRect = sign.getBoundingClientRect();
+    return {
+      lines: Math.round(li.getBoundingClientRect().height / first.height),
+      signCenter: signRect.top + signRect.height / 2,
+      firstCenter: first.top + first.height / 2,
+      lineHeight: Number.parseFloat(getComputedStyle(li).lineHeight),
+    };
+  });
+  expect(box.lines).toBeGreaterThanOrEqual(2);
+  expect(Math.abs(box.signCenter - box.firstCenter)).toBeLessThan(
+    box.lineHeight / 2,
+  );
+});
+
 // 追加したコードブロックは、コードブロックの地の色を変えず、外側に追加の色を適用する（CodeBlock）
 test("test_code_block", async () => {
   // 準備・実行
