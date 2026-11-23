@@ -171,13 +171,41 @@ scenarios:
       - ページが外部へ要求した URL は設定の `mermaid.url` の 1 件だけ
       - ブラウザのコンソールに mermaid を読み込めなかったエラーが出る
     test: test_error_when_mermaid_not_embedded
+  - name: 正常シナリオ（メジャーバージョンの範囲を指定する）
+    setup:
+      - name: 範囲を読み込むページ
+        description: 正常シナリオと同じ HTML で、URL のバージョンの位置に `0` を記載したもの
+        notes: ビルドで埋めるバージョンは `v0.0.2`
+      - name: Mock
+        description: jsDelivr を、`@0` の要求に `v0.0.2` のビルドの `dist/` を返却する手元の配信に差し替える（`v0.0.1` と `v0.0.2` のタグがある状態の代役）
+        notes: '`/gh/shuhei1101/mdmark@0/dist/{ファイル}` への要求に、`v0.0.2` のビルドの `dist/{ファイル}` を返却する'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant C as jsDelivr
+        U->>P: ページを開く
+        P->>C: @0/dist/index.css と index.js を要求
+        C-->>P: メジャーバージョン 0 の最新のタグの CSS と JavaScript
+        P->>P: 公開関数を呼ぶ
+        P-->>U: バージョン v0.0.2 を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - 公開関数が `v0.0.2` を返却する
+      - ページのルート要素の CSS 変数 `--mdmark-version` の計算値が `"v0.0.2"`
+    test: test_normal_when_major_range
 lead: 利用側のページが、タグか develop を指定した URL で mdmark の JavaScript と CSS を読み込み、公開関数を呼ぶ。サーバーの言語によらず、ページに記載した参照だけで使用できる。
 primary_actor: mdmark を使用するアプリのページ
 trigger: 利用者が、mdmark を読み込むページをブラウザで開く
 preconditions:
-  - 読み込むバージョンのタグか develop が指す commit に `dist/` が入っている
+  - 読み込むバージョンのタグ・メジャーバージョンの範囲の最新のタグか develop が指す commit に `dist/` が入っている
   - ページが `https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@{タグか develop}/dist/index.js` と `index.css` を読み込む記述を持つか、`dist/` の配布ファイルを埋めて持つ
-success_guarantee: ページに CSS が該当し、JavaScript の公開関数が、タグを指定したときはそのタグ、develop を指定したときは develop のビルドのバージョンを返却する。配布ファイルを埋めたページは、埋めた部品と mermaid のモジュールを外部へ要求せずに読み込み、map・ビュー・コメント・mermaid の図を描く。
+success_guarantee: ページに CSS が該当し、JavaScript の公開関数が、タグを指定したときはそのタグ、develop を指定したときは develop のビルドのバージョン、メジャーバージョンの範囲（`@0`）を指定したときはその範囲の最新のタグのバージョンを返却する。配布ファイルを埋めたページは、埋めた部品と mermaid のモジュールを外部へ要求せずに読み込み、map・ビュー・コメント・mermaid の図を描く。
 minimal_guarantee: 配布物を読み込めなかったときも、ページの本文はそのまま表示され、読み込めなかったことがブラウザのコンソールに出る。
 test_file: tests/e2e/単一ユースケース/配布物を読み込む.spec.ts
 tags:

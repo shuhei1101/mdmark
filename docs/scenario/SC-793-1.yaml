@@ -1,0 +1,88 @@
+id: SC-793-1
+visibility: internal
+title: アプリの一覧を表のカスタム要素で探して編集する
+lead: アプリの画面が mdmark の配布物をメジャーバージョンの範囲で読み込み、`<mdmark-table>` に一覧のデータを指定する。利用者が表を並べ替え・絞り込みして目当ての行を探し、行を押して詳細を開き、セルを編集して保存する。
+primary_actor: 利用者
+stakeholders:
+  - name: アプリの画面
+    interest: 表をアプリごとに作らず、mdmark のバージョンを上げても依存の更新とビルドをせずに表の部品の修正と機能に追従できる
+  - name: 利用者
+    interest: アプリの一覧を mdmark の文書の表と同じ操作で探し、その場で行を開いて編集できる
+trigger: 利用者が、アプリの一覧から目当ての行を探して中身を修正したくなる
+preconditions:
+  - アプリの画面が jsDelivr の mdmark の配布物を読み込む記述を持つ
+success_guarantee: メジャーバージョンの範囲で読み込んだ配布物の `<mdmark-table>` に一覧が描かれ、並べ替え・絞り込みで行を探せる。行の押下とセルの編集がイベントでアプリへ届き、アプリが詳細を開いて保存する。
+minimal_guarantee: 配布物を読み込めないときも、アプリの画面のほかの要素は動く。データに誤りがあるときは、表の場所に誤りの通知を出す。
+test_file: tests/e2e/複合ユースケース/アプリの一覧を表のカスタム要素で探して編集する.spec.ts
+decisions:
+  - D-869
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: アプリの画面
+        description: '`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@0/dist/` の `index.js` と `index.css` を読み込み、`<mdmark-table>` に一覧の列の定義と行のデータを指定する HTML。行の押下のイベントで詳細の区画を開き、セルの編集のイベントで受け取った値を手元の配列に保存する'
+      - name: 一覧のデータ
+        description: タイトル・状態・担当・更新日の 4 列と 5 行。担当の列を編集できる列にする
+      - name: Mock
+        description: jsDelivr を、`@0` の要求にビルドした `dist/` を返却する手元の応答に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        A[配布物を読み込む:正常シナリオ（メジャーバージョンの範囲を指定する）] --> B[表をカスタム要素で描く:正常シナリオ]
+        B --> C[表をカスタム要素で描く:正常シナリオ（行を押す）]
+        C --> D[表をカスタム要素で描く:正常シナリオ（セルを編集する）]
+        click A "id:SC-472-28#scenarios[正常シナリオ（メジャーバージョンの範囲を指定する）]"
+        click B "id:SC-793-2#scenarios[正常シナリオ]"
+        click C "id:SC-793-2#scenarios[正常シナリオ（行を押す）]"
+        click D "id:SC-793-2#scenarios[正常シナリオ（セルを編集する）]"
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`@0` で読み込んだ配布物の `<mdmark-table>` に、5 行の一覧が Markdown の表と同じ外観で描かれる'
+      - 状態の列で絞り込み、更新日の列で並べ替えると、目当ての行が先頭に来る
+      - その行を押すと、アプリの詳細の区画にその行の中身が開く
+      - その行の担当のセルを編集して確定すると、アプリの配列に新しい値が保存され、セルに新しい値が出る
+    test: test_normal
+    uses:
+      - SC-472-28#scenarios[正常シナリオ（メジャーバージョンの範囲を指定する）]
+      - SC-793-2#scenarios[正常シナリオ]
+      - SC-793-2#scenarios[正常シナリオ（行を押す）]
+      - SC-793-2#scenarios[正常シナリオ（セルを編集する）]
+  - name: 正常シナリオ（行を追加する）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオと同じ。行の追加のイベントで新しい行を行のデータに追加し、プロパティに指定し直す
+      - name: 一覧のデータ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        A[配布物を読み込む:正常シナリオ（メジャーバージョンの範囲を指定する）] --> B[表をカスタム要素で描く:正常シナリオ（行を追加する）]
+        B --> C[表をカスタム要素で描く:正常シナリオ（セルを編集する）]
+        click A "id:SC-472-28#scenarios[正常シナリオ（メジャーバージョンの範囲を指定する）]"
+        click B "id:SC-793-2#scenarios[正常シナリオ（行を追加する）]"
+        click C "id:SC-793-2#scenarios[正常シナリオ（セルを編集する）]"
+      ```
+
+      <!-- /map -->
+    expected:
+      - 行の追加のボタンを押すと、アプリが行を追加し、6 行の表に描き直される
+      - 追加した行の担当のセルを編集して確定すると、アプリの配列に新しい値が保存される
+    test: test_normal_when_row_added
+    uses:
+      - SC-472-28#scenarios[正常シナリオ（メジャーバージョンの範囲を指定する）]
+      - SC-793-2#scenarios[正常シナリオ（行を追加する）]
+      - SC-793-2#scenarios[正常シナリオ（セルを編集する）]
+tags:
+  - name: topic:表
+    main: true
+  - name: topic:部品
+  - name: topic:配布物
+  - name: tool:jsdelivr
