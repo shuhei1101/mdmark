@@ -102,8 +102,16 @@ const scenes = {
   },
 };
 
+/** 担当の列を見せる場面: 担当の列がピン止めしたタイトルの列のすぐ右に来るまで表をスクロールする */
+const SCROLL_TO_OWNER = new Set(["edit-a", "edit-a-hover", "edit-b"]);
+
 for (const el of document.querySelectorAll("[data-mock-scene]")) {
   const name = el.dataset.mockScene;
   await mount(el, { markdown: tableMarkdown(name === "badges") });
   scenes[name](el);
+  if (SCROLL_TO_OWNER.has(name)) {
+    const scroller = el.querySelector(".mdmark-table-scroll");
+    const [title, , owner] = el.querySelector(DATA_ROWS).children;
+    scroller.scrollLeft = owner.offsetLeft - title.offsetWidth;
+  }
 }

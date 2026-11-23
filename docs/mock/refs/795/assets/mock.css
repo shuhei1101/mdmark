@@ -70,6 +70,7 @@
 /* 編集中のセル（案 A: 表の部品が入力欄を描く） */
 .mock-cell-editing {
   padding: 4px;
+  text-decoration: none;
 }
 .mock-cell-input {
   box-sizing: border-box;
