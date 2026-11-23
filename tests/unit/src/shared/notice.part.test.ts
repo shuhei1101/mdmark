@@ -98,5 +98,7 @@ test("test_render_notice_when_table_data", async () => {
   expect(html).toContain(
     '<strong class="mdmark-notice-title">この表を表示できません</strong>',
   );
-  expect(html).toContain("<p><code>rows</code>に配列でない値が指定されています。</p>");
+  expect(html).toContain(
+    "<p><code>rows</code>に配列でない値が指定されています。</p>",
+  );
 });

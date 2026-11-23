@@ -31,11 +31,51 @@ const columns = () => [
 
 /** 5 行の行のデータ */
 const rows = () => [
-  { key: "R1", values: { title: "設計", state: "未着手", owner: "佐藤", updated: "2026-11-20" } },
-  { key: "R2", values: { title: "列の幅", state: "進行中", owner: "鈴木", updated: "2026-11-22" } },
-  { key: "R3", values: { title: "並べ替え", state: "進行中", owner: "佐藤", updated: "2026-11-18" } },
-  { key: "R4", values: { title: "ピン止め", state: "完了", owner: "田中", updated: "2026-11-15" } },
-  { key: "R5", values: { title: "行を押す", state: "未着手", owner: "鈴木", updated: "2026-11-21" } },
+  {
+    key: "R1",
+    values: {
+      title: "設計",
+      state: "未着手",
+      owner: "佐藤",
+      updated: "2026-11-20",
+    },
+  },
+  {
+    key: "R2",
+    values: {
+      title: "列の幅",
+      state: "進行中",
+      owner: "鈴木",
+      updated: "2026-11-22",
+    },
+  },
+  {
+    key: "R3",
+    values: {
+      title: "並べ替え",
+      state: "進行中",
+      owner: "佐藤",
+      updated: "2026-11-18",
+    },
+  },
+  {
+    key: "R4",
+    values: {
+      title: "ピン止め",
+      state: "完了",
+      owner: "田中",
+      updated: "2026-11-15",
+    },
+  },
+  {
+    key: "R5",
+    values: {
+      title: "行を押す",
+      state: "未着手",
+      owner: "鈴木",
+      updated: "2026-11-21",
+    },
+  },
 ];
 
 /** 型 MdmarkTableElement のプロパティを持つ要素 */
@@ -74,9 +114,9 @@ function shownKeys(element: HTMLElement): string[] {
 
 /** 列の見出しの並べ替えのボタン */
 function sortButton(element: HTMLElement, column: number): HTMLButtonElement {
-  const button = element.querySelectorAll<HTMLTableCellElement>("thead th")[
-    column
-  ]?.querySelector<HTMLButtonElement>(".mdmark-sort");
+  const button = element
+    .querySelectorAll<HTMLTableCellElement>("thead th")
+    [column]?.querySelector<HTMLButtonElement>(".mdmark-sort");
   if (!button) {
     throw new Error("並べ替えのボタンがありません");
   }
@@ -90,7 +130,8 @@ function filterState(element: HTMLElement, value: string): void {
     ".mdmark-filter-drawer:not([hidden])",
   );
   const checkbox = [
-    ...(drawer?.querySelectorAll<HTMLInputElement>("input[type=checkbox]") ?? []),
+    ...(drawer?.querySelectorAll<HTMLInputElement>("input[type=checkbox]") ??
+      []),
   ].find((input) => input.closest("label")?.textContent?.includes(value));
   checkbox?.click();
 }
@@ -99,13 +140,18 @@ function filterState(element: HTMLElement, value: string): void {
 test("test_connected_callback_when_upgraded", async () => {
   // 準備
   const { MdmarkTableElement } = await loadElement();
-  const element = document.createElement("mdmark-table-upgrade") as TableElement;
+  const element = document.createElement(
+    "mdmark-table-upgrade",
+  ) as TableElement;
   element.columns = columns();
   element.rows = rows();
   document.body.append(element);
   elements.push(element);
   // 実行
-  customElements.define("mdmark-table-upgrade", class extends MdmarkTableElement {});
+  customElements.define(
+    "mdmark-table-upgrade",
+    class extends MdmarkTableElement {},
+  );
   await flush();
   // 検証
   expect(element.querySelector("table")).not.toBeNull();
@@ -151,7 +197,9 @@ test("test_schedule_render", async () => {
   await flush();
   watch.disconnect();
   // 検証
-  expect(records.filter((record) => record.addedNodes.length > 0)).toHaveLength(1);
+  expect(records.filter((record) => record.addedNodes.length > 0)).toHaveLength(
+    1,
+  );
 });
 
 // 列の定義と行のデータから表を描く（正常系）
@@ -209,7 +257,15 @@ test("test_render_now_when_rows_reassigned", async () => {
   // 実行
   element.rows = [
     ...rows(),
-    { key: "R6", values: { title: "行を追加", state: "進行中", owner: "佐藤", updated: "2026-11-23" } },
+    {
+      key: "R6",
+      values: {
+        title: "行を追加",
+        state: "進行中",
+        owner: "佐藤",
+        updated: "2026-11-23",
+      },
+    },
   ];
   await flush();
   // 検証
@@ -239,7 +295,11 @@ test("test_render_now_when_cell_edit_cancelled", async () => {
   if (input) {
     input.value = "田中";
     input.dispatchEvent(
-      new KeyboardEvent("keydown", { key: "Enter", bubbles: true, cancelable: true }),
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+      }),
     );
   }
   // 検証
@@ -268,7 +328,7 @@ test("test_render_now_when_events", async () => {
   );
   wrapper.addEventListener("mdmark-row-add", adds);
   // 実行
-  (bodyRows(element)[2]?.children[0] as HTMLElement).click();
+  (bodyRows(element)[2]?.children[0] as HTMLElement | undefined)?.click();
   element.querySelector<HTMLButtonElement>(".mdmark-table-add-button")?.click();
   // 検証
   expect(clicks).toHaveBeenCalledTimes(1);

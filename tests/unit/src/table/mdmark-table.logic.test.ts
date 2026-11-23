@@ -250,7 +250,12 @@ test("test_cell_text", async () => {
   // 準備
   const { cellText } = await loadLogic();
   // 実行
-  const texts = [cellText("佐藤"), cellText(12.5), cellText(null), cellText(undefined)];
+  const texts = [
+    cellText("佐藤"),
+    cellText(12.5),
+    cellText(null),
+    cellText(undefined),
+  ];
   // 検証
   expect(texts).toEqual(["佐藤", "12.5", "", ""]);
 });

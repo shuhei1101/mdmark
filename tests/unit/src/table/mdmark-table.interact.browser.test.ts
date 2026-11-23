@@ -209,7 +209,9 @@ test("test_attach_table_rows_when_edit_rejected", async () => {
   if (input) {
     input.value = "田中";
     input.blur();
-    cellAt(root, 0, 0).dispatchEvent(new FocusEvent("focusin", { bubbles: true }));
+    cellAt(root, 0, 0).dispatchEvent(
+      new FocusEvent("focusin", { bubbles: true }),
+    );
   }
   // 検証
   expect(handlers.onCellEdit).toHaveBeenCalledTimes(1);
@@ -266,7 +268,11 @@ test("test_apply_cell_renderers", async () => {
     ],
     rows: Object.entries(values).map(([key, row]) => ({
       key,
-      values: { title: row[0] ?? null, state: row[1] ?? null, owner: row[2] ?? null },
+      values: {
+        title: row[0] ?? null,
+        state: row[1] ?? null,
+        owner: row[2] ?? null,
+      },
     })),
   };
   // 実行
@@ -298,7 +304,9 @@ test("test_apply_cell_renderers_when_render_throws", async () => {
       },
       { key: "owner", title: "担当" },
     ],
-    rows: [{ key: "R1", values: { title: "設計", state: "未着手", owner: "佐藤" } }],
+    rows: [
+      { key: "R1", values: { title: "設計", state: "未着手", owner: "佐藤" } },
+    ],
   };
   // 実行
   applyCellRenderers(wrapper, spec);

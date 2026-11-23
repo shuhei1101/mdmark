@@ -2879,7 +2879,13 @@ async function keyedTable(
     title: ["設計", "列の幅", "並べ替え", "ピン止め", "行を押す"],
     state: ["未着手", "進行中", "進行中", "完了", "未着手"],
     owner: ["佐藤", "鈴木", "佐藤", "田中", "鈴木"],
-    updated: ["2026-11-20", "2026-11-22", "2026-11-18", "2026-11-15", "2026-11-21"],
+    updated: [
+      "2026-11-20",
+      "2026-11-22",
+      "2026-11-18",
+      "2026-11-15",
+      "2026-11-21",
+    ],
   };
   const options = {
     kind: "data" as const,
@@ -2890,7 +2896,9 @@ async function keyedTable(
       columns.map((column) => values[column.key]?.[row] ?? ""),
     ),
     filters: columns.flatMap((column, index) =>
-      column.key === "state" ? [{ column: index, kind: "select" as const }] : [],
+      column.key === "state"
+        ? [{ column: index, kind: "select" as const }]
+        : [],
     ),
   };
   // 記法の表と同じく、操作を付ける前の表を囲みの中に配置する
@@ -2915,15 +2923,23 @@ const keyedColumns = [
 
 /** 4 列の表で、更新日を降順に並べ、状態を 進行中 に絞り込み、担当を隠す */
 function operateKeyedTable(root: HTMLElement): void {
-  const updated = root.querySelectorAll("thead th")[3]?.querySelector<HTMLButtonElement>(".mdmark-sort");
+  const updated = root
+    .querySelectorAll("thead th")[3]
+    ?.querySelector<HTMLButtonElement>(".mdmark-sort");
   updated?.click();
   root.querySelector<HTMLButtonElement>(".mdmark-filter")?.click();
-  const drawer = root.querySelector<HTMLElement>(".mdmark-filter-drawer:not([hidden])");
+  const drawer = root.querySelector<HTMLElement>(
+    ".mdmark-filter-drawer:not([hidden])",
+  );
   if (drawer) {
     findCheckbox(drawer, "進行中").click();
   }
-  root.querySelector<HTMLButtonElement>(".mdmark-table-settings-toggle")?.click();
-  const eye = root.querySelector<HTMLButtonElement>('[data-column="2"] button[aria-pressed]');
+  root
+    .querySelector<HTMLButtonElement>(".mdmark-table-settings-toggle")
+    ?.click();
+  const eye = root.querySelector<HTMLButtonElement>(
+    '[data-column="2"] button[aria-pressed]',
+  );
   eye?.click();
 }
 
@@ -2953,17 +2969,18 @@ test("test_restore_table_state", async () => {
   // 実行
   restoreTableState(second.wrapper, state);
   // 検証
-  expect(second.root.querySelectorAll("thead th")[3]?.getAttribute("aria-sort")).toBe(
-    "descending",
-  );
+  expect(
+    second.root.querySelectorAll("thead th")[3]?.getAttribute("aria-sort"),
+  ).toBe("descending");
   expect(
     bodyRows(second.root)
       .filter((row) => !row.hidden)
       .map((row) => row.children[1]?.textContent),
   ).toEqual(["進行中", "進行中"]);
-  expect((second.root.querySelectorAll("thead th")[2] as HTMLElement | undefined)?.hidden).toBe(
-    true,
-  );
+  expect(
+    (second.root.querySelectorAll("thead th")[2] as HTMLElement | undefined)
+      ?.hidden,
+  ).toBe(true);
 });
 
 // 今の表に無い列の状態は無視する（正常系）
@@ -2984,5 +3001,7 @@ test("test_restore_table_state_when_column_removed", async () => {
     });
   // 検証
   expect(call).not.toThrow();
-  expect(bodyRows(root).map((row) => row.children[0]?.textContent)).toEqual(before);
+  expect(bodyRows(root).map((row) => row.children[0]?.textContent)).toEqual(
+    before,
+  );
 });
