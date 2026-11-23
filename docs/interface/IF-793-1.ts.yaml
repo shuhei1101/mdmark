@@ -317,7 +317,7 @@ response:
     description: 編集したセルの列の `columns[].key`
   - name: mdmark-cell-edit.detail.oldValue
     type: string | number | null
-    description: 編集する前の値。指定された型のまま
+    description: 編集する前の値。指定された型のまま（同じ `rows` のまま同じセルを 2 回目以降に編集したときは、前回確定した文字列）
   - name: mdmark-cell-edit.detail.value
     type: string
     description: 確定した入力欄の文字列
