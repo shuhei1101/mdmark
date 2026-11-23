@@ -1076,3 +1076,48 @@ export const WideResized: Story = {
   parameters: { server: { id: "table" } },
   args: { ...resizeArgs, wide: "[1]", widths: '[{"column":1,"width":110}]' },
 };
+
+/** 行を押せる表・セルの編集・行の追加の状態の共通の引数（4 列・4 行） */
+const pressableArgs = {
+  kind: "data",
+  features: '["sort","pin","filter"]',
+  columns: '["タイトル","状態","担当","更新日"]',
+  rows: '[["設計","未着手","佐藤","2026-11-20"],["列の幅を広げる","進行中","鈴木","2026-11-22"],["列の並べ替えを使用する","進行中","佐藤","2026-11-18"],["ピン止めを使用する","完了","田中","2026-11-15"]]',
+  rowKeys: '["R1","R2","R3","R4"]',
+  pressable: true,
+};
+
+export const RowPressable: Story = {
+  name: "RowPressable",
+  parameters: { server: { id: "table" } },
+  args: { ...pressableArgs, focusRow: 3 },
+};
+
+export const CellEditable: Story = {
+  name: "CellEditable",
+  parameters: { server: { id: "table" } },
+  args: { ...pressableArgs, editable: "[2]" },
+};
+
+export const CellEditing: Story = {
+  name: "CellEditing",
+  parameters: { server: { id: "table" } },
+  args: {
+    ...pressableArgs,
+    editable: "[2]",
+    editing: '{"row":1,"column":2,"value":"鈴木"}',
+  },
+};
+
+export const AddRow: Story = {
+  name: "AddRow",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter"]',
+    columns: '["タイトル","状態","担当","更新日"]',
+    rows: '[["設計","未着手","佐藤","2026-11-20"],["列の幅を広げる","進行中","鈴木","2026-11-22"]]',
+    rowKeys: '["R1","R2"]',
+    addRow: true,
+  },
+};
