@@ -75,7 +75,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-23T13:05:00.601667+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T15:16:49.827501+00:00'
   - process: ドキュメント修正
     status: todo
     note: docs/guide の使用方法のページ・API・用語集・plugin/guide-index.yaml
