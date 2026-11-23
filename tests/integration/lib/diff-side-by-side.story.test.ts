@@ -49,33 +49,42 @@ function shown(page: Page) {
   }));
 }
 
+/** 広い幅の前の列と後の列（2 つ無ければ失敗させる） */
+async function pairColumns(page: Page) {
+  const [before, after] = await columns(page);
+  if (!before || !after) throw new Error("列が 2 つ無い");
+  return { before, after };
+}
+
 /** 2 列のセルが同じ行で上端をそろえていることを確かめる */
 async function expectAligned(page: Page): Promise<void> {
-  const [before, after] = await columns(page);
-  expect(before?.head.startsWith("前: ")).toBe(true);
-  expect(after?.head.startsWith("後: ")).toBe(true);
-  expect(before?.cells.map((cell) => cell.kind)).toEqual([
+  const { before, after } = await pairColumns(page);
+  expect(before.head.startsWith("前: ")).toBe(true);
+  expect(after.head.startsWith("後: ")).toBe(true);
+  expect(before.cells.map((cell) => cell.kind)).toEqual([
     "same",
     "del",
     "del",
     "same",
     "gap",
   ]);
-  expect(after?.cells.map((cell) => cell.kind)).toEqual([
+  expect(after.cells.map((cell) => cell.kind)).toEqual([
     "same",
     "add",
     "gap",
     "same",
     "add",
   ]);
-  before?.cells.forEach((cell, index) => {
-    expect(Math.abs(cell.top - (after?.cells[index]?.top ?? 0))).toBeLessThan(
-      1,
-    );
-  });
-  for (const cell of [...(before?.cells ?? []), ...(after?.cells ?? [])]) {
-    if (cell.kind === "gap") expect(cell.gapHidden).toBe("true");
-  }
+  const afterTops = after.cells.map((cell) => cell.top);
+  expect(
+    before.cells.map(
+      (cell, index) => Math.abs(cell.top - (afterTops[index] ?? 0)) < 1,
+    ),
+  ).toEqual(before.cells.map(() => true));
+  const gaps = [...before.cells, ...after.cells].filter(
+    (cell) => cell.kind === "gap",
+  );
+  expect(gaps.map((cell) => cell.gapHidden)).toEqual(gaps.map(() => "true"));
 }
 
 // 広い幅の 2 列に、変えていないブロックと書き換えたブロックを同じ高さで向かい合わせ、対の無い向かいに斜線の空きを入れる（Wide）
@@ -98,14 +107,13 @@ test("test_long_block", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-diffsidebyside--long-block", WIDE);
   // 検証
-  const [before, after] = await columns(page);
-  const last = (after?.cells.length ?? 0) - 1;
-  const added = after?.cells[last];
-  const gap = before?.cells[last];
-  expect(added?.kind).toBe("add");
-  expect(gap?.kind).toBe("gap");
-  expect(Math.abs((gap?.height ?? 0) - (added?.height ?? 0))).toBeLessThan(1);
-  expect(added?.height ?? 0).toBeGreaterThan(48);
+  const { before, after } = await pairColumns(page);
+  const added = after.cells.at(-1);
+  const gap = before.cells.at(-1);
+  if (!added || !gap) throw new Error("最後の行が無い");
+  expect([gap.kind, added.kind]).toEqual(["gap", "add"]);
+  expect(Math.abs(gap.height - added.height)).toBeLessThan(1);
+  expect(added.height).toBeGreaterThan(48);
 });
 
 // 幅 390px では 1 列で、変えたブロックだけ前の見出しと削除の色の下に後の見出しと追加の色を並べ、変えていないブロックは 1 回だけ出す（Narrow）
