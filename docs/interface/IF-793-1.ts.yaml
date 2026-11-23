@@ -1,0 +1,373 @@
+id: IF-793-1
+visibility: internal
+title: 表をカスタム要素で描く
+entry:
+  kind: operation
+  value: '`<mdmark-table>`（配布物 `dist/index.js` を読み込むと登録するカスタム要素）'
+lead: アプリの画面が、`<mdmark-table>` に列の定義と行のデータを JavaScript のプロパティで指定し、Markdown の表を囲んだときと同じ外観と操作の表を描く。行の押下・セルの編集・行の追加を、要素のイベントで受け取る。
+flows:
+  - name: 正常系
+    summary: 列の定義と行のデータから表を描き、並べ替え・絞り込み・列の幅・列の表示と並び順を操作する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み込み、幅 800px の `<mdmark-table>` を 1 つ持つページ
+      - name: 列の定義と行のデータ
+        description: '`title`（タイトル）・`state`（状態）・`owner`（担当）・`updated`（更新日）の 4 列と 5 行。`title` は `pinned: true`、`state` は `filter: { type: "select" }`。`features` は `{ "columns": {}, "reorder": {} }`'
+        notes: 1 行目の `title` は `<script>alert(1)</script>設計`、2 行目の `title` は 200 文字
+      - name: Mock
+        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: columns・rows・features を指定する
+        T->>T: 次のマイクロタスクで指定を確認する
+        T->>A: 要素の中に表を描く
+        A->>T: 更新日の見出しを押し、状態で絞り込み、担当の幅を広げる
+        T->>A: 並べ替え・絞り込んだ行と広げた列
+        A->>T: テーブル設定で更新日を隠し、担当を状態の前へ動かす
+        T->>A: 3 列の表（タイトル・担当・状態）
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`<mdmark-table>` の中に class `mdmark` の要素が 1 つあり、その中に見出し行・ピン止めのボタン・絞り込みのボタンと 5 行を持つ表がある'
+      - 更新日の見出しを押すと、行が更新日の降順に並び、`th` が `aria-sort` を持つ
+      - 状態の絞り込みで `進行中` を選ぶと、状態が `進行中` の行だけが残り、件数が `2 / 5 件` になる
+      - 担当の列の幅のつまみをドラッグすると、担当の列の幅が広がる
+      - 200 文字のタイトルは折り返され、隣の列のセルと矩形が重ならない。表は要素の中で横にスクロールし、タイトルの列は左端に留まる
+      - 1 行目のタイトルが文字 `<script>alert(1)</script>設計` のまま出て、`script` 要素が無い
+      - テーブル設定で更新日を隠すと、見出しとセルがタイトル・状態・担当の 3 列になる
+      - 担当を状態の前へ動かすと、見出しとセルの順がタイトル・担当・状態になる
+    test: test_normal
+  - name: 正常系（行を押す）
+    summary: 編集できない列のセルを押すか、行にフォーカスして Enter を押すと、行のキーを持つ行の押下のイベントを送信する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。`<mdmark-table>` の `mdmark-row-click` を受け、受け取った `detail.key` を配列に記録する
+      - name: 列の定義と行のデータ
+        description: 正常系と同じ。行のキーは上から `R1`〜`R5`
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: 3 行目の担当のセルを押す
+        T-->>A: mdmark-row-click（key: R3）
+        A->>T: 4 行目にフォーカスして Enter を押す
+        T-->>A: mdmark-row-click（key: R4）
+        A->>T: 並べ替え・ピン止め・絞り込みのボタンを押す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 3 行目のセルを押すと `mdmark-row-click` が 1 回届き、`detail.key` が `R3`
+      - ↓ で 4 行目へフォーカスを移して Enter を押すと、`detail.key` が `R4` の `mdmark-row-click` が届く
+      - タブの順で表の行に入るのは 1 行だけ（`tabindex="0"` の行が 1 つ）
+      - 並べ替え・ピン止め・絞り込みのボタンと、セルの中のリンクを押しても `mdmark-row-click` は届かない
+    test: test_normal_when_row_clicked
+  - name: 正常系（セルを編集する）
+    summary: 編集できる列のセルを入力欄にし、確定すると行のキー・列のキー・前の値・変更後の値を持つセルの編集のイベントを送信する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: '正常系と同じ。`owner` の列を `editable: true` にし、`mdmark-cell-edit` を受けて `detail` を配列に記録する'
+      - name: 列の定義と行のデータ
+        description: 正常系と同じ。2 行目（`R2`）の `owner` は `鈴木`、3 行目（`R3`）の `owner` は `佐藤`
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: 2 行目の担当のセルを押す
+        T->>A: 値が 鈴木 の入力欄
+        A->>T: 田中 を入れて Enter を押す
+        T-->>A: mdmark-cell-edit（key: R2・column: owner・oldValue: 鈴木・value: 田中）
+        T->>A: 田中 のセル
+        A->>T: 3 行目で F2 を押し、入力して Esc を押す
+        T->>A: 佐藤 のセル
+      ```
+
+      <!-- /map -->
+    expected:
+      - 2 行目の担当のセルを押すと、`mdmark-row-click` は届かず、セルが値 `鈴木` の入力欄になって入力欄にフォーカスが移る
+      - '`田中` を入れて Enter を押すと `mdmark-cell-edit` が 1 回届き、`detail` が `{ key: "R2", column: "owner", oldValue: "鈴木", value: "田中" }`。セルが文字 `田中` に戻る'
+      - 3 行目で F2 を押すと担当のセルが入力欄になり、Esc を押すとイベントは届かず、セルが `佐藤` のまま
+      - 値を変えずに確定すると、イベントは届かない
+      - タイトルの列（`editable` なし）のセルを押しても入力欄にならない
+    test: test_normal_when_cell_edited
+  - name: 正常系（行を追加する）
+    summary: 「行追加」を押すと行の追加のイベントを送信し、アプリが指定し直した行のデータで、並べ替えと絞り込みを保ったまま描き直す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: '正常系と同じ。`features` に `add: {}` を加える。`mdmark-row-add` を受けて、状態が `進行中` の 6 行目（`R6`）を加えた配列を `rows` に指定し直す'
+      - name: 列の定義と行のデータ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: 更新日で並べ替え、状態で 進行中 に絞り込む
+        A->>T: 行追加 を押す
+        T-->>A: mdmark-row-add
+        A->>T: 6 行の rows を指定し直す
+        T->>A: 並べ替えと絞り込みを保った表
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表の下の左端に文字 `行追加` のボタンがあり、押すと `mdmark-row-add` が 1 回届く
+      - '`rows` を指定し直すと、件数が `3 / 6 件` になり、`R6` の行が更新日の順の位置に出る'
+      - 更新日の `aria-sort` と状態の絞り込みの選択が残る
+    test: test_normal_when_row_added
+  - name: 正常系（セルの中身を差し替える）
+    summary: 列の定義の描き方の関数が返却した要素をセルに配置し、並べ替えと絞り込みは行のデータの値で動かす
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。`state` の列の定義に、値を文字にした class `app-badge` の `span` を返却する `render` を指定する
+      - name: 列の定義と行のデータ
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: render を持つ columns と rows を指定する
+        T->>A: render(value, row) を行ごとに呼ぶ
+        A-->>T: span.app-badge
+        T->>A: 状態の列がバッジの表
+        A->>T: 状態の見出しを押す
+        T->>A: 状態の値の順に並んだ行
+      ```
+
+      <!-- /map -->
+    expected:
+      - 状態の列の 5 つのセルが、それぞれ class `app-badge` の `span` を 1 つ持つ
+      - '`render` の第 2 引数が、その行の `{ key, values }` と同じ値'
+      - 状態の見出しを押すと、行が `rows[].values.state` の文字の順に並ぶ
+      - 状態の絞り込みの値の候補が `rows[].values.state` の値と同じ
+    test: test_normal_when_cell_content_replaced
+  - name: 異常系（データの誤り・通知ブロック）
+    summary: 指定に誤りがあると、例外を投げずに要素の中へ誤りの通知ブロックを配置する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。`<mdmark-table>` の後ろに文字 `後ろの段落` の `p` を持つ
+      - name: 誤った指定
+        description: '`rows` に文字列を指定するもの、`columns` に `title` が `担当` の列を 2 つ指定するもの、`features` に `total: {}` を指定するものの 3 通り'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: 誤った columns・rows・features を指定する
+        T->>T: 指定を確認する
+        T->>A: 要素の中に通知ブロック
+      ```
+
+      <!-- /map -->
+    expected:
+      - 3 通りとも、プロパティの代入が例外を投げない
+      - 要素の中に class `mdmark-notice`・`role="status"` の要素があり、タイトルが `この表を表示できません`
+      - 本文が、誤った指定の名前（`rows`・`columns[1].title`・`features.total`）を `code` 要素で持つ
+      - 要素の中に `table` が無く、後ろの段落が表示されている
+      - 正しい指定を代入し直すと、通知ブロックが消えて表が描かれる
+    test: test_error_when_data_invalid
+idempotent: true
+side_effects: 要素の中身を書き換え、表の操作のイベントを要素の中に付ける。絞り込みのドロワーとテーブル設定のパネルを開いている間だけ `document` の `pointerdown`・`keydown` を受け取る。要素から `mdmark-row-click`・`mdmark-cell-edit`・`mdmark-row-add` を送信する。指定された配列とオブジェクトは書き換えない
+callers:
+  - SC-793-2#
+  - SC-793-1#
+exclusivity: 要素ごとに独立して描く。同じマイクロタスクの中の複数のプロパティの代入は、まとめて 1 回だけ描く。描き直しは前の描画の操作とイベントの受け取りを片付けてから行う
+request:
+  - name: columns
+    type: MdmarkTableColumn[]
+    required: true
+    location: argument
+    description: 列の定義（要素のプロパティ）。キーと意味はデータ『表のカスタム要素の指定』の `columns[]`
+    constraints: 1 つ以上。`key`・`title` は空でない文字列で、列の定義の中で重ならない
+  - name: columns[].key
+    type: string
+    required: true
+    location: argument
+    description: 列のキー。`rows[].values` から値を参照し、イベントの `column` にする
+    example: owner
+  - name: columns[].title
+    type: string
+    required: true
+    location: argument
+    description: 列の見出しの文字
+    example: 担当
+  - name: columns[].pinned
+    type: boolean
+    required: false
+    default: '`false`'
+    location: argument
+    description: 描いた直後にピン止めする
+  - name: columns[].hidden
+    type: boolean
+    required: false
+    default: '`false`'
+    location: argument
+    description: 描いた直後に列を隠す
+    constraints: 先頭の列には指定できない
+  - name: columns[].filter.type
+    type: '"select" | "text" | "date"'
+    required: false
+    default: なし（`filter` を持てば、表のマーカーの設定の `columns.{列名}.filter.type` と同じ決め方）
+    location: argument
+    description: 絞り込みの種類。`filter` を持つ列に絞り込みのボタンを付ける
+  - name: columns[].width
+    type: '{ mode?: string; min?: number; max?: number }'
+    required: false
+    default: なし（自動で計算する）
+    location: argument
+    description: 列の幅。キーと意味は表のマーカーの設定の `columns.{列名}.width`
+  - name: columns[].editable
+    type: boolean
+    required: false
+    default: '`false`'
+    location: argument
+    description: セルを押すと入力欄で編集を始める列
+  - name: columns[].render
+    type: '(value: string | number | null, row: MdmarkTableRow) => Node | string'
+    required: false
+    default: なし（値を文字で出す）
+    location: argument
+    description: セルの中身の描き方。返却した `Node` をセルに配置し、文字列は文字のまま出す
+    notes: 並べ替え・絞り込み・編集の前の値は `rows[].values` の値で動く。編集できる列で編集を終えると、変更後の値でもう一度呼ぶ
+  - name: rows
+    type: MdmarkTableRow[]
+    required: true
+    location: argument
+    description: 行のデータ（要素のプロパティ）。配列の順が並べ替えていないときの行の順。空の配列は空の表を描く
+    constraints: '`key` は行のデータの中で重ならない'
+  - name: rows[].key
+    type: string
+    required: true
+    location: argument
+    description: 行のキー。イベントの `key` にし、指定し直したときに同じ行を見分ける
+    example: FB-12
+  - name: rows[].values
+    type: Record<string, string | number | null>
+    required: true
+    location: argument
+    description: '`columns[].key` をキーにした値の組。`null` と列のキーが無い値は空のセルにする'
+    constraints: 値は文字列・有限の数値・`null` のどれか
+  - name: features
+    type: MdmarkTableFeatures
+    required: false
+    default: '`{}`（種類 `data` の既定の機能と、列の定義に記載した機能だけを付ける）'
+    location: argument
+    description: 表の機能（要素のプロパティ）。キーと意味はデータ『表のカスタム要素の指定』の `features`
+    constraints: キーは `sort`・`pin`・`filter`・`resize`・`count`・`columns`・`reorder`・`add` だけ
+    example: '{ "columns": {}, "reorder": {}, "add": {} }'
+request_example: |-
+  ```json
+  {
+    "columns": [
+      { "key": "title", "title": "タイトル", "pinned": true },
+      { "key": "state", "title": "状態", "filter": { "type": "select" } },
+      { "key": "owner", "title": "担当", "editable": true },
+      { "key": "updated", "title": "更新日" }
+    ],
+    "rows": [
+      { "key": "R1", "values": { "title": "列の幅を広げる", "state": "未着手", "owner": "佐藤", "updated": "2026-11-20" } }
+    ],
+    "features": { "columns": {}, "reorder": {}, "add": {} }
+  }
+  ```
+response:
+  - name: mdmark-row-click.detail.key
+    type: string
+    description: 押した行の `rows[].key`
+  - name: mdmark-cell-edit.detail.key
+    type: string
+    description: 編集したセルの行の `rows[].key`
+  - name: mdmark-cell-edit.detail.column
+    type: string
+    description: 編集したセルの列の `columns[].key`
+  - name: mdmark-cell-edit.detail.oldValue
+    type: string | number | null
+    description: 編集する前の値。指定された型のまま
+  - name: mdmark-cell-edit.detail.value
+    type: string
+    description: 確定した入力欄の文字列
+  - name: mdmark-row-add.detail
+    type: '{}'
+    description: 空のオブジェクト。行はアプリが `rows` に加えて指定し直す
+response_notes: 3 つのイベントは `<mdmark-table>` から送信する `CustomEvent` で、`bubbles` と `composed` を持つ。`mdmark-cell-edit` だけは `cancelable` で、受け取った側が `preventDefault()` するとセルを前の値に戻す。戻さなければ、`rows` を指定し直すまでセルに変更後の値を出し、並べ替えと絞り込みもその値で動く
+exceptions:
+  - name: なし（正常終了）
+    condition: 指定を確認して表を描く
+  - name: なし（通知ブロック・データの誤り）
+    condition: '`columns` が配列でないか空、`columns[].key`・`title` が空でない文字列でないか重なる、`filter.type`・`width`・`render` の型が違う、`rows` が配列でない、`rows[].key` が文字列でないか重なる、`rows[].values` がオブジェクトでないか値が文字列・有限の数値・`null` でない、`features` がオブジェクトでないか受け付けないキーを持つ、先頭の列に `hidden` を指定した'
+    notes: プロパティの代入は例外を投げない。要素の中を空にして通知ブロックを配置する。タイトルは `この表を表示できません`、本文は最初に見つけた誤りの指定の名前（`code` 要素）と修正方法
+constraints:
+  - item: 要素の登録
+    constraint: '`dist/index.js` を読み込んだとき、`customElements` があり `mdmark-table` がまだ登録されていなければ登録する。登録済み（別のバージョンの配布物を含む）なら登録しない'
+    notes: Node で `render` を使用するときは `customElements` が無く、何もしない
+  - item: 描く先
+    constraint: Shadow DOM を使用せず、要素の中に class `mdmark` の要素を 1 つ配置して、その中に表を描く。ページが読み込んだ `dist/index.css` が Markdown の表と同じく該当する
+  - item: 描くとき
+    constraint: 要素がページにあり、`columns` と `rows` の両方が指定されているときに描く。どちらかが無い間は何も描かない。要素を登録する前に代入したプロパティも、登録した後に読み取る
+  - item: 描く表
+    constraint: インターフェース定義『文書を描く』の制約の「表の操作」の、種類 `data` の表と同じ要素と操作にする。付ける機能は `features` と列の定義の機能だけで、集計・コピー・行へのリンクは付けない
+    notes: docs/interface/IF-472-35.ts
+  - item: 値の出し方
+    constraint: 列名と行の値は文字として出し、HTML として解釈しない。数値は `String(value)` で出し、並べ替えでは数値どうしを数の大きさで比べる
+  - item: 描き直し
+    constraint: '`columns`・`rows`・`features` を代入し直すと描き直す。並べ替え・絞り込み・列の幅・列の表示と並び順・ピン止めは、同じ `columns[].key` の列について保つ。編集中のセルは取り消す'
+  - item: 行の押下
+    constraint: 編集できない列のセルを押すと `mdmark-row-click` を送信する。表の中のボタン・入力欄・リンクを押したときは送信しない。行は 1 つだけを `tabindex="0"`（ほかは `-1`）にし、↑・↓ で表示している行の間でフォーカスを移し、Enter で `mdmark-row-click` を送信する
+  - item: セルの編集
+    constraint: 編集できる列のセルを押すか、行にフォーカスして F2 を押すと（行の中の最初の編集できる列のセル）、セルを `input type="text"`（`aria-label` は `{列名}（{表示している行の番号} 行目）を編集する`）と案内 `Enter で確定・Esc で取り消す` にしてフォーカスを移す。Enter とフォーカスが外れたときに確定し、Esc で取り消して行へフォーカスを戻す。値が変わったときだけ `mdmark-cell-edit` を送信する。同時に編集するセルは 1 つだけ
+  - item: 行の追加
+    constraint: '`features.add` を持つ表は、表の下の左端に文字 `行追加` のボタンを配置し、押すと `mdmark-row-add` を送信する'
+  - item: セルの中身の描き方の例外
+    constraint: '`render` が例外を投げたか `Node`・文字列でない値を返却したときは、そのセルに値を文字で出し、元のエラーを `console.error` に出す'
+  - item: 行の数
+    constraint: 制限なし
+    notes: 全ての行を描き、行の仮想化はしない。数千行までの一覧を想定する
+  - item: 片付け
+    constraint: 要素をページから取り除くと、`document` の受け取りを解除する。ページへ戻すと、保持しているプロパティで描き直す
+  - item: 対応ブラウザ
+    constraint: Chrome 99・Firefox 98・Safari 16.4 以上
+    decided_by: NFR-472-1#
+  - item: 型の配布
+    constraint: '`MdmarkTableElement`・`MdmarkTableColumn`・`MdmarkTableRow`・`MdmarkTableFeatures`・`MdmarkTableRowClickDetail`・`MdmarkTableCellEditDetail` を `dist/index.d.ts` に書き出し、`HTMLElementTagNameMap` に `mdmark-table`、`HTMLElementEventMap` に 3 つのイベントを加える'
+refs:
+  - DATA-793-1#
+  - IF-472-35#constraints[表の操作]
+  - IF-472-30#
+decisions:
+  - D-869
+test_file: tests/integration/lib/mdmark-table.browser.test.ts
+tags:
+  - name: topic:表
+    main: true
+  - name: topic:api
+  - name: topic:イベント
+  - name: action:描画

@@ -38,6 +38,8 @@ items:
   summary: 文書の作成者が、移行の手順をバージョンの順に適用して設定のバージョンを呼んだ CLI のバージョンにする（mdmark upgrade）
 - page: IF-472-30.ts.yaml
   summary: 利用側のページと拡張のモジュールが、列名と項目の値から要素の中にボード表示と表形式のビューを描く（mountView）
+- page: IF-793-1.ts.yaml
+  summary: アプリの画面が、列の定義と行のデータを指定して表を描き、行の押下・セルの編集・行の追加をイベントで受け取る（<mdmark-table>）
 - page: IF-472-27.ts.yaml
   summary: 利用側のページが、自分の要素と読み込みと保存の関数を指定し、要素の中の選んだ箇所にコメントを付ける（mountComments）
 - page: IF-472-36.ts.yaml
