@@ -8,8 +8,8 @@ export type SideBySideRow = {
   after?: string;
 };
 
-/** 前の列の変えていないブロックから外す `data-source-line` と `id`（後の列と重ならないようにする） */
-const LINE_AND_ID = /\s(?:data-source-line|id)="[^"]*"/g;
+/** 前の列の変えていないブロックから外す `data-source-line`（前のリビジョンの行番号で、描いた文書の行と対応しない） */
+const SOURCE_LINE = /\sdata-source-line="[^"]*"/g;
 
 /** 対の無い向かいの斜線の空き */
 const GAP = '<div class="mdmark-diff-pair-gap" aria-hidden="true"></div>';
@@ -21,7 +21,7 @@ const cell = (html: string): string =>
 /** 前の列のセルの中身 */
 function beforeCell(row: SideBySideRow): string {
   if (row.kind === "add") return GAP;
-  if (row.kind === "same") return (row.before ?? "").replace(LINE_AND_ID, "");
+  if (row.kind === "same") return (row.before ?? "").replace(SOURCE_LINE, "");
   return renderDiffBlock({
     kind: "del",
     unit: "block",

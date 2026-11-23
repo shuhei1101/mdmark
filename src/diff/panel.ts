@@ -387,6 +387,17 @@ export function attachDiff(options: {
       rows,
       idPrefix: panelId,
     });
+    // 隠した本文と、広い幅の前の列・後の列と、狭い幅の並びの `id` を重ならせない（列の見出しの `id` は場所の `id` を頭に持つため変えない）
+    result
+      .querySelectorAll<HTMLElement>(".mdmark-diff-pair-col")
+      .forEach((column, side) => {
+        const name = side === 0 ? "before" : "after";
+        for (const cell of column.querySelectorAll<HTMLElement>(
+          ".mdmark-diff-pair-cell",
+        )) {
+          scopeIds({ root: cell, prefix: `${panelId}-${name}-` });
+        }
+      });
     const stacked = result.querySelector<HTMLElement>(
       ".mdmark-diff-pair-stacked",
     );
