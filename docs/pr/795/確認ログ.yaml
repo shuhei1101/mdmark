@@ -5,3 +5,15 @@ confirmations:
     approver: shuhei1101
     commit: 5bf0d22f
     thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4666502012
+  - topic: '#793 の表のカスタム要素で、セルの編集の入力欄を表の部品が描くか、アプリが描くか'
+    decision: 表の部品が入力欄と「行追加」のボタンを描き、確定した値をイベントで通知する。編集できる列のセルを押すと編集を始め（行の押下は通知しない）、行で F2 を押すと行の中の最初の編集できるセルを編集する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b20746a2
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4666891532
+  - topic: '#793 の表のカスタム要素の、データの誤りの通知のタイトルの文言'
+    decision: 新規に「この表を表示できません」を追加する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b20746a2
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4666892536

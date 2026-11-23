@@ -38,8 +38,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-23T13:18:11.274606+00:00'
   - process: モック作成
-    status: todo
+    status: done
     note: 表の部品のセルの編集・行の追加・行の押下の状態だけを作る（要件の未確定の論点）
+    updated_by: planner
+    updated_at: '2026-11-23T14:09:42.305062+00:00'
   - process: データ設計
     status: todo
   - process: インターフェース定義設計
