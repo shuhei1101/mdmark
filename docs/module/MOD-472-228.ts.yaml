@@ -313,6 +313,62 @@ functions:
       - 'MOD-583-17#functions[rowIdFromHash]'
       - MOD-472-315#functions[renderTableBar]
       - MOD-472-315#functions[renderTotalRows]
+  - name: captureTableState
+    title: 表の操作の状態を記録する
+    container: src/table/table.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`attachTables` を付けた `div.mdmark-table` から、並べ替え・絞り込み・列の表示と順・列の幅・ピン止めを `TableState` にする。`data-column-key` を持たない列は記録しない'
+    args:
+      - name: wrapper
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-table`'
+    returns:
+      type: TableState
+      description: 記録した状態
+    unit_tests:
+      - name: test_capture_table_state
+        case: 正常
+        summary: 操作した状態を列のキーで記録する
+        condition: '`data-column-key` を持つ 4 列の表で、`updated` を降順に並べ替え、`state` を `進行中` に絞り込み、`owner` を隠す'
+        mock: なし（ブラウザ）
+        expected: '`sort` が `{ key: "updated", direction: "descending" }`、`filters` が `state` の `進行中`、`hidden` が `["owner"]`'
+    refs:
+      - IF-793-1#constraints[描き直し]
+  - name: restoreTableState
+    title: 表の操作の状態を戻す
+    container: src/table/table.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`attachTables` を付けた直後の表に、記録した状態のうち今の表にある列の状態を、利用者の操作と同じ処理（列の順 → 列の表示 → 列の幅 → ピン止め → 絞り込み → 並べ替えの順）で適用する。列の表示を適用しても `onColumnsChange` は通知しない'
+    args:
+      - name: wrapper
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-table`'
+      - name: state
+        type: TableState
+        required: true
+        description: '`captureTableState` が記録した状態'
+    returns:
+      type: void
+      description: '-'
+    unit_tests:
+      - name: test_restore_table_state
+        case: 正常
+        summary: 描き直した表に記録した状態を戻す
+        condition: '`test_capture_table_state` で記録した状態を、行を 1 つ加えて描いた表に戻す'
+        mock: なし（ブラウザ）
+        expected: '`updated` の `th` が `aria-sort="descending"`、`state` が `進行中` の行だけが表示され、`owner` の列が `hidden`'
+      - name: test_restore_table_state_when_column_removed
+        case: 正常
+        summary: 今の表に無い列の状態は無視する
+        condition: '`updated` で並べ替えた状態を、`updated` の列が無い表に戻す'
+        mock: なし（ブラウザ）
+        expected: 例外を投げず、行が元の並び
+    refs:
+      - IF-793-1#constraints[描き直し]
 lead: '表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピーの操作を受け持ち、表の操作を変えるときに参照する。'
 tags:
   - name: topic:テーブル
@@ -323,3 +379,28 @@ tags:
   - name: topic:部品
   - name: action:コピー
   - name: action:並べ替え
+data_models:
+  - name: TableState
+    title: 表の操作の状態
+    container: src/table/table.interact.ts
+    usecase: 表をカスタム要素で描く
+    summary: '`captureTableState` が記録し `restoreTableState` が戻す、列を列のキー（`th` の `data-column-key`）で指す状態'
+    properties:
+      - name: sort
+        type: '{ key: string; direction: "ascending" | "descending" } | undefined'
+        description: 並べ替えた列と向き
+      - name: filters
+        type: 'Array<{ key: string; value: FilterValue }>'
+        description: 適用している絞り込み
+      - name: hidden
+        type: string[]
+        description: 隠している列
+      - name: order
+        type: string[]
+        description: 今の列の順
+      - name: widths
+        type: 'Array<{ key: string; width: number }>'
+        description: つまみで変えた列の幅（px）
+      - name: pinned
+        type: string[]
+        description: ピン止めのボタンが `aria-pressed="true"` の列

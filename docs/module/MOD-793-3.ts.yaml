@@ -1,0 +1,211 @@
+id: MOD-793-3
+visibility: internal
+title: ライブラリ本体 / 表 / mdmark-table.element.ts
+lead: カスタム要素 `<mdmark-table>` のプロパティ・描画・描き直し・イベントの送信と登録を受け持ち、`<mdmark-table>` の振る舞いを変えるときに参照する。
+test_files:
+  - tests/unit/src/table/mdmark-table.element.browser.test.ts
+data_models:
+  - name: MdmarkTableRowClickDetail
+    title: 行の押下のイベントの値
+    container: src/table/mdmark-table.element.ts
+    usecase: 表をカスタム要素で描く
+    role: 公開の型
+    summary: '`mdmark-row-click` の `detail`'
+    properties:
+      - name: key
+        type: string
+        description: 押した行の `rows[].key`
+    refs:
+      - IF-793-1#response
+  - name: MdmarkTableCellEditDetail
+    title: セルの編集のイベントの値
+    container: src/table/mdmark-table.element.ts
+    usecase: 表をカスタム要素で描く
+    role: 公開の型
+    summary: '`mdmark-cell-edit` の `detail`'
+    properties:
+      - name: key
+        type: string
+        description: 行の `rows[].key`
+      - name: column
+        type: string
+        description: 列の `columns[].key`
+      - name: oldValue
+        type: MdmarkTableValue
+        description: 編集する前の値（指定された型のまま）
+      - name: value
+        type: string
+        description: 確定した入力欄の文字列
+    refs:
+      - IF-793-1#response
+classes:
+  - name: MdmarkTableElement
+    title: 表のカスタム要素
+    container: src/table/mdmark-table.element.ts
+    usecase: 表をカスタム要素で描く
+    role: カスタム要素
+    kind: クラス
+    inherits: HTMLElement
+    summary: '`columns`・`rows`・`features` を代入すると、次のマイクロタスクで確認して要素の中に表か通知ブロックを描く'
+    description: Shadow DOM を使用せず、要素の中に `div.mdmark` を 1 つ配置して描く。プロパティの代入は例外を投げない。指定された配列とオブジェクトは書き換えず、編集した値は要素の中の上書き（`edits`）に持つ
+    properties:
+      - name: columns
+        type: MdmarkTableColumn[] | undefined
+        access: public
+        description: 列の定義。代入すると `scheduleRender` を呼ぶ
+      - name: rows
+        type: MdmarkTableRow[] | undefined
+        access: public
+        description: 行のデータ。代入すると `edits` を空にして `scheduleRender` を呼ぶ
+      - name: features
+        type: MdmarkTableFeatures | undefined
+        access: public
+        description: 表の機能。代入すると `scheduleRender` を呼ぶ
+      - name: pending
+        type: boolean
+        access: private
+        default: 'false'
+        description: 描画をマイクロタスクに予約したか
+      - name: detach
+        type: (() => void) | undefined
+        access: private
+        description: 今の描画の操作（`attachTables`・`attachTableWidths`・`attachStickyRows`・`attachTableRows`）を解除する関数
+      - name: edits
+        type: Map<string, string>
+        access: private
+        description: 編集を確定して取り消されなかった値（キーは `{行のキー}\u0000{列のキー}`）。`rows` を代入するまで描き直しでも使用する
+    methods:
+      - name: connectedCallback
+        title: ページに入った
+        kind: メソッド
+        summary: 登録する前に代入されていた自身のプロパティ（`columns`・`rows`・`features`）を取り出してアクセサーへ設定し、`scheduleRender` を呼ぶ
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_connected_callback_when_upgraded
+            case: 正常
+            summary: 登録する前に代入したプロパティで描く
+            condition: '`document.createElement("mdmark-table-upgrade")` に `columns`・`rows` を代入してページに入れ、後から `customElements.define("mdmark-table-upgrade", MdmarkTableElement)`'
+            mock: なし（ブラウザ）
+            expected: マイクロタスクの後に要素の中に `table` がある
+      - name: disconnectedCallback
+        title: ページから取り除かれた
+        kind: メソッド
+        summary: '`detach` を呼んで `document` の受け取りと `ResizeObserver` を解除する。要素の中身とプロパティは残す'
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_disconnected_callback
+            case: 正常
+            summary: 取り除くと操作を解除し、戻すと描き直す
+            condition: 描いた要素を取り除いてから並べ替えのボタンを押し、続けてページに戻す
+            mock: なし（ブラウザ）
+            expected: 取り除いた間は行の順が変わらず、戻した後は並べ替えのボタンで行が並ぶ
+      - name: scheduleRender
+        title: 描画を予約する
+        kind: メソッド
+        summary: '`pending` が `false` のときだけ `queueMicrotask` で `renderNow` を 1 回予約する'
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_schedule_render
+            case: 正常
+            summary: 同じマイクロタスクの代入を 1 回にまとめる
+            condition: '`columns`・`rows`・`features` を続けて代入する'
+            mock: '`renderTable` を呼ばれた回数を記録する関数で包む'
+            expected: '`renderTable` が 1 回だけ呼ばれる'
+      - name: renderNow
+        title: 描く
+        kind: メソッド
+        summary: 指定を確認し、誤りがあれば通知ブロックを、無ければ表を描いて操作を付ける。前の描画の並べ替え・絞り込み・列の幅・列の表示と順・ピン止めを保つ
+        returns:
+          type: void
+          description: '-'
+        side_effects: 要素の中身を書き換え、操作を付ける。`mdmark-row-click`・`mdmark-cell-edit`・`mdmark-row-add` を送信する関数をつなぐ
+        process: |-
+          1. `pending` を `false` にし、要素がページに無いか `columns`・`rows` のどちらかが `undefined` なら何もしない
+          2. 前の表があれば `captureTableState(wrapper)` で状態を記録し、`detach` を呼ぶ
+          3. `checkTableSpec` が誤りを返却したら、要素の中を `div.mdmark` の中の `renderNotice({ name: issue.path, source: "table-data", reason: issue.reason })` にして終える
+          4. `edits` を重ねた行のデータで `toTableOptions` を呼び、要素の中を `div.mdmark` の中の `renderTable(options)` にする
+          5. `applyCellRenderers` を呼び、`attachTables`（`pinMode` は `each`）・`attachTableWidths`・`attachStickyRows`・`attachTableRows` を付け、記録した状態を `restoreTableState(wrapper, state)` で戻す
+          6. `attachTableRows` の通知先は、`mdmark-row-click`・`mdmark-row-add` を `bubbles`・`composed` の `CustomEvent` で送信し、`mdmark-cell-edit` を `cancelable` も付けて送信して `dispatchEvent` の戻り値を返却する。`true` のときは `edits` に入れる
+        unit_tests:
+          - name: test_render_now
+            case: 正常
+            summary: 列の定義と行のデータから表を描く
+            condition: 4 列・5 行。`title` は `pinned`
+            mock: なし（ブラウザ）
+            expected: 要素の子が `div.mdmark` 1 つで、その中の `div.mdmark-table[data-kind="data"]` が 5 行。各行が `data-key` を持つ
+          - name: test_render_now_when_invalid
+            case: 異常
+            summary: 誤った指定は例外を投げずに通知ブロックを描く
+            condition: '`rows` に文字列を代入し、続けて正しい配列を代入する'
+            mock: なし（ブラウザ）
+            expected: 代入が例外を投げず、1 回目の後はタイトル `この表を表示できません` の通知ブロックで本文に `<code>rows</code>`、2 回目の後は `table` があり通知ブロックが無い
+          - name: test_render_now_when_rows_reassigned
+            case: 正常
+            summary: 行のデータを代入し直すと並べ替えと絞り込みを保って描き直す
+            condition: 更新日で並べ替え、状態を `進行中` に絞り込んでから、行を 1 つ加えた `rows` を代入する
+            mock: なし（ブラウザ）
+            expected: 更新日の `th` が `aria-sort` を持ち、状態が `進行中` の行だけが表示され、加えた行も並びの位置にある
+          - name: test_render_now_when_cell_edit_cancelled
+            case: 正常
+            summary: アプリが preventDefault すると前の値に戻す
+            condition: '`mdmark-cell-edit` で `preventDefault()` する受け取りを付け、セルを編集して確定する'
+            mock: なし（ブラウザ）
+            expected: イベントが `cancelable` で届き、セルが前の値
+          - name: test_render_now_when_events
+            case: 正常
+            summary: 行の押下と行の追加を要素のイベントで送信する
+            condition: '`features` に `add: {}`。要素を囲む `div` でイベントを受け、行を押して `行追加` を押す'
+            mock: なし（ブラウザ）
+            expected: 囲む `div` に `mdmark-row-click`（`detail.key`）と `mdmark-row-add` が 1 回ずつ届く
+        callees:
+          - MOD-793-1#functions[checkTableSpec]
+          - MOD-793-1#functions[toTableOptions]
+          - MOD-793-2#functions[applyCellRenderers]
+          - MOD-793-2#functions[attachTableRows]
+          - MOD-472-315#functions[renderTable]
+          - MOD-472-228#functions[attachTables]
+          - MOD-472-228#functions[captureTableState]
+          - MOD-472-228#functions[restoreTableState]
+          - MOD-472-310#functions[renderNotice]
+        refs:
+          - IF-793-1#constraints[描くとき]
+          - IF-793-1#constraints[描き直し]
+          - IF-793-1#exceptions
+    refs:
+      - IF-793-1#
+functions:
+  - name: defineTableElement
+    title: 表のカスタム要素を登録する
+    container: src/table/mdmark-table.element.ts
+    kind: 関数
+    scope: internal
+    summary: '`registry` に `mdmark-table` が登録されていなければ `MdmarkTableElement` を登録する'
+    args:
+      - name: registry
+        type: CustomElementRegistry
+        required: true
+        description: 登録先（ページでは `customElements`）
+    returns:
+      type: void
+      description: '-'
+    unit_tests:
+      - name: test_define_table_element
+        case: 正常
+        summary: 未登録なら登録し、登録済みなら何もしない
+        condition: '`get` と `define` を記録する登録先で 2 回呼ぶ（2 回目は `get` が別のクラスを返却する）'
+        mock: 登録先を記録する代役にする
+        expected: '`define` が `mdmark-table` と `MdmarkTableElement` で 1 回だけ呼ばれる'
+    refs:
+      - IF-793-1#constraints[要素の登録]
+tags:
+  - name: topic:表
+    main: true
+  - name: topic:api
+  - name: topic:イベント
+  - name: action:描画
