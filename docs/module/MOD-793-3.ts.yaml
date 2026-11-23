@@ -158,6 +158,12 @@ classes:
             condition: '`mdmark-cell-edit` で `preventDefault()` する受け取りを付け、セルを編集して確定する'
             mock: なし（ブラウザ）
             expected: イベントが `cancelable` で届き、セルが前の値
+          - name: test_render_now_when_cell_edit_after_reorder
+            case: 正常
+            summary: 列を並べ替えた後も、押したセルの列の値で編集を始めて通知する
+            condition: '`features` に `reorder` を指定し、テーブル設定のつまみで担当の列を状態の列の前へ移してから、担当のセルを編集して確定する'
+            mock: なし（ブラウザ）
+            expected: 入力欄が担当の値で始まり、`mdmark-cell-edit` の `column` が `owner`、`oldValue` が担当の値
           - name: test_render_now_when_events
             case: 正常
             summary: 行の押下と行の追加を要素のイベントで送信する

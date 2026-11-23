@@ -308,6 +308,58 @@ test("test_render_now_when_cell_edit_cancelled", async () => {
   expect(cell.textContent).toBe("鈴木");
 });
 
+// 列を並べ替えた後も、押したセルの列の値で編集を始めて通知する（正常系）
+test("test_render_now_when_cell_edit_after_reorder", async () => {
+  // 準備
+  await loadElement();
+  const element = createTable();
+  element.columns = columns();
+  element.rows = rows();
+  element.features = { reorder: {} };
+  await flush();
+  const events: CustomEvent[] = [];
+  element.addEventListener("mdmark-cell-edit", (event) => {
+    events.push(event as CustomEvent);
+  });
+  element
+    .querySelector<HTMLElement>(
+      '.mdmark-table-settings-item[data-column="2"] .mdmark-table-settings-grip',
+    )
+    ?.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "ArrowUp",
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  const cell = bodyRows(element)[1]?.children[1] as HTMLElement;
+  // 実行
+  cell.click();
+  const input = cell.querySelector<HTMLInputElement>("input");
+  const started = input?.value;
+  if (input) {
+    input.value = "田中";
+    input.dispatchEvent(
+      new KeyboardEvent("keydown", {
+        key: "Enter",
+        bubbles: true,
+        cancelable: true,
+      }),
+    );
+  }
+  // 検証
+  expect(
+    element.querySelectorAll<HTMLElement>("thead th")[1]?.dataset.columnKey,
+  ).toBe("owner");
+  expect(started).toBe("鈴木");
+  expect(events[0]?.detail).toEqual({
+    key: "R2",
+    column: "owner",
+    oldValue: "鈴木",
+    value: "田中",
+  });
+});
+
 // 行の押下と行の追加を要素のイベントで送信する（正常系）
 test("test_render_now_when_events", async () => {
   // 準備
