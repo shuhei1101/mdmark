@@ -69,12 +69,12 @@ fields:
     title: 列ごとの値
     type: object
     required: true
-    description: '`columns[].key` をキーにした値の組。値は文字列で、文字のまま出し HTML として解釈しない。列のキーが無い値は空のセルにする。並べ替えと絞り込みはこの値で動く'
+    description: '`columns[].key` をキーにした値の組。値は文字列・数値・`null` のどれかで、文字にして出し HTML として解釈しない。`null` と列のキーが無い値は空のセルにする。並べ替えと絞り込みはこの値で動き、数値は数値のまま比べる。セルの編集のイベントは、前の値を指定された型のまま、確定した値を入力欄の文字列で通知する'
     example: '{"title": "列の幅を広げる", "owner": "佐藤"}'
   - key: features
     title: 表の機能
     type: object
-    description: 種類 `data` の機能に追加する・削除する機能。キーと意味は表のマーカーの設定の `features` と同じで、`add`（行の追加）を加える。列の定義に記載した機能は、記載しなくても付く
+    description: 種類 `data` の機能に追加する・削除する機能。受け付けるキーは `sort`・`pin`・`filter`・`resize`・`count`・`columns`・`reorder`・`add`（行の追加）で、`add` を除くキーの意味は表のマーカーの設定の `features` と同じ。`total`・`copy`・`rowlink` と知らないキーは受け付けず、表の場所に誤りの通知を出す。列の定義に記載した機能は、記載しなくても付く
     example: '{"columns": {}, "reorder": {}, "add": {}}'
   - key: features.add
     title: 行の追加
