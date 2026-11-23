@@ -153,7 +153,7 @@ test("test_attach_table_rows_when_cell_edited", async () => {
     press(input, "Enter");
   }
   // 検証
-  expect(input?.parentElement).not.toBeNull();
+  expect(input).not.toBeNull();
   expect(handlers.onCellEdit).toHaveBeenCalledTimes(1);
   expect(handlers.onCellEdit).toHaveBeenCalledWith({
     key: "R2",
@@ -302,9 +302,9 @@ test("test_apply_cell_renderers_when_render_throws", async () => {
   };
   // 実行
   applyCellRenderers(wrapper, spec);
-  errorSpy.mockRestore();
   // 検証
   expect(cellAt(root, 0, 1).textContent).toBe("未着手");
   expect(errorSpy).toHaveBeenCalledTimes(1);
   expect(errorSpy.mock.calls[0]).toContain(failure);
+  errorSpy.mockRestore();
 });
