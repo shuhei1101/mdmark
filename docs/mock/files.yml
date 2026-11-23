@@ -1425,6 +1425,22 @@ files:
     visibility: internal
     description: '部品『右側の目次』のモック: 狭い幅の目次のバーを留める位置に固定する今の見せ方と、案 A（本文の先頭にだけ配置する）・案 B（下へスクロール中は隠す）・案 C（目次を開くボタンだけを固定する）を、スマートフォンの幅の見本で並べる。狭い幅の目次の見せ方を決めるときに参照する。'
     tags: [topic:モック, topic:目次]
+  - path: refs/795/index.md
+    visibility: internal
+    description: '#795（アプリの画面で使用する表のカスタム要素）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/795/assets/mock.css
+    visibility: internal
+    description: '#795 のモックの規則: 配布物の CSS の上に、カタログの並びと、まだ表の部品に無い状態（押せる行・セルの編集・行の追加）を重ねる。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック, topic:表]
+  - path: refs/795/assets/scene.js
+    visibility: internal
+    description: '#795 のモックの動き: 配布物の mount でアプリの一覧の表を状態ごとの場所に描き、押せる行・セルの編集・行の追加・誤りの通知をモックだけの要素で重ねる。このモックの動きを変えるときに参照する。'
+    tags: [topic:モック, topic:表]
+  - path: components/mdmark-table/index.html
+    visibility: internal
+    description: '部品『表』のモック: アプリの画面が <mdmark-table> に列の定義と行のデータを指定して描いた表の、通常・押せる行・セルの編集の案 A（部品が入力欄を描く）と案 B（アプリが描く）・行の追加・セルの中身の差し替え・データの誤りの状態を並べる。表のカスタム要素の見せ方を決めるときに参照する。'
+    tags: [topic:モック, topic:表]
   - path: refs/792/index.md
     visibility: internal
     description: '#792（左右に並べる差分と箇条書きの記号の位置、狭い幅の右側の目次のバーの見せ方）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'

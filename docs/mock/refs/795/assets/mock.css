@@ -1,0 +1,116 @@
+/* #795 のモックだけの規則: 配布物の CSS の上に、カタログの並びと、まだ表の部品に無い状態（押せる行・セルの編集・行の追加）を重ねる */
+
+/* カタログの並び: 場面ごとに見出しと見本を縦に並べる */
+.catalog {
+  display: block;
+  box-sizing: border-box;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
+
+  & h2 {
+    margin: 48px 0 8px;
+    font-size: 22px;
+  }
+  & h3 {
+    margin: 24px 0 4px;
+    font-size: 17px;
+  }
+  & p.state-note {
+    margin: 0 0 8px;
+    color: var(--mdmark-color-muted);
+    font-size: 13px;
+  }
+}
+
+/* アプリの画面の中の <mdmark-table> の場所: 幅 480px で、表が横にはみ出す */
+.app-slot {
+  box-sizing: border-box;
+  width: min(480px, 100%);
+  padding: 12px;
+  border: 1px dashed var(--mdmark-color-border);
+  border-radius: 6px;
+}
+
+/* 案を左右に並べる（狭い画面では縦に並べる） */
+.choice-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
+  gap: 24px;
+}
+
+/* 押せる行: ポインターを乗せた行とフォーカスした行 */
+.mock-row-pressable {
+  cursor: pointer;
+}
+.mock-row-hover > td {
+  background: var(--mdmark-color-surface-raised, rgb(0 0 0 / 4%));
+}
+.mock-row-focus {
+  outline: 2px solid var(--mdmark-color-accent);
+  outline-offset: -2px;
+}
+
+/* 編集できる列のセル: 下端の破線で編集できることを示す */
+.mock-cell-editable {
+  text-decoration: underline dashed var(--mdmark-color-muted);
+  text-underline-offset: 4px;
+}
+
+/* 編集中のセル（案 A: 表の部品が入力欄を描く） */
+.mock-cell-editing {
+  padding: 4px;
+}
+.mock-cell-input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 6em;
+  min-height: 32px;
+  padding: 4px 8px;
+  border: 2px solid var(--mdmark-color-accent);
+  border-radius: 4px;
+  background: var(--mdmark-color-surface);
+  color: var(--mdmark-color-text);
+  font: inherit;
+}
+.mock-cell-hint {
+  display: block;
+  margin-top: 4px;
+  color: var(--mdmark-color-muted);
+  font-size: 12px;
+}
+
+/* 案 B: アプリがセルの中身の差し替えで描く入力欄 */
+.mock-app-editor {
+  display: flex;
+  gap: 4px;
+
+  & select,
+  & button {
+    min-height: 32px;
+    font: inherit;
+  }
+}
+
+/* 行の追加のボタン: 表の下の左端 */
+.mock-add-row {
+  margin-top: 8px;
+}
+.mock-add-row-button {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  min-height: 32px;
+  padding: 4px 12px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: 6px;
+  background: var(--mdmark-color-surface);
+  color: var(--mdmark-color-text);
+  font: inherit;
+  cursor: pointer;
+
+  &:focus-visible {
+    outline: 2px solid var(--mdmark-color-accent);
+    outline-offset: 2px;
+  }
+}
