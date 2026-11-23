@@ -21,7 +21,7 @@ scenarios:
     setup:
       - name: アプリの画面
         description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、`<mdmark-table>` を 1 つ持つ HTML
-        notes: 描く先の `<mdmark-table>` の幅は 480px（4 列の最小の幅の合計が収まらず、表が横にはみ出す幅）
+        notes: 描く先の `<mdmark-table>` の幅は 800px（タイトルの列の最小の幅は収まり、4 列の最小の幅の合計は収まらず、表が横にはみ出す幅）
       - name: 列の定義と行のデータ
         description: タイトル・状態・担当・更新日の 4 列と 5 行。タイトルの列をピン止めし、状態の列に絞り込みを付け、列の表示と列の並べ替えを付ける（Markdown の表の `columns`・`reorder` に該当する指定）
         notes: 1 行目のタイトルは `<script>alert(1)</script>設計`、2 行目のタイトルは列の幅を超える 200 文字

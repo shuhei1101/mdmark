@@ -23,10 +23,10 @@
   }
 }
 
-/* アプリの画面の中の <mdmark-table> の場所: 幅 480px で、表が横にはみ出す */
+/* アプリの画面の中の <mdmark-table> の場所: 幅 800px で、タイトルの列は収まり、表が横にはみ出す */
 .app-slot {
   box-sizing: border-box;
-  width: min(480px, 100%);
+  width: min(800px, 100%);
   padding: 12px;
   border: 1px dashed var(--mdmark-color-border);
   border-radius: 6px;
@@ -35,7 +35,7 @@
 /* 案を左右に並べる（狭い画面では縦に並べる） */
 .choice-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(480px, 100%), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(800px, 100%), 1fr));
   gap: 24px;
 }
 
