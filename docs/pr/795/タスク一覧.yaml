@@ -47,7 +47,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-23T14:33:36.708873+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T14:49:11.242616+00:00'
   - process: エージェント・MCP サーバー設計
     status: skipped
     reason: ガイドは知識だけで、今の dev-docs の search_docs で参照できる（判定フローチャート『機能を呼ぶインターフェースの選び方』）。エージェントと MCP のツールを追加しない
