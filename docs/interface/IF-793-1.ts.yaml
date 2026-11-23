@@ -12,7 +12,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: ビルドした `dist/index.js` と `dist/index.css` を読み込み、幅 800px の `<mdmark-table>` を 1 つ持つページ
       - name: 列の定義と行のデータ
-        description: '`title`（タイトル）・`state`（状態）・`owner`（担当）・`updated`（更新日）の 4 列と 5 行。`title` は `pinned: true`、`state` は `filter: { type: "select" }`。`features` は `{ "columns": {}, "reorder": {} }`'
+        description: '`title`（タイトル）・`state`（状態）・`owner`（担当）・`updated`（更新日）の 4 列と 5 行。`title` は `pinned: true`、`state` は `filter: { type: "select" }`。`features` は `{ "count": {}, "columns": {}, "reorder": {} }`'
         notes: 1 行目の `title` は `<script>alert(1)</script>設計`、2 行目の `title` は 200 文字
       - name: Mock
         description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
@@ -233,6 +233,12 @@ request:
     location: argument
     description: 描いた直後に列を隠す
     constraints: 先頭の列には指定できない
+  - name: columns[].filter
+    type: '{ type?: "select" | "text" | "date" }'
+    required: false
+    default: なし（絞り込みを付けない）
+    location: argument
+    description: この列に絞り込みを付ける。`{}` は種類を省いた絞り込み
   - name: columns[].filter.type
     type: '"select" | "text" | "date"'
     required: false
