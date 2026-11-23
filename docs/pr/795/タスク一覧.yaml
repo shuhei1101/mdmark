@@ -1,0 +1,75 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 既存の設計書があり、棚卸しは要らない
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue でない
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: カスタム要素と jsDelivr の semver の範囲の指定は既存の技術で、未検証の機構に依らない（範囲の指定は外部 API『jsDelivr』で確認済み）
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: 複合ユースケース設計
+    status: todo
+  - process: デザインスタイル選定
+    status: skipped
+    reason: デザイン方針（docs/design-policy.md）があり、Issue は見た目の方向を変えない
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更が無い
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: 単一ユースケース設計
+    status: todo
+  - process: モック作成
+    status: todo
+    note: 表の部品のセルの編集・行の追加・行の押下の状態だけを作る（要件の未確定の論点）
+  - process: データ設計
+    status: todo
+  - process: インターフェース定義設計
+    status: todo
+  - process: エージェント・MCP サーバー設計
+    status: skipped
+    reason: ガイドは知識だけで、今の dev-docs の search_docs で参照できる（判定フローチャート『機能を呼ぶインターフェースの選び方』）。エージェントと MCP のツールを追加しない
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: エージェントフロー・LLM 呼び出し設計
+    status: skipped
+    reason: エージェント・LLM の呼び出しを追加しない
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: 精度評価設計
+    status: skipped
+    reason: LLM・意思決定モデルを使用するノードが無い
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: 部品設計
+    status: todo
+  - process: 画面設計
+    status: skipped
+    reason: mdmark の画面（docs/screen）は変わらず、表の部品の変更は部品設計で扱う
+    updated_by: planner
+    updated_at: '2026-11-23T13:05:00.601667+00:00'
+  - process: モジュール構成設計
+    status: todo
+  - process: ドキュメント修正
+    status: todo
+    note: docs/guide の使用方法のページ・API・用語集・plugin/guide-index.yaml
+  - process: 単体テスト作成
+    status: todo
+  - process: 実装
+    status: todo
+  - process: 結合テスト作成
+    status: todo

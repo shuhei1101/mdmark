@@ -1,0 +1,104 @@
+use_cases:
+  - kind: composite
+    scenario: docs/scenario/SC-793-1.yaml
+    impact: new
+    detail: アプリの画面が配布物を読み込んで表のカスタム要素に一覧のデータを指定し、利用者が表を並べ替え・絞り込みして行を開き、セルを編集して保存する流れを新規に作る
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-793-2.yaml
+    impact: new
+    detail: アプリの画面が列の定義と行のデータを指定して表を描き、行の押下・セルの編集・行の追加をイベントで受け取る単一 UC を新規に作る
+    depends_on:
+      - docs/scenario/SC-793-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-28.yaml
+    impact: changed
+    detail: メジャーバージョンの範囲（@0）を指定した URL で配布物を読み込み、更新に追従する場合を追加する
+    depends_on:
+      - docs/scenario/SC-793-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: run_only
+    detail: 表の操作の処理をカスタム要素と共有するため、文書の表の操作が変わらないことを確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-81.yaml
+    impact: run_only
+    detail: 公開関数の並びにカスタム要素の登録を追加するため、ビューとコメントを JavaScript から描く操作が変わらないことを確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-24.yaml
+    impact: run_only
+    detail: カスタム要素の登録の処理を共通にする場合に、埋め込んだ HTML のチャートが変わらないことを確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: following
+    detail: 配布ファイルを分ける場合に、ビルドで得る配布物の一覧に追随する
+    depends_on:
+      - docs/scenario/SC-793-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: ガイドの索引に行を追加するため、ガイドを参照できることを確認する
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-90.yaml
+    impact: run_only
+    detail: 利用側の JavaScript から描いたビューの表の操作が変わらないことを確認する
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-85.yaml
+    impact: run_only
+    detail: 追加したガイドのページを参照して記載する流れが変わらないことを確認する
+    depends_on: []
+docs:
+  - page: docs/guide/カスタマイズ-表をカスタム要素で使用する.mark.md
+    new: true
+    change: アプリの画面で <mdmark-table> を読み込み、列の定義と行のデータを指定して、操作のイベントを受け取る手順のガイドを新規に作る（タグ topic:ガイド）
+    status: todo
+  - page: docs/guide/コアコンセプト-部品をカスタム要素で配る仕組み.md
+    new: true
+    change: 部品をカスタム要素として jsDelivr から配り、@0 で更新に追従し、操作をイベントで通知する仕組みを新規に説明する
+    status: todo
+  - page: docs/guide/API.mark.md
+    new: false
+    change: <mdmark-table> のプロパティ・属性・イベントと公開の型を追加する
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 表のカスタム要素と、列の定義・行のデータなど新しい用語を追加する
+    status: todo
+  - page: docs/guide/導入-配布物を読み込む.md
+    new: false
+    change: '@0 の範囲を指定して更新に追従する読み込み方と、破壊的変更の扱いを追加する'
+    status: todo
+  - page: docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
+    new: false
+    change: 部品を JavaScript から使用する方法の並びに、表のカスタム要素のガイドへのリンクを追加する
+    status: todo
+  - page: docs/guide/files.yml
+    new: false
+    change: 新規に作るガイドのページの行（name・description・tags）を追加する
+    status: todo
+  - page: docs/guide/index.yaml
+    new: false
+    change: 新規に作るガイドのページの行を目次に追加する
+    status: todo
+  - page: plugin/guide-index.yaml
+    new: false
+    change: 表のカスタム要素のガイドの行を追加する
+    status: todo
+scope_out:
+  - item: 表のほかの部品（ビュー・コメント・図など）のカスタム要素
+    reason: 要望は最初の部品を表にし、ほかの部品は同じ方式で後から追加する。この PR は追加できる構造までを作る
+    plan: to_file
+  - item: React から使用する薄いラッパーの配布
+    reason: 決定で見送った案（配布が 2 つになる）。ラッパーは最初は使用する側のアプリに置き、使用するアプリが増えてから追加する
+    plan: none
+  - item: MindStella の表形式のビューを <mdmark-table> に置き換える
+    reason: 後続の別のリポジトリの Issue（shuhei1101/mindstella#670）が扱う
+    plan: none
+  - item: AI Monitor のフィードバック画面の一覧を <mdmark-table> に置き換える
+    reason: 後続の別のリポジトリの Issue（shuhei1101/ai-monitor#3775）が扱う
+    plan: none
