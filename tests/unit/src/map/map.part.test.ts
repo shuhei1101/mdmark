@@ -355,7 +355,6 @@ test("test_render_map_band", async () => {
     title: "",
     text: "",
     playing: false,
-    fill: 0,
     label: "全体の構成の案内",
   });
   // 検証
@@ -382,7 +381,6 @@ test("test_render_map_band_when_playing", async () => {
     title: "記法を読む",
     text: "",
     playing: true,
-    fill: 0.5,
     label: "全体の構成の案内",
   });
   // 検証
@@ -390,7 +388,7 @@ test("test_render_map_band_when_playing", async () => {
   expect(segments[0]).toContain("is-done");
   expect(segments[1]).toContain("is-current");
   expect(segments[1]).toContain("is-playing");
-  expect(html).toMatch(/class="map-band-fill" style="width: ?50%/);
+  expect(html).toMatch(/class="map-band-fill" style="width: ?100%/);
   expect(html).toContain('aria-valuetext="手順 2/4 記法を読む"');
   expect(html).not.toMatch(/class="map-band[^"-]*\bis-idle\b/);
 });
@@ -408,7 +406,6 @@ test("test_render_map_band_when_playback", async () => {
     title: "mount を呼ぶ",
     text: "",
     playing: true,
-    fill: 0,
     label: "文書を描くまでの再生",
   });
   // 検証
@@ -991,7 +988,6 @@ test("test_render_map_band_when_transition", async () => {
     title: "判定 → 差し戻しの理由を確認する：差し戻し",
     text: "",
     playing: true,
-    fill: 0,
     label: "作業の状態の再生",
   });
   // 検証
@@ -1016,7 +1012,6 @@ test("test_render_map_band_when_relation", async () => {
     title: "2: 注文の画面 → 注文の API：注文を送る",
     text: "画面の入力を JSON にして API へ送る",
     playing: true,
-    fill: 0,
     label: "注文の流れの再生",
   });
   // 検証
