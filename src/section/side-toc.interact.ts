@@ -365,9 +365,6 @@ export function attachSideToc(options: {
     ...aside.querySelectorAll<HTMLAnchorElement>(".mdmark-side-toc-list a"),
   ];
   const bars = [...aside.querySelectorAll(".mdmark-side-toc-bar")];
-  const currentLabel = aside.querySelector(
-    ".mdmark-side-toc-current",
-  ) as HTMLElement;
   const targets = headingElements(content);
 
   /** 目次を出すか隠すかを、状態と属性に写す */
@@ -406,8 +403,6 @@ export function attachSideToc(options: {
       }
       bars[index]?.toggleAttribute("data-current", index === current);
     });
-    currentLabel.textContent =
-      current === undefined ? "" : (links[current]?.textContent ?? "");
   };
 
   // 今いるセクションは、次の描画のタイミングに 1 回だけもう一度決める

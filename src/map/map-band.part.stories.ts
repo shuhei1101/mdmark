@@ -18,7 +18,6 @@ export const Step: Story = {
   args: {
     index: 1,
     playing: true,
-    fill: 0.5,
     title: "記法を読む",
     text: "1 行目\n2 行目\n3 行目",
   },

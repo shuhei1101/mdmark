@@ -204,11 +204,10 @@ export function renderSideToc(options: {
     panelId = DEFAULT_PANEL_ID,
   } = options;
   const escapedPanelId = escapeHtml(panelId);
-  const currentText = headings.find((heading) => heading.id === current)?.text;
   const bars = renderBars(headings, current);
   const markdown = markdownOptionsOf(options);
   const head = renderHead({ sections, pinned, ...markdown });
   const panel = renderMarkdownPanel({ ...markdown, panelId });
   const flags = `${open ? " data-open" : ""}${pinned ? " data-pinned" : ""}`;
-  return `<aside class="mdmark-side-toc" data-mode="${mode}"${flags}><button class="mdmark-side-toc-toggle" type="button" aria-expanded="${open}" aria-controls="${escapedPanelId}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-current">${escapeHtml(currentText ?? "")}</span>${iconSvg("ellipsis")}</button><div class="mdmark-side-toc-rail" aria-hidden="true">${bars}</div><nav class="mdmark-side-toc-panel" id="${escapedPanelId}" aria-label="右側の目次">${head}${panel}<ul class="mdmark-side-toc-list">${renderItems(nestHeadings(headings), current)}</ul></nav></aside>`;
+  return `<aside class="mdmark-side-toc" data-mode="${mode}"${flags}><button class="mdmark-side-toc-toggle" type="button" aria-expanded="${open}" aria-controls="${escapedPanelId}" aria-label="目次を表示" title="目次を表示"><span class="mdmark-side-toc-toggle-wide">${iconSvg("ellipsis")}</span><span class="mdmark-side-toc-toggle-narrow">${iconSvg("panel-right")}</span></button><div class="mdmark-side-toc-rail" aria-hidden="true">${bars}</div><nav class="mdmark-side-toc-panel" id="${escapedPanelId}" aria-label="右側の目次">${head}${panel}<ul class="mdmark-side-toc-list">${renderItems(nestHeadings(headings), current)}</ul></nav></aside>`;
 }

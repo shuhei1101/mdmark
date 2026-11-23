@@ -6,6 +6,7 @@ import {
   jsdiffEngine,
 } from "./compute.ts";
 import { renderDiffBlock } from "./diff-blocks.part.ts";
+import type { SideBySideRow } from "./diff-side-by-side.part.ts";
 import {
   checkRevisions,
   type DiffRevision,
@@ -841,4 +842,142 @@ function insertRemovals(options: {
       insertItem(first, inserted, removal.unit);
     }
   }
+}
+
+/** 左右に並べるブロックを上から順に集める: 本文かセクションの中身の直下の要素を 1 つずつ（リスト・表は全体を 1 つ、見出しは見出しだけ）にし、元の行の範囲を付ける */
+function pairRanges(root: ParentNode, lineCount: number): BlockRange[] {
+  const entries: Omit<BlockRange, "end">[] = [];
+  const walk = (parent: ParentNode): void => {
+    for (const child of parent.children) {
+      if (!(child instanceof HTMLElement)) {
+        continue;
+      }
+      if (child.matches(SECTION_BODY)) {
+        walk(child);
+        continue;
+      }
+      const start = lineOf(child);
+      if (start !== undefined) {
+        entries.push({ element: child, unit: "block", start });
+      }
+    }
+  };
+  walk(root);
+  return entries.map((entry, position) => ({
+    ...entry,
+    end: (entries[position + 1]?.start ?? lineCount) - 1,
+  }));
+}
+
+/** ブロックの HTML（見出しはセクションの中身を含めない） */
+const blockHtml = (range: BlockRange): string => range.element.outerHTML;
+
+/** 前と後の文書を描いた中身を、`colorDiffBlocks` と同じ比べ方で、向かい合う 1 組のブロックの並びにする（`root` は書き換えない） */
+export function pairSideBySide(options: {
+  before: Side;
+  after: Side;
+  /** 単語の区切り。持たないブラウザでは `undefined` */
+  segmenter: Intl.Segmenter | undefined;
+  /** 比較の計算。既定は `jsdiffEngine` */
+  engine?: DiffEngine;
+}): SideBySideRow[] {
+  const { before, after, segmenter, engine = jsdiffEngine } = options;
+  const texts = {
+    before: splitSourceLines(before.markdown),
+    after: splitSourceLines(after.markdown),
+  };
+  const diff = computeDiff({
+    before: before.markdown,
+    after: after.markdown,
+    segmenter,
+    engine,
+  });
+  const lines = classifyLines({ diff, texts });
+  const beforeRanges = pairRanges(before.root, texts.before.length);
+  const afterRanges = pairRanges(after.root, texts.after.length);
+  const regrouped = regroupedRanges({ lines, beforeRanges, afterRanges });
+  const sameAfter = new Map(
+    [...lines.same].map(([beforeLine, afterLine]) => [afterLine, beforeLine]),
+  );
+  const isAdded = (range: BlockRange): boolean =>
+    contentLines(texts.after, range).some((line) => lines.added.has(line)) ||
+    regrouped.has(range);
+  const chunkOf = (range: BlockRange, side: "before" | "after"): number => {
+    const chunks = side === "before" ? lines.chunkBefore : lines.chunkAfter;
+    const line = contentLines(texts[side], range).find((l) => chunks.has(l));
+    return line === undefined ? -1 : (chunks.get(line) ?? -1);
+  };
+  /** 後のブロックの変えていない行を範囲に持つ前のブロック */
+  const ownersOf = (range: BlockRange): BlockRange[] => {
+    const owners: BlockRange[] = [];
+    for (const line of contentLines(texts.after, range)) {
+      const beforeLine = sameAfter.get(line);
+      const owner =
+        beforeLine === undefined
+          ? undefined
+          : ownerOf(beforeRanges, "block", beforeLine);
+      if (owner !== undefined && !owners.includes(owner)) {
+        owners.push(owner);
+      }
+    }
+    return owners;
+  };
+  const used = new Set<BlockRange>();
+  /** 前のブロックごとの、組にした後の行 */
+  const rowOf = new Map<BlockRange, SideBySideRow>();
+  const rows: SideBySideRow[] = [];
+  for (const range of afterRanges) {
+    const owner = ownersOf(range).find((candidate) => !used.has(candidate));
+    const added = isAdded(range);
+    let pair = owner;
+    if (pair === undefined && added) {
+      // 変えていない行を持たない追加のブロックは、同じ変えた塊の残っている前のブロックの先頭と書き換えかを比べる
+      const chunk = chunkOf(range, "after");
+      const candidate = beforeRanges.find(
+        (item) =>
+          !used.has(item) &&
+          ownersOf(range).length === 0 &&
+          chunk !== -1 &&
+          chunkOf(item, "before") === chunk,
+      );
+      if (
+        candidate !== undefined &&
+        isRewrite({
+          before: candidate.element.textContent ?? "",
+          after: range.element.textContent ?? "",
+          segmenter,
+          engine,
+        })
+      ) {
+        pair = candidate;
+      }
+    }
+    const row: SideBySideRow =
+      pair === undefined
+        ? added
+          ? { kind: "add", after: blockHtml(range) }
+          : { kind: "same", before: blockHtml(range), after: blockHtml(range) }
+        : {
+            kind: added ? "change" : "same",
+            before: blockHtml(pair),
+            after: blockHtml(range),
+          };
+    if (pair !== undefined) {
+      used.add(pair);
+      rowOf.set(pair, row);
+    }
+    rows.push(row);
+  }
+  // 組にならなかった前のブロックは、前の文書で直前にあった組にしたブロックの行の後ろに削除の行で入れる
+  let insertAt = 0;
+  for (const range of beforeRanges) {
+    const row = rowOf.get(range);
+    if (row !== undefined) {
+      insertAt = rows.indexOf(row) + 1;
+      continue;
+    }
+    rows.splice(insertAt, 0, { kind: "del", before: blockHtml(range) });
+    insertAt += 1;
+  }
+  return rows;
 }

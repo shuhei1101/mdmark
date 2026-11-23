@@ -4,6 +4,7 @@ import {
   findScrollContainer,
   type ScrollContainer,
 } from "../shared/scroller.interact.ts";
+import { readStickyTop } from "../shared/sticky-top.ts";
 import { attachZoom } from "../shared/zoom.interact.ts";
 import { PANEL_CLOSE_LABEL, PANEL_OPEN_LABEL } from "./diagram.part.ts";
 import {
@@ -102,19 +103,16 @@ function listenScroller(
 
 /** シーケンス図の参加者の行を表示する枠の上端から下げる幅（px）。表示する枠の中を縦に動かした分と、文書のスクロールで表示する枠の上端が留める位置より上へ出た分の大きいほうで、表示する枠の下端より下へは出さない */
 function headsOffset(target: {
-  figure: HTMLElement;
   viewport: HTMLElement;
   heads: HTMLElement;
   scroller: ScrollContainer | undefined;
   scale: number;
+  /** `--mdmark-sticky-top` の px */
+  stickyTop: number;
 }): number {
-  const { figure, viewport, heads, scroller, scale } = target;
+  const { viewport, heads, scroller, scale, stickyTop } = target;
   if (!scroller) return viewport.scrollTop;
   const top = scroller.page ? 0 : scroller.target.getBoundingClientRect().top;
-  const stickyTop =
-    Number.parseFloat(
-      getComputedStyle(figure).getPropertyValue("--mdmark-sticky-top"),
-    ) || 0;
   const page = top + stickyTop - viewport.getBoundingClientRect().top;
   const limit =
     viewport.clientHeight - heads.clientHeight * scale + viewport.scrollTop;
@@ -173,11 +171,19 @@ function attachView(
   let userHeight: number | null = null;
   /** シーケンス図の相手の名前の行を、表示する枠の上端に留める（図の座標で縦に動いた分だけ下げる） */
   const scroller = headsScroller(figure, { modal, heads });
+  // 留める位置は付けたときと画面の大きさが変わったときだけ求め、スクロールでは保持した値を使用する
+  let stickyTop = heads ? readStickyTop(figure) : 0;
   const stickHeads = (): void => {
     if (!heads) {
       return;
     }
-    const offset = headsOffset({ figure, viewport, heads, scroller, scale });
+    const offset = headsOffset({
+      viewport,
+      heads,
+      scroller,
+      scale,
+      stickyTop,
+    });
     heads.style.transform = `translateY(${Math.round(offset) / scale}px)`;
     heads.classList.toggle("is-stuck", offset > 0);
   };
@@ -208,6 +214,16 @@ function attachView(
     signal: controller.signal,
   });
   listenScroller(scroller, stickHeads, controller.signal);
+  if (heads) {
+    window.addEventListener(
+      "resize",
+      () => {
+        stickyTop = readStickyTop(figure);
+        stickHeads();
+      },
+      { passive: true, signal: controller.signal },
+    );
+  }
 
   const zoom = attachZoom({
     viewport,

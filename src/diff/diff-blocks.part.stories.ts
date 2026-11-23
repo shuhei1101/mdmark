@@ -87,3 +87,14 @@ export const LongUrl: Story = {
     html: "<p>https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.9.0/dist/index.js?cache-bust=20261030-feature-vscode-diff-view-preview</p>",
   },
 };
+
+export const ListItemAddWrapped: Story = {
+  name: "ListItemAddWrapped",
+  parameters: { server: { id: "diff-blocks" } },
+  args: {
+    kind: "add",
+    unit: "item",
+    html: "<li>添付したファイル。2 行目に折り返す長い項目でも、記号は 1 行目の高さに描きます</li>",
+    frameWidth: "320px",
+  },
+};

@@ -75,8 +75,10 @@ export type MountOptions = {
   aliases?: MdmarkAlias[];
   /** 差分の取り出し元。指定すると描いた文書に差分を開く UI を付ける。指定するときは `docId` も要る */
   diffSource?: DiffSource;
-  /** 差分の出し方。`button`（既定）は「変更表示」を押してから差分の行を出し、`open` は描いた時点で押した状態にし、`blocks` は描いた文書のブロックを追加と削除の色で塗り分ける。`diffSource` を指定しないときは使用しない。知らない値は `button` にする */
+  /** 差分の出し方。`button`（既定）は「変更表示」を押してから差分の行を出し、`open` は描いた時点で押した状態にし、`blocks` は描いた文書のブロックを追加と削除の色で塗り分け、`side-by-side` は「変更表示」を押してから前と後を描いた本文を左右に並べる。`diffSource` を指定しないときは使用しない。知らない値は `button` にする */
   diffMode?: DiffMode;
+  /** 「変更表示」のボタンとリビジョンの選択を配置するか（既定 `true`）。`false` のときは配置せず、描いた時点で一番新しいリビジョンとその 1 つ前の差分を出す。真偽値でない値は `true` にする。`diffSource` を指定しないときと `diffMode` が `blocks` のときは使用しない */
+  diffControls?: boolean;
   /** コメントの読み込みと保存の関数。`comments` の機能がオンのときだけ使用する。指定するときは `docId` も要る */
   commentStore?: MdmarkCommentStore;
   /** 比較元の Markdown。指定すると、本文の中で比較元から変えたブロックを `blocks` と同じ色で塗り分ける。`null` と省いたときは色分けしない */
@@ -568,6 +570,9 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
         renderHtml: renderDiffHtml,
         hideWith: aside ? [aside] : [],
         open: diffMode === "open",
+        controls: opts.diffControls !== false,
+        layout: diffMode === "side-by-side" ? "side-by-side" : "lines",
+        renderMarkdown: (markdown) => renderMarkdown(markdown).html,
       });
       return;
     }

@@ -55,6 +55,10 @@ import {
   type DiffMinimapMark,
   renderDiffMinimap,
 } from "../src/diff/diff-minimap.part.ts";
+import {
+  renderDiffSideBySide,
+  type SideBySideRow,
+} from "../src/diff/diff-side-by-side.part.ts";
 import { renderDiffToggle } from "../src/diff/diff-toggle.part.ts";
 import { renderRevisionPicker } from "../src/diff/revision-picker.part.ts";
 import { renderEmbeddedHtml } from "../src/embedded-html/embedded-html.part.ts";
@@ -2111,7 +2115,6 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       title: typeof args.title === "string" ? args.title : "",
       text: typeof args.text === "string" ? args.text : "",
       playing: args.playing === true,
-      fill: typeof args.fill === "number" ? args.fill : 0,
       label: "全体の構成の案内",
     }),
   "diff-toggle": (args) =>
@@ -2137,6 +2140,15 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
     renderDiffMinimap({
       marks: args.marks as DiffMinimapMark[],
       view: args.view as { top: number; height: number },
+    }),
+  "diff-side-by-side": (args) =>
+    renderDiffSideBySide({
+      before: {
+        label: String(args.beforeLabel ?? "2026/10/19 16:40 件数を修正する"),
+      },
+      after: { label: String(args.afterLabel ?? "2026/10/20 11:05 追加する") },
+      rows: (args.rows as SideBySideRow[] | undefined) ?? [],
+      idPrefix: "story-diff-pair",
     }),
   "diff-blocks": (args) => {
     const unit = args.unit as "block" | "item" | "row";
@@ -2530,13 +2542,17 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       return narrowed(mapFrameStory(args), args);
     }
     if (args.kind === "mermaid") {
-      return fitted(
+      const frame = fitted(
         renderMermaidStory({
-          svg: "flowchart",
+          svg: typeof args.svg === "string" ? args.svg : "flowchart",
           title: typeof args.title === "string" ? args.title : "",
         }) ?? "",
         args,
       );
+      // `maxHeight` は表示する枠の高さの上限（`--mdmark-diagram-max-height`）を縮め、縦に長い図を枠で切る
+      return typeof args.maxHeight === "number"
+        ? `<div style="--mdmark-diagram-max-height: ${args.maxHeight}px">${frame}</div>`
+        : frame;
     }
     const html = renderDiagram({
       kind: "chart",

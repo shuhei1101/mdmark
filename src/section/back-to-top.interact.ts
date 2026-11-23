@@ -2,6 +2,7 @@ import {
   findScrollContainer,
   type ScrollContainer,
 } from "../shared/scroller.interact.ts";
+import { readStickyTop } from "../shared/sticky-top.ts";
 import { renderBackToTop } from "./back-to-top.part.ts";
 
 /** 差分のミニマップか余白の列と横の範囲が重なるとき、その部品の左端からボタンの右端までに空ける幅（px） */
@@ -44,14 +45,6 @@ function areaRect({ target, page }: ScrollContainer): AreaRect {
     bottom: Math.min(top + target.clientHeight, clientHeight),
     height: target.clientHeight,
   };
-}
-
-/** 描く先の要素の `--mdmark-sticky-top` の px を返却する（指定が無ければ 0） */
-function stickyTop(el: HTMLElement): number {
-  const value = getComputedStyle(el)
-    .getPropertyValue("--mdmark-sticky-top")
-    .trim();
-  return value === "" ? 0 : Number.parseFloat(value);
 }
 
 /** HTML 文字列からボタンの要素を作る */
@@ -136,7 +129,7 @@ export function attachBackToTop(options: {
     const offset = el.getBoundingClientRect().top - areaRect(container).top;
     if (container.page) {
       window.scrollTo({
-        top: window.scrollY + offset - stickyTop(el),
+        top: window.scrollY + offset - readStickyTop(el),
         behavior,
       });
     } else {
