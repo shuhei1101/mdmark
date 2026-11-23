@@ -11406,6 +11406,10 @@
     overflow: visible;
     pointer-events: none;
   }
+  /* 説明を持つ線のラベル: 線を押す・指す場所の層より上に置き、ラベルの上でツールチップを開く */
+  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-label.has-tip {
+    z-index: 1;
+  }
   /* 選んだノード・参加者 */
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node.is-selected {
     outline: 2px solid var(--mdmark-color-link);
