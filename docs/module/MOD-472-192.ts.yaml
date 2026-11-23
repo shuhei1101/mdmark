@@ -30,9 +30,9 @@ functions:
     side_effects: '`root` の中に要素を配置し、本文の要素と `hideWith` の要素に `DIFF_HIDDEN_ATTRIBUTE` を付与・解除する。取り出し元を呼ぶ。取り出せないときは `console.error` に出す'
     args:
       - name: options
-        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: DiffHtmlRenderer; renderMarkdown: (markdown: string) => string; hideWith?: HTMLElement[]; open?: boolean; controls?: boolean; layout?: "lines" | "side-by-side" }'
+        type: '{ root: HTMLElement; source: DiffSource; docId: string; renderHtml: DiffHtmlRenderer; renderMarkdown?: (markdown: string) => string; hideWith?: HTMLElement[]; open?: boolean; controls?: boolean; layout?: "lines" | "side-by-side" }'
         required: true
-        description: '`root` は描いた本文（右側の目次を配置したときは本文の列）、`source` と `docId` は `mount` に指定されたもの、`renderHtml` は埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返却する関数、`hideWith` は差分を開いている間、`root` の外で一緒に隠す要素（右側の目次）、`open` は配置した時点で開くか（既定 `false`。`mount` の `diffMode` が `open` のとき `true`）、`controls` は「変更表示」のボタンとリビジョンの選択を配置するか（既定 `true`。`false` のときは配置せず、`open` によらず配置した時点で開く）、`layout` は差分の出し方（既定 `lines`。`mount` の `diffMode` が `side-by-side` のとき `side-by-side`）、`renderMarkdown` は `layout` が `side-by-side` のとき前と後の本文を文書と同じ描き方で描いた HTML を返却する関数'
+        description: '`root` は描いた本文（右側の目次を配置したときは本文の列）、`source` と `docId` は `mount` に指定されたもの、`renderHtml` は埋め込んだ HTML を文書と同じ描き方で描き、操作を付ける関数を返却する関数、`hideWith` は差分を開いている間、`root` の外で一緒に隠す要素（右側の目次）、`open` は配置した時点で開くか（既定 `false`。`mount` の `diffMode` が `open` のとき `true`）、`controls` は「変更表示」のボタンとリビジョンの選択を配置するか（既定 `true`。`false` のときは配置せず、`open` によらず配置した時点で開く）、`layout` は差分の出し方（既定 `lines`。`mount` の `diffMode` が `side-by-side` のとき `side-by-side`）、`renderMarkdown` は `layout` が `side-by-side` のとき前と後の本文を文書と同じ描き方で描いた HTML を返却する関数（省くと `layout` が `side-by-side` でも `lines` で描く）'
     returns:
       type: () => void
       description: 差分を閉じ、待ちと受け取りとミニマップを片付け、配置した要素を取り除く関数

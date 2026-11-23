@@ -127,9 +127,6 @@ data_models:
       - name: playing
         type: boolean
         description: 今の手順を繰り返しているか
-      - name: fill
-        type: number
-        description: 今の手順の 1 周の進み（0〜1）
       - name: label
         type: string
         description: 帯の名前
@@ -963,9 +960,9 @@ functions:
       - name: test_render_map_band_when_playing
         case: 正常
         summary: 繰り返している途中
-        condition: '`index: 1`・`playing: true`・`fill: 0.5`・`titles` の 2 つ目が `記法を読む`'
+        condition: '`index: 1`・`playing: true`・`titles` の 2 つ目が `記法を読む`'
         mock: なし
-        expected: 1 つ目の区切りが `is-done`、2 つ目が `is-current` と `is-playing` で塗りの幅が 50%、バーの `aria-valuetext` が `手順 2/4 記法を読む`、帯が `is-idle` を持たない
+        expected: 1 つ目の区切りが `is-done`、2 つ目が `is-current` と `is-playing` で塗りの幅が 100%、バーの `aria-valuetext` が `手順 2/4 記法を読む`、帯が `is-idle` を持たない
       - name: test_render_map_band_when_playback
         case: 正常
         summary: 再生
