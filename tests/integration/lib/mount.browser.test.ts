@@ -4111,7 +4111,7 @@ test("test_normal_when_diagram_tooltip", async () => {
     () => find<HTMLElement>(el, 'figure.mdmark-diagram[data-diagram="map"]'),
     { timeout: MAP_WAIT_MS },
   );
-  // 説明を持つ線にポインターを乗せ、ツールチップの上へ動かしても出したままにする
+  // 説明とラベルを持つ線は、押せる帯の上では出さず、ラベルにポインターを乗せると出し、ツールチップの上へ動かしても出したままにする
   const wireLabel = find<HTMLElement>(
     figure,
     '.mdmark-diagram-label.has-tip[data-wire="user->classify"]',
@@ -4123,6 +4123,8 @@ test("test_normal_when_diagram_tooltip", async () => {
   hit.dispatchEvent(new PointerEvent("pointerover", { bubbles: true }));
   hit.dispatchEvent(new PointerEvent("pointerenter", { bubbles: true }));
   const wireTip = tipOf(wireLabel);
+  expect(wireTip.hidden).toBe(true);
+  await userEvent.hover(wireLabel);
   expect(wireTip.hidden).toBe(false);
   expect(wireTip.textContent).toContain("件名・本文・送信者のアドレス");
   await userEvent.hover(wireTip);
@@ -7818,7 +7820,7 @@ test("test_normal_when_side_toc_in_narrow_width", async () => {
     // 準備
     const el = createElement();
     await mountTracked(el, { markdown: SIDE_TOC_MARKDOWN });
-    const { aside, panel, toggle, rail, linkOf } = sideTocOf(el);
+    const { aside, content, panel, toggle, rail, linkOf } = sideTocOf(el);
     // 検証: 描いた直後は、目次を出すボタンだけが本文の右上の端にある
     expect(aside.querySelector(".mdmark-side-toc-current")).toBeNull();
     expect(getComputedStyle(rail).display).toBe("none");
@@ -7834,7 +7836,7 @@ test("test_normal_when_side_toc_in_narrow_width", async () => {
     expect(Math.round(face.width)).toBe(32);
     expect(Math.round(face.height)).toBe(32);
     expect(
-      Math.abs(hit.right - el.getBoundingClientRect().right),
+      Math.abs(hit.right - content.getBoundingClientRect().right),
     ).toBeLessThanOrEqual(1);
     expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
       document.documentElement.clientWidth,
@@ -18651,9 +18653,9 @@ test("test_normal_when_map_args", async () => {
   });
   try {
     pressSegment(seq(), 1);
+    expect(bandFill(seq())).toBe(100);
     vi.advanceTimersByTime(1000);
-    expect(bandFill(seq())).toBeGreaterThan(40);
-    expect(bandFill(seq())).toBeLessThan(60);
+    expect(bandFill(seq())).toBe(100);
     expect(bandStep(seq())).toBe(1);
     pressBlank(seq());
   } finally {

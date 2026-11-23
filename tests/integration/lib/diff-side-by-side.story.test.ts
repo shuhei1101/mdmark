@@ -4,6 +4,9 @@ import { createBrowserHolder, pageOverflows, resolveColor } from "../story.ts";
 
 const holder = createBrowserHolder();
 
+/** 広い幅の状態を開く画面の大きさ（部品設計の状態の幅 1280px） */
+const WIDE = { width: 1400, height: 900 };
+
 beforeAll(holder.launch);
 afterAll(holder.close);
 
@@ -78,7 +81,7 @@ async function expectAligned(page: Page): Promise<void> {
 // 広い幅の 2 列に、変えていないブロックと書き換えたブロックを同じ高さで向かい合わせ、対の無い向かいに斜線の空きを入れる（Wide）
 test("test_wide", async () => {
   // 準備・実行
-  const page = await holder.openStory("parts-diffsidebyside--wide");
+  const page = await holder.openStory("parts-diffsidebyside--wide", WIDE);
   // 検証
   await expect(shown(page)).resolves.toEqual({ pair: true, stacked: false });
   await expectAligned(page);
@@ -93,7 +96,7 @@ test("test_wide", async () => {
 // 右の追加した段落が長いと、向かいの空きが段落の高さに合わせて伸びる（LongBlock）
 test("test_long_block", async () => {
   // 準備・実行
-  const page = await holder.openStory("parts-diffsidebyside--long-block");
+  const page = await holder.openStory("parts-diffsidebyside--long-block", WIDE);
   // 検証
   const [before, after] = await columns(page);
   const last = (after?.cells.length ?? 0) - 1;
@@ -138,7 +141,7 @@ test("test_narrow", async () => {
 // ダークの配色でも、Wide と同じ並びで差分のブロックの色を使用する（Dark）
 test("test_dark", async () => {
   // 準備・実行
-  const page = await holder.openStory("parts-diffsidebyside--dark");
+  const page = await holder.openStory("parts-diffsidebyside--dark", WIDE);
   // 検証
   await expectAligned(page);
   const actual = await page
