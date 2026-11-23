@@ -550,3 +550,81 @@ test("test_attach_diff_when_open", async () => {
   expect(toggle?.getAttribute("aria-expanded")).toBe("false");
   expect(root.querySelector("p")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(false);
 });
+
+/** Markdown の行ごとに、元の行番号を持つ見出し（`id` 付き）か段落の HTML にする偽物の描き方 */
+const fakeRenderMarkdown = (markdown: string): string =>
+  markdown
+    .split("\n")
+    .map((line, index) =>
+      line === ""
+        ? ""
+        : line.startsWith("# ")
+          ? `<h1 id="heading-${index}" data-source-line="${index}">${line.slice(2)}</h1>`
+          : `<p data-source-line="${index}">${line}</p>`,
+    )
+    .join("");
+
+// controls が false なら、ボタンと選択を配置せずに配置した時点で差分を描く（正常系）
+test("test_attach_diff_when_controls_hidden", async () => {
+  // 準備
+  const root = createRoot();
+  const source = createSource();
+  const { attachDiff } = await loadPanel();
+  // 実行
+  const detach = attachDiff({
+    root,
+    source,
+    docId: "guide",
+    renderHtml: (html) => ({ html, attach: () => () => {} }),
+    renderMarkdown: fakeRenderMarkdown,
+    controls: false,
+  });
+  detaches.push(detach);
+  // 検証
+  await vi.waitFor(() => {
+    expect(root.querySelector(".mdmark-diff-line")).not.toBeNull();
+  });
+  expect(root.querySelector(".mdmark-diff-toggle")).toBeNull();
+  expect(root.querySelector("select")).toBeNull();
+  expect(source.contentCalls.map((call) => call.revisionId).sort()).toEqual([
+    "r2",
+    "r3",
+  ]);
+  expect(root.querySelector("p")?.hasAttribute(HIDDEN_ATTRIBUTE)).toBe(true);
+});
+
+// layout が side-by-side なら、行の代わりに左右に並べる差分を描く（正常系）
+test("test_attach_diff_when_side_by_side", async () => {
+  // 準備
+  const root = createRoot();
+  const source = createSource({}, REVISIONS.slice(1));
+  const { attachDiff } = await loadPanel();
+  // 実行
+  const detach = attachDiff({
+    root,
+    source,
+    docId: "guide",
+    renderHtml: (html) => ({ html, attach: () => () => {} }),
+    renderMarkdown: fakeRenderMarkdown,
+    controls: false,
+    layout: "side-by-side",
+  });
+  detaches.push(detach);
+  // 検証
+  await vi.waitFor(() => {
+    expect(root.querySelector("div.mdmark-diff-pair")).not.toBeNull();
+  });
+  expect(root.querySelector("div.mdmark-diff-pair-stacked")).not.toBeNull();
+  expect(root.querySelector(".mdmark-diff-line")).toBeNull();
+  expect(document.querySelector(".mdmark-diff-minimap")).toBeNull();
+  const panelId =
+    root.querySelector(".mdmark-diff[id^='mdmark-diff-panel-']")?.id ?? "";
+  expect(panelId).not.toBe("");
+  const stackedIds = [
+    ...root.querySelectorAll("div.mdmark-diff-pair-stacked [id]"),
+  ].map((element) => element.id);
+  expect(stackedIds.length).toBeGreaterThan(0);
+  for (const id of stackedIds) {
+    expect(id.startsWith(`${panelId}-stacked-`)).toBe(true);
+  }
+});

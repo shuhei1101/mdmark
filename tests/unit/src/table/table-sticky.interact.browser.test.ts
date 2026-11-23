@@ -241,6 +241,27 @@ test("test_attach_sticky_rows_when_unwrapped", async () => {
   });
 });
 
+// px 以外の長さの留める位置も JS でずらす量に換算する（正常系）
+test("test_attach_sticky_rows_when_sticky_top_calc", async () => {
+  // 準備
+  addStyles();
+  vi.spyOn(CSS, "supports").mockReturnValue(false);
+  const { attachStickyRows } = await loadSticky();
+  const root = createRootFromHtml(bareTable(60));
+  root.style.setProperty("--mdmark-sticky-top", "calc(.25rem * 24)");
+  const headTop = headCell(root).getBoundingClientRect().top + window.scrollY;
+  detachers.push(attachStickyRows(root));
+  // 実行: 見出し行の上端が画面の上端より 300px 上になるまでスクロールする
+  window.scrollTo(0, headTop + 300);
+  await nextFrame();
+  // 検証
+  await vi.waitFor(() => {
+    expect(
+      Math.abs(headCell(root).getBoundingClientRect().top - 96),
+    ).toBeLessThanOrEqual(1);
+  });
+});
+
 // 横にだけスクロールする要素の中の表は、画面を基準にし、animation-timeline を持つブラウザでも JS でずらす（正常系）
 test("test_attach_sticky_rows_when_in_wide_range", async () => {
   // 準備: 横にだけスクロールする要素（縦にははみ出さない）の中に表を描く

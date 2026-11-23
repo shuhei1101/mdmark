@@ -909,6 +909,42 @@ test("test_render_map_flow_when_annotations", async () => {
   }
 });
 
+// ラベルと説明を持つ線は、ラベルだけをツールチップの持ち主にする（正常系）
+test("test_render_map_flow_when_labeled_wire_tip", async () => {
+  // 準備
+  const { renderMapFlow } = await loadParts();
+  // 実行
+  const { html } = renderMapFlow({
+    ...(await flowArgs()),
+    notes: {
+      "marker->data": "補足の JSON を渡す",
+      "mount->marker": "Markdown を渡す",
+    },
+  });
+  // 検証
+  const label =
+    findTags(html, 'data-wire="marker-&gt;data"').find((tag) =>
+      tag.includes("mdmark-diagram-label"),
+    ) ?? "";
+  expect(label).toContain('data-tip-owner="marker-&gt;data"');
+  expect(label).toContain("aria-describedby=");
+  const labeledHit =
+    html.match(
+      /<g class="map-wire-hit" data-wire="marker-&gt;data"[\s\S]*?<\/g>/,
+    )?.[0] ?? "";
+  expect(labeledHit).toContain("map-wire-hit-segment");
+  expect(labeledHit).not.toContain("data-tip-owner");
+  const unlabeledHit =
+    html.match(
+      /<g class="map-wire-hit" data-wire="mount-&gt;marker"[\s\S]*?<\/g>/,
+    )?.[0] ?? "";
+  const owners = matches(
+    unlabeledHit,
+    /<rect class="map-wire-hit-segment"[^>]*data-tip-owner="mount-&gt;marker"[^>]*>/g,
+  );
+  expect(owners).toHaveLength(1);
+});
+
 // まとめた線の説明（正常系）
 test("test_render_map_flow_when_merged_notes", async () => {
   // 準備
