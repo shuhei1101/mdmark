@@ -47,3 +47,9 @@ confirmations:
     approver: shuhei1101
     commit: c968d756
     thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4660055409
+  - topic: '#790 の iPad の Safari の見出し行のずれの直し方（実機の確認の結果）'
+    decision: 確認用のページで、今の `animation-timeline` の方式は iPad の実機でずれず、JS でずらす方式は遅かった。iPad・iPhone の Safari でも今の方式のままにし、JS でずらす方式に切り替えない
+    decided_by: reply
+    approver: shuhei1101
+    commit: 9bbf87b7
+    thread: https://github.com/shuhei1101/mdmark/pull/792#discussion_r4660762538
