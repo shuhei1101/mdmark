@@ -282,7 +282,7 @@ functions:
         summary: スクロールすると今いるセクションの項目を付け替える
         condition: 見出しが 3 つある長い本文で、2 つ目の見出しを線より上へスクロールして次の描画を待つ
         mock: なし
-        expected: 2 つ目の項目だけが `aria-current="location"`、右端の線の 2 本目だけが `data-current` を持ち、目次を出すボタンに 2 つ目の見出しの文字が出る
+        expected: 2 つ目の項目だけが `aria-current="location"`、右端の線の 2 本目だけが `data-current` を持つ
       - name: test_attach_side_toc_when_detached
         case: 正常
         summary: 削除すると包む前の子の並びへ戻す

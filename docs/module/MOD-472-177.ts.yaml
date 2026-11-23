@@ -118,7 +118,7 @@ functions:
         summary: '`fitHeight` の関数が `true` を返却するようになった後の `refit()` で、倍率を保ち下限を高さでもう一度求める'
         condition: 幅 600px・高さ 400px の枠に幅 500・高さ 1600 の中身。始めは `fitHeight` が `false` を返却し、`true` を返却するようにして `refit()` を呼ぶ
         mock: なし
-        expected: '`refit()` の前後で倍率が `1` のままで、`fit()` が `1` から `0.25` になり、表示する枠が `data-at-fit` を持たなくなる'
+        expected: '`refit()` の前後で倍率が `1` のままで、`fit()` が `1` から `0.25` になり、表示する枠が前後とも `data-at-fit` を持たない（倍率 `1` の中身の高さ 1600 が枠の高さ 400 に収まらない）'
       - name: test_attach_zoom_when_link_dragstart
         case: 正常
         summary: ノードのリンクの上の押下で、ブラウザのリンクのドラッグを始めない

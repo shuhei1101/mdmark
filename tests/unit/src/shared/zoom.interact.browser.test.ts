@@ -320,7 +320,7 @@ test("test_attach_zoom_when_refit", async () => {
   zoom.refit();
   // 検証
   expect(fitBefore).toBe(1);
-  expect(atFitBefore).toBe(true);
+  expect(atFitBefore).toBe(false);
   expect(zoom.fit()).toBeCloseTo(viewport.clientHeight / 1600, 5);
   expect(zooms.at(-1) ?? 1).toBe(1);
   expect(viewport.hasAttribute("data-at-fit")).toBe(false);
