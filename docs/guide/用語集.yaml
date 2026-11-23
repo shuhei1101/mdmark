@@ -747,7 +747,7 @@ terms:
     href: ./導入-差分を表示する.md
 - id: diff-mode
   name: 差分の出し方
-  description: '`mount` の `opts.diffMode`。`button`（既定。「変更表示」を押してから差分の行を出す）・`open`（描いた時点で押した状態にして差分の行を出す）・`blocks`（描いた文書のブロックを色分けする）から選ぶ。配布物の `diffModes` が、対応する値を持つ'
+  description: '`mount` の `opts.diffMode`。`button`（既定。「変更表示」を押してから差分の行を出す）・`open`（描いた時点で押した状態にして差分の行を出す）・`blocks`（描いた文書のブロックを色分けする）・`side-by-side`（「変更表示」を押してから、前と後を描いた本文を左右に並べる）から選ぶ。配布物の `diffModes` が、対応する値を持つ'
   details:
   - title: 文書を描く
     href: ./API.mark.md#文書を描く
@@ -981,7 +981,7 @@ terms:
     href: ./記法.mark.md#map
 - id: step-bar
   name: 手順のバー
-  description: map の図の下の帯の、案内・再生の手順の数に区切ったバー。区切りか左右の矢印を押すとその手順を停止するまで繰り返し、バーの外か図の空いた場所を押すと止まる
+  description: map の図の下の帯の、案内・再生の手順の数に区切ったバー。区切りか左右の矢印を押すとその手順を停止するまで繰り返し、今の手順の区切りの全体を塗る。バーの外か図の空いた場所を押すと止まる
   details:
   - title: map
     href: ./記法.mark.md#map

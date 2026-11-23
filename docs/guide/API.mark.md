@@ -135,7 +135,8 @@ handle.destroy();
 | `opts.icons` | 任意 | 配布物に入っていない名前の Lucide のアイコンの形状の表（`Record<string, IconNode>`）。表にある名前は jsDelivr から読み込まずにこの構造で描く。省くと、使用する名前だけを jsDelivr から読み込む |
 | `opts.resolveIdLink` | 任意 | `id:` で始まるリンク先（`id:` を含む値）を受け取り、開く URL を返却する関数（`(ref: string) => string \| undefined`）。本文の `[名前](id:...)` のリンクと、map の `flowchart` の `click` のノードと `classDiagram` の `click`・`link` のクラスのリンクに適用する。返却した URL も本文のリンクと同じ許可で確認する。省いたとき・URL を返却しないとき・例外を投げたときは、本文のリンクは `href` を持たず、ノードはリンクにせず記載の警告にする |
 | `opts.diffSource` | 任意 | 文書のリビジョンの一覧と、リビジョンごとの本文を返却する取り出し元（`DiffSource`）。指定すると、描いた文書に差分を開く UI が付く。`opts.docId` と一緒に指定する。省くと、差分の UI を付けない |
-| `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks` のどれか。省くと `button`。`opts.diffSource` を指定しないときは使用しない。知らない値は `button` として扱う |
+| `opts.diffMode` | 任意 | 差分の出し方。`button`・`open`・`blocks`・`side-by-side` のどれか。省くと `button`。`side-by-side` は「変更表示」を押してから、前と後のリビジョンを描いた本文を左右に並べる。`opts.diffSource` を指定しないときは使用しない。知らない値は `button` として扱う |
+| `opts.diffControls` | 任意 | 「変更表示」のボタンと前と後のリビジョンを選ぶ欄を配置するか（真偽値）。省くと `true`。`false` のときは配置せず、描いた時点で一番新しいリビジョンとその 1 つ前の差分を出す。`opts.diffSource` を指定しないときと `opts.diffMode` が `blocks` のときは使用しない。真偽値でない値は `true` として扱う |
 | `opts.commentStore` | 任意 | コメントを読み込み、保存する関数（`MdmarkCommentStore`）。機能 `comments` がオンのときだけ使用する。`opts.docId` と一緒に指定する。省くと、コメントを付けられない |
 | `opts.baseMarkdown` | 任意 | 比較元の Markdown（文字列か `null`）。指定すると、本文の中で比較元から追加・変更したブロックと削除したブロックを、`opts.diffMode` が `blocks` のときと同じ色で塗り分ける。`opts.diffSource` は要らない。`opts.diffSource` も指定したときは、色分けに比較元を使用し、取り出し元は「変更表示」の差分にだけ使用する（`blocks` では取り出し元を呼ばない）。`null` と省いたときは色分けしない。色分けしているときは、右側の目次の変わったセクションの項目に変更のマーカーを出す。`update` の第 2 引数で差し替える |
 | `opts.onColumnsChange` | 任意 | `columns` の機能を持つ表で列の表示を切り替えるたびに呼ぶ関数。`{ tableIndex, hidden }`（`MdmarkColumnsChange`）を受け取る。`tableIndex` は本文の中の `columns` の機能を持つ表の出現順（0 から。削除したブロックの中の表は数えない）、`hidden` は隠している列の見出しの文字を列の順に並べた配列。描いたときの `hidden` の状態と、`update` で再描画したときは呼ばない |
@@ -251,7 +252,7 @@ const supportsBlocks = mdmark.diffModes?.includes("blocks") ?? false;
 
 | 型 | 説明 | 例 |
 | --- | --- | --- |
-| `readonly ["button", "open", "blocks"]` | `opts.diffMode` に指定できる値 | `["button", "open", "blocks"]` |
+| `readonly ["button", "open", "blocks", "side-by-side"]` | `opts.diffMode` に指定できる値 | `["button", "open", "blocks", "side-by-side"]` |
 
 `opts.diffMode` を知らない古いバージョンの配布物は、`diffModes` を持たない。
 そのバージョンの `mount` は `opts.diffMode` を黙って無視するため、`diffModes` が無いか目的の出し方を含まないときは、その出し方に対応しないバージョンと見なす。
@@ -1031,7 +1032,7 @@ mdmark.mount(document.querySelector("#doc"), { markdown });
 | `--mdmark-table-rule-inline` | `1px` | 表のセルの左右の線の太さ（`plain` の種類は `0`） |
 | `--mdmark-back-to-top-size` | `2.75rem` | 先頭へ戻るボタンの幅と高さ |
 | `--mdmark-back-to-top-gap` | `1rem` | 先頭へ戻るボタンと、スクロールする場所の右端・下端の間 |
-| `--mdmark-sticky-top` | `0px` | 表の見出し行と、右側の目次・狭い幅の帯を留める位置と、hover で開く右側の目次の枠の上端の、スクロールする場所の上端からのずれ。スクロールする場所は、文書を縦にスクロールする要素の中に描いたときはその要素、そうでなければ画面。ページの上端に固定したヘッダーを持つ利用側は、その高さを指定する |
+| `--mdmark-sticky-top` | `0px` | 表の見出し行と、右側の目次・狭い幅の目次を出すボタンを留める位置と、hover で開く右側の目次の枠の上端の、スクロールする場所の上端からのずれ。スクロールする場所は、文書を縦にスクロールする要素の中に描いたときはその要素、そうでなければ画面。ページの上端に固定したヘッダーを持つ利用側は、その高さを指定する。`px` のほか `rem`・`em`・`vh`・`calc()` などの長さも指定でき、どのブラウザでも同じ位置に留まる |
 | `--mdmark-icon-inline-size` | `1em` | 行内のアイコン（`icon\:`）の幅と高さ |
 | `--mdmark-highlight-bg` | `var(--mdmark-color-accent-yellow-bg)` | 色を指定しない蛍光ペンの面の色 |
 | `--mdmark-color-footnote-ref` | `var(--mdmark-color-link)` | 本文の脚注の番号（`[1]`）の色 |
