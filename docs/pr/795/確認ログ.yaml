@@ -1,0 +1,7 @@
+confirmations:
+  - topic: '#793 の表のカスタム要素で、長い文字を省略するか折り返すか'
+    decision: 長い文字は省略せず、今の Markdown の表の部品と同じく列の最小の幅で折り返す。収まらない表は表の中で横にスクロールする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 5bf0d22f
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4666502012
