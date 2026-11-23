@@ -56,39 +56,57 @@ docs:
   - page: docs/guide/カスタマイズ-表をカスタム要素で使用する.mark.md
     new: true
     change: アプリの画面で <mdmark-table> を読み込み、列の定義と行のデータを指定して、操作のイベントを受け取る手順のガイドを新規に作る（タグ topic:ガイド）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
   - page: docs/guide/コアコンセプト-部品をカスタム要素で配る仕組み.md
     new: true
     change: 部品をカスタム要素として jsDelivr から配り、@0 で更新に追従し、操作をイベントで通知する仕組みを新規に説明する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
   - page: docs/guide/API.mark.md
     new: false
     change: <mdmark-table> のプロパティ・属性・イベントと公開の型を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: 表のカスタム要素と、列の定義・行のデータなど新しい用語を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
   - page: docs/guide/導入-配布物を読み込む.md
     new: false
     change: '@0 の範囲を指定して更新に追従する読み込み方と、破壊的変更の扱いを追加する'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
   - page: docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
     new: false
     change: 部品を JavaScript から使用する方法の並びに、表のカスタム要素のガイドへのリンクを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
   - page: docs/guide/files.yml
     new: false
     change: 新規に作るガイドのページの行（name・description・tags）を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
   - page: docs/guide/index.yaml
     new: false
     change: 新規に作るガイドのページの行を目次に追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
   - page: plugin/guide-index.yaml
     new: false
     change: 表のカスタム要素のガイドの行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-23T18:00:58.174050+00:00'
 scope_out:
   - item: 表のほかの部品（ビュー・コメント・図など）のカスタム要素
     reason: 要望は最初の部品を表にし、ほかの部品は同じ方式で後から追加する。この PR は追加できる構造までを作る

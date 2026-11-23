@@ -79,8 +79,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-23T15:16:49.827501+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/guide の使用方法のページ・API・用語集・plugin/guide-index.yaml
+    updated_by: planner
+    updated_at: '2026-11-23T18:01:11.701600+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
