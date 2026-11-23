@@ -1185,6 +1185,74 @@ states:
         value: '[["導入の手順","128","8","0","18","17","23","16","15","16"]]'
       - name: overflow
         value: 'true'
+  - name: RowPressable
+    description: 行を押せる表。4 行目にフォーカスがあり、内側の枠が出ている
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["タイトル","状態","担当","更新日"]'
+      - name: rows
+        value: '[["設計","未着手","佐藤","2026-11-20"],["列の幅を広げる","進行中","鈴木","2026-11-22"],["列の並べ替えを使用する","進行中","佐藤","2026-11-18"],["ピン止めを使用する","完了","田中","2026-11-15"]]'
+      - name: rowKeys
+        value: '["R1","R2","R3","R4"]'
+      - name: pressable
+        value: 'true'
+      - name: focusRow
+        value: '3'
+  - name: CellEditable
+    description: 担当の列を編集できる表。担当のセルに破線の下線が出ている
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["タイトル","状態","担当","更新日"]'
+      - name: rows
+        value: '[["設計","未着手","佐藤","2026-11-20"],["列の幅を広げる","進行中","鈴木","2026-11-22"],["列の並べ替えを使用する","進行中","佐藤","2026-11-18"],["ピン止めを使用する","完了","田中","2026-11-15"]]'
+      - name: rowKeys
+        value: '["R1","R2","R3","R4"]'
+      - name: pressable
+        value: 'true'
+      - name: editable
+        value: '[2]'
+  - name: CellEditing
+    description: 2 行目の担当のセルを編集している。セルが値 `鈴木` の入力欄と案内になっている
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["タイトル","状態","担当","更新日"]'
+      - name: rows
+        value: '[["設計","未着手","佐藤","2026-11-20"],["列の幅を広げる","進行中","鈴木","2026-11-22"],["列の並べ替えを使用する","進行中","佐藤","2026-11-18"],["ピン止めを使用する","完了","田中","2026-11-15"]]'
+      - name: rowKeys
+        value: '["R1","R2","R3","R4"]'
+      - name: pressable
+        value: 'true'
+      - name: editable
+        value: '[2]'
+      - name: editing
+        value: '{"row":1,"column":2,"value":"鈴木"}'
+  - name: AddRow
+    description: 行の追加を許可した表。表の下の左端に `行追加` のボタンがある
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter"]'
+      - name: columns
+        value: '["タイトル","状態","担当","更新日"]'
+      - name: rows
+        value: '[["設計","未着手","佐藤","2026-11-20"],["列の幅を広げる","進行中","鈴木","2026-11-22"]]'
+      - name: rowKeys
+        value: '["R1","R2"]'
+      - name: addRow
+        value: 'true'
 lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決定した並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、どの種類の表も、表がスクロールする場所（ページか、表を囲む縦にスクロールする区画）に残っている間はスクロールしてもその上端に留め、集計の行をその下端に留める。列ごとに中身の量から折り返すかと列の幅を決め、全ての列の最小の幅が収まらない表は表の中で横にスクロールさせる。
 args:
   - name: kind
@@ -1473,6 +1541,46 @@ args:
     default: なし（ドラッグしていない）
     enabled_when: '`features` に `resize` を含むとき'
     description: つまみをドラッグしている列の位置。その列のつまみの線を出したままにする。`mount` が入れる
+  - name: rowKeys
+    type: 配列
+    required: false
+    default: '`[]`（行のキーを持たない）'
+    description: 本文の行ごとの行のキー（`<mdmark-table>` の `rows[].key`）。行の `tr` に `data-key` を付ける。並べ替え・絞り込みの後も行に付いたまま動く
+    status: planned
+  - name: pressable
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`rowKeys` を指定したとき'
+    description: 行を押せる表か。本文の行に `mdmark-row-pressable` を付けて、編集できない列のセルの上でポインターを指の形状にし、ポインターを乗せた行の面を `--mdmark-color-surface` にする。表示している行の 1 つだけを `tabindex="0"`、ほかを `tabindex="-1"` にする
+    status: planned
+  - name: focusRow
+    type: 整数
+    required: false
+    default: なし（表示している最初の行）
+    enabled_when: '`pressable` が `true` のとき'
+    description: '`tabindex="0"` にする本文の行の位置。その行にフォーカスがある間は、行に `--mdmark-color-accent` の 2px の内側の枠線を出す'
+    status: planned
+  - name: editable
+    type: 整数の配列
+    required: false
+    default: '`[]`'
+    enabled_when: '`rowKeys` を指定したとき'
+    description: 編集できる列の位置。その列の `td` に `mdmark-cell-editable` を付けて、文字に `--mdmark-color-muted` の破線の下線を引き、ポインターを乗せたセルの面を `--mdmark-color-surface`・ポインターを文字の形状にする
+    status: planned
+  - name: editing
+    type: オブジェクト
+    required: false
+    default: なし（編集していない）
+    enabled_when: '`editable` を指定したとき'
+    description: 編集しているセル（`{ row, column, value }`。`row` は本文の行の位置、`column` は `editable` の列の位置、`value` は入力欄の文字）。そのセルに `mdmark-cell-editing` を付けて下線を解除し、中身を `input type="text"`（`--mdmark-color-accent` の 2px の枠線、高さ 32px 以上）と、その下に案内 `Enter で確定・Esc で取り消す`（12px、`--mdmark-color-muted`）に置き換える
+    status: planned
+  - name: addRow
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 表の下の左端に、`plus` のアイコンと文字 `行追加` のボタン（高さ 32px 以上、`--mdmark-color-border` の枠線）を配置するか
+    status: planned
 events:
   - name: 並べ替える
     when: 列の見出しのボタンを押す
@@ -1538,6 +1646,30 @@ events:
     when: '`見本を隠す`・`見本を表示` のボタンを押す'
     value: ボタンの `aria-expanded`
     description: '`mount` が見本を隠す・出し、ボタンの文言を替える'
+  - name: 行を押す
+    when: '`pressable` の表で、編集できない列のセルを押すか、`tabindex="0"` の行で Enter を押す。表の中のボタン・入力欄・リンクを押したときは発火しない'
+    value: 行の `data-key`
+    description: '`<mdmark-table>` が `mdmark-row-click` を送信する'
+  - name: 行のフォーカスを移す
+    when: '`pressable` の表の行で ↑・↓ を押す'
+    value: 移った先の行の位置
+    description: '`<mdmark-table>` が表示している行の間で `tabindex="0"` の行を移し、フォーカスを移す'
+  - name: セルの編集を始める
+    when: '`editable` の列のセルを押すか、`pressable` の表の行で F2 を押す（行の中の最初の `editable` の列のセル）'
+    value: 行の `data-key` と列の位置
+    description: '`<mdmark-table>` が `editing` を入れて入力欄にフォーカスを移す。行を押すイベントは発火しない。ほかのセルを編集しているときは、そのセルを確定してから始める'
+  - name: セルの編集を確定する
+    when: 入力欄で Enter を押すか、入力欄の外へフォーカスが移る
+    value: 行の `data-key`・列の位置・入力欄の文字
+    description: '`<mdmark-table>` が `editing` を解除し、値が変わったときだけ `mdmark-cell-edit` を送信する'
+  - name: セルの編集を取り消す
+    when: 入力欄で Esc を押す
+    value: なし
+    description: '`<mdmark-table>` が `editing` を解除してセルを前の値に戻し、行へフォーカスを戻す'
+  - name: 行を追加する
+    when: '`行追加` のボタンを押す'
+    value: なし
+    description: '`<mdmark-table>` が `mdmark-row-add` を送信する'
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -1592,6 +1724,9 @@ accessibility:
   - 階層の開閉のボタンは `aria-expanded` と `{パス} を畳む`・`{パス} を開く` のスクリーンリーダー向けの名前を持つ。キーの名前は `tabindex="0"` で、フォーカスでも全体のパスのツールチップを出す。選んだ行は `aria-selected` で示し、縦線の濃さだけに頼らない
   - 見本の表示の切り替えのボタンは `aria-expanded`・`aria-controls` で見本の開閉を示す
   - RAW のボタンは `aria-label="元の CSV を表示"` と `aria-pressed` を持ち、24px 四方以上。押した状態は青いアイコンと薄い青の面で示す。押すと表と元の CSV が入れ替わるため、状態は色のほかに出ている中身でも分かる
+  - 行を押せる表の行は、タブの順に 1 行だけ入り（roving tabindex）、↑・↓ で行を移す。フォーカスした行は 2px の枠線で示し、面の色だけに頼らない
+  - 編集できるセルは破線の下線とポインターの形状で示し、色だけに頼らない。入力欄は `{列名}（{表示している行の番号} 行目）を編集する` をスクリーンリーダー向けの名前に持ち、案内を `aria-describedby` で伝える
+  - '`行追加` のボタンは文字を持ち、アイコンは `aria-hidden` にする。フォーカスは 2px の `--mdmark-color-accent` の外側の枠線で示す'
 refs:
   - IF-472-34#constraints[表]
   - IF-472-35#constraints[表の操作]
