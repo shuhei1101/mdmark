@@ -57,8 +57,8 @@ data_models:
     container: src/table/mdmark-table.logic.ts
     usecase: 表をカスタム要素で描く
     role: 公開の型
-    summary: '`features`。`Partial<Record<MdmarkTableFeatureName, Record<string, never>>>`'
-    description: '`MdmarkTableFeatureName` は `"sort" | "pin" | "filter" | "resize" | "count" | "columns" | "reorder" | "add"`。値に `false` を指定すると種類 `data` の既定の機能から削除する（表のマーカーの設定の `features` と同じ）ので、値の型は `Record<string, never> | false`'
+    summary: '`features`。`Partial<Record<MdmarkTableFeatureName, { enabled?: boolean }>>`'
+    description: '`MdmarkTableFeatureName` は `"sort" | "pin" | "filter" | "resize" | "count" | "columns" | "reorder" | "add"`。値は `{ enabled?: boolean }` で、`enabled` が `false` の機能を種類 `data` の既定の機能から削除し、省くか `true` なら追加する（表のマーカーの設定の `features.{機能}.enabled` と同じ）'
   - name: TableSpecIssue
     title: 指定の誤り
     container: src/table/mdmark-table.logic.ts
@@ -96,7 +96,7 @@ functions:
     process: |-
       1. `columns` が配列で 1 つ以上。要素はオブジェクトで、`key`・`title` は空でない文字列で列の定義の中で重ならず、`pinned`・`hidden`・`editable` は真偽値、`filter` はオブジェクトで `type` は `select`・`text`・`date`、`width` はオブジェクトで `min`・`max` は正の数、`render` は関数。先頭の列は `hidden` を `true` にしない
       2. `rows` が配列。要素はオブジェクトで、`key` は文字列で行のデータの中で重ならず、`values` はオブジェクトで値は文字列・有限の数値・`null`
-      3. `features` は `undefined` かオブジェクトで、キーは `TABLE_ELEMENT_FEATURES` のどれか、値はオブジェクトか `false`
+      3. `features` は `undefined` かオブジェクトで、キーは `TABLE_ELEMENT_FEATURES` のどれか、値はオブジェクトで、`enabled` は省くか真偽値
       4. 合わない最初の指定の名前を `columns[1].title` の形式で `path` に入れ、内容と修正方法を `reason` に入れる
     unit_tests:
       - name: test_check_table_spec
@@ -123,6 +123,12 @@ functions:
         condition: '`features` が `{ total: {} }`'
         mock: なし
         expected: '`path` が `features.total`'
+      - name: test_check_table_spec_when_feature_enabled_invalid
+        case: 異常
+        summary: 機能の enabled が真偽値でない
+        condition: '`features` が `{ resize: { enabled: "no" } }`'
+        mock: なし
+        expected: '`path` が `features.resize.enabled`'
       - name: test_check_table_spec_when_value_invalid
         case: 異常
         summary: 値が文字列・有限の数値・`null` でない
@@ -158,7 +164,7 @@ functions:
       type: TableOptions
       description: 表の部品の引数
     process: |-
-      1. `kind` を `data` にし、`features` を種類 `data` の既定（`sort`・`pin`・`filter`・`resize`）に、`spec.features` のオブジェクトのキー（`add` を除く）を加えて `false` のキーを削除した並びにする。`pinned` の列があれば `pin`、`filter` の列があれば `filter`、`hidden` の列があれば `columns` を加える
+      1. `kind` を `data` にし、`features` を種類 `data` の既定（`sort`・`pin`・`filter`・`resize`）に、`spec.features` の `enabled` が `false` でないキー（`add` を除く）を加え、`enabled` が `false` のキーを削除した並びにする。`pinned` の列があれば `pin`、`filter` の列があれば `filter`、`hidden` の列があれば `columns` を加える
       2. `columns` を列名をエスケープした HTML、`columnKeys` を `columns[].key`、`rows` を `cellText` をエスケープした HTML、`rowKeys` を `rows[].key` にする
       3. `filters`（`type` を省いた列は `long` の列なら `text`、ほかは `select`）・`pin`（`pinned` の列）・`hide`（`hidden` の列）・`widthRanges`（`width.min`・`max`）・`wide`（`width.mode` が `nowrap`）・`editable`（`editable` の列）を列の位置で入れる。`long`・`noSort` は `render` と同じ決め方（`table.syntax.ts` の列の文字数）で決める
       4. `pressable` を `true`、`addRow` を `spec.features.add` がオブジェクトかで入れる
@@ -178,7 +184,7 @@ functions:
       - name: test_to_table_options_when_feature_removed
         case: 正常
         summary: false の機能を既定から削除する
-        condition: '`features` が `{ resize: false }`'
+        condition: '`features` が `{ resize: { enabled: false } }`'
         mock: なし
         expected: '`features` が `resize` を持たない'
     callees:

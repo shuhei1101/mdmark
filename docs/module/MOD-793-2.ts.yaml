@@ -25,7 +25,7 @@ data_models:
         description: 編集を確定したセルをもう一度描く。`<mdmark-table>` が `applyCellRenderers` と同じ処理を指定する
       - name: valueOf
         type: '(key: string, column: number) => MdmarkTableValue'
-        description: 編集する前の値（指定された型のまま）
+        description: 編集する前の値。`rows` を指定し直してから初めて編集するセルは指定された型のまま、同じ `rows` のまま 2 回目以降に編集するセルは前回確定した文字列（`MdmarkTableElement` の `edits` の値）
 functions:
   - name: attachTableRows
     title: 行とセルの操作を付ける
