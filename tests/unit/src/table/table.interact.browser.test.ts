@@ -2871,7 +2871,9 @@ test("test_attach_tables_when_resized_refreshes_width", async () => {
 async function keyedTable(
   columns: Array<{ key: string; title: string }>,
 ): Promise<{ root: HTMLElement; wrapper: HTMLElement }> {
-  const { renderTable } = await import("../../../../src/table/table.part.ts");
+  const { renderPlainTable, renderTable } = await import(
+    "../../../../src/table/table.part.ts"
+  );
   const { attachTables } = await loadTables();
   const values: Record<string, string[]> = {
     title: ["設計", "列の幅", "並べ替え", "ピン止め", "行を押す"],
@@ -2879,19 +2881,21 @@ async function keyedTable(
     owner: ["佐藤", "鈴木", "佐藤", "田中", "鈴木"],
     updated: ["2026-11-20", "2026-11-22", "2026-11-18", "2026-11-15", "2026-11-21"],
   };
+  const options = {
+    kind: "data" as const,
+    features: ["sort", "pin", "filter", "columns"],
+    columns: columns.map((column) => column.title),
+    columnKeys: columns.map((column) => column.key),
+    rows: values.title.map((_, row) =>
+      columns.map((column) => values[column.key]?.[row] ?? ""),
+    ),
+    filters: columns.flatMap((column, index) =>
+      column.key === "state" ? [{ column: index, kind: "select" as const }] : [],
+    ),
+  };
+  // 記法の表と同じく、操作を付ける前の表を囲みの中に配置する
   const root = createRootFromHtml(
-    renderTable({
-      kind: "data",
-      features: ["sort", "pin", "filter", "columns"],
-      columns: columns.map((column) => column.title),
-      columnKeys: columns.map((column) => column.key),
-      rows: values.title.map((_, row) =>
-        columns.map((column) => values[column.key]?.[row] ?? ""),
-      ),
-      filters: columns.flatMap((column, index) =>
-        column.key === "state" ? [{ column: index, kind: "select" as const }] : [],
-      ),
-    }),
+    renderTable({ ...options, body: renderPlainTable(options) }),
   );
   detachers.push(attachTables(root));
   const wrapper = root.querySelector<HTMLElement>(".mdmark-table");
