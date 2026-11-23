@@ -23,6 +23,7 @@
 | [エイリアスを作る](#エイリアスを作る) | `buildAliases(input)` | 設定の `aliases` の行と読み込んだ YAML から、エイリアスと使用できない行・レコードのずれを返却する |
 | [拡張を登録する](#拡張を登録する) | `registerExtension(extension)` | 利用側が自分のマーカーと、そのマーカーを描くモジュールの読み込み方を登録する |
 | [ビューを描く](#ビューを描く) | `mountView(el, opts)` | 列名と項目の値から、要素の中にボード表示と表形式のビューを描く |
+| [表をカスタム要素で描く](#表をカスタム要素で描く) | `<mdmark-table>` | 列の定義と行のデータから表を描き、行の押下・セルの編集・行の追加を要素のイベントで通知する |
 | [コメントを付ける](#コメントを付ける) | `mountComments(el, opts)` | 利用側の要素の中の選んだ箇所に、コメントを付けられるようにする |
 | [部品のモジュールを指定する](#部品のモジュールを指定する) | `setPartModuleLoader(name, loader)` | map・ビュー・コメントの部品と mermaid のモジュールを返却する関数を指定し、配布物の隣や `mermaid.url` から読み込まずにその関数で読み込ませる |
 | [テーマの CSS 変数](#テーマの-css-変数) | `--mdmark-*` | 外観の値を持つ変数。利用側が上書きする |
@@ -902,6 +903,59 @@ handle.destroy();
 | --- | --- |
 | `el` が要素でない、`opts.columns` が空か文字列の配列でないか重なりを持つ、`opts.items` が配列でないか要素がオブジェクトでない、`opts.group`・`opts.filter` の列名が `opts.columns` に無い、`opts.filter` の種類が `select`・`text`・`date` でない、`opts.default` が `board`・`table` でないか `opts.group` が無いのに `board`、`opts.icons` に使用できないアイコンの名前がある | `TypeError` を同期で投げる（`Promise` は返却しない）。`el` は書き換えず、メッセージに誤った引数の名前を含める |
 | ビューの部品のモジュールを読み込めない | `el` の中にタイトル `この箇所を表示できません` の [通知ブロック](./用語集.mark.md) を配置し、`Promise` を元のエラーで reject する |
+
+## 表をカスタム要素で描く
+
+`dist/index.js` を読み込んだページで、`<mdmark-table>` のプロパティに列の定義と行のデータを指定し、Markdown の表を囲んだときと同じ外観と操作の表を描く。
+手順は [表をカスタム要素で使用する](./カスタマイズ-表をカスタム要素で使用する.mark.md)。
+
+### リクエスト
+
+```js
+const table = document.querySelector("mdmark-table");
+table.columns = [{ key: "title", title: "タイトル", pinned: true }, { key: "owner", title: "担当", editable: true }];
+table.rows = [{ key: "FB-12", values: { title: "列の幅を広げる", owner: "佐藤" } }];
+table.features = { count: {}, add: {} };
+```
+
+<!-- table: {"kind": "data"} -->
+
+| プロパティ | 型 | 必須 | 説明 |
+| --- | --- | --- | --- |
+| `columns` | `MdmarkTableColumn[]` | ✓ | 列の定義。1 つ以上 |
+| `columns[].key` | `string` | ✓ | 列のキー |
+| `columns[].title` | `string` | ✓ | 列名。列の定義の中で重ならない |
+| `columns[].pinned` | `boolean` |  | 描いた直後にピン止めする |
+| `columns[].hidden` | `boolean` |  | 描いた直後に列を隠す。先頭の列には指定できない |
+| `columns[].filter` | `{ type?: "select" \| "text" \| "date" }` |  | 絞り込みを付ける |
+| `columns[].width` | `{ mode?: "auto" \| "wrap" \| "nowrap"; min?: number; max?: number }` |  | 列の幅 |
+| `columns[].editable` | `boolean` |  | セルを押すと入力欄で編集を始める |
+| `columns[].render` | `(value, row) => Node \| string` |  | セルの中身の描き方 |
+| `rows` | `MdmarkTableRow[]` | ✓ | 行のデータ |
+| `rows[].key` | `string` | ✓ | 行のキー。行のデータの中で重ならない |
+| `rows[].values` | `Record<string, string \| number \| null>` | ✓ | 列のキーごとの値 |
+| `features` | `MdmarkTableFeatures` |  | 表の機能。キーは `sort`・`pin`・`filter`・`resize`・`count`・`columns`・`reorder`・`add`。値は `{}` か `{ enabled: false }` |
+
+<!-- /table -->
+
+### レスポンス
+
+要素から次のイベントを送信する。
+どれも `CustomEvent` で、`bubbles` と `composed` を持つ。
+
+| イベント | `detail` | 説明 |
+| --- | --- | --- |
+| `mdmark-row-click` | `{ key }` | 行を押した |
+| `mdmark-cell-edit` | `{ key, column, oldValue, value }` | セルの編集を確定した。`cancelable` で、`preventDefault()` するとセルを前の値に戻す |
+| `mdmark-row-add` | `{}` | `行追加` のボタンを押した |
+
+型 `MdmarkTableElement`・`MdmarkTableColumn`・`MdmarkTableRow`・`MdmarkTableValue`・`MdmarkTableFeatures`・`MdmarkTableRowClickDetail`・`MdmarkTableCellEditDetail` は `dist/index.d.ts` から公開し、`HTMLElementTagNameMap` と `HTMLElementEventMap` に加える。
+
+### エラー
+
+プロパティの代入は例外を投げない。
+指定に誤りがあると、要素の中にタイトル `この表を表示できません` の通知ブロックを出し、本文に最初に見つけた誤りの指定の名前と修正方法を出す。
+`render` が例外を投げたセルは、値を文字で出し、元のエラーをコンソールに出す。
 
 ## コメントを付ける
 

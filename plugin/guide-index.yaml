@@ -8,6 +8,10 @@ guides:
     when: 表に並べ替え・絞り込み・ピン止めなどの機能を付けるとき
     summary: 表をマーカーで囲み、種類・機能・列の設定を JSON のキーで選ぶ手順
     page: docs/guide/記載する-表に機能を付ける.md
+  - name: table-element
+    when: アプリの画面の一覧を、mdmark の表（`<mdmark-table>`）で表示するとき
+    summary: 列の定義と行のデータを JavaScript のプロパティで指定して表を描き、行の押下・セルの編集・行の追加をイベントで受け取る手順
+    page: docs/guide/カスタマイズ-表をカスタム要素で使用する.mark.md
   - name: components
     when: 注意書き・タブ・ステップ・ファイルツリー・バッジ・脚注・注記・目次などで本文を組むとき・フォルダ構成を記載するとき
     summary: 本文の部品を記載する手順
