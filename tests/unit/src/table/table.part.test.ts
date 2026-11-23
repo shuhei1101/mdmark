@@ -1191,3 +1191,32 @@ test("test_render_copy_panel_when_document_with_reason", async () => {
   expect(plainText(html)).toContain("Markdown を選択しています。");
   expect(innerHtml(html, "<textarea")).toBe("# a");
 });
+
+// 値と名前をエスケープした入力欄と案内を返却する（正常系）
+test("test_render_cell_editor", async () => {
+  // 準備
+  const { renderCellEditor } = await loadTable();
+  // 実行
+  const html = renderCellEditor({
+    value: "<b>鈴木",
+    label: "担当（2 行目）を編集する",
+    hintId: "h1",
+  });
+  // 検証
+  expect(html).toContain('value="&lt;b&gt;鈴木"');
+  expect(html).toContain('aria-describedby="h1"');
+  expect(html).toContain('aria-label="担当（2 行目）を編集する"');
+  expect(plainText(html)).toContain("Enter で確定・Esc で取り消す");
+});
+
+// 文字を持つボタンを返却する（正常系）
+test("test_render_add_row", async () => {
+  // 準備
+  const { renderAddRow } = await loadTable();
+  // 実行
+  const html = renderAddRow();
+  // 検証
+  expect(html).toContain('class="mdmark-table-add-button"');
+  expect(plainText(html)).toContain("行追加");
+  expect(html).toContain('aria-hidden="true"');
+});

@@ -1082,6 +1082,30 @@ files:
     related:
       - to: src/table/csv.interact.ts
         type: tests
+  - path: unit/src/table/mdmark-table.logic.test.ts
+    description: src/table/mdmark-table.logic.ts（「表のカスタム要素の指定の確認と変換」）を確認するNode で実行する単体テスト。mdmark-table.logic.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:表, action:確認]
+    related:
+      - to: src/table/mdmark-table.logic.ts
+        type: tests
+  - path: unit/src/table/mdmark-table.interact.browser.test.ts
+    description: src/table/mdmark-table.interact.ts（「表のカスタム要素の行とセルの操作」）を確認するブラウザで実行する単体テスト。mdmark-table.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:表]
+    related:
+      - to: src/table/mdmark-table.interact.ts
+        type: tests
+  - path: unit/src/table/mdmark-table.element.browser.test.ts
+    description: src/table/mdmark-table.element.ts（「表のカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-table.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:表]
+    related:
+      - to: src/table/mdmark-table.element.ts
+        type: tests
+  - path: unit/src/elements.browser.test.ts
+    description: src/elements.ts（「カスタム要素の登録」）を確認するブラウザで実行する単体テスト。elements.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:部品]
+    related:
+      - to: src/elements.ts
+        type: tests
   - path: unit/src/diagram/diagram-tips.interact.browser.test.ts
     description: src/diagram/diagram-tips.interact.ts（「図のツールチップ」）を確認するブラウザで実行する単体テスト。diagram-tips.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:図, tool:svg]
