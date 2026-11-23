@@ -595,8 +595,9 @@ test("test_attach_diff_when_controls_hidden", async () => {
 
 // layout が side-by-side なら、行の代わりに左右に並べる差分を描く（正常系）
 test("test_attach_diff_when_side_by_side", async () => {
-  // 準備
+  // 準備: 本文の見出しは、偽物の描き方の見出しと同じ `id` を持つ
   const root = createRoot();
+  root.querySelector("h1")?.setAttribute("id", "heading-0");
   const source = createSource({}, REVISIONS.slice(1));
   const { attachDiff } = await loadPanel();
   // 実行
@@ -627,4 +628,21 @@ test("test_attach_diff_when_side_by_side", async () => {
   for (const id of stackedIds) {
     expect(id.startsWith(`${panelId}-stacked-`)).toBe(true);
   }
+  for (const [side, column] of [
+    ...root.querySelectorAll(".mdmark-diff-pair-col"),
+  ].entries()) {
+    const ids = [...column.querySelectorAll(".mdmark-diff-pair-cell [id]")].map(
+      (element) => element.id,
+    );
+    expect(ids.length).toBeGreaterThan(0);
+    for (const id of ids) {
+      expect(
+        id.startsWith(`${panelId}-${side === 0 ? "before" : "after"}-`),
+      ).toBe(true);
+    }
+  }
+  const allIds = [...document.querySelectorAll("[id]")].map(
+    (element) => element.id,
+  );
+  expect(new Set(allIds).size).toBe(allIds.length);
 });
