@@ -20,6 +20,7 @@ data_models:
   - name: MdmarkTableCellEditDetail
     title: セルの編集のイベントの値
     container: src/table/mdmark-table.element.ts
+    description: '`src/table/mdmark-table.interact.ts` で定義し、ここから再び export する'
     usecase: 表をカスタム要素で描く
     role: 公開の型
     summary: '`mdmark-cell-edit` の `detail`'
@@ -69,7 +70,7 @@ classes:
       - name: detach
         type: (() => void) | undefined
         access: private
-        description: 今の描画の操作（`attachTables`・`attachTableWidths`・`attachStickyRows`・`attachTableRows`）を解除する関数
+        description: 今の描画の操作（`attachTables`（列の幅を含む）・`attachStickyRows`・`attachTableRows`）を解除する関数
       - name: edits
         type: Map<string, string>
         access: private
@@ -129,8 +130,8 @@ classes:
           1. `pending` を `false` にし、要素がページに無いか `columns`・`rows` のどちらかが `undefined` なら何もしない
           2. 前の表があれば `captureTableState(wrapper)` で状態を記録し、`detach` を呼ぶ
           3. `checkTableSpec` が誤りを返却したら、要素の中を `div.mdmark` の中の `renderNotice({ name: issue.path, source: "table-data", reason: issue.reason })` にして終える
-          4. `edits` を重ねた行のデータで `toTableOptions` を呼び、要素の中を `div.mdmark` の中の `renderTable(options)` にする
-          5. `applyCellRenderers` を呼び、`attachTables`（`pinMode` は `each`）・`attachTableWidths`・`attachStickyRows`・`attachTableRows` を付け、記録した状態を `restoreTableState(wrapper, state)` で戻す
+          4. `edits` を重ねた行のデータで `toTableOptions` を呼び、要素の中を `div.mdmark` の中の `renderTable({ ...options, body: renderPlainTable(options) })` にする（記法の表と同じく、操作を付ける前の表を囲みの中に配置する）
+          5. `applyCellRenderers` を呼び、`attachTables`（`pinMode` は `each`。列の幅の自動の計算とつまみも付く）・`attachStickyRows`・`attachTableRows` を付け、記録した状態を `restoreTableState(wrapper, state)` で戻す
           6. `attachTableRows` の通知先は、`mdmark-row-click`・`mdmark-row-add` を `bubbles`・`composed` の `CustomEvent` で送信し、`mdmark-cell-edit` を `cancelable` も付けて送信して `dispatchEvent` の戻り値を返却する。`true` のときは `edits` に入れる
         unit_tests:
           - name: test_render_now

@@ -557,6 +557,40 @@ functions:
         expected: '`button` の文字が `行追加` で、アイコンが `aria-hidden="true"`'
     refs:
       - CMP-472-61#args[addRow]
+  - name: renderPlainTable
+    title: 操作を付ける前の表を描く
+    container: src/table/table.part.ts
+    kind: 関数
+    scope: internal
+    summary: '列の見出しと行のセルの HTML から、記法の表と同じ構造の操作を付ける前の表（`th` の `data-column-key`、`tr` の `data-key`・`mdmark-row-pressable`・`tabindex`、`td` の `mdmark-cell-editable` を持つ）の HTML を返却する。`<mdmark-table>` が `renderTable` の `body` に指定する'
+    args:
+      - name: options
+        type: TableOptions
+        required: true
+        description: '`columns`・`rows`・`columnKeys`・`rowKeys`・`pressable`・`focusRow`・`editable` を使用する'
+    returns:
+      type: string
+      description: '`<table tabindex="0" aria-label="表">` で始まる HTML'
+    refs:
+      - MOD-793-3#classes[MdmarkTableElement]
+  - name: cellEditorLabel
+    title: 編集中のセルの入力欄の名前を返却する
+    container: src/table/table.part.ts
+    kind: 関数
+    scope: internal
+    summary: '`{列名}（{行の番号} 行目）を編集する` を返却する'
+    args:
+      - name: column
+        type: string
+        required: true
+        description: 列名
+      - name: rowNumber
+        type: number
+        required: true
+        description: 表示している行の番号（1 始まり）
+    returns:
+      type: string
+      description: 入力欄のスクリーンリーダー向けの名前
 lead: '表・表の上のバー・集計の行・コピーのパネル・畳んだ列の HTML を受け持ち、表の部品の外観を変えるときに参照する。'
 tags:
   - name: topic:テーブル

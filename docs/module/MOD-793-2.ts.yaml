@@ -150,6 +150,20 @@ functions:
       - MOD-793-1#functions[cellText]
     refs:
       - IF-793-1#constraints[セルの中身の描き方の例外]
+  - name: renderCellContent
+    title: セル 1 つの中身を差し替える
+    container: src/table/mdmark-table.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 'セルに `data-value` を付け、列の `render` があれば中身を `render(value, row)` の返却値に置き換える（例外のときは値を文字で出して `console.error` に出す）。`applyCellRenderers` と、`<mdmark-table>` の編集の確定の `renderCell` が呼ぶ'
+    args:
+      - name: options
+        type: '{ cell: HTMLTableCellElement; column: MdmarkTableColumn; row: MdmarkTableRow; value: MdmarkTableValue }'
+        required: true
+        description: セル・列の定義・行のデータ・値
+    returns:
+      type: void
+      description: '-'
 tags:
   - name: topic:表
     main: true
