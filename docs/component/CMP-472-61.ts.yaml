@@ -1565,7 +1565,7 @@ args:
     type: 整数の配列
     required: false
     default: '`[]`'
-    enabled_when: '`rowKeys` を指定したとき'
+    enabled_when: '`pressable` が `true` のとき'
     description: 編集できる列の位置。その列の `td` に `mdmark-cell-editable` を付けて、文字に `--mdmark-color-muted` の破線の下線を引き、ポインターを乗せたセルの面を `--mdmark-color-surface`・ポインターを文字の形状にする
     status: planned
   - name: editing
