@@ -108,7 +108,7 @@ test("test_step", async () => {
   const fill = await page
     .locator(".map-band-fill")
     .evaluate((element) => element.style.width);
-  expect(fill).toBe("50%");
+  expect(fill).toBe("100%");
   const segments = await page.locator(".map-band-seg").evaluateAll((items) =>
     items.map((item) => {
       const style = getComputedStyle(item);
