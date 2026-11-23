@@ -12,7 +12,10 @@ const columns = () => [
 ];
 
 /** 2 行の行のデータ（文字列・数値・null を含む） */
-const rows = () => [
+const rows = (): Array<{
+  key: string;
+  values: Record<string, string | number | null>;
+}> => [
   {
     key: "R1",
     values: { title: "設計", state: "未着手", owner: "佐藤", updated: null },
