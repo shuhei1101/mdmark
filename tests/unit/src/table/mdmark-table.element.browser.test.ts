@@ -122,7 +122,11 @@ test("test_disconnected_callback", async () => {
   const parent = element.parentElement;
   // 実行
   element.remove();
-  sortButton(element, 3).click();
+  // 取り除いた後は操作を解除しているので、ボタンが残っていても行は動かない
+  element
+    .querySelectorAll("thead th")[3]
+    ?.querySelector<HTMLButtonElement>(".mdmark-sort")
+    ?.click();
   const whileRemoved = shownKeys(element);
   parent?.append(element);
   await flush();
