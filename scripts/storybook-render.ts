@@ -514,6 +514,20 @@ function fitted(html: string, args: PartArgs): string {
   return typeof args.zoom === "number" ? html : html + DIAGRAM_FIT_MARKER;
 }
 
+/** 種類 `mermaid` の図の枠のストーリー。`svg` は見本の名前、`maxHeight` は表示する枠の高さの上限（`--mdmark-diagram-max-height`）を縮め、縦に長い図を枠で切る */
+function mermaidFrameStory(args: PartArgs): string {
+  const frame = fitted(
+    renderMermaidStory({
+      svg: typeof args.svg === "string" ? args.svg : "flowchart",
+      title: typeof args.title === "string" ? args.title : "",
+    }) ?? "",
+    args,
+  );
+  return typeof args.maxHeight === "number"
+    ? `<div style="--mdmark-diagram-max-height: ${args.maxHeight}px">${frame}</div>`
+    : frame;
+}
+
 /** 図の部品のストーリーの引数: 見本・状態 */
 function diagramArgs(args: PartArgs): {
   zoom?: number;
@@ -2141,15 +2155,16 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       marks: args.marks as DiffMinimapMark[],
       view: args.view as { top: number; height: number },
     }),
+  // 描く先の要素のコンテナクエリ（48rem）で広い幅と狭い幅を切り替えるため、`frameWidth` の幅の要素をコンテナにする
   "diff-side-by-side": (args) =>
-    renderDiffSideBySide({
+    `<div style="container: mdmark / inline-size">${renderDiffSideBySide({
       before: {
         label: String(args.beforeLabel ?? "2026/10/19 16:40 件数を修正する"),
       },
       after: { label: String(args.afterLabel ?? "2026/10/20 11:05 追加する") },
-      rows: (args.rows as SideBySideRow[] | undefined) ?? [],
+      rows: Array.isArray(args.rows) ? (args.rows as SideBySideRow[]) : [],
       idPrefix: "story-diff-pair",
-    }),
+    })}</div>`,
   "diff-blocks": (args) => {
     const unit = args.unit as "block" | "item" | "row";
     const html = renderDiffBlock({
@@ -2542,17 +2557,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       return narrowed(mapFrameStory(args), args);
     }
     if (args.kind === "mermaid") {
-      const frame = fitted(
-        renderMermaidStory({
-          svg: typeof args.svg === "string" ? args.svg : "flowchart",
-          title: typeof args.title === "string" ? args.title : "",
-        }) ?? "",
-        args,
-      );
-      // `maxHeight` は表示する枠の高さの上限（`--mdmark-diagram-max-height`）を縮め、縦に長い図を枠で切る
-      return typeof args.maxHeight === "number"
-        ? `<div style="--mdmark-diagram-max-height: ${args.maxHeight}px">${frame}</div>`
-        : frame;
+      return mermaidFrameStory(args);
     }
     const html = renderDiagram({
       kind: "chart",

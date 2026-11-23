@@ -5986,6 +5986,8 @@
     .mdmark-diff-block-sign {
       position: absolute;
       inset-block-start: var(--mdmark-diff-block-pad-block);
+      /* 前のスクリーンリーダー向けの名前の後ろに続くブロックの間の余白を外し、中身の 1 行目の高さからずらさない */
+      margin: 0;
       inset-inline-start: 0;
       width: var(--mdmark-diff-block-gutter);
       font-family: var(--mdmark-font-mono);

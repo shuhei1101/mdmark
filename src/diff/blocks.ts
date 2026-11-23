@@ -872,16 +872,28 @@ function pairRanges(root: ParentNode, lineCount: number): BlockRange[] {
 /** ブロックの HTML（見出しはセクションの中身を含めない） */
 const blockHtml = (range: BlockRange): string => range.element.outerHTML;
 
-/** 前と後の文書を描いた中身を、`colorDiffBlocks` と同じ比べ方で、向かい合う 1 組のブロックの並びにする（`root` は書き換えない） */
-export function pairSideBySide(options: {
+/** 左右に並べるための、前と後のブロックと比べた結果 */
+type PairContext = {
+  beforeRanges: BlockRange[];
+  afterRanges: BlockRange[];
+  /** 後のブロックの範囲に空白だけでない追加した行があるか、分け直したブロックか */
+  isAdded: (range: BlockRange) => boolean;
+  /** 後のブロックの変えていない行を範囲に持つ前のブロック */
+  ownersOf: (range: BlockRange) => BlockRange[];
+  /** ブロックが属する変えた塊の番号（無ければ -1） */
+  chunkOf: (range: BlockRange, side: "before" | "after") => number;
+  /** 2 つのブロックの文字が書き換えか */
+  rewritten: (before: BlockRange, after: BlockRange) => boolean;
+};
+
+/** 前と後の Markdown を行で比べ、左右に並べるブロックと判定の関数を用意する */
+function pairContext(options: {
   before: Side;
   after: Side;
-  /** 単語の区切り。持たないブラウザでは `undefined` */
   segmenter: Intl.Segmenter | undefined;
-  /** 比較の計算。既定は `jsdiffEngine` */
-  engine?: DiffEngine;
-}): SideBySideRow[] {
-  const { before, after, segmenter, engine = jsdiffEngine } = options;
+  engine: DiffEngine;
+}): PairContext {
+  const { before, after, segmenter, engine } = options;
   const texts = {
     before: splitSourceLines(before.markdown),
     after: splitSourceLines(after.markdown),
@@ -899,85 +911,113 @@ export function pairSideBySide(options: {
   const sameAfter = new Map(
     [...lines.same].map(([beforeLine, afterLine]) => [afterLine, beforeLine]),
   );
-  const isAdded = (range: BlockRange): boolean =>
-    contentLines(texts.after, range).some((line) => lines.added.has(line)) ||
-    regrouped.has(range);
-  const chunkOf = (range: BlockRange, side: "before" | "after"): number => {
-    const chunks = side === "before" ? lines.chunkBefore : lines.chunkAfter;
-    const line = contentLines(texts[side], range).find((l) => chunks.has(l));
-    return line === undefined ? -1 : (chunks.get(line) ?? -1);
-  };
-  /** 後のブロックの変えていない行を範囲に持つ前のブロック */
   const ownersOf = (range: BlockRange): BlockRange[] => {
-    const owners: BlockRange[] = [];
-    for (const line of contentLines(texts.after, range)) {
-      const beforeLine = sameAfter.get(line);
-      const owner =
-        beforeLine === undefined
-          ? undefined
-          : ownerOf(beforeRanges, "block", beforeLine);
-      if (owner !== undefined && !owners.includes(owner)) {
-        owners.push(owner);
-      }
-    }
-    return owners;
+    const owners = contentLines(texts.after, range)
+      .map((line) => sameAfter.get(line))
+      .map((line) =>
+        line === undefined ? undefined : ownerOf(beforeRanges, "block", line),
+      )
+      .filter((owner): owner is BlockRange => owner !== undefined);
+    return [...new Set(owners)];
   };
+  return {
+    beforeRanges,
+    afterRanges,
+    isAdded: (range) =>
+      contentLines(texts.after, range).some((line) => lines.added.has(line)) ||
+      regrouped.has(range),
+    ownersOf,
+    chunkOf: (range, side) => {
+      const chunks = side === "before" ? lines.chunkBefore : lines.chunkAfter;
+      const line = contentLines(texts[side], range).find((l) => chunks.has(l));
+      return line === undefined ? -1 : (chunks.get(line) ?? -1);
+    },
+    rewritten: (from, to) =>
+      isRewrite({
+        before: from.element.textContent ?? "",
+        after: to.element.textContent ?? "",
+        segmenter,
+        engine,
+      }),
+  };
+}
+
+/** 後のブロックと組にする前のブロック。変えていない行を持つ前のブロックか、変えていない行を持たない追加のブロックは同じ変えた塊の残っている前のブロックの先頭のうち書き換えのもの */
+function counterpartOf(
+  context: PairContext,
+  range: BlockRange,
+  used: Set<BlockRange>,
+): BlockRange | undefined {
+  const owners = context.ownersOf(range);
+  const owner = owners.find((candidate) => !used.has(candidate));
+  if (owner !== undefined || owners.length > 0 || !context.isAdded(range)) {
+    return owner;
+  }
+  const chunk = context.chunkOf(range, "after");
+  const candidate = context.beforeRanges.find(
+    (item) =>
+      !used.has(item) &&
+      chunk !== -1 &&
+      context.chunkOf(item, "before") === chunk,
+  );
+  return candidate !== undefined && context.rewritten(candidate, range)
+    ? candidate
+    : undefined;
+}
+
+/** 後のブロック 1 つと、組にした前のブロックの行 */
+function rowOfPair(
+  range: BlockRange,
+  pair: BlockRange | undefined,
+  added: boolean,
+): SideBySideRow {
+  if (pair !== undefined) {
+    return {
+      kind: added ? "change" : "same",
+      before: blockHtml(pair),
+      after: blockHtml(range),
+    };
+  }
+  return added
+    ? { kind: "add", after: blockHtml(range) }
+    : { kind: "same", before: blockHtml(range), after: blockHtml(range) };
+}
+
+/** 前と後の文書を描いた中身を、`colorDiffBlocks` と同じ比べ方で、向かい合う 1 組のブロックの並びにする（`root` は書き換えない） */
+export function pairSideBySide(options: {
+  before: Side;
+  after: Side;
+  /** 単語の区切り。持たないブラウザでは `undefined` */
+  segmenter: Intl.Segmenter | undefined;
+  /** 比較の計算。既定は `jsdiffEngine` */
+  engine?: DiffEngine;
+}): SideBySideRow[] {
+  const context = pairContext({
+    ...options,
+    engine: options.engine ?? jsdiffEngine,
+  });
   const used = new Set<BlockRange>();
   /** 前のブロックごとの、組にした後の行 */
   const rowOf = new Map<BlockRange, SideBySideRow>();
-  const rows: SideBySideRow[] = [];
-  for (const range of afterRanges) {
-    const owner = ownersOf(range).find((candidate) => !used.has(candidate));
-    const added = isAdded(range);
-    let pair = owner;
-    if (pair === undefined && added) {
-      // 変えていない行を持たない追加のブロックは、同じ変えた塊の残っている前のブロックの先頭と書き換えかを比べる
-      const chunk = chunkOf(range, "after");
-      const candidate = beforeRanges.find(
-        (item) =>
-          !used.has(item) &&
-          ownersOf(range).length === 0 &&
-          chunk !== -1 &&
-          chunkOf(item, "before") === chunk,
-      );
-      if (
-        candidate !== undefined &&
-        isRewrite({
-          before: candidate.element.textContent ?? "",
-          after: range.element.textContent ?? "",
-          segmenter,
-          engine,
-        })
-      ) {
-        pair = candidate;
-      }
-    }
-    const row: SideBySideRow =
-      pair === undefined
-        ? added
-          ? { kind: "add", after: blockHtml(range) }
-          : { kind: "same", before: blockHtml(range), after: blockHtml(range) }
-        : {
-            kind: added ? "change" : "same",
-            before: blockHtml(pair),
-            after: blockHtml(range),
-          };
+  const rows = context.afterRanges.map((range) => {
+    const pair = counterpartOf(context, range, used);
+    const row = rowOfPair(range, pair, context.isAdded(range));
     if (pair !== undefined) {
       used.add(pair);
       rowOf.set(pair, row);
     }
-    rows.push(row);
-  }
+    return row;
+  });
   // 組にならなかった前のブロックは、前の文書で直前にあった組にしたブロックの行の後ろに削除の行で入れる
   let insertAt = 0;
-  for (const range of beforeRanges) {
+  for (const range of context.beforeRanges) {
     const row = rowOf.get(range);
-    if (row !== undefined) {
+    if (row === undefined) {
+      rows.splice(insertAt, 0, { kind: "del", before: blockHtml(range) });
+      insertAt += 1;
+    } else {
       insertAt = rows.indexOf(row) + 1;
-      continue;
     }
-    rows.splice(insertAt, 0, { kind: "del", before: blockHtml(range) });
-    insertAt += 1;
   }
   return rows;
 }

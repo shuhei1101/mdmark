@@ -30,6 +30,15 @@ type RangeAttaches = {
   after: ReturnType<DiffHtmlRenderer>["attach"] | null;
 };
 
+/** 差分を描く場所と、選んだ前と後のリビジョン */
+type DiffView = {
+  revisions: DiffRevision[];
+  /** 選んだ前と後のリビジョンの `id` */
+  selected: () => [string, string];
+  summary: HTMLElement;
+  result: HTMLElement;
+};
+
 /** `id` を指す、空白で区切った `id` を持つ属性 */
 const ID_LIST_ATTRIBUTES = [
   "aria-labelledby",
@@ -257,13 +266,7 @@ export function attachDiff(options: {
   };
 
   /** 選んだ 2 つのリビジョンの本文を取り出して差分を描く */
-  const refresh = async (view: {
-    revisions: DiffRevision[];
-    /** 選んだ前と後のリビジョンの `id` */
-    selected: () => [string, string];
-    summary: HTMLElement;
-    result: HTMLElement;
-  }): Promise<void> => {
+  const refresh = async (view: DiffView): Promise<void> => {
     const { revisions, summary, result } = view;
     selectGeneration += 1;
     const mine = selectGeneration;
@@ -398,6 +401,70 @@ export function attachDiff(options: {
     }
   };
 
+  /** リビジョンの選択を配置し、選び直すと差分を描き直す。差分を描く場所を返却する */
+  const placePicker = (revisions: DiffRevision[]): DiffView => {
+    const [newest, previous] = revisions as [DiffRevision, DiffRevision];
+    panel.innerHTML = `${renderRevisionPicker({
+      revisions,
+      before: previous.id,
+      after: newest.id,
+      idPrefix: `${panelId}-picker`,
+    })}<div class="mdmark-diff-result"></div>`;
+    const before = panel.querySelector<HTMLSelectElement>(
+      `#${CSS.escape(`${panelId}-picker-before`)}`,
+    );
+    const after = panel.querySelector<HTMLSelectElement>(
+      `#${CSS.escape(`${panelId}-picker-after`)}`,
+    );
+    const summary = panel.querySelector<HTMLElement>(".mdmark-diff-summary");
+    const result = panel.querySelector<HTMLElement>(".mdmark-diff-result");
+    if (!before || !after || !summary || !result) {
+      throw new Error("リビジョンの選択が描かれていない");
+    }
+    const view: DiffView = {
+      revisions,
+      selected: () => [before.value, after.value],
+      summary,
+      result,
+    };
+    /** 前の欄の選択に合わせて、後の欄の選べない項目を修正する。後が前以前になったら、前の 1 つ新しいリビジョンに移す */
+    const constrain = (): void => {
+      const limit = before.selectedIndex;
+      for (const option of after.options) {
+        option.disabled = option.index >= limit;
+      }
+      if (after.selectedIndex >= limit) {
+        after.selectedIndex = limit - 1;
+      }
+    };
+    before.addEventListener("change", () => {
+      constrain();
+      void refresh(view);
+    });
+    after.addEventListener("change", () => {
+      void refresh(view);
+    });
+    return view;
+  };
+
+  /** ボタンと選択を配置しないときの、一番新しいリビジョンとその 1 つ前の差分を描く場所を返却する */
+  const placeLatest = (revisions: DiffRevision[]): DiffView => {
+    const [newest, previous] = revisions as [DiffRevision, DiffRevision];
+    panel.innerHTML =
+      '<div class="mdmark-diff-summary" role="status"></div><div class="mdmark-diff-result"></div>';
+    const summary = panel.querySelector<HTMLElement>(".mdmark-diff-summary");
+    const result = panel.querySelector<HTMLElement>(".mdmark-diff-result");
+    if (!summary || !result) {
+      throw new Error("差分の場所が描かれていない");
+    }
+    return {
+      revisions,
+      selected: () => [previous.id, newest.id],
+      summary,
+      result,
+    };
+  };
+
   /** 開く: 本文を隠し、取り出し元からリビジョンの一覧を受けて選ぶ欄と差分を出す */
   const open = async (): Promise<void> => {
     openGeneration += 1;
@@ -446,64 +513,7 @@ export function attachDiff(options: {
       panel.innerHTML = renderDiffMessage({ kind: "single" });
       return;
     }
-    const [newest, previous] = revisions as [DiffRevision, DiffRevision];
-    if (!controls) {
-      // ボタンと選択を配置しないときは、一番新しいリビジョンとその 1 つ前の差分を出す
-      panel.innerHTML =
-        '<div class="mdmark-diff-summary" role="status"></div><div class="mdmark-diff-result"></div>';
-      const summary = panel.querySelector<HTMLElement>(".mdmark-diff-summary");
-      const result = panel.querySelector<HTMLElement>(".mdmark-diff-result");
-      if (!summary || !result) {
-        throw new Error("差分の場所が描かれていない");
-      }
-      await refresh({
-        revisions,
-        selected: () => [previous.id, newest.id],
-        summary,
-        result,
-      });
-      return;
-    }
-    panel.innerHTML = `${renderRevisionPicker({
-      revisions,
-      before: previous.id,
-      after: newest.id,
-      idPrefix: `${panelId}-picker`,
-    })}<div class="mdmark-diff-result"></div>`;
-    const before = panel.querySelector<HTMLSelectElement>(
-      `#${CSS.escape(`${panelId}-picker-before`)}`,
-    );
-    const after = panel.querySelector<HTMLSelectElement>(
-      `#${CSS.escape(`${panelId}-picker-after`)}`,
-    );
-    const summary = panel.querySelector<HTMLElement>(".mdmark-diff-summary");
-    const result = panel.querySelector<HTMLElement>(".mdmark-diff-result");
-    if (!before || !after || !summary || !result) {
-      throw new Error("リビジョンの選択が描かれていない");
-    }
-    const view = {
-      revisions,
-      selected: (): [string, string] => [before.value, after.value],
-      summary,
-      result,
-    };
-    /** 前の欄の選択に合わせて、後の欄の選べない項目を修正する。後が前以前になったら、前の 1 つ新しいリビジョンに移す */
-    const constrain = (): void => {
-      const limit = before.selectedIndex;
-      for (const option of after.options) {
-        option.disabled = option.index >= limit;
-      }
-      if (after.selectedIndex >= limit) {
-        after.selectedIndex = limit - 1;
-      }
-    };
-    before.addEventListener("change", () => {
-      constrain();
-      void refresh(view);
-    });
-    after.addEventListener("change", () => {
-      void refresh(view);
-    });
+    const view = controls ? placePicker(revisions) : placeLatest(revisions);
     await refresh(view);
   };
 

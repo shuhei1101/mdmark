@@ -122,6 +122,27 @@ function headsOffset(target: {
   );
 }
 
+/** シーケンス図の参加者の行を留める位置（`--mdmark-sticky-top` の px）を、付けたときと画面の大きさが変わったときだけ求めて返却する関数。参加者の行を持たない図では 0 */
+function trackStickyTop(options: {
+  figure: HTMLElement;
+  enabled: boolean;
+  onResize: () => void;
+  signal: AbortSignal;
+}): () => number {
+  const { figure, enabled, onResize, signal } = options;
+  if (!enabled) return () => 0;
+  let value = readStickyTop(figure);
+  window.addEventListener(
+    "resize",
+    () => {
+      value = readStickyTop(figure);
+      onResize();
+    },
+    { passive: true, signal },
+  );
+  return () => value;
+}
+
 /** 開閉のボタン: 押すたびにパネルを開閉し、開閉のボタンの状態とスクリーンリーダー向けの名前を合わせる */
 function attachPanelToggle(figure: HTMLElement, signal: AbortSignal): void {
   const panel = figure.querySelector<HTMLElement>(".mdmark-diagram-tools");
@@ -172,7 +193,7 @@ function attachView(
   /** シーケンス図の相手の名前の行を、表示する枠の上端に留める（図の座標で縦に動いた分だけ下げる） */
   const scroller = headsScroller(figure, { modal, heads });
   // 留める位置は付けたときと画面の大きさが変わったときだけ求め、スクロールでは保持した値を使用する
-  let stickyTop = heads ? readStickyTop(figure) : 0;
+  let stickyTop = (): number => 0;
   const stickHeads = (): void => {
     if (!heads) {
       return;
@@ -182,7 +203,7 @@ function attachView(
       heads,
       scroller,
       scale,
-      stickyTop,
+      stickyTop: stickyTop(),
     });
     heads.style.transform = `translateY(${Math.round(offset) / scale}px)`;
     heads.classList.toggle("is-stuck", offset > 0);
@@ -214,16 +235,12 @@ function attachView(
     signal: controller.signal,
   });
   listenScroller(scroller, stickHeads, controller.signal);
-  if (heads) {
-    window.addEventListener(
-      "resize",
-      () => {
-        stickyTop = readStickyTop(figure);
-        stickHeads();
-      },
-      { passive: true, signal: controller.signal },
-    );
-  }
+  stickyTop = trackStickyTop({
+    figure,
+    enabled: heads !== null,
+    onResize: stickHeads,
+    signal: controller.signal,
+  });
 
   const zoom = attachZoom({
     viewport,
