@@ -53,7 +53,10 @@ const shownRows = (wrapper: HTMLElement): HTMLTableRowElement[] =>
   ].filter((row) => !row.hidden);
 
 /** `tabindex="0"` にする行を 1 つにする */
-const setFocusRow = (wrapper: HTMLElement, target: HTMLTableRowElement): void => {
+const setFocusRow = (
+  wrapper: HTMLElement,
+  target: HTMLTableRowElement,
+): void => {
   for (const row of wrapper.querySelectorAll<HTMLTableRowElement>(
     "tbody tr.mdmark-row-pressable",
   )) {
@@ -248,7 +251,10 @@ export const attachTableRows = (
       onInputKey(event);
       return;
     }
-    if (target instanceof HTMLTableRowElement && target.matches(".mdmark-row-pressable")) {
+    if (
+      target instanceof HTMLTableRowElement &&
+      target.matches(".mdmark-row-pressable")
+    ) {
       onRowKey(event, target);
     }
   };
@@ -265,7 +271,11 @@ export const attachTableRows = (
   };
 
   const onFocusin = (event: FocusEvent): void => {
-    if (editing && event.target instanceof Node && !editing.cell.contains(event.target)) {
+    if (
+      editing &&
+      event.target instanceof Node &&
+      !editing.cell.contains(event.target)
+    ) {
       commit(false);
     }
   };
@@ -315,7 +325,10 @@ export const renderCellContent = (options: {
       cell.textContent = content;
     } else {
       cell.textContent = text;
-      console.error("[mdmark] セルの中身の描き方が Node か文字列でない値を返却しました", content);
+      console.error(
+        "[mdmark] セルの中身の描き方が Node か文字列でない値を返却しました",
+        content,
+      );
     }
   } catch (error) {
     cell.textContent = text;
@@ -329,7 +342,9 @@ export const applyCellRenderers = (
   spec: { columns: MdmarkTableColumn[]; rows: MdmarkTableRow[] },
 ): void => {
   const rowOf = new Map(spec.rows.map((row) => [row.key, row]));
-  for (const tr of wrapper.querySelectorAll<HTMLTableRowElement>("tbody tr[data-key]")) {
+  for (const tr of wrapper.querySelectorAll<HTMLTableRowElement>(
+    "tbody tr[data-key]",
+  )) {
     const row = rowOf.get(tr.dataset.key ?? "");
     if (!row) {
       continue;
@@ -337,7 +352,12 @@ export const applyCellRenderers = (
     for (const [index, column] of spec.columns.entries()) {
       const cell = tr.children[index];
       if (column.render && cell instanceof HTMLTableCellElement) {
-        renderCellContent({ cell, column, row, value: row.values[column.key] ?? null });
+        renderCellContent({
+          cell,
+          column,
+          row,
+          value: row.values[column.key] ?? null,
+        });
       }
     }
   }

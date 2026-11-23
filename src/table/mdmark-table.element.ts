@@ -38,7 +38,8 @@ export const TABLE_ELEMENT_NAME = "mdmark-table";
 const PROPERTIES = ["columns", "rows", "features"] as const;
 
 /** 編集した値の上書きのキー */
-const editKey = (row: string, column: string): string => `${row}\u0000${column}`;
+const editKey = (row: string, column: string): string =>
+  `${row}\u0000${column}`;
 
 /** HTMLElement の無い環境（Node）で読み込んでも失敗しない基底のクラス */
 const BaseElement: typeof HTMLElement =
@@ -116,7 +117,11 @@ export class MdmarkTableElement extends BaseElement {
   /** 指定を確認して、表か通知ブロックを描く */
   renderNow(): void {
     this.#pending = false;
-    if (!this.isConnected || this.#columns === undefined || this.#rows === undefined) {
+    if (
+      !this.isConnected ||
+      this.#columns === undefined ||
+      this.#rows === undefined
+    ) {
       return;
     }
     const previous = this.querySelector<HTMLElement>(".mdmark-table");
@@ -131,9 +136,15 @@ export class MdmarkTableElement extends BaseElement {
       features: this.#features,
     });
     if (issue) {
-      this.replaceChildren(this.#container(
-        renderNotice({ name: issue.path, source: "table-data", reason: issue.reason }),
-      ));
+      this.replaceChildren(
+        this.#container(
+          renderNotice({
+            name: issue.path,
+            source: "table-data",
+            reason: issue.reason,
+          }),
+        ),
+      );
       return;
     }
     const spec: TableSpec = {
@@ -194,7 +205,7 @@ export class MdmarkTableElement extends BaseElement {
   /** 行とセルの操作の通知先（要素のイベントを送信する） */
   #handlers(spec: TableSpec) {
     const rowOf = new Map(spec.rows.map((row) => [row.key, row]));
-    const valueOf = (key: string, column: number): MdmarkTableValue => {
+    const readValue = (key: string, column: number): MdmarkTableValue => {
       const columnKey = spec.columns[column]?.key ?? "";
       const edited = this.#edits.get(editKey(key, columnKey));
       return edited ?? rowOf.get(key)?.values[columnKey] ?? null;
@@ -236,7 +247,7 @@ export class MdmarkTableElement extends BaseElement {
         const definition = spec.columns[column];
         const row = rowOf.get(key);
         if (definition?.render && row) {
-          const value = valueOf(key, column);
+          const value = readValue(key, column);
           renderCellContent({
             cell,
             column: definition,
@@ -245,7 +256,7 @@ export class MdmarkTableElement extends BaseElement {
           });
         }
       },
-      valueOf,
+      valueOf: readValue,
     };
   }
 }

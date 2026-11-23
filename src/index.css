@@ -2041,7 +2041,9 @@
     }
 
     /* 行を押せる表の行: 編集できない列のセルの上で指の形状のポインターにし、乗せた行とフォーカスした行を示す */
-    .mdmark-table tr.mdmark-row-pressable > :is(td, th):not(.mdmark-cell-editable) {
+    .mdmark-table
+      tr.mdmark-row-pressable
+      > :is(td, th):not(.mdmark-cell-editable) {
       cursor: pointer;
     }
     .mdmark-table tr.mdmark-row-pressable:hover > :is(td, th) {

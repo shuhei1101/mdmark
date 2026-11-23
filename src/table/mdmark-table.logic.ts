@@ -113,15 +113,90 @@ const widthIssue = (
     return undefined;
   }
   if (!isObject(width)) {
-    return issueOf(path, " にオブジェクトでない値が指定されています。`{ min, max }` のオブジェクトで指定してください。");
+    return issueOf(
+      path,
+      " にオブジェクトでない値が指定されています。`{ min, max }` のオブジェクトで指定してください。",
+    );
   }
   for (const side of ["min", "max"] as const) {
     const value = width[side];
     if (value !== undefined && !(typeof value === "number" && value > 0)) {
-      return issueOf(`${path}.${side}`, " に正の数でない値が指定されています。em の数を正の数で指定してください。");
+      return issueOf(
+        `${path}.${side}`,
+        " に正の数でない値が指定されています。em の数を正の数で指定してください。",
+      );
     }
   }
   return undefined;
+};
+
+/** 列のキーと列名の誤り（重なりを `seen` に記録する） */
+const identityIssue = (
+  column: Record<string, unknown>,
+  path: string,
+  seen: { keys: Set<string>; titles: Set<string> },
+): TableSpecIssue | undefined => {
+  for (const name of ["key", "title"] as const) {
+    const value = column[name];
+    const set = name === "key" ? seen.keys : seen.titles;
+    if (!isFilledText(value)) {
+      return issueOf(
+        `${path}.${name}`,
+        " に空でない文字列を指定してください。",
+      );
+    }
+    if (set.has(value)) {
+      return issueOf(
+        `${path}.${name}`,
+        " がほかの列と重なっています。列の定義の中で重ならない値を指定してください。",
+      );
+    }
+    set.add(value);
+  }
+  return undefined;
+};
+
+/** 真偽値の指定（ピン止め・最初から隠す・編集できる列）の誤り */
+const flagsIssue = (
+  column: Record<string, unknown>,
+  path: string,
+  index: number,
+): TableSpecIssue | undefined => {
+  const name = (["pinned", "hidden", "editable"] as const).find(
+    (flag) => !isOptionalBoolean(column[flag]),
+  );
+  if (name) {
+    return issueOf(`${path}.${name}`, " に真偽値を指定してください。");
+  }
+  return index === 0 && column.hidden === true
+    ? issueOf(
+        `${path}.hidden`,
+        " は先頭の列に指定できません。先頭の列は隠せません。",
+      )
+    : undefined;
+};
+
+/** 絞り込みの指定の誤り */
+const filterIssue = (
+  filter: unknown,
+  path: string,
+): TableSpecIssue | undefined => {
+  if (filter === undefined) {
+    return undefined;
+  }
+  if (!isObject(filter)) {
+    return issueOf(
+      path,
+      " にオブジェクトでない値が指定されています。`{}` か `{ type }` で指定してください。",
+    );
+  }
+  return filter.type !== undefined &&
+    !FILTER_KINDS.includes(String(filter.type))
+    ? issueOf(
+        `${path}.type`,
+        " に `select`・`text`・`date` のどれかを指定してください。",
+      )
+    : undefined;
 };
 
 /** 列の定義 1 つの誤り */
@@ -132,46 +207,31 @@ const columnIssue = (
 ): TableSpecIssue | undefined => {
   const path = `columns[${index}]`;
   if (!isObject(column)) {
-    return issueOf(path, " にオブジェクトでない値が指定されています。列の定義をオブジェクトで指定してください。");
+    return issueOf(
+      path,
+      " にオブジェクトでない値が指定されています。列の定義をオブジェクトで指定してください。",
+    );
   }
-  for (const name of ["key", "title"] as const) {
-    const value = column[name];
-    const set = name === "key" ? seen.keys : seen.titles;
-    if (!isFilledText(value)) {
-      return issueOf(`${path}.${name}`, " に空でない文字列を指定してください。");
-    }
-    if (set.has(value)) {
-      return issueOf(`${path}.${name}`, " がほかの列と重なっています。列の定義の中で重ならない値を指定してください。");
-    }
-    set.add(value);
-  }
-  for (const name of ["pinned", "hidden", "editable"] as const) {
-    if (!isOptionalBoolean(column[name])) {
-      return issueOf(`${path}.${name}`, " に真偽値を指定してください。");
-    }
-  }
-  if (index === 0 && column.hidden === true) {
-    return issueOf(`${path}.hidden`, " は先頭の列に指定できません。先頭の列は隠せません。");
-  }
-  const filter = column.filter;
-  if (filter !== undefined) {
-    if (!isObject(filter)) {
-      return issueOf(`${path}.filter`, " にオブジェクトでない値が指定されています。`{}` か `{ type }` で指定してください。");
-    }
-    if (filter.type !== undefined && !FILTER_KINDS.includes(String(filter.type))) {
-      return issueOf(`${path}.filter.type`, " に `select`・`text`・`date` のどれかを指定してください。");
-    }
-  }
-  if (column.render !== undefined && typeof column.render !== "function") {
-    return issueOf(`${path}.render`, " に関数を指定してください。");
-  }
-  return widthIssue(column.width, `${path}.width`);
+  const renderIssue =
+    column.render !== undefined && typeof column.render !== "function"
+      ? issueOf(`${path}.render`, " に関数を指定してください。")
+      : undefined;
+  return (
+    identityIssue(column, path, seen) ??
+    flagsIssue(column, path, index) ??
+    filterIssue(column.filter, `${path}.filter`) ??
+    renderIssue ??
+    widthIssue(column.width, `${path}.width`)
+  );
 };
 
 /** 列の定義の誤り */
 const columnsIssue = (columns: unknown): TableSpecIssue | undefined => {
   if (!Array.isArray(columns) || columns.length === 0) {
-    return issueOf("columns", " に列の定義の配列（1 つ以上）を指定してください。");
+    return issueOf(
+      "columns",
+      " に列の定義の配列（1 つ以上）を指定してください。",
+    );
   }
   const seen = { keys: new Set<string>(), titles: new Set<string>() };
   for (const [index, column] of columns.entries()) {
@@ -186,27 +246,42 @@ const columnsIssue = (columns: unknown): TableSpecIssue | undefined => {
 /** 行のデータの誤り */
 const rowsIssue = (rows: unknown): TableSpecIssue | undefined => {
   if (!Array.isArray(rows)) {
-    return issueOf("rows", " に配列でない値が指定されています。行のデータを、行ごとのオブジェクトの配列で指定してください。");
+    return issueOf(
+      "rows",
+      " に配列でない値が指定されています。行のデータを、行ごとのオブジェクトの配列で指定してください。",
+    );
   }
   const keys = new Set<string>();
   for (const [index, row] of rows.entries()) {
     const path = `rows[${index}]`;
     if (!isObject(row)) {
-      return issueOf(path, " にオブジェクトでない値が指定されています。`{ key, values }` で指定してください。");
+      return issueOf(
+        path,
+        " にオブジェクトでない値が指定されています。`{ key, values }` で指定してください。",
+      );
     }
     if (typeof row.key !== "string") {
       return issueOf(`${path}.key`, " に文字列を指定してください。");
     }
     if (keys.has(row.key)) {
-      return issueOf(`${path}.key`, " がほかの行と重なっています。行のデータの中で重ならない値を指定してください。");
+      return issueOf(
+        `${path}.key`,
+        " がほかの行と重なっています。行のデータの中で重ならない値を指定してください。",
+      );
     }
     keys.add(row.key);
     if (!isObject(row.values)) {
-      return issueOf(`${path}.values`, " に列のキーごとの値のオブジェクトを指定してください。");
+      return issueOf(
+        `${path}.values`,
+        " に列のキーごとの値のオブジェクトを指定してください。",
+      );
     }
     for (const [key, value] of Object.entries(row.values)) {
       if (!isTableValue(value)) {
-        return issueOf(`${path}.values.${key}`, " に文字列・有限の数値・`null` のどれかを指定してください。");
+        return issueOf(
+          `${path}.values.${key}`,
+          " に文字列・有限の数値・`null` のどれかを指定してください。",
+        );
       }
     }
   }
@@ -219,18 +294,30 @@ const featuresIssue = (features: unknown): TableSpecIssue | undefined => {
     return undefined;
   }
   if (!isObject(features)) {
-    return issueOf("features", " にオブジェクトでない値が指定されています。機能の名前をキーにしたオブジェクトで指定してください。");
+    return issueOf(
+      "features",
+      " にオブジェクトでない値が指定されています。機能の名前をキーにしたオブジェクトで指定してください。",
+    );
   }
   const names: readonly string[] = TABLE_ELEMENT_FEATURES;
   for (const [name, value] of Object.entries(features)) {
     if (!names.includes(name)) {
-      return issueOf(`features.${name}`, ` は受け付けない機能です。${TABLE_ELEMENT_FEATURES.join("・")} のどれかを指定してください。`);
+      return issueOf(
+        `features.${name}`,
+        ` は受け付けない機能です。${TABLE_ELEMENT_FEATURES.join("・")} のどれかを指定してください。`,
+      );
     }
     if (!isObject(value)) {
-      return issueOf(`features.${name}`, " に `{}` か `{ enabled }` を指定してください。");
+      return issueOf(
+        `features.${name}`,
+        " に `{}` か `{ enabled }` を指定してください。",
+      );
     }
     if (!isOptionalBoolean(value.enabled)) {
-      return issueOf(`features.${name}.enabled`, " に真偽値を指定してください。");
+      return issueOf(
+        `features.${name}.enabled`,
+        " に真偽値を指定してください。",
+      );
     }
   }
   return undefined;
@@ -262,7 +349,9 @@ const featuresOf = (spec: TableSpec): string[] => {
   const { columns } = spec;
   const requested = Object.entries(spec.features ?? {});
   const removed = new Set(
-    requested.filter(([, value]) => value?.enabled === false).map(([name]) => name),
+    requested
+      .filter(([, value]) => value?.enabled === false)
+      .map(([name]) => name),
   );
   const added = requested
     .filter(([name, value]) => name !== "add" && value?.enabled !== false)
@@ -320,12 +409,17 @@ export const toTableOptions = (spec: TableSpec): TableOptions => {
     ...(pin.length > 0 ? { pin } : {}),
     hide: positionsOf(columns, (column) => column.hidden === true),
     widthRanges: columns.flatMap((column, index) =>
-      column.width && (column.width.min !== undefined || column.width.max !== undefined)
+      column.width &&
+      (column.width.min !== undefined || column.width.max !== undefined)
         ? [
             {
               column: index,
-              ...(column.width.min === undefined ? {} : { min: column.width.min }),
-              ...(column.width.max === undefined ? {} : { max: column.width.max }),
+              ...(column.width.min === undefined
+                ? {}
+                : { min: column.width.min }),
+              ...(column.width.max === undefined
+                ? {}
+                : { max: column.width.max }),
             },
           ]
         : [],
