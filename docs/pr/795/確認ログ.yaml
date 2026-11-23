@@ -17,3 +17,9 @@ confirmations:
     approver: shuhei1101
     commit: b20746a2
     thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4666892536
+  - topic: '#795 で project-index が応答しないときに、データ設計をどう進めるか'
+    decision: ユーザーが project-index の常駐サーバーを確認・再起動してから、データ設計を write_docs で続ける（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 61d42218
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4667023235

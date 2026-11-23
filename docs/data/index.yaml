@@ -50,6 +50,8 @@ items:
   summary: map
 - page: DATA-472-25.yaml
   summary: 表
+- page: DATA-793-1.yaml
+  summary: アプリの画面が表のカスタム要素に指定する列の定義・行のデータ・表の機能
 - page: DATA-472-26.yaml
   summary: タブ
 - page: DATA-472-27.yaml
