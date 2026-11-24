@@ -750,6 +750,37 @@ flows:
     test: test_normal_when_develop
     refs:
       - SC-472-10#scenarios[正常シナリオ（develop を読み込む）]
+  - name: 正常系（再生のダイアログの相対パスの動画）
+    summary: 再生のボタンが持つ動画のパスを拡張機能に問い合わせ、開いたダイアログで Webview の URL の動画を再生する
+    setup:
+      - name: 表のセルの動画を持つワークスペース
+        description: '`docs/guide.md` の表のセルが相対パスで `media/demo.mp4` を指し、`docs/media/demo.mp4` が実在する'
+      - name: Mock
+        description: 正常系と同じ。ボタンの押下と動画の再生は `inspectPreview` で Webview の要素を操作させる
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant U as 文書の作成者
+        participant EX as 拡張機能
+        participant PV as Webview
+        U->>EX: mdmark.openPreviewToSide
+        EX->>PV: render
+        PV->>EX: resolveAssets（media/demo.mp4）
+        EX-->>PV: assetsResolved（Webview の URL）
+        PV->>PV: 再生のボタンの data-media-src を替える
+        U->>PV: 再生のボタンを押す
+        PV-->>U: ダイアログで動画を再生する
+      ```
+
+      <!-- /map -->
+    expected:
+      - 再生のボタンの `data-media-src` が `docs/media/demo.mp4` の `asWebviewUri` の URL
+      - ボタンを押した後、ダイアログの `video` の `src` が同じ URL で、`play()` の 1 秒後に `currentTime` が 0.5 秒以上進む
+    test: test_normal_when_modal_relative_media
+    refs:
+      - SC-472-31#scenarios[正常シナリオ（モーダルで再生する相対パスの動画）]
 lead: 文書の作成者が、開いている Markdown の横の列か同じ列に、mdmark で描くプレビューのパネルを開く。拡張機能は読み込む mdmark のバージョンを決め、Webview に jsDelivr の配布物を読み込ませて描かせる。差分ビューから開いたときは、変更前と変更後の Markdown を読み込み、変更後の文書のブロックを色分けして描かせる。
 idempotent: true
 side_effects: Webview のパネルを開く。`mdmark.version` が `latest` のとき GitHub のタグ一覧を 1 回取り、選んだバージョンを拡張機能の `globalState` の `mdmark.lastVersion` に記載する。差分ビューのときは、変更前と変更後の文書を `workspace.openTextDocument` で読み込む。設定に `aliases` があるときは、その行の `paths` の YAML を読み込む。Markdown・設定ファイル・Git のリポジトリは書き換えない
@@ -855,10 +886,10 @@ constraints:
     constraint: Webview は差分の `render` を受けたとき、読み込んだ配布物の `diffModes` が無いか `blocks` を含まなければ、`mount` を呼ばずに `loadFailed`（`diffUnsupported`）を通知し、描けない理由 `読み込んだ mdmark（{バージョン}）は差分の表示に対応していません。設定 mdmark.version を差分の表示に対応したバージョンか latest に変更してから、リロードしてください。` と「リロード」を出す
     notes: 判定はライブラリ本体の文書を描く.ts の制約「対応する差分の出し方」。文言は確認ログの決定（A）。記載方法（`code` の位置）は画面設計
   - item: 動画・音声とアセットのルートの解決
-    constraint: '`mount` か `update` の後に、Webview は本文の `img` の `src`、`video`・`audio` の `src` と `poster` のうち相対パスのものを集め、`resolveAssets` で拡張機能に送信する。拡張機能は、Markdown のフォルダを基準にしたファイル、無ければ設定ファイルの `assets.root` を基準にしたファイルがワークスペースの中にあれば、その `asWebviewUri` の URL（クエリとフラグメントは残す）を、どちらにも無ければ `null` を返却する。Webview は URL を受け取った要素の属性を替え、`null` の要素は替えない。`localResourceRoots` に `assets.root` のフォルダを含める'
+    constraint: '`mount` か `update` の後に、Webview は本文の `img` の `src`、`video`・`audio` の `src` と `poster`、再生のボタンの `data-media-src` と `data-media-poster` のうち相対パスのものを集め、`resolveAssets` で拡張機能に送信する。拡張機能は、Markdown のフォルダを基準にしたファイル、無ければ設定ファイルの `assets.root` を基準にしたファイルがワークスペースの中にあれば、その `asWebviewUri` の URL（クエリとフラグメントは残す）を、どちらにも無ければ `null` を返却する。Webview は URL を受け取った要素の属性を替え、`null` の要素は替えない。`localResourceRoots` に `assets.root` のフォルダを含める'
     decided_by: CFG-472-2#settings[assets.root]
   - item: 再生できない動画・音声
-    constraint: '`video`・`audio` が `error` になったとき、要素を mdmark の通知ブロックの外観の枠に替え、プレビューで再生できないことと、`openAsset` を送信する「既定のアプリで開く」のリンクを出す。拡張機能は受け取ったパスを制約「動画・音声とアセットのルートの解決」と同じく解決し、ワークスペースの中のファイルだけを `vscode.env.openExternal` で開く'
+    constraint: '`video`・`audio`（再生のダイアログの中の要素を含む）が `error` になったとき、要素を mdmark の通知ブロックの外観の枠に替え、プレビューで再生できないことと、`openAsset` を送信する「既定のアプリで開く」のリンクを出す。拡張機能は受け取ったパスを制約「動画・音声とアセットのルートの解決」と同じく解決し、ワークスペースの中のファイルだけを `vscode.env.openExternal` で開く'
     notes: PoC 結果で、プレビューの Webview は AAC の音声と webm を再生できない。mp4・mov は映像だけが再生される
   - item: 取り込む文書
     constraint: 開いている Markdown（差分のパネルは変更後の側）の include のマーカーの取り込み先を、インターフェース定義『文書をHTML文字列にする』の制約「取り込み」と同じパスの解き方で、Markdown のフォルダを基準に `workspace.fs` で読み込む（取り込んだ文書の中のマーカーもたどり、同じファイルは 1 回だけ読み込む）。開いているエディタの保存していない書き換えではなく、保存した中身を読み込む。設定ファイルのフォルダ（無ければ Markdown のフォルダ）の外のパス（書き出しと同じ範囲）と読み込めないファイルは表に入れず、そのマーカーの場所には mdmark が記載の警告を出す。読み込んだ表を `render` の `includes` に入れ、Webview は `mount` の `opts.includes`（`update` は `options.includes`）に指定する

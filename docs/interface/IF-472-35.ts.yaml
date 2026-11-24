@@ -11121,6 +11121,104 @@ flows:
       - 幅 390px では列が 1 つで、書き換えた段落は `前:` の小さい見出しと削除の色のブロックの下に `後:` の小さい見出しと追加の色のブロックが続き、見出しと表は 1 回だけ出る
       - 配布物の `diffModes` が `side-by-side` を含む
     test: test_normal_when_side_by_side
+  - name: 正常系（動画を再生のダイアログで再生する）
+    summary: 再生のボタンを押すと全画面のダイアログで動画を再生し、Esc と閉じるボタンで閉じて再生を止め、押したボタンへフォーカスを戻す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 表のセルの中の動画の Markdown
+        description: 表のセルに `![素材 1](m1.mp4 "手順 1 の画面")` と `![素材 2](m2.mp4)` を記載した文書
+      - name: Mock
+        description: 差し替える依存は無い（動画は手元の応答で返却する）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 素材 1 のボタンを押す
+        M->>P: ダイアログを showModal() で開き、m1.mp4 を再生する
+        P->>M: Esc を押す
+        M-->>P: 再生を止めて閉じ、素材 1 のボタンへフォーカスを戻す
+        P->>M: 素材 2 のボタンを Enter で押し、閉じるボタンを押す
+        M-->>P: 再生を止めて閉じ、素材 2 のボタンへフォーカスを戻す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 素材 1 を押した後、`dialog.mdmark-media-modal[open]` の中に `src="m1.mp4"`・`controls`・`autoplay`・`playsinline`・`aria-label="素材 1"` の `video` があり、`paused` が `false`、タイトルが `素材 1`、キャプションが `手順 1 の画面`
+      - ダイアログに前後の切り替えと枚数が無く、右の矢印キーの後も `m1.mp4` のまま
+      - Esc の後に `dialog.mdmark-media-modal` が無く、`document.activeElement` が素材 1 のボタンで、`scrollY` が押す前と同じ
+      - 素材 2 で開いたダイアログは `p.mdmark-media-modal-caption` を持たず、閉じるボタン（`aria-label="再生を閉じる"`）の後に閉じて、フォーカスが素材 2 のボタン
+    test: test_normal_when_media_modal_opened
+    refs:
+      - SC-801-1#scenarios[正常シナリオ]
+      - SC-801-1#scenarios[正常シナリオ（キーで開いて閉じるボタンで閉じる）]
+  - name: 正常系（音声を再生のダイアログで再生する）
+    summary: 音声の再生のボタンで開いたダイアログを背景で閉じ、画像のライトボックスの切り替えの並びに動画・音声を含めない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 画像と表のセルの中の音声の Markdown
+        description: 画像 `a.png` の段落、表のセルに `![読み上げ](voice.mp3 "読み上げの見本")` と `![素材 1](m1.mp4)` を持つ表、画像 `b.png` の段落をこの順に並べた文書
+      - name: Mock
+        description: 差し替える依存は無い（画像・音声・動画は手元の応答で返却する）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>M: 読み上げのボタンを押す
+        M->>P: ダイアログで voice.mp3 を再生する
+        P->>M: ダイアログの外の背景を押す
+        M-->>P: 再生を止めて閉じる
+        P->>M: a.png を押し、右の矢印キーを押す
+        M-->>P: ライトボックスで b.png を出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 読み上げを押した後、ダイアログの中に `src="voice.mp3"`・`controls`・`autoplay` の `audio` があり、キャプションが `読み上げの見本`
+      - 背景を押した後にダイアログが無く、`document.activeElement` が読み上げのボタン
+      - '`a.png` で開いたライトボックスの枚数が `1 / 2` で、右の矢印キーの後に `b.png`'
+    test: test_normal_when_media_modal_audio
+    refs:
+      - SC-801-1#scenarios[正常シナリオ（音声）]
+      - SC-801-1#scenarios[正常シナリオ（画像の切り替えの並び）]
+  - name: 正常系（再生のボタンを印刷する）
+    summary: 印刷では再生のボタンのラベルとキャプションを本文の文字で出し、再生のアイコンとダイアログを出さない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 再生のボタンの Markdown
+        description: 表のセルの `![素材 1](m1.mp4 "手順 1 の画面")` と、動画だけの段落 `![操作の様子](demo.mp4 "保存までの操作"){modal}` を持つ文書
+      - name: Mock
+        description: '印刷は Playwright の `emulateMedia({ media: "print" })` で代える'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        P->>P: 印刷の media にする
+        P-->>P: 印刷向けの CSS が該当する
+      ```
+
+      <!-- /map -->
+    expected:
+      - 印刷の media の間、再生のボタンの中の再生のアイコンの `display` が `none` で、ボタンの枠線の幅が 0
+      - '`素材 1`・`操作の様子` のラベルと `手順 1 の画面`・`保存までの操作` のキャプションが出ている'
+      - '表の行に改ページを回避する指定（`break-inside: avoid`）が該当している'
+    test: test_normal_when_media_open_printed
+    refs:
+      - SC-472-58#scenarios[正常シナリオ（モーダルにした動画を印刷に出す）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -12267,7 +12365,7 @@ constraints:
       `canvas[hidden]` は `display: none` にする'
     notes: 止め方は PoC 検証の案 A（止めると最初のフレームに戻る）
   - item: 印刷の画像と動画
-    constraint: 印刷では、拡大のアイコンと GIF のボタンを出さず、`mdmark-only-light` の画像を出して `mdmark-only-dark` の画像を隠す。`video` と `audio` を出さず、`mdmark-media-print` の画像とキャプションを出す。リンクと添付のカードは、リンク先の URL を文字で出す
+    constraint: 印刷では、拡大のアイコンと GIF のボタンを出さず、`mdmark-only-light` の画像を出して `mdmark-only-dark` の画像を隠す。`video` と `audio` を出さず、`mdmark-media-print` の画像とキャプションを出す。再生のボタンは枠と再生のアイコンを出さずにラベルとキャプションを本文の文字で出し（`mdmark-media-thumb` は `poster` の画像だけを出す）、再生のダイアログを出さず、表の行を改ページで割らない。リンクと添付のカードは、リンク先の URL を文字で出す
   - item: 先頭へ戻るボタン
     constraint: '`back-to-top` がオンのとき、`el` の子の末尾に `button.mdmark-back-to-top`（`type="button"`・`aria-label` と `title` は `先頭へ戻る`・lucide の `arrow-up-to-line` のアイコン）を配置し、`update` で本文を再描画しても残す。
 
@@ -12895,6 +12993,22 @@ constraints:
     notes: 狭い幅の見せ方と広い幅の 1 つのスクロールはモック作成の確認ログの決定。外観はモック `docs/mock/components/diff-side-by-side/`。列の行を合わせる構造は部品設計
   - item: 手順のバーの今の区切り
     constraint: 案内と再生の手順のバーの今の手順の区切りは、その手順へ移った時点で全体を緑で塗り、繰り返しの 1 周の時間に合わせて少しずつ塗るアニメーションをしない。済んだ手順・残りの手順の区切りの描き分けは今のまま
+  - item: 動画と音声の再生のダイアログ
+    constraint: |-
+      `media` がオンのとき、`button.mdmark-media-open`（文書をHTML文字列にする.ts の制約「動画と音声の再生のボタン」）を押すと、`<dialog class="mdmark-media-modal" closedby="any" aria-labelledby="{タイトルの id}">` を `el` の中に配置して `showModal()` で開く。
+
+      上のバーに `<p class="mdmark-media-modal-title">{ボタンのラベル}</p>` と、ライトボックスと同じ四角の閉じるボタン（`aria-label` と `title` は `再生を閉じる`）だけを配置し、前後の切り替え・枚数・拡大と縮小を持たない。
+
+      再生の場所（`div.mdmark-media-modal-stage`）に、ボタンの `data-media-kind` の `video`・`audio` を `src`（`data-media-src`）・`controls`・`autoplay`・`aria-label="{ラベル}"` と、動画は `playsinline`・`poster`（`data-media-poster`）、`data-media-muted`・`data-media-loop` を持つときは `muted`・`loop` で配置して再生を始める。ボタンが `data-media-caption` を持つときは、下に `<p class="mdmark-media-modal-caption">` を出す。
+
+      閉じるボタン・Esc・ダイアログの外の背景を押すと閉じ（`closedby` を持たないブラウザは `dialog` 自身を押したときに閉じる）、再生を止めて `dialog` を削除し、フォーカスを押したボタンへ戻し、文書のスクロールの位置を開く前のままにする。
+
+      ダイアログの中で Tab のフォーカスを循環させる。
+
+      左右の矢印キーで切り替えず、動画・音声をライトボックスの切り替えの並びに含めない。
+
+      閉じたときと、戻り値の `destroy` で、開いている間に付けた受け取りを解除する
+    notes: ライトボックスと同じ開き方・閉じ方は要件の決定。ダイアログの並びは確認ログのモックへの合意
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画

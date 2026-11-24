@@ -287,6 +287,35 @@ scenarios:
       - 画像の上に、`modal` を読み込めないことと、記載できる属性を記載した記載の警告がある
       - 画像の幅は 300px で、ライトボックスで拡大できる画像の図のまま
     test: test_error_when_modal_on_image
+  - name: 正常シナリオ（サムネイルの属性）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+      - name: thumbnail の属性を持つ動画の Markdown
+        description: 表のセルに `![素材 1](m1.mp4){thumbnail poster=m1.png}`・`![素材 2](m2.mp4)` を記載し、動画だけの段落 `![操作の様子](demo.mp4){modal thumbnail poster=demo.png}` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ。動画・ポスターの画像は手元の応答で返却する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M->>M: thumbnail の属性を読み込む
+        M-->>P: thumbnail の動画は poster のサムネイル、そのほかのモーダルの動画はラベルのボタンで描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - 素材 1 のセルと段落の場所に、`m1.png`・`demo.png` の画像を持ち、スクリーンリーダー向けの名前に `素材 1`・`操作の様子` を持つボタンがある
+      - 素材 2 のセルは、画像を持たず、スクリーンリーダー向けの名前に `素材 2` を持つボタン（既定のボタン）
+      - ボタンを押すまで、動画の本体を要求しない
+      - 本文に `{thumbnail` の文字が出ておらず、記載の警告が出ていない
+    test: test_normal_when_thumbnail_attribute
 lead: 文書の作成者が、画像の後ろの属性でサイズと配置を指定し、title をキャプションにし、ギャラリーのマーカーで画像を格子に並べ、テーマごとに出す画像を分け、動画・音声・GIF を画像と同じ記載方法で配置すると、mdmark がそれぞれ図・格子・再生バー・止める・再生するボタンで描く。
 primary_actor: 文書の作成者
 stakeholders:
