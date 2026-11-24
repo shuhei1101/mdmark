@@ -1,0 +1,25 @@
+confirmations:
+  - topic: モーダルで再生する属性の名前
+    decision: '`modal`（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/801#discussion_r4680182340
+  - topic: WSL から Windows のプロセスを起動できず、モックのスクリーンショットを撮れないときの進め方
+    decision: 撮影せずに進める（別案 B）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/801#discussion_r4683551877
+  - topic: その場に出すもの（ラベルのボタン / poster のサムネイル）
+    decision: 既定をラベルの文字と再生のアイコンのボタン（推奨案 A）にし、poster のサムネイル（案 B）も選べるようにする
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/801#discussion_r4683669502
+  - topic: poster のサムネイルを選ぶ記載方法
+    decision: 動画ごとの属性 `thumbnail`（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/801#discussion_r4683690900

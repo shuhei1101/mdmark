@@ -398,6 +398,10 @@ items:
   summary: ライブラリ本体 / map / 描画と操作 / map.part.ts
 - page: MOD-472-330.ts.yaml
   summary: ライブラリ本体 / 画像と動画 / media.part.ts
+- page: MOD-801-1.ts.yaml
+  summary: ライブラリ本体 / 画像と動画 / media-modal.part.ts
+- page: MOD-801-2.ts.yaml
+  summary: ライブラリ本体 / 画像と動画 / media-modal.interact.ts
 - page: MOD-472-145.ts.yaml
   summary: ライブラリ本体 / 図 / mermaid.part.ts
 - page: MOD-472-310.ts.yaml

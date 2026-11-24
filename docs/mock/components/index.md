@@ -65,7 +65,7 @@
 | [map-band](./map-band/index.html) | map の案内・再生の帯（手順のバーだけの帯・区切りを押した手順の再生と再生し直し・バー以外を押して停止・なめらかな移動の実演・手順が多いとき・狭い幅） |
 | [map-mindmap](./map-mindmap/index.html) | map のマインドマップ（根を中央に配置した木の配置・項目の形状と枝の色・枝の開閉と中へ入る・項目の選択と強調・補足の layout と書き方の警告・案内・狭い幅） |
 | [map-kinds](./map-kinds/index.html) | map の図で使えるノードの種類・線の種類・グループ・データの点の一覧と、使う場面の例 |
-| [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン |
+| [media](./media/index.html) | 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン、表のセルの中と modal の属性の動画・音声の再生のダイアログ |
 | [mermaid-diagram](./mermaid-diagram/index.html) | 言語 mermaid のコードブロックを図の枠に入れて描いた図（front matter の title のタイトル・タイトルが無いときの図の種類の名前・actor のアイコンの案・種類ごとの見本）と、mermaid を読み込めない通知ブロック・記法を解釈できない記載の警告・機能をオフにしたコードブロック |
 | [plain-mermaid-style](./plain-mermaid-style/index.html) | mermaid のライブラリへ戻している mermaid のコードブロック（`style`・`classDef`・`%%{init}`・端に丸を付ける線・`::icon`・`:::`）を、今の描き方（mermaid の図）と案 A（map の図。指定を適用しない）・案 B（`style`・`classDef` の色を適用する）で並べた見本 |
 | [plain-mermaid](./plain-mermaid/index.html) | map の範囲の外の mermaid のコードブロックを、今の描き方（mermaid の図）と案 A（補足の無い map の図）で並べた flowchart・sequenceDiagram・classDiagram と、map が描けない種類の gantt |

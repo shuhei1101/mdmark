@@ -46,6 +46,56 @@ functions:
         mock: なし
         expected: '`audio` が `controls` を持ち、`playsinline` と `img.mdmark-media-print` を持たない'
     status: planned
+  - name: renderMediaOpener
+    title: 再生のボタンを描く
+    container: src/media/media.part.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『動画と音声』の `opener` の再生のボタンの HTML を返却する
+    description: |-
+      `button.mdmark-media-open` に `type="button"`・`aria-haspopup="dialog"`・`data-media-kind`・`data-media-src` と、指定したときだけ `data-media-caption`・`data-media-poster`・`data-media-autoplay`・`data-media-muted`・`data-media-loop` を付ける（`autoplay` のときは `data-media-muted` も付ける）。
+      `button` はアイコン（動画は `play`、音声は `volume-2`）と `span.mdmark-media-open-label`（`alt`。空なら `src` のファイル名）、`thumbnail` は class `mdmark-media-thumb`・`<img src="{poster}" alt="">`・`play` のアイコン・`aria-label="{ラベル}"` にする。
+      `caption` を指定したときはボタンの後ろに `span.mdmark-media-open-caption` を置き、`inline` が `false` のときは全体を `div.mdmark-media-inline-figure` で包む
+    args:
+      - name: options
+        type: '{ kind: "video" | "audio"; src: string; alt: string; caption?: string; poster?: string; autoplay?: boolean; muted?: boolean; loop?: boolean; opener: "button" | "thumbnail"; inline: boolean }'
+        required: true
+        description: 部品設計の引数
+    returns:
+      type: string
+      description: '`<button class="mdmark-media-open` か `<div class="mdmark-media-inline-figure">` で始まる HTML'
+    callees:
+      - MOD-472-313#functions[escapeHtml]
+      - MOD-472-180#functions[iconSvg]
+    refs:
+      - CMP-472-36#
+      - IF-472-34#constraints[動画と音声の再生のボタン]
+    unit_tests:
+      - name: test_render_media_opener
+        case: 正常
+        summary: ラベルと再生のアイコンのボタンを描く
+        condition: 部品設計の `OpenButton` と `OpenButtonAudio`
+        mock: なし
+        expected: 1 つ目が `data-media-kind="video"`・`data-media-src="demo.mp4"`・`aria-haspopup="dialog"` と `play` のアイコンと `素材 1` のラベル、2 つ目が `volume-2` のアイコン。どちらも `video`・`audio`・`div.mdmark-media-inline-figure` を持たない
+      - name: test_render_media_opener_when_caption
+        case: 正常
+        summary: 段落のボタンを包み、キャプションを置く
+        condition: 部品設計の `OpenButtonCaption`
+        mock: なし
+        expected: '`div.mdmark-media-inline-figure` の中にボタンと `span.mdmark-media-open-caption`（`保存までの操作`）があり、ボタンが `data-media-caption` を持つ'
+      - name: test_render_media_opener_when_thumbnail
+        case: 正常
+        summary: poster のサムネイルのボタンを描く
+        condition: 部品設計の `OpenThumbnail`
+        mock: なし
+        expected: '`button.mdmark-media-open.mdmark-media-thumb` が `aria-label="素材 2"` と `<img src="demo-poster.png" alt="">` を持ち、`span.mdmark-media-open-label` を持たない'
+      - name: test_render_media_opener_when_autoplay
+        case: 正常
+        summary: autoplay には data-media-muted を付け、alt が空ならファイル名をラベルにする
+        condition: '`alt` が空、`src` が `media/demo.mp4`、`autoplay` と `loop` が `true`'
+        mock: なし
+        expected: '`data-media-autoplay`・`data-media-muted`・`data-media-loop` を持ち、ラベルが `demo.mp4`'
+    status: planned
 lead: '動画と音声の部品が返却する HTML を受け持ち、動画と音声の外観を変えるときに参照する。'
 tags:
   - name: topic:音声

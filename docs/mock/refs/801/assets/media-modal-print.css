@@ -1,0 +1,31 @@
+/* 動画・音声をモーダルで再生する規則の印刷（#801 で共有するアセット）: その場に出すものは文字とキャプションだけを出し、再生のアイコンとダイアログを出さない */
+
+@layer mdmark {
+  .mdmark {
+    /* 案 A のボタン: 枠と再生のアイコンを外し、ラベルを本文の文字で出す */
+    .mdmark-media-open {
+      border: 0;
+      padding: 0;
+      color: var(--mdmark-color-text);
+
+      .mdmark-icon {
+        display: none;
+      }
+    }
+
+    /* 案 B のサムネイル: 再生のアイコンを外し、poster の画像だけを出す */
+    .mdmark-media-thumb-icon {
+      display: none;
+    }
+
+    /* 表の行: 改ページで割らない */
+    tr {
+      break-inside: avoid;
+    }
+  }
+
+  /* 開いていたダイアログ: 紙には出さない */
+  .mdmark-media-modal {
+    display: none;
+  }
+}

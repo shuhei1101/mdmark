@@ -171,7 +171,8 @@ import { renderGallery } from "../src/media/gallery.part.ts";
 import { renderGif } from "../src/media/gif.part.ts";
 import { renderImageFigure } from "../src/media/image.part.ts";
 import { renderLightbox } from "../src/media/lightbox.part.ts";
-import { renderMedia } from "../src/media/media.part.ts";
+import { renderMedia, renderMediaOpener } from "../src/media/media.part.ts";
+import { renderMediaModal } from "../src/media/media-modal.part.ts";
 import { render } from "../src/render/index.ts";
 import { sanitizeEmbedded } from "../src/render/sanitize.ts";
 import { renderBackToTop } from "../src/section/back-to-top.part.ts";
@@ -2444,6 +2445,33 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       autoplay: args.autoplay === true,
       loop: args.loop === true,
     }),
+  "media-opener": (args) =>
+    renderMediaOpener({
+      kind: args.kind as "video" | "audio",
+      src: sampleMedia(args.src),
+      alt: String(args.alt ?? ""),
+      ...(args.caption === undefined ? {} : { caption: String(args.caption) }),
+      ...(args.poster === undefined
+        ? {}
+        : { poster: sampleMedia(args.poster) }),
+      opener: args.opener === "thumbnail" ? "thumbnail" : "button",
+      inline: args.inline === true,
+    }),
+  // ライトボックスと同じく、開いた状態を文書の流れの中に描く
+  "media-modal": (args) =>
+    renderMediaModal({
+      id: "story-media-modal",
+      kind: args.kind as "video" | "audio",
+      src: sampleMedia(args.src),
+      label: String(args.label ?? ""),
+      ...(args.caption === undefined ? {} : { caption: String(args.caption) }),
+      ...(args.poster === undefined
+        ? {}
+        : { poster: sampleMedia(args.poster) }),
+    }).replace(
+      '<dialog class="mdmark-media-modal"',
+      '<dialog open class="mdmark-media-modal" style="position: static; width: 100%; height: 26rem"',
+    ),
   // 文書と同じく画像の図の中に配置する（`mount` は図の中の `img` を包む）
   gif: (args) =>
     `<figure class="mdmark-figure mdmark-image">${renderGif({

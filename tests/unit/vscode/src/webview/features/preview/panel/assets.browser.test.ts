@@ -88,3 +88,65 @@ test("test_attach_media_errors", async () => {
   ).toBe("media/clip.webm");
   detach();
 });
+
+// 再生のボタンの動画と poster のパスも集める（正常系）
+test("test_collect_asset_paths_when_media_open", async () => {
+  // 準備
+  const { collectAssetPaths } = await loadAssets();
+  const root = createRoot(
+    '<button class="mdmark-media-open" type="button" data-media-kind="video" data-media-src="m/demo.mp4" data-media-poster="m/p.png"></button>',
+  );
+  // 実行
+  const paths = collectAssetPaths(root);
+  // 検証
+  expect(paths).toEqual(["m/demo.mp4", "m/p.png"]);
+});
+
+// 再生のボタンの data-media-src と data-media-poster を替える（正常系）
+test("test_apply_asset_urls_when_media_open", async () => {
+  // 準備
+  const { applyAssetUrls } = await loadAssets();
+  const root = createRoot(
+    '<button class="mdmark-media-open" type="button" data-media-kind="video" data-media-src="m/demo.mp4" data-media-poster="m/p.png"></button>',
+  );
+  // 実行
+  applyAssetUrls(root, {
+    "m/demo.mp4": "https://w/demo.mp4",
+    "m/p.png": "https://w/p.png",
+  });
+  // 検証
+  const button = root.querySelector("button.mdmark-media-open");
+  expect(button?.getAttribute("data-media-src")).toBe("https://w/demo.mp4");
+  expect(button?.getAttribute("data-media-poster")).toBe("https://w/p.png");
+});
+
+// 再生のダイアログの中の再生できない動画を通知に替える（正常系）
+test("test_attach_media_errors_when_modal", async () => {
+  // 準備
+  const { applyAssetUrls, attachMediaErrors } = await loadAssets();
+  const root = createRoot(
+    '<p><button class="mdmark-media-open" type="button" data-media-kind="video" data-media-src="media/clip.webm"></button></p>',
+  );
+  applyAssetUrls(root, { "media/clip.webm": "https://w/media/clip.webm" });
+  const detach = attachMediaErrors(root);
+  const button = root.querySelector("button.mdmark-media-open") as HTMLElement;
+  const dialog = document.createElement("dialog");
+  dialog.className = "mdmark-media-modal";
+  dialog.innerHTML = `<div class="mdmark-media-modal-stage"><video src="${button.dataset.mediaSrc}"></video></div>`;
+  root.append(dialog);
+  const stage = dialog.querySelector(".mdmark-media-modal-stage") as Element;
+  // 実行
+  (stage.querySelector("video") as HTMLVideoElement).dispatchEvent(
+    new Event("error"),
+  );
+  // 検証
+  expect(stage.querySelector("video")).toBeNull();
+  const notice = stage.querySelector(".mdmark-notice") as Element;
+  const text = notice.textContent ?? "";
+  expect(text).toContain("webm");
+  expect(text).toContain("media/clip.webm");
+  expect(text).not.toContain("https://w/");
+  const link = notice.querySelector('a[data-action="openAsset"]');
+  expect(link?.getAttribute("data-path")).toBe("media/clip.webm");
+  detach();
+});

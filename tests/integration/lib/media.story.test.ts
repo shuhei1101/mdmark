@@ -131,3 +131,126 @@ test("test_video_print", async () => {
   expect(printed.src).toBe(printed.poster);
   expect(printed.height).toBeGreaterThan(0);
 });
+
+/** 再生のボタンの属性・ラベル・キャプションと、アイコンと枠線の出方 */
+async function readOpener(page: Page) {
+  return page.evaluate(() => {
+    const button = document.querySelector(
+      "button.mdmark-media-open",
+    ) as HTMLButtonElement;
+    const icon = button.querySelector("svg");
+    const caption = document.querySelector(".mdmark-media-open-caption");
+    const box = button.getBoundingClientRect();
+    const frame = button.closest(".mdmark") ?? document.body;
+    return {
+      attributes: Object.fromEntries(
+        [...button.attributes].map((attribute) => [
+          attribute.name,
+          attribute.value,
+        ]),
+      ),
+      label:
+        button.querySelector(".mdmark-media-open-label")?.textContent ?? null,
+      caption: caption?.textContent ?? null,
+      wrapped: button.closest(".mdmark-media-inline-figure") !== null,
+      iconDisplay: icon ? getComputedStyle(icon).display : null,
+      borderWidth: getComputedStyle(button).borderTopWidth,
+      buttonRight: box.right,
+      frameRight: frame.getBoundingClientRect().right,
+      hasPlayer: document.querySelector("video, audio") !== null,
+    };
+  });
+}
+
+// 表のセルの中の動画は、ラベルと再生のアイコンのボタンにする（OpenButton）
+test("test_open_button", async () => {
+  // 準備・実行
+  const page = await open("open-button");
+  // 検証
+  const opener = await readOpener(page);
+  expect(opener.attributes).toMatchObject({
+    type: "button",
+    "aria-haspopup": "dialog",
+    "data-media-kind": "video",
+  });
+  expect(opener.label).toBe("素材 1");
+  expect(opener.iconDisplay).not.toBe("none");
+  expect(opener.wrapped).toBe(false);
+  expect(opener.hasPlayer).toBe(false);
+  // Tab でフォーカスできる
+  await page.keyboard.press("Tab");
+  await expect(
+    page.evaluate(() =>
+      document.activeElement?.classList.contains("mdmark-media-open"),
+    ),
+  ).resolves.toBe(true);
+});
+
+// 表のセルの中の音声は、音声のアイコンのボタンにする（OpenButtonAudio）
+test("test_open_button_audio", async () => {
+  // 準備・実行
+  const page = await open("open-button-audio");
+  // 検証
+  const opener = await readOpener(page);
+  expect(opener.attributes["data-media-kind"]).toBe("audio");
+  expect(opener.label).toBe("読み上げ");
+  expect(opener.hasPlayer).toBe(false);
+});
+
+// 段落の動画は、ボタンの後ろにキャプションを置いて包む（OpenButtonCaption）
+test("test_open_button_caption", async () => {
+  // 準備・実行
+  const page = await open("open-button-caption");
+  // 検証
+  const opener = await readOpener(page);
+  expect(opener.wrapped).toBe(true);
+  expect(opener.caption).toBe("保存までの操作");
+  expect(opener.attributes["data-media-caption"]).toBe("保存までの操作");
+});
+
+// 長いラベルはボタンの中で折り返し、はみ出さない（OpenButtonLongLabel）
+test("test_open_button_long_label", async () => {
+  // 準備・実行
+  const page = await open("open-button-long-label");
+  // 検証
+  const opener = await readOpener(page);
+  expect(opener.buttonRight).toBeLessThanOrEqual(opener.frameRight + 1);
+});
+
+// thumbnail の動画は、poster の画像に再生のアイコンを重ねる（OpenThumbnail）
+test("test_open_thumbnail", async () => {
+  // 準備・実行
+  const page = await open("open-thumbnail");
+  // 検証
+  const thumb = await page
+    .locator("button.mdmark-media-thumb")
+    .evaluate((button) => {
+      const image = button.querySelector("img") as HTMLImageElement;
+      return {
+        label: button.getAttribute("aria-label"),
+        alt: image.getAttribute("alt"),
+        height: image.getBoundingClientRect().height,
+        icon: button.querySelector(".mdmark-media-thumb-icon svg") !== null,
+        text: button.querySelector(".mdmark-media-open-label"),
+      };
+    });
+  expect(thumb.label).toBe("素材 2");
+  expect(thumb.alt).toBe("");
+  expect(thumb.height).toBeGreaterThan(0);
+  expect(thumb.icon).toBe(true);
+  expect(thumb.text).toBeNull();
+});
+
+// 印刷では、枠線と再生のアイコンを出さず、ラベルとキャプションを出す（OpenButtonPrint）
+test("test_open_button_print", async () => {
+  // 準備
+  const page = await open("open-button-print");
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  // 検証
+  const opener = await readOpener(page);
+  expect(opener.iconDisplay).toBe("none");
+  expect(opener.borderWidth).toBe("0px");
+  expect(opener.label).toBe("操作の様子");
+  expect(opener.caption).toBe("保存までの操作");
+});

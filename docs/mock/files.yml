@@ -182,7 +182,7 @@ files:
     tags: [topic:モック]
   - path: components/media/index.html
     visibility: internal
-    description: '部品『media』のモック: 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン、読み込めない属性の記載の警告。部品の外観や状態を決めるときに参照する。'
+    description: '部品『media』のモック: 動画・音声の再生バーとキャプション・幅と autoplay・loop、GIF の止める・再生するボタン、読み込めない属性の記載の警告、表のセルの中と modal の属性の動画・音声のその場に出すものと再生のダイアログ。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック]
   - path: components/notice/index.html
     visibility: internal
@@ -1425,6 +1425,22 @@ files:
     visibility: internal
     description: '部品『右側の目次』のモック: 狭い幅の目次のバーを留める位置に固定する今の見せ方と、案 A（本文の先頭にだけ配置する）・案 B（下へスクロール中は隠す）・案 C（目次を開くボタンだけを固定する）を、スマートフォンの幅の見本で並べる。狭い幅の目次の見せ方を決めるときに参照する。'
     tags: [topic:モック, topic:目次]
+  - path: refs/801/index.md
+    visibility: internal
+    description: '#801（表のセルの中の動画・音声をモーダルで再生する）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/801/assets/media-modal.css
+    visibility: internal
+    description: '#801 のモックが共通で読み込む素材: 動画・音声のその場に出すもの（ラベルのボタン・サムネイル）と再生のダイアログの規則。複数のモックに有効になる外観を変えるときに参照する。'
+    tags: [topic:モック, topic:動画, tool:css]
+  - path: refs/801/assets/media-modal-print.css
+    visibility: internal
+    description: '#801 のモックが共通で読み込む素材: 動画・音声のその場に出すものと再生のダイアログの印刷の規則。複数のモックに有効になる印刷の外観を変えるときに参照する。'
+    tags: [topic:モック, topic:印刷, tool:css]
+  - path: refs/801/assets/media-modal.js
+    visibility: internal
+    description: '#801 のモックが共通で読み込む素材: その場に出すものを押したときの再生のダイアログの開閉と、閉じたときの再生の停止とフォーカスの戻し。複数のモックに有効になる動きを変えるときに参照する。'
+    tags: [topic:モック, topic:動画, tool:javascript]
   - path: refs/795/index.md
     visibility: internal
     description: '#795（アプリの画面で使用する表のカスタム要素）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'

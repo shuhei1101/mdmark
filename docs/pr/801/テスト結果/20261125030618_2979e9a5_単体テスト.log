@@ -1,0 +1,305 @@
+# Red の確認（実装の前）。単体テストの層の実行場所は runner だが、実装の前の Red の確認は追加・変更したテストファイルを手元の個別実行で回した
+$ npx vitest run --project 'unit*' tests/unit/src/media/media.part.test.ts tests/unit/src/media/media-modal.part.test.ts tests/unit/src/media/image.syntax.test.ts tests/unit/src/media/media-modal.interact.browser.test.ts tests/unit/src/interact.browser.test.ts tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal
+
+ ❯ |unit| tests/unit/src/media/media-modal.part.test.ts (2 tests | 2 failed) 33ms
+   × test_render_media_modal 19ms
+   × test_render_media_modal_when_audio 12ms
+ ❯ |unit| tests/unit/src/media/media.part.test.ts (7 tests | 4 failed) 114ms
+   × test_render_media_opener 80ms
+   × test_render_media_opener_when_caption 1ms
+   × test_render_media_opener_when_thumbnail 0ms
+   × test_render_media_opener_when_autoplay 0ms
+3:06:19 AM [vite] Internal server error: Failed to resolve import "../../../../src/media/media-modal.interact.ts" from "tests/unit/src/media/media-modal.interact.browser.test.ts". Does the file exist?
+  Plugin: vite:import-analysis
+  File: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/tests/unit/src/media/media-modal.interact.browser.test.ts:11:9
+  3  |  import { addStyles, createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+  4  |  /** 再生のダイアログの操作を読み込む（実装が無い間は各テストが個別に失敗する） */
+  5  |  const loadMediaModal = () => import("../../../../src/media/media-modal.interact.ts");
+     |                                      ^
+  6  |  const detachers = [];
+  7  |  /** `play`・`pause` の呼び出しの記録 */
+      at TransformPluginContext._formatLog (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/node_modules/vite/dist/node/chunks/node.js:8861:39)
+      at TransformPluginContext.error (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/node_modules/vite/dist/node/chunks/node.js:8858:14)
+      at resolveId (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/node_modules/vite/dist/node/chunks/node.js:26533:18)
+      at async file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/node_modules/vite/dist/node/chunks/node.js:26632:23
+      at async Promise.all (index 3)
+      at async TransformPluginContext.transform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/node_modules/vite/dist/node/chunks/node.js:26605:4)
+      at async EnvironmentPluginContainer.transform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/node_modules/vite/dist/node/chunks/node.js:8632:14)
+      at async loadAndTransform (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/node_modules/vite/dist/node/chunks/node.js:20108:26)
+      at async viteTransformMiddleware (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/node_modules/vite/dist/node/chunks/node.js:20328:20)
+ ❯ |unit-browser (chromium)| tests/unit/src/media/media-modal.interact.browser.test.ts (0 test)
+ ❯ |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts (6 tests | 2 failed) 458ms
+   × test_collect_asset_paths_when_media_open 143ms
+   × test_apply_asset_urls_when_media_open 54ms
+ ❯ |unit| tests/unit/src/media/image.syntax.test.ts (18 tests | 5 failed) 57ms
+   × test_read_image_attributes_when_modal 8ms
+   × test_read_image_attributes_when_modal_unreadable 1ms
+   × test_read_images_when_table_cell 1ms
+   × test_read_images_when_opener_unreadable 2ms
+   × test_build_image_figures_when_opener 4ms
+
+⎯⎯⎯⎯⎯⎯ Failed Suites 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/media/media-modal.interact.browser.test.ts [ tests/unit/src/media/media-modal.interact.browser.test.ts ]
+Error: Failed to import test file /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/tests/unit/src/media/media-modal.interact.browser.test.ts
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=661ca12f:5843:5
+ ❯ collectTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=661ca12f:5819:3
+ ❯ startTests node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=661ca12f:6503:17
+
+Caused by: TypeError: Failed to fetch dynamically imported module: http://localhost:63316/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/tests/unit/src/media/media-modal.interact.browser.test.ts?import&browserv=1795543579659
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 13 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/media/image.syntax.test.ts > test_read_image_attributes_when_modal
+AssertionError: expected { kind: 'audio', lightbox: true, …(4) } to match object { Object (modal, opener, ...) }
+(5 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "items": [],
+-   "modal": true,
+-   "opener": true,
++   "items": [
++     {
++       "label": "modal",
++       "message": "使用できない属性です。",
++     },
++   ],
+  }
+
+ ❯ tests/unit/src/media/image.syntax.test.ts:266:17
+    264|   const video = readImageAttributes("thumbnail poster=p.png", "video",…
+    265|   // 検証
+    266|   expect(audio).toMatchObject({ modal: true, opener: true, items: [] }…
+       |                 ^
+    267|   expect(video).toMatchObject({ thumbnail: true, opener: true, items: …
+    268| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/image.syntax.test.ts > test_read_image_attributes_when_modal_unreadable
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/media/image.syntax.test.ts:288:23
+    286|     attributes.items.map((item) => item.label);
+    287|   expect(labels(image)).toEqual(["modal"]);
+    288|   expect(image.modal).toBe(false);
+       |                       ^
+    289|   expect(labels(audio)).toEqual(["thumbnail"]);
+    290|   expect(audio.thumbnail).toBe(false);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/image.syntax.test.ts > test_read_images_when_table_cell
+AssertionError: expected undefined to be true // Object.is equality
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/media/image.syntax.test.ts:315:34
+    313|     tokens.find((token) => token.attrGet("src") === src)?.meta
+    314|       ?.mdmarkImage as ImageAttributes | undefined;
+    315|   expect(meta("m1.mp4")?.opener).toBe(true);
+       |                                  ^
+    316|   expect(meta("chart.png")?.opener).toBe(false);
+    317| });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/image.syntax.test.ts > test_read_images_when_opener_unreadable
+AssertionError: expected undefined to be false // Object.is equality
+
+- Expected:
+false
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/media/image.syntax.test.ts:333:65
+    331|   // 検証
+    332|   for (const token of tokens) {
+    333|     expect((token.meta?.mdmarkImage as ImageAttributes).opener).toBe(f…
+       |                                                                 ^
+    334|   }
+    335|   const warnings = findTags(html, 'class="mdmark-syntax-warning"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/image.syntax.test.ts > test_build_image_figures_when_opener
+AssertionError: expected '<div class="mdmark-table" data-kind="…' not to match /<video\b/
+
+- Expected:
+/<video\b/
+
++ Received:
+"<div class=\"mdmark-table\" data-kind=\"default\" data-features=\"sort pin resize\"><div class=\"mdmark-table-scroll\"><table tabindex=\"0\" aria-label=\"表\">
+<thead>
+<tr>
+<th>手順</th>
+<th>素材</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td data-label=\"手順\">保存</td>
+<td data-label=\"素材\"><img src=\"m1.mp4\" alt=\"素材 1\" title=\"手順 1\" /></td>
+</tr>
+</tbody>
+</table>
+</div></div><div class=\"mdmark-syntax-warning\" role=\"note\"><p class=\"mdmark-syntax-warning-title\">記載の警告</p><p>画像の読み込めない属性を当てずに描いています。記載できる属性は <code>width</code>・<code>align</code>・<code>nolightbox</code>・<code>autoplay</code>・<code>muted</code>・<code>loop</code>・<code>poster</code> です。</p><ul><li><code>modal</code>: 使用できない属性です。</li></ul></div><figure class=\"mdmark-figure mdmark-media\"><video src=\"demo.mp4\" controls playsinline preload=\"metadata\" aria-label=\"操作\"></video></figure><div class=\"mdmark-syntax-warning\" role=\"note\"><p class=\"mdmark-syntax-warning-title\">記載の警告</p><p>画像の読み込めない属性を当てずに描いています。記載できる属性は <code>width</code>・<code>align</code>・<code>nolightbox</code>・<code>autoplay</code>・<code>muted</code>・<code>loop</code>・<code>poster</code> です。</p><ul><li><code>modal</code>: 使用できない属性です。</li></ul></div><p>手順は  で確認する。</p>
+<figure class=\"mdmark-figure mdmark-media\"><video src=\"steps.mp4\" controls playsinline preload=\"metadata\" aria-label=\"手順\"></video></figure><div class=\"mdmark-syntax-warning\" role=\"note\"><p class=\"mdmark-syntax-warning-title\">記載の警告</p><p>画像の読み込めない属性を当てずに描いています。記載できる属性は <code>width</code>・<code>align</code>・<code>nolightbox</code>・<code>autoplay</code>・<code>muted</code>・<code>loop</code>・<code>poster</code> です。</p><ul><li><code>thumbnail</code>: 使用できない属性です。</li></ul></div><figure class=\"mdmark-figure mdmark-media\"><video src=\"m2.mp4\" controls playsinline preload=\"metadata\" aria-label=\"素材 2\" poster=\"m2.png\"></video><img class=\"mdmark-media-print\" src=\"m2.png\" alt=\"\" /></figure>"
+
+ ❯ tests/unit/src/media/image.syntax.test.ts:363:20
+    361|   const { html } = renderDoc(markdown);
+    362|   // 検証
+    363|   expect(html).not.toMatch(/<video\b/);
+       |                    ^
+    364|   const cell = /<td>[^]*?m1\.mp4[^]*?<\/td>/.exec(html)?.[0] ?? "";
+    365|   expect(cell).toContain('class="mdmark-media-open"');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/media-modal.part.test.ts > test_render_media_modal
+Error: Cannot find module '/src/media/media-modal.part.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/tests/unit/src/media/media-modal.part.test.ts
+ ❯ tests/unit/src/media/media-modal.part.test.ts:10:32
+      8| test("test_render_media_modal", async () => {
+      9|   // 準備
+     10|   const { renderMediaModal } = await loadMediaModal();
+       |                                ^
+     11|   // 実行（部品設計の Video）
+     12|   const html = renderMediaModal({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/media-modal.part.test.ts > test_render_media_modal_when_audio
+Error: Cannot find module '/src/media/media-modal.part.ts' imported from /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/tests/unit/src/media/media-modal.part.test.ts
+ ❯ tests/unit/src/media/media-modal.part.test.ts:51:32
+     49| test("test_render_media_modal_when_audio", async () => {
+     50|   // 準備
+     51|   const { renderMediaModal } = await loadMediaModal();
+       |                                ^
+     52|   // 実行（部品設計の Audio と VideoNoCaption）
+     53|   const audio = renderMediaModal({
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/media.part.test.ts > test_render_media_opener
+TypeError: renderMediaOpener is not a function
+ ❯ tests/unit/src/media/media.part.test.ts:85:17
+     83|   const { iconSvg } = await loadIcons();
+     84|   // 実行（部品設計の OpenButton と OpenButtonAudio）
+     85|   const video = renderMediaOpener({
+       |                 ^
+     86|     kind: "video",
+     87|     src: "demo.mp4",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/media.part.test.ts > test_render_media_opener_when_caption
+TypeError: renderMediaOpener is not a function
+ ❯ tests/unit/src/media/media.part.test.ts:121:16
+    119|   const { renderMediaOpener } = await loadMedia();
+    120|   // 実行（部品設計の OpenButtonCaption）
+    121|   const html = renderMediaOpener({
+       |                ^
+    122|     kind: "video",
+    123|     src: "demo.mp4",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/media.part.test.ts > test_render_media_opener_when_thumbnail
+TypeError: renderMediaOpener is not a function
+ ❯ tests/unit/src/media/media.part.test.ts:145:16
+    143|   const { renderMediaOpener } = await loadMedia();
+    144|   // 実行（部品設計の OpenThumbnail）
+    145|   const html = renderMediaOpener({
+       |                ^
+    146|     kind: "video",
+    147|     src: "demo.mp4",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/14]⎯
+
+ FAIL  |unit| tests/unit/src/media/media.part.test.ts > test_render_media_opener_when_autoplay
+TypeError: renderMediaOpener is not a function
+ ❯ tests/unit/src/media/media.part.test.ts:166:16
+    164|   const { renderMediaOpener } = await loadMedia();
+    165|   // 実行
+    166|   const html = renderMediaOpener({
+       |                ^
+    167|     kind: "video",
+    168|     src: "media/demo.mp4",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts > test_collect_asset_paths_when_media_open
+AssertionError: expected [] to deeply equal [ 'm/demo.mp4', 'm/p.png' ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/assets.browser.test.ts/test_collect_asset_paths_when_media_open.png
+
+[32m- Expected[39m
+[31m+ Received[39m
+
+[32m- [[39m
+[32m-   "m/demo.mp4",[39m
+[32m-   "m/p.png",[39m
+[32m- ][39m
+[31m+ [][39m
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts:102:17
+    100|   const paths = collectAssetPaths(root);
+    101|   // 検証
+    102|   expect(paths).toEqual(["m/demo.mp4", "m/p.png"]);
+       |                 ^
+    103| });
+    104|
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=661ca12f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/14]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts > test_apply_asset_urls_when_media_open
+AssertionError: expected 'm/demo.mp4' to be 'https://w/demo.mp4' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/assets.browser.test.ts/test_apply_asset_urls_when_media_open.png
+
+Expected: [32m"[7mhttps://w[27m/demo.mp4"[39m
+Received: [31m"[7mm[27m/demo.mp4"[39m
+
+ ❯ tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts:119:50
+    117|   // 検証
+    118|   const button = root.querySelector("button.mdmark-media-open");
+    119|   expect(button?.getAttribute("data-media-src")).toBe("https://w/demo.…
+       |                                                  ^
+    120|   expect(button?.getAttribute("data-media-poster")).toBe("https://w/p.…
+    121| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=661ca12f:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/14]⎯
+
+
+ Test Files  5 failed | 1 passed (6)
+      Tests  13 failed | 28 passed (41)
+   Start at  03:06:18
+   Duration  1.47s (transform 39%, tests 29%, import 17%, worker 16%)
+
+
+# 実装の前から pass したテスト
+- test_attach_media_errors_when_modal: vscode/src/webview/features/preview/panel/assets.ts の attachMediaErrors（69〜91 行目）が root の error をキャプチャーフェーズで受けて要素を通知に替える振る舞いを既に持つ（6e8cbadd 以前から）
+- test_attach_interactions_when_media_off: src/interact.ts の attachInteractions に再生のダイアログを付ける処理が無く、ダイアログを開かない（2979e9a5 の時点）
+# media-modal.interact.browser.test.ts はファイルの読み込みで失敗する（src/media/media-modal.interact.ts が無いため）

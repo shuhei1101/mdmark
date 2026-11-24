@@ -1,0 +1,51 @@
+id: MOD-801-1
+visibility: internal
+title: ライブラリ本体 / 画像と動画 / media-modal.part.ts
+lead: 動画と音声の再生のダイアログの HTML を受け持ち、再生のダイアログの外観を変えるときに参照する。
+test_files:
+  - tests/unit/src/media/media-modal.part.test.ts
+functions:
+  - name: renderMediaModal
+    title: 再生のダイアログを描く
+    container: src/media/media-modal.part.ts
+    kind: 関数
+    scope: internal
+    summary: 部品設計『動画と音声の再生のダイアログ』の `dialog` の HTML を返却する
+    description: |-
+      `dialog.mdmark-media-modal` に `closedby="any"`・`aria-labelledby`（`{id}-title`）を付け、上のバーにタイトルと閉じるボタン（`mdmark-lightbox-tool`・`data-tool="close"`・`aria-label` と `title` は `再生を閉じる`・アイコン `x`）を配置する。
+      再生の場所に `kind` の `video`・`audio` を `src`・`controls`・`autoplay`・`aria-label`（`label`）で置き、動画には `playsinline`・`poster`、`muted`・`loop` を指定したときはその属性を付ける。
+      `caption` が空でないときだけ `p.mdmark-media-modal-caption` を置く
+    args:
+      - name: options
+        type: '{ id: string; kind: "video" | "audio"; src: string; label: string; caption?: string; poster?: string; muted?: boolean; loop?: boolean }'
+        required: true
+        description: 部品設計の引数と、タイトルの `id` の頭（`id`）
+    returns:
+      type: string
+      description: '`<dialog class="mdmark-media-modal"` で始まる HTML'
+    callees:
+      - MOD-472-313#functions[escapeHtml]
+      - MOD-472-180#functions[iconSvg]
+    refs:
+      - CMP-801-1#
+    unit_tests:
+      - name: test_render_media_modal
+        case: 正常
+        summary: 動画とタイトルとキャプションを描く
+        condition: 部品設計の `Video`
+        mock: なし
+        expected: '`dialog` が `closedby="any"` とタイトルを指す `aria-labelledby` を持ち、`video` が `controls`・`autoplay`・`playsinline`・`poster`・`aria-label="素材 2"`、閉じるボタンの `aria-label` が `再生を閉じる`、キャプションが `操作の画面`。前後の切り替えと枚数が無い'
+      - name: test_render_media_modal_when_audio
+        case: 正常
+        summary: 音声は playsinline と poster を持たず、キャプションの無いときは出さない
+        condition: 部品設計の `Audio` と `VideoNoCaption`
+        mock: なし
+        expected: 1 つ目の `audio` が `controls`・`autoplay` を持ち `playsinline` を持たない。2 つ目は `p.mdmark-media-modal-caption` を持たない
+    status: planned
+tags:
+  - name: topic:動画
+    main: true
+  - name: topic:音声
+  - name: topic:部品
+  - name: tool:html
+  - name: action:描画

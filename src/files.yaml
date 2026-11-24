@@ -1305,11 +1305,31 @@ files:
     related:
       - to: MOD-740-3
         type: implements
+  - path: media/media-modal.part.stories.ts
+    description: 部品設計『動画と音声の再生のダイアログ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
+    related:
+      - to: CMP-801-1
+        type: implements
   - path: media/media.part.stories.ts
     description: 部品設計『動画と音声』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
     related:
       - to: CMP-472-36
+        type: implements
+  - path: media/media-modal.part.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「動画と音声の再生のダイアログの renderMediaModal」を受け持つ。部品が返却する HTML を変えるときに参照する。
+    tags: [topic:部品, tool:html, topic:動画, topic:音声]
+    related:
+      - to: MOD-801-1
+        type: implements
+      - to: CMP-801-1
+        type: implements
+  - path: media/media-modal.interact.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「再生のボタンで再生のダイアログを開き、閉じたら再生を止める処理」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:動画, topic:音声]
+    related:
+      - to: MOD-801-2
         type: implements
   - path: media/media.part.ts
     description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「動画と音声の renderMedia」を受け持つ。部品が返却する HTML を変えるときに参照する。

@@ -1,0 +1,64 @@
+id: MOD-801-2
+visibility: internal
+title: ライブラリ本体 / 画像と動画 / media-modal.interact.ts
+lead: 再生のボタンで開く再生のダイアログの開閉と再生の停止を受け持ち、動画・音声のモーダルの操作を変えるときに参照する。
+test_files:
+  - tests/unit/src/media/media-modal.interact.browser.test.ts
+functions:
+  - name: attachMediaModal
+    title: 再生のボタンでダイアログを開く
+    container: src/media/media-modal.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 再生のボタンの押下で再生のダイアログを開き、閉じたら再生を止めて削除する
+    description: |-
+      `root` の `click` を受け、`button.mdmark-media-open` を押したときに、その `data-media-*` とラベル（`aria-label`、無ければ `span.mdmark-media-open-label` の文字）で `renderMediaModal` の `dialog` を `root` の中に配置して `showModal()` で開き、動画・音声の `play()` を呼ぶ（拒んだときは再生バーから再生できるままにする）。
+      閉じるボタンで `close()` し、`closedby` を持たないブラウザでは `dialog` 自身を押したときに閉じる。
+      `close` で動画・音声の `pause()` を呼んで `dialog` を削除し、フォーカスを押したボタンへ戻し、スクロールの位置を開く前のままにする。
+      ダイアログの中の左右の矢印キーは受けない（ライトボックスの切り替えに届かない）
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+    returns:
+      type: () => void
+      description: 受け取りを解除し、開いているダイアログを閉じる関数
+    side_effects: '`root` に `dialog` を配置・削除する'
+    callees:
+      - MOD-801-1#functions[renderMediaModal]
+    refs:
+      - IF-472-35#constraints[動画と音声の再生のダイアログ]
+    unit_tests:
+      - name: test_attach_media_modal
+        case: 正常
+        summary: ボタンで開いて再生し、Esc で閉じて止める
+        condition: 再生のボタン 2 つを描いた要素で 1 つ目を押し、Esc を押す（Playwright のキー操作）
+        mock: '`HTMLMediaElement.prototype.play` と `pause` を呼ばれたことを記録する関数に差し替える'
+        expected: 押した後に `dialog.mdmark-media-modal[open]` があり `play` が 1 回、Esc の後に `dialog` が無く `pause` が 1 回で、フォーカスが 1 つ目のボタン、`scrollY` が押す前と同じ
+      - name: test_attach_media_modal_when_closed
+        case: 正常
+        summary: 閉じるボタンと背景で閉じる
+        condition: 開いて閉じるボタンを押す、開いて `dialog` 自身を押す
+        mock: '`play`・`pause` は `test_attach_media_modal` と同じ'
+        expected: どちらも `dialog` が無く、フォーカスが押したボタン
+      - name: test_attach_media_modal_when_arrow
+        case: 正常
+        summary: 矢印キーで切り替えない
+        condition: 再生のボタン 2 つの 1 つ目で開き、`ArrowRight` を押す
+        mock: '`play`・`pause` は `test_attach_media_modal` と同じ'
+        expected: '`dialog` の `video` の `src` が 1 つ目のままで、`dialog` が 1 つだけ'
+      - name: test_attach_media_modal_when_cleaned_up
+        case: 正常
+        summary: 削除すると開いたダイアログを閉じ、押しても開かない
+        condition: 開いてから戻り値を呼び、もう一度ボタンを押す
+        mock: '`play`・`pause` は `test_attach_media_modal` と同じ'
+        expected: '`dialog` が無く、押した後も `dialog` が無い'
+    status: planned
+tags:
+  - name: topic:動画
+    main: true
+  - name: topic:音声
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作

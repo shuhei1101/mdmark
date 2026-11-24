@@ -3123,6 +3123,70 @@ flows:
       - マーカーの場所に、`glossary-terms` を記載した記載の警告がある
       - 後の段落が描かれている
     test: test_normal_when_glossary_alias_row_missing
+  - name: 正常系（再生のボタン）
+    summary: 表のセルの中の動画・音声と modal・thumbnail の属性の動画を、再生バーでなく再生のボタンにする
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 再生のボタンにする動画・音声の Markdown
+        description: 表のセルに `![素材 1](m1.mp4 "手順 1 の画面")`・`![読み上げ](voice.mp3)`・`![素材 2](m2.mp4){thumbnail poster=m2.png}` を記載し、動画だけの段落 `![操作の様子](demo.mp4){modal autoplay}`、文の途中の `手順は ![手順](steps.mp4){modal} で確認する。`、属性の無い動画だけの段落 `![操作](demo2.mp4)` を持つ文書
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 表のセルの中と modal・thumbnail の動画・音声を見分ける
+        M-->>C: 再生のボタンを持つ HTML 文字列
+      ```
+
+      <!-- /map -->
+    expected:
+      - 表のセルの `m1.mp4` が `button.mdmark-media-open` で、`data-media-kind="video"`・`data-media-src="m1.mp4"`・`data-media-caption="手順 1 の画面"` と `素材 1` のラベルを持ち、後ろに `span.mdmark-media-open-caption` がある
+      - '`voice.mp3` が `data-media-kind="audio"` のボタンで、`m2.mp4` が `button.mdmark-media-thumb` で `<img src="m2.png" alt="">` と `aria-label="素材 2"` を持つ'
+      - 段落の `demo.mp4` が `div.mdmark-media-inline-figure` の中のボタンで `data-media-autoplay`・`data-media-muted` を持ち、文の途中の `steps.mp4` のボタンが `手順は` と `で確認する。` の間にある
+      - '`demo2.mp4` は今までどおり `figure.mdmark-media` の `video`'
+      - 文字列に `m1.mp4`・`voice.mp3`・`m2.mp4`・`demo.mp4`・`steps.mp4` の `video`・`audio`・`img` の `src` が無く、記載の警告が無い
+    test: test_normal_when_media_open_button
+    refs:
+      - SC-472-67#scenarios[正常シナリオ（表のセルの中の動画と音声）]
+      - SC-472-67#scenarios[正常シナリオ（モーダルで再生する属性）]
+      - SC-472-67#scenarios[正常シナリオ（サムネイルの属性）]
+  - name: 異常系（読み込めない modal・thumbnail）
+    summary: 画像の modal・thumbnail と、音声・poster の無い動画の thumbnail を記載の警告にする
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 読み込めない属性の Markdown
+        description: '`![グラフ](chart.png){modal width=300}`・`![読み上げ](voice.mp3){thumbnail}`・`![操作](demo.mp4){thumbnail}`・`![操作の様子](demo2.mp4){modal width=320 align=center}` をそれぞれ画像だけの段落に持ち、表のセルに `![素材 1](m1.mp4){align=right}` を記載した文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: 読み込めない modal・thumbnail を除いて属性を適用する
+        M-->>C: 記載の警告を持つ HTML 文字列
+      ```
+
+      <!-- /map -->
+    expected:
+      - 4 つの段落の前と表の前に記載の警告が 1 つずつあり、本文に読み込めない `modal`・`thumbnail`・`width=320`・`align=center`・`align=right` と記載できる属性の名前がある
+      - '`chart.png` は `--mdmark-image-width: 300px` の `figure.mdmark-image`'
+      - '`voice.mp3` は `button.mdmark-media-thumb` でなく、`audio` の `figure.mdmark-media`（表のセルでも `modal` でもない）'
+      - '`demo.mp4` は `figure.mdmark-media` の `video`（`thumbnail` を適用せず、モーダルにしない）'
+      - '`demo2.mp4` は `div.mdmark-media-inline-figure` の中の再生のボタンで、`style` と `data-align` を持たない。表のセルの `m1.mp4` は再生のボタンで `data-align` を持たない'
+    test: test_error_when_modal_attribute_unreadable
+    refs:
+      - SC-472-67#scenarios[異常シナリオ（画像に記載した modal）]
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返却する。
 idempotent: true
 side_effects: なし（外部ライブラリも読み込まない）
@@ -3478,7 +3542,7 @@ constraints:
   - item: 画像の属性
     constraint: '`images` がオンのとき、画像（動画・音声を含む）の直後の `{属性 …}` を空白で区切って読み込み、画像に適用して出力から除外する。
 
-      属性は `width=値`（`300` か `300px` の px と、`1`〜`100` の `%`）・`align=left|center|right`・`nolightbox`、動画・音声だけの `autoplay`・`muted`・`loop`・`poster=パス`。
+      属性は `width=値`（`300` か `300px` の px と、`1`〜`100` の `%`）・`align=left|center|right`・`nolightbox`、動画・音声だけの `autoplay`・`muted`・`loop`・`poster=パス`・`modal`、動画だけの `thumbnail`。
 
       `width` は `--mdmark-image-width: {値}` を、画像だけの段落なら `figure` の `style`、文の中の画像なら `img` の `style` に配置する。
 
@@ -3486,7 +3550,7 @@ constraints:
 
       `nolightbox` は `img` に `data-nolightbox` を付ける。
 
-      知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性は適用せずに、画像の前（文の中の画像は段落の前）に記載の警告を配置し、本文に読み込めない属性と記載できる属性を出す。
+      知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した `autoplay`・`muted`・`loop`・`poster`・`modal`・`thumbnail`・音声に記載した `thumbnail`・`poster` を持たない動画の `thumbnail`・制約「動画と音声の再生のボタン」で再生のボタンにする動画・音声の `width`・`align` は適用せずに、画像の前（文の中の画像は段落の前）に記載の警告を配置し、本文に読み込めない属性と記載できる属性を出す。
 
       `images` がオフのときは `{…}` を記載した文字のまま出す'
   - item: 画像の図とキャプション
@@ -3498,7 +3562,7 @@ constraints:
     constraint: '`gallery` がオンのとき、`<!-- gallery: {"columns": 列の数} -->` 〜 `<!-- /gallery -->` の範囲を `<div class="mdmark-gallery" style="--mdmark-gallery-cols: {列の数}">` と `<div class="mdmark-gallery-grid">` で囲み、範囲の中の画像をそれぞれ制約「画像の図とキャプション」の `figure` にする（範囲の中の画像以外の Markdown は出力に残さない）。列の数は `1`〜`6` で、省いたときは `2`。`fig` のマーカーの直後のギャラリーは、`<figure class="mdmark-figure" id="fig-{ID}">` で囲んで `図 {番号}` のキャプションを外の `figure` の下に配置し、中の画像の `figure` に範囲の中の順に `id="fig-{ID}-{a, b, …}"` とキャプションの頭の `<b>図 {番号}{a, b, …}</b>` を付ける（画像の数は 26 まで）。範囲の中の画像が 0 件・27 件以上、1〜6 の整数でない `columns` は記載の警告にする（27 件目からはサブ図の番号を付けない）。`gallery` がオフのときはマーカーだけを取り除く'
     notes: 狭い幅で列を減らす幅は部品設計
   - item: 動画と音声
-    constraint: '`media` がオンのとき、`src` の拡張子（クエリとフラグメントを除き、大文字と小文字を区別しない）が `mp4`・`m4v`・`webm`・`mov`・`ogv` の画像を `video`、`mp3`・`m4a`・`aac`・`ogg`・`oga`・`opus`・`wav`・`flac` の画像を `audio` にし、`<figure class="mdmark-figure mdmark-media">` に入れる（文の中でも段落を分けず、`figure` を段落の後ろに出す）。
+    constraint: '`media` がオンのとき、`src` の拡張子（クエリとフラグメントを除き、大文字と小文字を区別しない）が `mp4`・`m4v`・`webm`・`mov`・`ogv` の画像を `video`、`mp3`・`m4a`・`aac`・`ogg`・`oga`・`opus`・`wav`・`flac` の画像を `audio` にし、`<figure class="mdmark-figure mdmark-media">` に入れる（文の中でも段落を分けず、`figure` を段落の後ろに出す）。表のセルの中の動画・音声と `modal`・`thumbnail` の属性を持つ動画・音声は、制約「動画と音声の再生のボタン」のとおり描く。
 
       要素は `src`・`controls`・`preload="metadata"`・`aria-label="{alt}"` を持ち、`video` は `playsinline` も持つ。
 
@@ -3760,6 +3824,20 @@ constraints:
       描いた表は本文の表から入れた用語集の表と同じく、表の中の単語に下線を付けない。表の行を用語として入れ直さない（エイリアスとして照合する）。
       該当するエイリアスが 1 件も無いときは、表を描かずにマーカーの場所に記載の警告を出す。`alias_row` と `term`・`meaning`・`aliases`・`avoid` を一緒に記載したマーカーは、記載の警告を出し、`alias_row` を使用して描く
     notes: 記載の警告の文は、指した行の id と、設定の `aliases` の行の `id` を確認する修正方法を持つ
+  - item: 動画と音声の再生のボタン
+    constraint: |-
+      `media` がオンのとき、表のセル（`th`・`td`）の中の動画・音声と、属性 `modal`・`thumbnail` を持つ動画・音声を、再生バーを持つ `video`・`audio` にせず、記載した場所に `<button class="mdmark-media-open" type="button" aria-haspopup="dialog">` を配置する（文の中でも段落の後ろへ移さない）。
+
+      ボタンは `data-media-kind`（`video` / `audio`）・`data-media-src`（`src`）と、記載したときだけ `data-media-caption`（title）・`data-media-poster`・`data-media-autoplay`・`data-media-muted`・`data-media-loop` を持ち、属性の `autoplay` に `muted` が無いときは `data-media-muted` を追加する。
+
+      ボタンの中身は、既定では再生のアイコン（動画は lucide の `play`、音声は `volume-2`。`aria-hidden`）と `<span class="mdmark-media-open-label">{alt}</span>`（alt が空なら `src` のファイル名）。`thumbnail` を持ち `poster` を持つ動画は、class `mdmark-media-thumb` を追加し、中身を `<img src="{poster}" alt="">` と再生のアイコンにして、`aria-label="{ラベル}"` を付ける。
+
+      title を持つときは、ボタンの後ろに `<span class="mdmark-media-open-caption">{title}</span>` を配置する。
+
+      画像 1 つだけの段落のときは、段落を `<div class="mdmark-media-inline-figure">` に置き換えてボタンとキャプションを入れる。
+
+      この文字列は `video`・`audio` を持たず、動画・音声の本体を読み込まない（再生は `mount` が付ける）
+    notes: その場に出すものの既定（ラベルのボタン）と属性 `thumbnail`・属性の名前 `modal` は確認ログの決定。箇条書きの中と文の途中の動画は、属性が無ければ制約「動画と音声」のとおり
 test_file: tests/integration/lib/render.test.ts
 tags:
   - name: topic:api

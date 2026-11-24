@@ -43,9 +43,9 @@ test("test_read_image_attributes", async () => {
   const first = readImageAttributes(
     "width=300 align=center nolightbox",
     "image",
-    false,
+    { inline: false },
   );
-  const second = readImageAttributes("width=40%", "image", false);
+  const second = readImageAttributes("width=40%", "image", { inline: false });
   // 検証
   expect(first).toMatchObject({
     width: "300px",
@@ -64,7 +64,7 @@ test("test_read_image_attributes_when_media", async () => {
   const attributes = readImageAttributes(
     "autoplay loop poster=demo.png width=480",
     "video",
-    false,
+    { inline: false },
   );
   // 検証
   expect(attributes).toMatchObject({
@@ -84,9 +84,9 @@ test("test_read_image_attributes_when_unreadable", async () => {
   const block = readImageAttributes(
     "width=big width=0% width=101% foo autoplay",
     "image",
-    false,
+    { inline: false },
   );
-  const inline = readImageAttributes("align=left", "image", true);
+  const inline = readImageAttributes("align=left", "image", { inline: true });
   // 検証
   expect(block.width).toBeUndefined();
   const labels = block.items.map((item) => item.label);
@@ -253,4 +253,146 @@ test("test_build_image_figures_when_media_off", () => {
   // 検証
   expect(html).not.toContain("<video");
   expect(innerHtml(html, "mdmark-image")).toContain('src="demo.mp4"');
+});
+
+// modal と thumbnail を読み込む（正常系）
+test("test_read_image_attributes_when_modal", async () => {
+  // 準備
+  const { readImageAttributes } = await loadImages();
+  // 実行
+  const audio = readImageAttributes("modal", "audio", { inline: false });
+  const video = readImageAttributes("thumbnail poster=p.png", "video", {
+    inline: false,
+  });
+  // 検証
+  expect(audio).toMatchObject({ modal: true, opener: true, items: [] });
+  expect(video).toMatchObject({ thumbnail: true, opener: true, items: [] });
+});
+
+// 読み込めない modal・thumbnail・width・align を項目にする（異常系）
+test("test_read_image_attributes_when_modal_unreadable", async () => {
+  // 準備
+  const { readImageAttributes } = await loadImages();
+  // 実行
+  const image = readImageAttributes("modal", "image", { inline: false });
+  const audio = readImageAttributes("thumbnail", "audio", { inline: false });
+  const video = readImageAttributes("thumbnail", "video", { inline: false });
+  const sized = readImageAttributes("modal width=320 align=center", "video", {
+    inline: false,
+  });
+  const cell = readImageAttributes("align=right", "video", {
+    inline: false,
+    opener: true,
+  });
+  // 検証
+  const labels = (attributes: ImageAttributes) =>
+    attributes.items.map((item) => item.label);
+  expect(labels(image)).toEqual(["modal"]);
+  expect(image.modal).toBe(false);
+  expect(labels(audio)).toEqual(["thumbnail"]);
+  expect(audio.thumbnail).toBe(false);
+  expect(labels(video)).toEqual(["thumbnail"]);
+  expect(video.thumbnail).toBe(false);
+  expect(labels(sized)).toEqual(["width=320", "align=center"]);
+  expect(sized.width).toBeUndefined();
+  expect(sized.align).toBeUndefined();
+  expect(labels(cell)).toEqual(["align=right"]);
+  expect(cell.align).toBeUndefined();
+});
+
+// 表のセルの中の動画に opener を配置する（正常系）
+test("test_read_images_when_table_cell", async () => {
+  // 準備
+  const markdown = [
+    "| 素材 | 図 |",
+    "| --- | --- |",
+    "| ![素材 1](m1.mp4) | ![グラフ](chart.png) |",
+    "",
+  ].join("\n");
+  // 実行
+  const tokens = await imageTokens(markdown);
+  // 検証
+  const meta = (src: string) =>
+    tokens.find((token) => token.attrGet("src") === src)?.meta?.mdmarkImage as
+      | ImageAttributes
+      | undefined;
+  expect(meta("m1.mp4")?.opener).toBe(true);
+  expect(meta("chart.png")?.opener).toBe(false);
+});
+
+// 読み込めない thumbnail の動画・音声に opener を配置しない（異常系）
+test("test_read_images_when_opener_unreadable", async () => {
+  // 準備
+  const markdown = [
+    "![読み上げ](voice.mp3){thumbnail}",
+    "",
+    "![操作](demo.mp4){thumbnail}",
+    "",
+  ].join("\n");
+  // 実行
+  const tokens = await imageTokens(markdown);
+  const { html } = renderDoc(markdown);
+  // 検証
+  for (const token of tokens) {
+    expect(
+      (token.meta?.mdmarkImage as ImageAttributes | undefined)?.opener,
+    ).toBe(false);
+  }
+  const warnings = findTags(html, 'class="mdmark-syntax-warning"');
+  expect(warnings).toHaveLength(2);
+  expect(html.indexOf('class="mdmark-syntax-warning"')).toBeLessThan(
+    html.indexOf("voice.mp3"),
+  );
+  expect(plainText(innerHtml(html, 'class="mdmark-syntax-warning"'))).toContain(
+    "thumbnail",
+  );
+});
+
+// 表のセル・段落・文の途中の動画を再生のボタンにする（正常系）
+test("test_build_image_figures_when_opener", () => {
+  // 準備
+  const markdown = [
+    "| 手順 | 素材 |",
+    "| --- | --- |",
+    '| 保存 | ![素材 1](m1.mp4 "手順 1") |',
+    "",
+    "![操作](demo.mp4){modal}",
+    "",
+    "手順は ![手順](steps.mp4){modal} で確認する。",
+    "",
+    "![素材 2](m2.mp4){thumbnail poster=m2.png}",
+    "",
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  expect(html).not.toMatch(/<video\b/);
+  const cell = /<td[^>]*>[\s\S]*?m1\.mp4[\s\S]*?<\/td>/.exec(html)?.[0] ?? "";
+  expect(cell).toContain('class="mdmark-media-open"');
+  expect(plainText(innerHtml(cell, "mdmark-media-open-caption"))).toBe(
+    "手順 1",
+  );
+  const figure = innerHtml(html, 'class="mdmark-media-inline-figure"');
+  expect(figure).toContain('data-media-src="demo.mp4"');
+  const sentence = /<p>手順は [\s\S]*?<\/p>/.exec(html)?.[0] ?? "";
+  expect(sentence).toContain('data-media-src="steps.mp4"');
+  expect(sentence.indexOf("mdmark-media-open")).toBeLessThan(
+    sentence.indexOf("で確認する"),
+  );
+  expect(findTag(html, 'data-media-src="m2.mp4"')).toContain(
+    "mdmark-media-thumb",
+  );
+});
+
+// media がオフなら表のセルの動画を画像のままにする（正常系）
+test("test_build_image_figures_when_opener_media_off", () => {
+  // 準備
+  const markdown = ["| 素材 |", "| --- |", "| ![素材 1](m1.mp4) |", ""].join(
+    "\n",
+  );
+  // 実行
+  const { html } = renderDoc(markdown, { media: false });
+  // 検証
+  expect(html).not.toContain("mdmark-media-open");
+  expect(findTag(html, "<img")).toContain('src="m1.mp4"');
 });

@@ -1,0 +1,132 @@
+id: SC-801-1
+visibility: internal
+title: 動画と音声をモーダルで再生する
+lead: 読者が、表のセルの中の動画・音声と `modal` の属性を持つ動画・音声の再生のボタンを押すと、全画面のダイアログで再生し、閉じると再生を止めて押したボタンへ戻る。
+test_file: tests/e2e/単一ユースケース/動画と音声をモーダルで再生する.spec.ts
+primary_actor: 読者
+stakeholders:
+  - name: 文書の作成者
+    interest: 動画・音声を表のセルなどの狭い場所に配置しても、読者に再生してもらえる
+trigger: 読者が、描いた文書の動画・音声の再生のボタンを押す
+preconditions:
+  - 利用側のページが、表のセルの中の動画・音声か `modal` の属性を持つ動画・音声を持つ文書を描いている
+  - 動画と音声の機能（`media`）がオン（既定）
+success_guarantee: 押した動画・音声が全画面のダイアログで再生され、閉じると再生が止まって押したボタンへフォーカスが戻る。
+minimal_guarantee: ダイアログを閉じた後の文書は、押す前と同じスクロールの位置にあり、音が出続けない。
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 文書を描いたページ
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
+      - name: 表のセルの中の動画の Markdown
+        description: 表のセルに `![素材 1](m1.mp4 "手順 1 の画面")` と `![素材 2](m2.mp4)` を記載した文書
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。動画は手元の応答で返却する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 描いた文書
+        participant M as mdmark
+        U->>P: 素材 1 の再生のボタンを押す
+        M-->>U: 素材 1 の動画を再生する全画面のダイアログ
+        U->>M: Esc を押す
+        M-->>U: ダイアログを閉じた文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - 素材 1 のボタンを押した後、全画面のダイアログが開き、`m1.mp4` の動画が再生バーを持って再生を始め、キャプションが `手順 1 の画面`
+      - ダイアログに前後の切り替えと枚数が無く、左右の矢印キーで `m2.mp4` に切り替わらない
+      - Esc の後にダイアログが閉じ、動画の再生が止まり、フォーカスが素材 1 のボタンへ戻り、文書のスクロールの位置が押す前と同じ
+      - ダイアログの閉じるボタンが `aria-label` を持ち、ダイアログの中で Tab のフォーカスが循環する
+    test: test_normal
+  - name: 正常シナリオ（キーで開いて閉じるボタンで閉じる）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 表のセルの中の動画の Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 描いた文書
+        participant M as mdmark
+        U->>P: Tab で素材 2 のボタンにフォーカスして Enter を押す
+        M-->>U: 素材 2 の動画を再生する全画面のダイアログ
+        U->>M: 閉じるボタンを押す
+        M-->>U: ダイアログを閉じた文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - 素材 2 のボタンは Tab でフォーカスでき、スクリーンリーダー向けの名前に `素材 2` を持ち、Enter で開く
+      - キャプションの無い動画では、ダイアログにキャプションを出さない
+      - 閉じるボタンの後にダイアログが閉じ、再生が止まり、フォーカスが素材 2 のボタンへ戻る
+    test: test_normal_when_opened_by_key
+  - name: 正常シナリオ（音声）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 表のセルの中の音声の Markdown
+        description: 表のセルに `![読み上げ](voice.mp3 "読み上げの見本")` を記載した文書
+      - name: Mock
+        description: 正常シナリオと同じ。音声は手元の応答で返却する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 描いた文書
+        participant M as mdmark
+        U->>P: 読み上げの再生のボタンを押す
+        M-->>U: 音声を再生する全画面のダイアログ
+        U->>M: ダイアログの外の背景を押す
+        M-->>U: ダイアログを閉じた文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - ボタンを押した後、全画面のダイアログに `voice.mp3` の音声が再生バーを持って出て再生を始め、キャプションが `読み上げの見本`
+      - 背景を押した後にダイアログが閉じ、音声の再生が止まり、フォーカスが読み上げのボタンへ戻る
+    test: test_normal_when_audio
+  - name: 正常シナリオ（画像の切り替えの並び）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 画像と表のセルの中の動画の Markdown
+        description: 画像 `a.png`、表のセルに `![素材 1](m1.mp4)` を持つ表、画像 `b.png` をこの順に並べた文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 描いた文書
+        participant M as mdmark
+        U->>P: 画像 a.png を押す
+        M-->>U: a.png を拡大したライトボックス
+        U->>M: 右の矢印キーを押す
+        M-->>U: b.png
+      ```
+
+      <!-- /map -->
+    expected:
+      - ライトボックスの枚数が `1 / 2` で、動画を含めない
+      - 右の矢印キーの後に `b.png` が表示され、動画を飛ばす
+    test: test_normal_when_lightbox_skips_media
+tags:
+  - name: topic:動画
+    main: true
+  - name: topic:音声
+  - name: action:再生

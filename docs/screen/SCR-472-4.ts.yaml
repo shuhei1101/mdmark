@@ -1570,7 +1570,7 @@ elements:
       - name: loop
         value: 属性に `loop` があるとき `true`
     position: 描く先の要素
-    description: 拡張子が動画・音声の画像を、再生バーを持つ要素にして図に入れる。文の中に記載しても段落の後ろに配置する。印刷では動画の代わりに `poster` の画像を出す
+    description: 拡張子が動画・音声の画像を、再生バーを持つ要素にして図に入れる（表のセルの中と属性 `modal`・`thumbnail` のものは要素「動画・音声の再生のボタン」）。文の中に記載しても段落の後ろに配置する。印刷では動画の代わりに `poster` の画像を出す
     visible_when: 文書に拡張子が動画・音声の画像があり、`media` がオンのとき
     tab_order: 0
     refs:
@@ -2086,6 +2086,66 @@ elements:
     visible_when: 言語が `markdown` か `md` のコードブロックで、Raw のボタンが押した状態（`aria-pressed="true"`）でないとき
     refs:
       - IF-472-35#constraints[言語 markdown のコードブロックの描いた結果]
+    status: planned
+  - name: 動画・音声の再生のボタン
+    id: media-open
+    kind: button
+    component: CMP-472-36#
+    args:
+      - name: kind
+        value: '`src` の拡張子が動画なら `video`、音声なら `audio`'
+      - name: src
+        value: 画像の `src`
+      - name: alt
+        value: 画像の alt（空なら `src` のファイル名）
+      - name: caption
+        value: 画像の title
+      - name: poster
+        value: 属性の `poster=`
+      - name: opener
+        value: 属性に `thumbnail` があり `poster` を持つとき `thumbnail`、それ以外は `button`
+      - name: inline
+        value: 表のセルの中か文の途中のとき `true`
+      - name: autoplay
+        value: 属性に `autoplay` があるとき `true`
+      - name: muted
+        value: 属性に `muted` か `autoplay` があるとき `true`
+      - name: loop
+        value: 属性に `loop` があるとき `true`
+    position: 描く先の要素（表のセル・文の中・画像だけの段落の場所）
+    description: 表のセルの中の動画・音声と、属性 `modal`・`thumbnail` を持つ動画・音声を、再生バーを出さずに記載した場所の再生のボタンにする。長いラベルはボタンの中で折り返す。印刷ではラベルとキャプションを本文の文字で出す
+    visible_when: 表のセルの中に拡張子が動画・音声の画像があるか、属性 `modal`・`thumbnail` を持つ動画・音声があり、`media` がオンのとき
+    tab_order: 0
+    action: 押すと要素「動画・音声の再生のダイアログ」を開く
+    refs:
+      - IF-472-34#constraints[動画と音声の再生のボタン]
+      - IF-472-35#constraints[印刷の画像と動画]
+    status: planned
+  - name: 動画・音声の再生のダイアログ
+    id: media-modal
+    kind: dialog
+    component: CMP-801-1#
+    args:
+      - name: kind
+        value: 押した再生のボタンの `data-media-kind`
+      - name: src
+        value: 押した再生のボタンの `data-media-src`
+      - name: label
+        value: 押した再生のボタンのラベル
+      - name: caption
+        value: 押した再生のボタンの `data-media-caption`
+      - name: poster
+        value: 押した再生のボタンの `data-media-poster`
+      - name: muted
+        value: 押した再生のボタンが `data-media-muted` を持つとき `true`
+      - name: loop
+        value: 押した再生のボタンが `data-media-loop` を持つとき `true`
+    position: 描く先の要素 > 再生のダイアログ
+    description: 再生のボタンで開く `dialog` のモーダル。動画・音声を再生バー付きで再生し、前後の切り替えと拡大・縮小を持たない。長いタイトルとキャプションは折り返し、閉じるボタンを右端に残す
+    visible_when: 再生のボタンを押してから閉じるまで
+    action: 閉じるボタン・Esc・ダイアログの外の背景で閉じ、再生を止めてフォーカスを押した再生のボタンへ戻す。文書のスクロールの位置は開く前のまま
+    refs:
+      - IF-472-35#constraints[動画と音声の再生のダイアログ]
     status: planned
 mock: docs/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が追加する UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張のマーカーの場所・拡張記法の部品・記載の警告）を持つ。

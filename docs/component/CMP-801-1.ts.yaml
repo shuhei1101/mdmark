@@ -1,0 +1,131 @@
+id: CMP-801-1
+visibility: internal
+title: 動画と音声の再生のダイアログ
+lead: 再生のボタンを押したときに全画面のダイアログで動画・音声を再生する。上のバーにラベルと閉じるボタン、中央に再生バーを持つ動画・音声、下にキャプションを配置する。
+implementation: src/media/media-modal.part.ts#renderMediaModal
+story: Parts/MediaModal
+test_file: tests/integration/lib/media-modal.story.test.ts
+args:
+  - name: kind
+    type: 列挙
+    required: true
+    choices: '`video`・`audio`'
+    description: 再生する要素
+  - name: src
+    type: 文字列
+    required: true
+    description: 動画・音声の URL
+  - name: label
+    type: 文字列
+    required: true
+    description: 上のバーに出すタイトルと、要素の `aria-label`（再生のボタンのラベル）
+  - name: caption
+    type: 文字列
+    required: false
+    default: '""'
+    description: title。空ならキャプションを出さない
+  - name: poster
+    type: 文字列
+    required: false
+    default: なし
+    enabled_when: '`kind` が `video` のとき'
+    description: 再生前に出す画像の URL
+  - name: muted
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: ミュートにして始めるか
+  - name: loop
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 繰り返し再生するか
+events:
+  - name: 閉じる
+    when: 閉じるボタンを押すか、Esc を押すか、ダイアログの外の背景を押す
+    value: '`dialog` の `open`'
+    description: '`mount` が再生を止めてダイアログを削除し、フォーカスを押した再生のボタンへ戻す'
+css_properties:
+  - name: --mdmark-color-bg-opaque
+    syntax: <color>
+    default: var(--mdmark-color-bg)
+    description: バーとキャプションの背景色
+  - name: --mdmark-color-border
+    syntax: <color>
+    default: '#e4e4e7（ダーク #26262b）'
+    description: バーの下端の線とボタンの線の色
+states:
+  - name: Video
+    description: title を持つ動画。再生バー・タイトル・キャプションを出す
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: label
+        value: 素材 2
+      - name: caption
+        value: 操作の画面
+      - name: poster
+        value: demo-poster.png
+  - name: VideoNoCaption
+    description: title を持たない動画。キャプションを出さない
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: label
+        value: 素材 1
+  - name: Audio
+    description: 音声。再生バーだけを中央に出す
+    args:
+      - name: kind
+        value: audio
+      - name: src
+        value: voice.mp3
+      - name: label
+        value: 読み上げ
+      - name: caption
+        value: 読み上げの見本
+  - name: LongLabel
+    description: ラベルとキャプションが長い。折り返し、閉じるボタンを右端に残す
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: label
+        value: 設定ファイルを読み込めないときに文書の先頭へ出すバーの操作を、最初から最後まで通した長い名前の素材
+      - name: caption
+        value: 設定ファイルを読み込めないときに文書の先頭へバーを出し、設定ファイルを開くボタンから修正できることを示す画面の操作
+  - name: Narrow
+    description: 幅の狭い画面。動画を画面の幅に収める
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: label
+        value: 素材 2
+      - name: caption
+        value: 操作の画面
+    notes:
+      定義: ストーリーの画面の幅を 390px にする
+accessibility:
+  - '`dialog` は上のバーのタイトルを `aria-labelledby` で指し、`showModal()` で開いて、中で Tab のフォーカスを循環させる'
+  - 閉じるボタンは `aria-label` と `title` に `再生を閉じる` を持ち、ライトボックスと同じ四角の外観にする
+  - 動画・音声は `controls` を持ち、`aria-label` にラベルを入れる
+uses:
+  - component: CMP-472-31#
+    how: 閉じるボタンの外観（`mdmark-lightbox-tool`）・ダイアログの大きさと背面をライトボックスと統一する
+refs:
+  - IF-472-35#constraints[動画と音声の再生のダイアログ]
+status: planned
+notes:
+  HTML: '`<dialog class="mdmark-media-modal" closedby="any" aria-labelledby="{id}"><div class="mdmark-media-modal-head"><p class="mdmark-media-modal-title" id="{id}">{label}</p><button class="mdmark-lightbox-tool" type="button" aria-label="再生を閉じる" title="再生を閉じる">…</button></div><div class="mdmark-media-modal-stage"><video src controls autoplay playsinline aria-label></video></div><p class="mdmark-media-modal-caption">{caption}</p></dialog>`。並びは確認ログのモックへの合意。モックは `docs/mock/components/media/` の再生のダイアログの場面'
+tags:
+  - name: topic:動画
+    main: true
+  - name: topic:音声
+  - name: topic:ダイアログ

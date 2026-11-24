@@ -11,6 +11,7 @@ import { attachTermTips } from "./knowledge/term.interact.ts";
 import { attachWideToggles } from "./layout/wide.interact.ts";
 import { attachGifs } from "./media/gif.interact.ts";
 import { attachLightbox } from "./media/lightbox.interact.ts";
+import { attachMediaModal } from "./media/media-modal.interact.ts";
 import type { MdmarkColumnsChange } from "./mount.ts";
 import {
   attachSections,
@@ -142,6 +143,9 @@ function attachMedia(context: InteractionContext): Array<() => void> {
   if (features.lightbox === true) {
     detachers.push(attachLightbox(root));
   }
+  if (features.media === true) {
+    detachers.push(attachMediaModal(root));
+  }
   if (partStates !== undefined) {
     detachers.push(attachDetailsStates({ root, states: partStates }));
   }
@@ -152,7 +156,7 @@ function attachMedia(context: InteractionContext): Array<() => void> {
   return detachers;
 }
 
-/** 機能がオンの記法だけ（セクションと行の詳細・表・タブの順に）操作を付け、`table` がオンなら表の見出し行と集計の行を留める処理を、`code` がオンならコードブロックのコピーを付け、`tree` がオンならファイルツリーの開閉とコピーを付け、`footnotes` がオンなら脚注のツールチップと一覧への移動を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、`lightbox` がオンなら画像の拡大を、`gif` がオンならその後に GIF の止める・再生するボタンを付け、`csv` がオンなら CSV の表と元の CSV の切り替えを、`wide` がオンなら wide の範囲の幅の切り替えを付け、まとめて削除する関数を返却する */
+/** 機能がオンの記法だけ（セクションと行の詳細・表・タブの順に）操作を付け、`table` がオンなら表の見出し行と集計の行を留める処理を、`code` がオンならコードブロックのコピーを付け、`tree` がオンならファイルツリーの開閉とコピーを付け、`footnotes` がオンなら脚注のツールチップと一覧への移動を付け、`diagrams` がオンなら図と操作できる部品の操作を付け、`glossary` か `backlinks` がオンなら用語のツールチップの操作を付け、`html` がオンなら埋め込んだ HTML の幅の操作を（`hints` もオンならヒントの操作も）付け、`lightbox` がオンなら画像の拡大を、`gif` がオンならその後に GIF の止める・再生するボタンを付け、`media` がオンなら再生のボタンで開く再生のダイアログを付け、`csv` がオンなら CSV の表と元の CSV の切り替えを、`wide` がオンなら wide の範囲の幅の切り替えを付け、まとめて削除する関数を返却する */
 export function attachInteractions(options: {
   /** 描いた要素 */
   root: HTMLElement;

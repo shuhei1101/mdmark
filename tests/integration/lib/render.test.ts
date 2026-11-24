@@ -2284,6 +2284,121 @@ test("test_normal_when_image_attribute_invalid", async () => {
   expect(html).not.toContain("{align=left}");
 });
 
+// 表のセルの中の動画・音声と modal・thumbnail の動画を、再生のボタンにする（正常系）
+test("test_normal_when_media_open_button", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "| 手順 | 素材 |",
+    "| --- | --- |",
+    '| 1 | ![素材 1](m1.mp4 "手順 1 の画面") |',
+    "| 2 | ![読み上げ](voice.mp3) |",
+    "| 3 | ![素材 2](m2.mp4){thumbnail poster=m2.png} |",
+    "",
+    "![操作の様子](demo.mp4){modal autoplay}",
+    "",
+    "手順は ![手順](steps.mp4){modal} で確認する。",
+    "",
+    "![操作](demo2.mp4)",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証: 表のセルの中の動画と音声とサムネイル
+  const m1 = findTag(html, 'data-media-src="m1.mp4"');
+  expect(m1).toContain('class="mdmark-media-open"');
+  expect(m1).toContain('data-media-kind="video"');
+  expect(m1).toContain('data-media-caption="手順 1 の画面"');
+  const cell = /<td[^>]*>[\s\S]*?m1\.mp4[\s\S]*?<\/td>/.exec(html)?.[0] ?? "";
+  expect(plainText(innerHtml(cell, "mdmark-media-open-label"))).toBe("素材 1");
+  expect(cell).toContain('class="mdmark-media-open-caption"');
+  expect(findTag(html, 'data-media-src="voice.mp3"')).toContain(
+    'data-media-kind="audio"',
+  );
+  const thumb = findTag(html, 'data-media-src="m2.mp4"');
+  expect(thumb).toContain("mdmark-media-thumb");
+  expect(thumb).toContain('aria-label="素材 2"');
+  const poster = findTag(html, 'src="m2.png"');
+  expect(poster).toMatch(/^<img\b/);
+  expect(poster).toContain('alt=""');
+  // 検証: 段落と文の途中
+  const figure = innerHtml(html, 'class="mdmark-media-inline-figure"');
+  const demo = findTag(figure, 'data-media-src="demo.mp4"');
+  expect(demo).toMatch(/\sdata-media-autoplay\b/);
+  expect(demo).toMatch(/\sdata-media-muted\b/);
+  const sentence = /<p>手順は [\s\S]*?<\/p>/.exec(html)?.[0] ?? "";
+  expect(sentence.indexOf("手順は")).toBeLessThan(
+    sentence.indexOf('data-media-src="steps.mp4"'),
+  );
+  expect(sentence.indexOf('data-media-src="steps.mp4"')).toBeLessThan(
+    sentence.indexOf("で確認する。"),
+  );
+  // 検証: 属性の無い段落の動画は今までどおり
+  expect(findTag(html, "<video")).toContain('src="demo2.mp4"');
+  for (const src of [
+    "m1.mp4",
+    "voice.mp3",
+    "m2.mp4",
+    "demo.mp4",
+    "steps.mp4",
+  ]) {
+    expect(html).not.toMatch(
+      new RegExp(
+        `<(video|audio|img)\\b[^>]*\\ssrc="${src.replace(".", "\\.")}"`,
+      ),
+    );
+  }
+  expect(warnings(html)).toHaveLength(0);
+});
+
+// 画像の modal・thumbnail と、音声・poster の無い動画の thumbnail を記載の警告にする（異常系）
+test("test_error_when_modal_attribute_unreadable", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "![グラフ](chart.png){modal width=300}",
+    "",
+    "![読み上げ](voice.mp3){thumbnail}",
+    "",
+    "![操作](demo.mp4){thumbnail}",
+    "",
+    "![操作の様子](demo2.mp4){modal width=320 align=center}",
+    "",
+    "| 素材 |",
+    "| --- |",
+    "| ![素材 1](m1.mp4){align=right} |",
+  ].join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証: 記載の警告
+  const boxes = warnings(html);
+  expect(boxes).toHaveLength(5);
+  const all = boxes.join("");
+  for (const text of [
+    "modal",
+    "thumbnail",
+    "width=320",
+    "align=center",
+    "align=right",
+  ]) {
+    expect(all).toContain(text);
+  }
+  for (const name of ["width", "align", "nolightbox", "modal", "thumbnail"]) {
+    expect(all).toContain(`<code>${name}</code>`);
+  }
+  expect(html.indexOf(boxes[4] ?? "")).toBeLessThan(html.indexOf("<table"));
+  // 検証: 読み込めた属性は適用する
+  expect(findTag(html, "<figure")).toContain("--mdmark-image-width: 300px");
+  expect(findTag(html, 'src="voice.mp3"')).toMatch(/^<audio/);
+  expect(html).not.toContain("mdmark-media-thumb");
+  expect(findTag(html, 'src="demo.mp4"')).toMatch(/^<video/);
+  const demo2 = innerHtml(html, 'class="mdmark-media-inline-figure"');
+  expect(findTag(demo2, 'data-media-src="demo2.mp4"')).not.toContain("style=");
+  expect(findTag(html, "mdmark-media-inline-figure")).not.toContain(
+    "data-align",
+  );
+  expect(findTag(html, 'data-media-src="m1.mp4"')).not.toContain("data-align");
+});
+
 // ギャラリーのマーカーの範囲の画像を格子に並べ、fig のマーカーの番号にサブ図の番号を付ける（正常系）
 test("test_normal_when_gallery", async () => {
   // 準備
