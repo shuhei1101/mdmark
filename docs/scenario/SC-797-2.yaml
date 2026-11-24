@@ -109,9 +109,9 @@ scenarios:
   - name: 正常シナリオ（グラフと操作できる部品を描く）
     setup:
       - name: アプリの画面
-        description: 正常シナリオ（ビューを描く）と同じ配布物を読み込み、グラフのカスタム要素 `<mdmark-chart>` と操作できる部品のカスタム要素 `<mdmark-param>` を 1 つずつ持つ HTML。操作できる部品の値の変更のイベントを受け、受け取った値を画面に出す
+        description: 正常シナリオ（ビューを描く）と同じ配布物を読み込み、グラフのカスタム要素と操作できる部品のカスタム要素を 1 つずつ持つ HTML。操作できる部品の値の変更のイベントを受け、受け取った値を画面に出す
       - name: 部品の定義
-        description: 『チャートを描く』の正常シナリオと同じ折れ線のグラフの定義と、スライダー 1 つ（0〜10、初期値 5）とグラフを持つ操作できる部品の定義
+        description: 種類が折れ線・系列 1 つ・項目 5 つのグラフの定義と、スライダー 1 つ（0〜10、初期値 5）とグラフを持つ操作できる部品の定義
       - name: Mock
         description: 正常シナリオ（ビューを描く）と同じ
     flow: |-
@@ -121,8 +121,8 @@ scenarios:
       sequenceDiagram
         actor U as 利用者
         participant A as アプリの画面
-        participant G as mdmark-chart
-        participant P as mdmark-param
+        participant G as グラフのカスタム要素
+        participant P as 操作できる部品のカスタム要素
         A->>G: グラフの定義をプロパティで指定する
         G-->>U: 図の枠に入れたグラフ
         A->>P: 操作できる部品の定義をプロパティで指定する
@@ -135,8 +135,8 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - '`<mdmark-chart>` の場所に、『チャートを描く』の正常シナリオと同じ図の枠とグラフが描かれる'
-      - '`<mdmark-param>` のスライダーを 8 に動かすと、グラフが 8 の値で描き直され、値の変更のイベントが値 8 で届く'
+      - 'グラフのカスタム要素の場所に、同じ定義を `<!-- chart -->` で描いたときと同じ図の枠とグラフが描かれる'
+      - '操作できる部品のカスタム要素のスライダーを 8 に動かすと、グラフが 8 の値で描き直され、値の変更のイベントが値 8 で届く'
       - グラフの定義を指定し直すと、加えた点を持つグラフに描き直される
     test: test_normal_when_chart_drawn
   - name: 正常シナリオ（map の図を描く）
@@ -171,7 +171,7 @@ scenarios:
   - name: 異常シナリオ（データの誤り）
     setup:
       - name: アプリの画面
-        description: 正常シナリオ（ビューを描く）と同じ配布物を読み込み、`<mdmark-view>`・`<mdmark-chart>`・`<mdmark-map>` を 1 つずつと、その後ろに段落を 1 つ持つ HTML
+        description: 正常シナリオ（ビューを描く）と同じ配布物を読み込み、`<mdmark-view>`・グラフのカスタム要素・`<mdmark-map>` を 1 つずつと、その後ろに段落を 1 つ持つ HTML
       - name: 誤ったデータ
         description: ビューの項目に配列でないもの、グラフの定義に知らないグラフの種類、map の Mermaid に読み込めない記載を指定する
       - name: Mock
