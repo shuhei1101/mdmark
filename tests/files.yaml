@@ -1568,6 +1568,18 @@ files:
     related:
       - to: src/media/lightbox.part.ts
         type: tests
+  - path: unit/src/media/media-modal.part.test.ts
+    description: src/media/media-modal.part.ts（「動画と音声の再生のダイアログの renderMediaModal」）を確認する単体テスト。media-modal.part.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:動画]
+    related:
+      - to: src/media/media-modal.part.ts
+        type: tests
+  - path: unit/src/media/media-modal.interact.browser.test.ts
+    description: src/media/media-modal.interact.ts（「再生のボタンで再生のダイアログを開き、閉じたら再生を止める」）を確認するブラウザで実行する単体テスト。media-modal.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:動画, topic:ダイアログ]
+    related:
+      - to: src/media/media-modal.interact.ts
+        type: tests
   - path: unit/src/media/media.part.test.ts
     description: src/media/media.part.ts（「動画と音声の renderMedia」）を確認する単体テスト。media.part.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:部品, tool:html, topic:動画]

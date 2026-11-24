@@ -88,3 +88,56 @@ test("test_attach_media_errors", async () => {
   ).toBe("media/clip.webm");
   detach();
 });
+
+// 再生のボタンの動画と poster のパスも集める（正常系）
+test("test_collect_asset_paths_when_media_open", async () => {
+  // 準備
+  const { collectAssetPaths } = await loadAssets();
+  const root = createRoot(
+    '<button class="mdmark-media-open" type="button" data-media-kind="video" data-media-src="m/demo.mp4" data-media-poster="m/p.png"></button>',
+  );
+  // 実行
+  const paths = collectAssetPaths(root);
+  // 検証
+  expect(paths).toEqual(["m/demo.mp4", "m/p.png"]);
+});
+
+// 再生のボタンの data-media-src と data-media-poster を替える（正常系）
+test("test_apply_asset_urls_when_media_open", async () => {
+  // 準備
+  const { applyAssetUrls } = await loadAssets();
+  const root = createRoot(
+    '<button class="mdmark-media-open" type="button" data-media-kind="video" data-media-src="m/demo.mp4" data-media-poster="m/p.png"></button>',
+  );
+  // 実行
+  applyAssetUrls(root, {
+    "m/demo.mp4": "https://w/demo.mp4",
+    "m/p.png": "https://w/p.png",
+  });
+  // 検証
+  const button = root.querySelector("button.mdmark-media-open");
+  expect(button?.getAttribute("data-media-src")).toBe("https://w/demo.mp4");
+  expect(button?.getAttribute("data-media-poster")).toBe("https://w/p.png");
+});
+
+// 再生のダイアログの中の再生できない動画を通知に替える（正常系）
+test("test_attach_media_errors_when_modal", async () => {
+  // 準備
+  const { attachMediaErrors } = await loadAssets();
+  const root = createRoot("<p>本文</p>");
+  const detach = attachMediaErrors(root);
+  const dialog = document.createElement("dialog");
+  dialog.className = "mdmark-media-modal";
+  dialog.innerHTML =
+    '<div class="mdmark-media-modal-stage"><video data-mdmark-src="media/clip.webm"></video></div>';
+  root.append(dialog);
+  // 実行
+  dialog.querySelector("video")?.dispatchEvent(new Event("error"));
+  // 検証
+  const stage = dialog.querySelector(".mdmark-media-modal-stage");
+  expect(stage?.querySelector("video")).toBeNull();
+  const notice = stage?.querySelector(".mdmark-notice");
+  expect(notice?.textContent).toContain("webm");
+  expect(notice?.textContent).toContain("media/clip.webm");
+  detach();
+});

@@ -310,3 +310,21 @@ test("test_attach_interactions_when_part_states", async () => {
     root.querySelector<HTMLDetailsElement>("details.mdmark-collapsible")?.open,
   ).toBe(true);
 });
+
+// media がオフなら再生のダイアログを開かない（正常系）
+test("test_attach_interactions_when_media_off", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const { root, features } = createRoot("![操作](demo.mp4){modal}\n");
+  detachers.push(
+    attachInteractions({
+      root,
+      features: { ...features, media: false },
+      placement: "top",
+    }),
+  );
+  // 実行
+  root.querySelector<HTMLButtonElement>("button.mdmark-media-open")?.click();
+  // 検証
+  expect(root.querySelector("dialog.mdmark-media-modal")).toBeNull();
+});
