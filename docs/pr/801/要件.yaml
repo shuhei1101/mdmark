@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-67.yaml
     impact: changed
-    detail: 表のセルの中の動画と、モーダルで再生する属性を記載した段落の動画を、その場に再生バーを出さずに描くシナリオを追加する。属性を記載しない段落の動画は今までどおり
+    detail: 表のセルの中の動画と、モーダルで再生する属性・サムネイルの属性を記載した段落の動画を、その場に再生バーを出さずに描くシナリオを追加する。属性を記載しない段落の動画は今までどおり
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-66.yaml
