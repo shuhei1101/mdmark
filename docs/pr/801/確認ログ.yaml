@@ -5,3 +5,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/801#discussion_r4680182340
+  - topic: WSL から Windows のプロセスを起動できず、モックのスクリーンショットを撮れないときの進め方
+    decision: 撮影せずに進める（別案 B）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/801#discussion_r4683551877
