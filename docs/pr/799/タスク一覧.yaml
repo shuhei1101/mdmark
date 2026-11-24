@@ -66,7 +66,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-24T03:01:11.140485+00:00'
   - process: 部品設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T05:28:32.094319+00:00'
   - process: 画面設計
     status: skipped
     reason: mdmark の画面（docs/screen）は変わらず、部品のカスタム要素の状態とイベントは部品設計で扱う
