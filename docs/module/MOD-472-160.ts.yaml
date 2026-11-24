@@ -18,7 +18,7 @@ functions:
     scope: public
     args:
       - name: props
-        type: '{ columns: string[]; items: string[][]; group?: string; mode?: "board" | "table"; filters?: TableFilter[]; filterValues?: FilterValue[]; openFilter?: number; icons?: Record<string, string>; boardDisabled?: string; id: string }'
+        type: '{ columns: string[]; items: string[][]; group?: string; mode?: "board" | "table"; filters?: TableFilter[]; filterValues?: FilterValue[]; openFilter?: number; icons?: Record<string, string>; boardDisabled?: string; keys?: string[]; id: string }'
         required: true
         description: 部品設計の引数
     returns:
@@ -28,6 +28,7 @@ functions:
       1. `group` があれば `renderViewSwitch` と `renderViewBoard` を、無ければどちらも配置しない
       2. 列名と値をエスケープした表を `renderTable`（`kind: "data"`、`features` は `sort` と、`filters` があれば `filter`）で作り、`div.mdmark-view-table` に入れる
       3. `mode` で出さない方に `hidden` を付ける
+      4. `keys` があれば、ボードの項目と表形式の行に `data-key` を付け、ボードの先頭の項目だけを `tabindex="0"`（ほかは `-1`）にする
     unit_tests:
       - name: test_render_view
         case: 正常

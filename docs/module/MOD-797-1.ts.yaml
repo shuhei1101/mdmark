@@ -1,0 +1,202 @@
+id: MOD-797-1
+visibility: internal
+title: ライブラリ本体 / ビューとコメント / mdmark-view.element.ts
+lead: カスタム要素 `<mdmark-view>` のプロパティ・描画・描き直し・イベントの送信と登録を受け持ち、`<mdmark-view>` の振る舞いを変えるときに参照する。
+test_files:
+  - tests/unit/src/views/mdmark-view.element.browser.test.ts
+data_models:
+  - name: MdmarkViewItem
+    title: ビューの項目
+    container: src/views/mdmark-view.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: 公開の型
+    summary: '`items` の 1 要素'
+    properties:
+      - name: key
+        type: string
+        description: 項目のキー
+      - name: values
+        type: Record<string, string>
+        description: 列名をキーにした値の組
+    refs:
+      - IF-797-1#request
+  - name: MdmarkViewItemClickDetail
+    title: 項目の押下のイベントの値
+    container: src/views/mdmark-view.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: 公開の型
+    summary: '`mdmark-item-click` の `detail`'
+    properties:
+      - name: key
+        type: string
+        description: 押した項目の `items[].key`
+    refs:
+      - IF-797-1#response
+classes:
+  - name: MdmarkViewElement
+    title: ビューのカスタム要素
+    container: src/views/mdmark-view.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: カスタム要素
+    kind: クラス
+    inherits: HTMLElement
+    summary: '`columns`・`items`・`group`・`default`・`filter`・`icons` を代入すると、次のマイクロタスクで確認してビューか通知ブロックを描く'
+    description: '`dist/index.js` に入れる。ビューの部品のモジュール（`dist/view.js`）は初めて描くときに `loadPartModule("view")` で読み込み、`src/views/index.ts`・`view.part.ts` を import しない。プロパティの代入は例外を投げず、指定された配列とオブジェクトは書き換えない'
+    properties:
+      - name: columns
+        type: string[] | undefined
+        access: public
+        description: 列名。代入すると `scheduleRender` を呼ぶ
+      - name: items
+        type: MdmarkViewItem[] | undefined
+        access: public
+        description: 項目。代入すると `scheduleRender` を呼ぶ
+      - name: group
+        type: string | undefined
+        access: public
+        description: ボードで列に分ける列名。代入すると `scheduleRender` を呼ぶ
+      - name: default
+        type: '"board" | "table" | undefined'
+        access: public
+        description: 描いた直後に出すビュー
+      - name: filter
+        type: Record<string, FilterKind> | undefined
+        access: public
+        description: 絞り込みを付ける列と種類
+      - name: icons
+        type: Record<string, ViewIconName> | undefined
+        access: public
+        description: ボードの列の見出しのアイコンの対応
+      - name: pending
+        type: boolean
+        access: private
+        default: 'false'
+        description: 描画をマイクロタスクに予約したか
+      - name: detach
+        type: (() => void) | undefined
+        access: private
+        description: 今の描画を片付ける関数（`drawView` の戻り値）
+    methods:
+      - name: connectedCallback
+        title: ページに入った
+        kind: メソッド
+        summary: 登録する前に代入されていた自身のプロパティを取り出してアクセサーへ設定し、`scheduleRender` を呼ぶ
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_connected_callback_when_upgraded
+            case: 正常
+            summary: 登録する前に代入したプロパティで描く
+            condition: 登録していない名前の要素に `columns`・`items` を代入してページに入れ、後から `MdmarkViewElement` で登録する
+            mock: ビューの部品のモジュールを `setPartModuleLoader` で渡す
+            expected: 要素の中に `div.mdmark-view` がある
+      - name: disconnectedCallback
+        title: ページから取り除かれた
+        kind: メソッド
+        summary: '`detach` を呼んで `document` の受け取りを解除する。プロパティは残し、ページへ戻すと描き直す'
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_disconnected_callback
+            case: 正常
+            summary: 取り除くと片付け、戻すと描き直す
+            condition: 描いた要素を取り除いてからページに戻す
+            mock: '`drawView` を呼ばれた回数と片付けを記録する代役の部品のモジュール'
+            expected: 取り除くと片付ける関数が 1 回呼ばれ、戻すと `drawView` がもう一度呼ばれる
+      - name: scheduleRender
+        title: 描画を予約する
+        kind: メソッド
+        summary: '`pending` が `false` のときだけ `queueMicrotask` で `renderNow` を 1 回予約する'
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_schedule_render
+            case: 正常
+            summary: 同じマイクロタスクの代入を 1 回にまとめる
+            condition: '`columns`・`items`・`group` を続けて代入する'
+            mock: '`drawView` を呼ばれた回数を記録する代役の部品のモジュール'
+            expected: '`drawView` が 1 回だけ呼ばれる'
+      - name: renderNow
+        title: 描く
+        kind: メソッド
+        summary: 指定を確認し、誤りがあれば通知ブロックを、無ければビューの部品のモジュールの `drawView` で描く
+        returns:
+          type: Promise<void>
+          description: '-'
+        side_effects: 要素の中身を書き換える。`mdmark-item-click` を送信する関数をつなぐ
+        process: |-
+          1. `pending` を `false` にし、要素がページに無いか `columns`・`items` のどちらかが `undefined` なら何もしない
+          2. `items` が配列でないか `items[].key` が文字列でないか重なるとき、または `checkViewOptions` が `TypeError` を投げたときは、要素の中を `div.mdmark` の中の `renderNotice`（`source` は箇所、`name` は誤りの指定の名前）にして終える
+          3. `loadPartModule("view")` でモジュールを読み込む。読み込めなければ、文書のビューのマーカーと同じ読み込めない旨の通知ブロックにして終える
+          4. 前の描画があれば表示しているビュー・並べ替え・絞り込みを記録し、`detach` を呼ぶ
+          5. `drawView(this, { columns, items: items の values, group, default, filter, icons }, { keys: items の key, onItemClick })` を呼ぶ。`onItemClick` は `mdmark-item-click` を `bubbles`・`composed` の `CustomEvent` で送信する
+          6. 記録した状態を、同じ列名について戻す
+        unit_tests:
+          - name: test_render_now
+            case: 正常
+            summary: 列名と項目からビューを描き、項目が data-key を持つ
+            condition: 3 列・3 件、`group` は `状態`
+            mock: なし（ブラウザ。ビューの部品のモジュールを `setPartModuleLoader` で渡す）
+            expected: 要素の子が `div.mdmark` 1 つで、ボードの項目と表形式の行が `data-key` を持つ
+          - name: test_render_now_when_invalid
+            case: 異常
+            summary: 誤った指定は例外を投げずに通知ブロックを描く
+            condition: '`items[].key` が重なる指定を代入し、続けて正しい指定を代入する'
+            mock: なし
+            expected: 代入が例外を投げず、1 回目はタイトル `この箇所を表示できません` で本文に `<code>items[1].key</code>` を持つ通知ブロック、2 回目はビュー
+          - name: test_render_now_when_item_clicked
+            case: 正常
+            summary: 項目の押下を要素のイベントで送信する
+            condition: 要素を囲む `div` でイベントを受け、ボードの 2 件目を押す
+            mock: なし
+            expected: 囲む `div` に `mdmark-item-click` が `detail.key` `T2` で 1 回届く
+          - name: test_render_now_when_items_reassigned
+            case: 正常
+            summary: 項目を代入し直すと表示していたビューと絞り込みを保つ
+            condition: 表形式に切り替えて担当で絞り込んだ後、項目を 1 つ加えて代入する
+            mock: なし
+            expected: 表形式が出ていて、絞り込みの選択が残る
+        callees:
+          - MOD-472-154#functions[checkViewOptions]
+          - MOD-472-159#functions[loadPartModule]
+          - MOD-472-156#functions[drawView]
+          - MOD-472-310#functions[renderNotice]
+        refs:
+          - IF-797-1#constraints[描くとき]
+          - IF-797-1#constraints[描き直し]
+          - IF-797-1#exceptions
+    refs:
+      - IF-797-1#
+functions:
+  - name: defineViewElement
+    title: ビューのカスタム要素を登録する
+    container: src/views/mdmark-view.element.ts
+    kind: 関数
+    scope: internal
+    summary: '`registry` に `mdmark-view` が登録されていなければ `MdmarkViewElement` を登録する'
+    args:
+      - name: registry
+        type: CustomElementRegistry
+        required: true
+        description: 登録先
+    returns:
+      type: void
+      description: '-'
+    unit_tests:
+      - name: test_define_view_element
+        case: 正常
+        summary: 未登録なら登録し、登録済みなら何もしない
+        condition: '`get` と `define` を記録する登録先で 2 回呼ぶ（2 回目は `get` が別のクラスを返却する）'
+        mock: 登録先を記録する代役
+        expected: '`define` が `mdmark-view` と `MdmarkViewElement` で 1 回だけ呼ばれる'
+    refs:
+      - IF-797-1#constraints[要素の登録]
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:api
+  - name: topic:イベント
+  - name: action:描画

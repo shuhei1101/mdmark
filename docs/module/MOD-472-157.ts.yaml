@@ -71,9 +71,9 @@ functions:
     side_effects: '`root` の中の文字をマーカーで包み、ボタン・一覧を配置し、`document` と `window` に受け取りを付ける。`store.load`・`store.save`・`store.update`・`store.remove` を呼ぶ'
     args:
       - name: options
-        type: '{ root: HTMLElement; store: MdmarkCommentStore; docId: string; reveal?: (element: HTMLElement) => void; margin?: boolean }'
+        type: '{ root: HTMLElement; store: MdmarkCommentStore; docId: string; reveal?: (element: HTMLElement) => void; margin?: boolean; closeOnEvent?: boolean }'
         required: true
-        description: 範囲の要素・読み込みと保存の関数・対象の ID・マーカーを囲む閉じたセクションと行の詳細を開く関数（`mount` は `openEnclosing` を指定する。`mountComments` は指定しない）・余白のマーカーを配置するか（`mount` だけが `true` を指定する。既定は `false`）
+        description: 範囲の要素・読み込みと保存の関数・対象の ID・マーカーを囲む閉じたセクションと行の詳細を開く関数（`mount` は `openEnclosing` を指定する。`mountComments` は指定しない）・余白のマーカーを配置するか（`mount` だけが `true` を指定する。既定は `false`）・保存・修正・削除の関数の戻り値を待たずに閉じるか（コメントのカスタム要素だけが `true` を指定する。既定は `false`）
     returns:
       type: Promise<CommentsController>
       description: 削除する関数と、再読み込みする・マーカーへ移る関数
@@ -86,8 +86,9 @@ functions:
       6. キャンセルと Esc で入力欄を閉じる。本文があれば `window.confirm(DISCARD_MESSAGE)` で確認し、捨てないときは残す。閉じたらボタンへフォーカスを戻す。外側の押下では閉じない
       7. マーカーの押下・Enter・Space で `renderCommentBubble`（`ids`、`canEdit` は `store.update` が関数か、`canRemove` は `store.remove` が関数か）の吹き出しを開いてマーカーの `aria-expanded` を `true` にし、吹き出しへフォーカスを移す。`canEdit` か `canRemove` なら `attachCommentActions` で修正と削除の操作を付ける。閉じるボタンと Esc で閉じてマーカーへフォーカスを戻し、外側の押下でも閉じる。Esc は、`attachCommentActions` の `cancel()` が真を返却したら（入力欄か削除の確認を閉じた・待っている）吹き出しを閉じない
       8. 修正できたら（`onUpdated`）、記録したコメントとマーカーに付いたコメントの、その `id` の本文を書き換える。削除できたら（`onRemoved`）、記録したコメントとマーカーに付いたコメントからその `id` を除く。そのマーカーのコメントが残らなければ、吹き出しを開いていれば閉じ、マーカーを含む `COMMENT_BLOCKS` のブロックを記録してからマーカーを中の文字のセクションに戻して `normalize` し、吹き出しを開いていたときはそのブロックに `tabindex="-1"` を付けて `focus({ preventScroll: true })` する。残るかを返却する
-      9. `scroll`（捕捉）と `resize` で、開いている枠かボタンを元の箇所に付いていかせる
-      10. `reload` は、再読み込みの番号を 1 進めて記録し、`store.load({ docId })` を待つ。待つ間に削除したか番号が進んだら何もせずに解決する。reject したか配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、元のエラー（合わない値のときは `TypeError`）で reject する（マーカーは残す）。読み込めたら記録したコメントを置き換え、開いている吹き出しを閉じ（入力欄は残す）、手順 2 のとおりマーカーと一覧をもう一度付けて解決する
+      9. `closeOnEvent` が `true` のときは、手順 5 の保存と手順 8 の修正・削除で、関数を呼んだら戻り値を待たずに入力欄・編集欄・削除の確認を閉じ、マーカー・吹き出しの本文・失敗の表示を変えない（表示は `reload` で変える）
+      10. `scroll`（捕捉）と `resize` で、開いている枠かボタンを元の箇所に付いていかせる
+      11. `reload` は、再読み込みの番号を 1 進めて記録し、`store.load({ docId })` を待つ。待つ間に削除したか番号が進んだら何もせずに解決する。reject したか配列でないか `isComment` でない要素があれば、`load`・`docId`・元のエラーか合わなかった値を `console.error` に出し、元のエラー（合わない値のときは `TypeError`）で reject する（マーカーは残す）。読み込めたら記録したコメントを置き換え、開いている吹き出しを閉じ（入力欄は残す）、手順 2 のとおりマーカーと一覧をもう一度付けて解決する
       11. `focus(id)` は、削除した後か、その `id` のコメントを持つマーカーが無ければ何もしない。あれば、全てのマーカーの `data-focused` を削除し、最初のマーカーを `reveal` に指定してから `scrollIntoView({ block: "nearest" })` してフォーカスを移し、その `id` を持つマーカーに `data-focused` を付ける。吹き出しは開かない
       12. `detach` は、受け取りを解除し、配置した要素と `PENDING_HIGHLIGHT` を削除し、マーカーを中の文字のセクションに戻して `normalize` する。2 回目以降は何もしない
       13. `margin` が `true` で `root` が `div.mdmark-content` のときは、手順 2 の後に `attachMarginMarkers({ content: root })` を呼び、削除する関数を手順 12 の `detach` で呼ぶ。マーカーのもう一度付け（保存・`reload`）と吹き出しの開閉は、`attachMarginMarkers` が `root` の中の変化から取得する

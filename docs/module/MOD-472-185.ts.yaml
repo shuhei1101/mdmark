@@ -23,6 +23,10 @@ functions:
         type: MdmarkParamDefinition[]
         required: true
         description: '`render` と同じ解析で読み込めた `param` の定義。`div.mdmark-param` の並びと同じ順'
+      - name: options
+        type: '{ onChange?: (key: string, value: number) => void }'
+        required: false
+        description: 操作できる部品のカスタム要素だけが指定する。スライダーの `input` ごとに、グラフを描き直した後で `knob.key` と今の値で呼ぶ
     returns:
       type: () => void
       description: 付けた操作を削除する関数

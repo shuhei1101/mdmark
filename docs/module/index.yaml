@@ -202,6 +202,14 @@ items:
   summary: ライブラリ本体 / 表 / mdmark-table.interact.ts
 - page: MOD-793-3.ts.yaml
   summary: ライブラリ本体 / 表 / mdmark-table.element.ts
+- page: MOD-797-1.ts.yaml
+  summary: ライブラリ本体 / ビューとコメント / mdmark-view.element.ts
+- page: MOD-797-2.ts.yaml
+  summary: ライブラリ本体 / ビューとコメント / mdmark-comments.element.ts
+- page: MOD-797-3.ts.yaml
+  summary: ライブラリ本体 / 図 / mdmark-graph.element.ts
+- page: MOD-797-4.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / mdmark-map.element.ts
 - page: MOD-472-220.ts.yaml
   summary: ライブラリ本体 / タブ / tabs.interact.ts
 - page: MOD-472-266.ts.yaml

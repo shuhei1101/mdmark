@@ -33,13 +33,17 @@ functions:
         type: MdmarkViewOptions
         required: true
         description: 検めた指定
+      - name: hooks
+        type: '{ keys?: string[]; onItemClick?: (key: string) => void }'
+        required: false
+        description: ビューのカスタム要素だけが指定する。`keys` を `renderView` の `keys` に指定し、項目を押すと `onItemClick` を呼ぶ。`mountView` は指定しない
     returns:
       type: () => void
       description: 操作を削除し、`el` の中を空にする関数
     process: |-
       1. 項目を `columns` の並びの値の配列にする（キーが無ければ空の文字）
       2. `el` の中を空にし、class `mdmark` の `div` を配置して、その中に `renderView`（`mode` は `default`、無ければ `group` があれば `board`、`filters` は `filter` の列の位置と種類、`icons` は `icons`、`id` はモジュールの通し番号）を入れる
-      3. `attachTables` で表の並べ替えと絞り込みを付け、`attachSwitch` で切り替えを付ける
+      3. `attachTables` で表の並べ替えと絞り込みを付け、`attachSwitch` で切り替えを付ける。`hooks.keys` があれば `renderView` に `keys` を指定し、ボードの項目と表形式の行の押下・Enter（ボタン・入力欄・リンクを除く）と部品設計のキー操作で `hooks.onItemClick(data-key)` を呼ぶ
       4. 削除する関数は、両方を削除して `el` の中を空にする
     unit_tests:
       - name: test_draw_view
@@ -60,6 +64,12 @@ functions:
         condition: 描いた後に削除する関数を呼ぶ
         mock: なし
         expected: '`el` の子が無い'
+      - name: test_draw_view_when_item_clicked
+        case: 正常
+        summary: keys を指定すると項目を押せ、onItemClick を呼ぶ
+        condition: '`hooks` に `keys`・`onItemClick` を指定し、ボードの 2 件目を押し、表形式の 3 件目で Enter を押す。切り替えのボタンも押す'
+        mock: '`onItemClick` を記録する関数'
+        expected: '`onItemClick` が 2 件目・3 件目のキーで 1 回ずつ呼ばれ、切り替えのボタンでは呼ばれない'
     refs:
       - IF-472-30#constraints[描くビュー]
       - CMP-472-25#
