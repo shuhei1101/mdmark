@@ -132,7 +132,7 @@ response:
   - name: mdmark-comment-remove.detail.id
     type: string
     description: 削除するコメントの `id`
-response_notes: 3 つのイベントは `<mdmark-comments>` から送信する `CustomEvent` で、`bubbles` と `composed` を持つ。イベントを送信した後、アプリが `comments` を指定し直すまでマーカーと吹き出しは変えない
+response_notes: 3 つのイベントは `<mdmark-comments>` から送信する `CustomEvent` で、`bubbles` と `composed` を持つ。送信したら、保存は入力欄を、編集は編集欄を、削除は削除の確認を閉じ、アプリが `comments` を指定し直すまでマーカーと吹き出しは変えない。保存に失敗したことは要素へ伝えず、アプリが自分の画面で伝える
 exceptions:
   - name: なし（正常終了）
     condition: 指定を確認してコメントを付けられるようにする
@@ -143,7 +143,7 @@ constraints:
   - item: 要素の登録
     constraint: '`dist/index.js` を読み込んだとき、`customElements` があり `mdmark-comments` がまだ登録されていなければ登録する'
   - item: 付ける先
-    constraint: Shadow DOM を使用せず、要素の子の本文に `mountComments` と同じ処理でコメントの操作を付ける。保存・編集・削除は、要素が渡す読み込みと保存の関数を通じてイベントにする
+    constraint: Shadow DOM を使用せず、要素の子の本文に `mountComments` と同じ処理でコメントの操作を付ける。保存・編集・削除はイベントにし、送信した後の表示は制約「イベントを送信した後の表示」に従う
   - item: 付け直し
     constraint: '`comments` を代入し直すとマーカーを付け直す。開いている入力欄は閉じる'
   - item: 本文の変更
@@ -155,6 +155,8 @@ constraints:
     decided_by: NFR-472-1#
   - item: 型の配布
     constraint: '`MdmarkCommentsElement`・`MdmarkCommentEditDetail`・`MdmarkCommentRemoveDetail` を `dist/index.d.ts` に書き出し、`HTMLElementTagNameMap` に `mdmark-comments`、`HTMLElementEventMap` に 3 つのイベントを加える'
+  - item: イベントを送信した後の表示
+    constraint: 今のコメントの処理（`src/comments/`）は、保存・編集・削除の関数の戻り値でマーカーを付ける・吹き出しを書き換える・失敗の表示を出す。カスタム要素から付けるときは、戻り値を待たずに入力欄・編集欄・削除の確認を閉じ、表示を変えない指定を今のコメントの処理に追加する。`mountComments` と文書のコメントは今の扱いのまま
 refs:
   - DATA-797-2#
   - IF-472-27#
