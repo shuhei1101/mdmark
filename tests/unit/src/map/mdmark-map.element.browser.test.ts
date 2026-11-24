@@ -155,10 +155,10 @@ test("test_render_now_when_data_has_comment_end", async () => {
   ).toHaveLength(1);
   expect(element.querySelector(".mdmark-notice")).toBeNull();
   expect(strayParagraphs(element)).toEqual([]);
-  const data = JSON.parse(
-    element.querySelector(".mdmark-map-data")?.textContent ?? "{}",
-  ) as { notes?: Record<string, { text?: string }> };
-  expect(data.notes?.api?.text).toBe("API --> DB の順に呼ぶ");
+  // 補足の説明は、図を付けた後にノードのヒントとして図の中に入る
+  expect(element.querySelector("figure.mdmark-diagram")?.textContent).toContain(
+    "API --> DB の順に呼ぶ",
+  );
 });
 
 // ``` の行を持つ source でも、コードブロックを途中で閉じずに図を描く（正常系）

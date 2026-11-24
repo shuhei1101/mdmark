@@ -162,7 +162,7 @@ test("test_attach_now_when_invalid", async () => {
   expect(notice?.classList.contains("mdmark-notice")).toBe(true);
   expect(notice?.innerHTML).toContain("この箇所を表示できません");
   expect(notice?.innerHTML).toContain("<code>comments</code>");
-  expect(element.querySelector("p")?.textContent).toBe(TEXT);
+  expect(element.querySelector(":scope > p")?.textContent).toBe(TEXT);
 });
 
 // 取り除くとマーカーを削除する（正常系）

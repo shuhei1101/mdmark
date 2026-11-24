@@ -113,9 +113,10 @@ test("test_connected_callback_when_upgraded", async () => {
     "mdmark-view-upgrade",
     class extends MdmarkViewElement {},
   );
-  await flush();
   // 検証
-  expect(element.querySelector("div.mdmark-view")).not.toBeNull();
+  await vi.waitFor(() =>
+    expect(element.querySelector("div.mdmark-view")).not.toBeNull(),
+  );
 });
 
 // 取り除くと片付け、戻すと描き直す（正常系）
