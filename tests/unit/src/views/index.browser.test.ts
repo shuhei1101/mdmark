@@ -203,3 +203,31 @@ test("test_attach_view_when_board_disabled", async () => {
     false,
   );
 });
+
+// keys を指定すると項目を押せ、onItemClick を呼ぶ（正常系）
+test("test_draw_view_when_item_clicked", async () => {
+  // 準備
+  const { drawView } = await loadViews();
+  const el = createHost();
+  const clicks: string[] = [];
+  detachers.push(
+    drawView(
+      el,
+      { columns: COLUMNS, items: ITEMS, group: "状態" },
+      {
+        keys: ["K1", "K2", "K3", "K4", "K5"],
+        onItemClick: (key: string) => clicks.push(key),
+      },
+    ),
+  );
+  // 実行
+  el.querySelector<HTMLElement>('.mdmark-view-card[data-key="K2"]')?.click();
+  switchButton(el, "table").click();
+  el.querySelector<HTMLElement>(
+    '.mdmark-view-table tbody tr[data-key="K3"]',
+  )?.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
+  // 検証
+  expect(clicks).toEqual(["K2", "K3"]);
+});

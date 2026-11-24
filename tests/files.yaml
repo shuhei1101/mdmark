@@ -1108,6 +1108,30 @@ files:
     related:
       - to: src/table/mdmark-table.element.ts
         type: tests
+  - path: unit/src/views/mdmark-view.element.browser.test.ts
+    description: src/views/mdmark-view.element.ts（「ビューのカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-view.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:ビュー]
+    related:
+      - to: src/views/mdmark-view.element.ts
+        type: tests
+  - path: unit/src/comments/mdmark-comments.element.browser.test.ts
+    description: src/comments/mdmark-comments.element.ts（「コメントのカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-comments.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:コメント]
+    related:
+      - to: src/comments/mdmark-comments.element.ts
+        type: tests
+  - path: unit/src/diagram/mdmark-graph.element.browser.test.ts
+    description: src/diagram/mdmark-graph.element.ts（「グラフと操作できる部品のカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-graph.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:グラフ]
+    related:
+      - to: src/diagram/mdmark-graph.element.ts
+        type: tests
+  - path: unit/src/map/mdmark-map.element.browser.test.ts
+    description: src/map/mdmark-map.element.ts（「map の図のカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-map.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:map]
+    related:
+      - to: src/map/mdmark-map.element.ts
+        type: tests
   - path: unit/src/elements.browser.test.ts
     description: src/elements.ts（「カスタム要素の登録」）を確認するブラウザで実行する単体テスト。elements.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:部品]

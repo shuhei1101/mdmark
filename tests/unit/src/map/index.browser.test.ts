@@ -358,3 +358,41 @@ test("test_attach_map_when_export", async () => {
   button?.click();
   expect(button?.getAttribute("aria-expanded")).toBe("false");
 });
+
+// onNodeClick を指定するとノードの押下で呼ぶ（正常系）
+test("test_attach_map_when_node_clicked", async () => {
+  // 準備
+  const { attachMap } = await loadMap();
+  const { resolveConfig } = await loadConfig();
+  const root = createRootFromHtml(
+    renderDoc(mapRange({ mermaid: "flowchart LR\n  api --> db\n" })).html,
+  );
+  const onNodeClick = vi.fn();
+  detachers.push(
+    attachMap(root, resolveConfig({ config: { map: CONFIG } }), {
+      onNodeClick,
+    }),
+  );
+  /** 要素の中央をポインターで押す */
+  const press = (target: Element) => {
+    const box = target.getBoundingClientRect();
+    const point = {
+      bubbles: true,
+      pointerId: 1,
+      button: 0,
+      clientX: box.x + box.width / 2,
+      clientY: box.y + box.height / 2,
+    };
+    target.dispatchEvent(new PointerEvent("pointerdown", point));
+    window.dispatchEvent(new PointerEvent("pointerup", point));
+    target.dispatchEvent(new MouseEvent("click", point));
+  };
+  // 実行
+  const node = root.querySelector('.mdmark-diagram-node[data-node="api"]');
+  const wire = root.querySelector('.map-wire-hit[data-wire="api->db"]');
+  if (node) press(node);
+  if (wire) press(wire);
+  // 検証
+  expect(onNodeClick).toHaveBeenCalledTimes(1);
+  expect(onNodeClick).toHaveBeenCalledWith("api");
+});
