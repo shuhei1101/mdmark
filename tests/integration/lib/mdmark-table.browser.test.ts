@@ -312,6 +312,19 @@ test("test_normal", async () => {
       nextCell.getBoundingClientRect(),
     ),
   ).toBe(false);
+  // 検証: 表は要素の中で横にスクロールし、右端までスクロールしてもタイトルの列は左端に留まる
+  const scroller = find<HTMLElement>(element, ".mdmark-table-scroll");
+  expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+  scroller.scrollLeft = scroller.scrollWidth;
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  expect(scroller.scrollLeft).toBeGreaterThan(0);
+  const scrollerLeft = scroller.getBoundingClientRect().left;
+  for (const pinned of [headOf(element, "title"), longCell]) {
+    expect(
+      Math.abs(pinned.getBoundingClientRect().left - scrollerLeft),
+    ).toBeLessThan(1);
+  }
+  scroller.scrollLeft = 0;
   // 実行・検証: 更新日の見出しで並べ替える
   find<HTMLButtonElement>(headOf(element, "updated"), ".mdmark-sort").click();
   expect(headOf(element, "updated").getAttribute("aria-sort")).toBe(
