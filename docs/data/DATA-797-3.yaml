@@ -9,7 +9,7 @@ fields:
     type: object
     required: true
     description: 描く図の部品の定義。キーと意味は、グラフは `chart`、操作できる部品は `param` のマーカーの範囲に記載する JSON と同じで、同じ構造の確認を実行する
-    example: '{"type": "line", "title": "見積もりの推移", "series": [{"name": "pt", "values": [3, 5, 8]}]}'
+    example: '{"type": "line", "title": "見積もりの推移", "scope": "Sprint 1〜3", "updated": "2026-11-24", "x": {"label": "Sprint", "ticks": ["1", "2", "3"]}, "y": {"label": "pt"}, "series": [{"name": "pt", "points": [3, 5, 8]}]}'
 lifecycle:
   - key: （全体）
     growth: カスタム要素 1 つに 1 件
