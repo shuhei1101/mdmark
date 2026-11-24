@@ -103,9 +103,9 @@ test("test_render_media_opener", async () => {
   expect(button).toContain('data-media-kind="video"');
   expect(button).toContain('data-media-src="demo.mp4"');
   expect(video).toContain(iconSvg("play"));
-  expect(
-    plainText(innerHtml(video, 'class="mdmark-media-open-label"')),
-  ).toBe("素材 1");
+  expect(plainText(innerHtml(video, 'class="mdmark-media-open-label"'))).toBe(
+    "素材 1",
+  );
   expect(audio).toContain(iconSvg("volume-2" as Parameters<typeof iconSvg>[0]));
   for (const html of [video, audio]) {
     expect(html).not.toMatch(/<(video|audio)\b/);
@@ -127,14 +127,16 @@ test("test_render_media_opener_when_caption", async () => {
     inline: false,
   });
   // 検証
-  expect(html.startsWith('<div class="mdmark-media-inline-figure">')).toBe(true);
+  expect(html.startsWith('<div class="mdmark-media-inline-figure">')).toBe(
+    true,
+  );
   const inner = innerHtml(html, 'class="mdmark-media-inline-figure"');
   expect(findTag(inner, 'class="mdmark-media-open"')).toContain(
     'data-media-caption="保存までの操作"',
   );
-  expect(
-    plainText(innerHtml(inner, 'class="mdmark-media-open-caption"')),
-  ).toBe("保存までの操作");
+  expect(plainText(innerHtml(inner, 'class="mdmark-media-open-caption"'))).toBe(
+    "保存までの操作",
+  );
 });
 
 // poster のサムネイルのボタンを描く（正常系）
@@ -177,7 +179,7 @@ test("test_render_media_opener_when_autoplay", async () => {
   expect(button).toMatch(/\sdata-media-autoplay\b/);
   expect(button).toMatch(/\sdata-media-muted\b/);
   expect(button).toMatch(/\sdata-media-loop\b/);
-  expect(
-    plainText(innerHtml(html, 'class="mdmark-media-open-label"')),
-  ).toBe("demo.mp4");
+  expect(plainText(innerHtml(html, 'class="mdmark-media-open-label"'))).toBe(
+    "demo.mp4",
+  );
 });

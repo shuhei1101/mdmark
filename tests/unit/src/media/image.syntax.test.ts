@@ -43,9 +43,9 @@ test("test_read_image_attributes", async () => {
   const first = readImageAttributes(
     "width=300 align=center nolightbox",
     "image",
-    false,
+    { inline: false },
   );
-  const second = readImageAttributes("width=40%", "image", false);
+  const second = readImageAttributes("width=40%", "image", { inline: false });
   // 検証
   expect(first).toMatchObject({
     width: "300px",
@@ -64,7 +64,7 @@ test("test_read_image_attributes_when_media", async () => {
   const attributes = readImageAttributes(
     "autoplay loop poster=demo.png width=480",
     "video",
-    false,
+    { inline: false },
   );
   // 検証
   expect(attributes).toMatchObject({
@@ -84,9 +84,9 @@ test("test_read_image_attributes_when_unreadable", async () => {
   const block = readImageAttributes(
     "width=big width=0% width=101% foo autoplay",
     "image",
-    false,
+    { inline: false },
   );
-  const inline = readImageAttributes("align=left", "image", true);
+  const inline = readImageAttributes("align=left", "image", { inline: true });
   // 検証
   expect(block.width).toBeUndefined();
   const labels = block.items.map((item) => item.label);
@@ -260,8 +260,10 @@ test("test_read_image_attributes_when_modal", async () => {
   // 準備
   const { readImageAttributes } = await loadImages();
   // 実行
-  const audio = readImageAttributes("modal", "audio", false);
-  const video = readImageAttributes("thumbnail poster=p.png", "video", false);
+  const audio = readImageAttributes("modal", "audio", { inline: false });
+  const video = readImageAttributes("thumbnail poster=p.png", "video", {
+    inline: false,
+  });
   // 検証
   expect(audio).toMatchObject({ modal: true, opener: true, items: [] });
   expect(video).toMatchObject({ thumbnail: true, opener: true, items: [] });
@@ -272,15 +274,16 @@ test("test_read_image_attributes_when_modal_unreadable", async () => {
   // 準備
   const { readImageAttributes } = await loadImages();
   // 実行
-  const image = readImageAttributes("modal", "image", false);
-  const audio = readImageAttributes("thumbnail", "audio", false);
-  const video = readImageAttributes("thumbnail", "video", false);
-  const sized = readImageAttributes(
-    "modal width=320 align=center",
-    "video",
-    false,
-  );
-  const cell = readImageAttributes("align=right", "video", false, true);
+  const image = readImageAttributes("modal", "image", { inline: false });
+  const audio = readImageAttributes("thumbnail", "audio", { inline: false });
+  const video = readImageAttributes("thumbnail", "video", { inline: false });
+  const sized = readImageAttributes("modal width=320 align=center", "video", {
+    inline: false,
+  });
+  const cell = readImageAttributes("align=right", "video", {
+    inline: false,
+    opener: true,
+  });
   // 検証
   const labels = (attributes: ImageAttributes) =>
     attributes.items.map((item) => item.label);
@@ -310,8 +313,9 @@ test("test_read_images_when_table_cell", async () => {
   const tokens = await imageTokens(markdown);
   // 検証
   const meta = (src: string) =>
-    tokens.find((token) => token.attrGet("src") === src)?.meta
-      ?.mdmarkImage as ImageAttributes | undefined;
+    tokens.find((token) => token.attrGet("src") === src)?.meta?.mdmarkImage as
+      | ImageAttributes
+      | undefined;
   expect(meta("m1.mp4")?.opener).toBe(true);
   expect(meta("chart.png")?.opener).toBe(false);
 });
@@ -330,7 +334,9 @@ test("test_read_images_when_opener_unreadable", async () => {
   const { html } = renderDoc(markdown);
   // 検証
   for (const token of tokens) {
-    expect((token.meta?.mdmarkImage as ImageAttributes).opener).toBe(false);
+    expect(
+      (token.meta?.mdmarkImage as ImageAttributes | undefined)?.opener,
+    ).toBe(false);
   }
   const warnings = findTags(html, 'class="mdmark-syntax-warning"');
   expect(warnings).toHaveLength(2);
@@ -361,14 +367,14 @@ test("test_build_image_figures_when_opener", () => {
   const { html } = renderDoc(markdown);
   // 検証
   expect(html).not.toMatch(/<video\b/);
-  const cell = /<td[^>]*>[^]*?m1\.mp4[^]*?<\/td>/.exec(html)?.[0] ?? "";
+  const cell = /<td[^>]*>[\s\S]*?m1\.mp4[\s\S]*?<\/td>/.exec(html)?.[0] ?? "";
   expect(cell).toContain('class="mdmark-media-open"');
   expect(plainText(innerHtml(cell, "mdmark-media-open-caption"))).toBe(
     "手順 1",
   );
   const figure = innerHtml(html, 'class="mdmark-media-inline-figure"');
   expect(figure).toContain('data-media-src="demo.mp4"');
-  const sentence = /<p>手順は [^]*?<\/p>/.exec(html)?.[0] ?? "";
+  const sentence = /<p>手順は [\s\S]*?<\/p>/.exec(html)?.[0] ?? "";
   expect(sentence).toContain('data-media-src="steps.mp4"');
   expect(sentence.indexOf("mdmark-media-open")).toBeLessThan(
     sentence.indexOf("で確認する"),
@@ -381,12 +387,9 @@ test("test_build_image_figures_when_opener", () => {
 // media がオフなら表のセルの動画を画像のままにする（正常系）
 test("test_build_image_figures_when_opener_media_off", () => {
   // 準備
-  const markdown = [
-    "| 素材 |",
-    "| --- |",
-    "| ![素材 1](m1.mp4) |",
-    "",
-  ].join("\n");
+  const markdown = ["| 素材 |", "| --- |", "| ![素材 1](m1.mp4) |", ""].join(
+    "\n",
+  );
   // 実行
   const { html } = renderDoc(markdown, { media: false });
   // 検証

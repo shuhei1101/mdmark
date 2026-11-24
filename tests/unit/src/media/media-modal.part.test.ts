@@ -2,7 +2,8 @@ import { expect, test } from "vitest";
 import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
 
 /** 再生のダイアログの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
-const loadMediaModal = () => import("../../../../src/media/media-modal.part.ts");
+const loadMediaModal = () =>
+  import("../../../../src/media/media-modal.part.ts");
 
 // 動画とタイトルとキャプションを描く（正常系）
 test("test_render_media_modal", async () => {
@@ -25,9 +26,9 @@ test("test_render_media_modal", async () => {
   expect(findTag(html, 'id="mdmark-media-1-title"')).toContain(
     "mdmark-media-modal-title",
   );
-  expect(
-    plainText(innerHtml(html, 'class="mdmark-media-modal-title"')),
-  ).toBe("素材 2");
+  expect(plainText(innerHtml(html, 'class="mdmark-media-modal-title"'))).toBe(
+    "素材 2",
+  );
   const video = findTag(html, "<video");
   expect(video).toMatch(/\scontrols\b/);
   expect(video).toMatch(/\sautoplay\b/);
@@ -37,9 +38,9 @@ test("test_render_media_modal", async () => {
   expect(findTag(html, 'data-tool="close"')).toContain(
     'aria-label="再生を閉じる"',
   );
-  expect(
-    plainText(innerHtml(html, 'class="mdmark-media-modal-caption"')),
-  ).toBe("操作の画面");
+  expect(plainText(innerHtml(html, 'class="mdmark-media-modal-caption"'))).toBe(
+    "操作の画面",
+  );
   expect(html).not.toContain("mdmark-lightbox-count");
   expect(findTags(html, 'data-tool="prev"')).toHaveLength(0);
   expect(findTags(html, 'data-tool="next"')).toHaveLength(0);
