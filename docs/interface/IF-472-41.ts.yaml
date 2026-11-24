@@ -333,7 +333,7 @@ exceptions:
     condition: '`--develop` を指定したのに、作業ツリーが git の作業ツリーでないか HEAD を読み取れない'
 constraints:
   - item: 配布ファイル 1 つのサイズ
-    constraint: 712KB 以下（729088 バイト）。利用側のページが読み込まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
+    constraint: 1024KB 以下（1048576 バイト）。利用側のページが読み込まない `dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` は対象外
     decided_by: NFR-472-1#requirements[配布ファイル 1 つのサイズ]
   - item: 出力の対象のブラウザ
     constraint: Chrome 99・Firefox 98・Safari 16.4
