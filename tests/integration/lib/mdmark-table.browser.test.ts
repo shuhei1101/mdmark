@@ -505,12 +505,14 @@ test("test_normal_when_row_added", async () => {
 test("test_normal_when_cell_content_replaced", async () => {
   // 準備
   const element = await placeTable();
-  const render = vi.fn((value: string | number | null) => {
-    const badge = document.createElement("span");
-    badge.className = "app-badge";
-    badge.textContent = `● ${String(value)}`;
-    return badge;
-  });
+  const render = vi.fn(
+    (value: string | number | null, _row: MdmarkTableRow) => {
+      const badge = document.createElement("span");
+      badge.className = "app-badge";
+      badge.textContent = `● ${String(value)}`;
+      return badge;
+    },
+  );
   const data = rows();
   // 実行
   await assign(element, {
