@@ -65,3 +65,78 @@ export const VideoPrint: Story = {
     poster: "demo-poster.png",
   },
 };
+
+export const OpenButton: Story = {
+  name: "OpenButton",
+  parameters: { server: { id: "media-opener" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材 1",
+    opener: "button",
+    inline: true,
+  },
+};
+
+export const OpenButtonAudio: Story = {
+  name: "OpenButtonAudio",
+  parameters: { server: { id: "media-opener" } },
+  args: {
+    kind: "audio",
+    src: "voice.mp3",
+    alt: "読み上げ",
+    opener: "button",
+    inline: true,
+  },
+};
+
+export const OpenButtonCaption: Story = {
+  name: "OpenButtonCaption",
+  parameters: { server: { id: "media-opener" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "操作の様子",
+    caption: "保存までの操作",
+    opener: "button",
+    inline: false,
+  },
+};
+
+export const OpenButtonLongLabel: Story = {
+  name: "OpenButtonLongLabel",
+  parameters: { server: { id: "media-opener" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "設定ファイルを読み込めないときに文書の先頭へ出すバーの操作を、最初から最後まで通した長い名前の素材",
+    opener: "button",
+    inline: true,
+  },
+};
+
+export const OpenThumbnail: Story = {
+  name: "OpenThumbnail",
+  parameters: { server: { id: "media-opener" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材 2",
+    poster: "demo-poster.png",
+    opener: "thumbnail",
+    inline: true,
+  },
+};
+
+export const OpenButtonPrint: Story = {
+  name: "OpenButtonPrint",
+  parameters: { server: { id: "media-opener" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "操作の様子",
+    caption: "保存までの操作",
+    opener: "button",
+    inline: false,
+  },
+};

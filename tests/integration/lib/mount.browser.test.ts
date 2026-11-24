@@ -9347,6 +9347,202 @@ test("test_normal_when_lightbox_opened", async () => {
   expect(document.activeElement).toBe(second);
 });
 
+// 見本の動画と音声（モックと同じファイル）の URL
+const SAMPLE_VIDEO_URL = new URL(
+  "../../../docs/mock/refs/263/assets/media/demo.mp4",
+  import.meta.url,
+).href;
+const SAMPLE_AUDIO_URL = new URL(
+  "../../../docs/mock/refs/263/assets/media/voice.mp3",
+  import.meta.url,
+).href;
+
+/** 開いている再生のダイアログ（無ければ undefined） */
+function openMediaModal(el: HTMLElement): HTMLDialogElement | undefined {
+  const dialog = el.querySelector<HTMLDialogElement>(
+    "dialog.mdmark-media-modal",
+  );
+  return dialog?.open ? dialog : undefined;
+}
+
+/** ラベルで再生のボタンを探す */
+function mediaOpener(el: HTMLElement, label: string): HTMLButtonElement {
+  const button = [
+    ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-media-open"),
+  ].find(
+    (candidate) =>
+      (candidate.getAttribute("aria-label") ??
+        candidate.querySelector(".mdmark-media-open-label")?.textContent) ===
+      label,
+  );
+  if (!button) {
+    throw new Error(`再生のボタンが無い: ${label}`);
+  }
+  return button;
+}
+
+// 再生のボタンを押すと全画面のダイアログで動画を再生し、Esc と閉じるボタンで閉じて再生を止め、押したボタンへフォーカスを戻す（正常系）
+test("test_normal_when_media_modal_opened", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      "| 手順 | 素材 |",
+      "| --- | --- |",
+      `| 1 | ![素材 1](${SAMPLE_VIDEO_URL} "手順 1 の画面") |`,
+      `| 2 | ![素材 2](${SAMPLE_VIDEO_URL}#m2) |`,
+      "",
+    ].join("\n"),
+  });
+  const first = mediaOpener(el, "素材 1");
+  const second = mediaOpener(el, "素材 2");
+  const scrollY = window.scrollY;
+  // 実行: 素材 1 を押す
+  await userEvent.click(first);
+  // 検証: ダイアログで動画を再生する
+  const dialog = openMediaModal(el) as HTMLDialogElement;
+  expect(dialog).toBeDefined();
+  const video = find<HTMLVideoElement>(dialog, "video");
+  expect(video.getAttribute("src")).toBe(SAMPLE_VIDEO_URL);
+  for (const name of ["controls", "autoplay", "playsinline"]) {
+    expect(video.hasAttribute(name)).toBe(true);
+  }
+  expect(video.getAttribute("aria-label")).toBe("素材 1");
+  await vi.waitFor(() => expect(video.paused).toBe(false));
+  expect(find(dialog, ".mdmark-media-modal-title").textContent).toBe("素材 1");
+  expect(find(dialog, ".mdmark-media-modal-caption").textContent).toBe(
+    "手順 1 の画面",
+  );
+  // 検証: 前後の切り替えと枚数が無く、右の矢印キーで切り替えない
+  expect(
+    dialog.querySelector('[data-tool="prev"], [data-tool="next"]'),
+  ).toBeNull();
+  expect(dialog.querySelector(".mdmark-lightbox-count")).toBeNull();
+  await userEvent.keyboard("{ArrowRight}");
+  expect(
+    find(openMediaModal(el) as HTMLElement, "video").getAttribute("src"),
+  ).toBe(SAMPLE_VIDEO_URL);
+  // 実行・検証: Esc で閉じ、素材 1 のボタンへフォーカスを戻す
+  await userEvent.keyboard("{Escape}");
+  await vi.waitFor(() =>
+    expect(el.querySelector("dialog.mdmark-media-modal")).toBeNull(),
+  );
+  expect(document.activeElement).toBe(first);
+  expect(window.scrollY).toBe(scrollY);
+  // 実行: 素材 2 を Enter で開き、閉じるボタンで閉じる
+  second.focus();
+  await userEvent.keyboard("{Enter}");
+  const reopened = openMediaModal(el) as HTMLDialogElement;
+  expect(reopened).toBeDefined();
+  expect(reopened.querySelector(".mdmark-media-modal-caption")).toBeNull();
+  const close = find<HTMLButtonElement>(reopened, '[data-tool="close"]');
+  expect(close.getAttribute("aria-label")).toBe("再生を閉じる");
+  await userEvent.click(close);
+  // 検証
+  await vi.waitFor(() =>
+    expect(el.querySelector("dialog.mdmark-media-modal")).toBeNull(),
+  );
+  expect(document.activeElement).toBe(second);
+});
+
+// 音声の再生のボタンで開いたダイアログを背景で閉じ、画像のライトボックスの切り替えの並びに動画・音声を含めない（正常系）
+test("test_normal_when_media_modal_audio", async () => {
+  // 準備
+  const [a, b] = ["#0f766e", "#b45309"].map((color) =>
+    pngUrl({ width: 320, height: 200, color }),
+  ) as [string, string];
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      `![画像 a](${a})`,
+      "",
+      "| 素材 |",
+      "| --- |",
+      `| ![読み上げ](${SAMPLE_AUDIO_URL} "読み上げの見本") |`,
+      `| ![素材 1](${SAMPLE_VIDEO_URL}) |`,
+      "",
+      `![画像 b](${b})`,
+      "",
+    ].join("\n"),
+  });
+  const voice = mediaOpener(el, "読み上げ");
+  // 実行: 読み上げを押す
+  await userEvent.click(voice);
+  // 検証
+  const dialog = openMediaModal(el) as HTMLDialogElement;
+  const audio = find<HTMLAudioElement>(dialog, "audio");
+  expect(audio.getAttribute("src")).toBe(SAMPLE_AUDIO_URL);
+  expect(audio.hasAttribute("controls")).toBe(true);
+  expect(audio.hasAttribute("autoplay")).toBe(true);
+  expect(find(dialog, ".mdmark-media-modal-caption").textContent).toBe(
+    "読み上げの見本",
+  );
+  // 実行・検証: ダイアログの外の背景を押して閉じる
+  await userEvent.click(dialog, { position: { x: -6, y: -6 }, force: true });
+  await vi.waitFor(() =>
+    expect(el.querySelector("dialog.mdmark-media-modal")).toBeNull(),
+  );
+  expect(document.activeElement).toBe(voice);
+  // 実行・検証: 画像 a のライトボックスは動画・音声を含めずに 2 枚を切り替える
+  const [imageA] = el.querySelectorAll<HTMLButtonElement>(
+    "button.mdmark-image-open",
+  );
+  await userEvent.click(imageA as HTMLButtonElement);
+  expect(lightboxState(el)).toEqual({ src: a, count: "1 / 2" });
+  await userEvent.keyboard("{ArrowRight}");
+  expect(lightboxState(el)).toEqual({ src: b, count: "2 / 2" });
+  await userEvent.keyboard("{Escape}");
+  await vi.waitFor(() => expect(openLightbox(el)).toBeUndefined());
+});
+
+// 印刷では再生のボタンのラベルとキャプションを本文の文字で出し、再生のアイコンとダイアログを出さない（正常系）
+test("test_normal_when_media_open_printed", async () => {
+  // 準備
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: [
+      "| 素材 |",
+      "| --- |",
+      `| ![素材 1](${SAMPLE_VIDEO_URL} "手順 1 の画面") |`,
+      "",
+      `![操作の様子](${SAMPLE_VIDEO_URL}#demo "保存までの操作"){modal}`,
+      "",
+    ].join("\n"),
+  });
+  try {
+    // 実行: 印刷の media にする
+    await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
+    // 検証: 再生のアイコンを出さず、枠線の幅が 0
+    const buttons = [
+      ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-media-open"),
+    ];
+    expect(buttons).toHaveLength(2);
+    for (const button of buttons) {
+      expect(getComputedStyle(find(button, "svg")).display).toBe("none");
+      expect(getComputedStyle(button).borderTopWidth).toBe("0px");
+    }
+    // 検証: ラベルとキャプションを出す
+    const labels = buttons.map(
+      (button) => find(button, ".mdmark-media-open-label").textContent,
+    );
+    expect(labels).toEqual(["素材 1", "操作の様子"]);
+    const captions = [
+      ...el.querySelectorAll<HTMLElement>(".mdmark-media-open-caption"),
+    ];
+    expect(captions.map((caption) => caption.textContent)).toEqual([
+      "手順 1 の画面",
+      "保存までの操作",
+    ]);
+    for (const caption of captions) {
+      expect(getComputedStyle(caption).display).not.toBe("none");
+    }
+    // 検証: 表の行を改ページで割らない
+    expect(getComputedStyle(find(el, "tbody tr")).breakInside).toBe("avoid");
+  } finally {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+  }
+});
+
 // ライトボックスの画像を図の全画面と同じボタンとキーで拡大・縮小し、拡大中は矢印キーで動かす（正常系）
 test("test_normal_when_lightbox_zoomed", async () => {
   // 準備

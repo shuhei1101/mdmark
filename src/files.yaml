@@ -1305,6 +1305,12 @@ files:
     related:
       - to: MOD-740-3
         type: implements
+  - path: media/media-modal.part.stories.ts
+    description: 部品設計『動画と音声の再生のダイアログ』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
+    tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]
+    related:
+      - to: CMP-801-1
+        type: implements
   - path: media/media.part.stories.ts
     description: 部品設計『動画と音声』の状態ごとの Storybook のストーリーを並べる。部品の状態を追加・変更するときに参照する。
     tags: [topic:ストーリー, tool:storybook, topic:部品, topic:動画]

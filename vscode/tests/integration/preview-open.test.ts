@@ -1073,6 +1073,59 @@ suite("プレビューを開く", () => {
     assert.match(csp ?? "", /(?:^|;)\s*media-src /);
   });
 
+  // 再生のボタンが持つ動画のパスを Webview の URL に替え、開いたダイアログでその動画を再生する
+  test("test_normal_when_modal_relative_media", async () => {
+    // 準備
+    const samples = join(REPO_ROOT, "docs/mock/refs/263/assets/media");
+    await writeFixture(
+      "docs/media/demo.mp4",
+      await readFile(join(samples, "demo.mp4")),
+    );
+    await writeFixture(
+      "docs/guide.md",
+      [
+        "# 見出し",
+        "",
+        "| 素材 |",
+        "| --- |",
+        "| ![素材 1](media/demo.mp4) |",
+        "",
+      ].join("\n"),
+    );
+    await openMarkdown("docs/guide.md");
+    // 実行
+    await vscode.commands.executeCommand("mdmark.openPreviewToSide");
+    const record = lastPanel();
+    await waitForRendered(record);
+    // 検証: 再生のボタンの data-media-src が Webview の URL
+    const url = record.panel.webview
+      .asWebviewUri(
+        vscode.Uri.file(join(workspaceDir(), "docs/media/demo.mp4")),
+      )
+      .toString();
+    const readSource = async () =>
+      (await inspect("button.mdmark-media-open"))[0]?.attributes[
+        "data-media-src"
+      ];
+    await waitFor(async () => (await readSource()) === url).catch(
+      () => undefined,
+    );
+    assert.strictEqual(await readSource(), url);
+    // 実行: 再生のボタンを押す
+    clickInPreview(record, "button.mdmark-media-open");
+    // 検証: ダイアログの動画が同じ URL で、再生して 1 秒後に進む
+    await waitFor(
+      async () =>
+        (await inspect("dialog.mdmark-media-modal video")).length === 1,
+      { message: "再生のダイアログが開かない" },
+    );
+    const [video] = await inspect("dialog.mdmark-media-modal video", true);
+    assert.strictEqual(video?.attributes.src, url);
+    const time = video?.currentTime ?? 0;
+    assert.ok(time >= 0.5, `動画: ${time}`);
+    assert.strictEqual((await inspect(".mdmark-notice")).length, 0);
+  });
+
   // 再生できない動画・音声を通知ブロックに替え、既定のアプリで開くリンクから開く
   test("test_error_when_unsupported_media", async () => {
     // 準備
