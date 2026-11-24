@@ -24,6 +24,39 @@ export { render } from "./render/index.ts";
 export type { MdmarkIconNode } from "./shared/icon-node.logic.ts";
 export type { StandardSchemaV1 } from "./standard-schema.ts";
 export type { MdmarkViewHandle, MdmarkViewOptions } from "./views/spec.ts";
+import type { MdmarkCommentEditDetail, MdmarkCommentRemoveDetail, MdmarkCommentsElement } from "./comments/mdmark-comments.element.ts";
+import type { MdmarkCommentDraft } from "./comments/spec.ts";
+import type { MdmarkGraphElement, MdmarkParamChangeDetail, MdmarkParamGraphElement } from "./diagram/mdmark-graph.element.ts";
+import type { MdmarkMapElement, MdmarkNodeClickDetail } from "./map/mdmark-map.element.ts";
+import type { MdmarkTableCellEditDetail, MdmarkTableElement, MdmarkTableRowClickDetail } from "./table/mdmark-table.element.ts";
+import type { MdmarkViewElement, MdmarkViewItemClickDetail } from "./views/mdmark-view.element.ts";
+export type { MdmarkCommentEditDetail, MdmarkCommentRemoveDetail, MdmarkCommentsElement, } from "./comments/mdmark-comments.element.ts";
+export type { MdmarkGraphElement, MdmarkParamChangeDetail, MdmarkParamGraphElement, } from "./diagram/mdmark-graph.element.ts";
+export type { MdmarkMapElement, MdmarkNodeClickDetail, } from "./map/mdmark-map.element.ts";
+export type { MdmarkTableCellEditDetail, MdmarkTableElement, MdmarkTableRowClickDetail, } from "./table/mdmark-table.element.ts";
+export type { MdmarkTableColumn, MdmarkTableFeatures, MdmarkTableRow, MdmarkTableValue, } from "./table/mdmark-table.logic.ts";
+export type { MdmarkViewElement, MdmarkViewItem, MdmarkViewItemClickDetail, } from "./views/mdmark-view.element.ts";
+declare global {
+    interface HTMLElementTagNameMap {
+        "mdmark-table": MdmarkTableElement;
+        "mdmark-view": MdmarkViewElement;
+        "mdmark-comments": MdmarkCommentsElement;
+        "mdmark-graph": MdmarkGraphElement;
+        "mdmark-param-graph": MdmarkParamGraphElement;
+        "mdmark-map": MdmarkMapElement;
+    }
+    interface HTMLElementEventMap {
+        "mdmark-row-click": CustomEvent<MdmarkTableRowClickDetail>;
+        "mdmark-cell-edit": CustomEvent<MdmarkTableCellEditDetail>;
+        "mdmark-row-add": CustomEvent<Record<string, never>>;
+        "mdmark-item-click": CustomEvent<MdmarkViewItemClickDetail>;
+        "mdmark-comment-save": CustomEvent<MdmarkCommentDraft>;
+        "mdmark-comment-edit": CustomEvent<MdmarkCommentEditDetail>;
+        "mdmark-comment-remove": CustomEvent<MdmarkCommentRemoveDetail>;
+        "mdmark-param-change": CustomEvent<MdmarkParamChangeDetail>;
+        "mdmark-node-click": CustomEvent<MdmarkNodeClickDetail>;
+    }
+}
 /** ビルドで埋めたバージョン（`v{MAJOR}.{MINOR}.{PATCH}`）を返却する */
 export declare function version(): string;
 export type { PageSettings as MdmarkPageSettings } from "./config.ts";

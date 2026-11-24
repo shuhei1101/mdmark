@@ -43,6 +43,10 @@ export type ZoomControl = {
         width: number;
         height: number;
     }): void;
+    /** 全体が収まる倍率に対する今の倍率の比を返却する */
+    ratio(): number;
+    /** 倍率を「全体が収まる倍率 × `ratio`」（下限・上限に収める）にし、表示する枠の中央にあった中身の座標を中央に保つ */
+    setRatio(ratio: number): void;
     /** 付けた操作と監視を解除する */
     detach(): void;
 };

@@ -1,5 +1,5 @@
 /** `mount` の `opts.diffMode` に指定できる差分の出し方。利用側が差分の出し方に対応するバージョンかを見分けるため、配布物が公開する */
-export declare const diffModes: readonly ["button", "open", "blocks"];
+export declare const diffModes: readonly ["button", "open", "blocks", "side-by-side"];
 /** `mount` の `opts.diffMode` の値 */
 export type DiffMode = (typeof diffModes)[number];
 /** 文書の変更の 1 回分 */

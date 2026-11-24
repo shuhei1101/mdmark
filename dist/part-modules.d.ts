@@ -10,6 +10,7 @@ export type PartLoaderName = PartName | "mermaid";
 export type MapPartModule = {
     attachMap: (root: HTMLElement, config: ResolvedConfig, hooks?: {
         resolveIdLink?: ResolveIdLink;
+        onNodeClick?: (id: string) => void;
     }) => () => void;
 };
 /** 部品の名前ごとのモジュールの構造 */

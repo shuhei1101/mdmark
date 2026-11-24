@@ -31,4 +31,10 @@ export declare function attachDiff(options: {
     hideWith?: HTMLElement[];
     /** 配置した時点で開くか（既定 `false`。`mount` の `diffMode` が `open` のとき `true`） */
     open?: boolean;
+    /** 「変更表示」のボタンとリビジョンの選択を配置するか（既定 `true`。`false` のときは配置せず、配置した時点で開く） */
+    controls?: boolean;
+    /** 差分の出し方（既定 `lines`。`side-by-side` は `renderMarkdown` を指定したときだけ左右に並べる） */
+    layout?: "lines" | "side-by-side";
+    /** 前と後の本文を文書と同じ描き方で描いた HTML を返却する関数 */
+    renderMarkdown?: (markdown: string) => string;
 }): () => void;

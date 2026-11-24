@@ -171,6 +171,24 @@ export type TableOptions = {
     rawCsv?: string | undefined;
     /** 元の CSV を出しているか（既定 `false`） */
     rawShown?: boolean;
+    /** 列ごとの列のキー（最下段の `th` の `data-column-key`） */
+    columnKeys?: string[];
+    /** 本文の行ごとの行のキー（`tr` の `data-key`） */
+    rowKeys?: string[];
+    /** 行を押せる表か（行に `mdmark-row-pressable` と `tabindex` を付ける） */
+    pressable?: boolean;
+    /** `tabindex="0"` にする本文の行の位置（既定は先頭の行） */
+    focusRow?: number;
+    /** 編集できる列の位置 */
+    editable?: number[];
+    /** 編集しているセル（ストーリーで使用する） */
+    editing?: {
+        row: number;
+        column: number;
+        value: string;
+    };
+    /** 表の下の左端に `行追加` のボタンを配置するか */
+    addRow?: boolean;
 };
 /** CSV の表の RAW のボタンを右端に配置する帯の HTML を返却する */
 export declare const renderRawBar: (pressed: boolean) => string;
@@ -410,7 +428,24 @@ export declare function renderRowLink(options: {
 }): string;
 /** 真偽値のセルの中身の HTML を返却する。`true` は ✓ のアイコン、`false` はスクリーンリーダー向けの `いいえ` */
 export declare function renderCheckCell(value: "true" | "false"): string;
+/** 編集中のセルの案内 */
+export declare const CELL_EDITOR_HINT = "Enter \u3067\u78BA\u5B9A\u30FBEsc \u3067\u53D6\u308A\u6D88\u3059";
+/** 編集中のセルの中身（入力欄と案内）の HTML を返却する */
+export declare function renderCellEditor(options: {
+    /** 入力欄の文字 */
+    value: string;
+    /** 入力欄のスクリーンリーダー向けの名前 */
+    label: string;
+    /** 案内の `id` */
+    hintId: string;
+}): string;
+/** 表の下の左端に配置する `行追加` のボタンの HTML を返却する */
+export declare function renderAddRow(): string;
+/** 編集中のセルの入力欄の名前（`{列名}（{行の番号} 行目）を編集する`） */
+export declare function cellEditorLabel(column: string, rowNumber: number): string;
 /** セルの文字が真偽値か */
 export declare function isCheckValue(text: string): text is "true" | "false";
 /** 表を囲む HTML を返却する。`body` を指定すると囲みだけを作り、指定しなければ `columns`・`rows` から表を作る */
 export declare function renderTable(options: TableOptions): string;
+/** 列の見出しと行のセルの HTML から、記法の表と同じ構造の操作を付ける前の表の HTML を返却する（`<mdmark-table>` が `renderTable` の `body` に指定する） */
+export declare function renderPlainTable(options: TableOptions): string;

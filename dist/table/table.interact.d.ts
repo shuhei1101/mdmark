@@ -18,3 +18,31 @@ export declare function attachTables(root: HTMLElement, options?: {
     /** URL の `#ID` を追うか。`false` なら `#ID` の指す行へ移らない（既定 `true`） */
     followHash?: boolean | undefined;
 }): () => void;
+/** 表の操作の状態（列を列のキーで指す） */
+export type TableState = {
+    /** 並べ替えた列と向き */
+    sort: {
+        key: string;
+        direction: "ascending" | "descending";
+    } | undefined;
+    /** 適用している絞り込み */
+    filters: Array<{
+        key: string;
+        value: Omit<FilterValue, "column">;
+    }>;
+    /** 隠している列 */
+    hidden: string[];
+    /** 今の列の順 */
+    order: string[];
+    /** つまみで変えた列の幅（px） */
+    widths: Array<{
+        key: string;
+        width: number;
+    }>;
+    /** ピン止めのボタンが押された列 */
+    pinned: string[];
+};
+/** `attachTables` を付けた表から、並べ替え・絞り込み・列の表示と順・列の幅・ピン止めを記録する */
+export declare function captureTableState(wrapper: HTMLElement): TableState;
+/** `attachTables` を付けた直後の表に、記録した状態のうち今の表にある列の状態を、利用者の操作と同じ処理で適用する */
+export declare function restoreTableState(wrapper: HTMLElement, state: TableState): void;

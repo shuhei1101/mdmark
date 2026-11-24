@@ -13,6 +13,8 @@ export declare function attachCommentActions(options: {
     onUpdated: (id: string, body: string) => void;
     /** 削除できたときに通知し、同じマーカーにコメントが残るかを受け取る */
     onRemoved: (id: string) => boolean;
+    /** 修正・削除の関数の戻り値を待たずに編集欄・削除の確認を閉じ、本文の表示を変えないか（既定 `false`） */
+    closeOnEvent?: boolean;
 }): {
     cancel: () => boolean;
 };

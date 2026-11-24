@@ -21,6 +21,8 @@ export declare function renderViewBoard(props: {
     icons: Record<string, string>;
     /** 隠すか（既定 `false`） */
     hidden?: boolean;
+    /** 項目ごとのキー（`items` と同じ並び）。あれば項目を押せるようにする */
+    keys?: string[] | undefined;
 }): string;
 /** 項目の表を、`group` の列の値ごとに並べたボードと、表形式で切り替えて出す HTML を返却する */
 export declare function renderView(props: {
@@ -42,6 +44,8 @@ export declare function renderView(props: {
     icons?: Record<string, string> | undefined;
     /** ボードにできない理由の記載の警告の `id` */
     boardDisabled?: string | undefined;
+    /** 項目ごとのキー（`items` と同じ並び）。あればボードの項目と表形式の行を押せるようにする */
+    keys?: string[] | undefined;
     /** ビューの要素の `id` の頭 */
     id: string;
 }): string;

@@ -5,5 +5,7 @@ export declare function renderNotice(options: {
     /** 図のマーカーか（既定 `true`）。`diff-revisions`・`diff-content`・`diff-blocks` では使用しない */
     figure?: boolean;
     /** 読み込めなかったもの（既定 `library`） */
-    source?: "library" | "extension" | "part" | "diff-revisions" | "diff-content" | "diff-blocks" | "icons";
+    source?: "library" | "extension" | "part" | "diff-revisions" | "diff-content" | "diff-blocks" | "icons" | "table-data" | "data";
+    /** `table-data`・`data` の本文で、指定の名前に続ける誤りの内容と修正方法 */
+    reason?: string;
 }): string;

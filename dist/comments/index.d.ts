@@ -17,6 +17,7 @@ export type CommentsPartModule = {
         docId: string;
         reveal?: (element: HTMLElement) => void;
         margin?: boolean;
+        closeOnEvent?: boolean;
     }) => Promise<CommentsController>;
 };
 /** 枠を箇所の下に配置し、下に収まらなければ上に配置し、左右は画面の中に収める */
@@ -38,4 +39,6 @@ export declare function attachComments(options: {
     reveal?: (element: HTMLElement) => void;
     /** 余白のマーカーを配置するか（既定 `false`） */
     margin?: boolean;
+    /** 保存・修正・削除の関数の戻り値を待たずに閉じ、表示を変えないか（既定 `false`。コメントのカスタム要素だけが `true` を指定する） */
+    closeOnEvent?: boolean;
 }): Promise<CommentsController>;

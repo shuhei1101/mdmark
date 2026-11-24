@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.adb270e";
+  return "v0.14.0+develop.cbf2a8e";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -74804,6 +74804,17 @@ function renderRowLink(options) {
 function renderCheckCell(value) {
   return value === "true" ? `<span class="mdmark-check" role="img" aria-label="\u306F\u3044">${iconSvg("check")}</span>` : '<span class="mdmark-visually-hidden">\u3044\u3044\u3048</span>';
 }
+var CELL_EDITOR_HINT = "Enter \u3067\u78BA\u5B9A\u30FBEsc \u3067\u53D6\u308A\u6D88\u3059";
+function renderCellEditor(options) {
+  const hintId = escapeHtml2(options.hintId);
+  return `<input class="mdmark-cell-input" type="text" value="${escapeHtml2(options.value)}" aria-label="${escapeHtml2(options.label)}" aria-describedby="${hintId}"><span class="mdmark-cell-hint" id="${hintId}">${CELL_EDITOR_HINT}</span>`;
+}
+function renderAddRow() {
+  return `<div class="mdmark-table-add"><button class="mdmark-table-add-button" type="button">${iconSvg("plus")}\u884C\u8FFD\u52A0</button></div>`;
+}
+function cellEditorLabel(column, rowNumber) {
+  return `${column}\uFF08${rowNumber} \u884C\u76EE\uFF09\u3092\u7DE8\u96C6\u3059\u308B`;
+}
 function isCheckValue(text2) {
   return text2 === "true" || text2 === "false";
 }
@@ -74831,7 +74842,7 @@ function renderTableBody(options, id) {
   );
   const panel = options.copyFallback ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback }) : "";
   const tableHtml = `<table tabindex="0" aria-label="\u8868"${autoWidthAttribute(context.autoWidthOf)}><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
-  return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${menus}${drawers.join("")}`;
+  return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${options.addRow ? renderAddRow() : ""}${menus}${drawers.join("")}`;
 }
 function bodyContextOf(options, id) {
   const columns = options.columns ?? [];
@@ -74881,6 +74892,28 @@ function columnStateOf(options) {
     )
   };
 }
+function columnKeyAttribute(options, column) {
+  const key = options.columnKeys?.[column];
+  return key === void 0 ? "" : ` data-column-key="${escapeHtml2(key)}"`;
+}
+function rowKeyAttributes(options, rowIndex) {
+  const key = options.rowKeys?.[rowIndex];
+  if (key === void 0) {
+    return "";
+  }
+  const pressable = options.pressable ? ` class="mdmark-row-pressable" tabindex="${rowIndex === (options.focusRow ?? 0) ? 0 : -1}"` : "";
+  return ` data-key="${escapeHtml2(key)}"${pressable}`;
+}
+function editableClasses(options, column, editing) {
+  if (!(options.editable ?? []).includes(column)) {
+    return [];
+  }
+  return editing ? ["mdmark-cell-editable", "mdmark-cell-editing"] : ["mdmark-cell-editable"];
+}
+function editingValue(context, cell) {
+  const editing = context.options.editing;
+  return editing && editing.row === cell.rowIndex && editing.column === cell.index ? editing.value : void 0;
+}
 function isStuck(context, column) {
   return context.pinned.has(column) && !context.unpinned.has(column);
 }
@@ -74923,7 +74956,7 @@ function renderHeadCell(context, cell) {
     'class="mdmark-col-resize is-dragging"'
   ) : header;
   return {
-    html: `<th${cellClass(context, index)}${headWidthStyle(context, index)}${sorted}${hiddenAttribute(context, index)}>${resizedHeader}</th>`,
+    html: `<th${cellClass(context, index)}${columnKeyAttribute(options, index)}${headWidthStyle(context, index)}${sorted}${hiddenAttribute(context, index)}>${resizedHeader}</th>`,
     drawer: tools.drawer
   };
 }
@@ -75012,7 +75045,9 @@ function renderBodyRow(context, place) {
   const row2 = context.rows[rowIndex] ?? [];
   const link2 = rowLinkOf(context, rowIndex);
   const spans = spanOf.get(rowIndex);
-  const cells = row2.map((text2, index) => renderBodyCell(context, { text: text2, index, link: link2, spans })).join("");
+  const cells = row2.map(
+    (text2, index) => renderBodyCell(context, { text: text2, index, link: link2, spans, rowIndex })
+  ).join("");
   const hidden = rowMatches(context, row2) ? "" : " hidden";
   return `<tr${rowAttributes(context, { rowIndex, link: link2 })}${hidden}>${cells}</tr>`;
 }
@@ -75022,13 +75057,27 @@ function rowAttributes(context, row2) {
   const target = targeted ? " data-target" : "";
   const rowColor = context.options.rowColors?.[row2.rowIndex];
   const colorAttribute = rowColor ? ` data-color="${rowColor}"` : "";
-  return `${idAttribute}${target}${colorAttribute}`;
+  return `${idAttribute}${target}${colorAttribute}${rowKeyAttributes(context.options, row2.rowIndex)}`;
 }
 function renderBodyCell(context, cell) {
   const { index } = cell;
-  const { content, valueAttribute } = bodyCellContent(context, cell);
+  const editing = editingValue(context, cell);
+  const { content, valueAttribute } = editing === void 0 ? bodyCellContent(context, cell) : {
+    content: renderCellEditor({
+      value: editing,
+      label: cellEditorLabel(
+        context.labels[index] ?? "",
+        (context.options.editing?.row ?? 0) + 1
+      ),
+      hintId: `${context.id}-cell-hint`
+    }),
+    valueAttribute: ""
+  };
   const { spanAttribute, mergedHidden } = mergeAttributes(context, cell);
-  const classes = cellClass(context, index, spanAttribute ? ["is-merged"] : []);
+  const classes = cellClass(context, index, [
+    ...spanAttribute ? ["is-merged"] : [],
+    ...editableClasses(context.options, index, editing !== void 0)
+  ]);
   const tag = index < context.rowHeader ? "th" : "td";
   const scope = tag === "th" ? ' scope="row"' : "";
   return `<${tag}${scope}${classes}${spanAttribute}${valueAttribute} data-label="${escapeHtml2(context.labels[index] ?? "")}"${hiddenAttribute(context, index)}${mergedHidden}>${content}</${tag}>`;
@@ -75419,7 +75468,7 @@ function columnAttributes(options) {
   )}`;
 }
 function tableContent(options) {
-  return options.body === void 0 ? renderTableBody(options, options.id ?? "mdmark-table") : `<div class="mdmark-table-scroll">${options.body}</div>`;
+  return options.body === void 0 ? renderTableBody(options, options.id ?? "mdmark-table") : `<div class="mdmark-table-scroll">${options.body}</div>${options.addRow ? renderAddRow() : ""}`;
 }
 function wrapCollapse(options, content) {
   const collapse = options.collapse ?? "none";

@@ -1,4 +1,5 @@
 import { type DiffEngine } from "./compute.ts";
+import type { SideBySideRow } from "./diff-side-by-side.part.ts";
 import { type DiffSource } from "./source.ts";
 /** ブロックの色分けのために取り出した結果。`pair` は 2 番目（前）と 1 番目（後）のリビジョンの Markdown、`single` はリビジョンが 1 つ以下、`failed` は一覧か本文を取り出せなかった */
 export type DiffPair = {
@@ -66,4 +67,13 @@ export declare function colorDiffBlocks(options: {
     /** 元の機能 `frontmatter` のオン・オフ（前と後の中身は機能 `frontmatter` をオンにして描いたもの。既定 `false`） */
     frontmatter?: boolean;
 }): void;
+/** 前と後の文書を描いた中身を、`colorDiffBlocks` と同じ比べ方で、向かい合う 1 組のブロックの並びにする（`root` は書き換えない） */
+export declare function pairSideBySide(options: {
+    before: Side;
+    after: Side;
+    /** 単語の区切り。持たないブラウザでは `undefined` */
+    segmenter: Intl.Segmenter | undefined;
+    /** 比較の計算。既定は `jsdiffEngine` */
+    engine?: DiffEngine;
+}): SideBySideRow[];
 export {};
