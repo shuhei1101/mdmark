@@ -73,7 +73,7 @@ classes:
         process: |-
           1. 要素がページに無いか `comments` が `undefined` なら何もしない
           2. 前の通知ブロックを取り除き、`controller` があれば `destroy` を呼ぶ
-          3. `comments` が配列でない、要素がコメントの構造の検査に通らない、`id` が重なる、`editable`・`removable` が真偽値でないときは、要素の先頭に `renderNotice` の通知ブロックを配置して終える
+          3. `comments` が配列でない、要素がコメントの構造の検査に通らない、`id` が重なる、`editable`・`removable` が真偽値でないときは、要素の先頭に `renderNotice`（`source` は `data`、`figure` は `false`、`name` は誤りの指定の名前、`reason` は誤りの内容と修正方法）の通知ブロックを配置して終える
           4. `loadPartModule("comments")` でモジュールを読み込み、`attachComments({ root: this, store, docId: "element", closeOnEvent: true })` を呼ぶ。`store.load` は `comments` を返却し、`store.save`・`update`（`editable` のときだけ持つ）・`remove`（`removable` のときだけ持つ）はそれぞれのイベントを `bubbles`・`composed` の `CustomEvent` で送信する
         unit_tests:
           - name: test_attach_now

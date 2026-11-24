@@ -49,7 +49,7 @@ classes:
           description: '-'
         process: |-
           1. 要素がページに無いか `definition` が `undefined` なら何もしない
-          2. `readDefinition("chart", JSON.stringify(definition))` が `ok: false` なら、要素の中を `div.mdmark` の中の `renderNotice`（図、理由は `problems`）にして終える
+          2. `readDefinition("chart", JSON.stringify(definition))` が `ok: false` なら、要素の中を `div.mdmark` の中の `renderNotice`（`source` は `data`、`name` は `definition` に `problems` の最初の読み込めない箇所のパスを続けた名前、`reason` はその箇所の誤りの内容と修正方法）にして終える
           3. 前の図の枠の高さと拡大の倍率を記録し、`detach` を呼ぶ
           4. `chart` のマーカーの範囲の Markdown を `render` して要素の中の `div.mdmark` に入れ、`attachDiagrams` を付け、記録した高さと倍率を戻す
         unit_tests:
