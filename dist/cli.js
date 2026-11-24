@@ -23753,7 +23753,7 @@ var require_lucide = __commonJS({
       ],
       ["path", { d: "M16 9a5 5 0 0 1 0 6" }]
     ];
-    var Volume2 = [
+    var Volume22 = [
       [
         "path",
         {
@@ -26382,7 +26382,7 @@ var require_lucide = __commonJS({
       Volleyball,
       Volume,
       Volume1,
-      Volume2,
+      Volume2: Volume22,
       VolumeOff,
       VolumeX,
       Vote,
@@ -28579,7 +28579,7 @@ var require_lucide = __commonJS({
     exports.Volleyball = Volleyball;
     exports.Volume = Volume;
     exports.Volume1 = Volume1;
-    exports.Volume2 = Volume2;
+    exports.Volume2 = Volume22;
     exports.VolumeOff = VolumeOff;
     exports.VolumeX = VolumeX;
     exports.Vote = Vote;
@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.a6686d2";
+  return "v0.14.0+develop.b5baf1f";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -73591,6 +73591,7 @@ var ICONS = {
   "maximize-2": import_lucide.Maximize2,
   pause: import_lucide.Pause,
   play: import_lucide.Play,
+  "volume-2": import_lucide.Volume2,
   table: import_lucide.Table,
   "settings-2": import_lucide.Settings2,
   "grip-vertical": import_lucide.GripVertical,
@@ -81141,6 +81142,62 @@ function renderMedia(options) {
   const style = width === void 0 ? "" : ` style="--mdmark-image-width: ${escapeHtml2(width)}"`;
   return `<figure class="mdmark-figure mdmark-media"${style}>${player}${print}${figcaption}</figure>`;
 }
+function fileNameOf(src) {
+  const path = src.split(/[?#]/)[0] ?? "";
+  return path.slice(path.lastIndexOf("/") + 1);
+}
+function openerData(options) {
+  const { kind, src, caption, poster, autoplay, muted, loop } = options;
+  return [
+    ` data-media-kind="${kind}"`,
+    ` data-media-src="${escapeHtml2(src)}"`,
+    caption ? ` data-media-caption="${escapeHtml2(caption)}"` : "",
+    poster === void 0 ? "" : ` data-media-poster="${escapeHtml2(poster)}"`,
+    autoplay ? " data-media-autoplay" : "",
+    autoplay || muted ? " data-media-muted" : "",
+    loop ? " data-media-loop" : ""
+  ].join("");
+}
+function renderMediaOpener(options) {
+  const {
+    kind,
+    src,
+    alt,
+    caption,
+    poster,
+    autoplay = false,
+    muted = false,
+    loop = false,
+    opener,
+    inline: inline2
+  } = options;
+  const label = alt === "" ? fileNameOf(src) : alt;
+  const data = openerData({
+    kind,
+    src,
+    caption,
+    poster: kind === "video" ? poster : void 0,
+    autoplay,
+    muted,
+    loop
+  });
+  const thumbnail = opener === "thumbnail" && kind === "video" ? poster : void 0;
+  const button = openerButton({ kind, label, data, thumbnail });
+  return wrapOpener({ button, caption, inline: inline2 });
+}
+function openerButton(options) {
+  const { kind, label, data, thumbnail } = options;
+  if (thumbnail !== void 0) {
+    return `<button class="mdmark-media-open mdmark-media-thumb" type="button" aria-haspopup="dialog" aria-label="${escapeHtml2(label)}"${data}><img src="${escapeHtml2(thumbnail)}" alt=""><span class="mdmark-media-thumb-icon">${iconSvg("play")}</span></button>`;
+  }
+  const icon = iconSvg(kind === "video" ? "play" : "volume-2");
+  return `<button class="mdmark-media-open" type="button" aria-haspopup="dialog"${data}>${icon}<span class="mdmark-media-open-label">${escapeHtml2(label)}</span></button>`;
+}
+function wrapOpener(options) {
+  const { button, caption, inline: inline2 } = options;
+  const captionHtml = caption ? `<span class="mdmark-media-open-caption">${escapeHtml2(caption)}</span>` : "";
+  return inline2 ? `${button}${captionHtml}` : `<div class="mdmark-media-inline-figure">${button}${captionHtml}</div>`;
+}
 
 // src/media/image.syntax.ts
 var MEDIA_EXTENSIONS = {
@@ -81154,9 +81211,18 @@ var IMAGE_ATTRIBUTE_NAMES = [
   "autoplay",
   "muted",
   "loop",
-  "poster"
+  "poster",
+  "modal",
+  "thumbnail"
 ];
-var MEDIA_ONLY_ATTRIBUTES = ["autoplay", "muted", "loop", "poster"];
+var MEDIA_ONLY_ATTRIBUTES = [
+  "autoplay",
+  "muted",
+  "loop",
+  "poster",
+  "modal",
+  "thumbnail"
+];
 var ALIGNS = ["left", "center", "right"];
 var MAX_WIDTH_PERCENT = 100;
 var ONLY_PATTERN = /#only-(dark|light)$/;
@@ -81190,9 +81256,16 @@ var unusable = (attribute) => ({
   label: attribute.part,
   message: "\u4F7F\u7528\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002"
 });
+var openerOnly = (attribute) => ({
+  label: attribute.part,
+  message: "\u518D\u751F\u306E\u30DC\u30BF\u30F3\u306B\u3057\u305F\u52D5\u753B\u30FB\u97F3\u58F0\u306B\u306F\u8A18\u8F09\u3067\u304D\u306A\u3044\u5C5E\u6027\u3067\u3059\u3002"
+});
 var readWidthAttribute = (attributes, attribute) => {
   if (attribute.value === void 0) {
     return unusable(attribute);
+  }
+  if (attribute.opener) {
+    return openerOnly(attribute);
   }
   const width = readWidth(attribute.value);
   if (width === void 0) {
@@ -81206,6 +81279,9 @@ var readWidthAttribute = (attributes, attribute) => {
 };
 var readAlignAttribute = (attributes, attribute) => {
   const { name, value, inline: inline2, part } = attribute;
+  if (attribute.opener) {
+    return openerOnly(attribute);
+  }
   if (inline2) {
     return {
       label: name,
@@ -81242,6 +81318,23 @@ var ATTRIBUTE_READERS = {
   autoplay: readFlagAttribute,
   muted: readFlagAttribute,
   loop: readFlagAttribute,
+  modal: (attributes, attribute) => {
+    if (attribute.part !== "modal") {
+      return unusable(attribute);
+    }
+    attributes.modal = true;
+    return void 0;
+  },
+  thumbnail: (attributes, attribute) => {
+    if (attribute.part === "thumbnail" && attribute.kind === "video") {
+      attributes.thumbnail = true;
+      return void 0;
+    }
+    return {
+      label: attribute.part,
+      message: "`poster` \u3092\u8A18\u8F09\u3057\u305F\u52D5\u753B\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002"
+    };
+  },
   poster: (attributes, attribute) => {
     if (attribute.kind === "video" && attribute.value) {
       attributes.poster = attribute.value;
@@ -81262,27 +81355,49 @@ var readAttribute = (attributes, attribute) => {
   const read = Object.hasOwn(ATTRIBUTE_READERS, name) ? ATTRIBUTE_READERS[name] : void 0;
   return read ? read(attributes, attribute) : unusable(attribute);
 };
-function readImageAttributes(text2, kind, inline2) {
+function opensOf(parts, media) {
+  const { kind, opener } = media;
+  if (kind !== "video" && kind !== "audio") {
+    return false;
+  }
+  const poster = parts.some((part) => /^poster=.+/.test(part));
+  return opener || parts.includes("modal") || kind === "video" && poster && parts.includes("thumbnail");
+}
+function readImageAttributes(text2, kind, position) {
+  const { inline: inline2, opener = false } = position;
   const attributes = {
     kind,
     lightbox: true,
     autoplay: false,
     muted: false,
     loop: false,
-    items: []
+    items: [],
+    modal: false,
+    thumbnail: false,
+    opener: false
   };
-  for (const part of text2.split(/\s+/).filter((item) => item !== "")) {
+  const parts = text2.split(/\s+/).filter((item) => item !== "");
+  attributes.opener = opensOf(parts, { kind, opener });
+  for (const part of parts) {
     const equals = part.indexOf("=");
     const unreadable8 = readAttribute(attributes, {
       part,
       name: equals < 0 ? part : part.slice(0, equals),
       value: equals < 0 ? void 0 : part.slice(equals + 1),
       kind,
-      inline: inline2
+      inline: inline2,
+      opener: attributes.opener
     });
     if (unreadable8) {
       attributes.items.push(unreadable8);
     }
+  }
+  if (attributes.thumbnail && attributes.poster === void 0) {
+    attributes.thumbnail = false;
+    attributes.items.push({
+      label: "thumbnail",
+      message: "`poster` \u3092\u8A18\u8F09\u3057\u305F\u52D5\u753B\u306B\u3060\u3051\u8A18\u8F09\u3067\u304D\u308B\u5C5E\u6027\u3067\u3059\u3002"
+    });
   }
   if (attributes.autoplay) {
     attributes.muted = true;
@@ -81317,12 +81432,16 @@ function takeAttributeText(next) {
   return found[1] ?? "";
 }
 function readImage(state, image2) {
-  const { children, position, sole, images } = image2;
+  const { children, position, sole, images, cell } = image2;
   const child = children[position];
   const kind = kindOf(state, String(child.attrGet("src") ?? ""));
   const inline2 = child !== sole && !isSoleWithAttributes(children, position);
   const text2 = images ? takeAttributeText(children[position + 1]) : "";
-  const attributes = readImageAttributes(text2, kind, inline2);
+  const media = kind === "video" || kind === "audio";
+  const attributes = readImageAttributes(text2, kind, {
+    inline: inline2,
+    opener: cell && media
+  });
   child.meta = { ...child.meta ?? {}, mdmarkImage: attributes };
   if (kind === "gif") {
     child.attrSet("data-gif", "");
@@ -81336,14 +81455,16 @@ function readImage(state, image2) {
 function readImages(state) {
   const images = featureOn(state, "images");
   const warnings = [];
+  let cell = false;
   for (const [index, token] of state.tokens.entries()) {
+    cell = cellStateOf(token, cell);
     const children = token.children;
     if (token.type !== "inline" || !children) {
       continue;
     }
     const sole = soleImageOf(token);
     const items = children.flatMap(
-      (child, position) => child.type === "image" ? readImage(state, { children, position, sole, images }) : []
+      (child, position) => child.type === "image" ? readImage(state, { children, position, sole, images, cell }) : []
     );
     token.children = children.filter(
       (child) => !(child.type === "text" && child.content === "")
@@ -81362,6 +81483,15 @@ function readImages(state) {
       })
     );
   }
+}
+function cellStateOf(token, current) {
+  if (token.type === "th_open" || token.type === "td_open") {
+    return true;
+  }
+  if (token.type === "th_close" || token.type === "td_close") {
+    return false;
+  }
+  return current;
 }
 function isSoleWithAttributes(children, position) {
   return children.every((child, at) => {
@@ -81432,6 +81562,23 @@ function mediaHtml(image2, kind) {
     ...mediaAttributesOf(imageAttributesOf(image2))
   });
 }
+function mediaOpenerHtml(image2, options) {
+  const attributes = imageAttributesOf(image2);
+  const thumbnail = attributes?.thumbnail === true && attributes.poster !== void 0;
+  return renderMediaOpener({
+    kind: options.kind,
+    src: String(image2.attrGet("src") ?? ""),
+    alt: altOf(image2),
+    ...captionOf(image2),
+    ...attributes?.poster === void 0 ? {} : { poster: attributes.poster },
+    ...playbackOf(attributes),
+    opener: thumbnail ? "thumbnail" : "button",
+    inline: options.inline
+  });
+}
+function opensModal(image2) {
+  return imageAttributesOf(image2)?.opener === true;
+}
 function mediaKindOfToken(image2) {
   const kind = imageAttributesOf(image2)?.kind;
   return kind === "video" || kind === "audio" ? kind : void 0;
@@ -81444,7 +81591,11 @@ function soleFigure(state, paragraph2) {
   }
   const soleMedia = mediaKindOfToken(sole);
   if (soleMedia) {
-    return features.media ? ownBlock(state, mediaHtml(sole, soleMedia), token) : void 0;
+    if (!features.media) {
+      return void 0;
+    }
+    const html = opensModal(sole) ? mediaOpenerHtml(sole, { kind: soleMedia, inline: false }) : mediaHtml(sole, soleMedia);
+    return ownBlock(state, html, token);
   }
   return features.images ? ownBlock(state, imageFigureHtml(sole), token) : void 0;
 }
@@ -81457,7 +81608,11 @@ function splitInlineMedia(state, paragraph2) {
     linkDepth += child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
     const kind = child.type === "image" ? mediaKindOfToken(child) : void 0;
     if (kind && features.media && linkDepth === 0) {
-      after.push(ownBlock(state, mediaHtml(child, kind), token));
+      if (opensModal(child)) {
+        children.push(openerInline(state, child, kind));
+      } else {
+        after.push(ownBlock(state, mediaHtml(child, kind), token));
+      }
       continue;
     }
     markOnlyImage(state, { child, images: features.images });
@@ -81465,6 +81620,28 @@ function splitInlineMedia(state, paragraph2) {
   }
   inline2.children = children;
   return after;
+}
+function openerInline(state, image2, kind) {
+  const token = new state.Token("html_inline", "", 0);
+  token.content = markOwn(
+    mediaOpenerHtml(image2, { kind, inline: true }),
+    envOf(state).nonce
+  );
+  return token;
+}
+function buildCellOpenersIn(state, options) {
+  const { token, cell, media } = options;
+  if (cell && media && token.type === "inline") {
+    buildCellOpeners(state, token);
+  }
+}
+function buildCellOpeners(state, inline2) {
+  let linkDepth = 0;
+  inline2.children = (inline2.children ?? []).map((child) => {
+    linkDepth += child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
+    const kind = child.type === "image" ? mediaKindOfToken(child) : void 0;
+    return kind && linkDepth === 0 && opensModal(child) ? openerInline(state, child, kind) : child;
+  });
 }
 function markOnlyImage(state, image2) {
   const { child, images } = image2;
@@ -81487,10 +81664,13 @@ function buildImageFigures(state) {
   }
   const tokens = state.tokens;
   const out = [];
+  let cell = false;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index];
+    cell = cellStateOf(token, cell);
     const inline2 = tokens[index + 1];
     const close = tokens[index + 2];
+    buildCellOpenersIn(state, { token, cell, media: features.media });
     if (token.type !== "paragraph_open" || inline2?.type !== "inline") {
       out.push(token);
       continue;
@@ -81609,13 +81789,13 @@ function buildCalloutsIn(state, tokens) {
 }
 
 // src/card/card.part.ts
-function fileNameOf(href) {
+function fileNameOf2(href) {
   const path = href.split(/[?#]/, 1)[0] ?? "";
   return path.slice(path.lastIndexOf("/") + 1);
 }
 function renderCard(options) {
   const { kind, href, title, fileKind } = options;
-  const name = fileNameOf(href);
+  const name = fileNameOf2(href);
   const domain = kind === "link" ? new URL(href).host : name.slice(name.lastIndexOf(".") + 1).toUpperCase();
   const url2 = kind === "link" ? href : name;
   const fileAttribute = kind === "file" && fileKind !== void 0 ? ` data-file-kind="${fileKind}"` : "";

@@ -63,6 +63,7 @@ declare const ICONS: {
     "maximize-2": IconNode;
     pause: IconNode;
     play: IconNode;
+    "volume-2": IconNode;
     table: IconNode;
     "settings-2": IconNode;
     "grip-vertical": IconNode;

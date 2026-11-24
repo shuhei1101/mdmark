@@ -4,8 +4,8 @@ import type { WarningItem } from "../extensions.ts";
 export type MediaKind = "image" | "gif" | "video" | "audio";
 /** 動画と音声の拡張子（小文字） */
 export declare const MEDIA_EXTENSIONS: Readonly<Record<"video" | "audio", readonly string[]>>;
-/** `{…}` に記載できる属性の名前。後ろの 4 つは動画・音声だけ */
-export declare const IMAGE_ATTRIBUTE_NAMES: readonly ["width", "align", "nolightbox", "autoplay", "muted", "loop", "poster"];
+/** `{…}` に記載できる属性の名前。`autoplay` から `modal` は動画・音声だけ、`thumbnail` は動画だけ */
+export declare const IMAGE_ATTRIBUTE_NAMES: readonly ["width", "align", "nolightbox", "autoplay", "muted", "loop", "poster", "modal", "thumbnail"];
 /** `align=` に記載できる配置 */
 declare const ALIGNS: readonly ["left", "center", "right"];
 /** 画像の属性 */
@@ -28,11 +28,20 @@ export type ImageAttributes = {
     poster?: string | undefined;
     /** 読み込めなかった属性 */
     items: WarningItem[];
+    /** 動画・音声だけ。`modal` を記載したら `true` */
+    modal: boolean;
+    /** `poster` を持つ動画だけ。`thumbnail` を記載したら `true` */
+    thumbnail: boolean;
+    /** 再生のボタンにするか */
+    opener: boolean;
 };
 /** `src` からクエリとフラグメントを除いた拡張子で、画像の種類を見分ける */
 export declare function mediaKindOf(src: string): MediaKind;
 /** `{` と `}` の中の文字を空白で区切って画像の属性を読み込む。読み込めない属性は当てずに `items` に入れる */
-export declare function readImageAttributes(text: string, kind: MediaKind, inline: boolean): ImageAttributes;
+export declare function readImageAttributes(text: string, kind: MediaKind, position: {
+    inline: boolean;
+    opener?: boolean;
+}): ImageAttributes;
 /** 画像のトークンの属性。`readImages` が `meta.mdmarkImage` に配置する */
 export declare function imageAttributesOf(token: Token): ImageAttributes | undefined;
 /** 段落の行内の子のうち、前後の空白の `text` を除いて画像 1 つだけなら、その画像を返却する */
