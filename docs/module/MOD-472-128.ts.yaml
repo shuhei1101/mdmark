@@ -24,6 +24,9 @@ data_models:
       - name: resolveIdLink
         type: ResolveIdLink | undefined
         description: '`mount` の `resolveIdLink`。構成図のノードの `id:` のリンク先を URL に変える'
+      - name: onNodeClick
+        type: '((id: string) => void) | undefined'
+        description: map の図のカスタム要素だけが指定する。構成図のノードの押下・Enter で、今の選択と強調に加えてノードの Mermaid の ID で呼ぶ。`mount` は指定しない
 functions:
   - name: attachMap
     title: mapを付ける
@@ -146,6 +149,12 @@ functions:
         condition: 構成図・シーケンス図・ガントチャートの範囲を持つ文書
         mock: なし（Chromium）
         expected: 3 つの範囲に `[data-tool="export"]` があり、`[data-tool="list"]` は構成図とシーケンス図だけにある。片付けた後は書き出すボタンを押しても `aria-expanded` が変わらない
+      - name: test_attach_map_when_node_clicked
+        case: 正常
+        summary: onNodeClick を指定するとノードの押下で呼ぶ
+        condition: ノード `api`・`db` の flowchart の範囲に `hooks.onNodeClick` を指定し、`api` のノードと線を押す
+        mock: '`onNodeClick` を記録する関数'
+        expected: '`onNodeClick` が `api` で 1 回だけ呼ばれ、線の押下では呼ばれない'
     refs:
       - IF-472-35#constraints[範囲の外の map の図の設定の行と見た目を指定する行]
       - IF-472-35#constraints[範囲の外の map の図に付く操作]

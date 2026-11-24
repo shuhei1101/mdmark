@@ -1,0 +1,68 @@
+id: DATA-797-2
+visibility: internal
+title: 'データ: コメントのカスタム要素の指定'
+lead: アプリの画面がコメントのカスタム要素の JavaScript のプロパティで指定する、要素の中に付いたコメント。アプリが保存のイベントを受けて書き込み、コメントの部品が参照してマーカーを付ける。
+datastore: JSON（アプリの画面のメモリ。mdmark は保存しない）
+fields:
+  - key: comments[]
+    title: コメント
+    type: array
+    required: true
+    description: 要素の中に付いたコメントの並び。空の配列はコメントの無い状態。要素の中の本文はアプリが子の要素として配置し、このデータには含めない
+  - key: comments[].id
+    title: コメントの ID
+    type: string
+    required: true
+    unique: コメントの並びの中
+    description: コメントを特定する値。アプリが保存したときに振る
+    example: c-1
+  - key: comments[].quote
+    title: 選んだ文字
+    type: string
+    required: true
+    description: コメントを付けた本文の文字。コメントの読み込みと保存の関数で扱うコメントの `quote` と同じ
+    example: 導入の手順
+  - key: comments[].prefix
+    title: 前の文字
+    type: string
+    required: true
+    description: 選んだ文字の直前の文字。同じ文字が本文に複数あるときに箇所を見分ける
+    example: 。
+  - key: comments[].suffix
+    title: 後ろの文字
+    type: string
+    required: true
+    description: 選んだ文字の直後の文字
+    example: を整える。
+  - key: comments[].body
+    title: コメントの本文
+    type: string
+    required: true
+    description: 利用者が記載した本文。文字のまま出し、HTML として解釈しない
+    example: 手順の数を 3 にする
+  - key: editable
+    title: 編集できる
+    type: bool
+    description: '`true` のとき、吹き出しに「編集」を出し、確定した本文を編集のイベントで通知する。省くと `false`（`mountComments` のコメントの読み込みと保存の関数が `update` を持たないときと同じ）'
+    example: 'true'
+  - key: removable
+    title: 削除できる
+    type: bool
+    description: '`true` のとき、吹き出しに「削除」を出し、押されたコメントを削除のイベントで通知する。省くと `false`（`remove` を持たないときと同じ）'
+    example: 'true'
+lifecycle:
+  - key: （全体）
+    growth: コメントのカスタム要素 1 つに 1 件
+    retention: アプリが指定し直すか、要素がページから削除されるまで
+    deletion: mdmark は保存しない。アプリが自分の保存先で持つ
+  - key: comments[]
+    growth: 要素の本文 1 つに〜数十件
+    retention: 全体と同じ
+    deletion: アプリがコメントを指定し直すと入れ替わる
+usage:
+  - interface: 部品をカスタム要素で描く
+    access: read
+    fields:
+      - comments[]
+      - editable
+      - removable

@@ -1,0 +1,71 @@
+id: DATA-797-1
+visibility: internal
+title: 'データ: ビューのカスタム要素の指定'
+lead: アプリの画面がビューのカスタム要素の JavaScript のプロパティで指定する、列名・項目・ビューの設定。アプリが書き込み、ビューの部品が参照して描く。
+datastore: JSON（アプリの画面のメモリ。mdmark は保存しない）
+fields:
+  - key: columns[]
+    title: 列名
+    type: array
+    required: true
+    description: 表形式の列の並びと、ボードの項目に出す値の並び。`mountView` の指定の `columns` と同じ
+    example: '["タイトル", "状態", "担当"]'
+  - key: items[]
+    title: 項目
+    type: array
+    required: true
+    description: 項目の並び。配列の順が表形式の行の順。空の配列は項目の無いビューを描く。`mountView` の指定の `items` の 1 要素を `values` に入れ、項目を特定する `key` を加えた組
+  - key: items[].key
+    title: 項目のキー
+    type: string
+    required: true
+    unique: 項目の並びの中
+    description: 項目を特定する値。項目の押下のイベントでアプリへ通知する。`mountView` の指定に無い、この要素だけのキー
+    example: T-3
+  - key: items[].values
+    title: 列ごとの値
+    type: object
+    required: true
+    description: 列名をキーにした値の組。`mountView` の指定の `items` の 1 要素と同じ
+    example: '{"タイトル": "設計", "状態": "対応中", "担当": "佐藤"}'
+  - key: group
+    title: ボードで列に分ける列名
+    type: string
+    description: '`mountView` の指定の `group` と同じ'
+    example: 状態
+  - key: default
+    title: 描いた直後に出すビュー
+    type: enum
+    description: '`board`（ボード表示）/ `table`（表形式）。`mountView` の指定の `default` と同じ'
+    example: board
+  - key: filter
+    title: 絞り込み
+    type: object
+    description: 表形式で絞り込みを付ける列と種類。`mountView` の指定の `filter` と同じ
+    example: '{"担当": "select"}'
+  - key: icons
+    title: 列の見出しのアイコン
+    type: object
+    description: ボードの列の見出しの値からアイコンの名前を参照する対応。`mountView` の指定の `icons` と同じ
+    example: '{"完了": "inbox"}'
+lifecycle:
+  - key: （全体）
+    growth: ビューのカスタム要素 1 つに 1 件
+    retention: アプリが指定し直すか、要素がページから削除されるまで
+    deletion: mdmark は保存しない。アプリが自分の保存先で持つ
+  - key: items[]
+    growth: アプリの項目の件数。〜数百件
+    retention: 全体と同じ
+    deletion: アプリが項目を指定し直すと入れ替わる
+usage:
+  - interface: 部品をカスタム要素で描く
+    access: read
+    fields:
+      - columns[]
+      - items[]
+      - group
+      - default
+      - filter
+      - icons
+refs:
+  - DATA-793-1#

@@ -59,6 +59,8 @@ functions:
 
       `resize(size)` は、中身の大きさ（倍率を掛ける前）を `size` の値をその場で書き換えて差し替え、全体が収まる倍率を再計算する。全体が収まる倍率で表示していたなら `reset` と同じく変更後の全体が収まる倍率と左上の位置にし、そうでなければ今の倍率の全体が収まる倍率に対する比（倍率の文字）を保つ倍率（下限・上限に収める）にして、表示する枠の中央にあった中身の座標を中央に保つ
 
+      `ratio()` は全体が収まる倍率に対する今の倍率の比を返却する。`setRatio(ratio)` は倍率を「全体が収まる倍率 × `ratio`」（下限・上限に収める）にし、表示する枠の中央にあった中身の座標を中央に保つ（図のカスタム要素が描き直す前後で倍率を保つのに使用する）
+
       付けた表示する枠と戻り値を `zoomControlOf` で引けるように登録し、`detach` で登録を削除する
     args:
       - name: options
@@ -67,7 +69,7 @@ functions:
         description: 表示する枠・倍率を掛ける中身・中身の大きさ・ボタンを持つ要素（`data-tool` で見分ける）・倍率が変わったときに呼ぶ関数・全体が収まる倍率を高さでも決めるか（既定 `true`。文書の中の図は `false` で幅だけで決める）・ドラッグを始めない要素のセレクタ（押せる要素に加える）・キーを受ける要素（既定は表示する枠とボタンを持つ要素）・倍率の文字の基準（既定 `content`。ライトボックスは画像の大きさを 100% にする）・全体が収まる倍率の下限（既定は下限なし。`attachDiagrams` が図の `data-fit-min` を指定する）・指の移動の扱い（既定 `pointer`。`attachDiagrams` は `native`）・拡大中のホイールをスクロールする祖先へ指定するか（既定 `false`。`attachDiagrams` は `true`）
     returns:
       type: 'ZoomControl'
-      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・倍率を保って下限を再計算する関数・矩形が収まる倍率と位置へ移す関数・倍率を変えずに矩形を中央へ移す関数・倍率の文字を保って中身の大きさを差し替える関数・付けた操作を削除する関数
+      description: 全体が収まる倍率に戻す関数・今の全体が収まる倍率を返却する関数・倍率を保って下限を再計算する関数・矩形が収まる倍率と位置へ移す関数・倍率を変えずに矩形を中央へ移す関数・倍率の文字を保って中身の大きさを差し替える関数・全体が収まる倍率に対する今の倍率の比を返却する関数・その比の倍率にする関数・付けた操作を削除する関数
     callees:
       - 'MOD-472-173#functions[fitScale]'
     unit_tests:
@@ -233,6 +235,12 @@ functions:
         condition: '`dragOwner: "[data-drag-owner]"` で付け、拡大してから `data-drag-owner` を持つ要素と、その中の `.mdmark-diagram-node-link` をそれぞれマウスで左へ 40px ドラッグする'
         mock: なし
         expected: どちらも表示する枠の `scrollLeft` が変わらず、`onPanStart` を呼ばない
+      - name: test_attach_zoom_when_ratio
+        case: 正常
+        summary: 全体が収まる倍率に対する比を読み、その比の倍率にする
+        condition: 幅 600px の枠に幅 1100 の中身、`percentBase` が `fit`。拡大を 2 回押して `ratio()` を読み、新しい表示する枠に付けた `attachZoom` の `setRatio` に渡す。`setRatio(100)` も呼ぶ
+        mock: なし
+        expected: '`ratio()` が `1.5625`、新しい枠の倍率の文字が `156%`。`setRatio(100)` の後は上限の `500%`'
     status: planned
   - name: zoomControlOf
     title: 表示する枠の拡大・縮小の操作を引く

@@ -473,6 +473,46 @@ files:
         type: tests
       - to: IF-793-1
         type: see_also
+  - path: integration/lib/mdmark-view.browser.test.ts
+    description: ビルドした配布物を Chromium で読み込み、ビューのカスタム要素の `<mdmark-view>` に列名と項目を指定して、ボード表示と表形式・絞り込み・項目の押下のイベント・誤りの通知ブロックを確認する結合テスト。ビューのカスタム要素を変えたときに参照する。
+    tags: [topic:結合テスト, topic:ビュー, topic:カスタム要素, tool:vitest]
+    related:
+      - to: src/views/mdmark-view.element.ts
+        type: tests
+      - to: IF-797-1
+        type: see_also
+  - path: integration/lib/mdmark-comments.browser.test.ts
+    description: ビルドした配布物を Chromium で読み込み、コメントのカスタム要素の `<mdmark-comments>` でコメントの保存・編集・削除のイベントと、指定し直したコメントのマーカー・誤りの通知ブロックを確認する結合テスト。コメントのカスタム要素を変えたときに参照する。
+    tags: [topic:結合テスト, topic:コメント, topic:カスタム要素, tool:vitest]
+    related:
+      - to: src/comments/mdmark-comments.element.ts
+        type: tests
+      - to: IF-797-2
+        type: see_also
+  - path: integration/lib/mdmark-graph.browser.test.ts
+    description: ビルドした配布物を Chromium で読み込み、グラフのカスタム要素の `<mdmark-graph>` にグラフの定義を指定して、図の枠とグラフ・描き直し・誤りの通知ブロックを確認する結合テスト。グラフのカスタム要素を変えたときに参照する。
+    tags: [topic:結合テスト, topic:グラフ, topic:カスタム要素, tool:vitest]
+    related:
+      - to: src/diagram/mdmark-graph.element.ts
+        type: tests
+      - to: IF-797-3
+        type: see_also
+  - path: integration/lib/mdmark-param-graph.browser.test.ts
+    description: ビルドした配布物を Chromium で読み込み、操作できる部品のカスタム要素の `<mdmark-param-graph>` でスライダーとグラフ・値の変更のイベント・誤りの通知ブロックを確認する結合テスト。操作できる部品のカスタム要素を変えたときに参照する。
+    tags: [topic:結合テスト, topic:グラフ, topic:カスタム要素, tool:vitest]
+    related:
+      - to: src/diagram/mdmark-graph.element.ts
+        type: tests
+      - to: IF-797-4
+        type: see_also
+  - path: integration/lib/mdmark-map.browser.test.ts
+    description: ビルドした配布物を Chromium で読み込み、map の図のカスタム要素の `<mdmark-map>` に Mermaid と補足を指定して、構成図・ノードの押下のイベント・誤りの通知ブロックを確認する結合テスト。map の図のカスタム要素を変えたときに参照する。
+    tags: [topic:結合テスト, topic:map, topic:カスタム要素, tool:vitest]
+    related:
+      - to: src/map/mdmark-map.element.ts
+        type: tests
+      - to: IF-797-5
+        type: see_also
   - path: integration/lib/mount-view.browser.test.ts
     description: インターフェース定義『ビューを描く』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:ビュー]
@@ -1107,6 +1147,30 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:表]
     related:
       - to: src/table/mdmark-table.element.ts
+        type: tests
+  - path: unit/src/views/mdmark-view.element.browser.test.ts
+    description: src/views/mdmark-view.element.ts（「ビューのカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-view.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:ビュー]
+    related:
+      - to: src/views/mdmark-view.element.ts
+        type: tests
+  - path: unit/src/comments/mdmark-comments.element.browser.test.ts
+    description: src/comments/mdmark-comments.element.ts（「コメントのカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-comments.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:コメント]
+    related:
+      - to: src/comments/mdmark-comments.element.ts
+        type: tests
+  - path: unit/src/diagram/mdmark-graph.element.browser.test.ts
+    description: src/diagram/mdmark-graph.element.ts（「グラフと操作できる部品のカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-graph.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:グラフ]
+    related:
+      - to: src/diagram/mdmark-graph.element.ts
+        type: tests
+  - path: unit/src/map/mdmark-map.element.browser.test.ts
+    description: src/map/mdmark-map.element.ts（「map の図のカスタム要素」）を確認するブラウザで実行する単体テスト。mdmark-map.element.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント, topic:map]
+    related:
+      - to: src/map/mdmark-map.element.ts
         type: tests
   - path: unit/src/elements.browser.test.ts
     description: src/elements.ts（「カスタム要素の登録」）を確認するブラウザで実行する単体テスト。elements.ts を変えたときに、合わせて再確認するケースを探すときに参照する。

@@ -1,0 +1,133 @@
+id: MOD-797-4
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / mdmark-map.element.ts
+lead: カスタム要素 `<mdmark-map>` のプロパティ・描画・描き直し・イベントの送信と登録を受け持ち、`<mdmark-map>` の振る舞いを変えるときに参照する。
+test_files:
+  - tests/unit/src/map/mdmark-map.element.browser.test.ts
+data_models:
+  - name: MdmarkNodeClickDetail
+    title: ノードの押下のイベントの値
+    container: src/map/mdmark-map.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: 公開の型
+    summary: '`mdmark-node-click` の `detail`'
+    properties:
+      - name: id
+        type: string
+        description: 押したノードの Mermaid の ID
+    refs:
+      - IF-797-5#response
+classes:
+  - name: MdmarkMapElement
+    title: map の図のカスタム要素
+    container: src/map/mdmark-map.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: カスタム要素
+    kind: クラス
+    inherits: HTMLElement
+    summary: '`source`・`data`・`options` を代入すると、次のマイクロタスクで map の範囲と同じ図か通知ブロックを描き、ノードの押下を `mdmark-node-click` で送信する'
+    description: '`dist/index.js` に入れ、map の部品のモジュール（`dist/map.js`）は `loadPartModule("map")` で読み込む。`src/map/` のほかのファイルを import しない'
+    properties:
+      - name: source
+        type: string | undefined
+        access: public
+        description: Mermaid。代入すると `scheduleRender` を呼ぶ
+      - name: data
+        type: object | undefined
+        access: public
+        description: 補足
+      - name: options
+        type: '{ title?: string; focus?: string } | undefined'
+        access: public
+        description: map の設定
+      - name: detach
+        type: (() => void) | undefined
+        access: private
+        description: '`attachMap` の戻り値'
+    methods:
+      - name: renderNow
+        title: 描く
+        kind: メソッド
+        summary: 指定を確認し、map の範囲の Markdown を `render` して `attachMap` で図にする
+        returns:
+          type: Promise<void>
+          description: '-'
+        process: |-
+          1. 要素がページに無いか `source` が `undefined` なら何もしない
+          2. `source` が文字列でない、`options` が `title`・`focus` のほかのキーを持つときは、要素の中を `div.mdmark` の中の `renderNotice`（`source` は `data`、`name` は誤りの指定の名前（`source`・`options.{キー}`）、`reason` は誤りの内容と修正方法）にして終える
+          3. `<!-- map: {options} -->`・Mermaid のコードブロック・`<!-- map-data: {data} -->`・`<!-- /map -->` の Markdown を `render` し、記載の警告が map の種類や補足の誤りを持つときは、手順 2 と同じ `renderNotice`（`name` は `source` か `data`、`reason` は記載の警告の最初の内容）にして終える。埋める前に、`options` と `data` は `JSON.stringify` の結果の `--` の 2 つ目の `-` を JSON の Unicode エスケープで記載し（`--` は文字列の中にだけ現れ、数値の符号は変えない）（`ER-472-2` の HTML コメントの決まり）、`source` は中の最も長い ``` の連続より 1 つ長い ``` のフェンスで囲む
+          4. 中へ入ったグループと開閉を記録し、`detach` を呼ぶ
+          5. `loadPartModule("map")` で読み込み、要素の中の `div.mdmark` に HTML を入れて `attachMap(root, config, { onNodeClick })` を呼ぶ。`onNodeClick` は `mdmark-node-click` を `bubbles`・`composed` の `CustomEvent` で送信する
+          6. 記録した状態を同じ ID について戻す
+        unit_tests:
+          - name: test_render_now
+            case: 正常
+            summary: Mermaid と補足から構成図を描き、ノードの押下を送信する
+            condition: ノード 3 つの `flowchart LR` と `api` に説明を付けた補足。`api` のノードを押す
+            mock: なし（ブラウザ。map の部品のモジュールを `setPartModuleLoader` で指定する）
+            expected: '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、`mdmark-node-click` が `{ id: "api" }` で 1 回届く'
+          - name: test_render_now_when_invalid
+            case: 異常
+            summary: 誤った指定は通知ブロックを描く
+            condition: '`options` に `collapse` を指定する'
+            mock: なし
+            expected: 代入が例外を投げず、本文に `<code>options.collapse</code>` を持つ通知ブロック
+          - name: test_render_now_when_data_has_comment_end
+            case: 正常
+            summary: '`-->` を持つ補足の文字でも、map の範囲を閉じずに図を描く'
+            condition: '`notes` の `api` の説明が `API --> DB の順に呼ぶ`'
+            mock: なし（ブラウザ。map の部品のモジュールを `setPartModuleLoader` で指定する）
+            expected: '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、図の外に本文が描かれず、`api` の説明が `API --> DB の順に呼ぶ`'
+          - name: test_render_now_when_source_has_fence
+            case: 正常
+            summary: '``` の行を持つ `source` でも、コードブロックを途中で閉じずに図を描く'
+            condition: '`flowchart LR` の途中に Mermaid のコメントの行（`%%` の後ろに ``` を続けた行）を持つ `source`'
+            mock: なし（ブラウザ。map の部品のモジュールを `setPartModuleLoader` で指定する）
+            expected: '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、図の外に本文もマーカーも描かれない'
+          - name: test_render_now_when_data_has_negative_number
+            case: 正常
+            summary: 負の数値を持つ補足でも、補足を読み込んで図を描く
+            condition: '`layout` の `api` の `order` が `-1` の補足'
+            mock: なし（ブラウザ。map の部品のモジュールを `setPartModuleLoader` で指定する）
+            expected: '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、通知ブロックが無い'
+        callees:
+          - MOD-472-212#functions[render]
+          - MOD-472-159#functions[loadPartModule]
+          - MOD-472-128#functions[attachMap]
+          - MOD-472-310#functions[renderNotice]
+        refs:
+          - IF-797-5#constraints[描く先]
+          - IF-797-5#constraints[ノードの押下]
+          - IF-797-5#exceptions
+    refs:
+      - IF-797-5#
+functions:
+  - name: defineMapElement
+    title: map の図のカスタム要素を登録する
+    container: src/map/mdmark-map.element.ts
+    kind: 関数
+    scope: internal
+    summary: '`registry` に `mdmark-map` が登録されていなければ `MdmarkMapElement` を登録する'
+    args:
+      - name: registry
+        type: CustomElementRegistry
+        required: true
+        description: 登録先
+    returns:
+      type: void
+      description: '-'
+    unit_tests:
+      - name: test_define_map_element
+        case: 正常
+        summary: 未登録なら登録し、登録済みなら何もしない
+        condition: '`get` と `define` を記録する登録先で 2 回呼ぶ'
+        mock: 登録先を記録する代役
+        expected: '`define` が `mdmark-map` で 1 回だけ呼ばれる'
+    refs:
+      - IF-797-5#constraints[要素の登録]
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: topic:api
+  - name: topic:イベント

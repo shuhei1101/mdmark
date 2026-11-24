@@ -164,3 +164,30 @@ export const TableOnly: Story = {
     id: "story-view",
   },
 };
+
+export const BoardPressable: Story = {
+  name: "BoardPressable",
+  parameters: { server: { id: "view" } },
+  args: {
+    columns: '["タイトル","状態","担当"]',
+    items:
+      '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"]]',
+    keys: '["T1","T2","T3"]',
+    group: "状態",
+    id: "story-view",
+  },
+};
+
+export const TablePressable: Story = {
+  name: "TablePressable",
+  parameters: { server: { id: "view" } },
+  args: {
+    columns: '["タイトル","状態","担当"]',
+    items:
+      '[["ビューを描く","進行中","佐藤"],["コメントを保存する","未着手","鈴木"],["表を絞り込む","未着手","佐藤"]]',
+    keys: '["T1","T2","T3"]',
+    group: "状態",
+    mode: "table",
+    id: "story-view",
+  },
+};

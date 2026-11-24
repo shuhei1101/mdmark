@@ -41,8 +41,18 @@ export function attachCommentActions(options: {
   onUpdated: (id: string, body: string) => void;
   /** 削除できたときに通知し、同じマーカーにコメントが残るかを受け取る */
   onRemoved: (id: string) => boolean;
+  /** 修正・削除の関数の戻り値を待たずに編集欄・削除の確認を閉じ、本文の表示を変えないか（既定 `false`） */
+  closeOnEvent?: boolean;
 }): { cancel: () => boolean } {
-  const { bubble, store, docId, isActive, onUpdated, onRemoved } = options;
+  const {
+    bubble,
+    store,
+    docId,
+    isActive,
+    onUpdated,
+    onRemoved,
+    closeOnEvent = false,
+  } = options;
   const canEdit = typeof store.update === "function";
   const canRemove = typeof store.remove === "function";
   let open: OpenItem | undefined;
@@ -133,31 +143,77 @@ export function attachCommentActions(options: {
       return false;
     }
   };
+  /** 修正・削除の関数を呼び、戻り値を待たずに編集欄・削除の確認を閉じて、本文の表示とその操作のボタンへ戻す */
+  const sendAndClose = (
+    current: OpenItem,
+    request: {
+      call: () => Promise<unknown>;
+      message: string;
+      action: "update" | "remove";
+    },
+  ): void => {
+    void runStore(request.call, {
+      message: request.message,
+      action: request.action,
+      id: current.id,
+    });
+    open = undefined;
+    const button = request.action === "update" ? "edit" : "remove";
+    redraw(current.id, { body: current.body })
+      ?.querySelector<HTMLElement>(`[data-action="${button}"]`)
+      ?.focus();
+  };
+  /** 編集欄の本文の記載と状態の表示に渡す値 */
+  const editOf =
+    (current: OpenItem, draft: string) => (state: CommentFormState) => ({
+      draft,
+      state,
+      fieldId: current.fieldId,
+    });
   /** 入力欄の本文で `store.update` を呼び、修正できたら本文の表示に戻す */
   const saveEdit = async (current: OpenItem): Promise<void> => {
     const update = store.update;
     const draft = itemOf(current.id)?.querySelector("textarea")?.value ?? "";
     const body = draft.trim();
-    const edit = (state: CommentFormState) => ({
-      draft,
-      state,
-      fieldId: current.fieldId,
-    });
     if (body === "") {
       focusField(
-        redraw(current.id, { body: current.body, edit: edit("empty") }),
+        redraw(current.id, {
+          body: current.body,
+          edit: editOf(current, draft)("empty"),
+        }),
       );
       return;
     }
     if (!update) {
       return;
     }
+    if (closeOnEvent) {
+      sendAndClose(current, {
+        call: () => update({ docId, id: current.id, body }),
+        message: "コメントを修正できません",
+        action: "update",
+      });
+      return;
+    }
+    await waitEdit(current, {
+      draft,
+      call: () => update({ docId, id: current.id, body }),
+      body,
+    });
+  };
+  /** 修正の関数の戻り値を待ち、修正できたら本文の表示に戻し、できなければ編集欄に失敗を出す */
+  const waitEdit = async (
+    current: OpenItem,
+    request: { draft: string; call: () => Promise<unknown>; body: string },
+  ): Promise<void> => {
+    const edit = editOf(current, request.draft);
     busy = true;
     redraw(current.id, { body: current.body, edit: edit("saving") });
-    const saved = await runStore(
-      () => update({ docId, id: current.id, body }),
-      { message: "コメントを修正できません", action: "update", id: current.id },
-    );
+    const saved = await runStore(request.call, {
+      message: "コメントを修正できません",
+      action: "update",
+      id: current.id,
+    });
     if (!isActive()) {
       return;
     }
@@ -169,8 +225,8 @@ export function attachCommentActions(options: {
       return;
     }
     open = undefined;
-    onUpdated(current.id, body);
-    redraw(current.id, { body })
+    onUpdated(current.id, request.body);
+    redraw(current.id, { body: request.body })
       ?.querySelector<HTMLElement>('[data-action="edit"]')
       ?.focus();
   };
@@ -190,6 +246,14 @@ export function attachCommentActions(options: {
   const confirmRemove = async (current: OpenItem): Promise<void> => {
     const remove = store.remove;
     if (!remove) {
+      return;
+    }
+    if (closeOnEvent) {
+      sendAndClose(current, {
+        call: () => remove({ docId, id: current.id }),
+        message: "コメントを削除できません",
+        action: "remove",
+      });
       return;
     }
     busy = true;

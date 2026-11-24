@@ -9,7 +9,7 @@ constants:
     title: カスタム要素の登録の一覧
     container: src/elements.ts
     summary: 部品ごとの登録する関数の並び。部品のカスタム要素を追加するときは、この並びに 1 つ加える
-    value: '[defineTableElement]'
+    value: '[defineTableElement, defineViewElement, defineCommentsElement, defineGraphElements, defineMapElement]'
 functions:
   - name: defineElements
     title: カスタム要素を登録する
@@ -35,6 +35,10 @@ functions:
         expected: 例外を投げない
     callees:
       - MOD-793-3#functions[defineTableElement]
+      - MOD-797-1#functions[defineViewElement]
+      - MOD-797-2#functions[defineCommentsElement]
+      - MOD-797-3#functions[defineGraphElements]
+      - MOD-797-4#functions[defineMapElement]
     refs:
       - IF-793-1#constraints[要素の登録]
 tags:

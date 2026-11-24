@@ -1,0 +1,191 @@
+id: IF-797-1
+visibility: internal
+title: ビューをカスタム要素で描く
+entry:
+  kind: operation
+  value: '`<mdmark-view>`（配布物 `dist/index.js` を読み込むと登録するカスタム要素）'
+lead: アプリの画面が、`<mdmark-view>` に列名と項目を JavaScript のプロパティで指定し、ビューのマーカーで描いたときと同じボード表示と表形式のビューを描く。項目の押下を要素のイベントで受け取る。
+flows:
+  - name: 正常系
+    summary: 列名と項目からボード表示を描き、表形式に切り替えて絞り込む
+    setup:
+      - name: 配布物を読み込んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み込み、`<mdmark-view>` を 1 つ持つページ
+      - name: 列名と項目
+        description: '`タイトル`・`状態`・`担当` の 3 列と 5 件（キーは `T1`〜`T5`、状態は 3 種）。`group` は `状態`、`filter` は `{ "担当": "select" }`'
+        notes: 1 件目のタイトルは `<script>alert(1)</script>設計`
+      - name: Mock
+        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant V as mdmark-view
+        A->>V: columns・items・group・filter を指定する
+        V->>V: 次のマイクロタスクで指定を確認し、ビューの部品のモジュールを読み込む
+        V->>A: 要素の中にボード表示を描く
+        A->>V: 表形式に切り替え、担当で絞り込む
+        V->>A: 絞り込んだ行
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`<mdmark-view>` の中に class `mdmark` の要素が 1 つあり、その中に `mountView` に同じ列名と項目を指定して描いたものと同じ 3 列のボードとビューの切り替えがある'
+      - 表形式に切り替えると 5 行が列名の順で並び、担当の絞り込みで 1 人を選ぶとその人の行だけが残る
+      - 1 件目のタイトルが文字 `<script>alert(1)</script>設計` のまま出て、`script` 要素が無い
+      - '`items` を指定し直すと描き直し、表示していたビュー（表形式）と絞り込みの選択が残る'
+    test: test_normal
+  - name: 正常系（項目を押す）
+    summary: ボードの項目か表形式の行を押すか、フォーカスして Enter を押すと、項目のキーを持つ項目の押下のイベントを送信する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。`mdmark-item-click` を受け、`detail.key` を配列に記録する
+      - name: 列名と項目
+        description: 正常系と同じ
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant V as mdmark-view
+        A->>V: ボードの T2 の項目を押す
+        V-->>A: mdmark-item-click（key: T2）
+        A->>V: 表形式の T3 の行にフォーカスして Enter を押す
+        V-->>A: mdmark-item-click（key: T3）
+      ```
+
+      <!-- /map -->
+    expected:
+      - ボードの T2 の項目を押すと `mdmark-item-click` が 1 回届き、`detail.key` が `T2`
+      - 表形式の T3 の行にフォーカスして Enter を押すと、`detail.key` が `T3` の `mdmark-item-click` が届く
+      - ビューの切り替え・並べ替え・絞り込みのボタンを押しても `mdmark-item-click` は届かない
+    test: test_normal_when_item_clicked
+  - name: 異常系（データの誤り）
+    summary: 指定に誤りがあると、例外を投げずに要素の中へ通知ブロックを配置する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。`<mdmark-view>` の後ろに文字 `後ろの段落` の `p` を持つ
+      - name: 誤った指定
+        description: '`items` に文字列を指定するもの、`items[].key` が重なるもの、`group` に列名に無い名前を指定するものの 3 通り'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant V as mdmark-view
+        A->>V: 誤った指定を代入する
+        V->>V: 指定を確認する
+        V->>A: 要素の中に通知ブロック
+      ```
+
+      <!-- /map -->
+    expected:
+      - 3 通りとも、プロパティの代入が例外を投げない
+      - 要素の中に class `mdmark-notice`・`role="status"` の要素があり、タイトルが `この箇所を表示できません`、本文が誤った指定の名前（`items`・`items[1].key`・`group`）を `code` 要素で持つ
+      - 後ろの段落が表示されている。正しい指定を代入し直すと通知ブロックが消えてビューが描かれる
+    test: test_error_when_data_invalid
+idempotent: true
+side_effects: 要素の中身を書き換え、ビューの操作を要素の中に付ける。初めて描くときにビューの部品のモジュール（`dist/view.js`）を読み込む。要素から `mdmark-item-click` を送信する。指定された配列とオブジェクトは書き換えない
+callers:
+  - SC-797-2#
+  - SC-797-1#
+exclusivity: 要素ごとに独立して描く。同じマイクロタスクの中の複数のプロパティの代入は、まとめて 1 回だけ描く。描き直しは前の描画の操作を片付けてから行う
+request:
+  - name: columns
+    type: string[]
+    required: true
+    location: argument
+    description: 列名（要素のプロパティ）。データ『ビューのカスタム要素の指定』の `columns[]`
+    constraints: '`mountView` の `columns` と同じ検査'
+  - name: items
+    type: MdmarkViewItem[]
+    required: true
+    location: argument
+    description: 項目（要素のプロパティ）。配列の順が表形式の行の順
+    constraints: '`key` は項目の並びの中で重ならない'
+  - name: items[].key
+    type: string
+    required: true
+    location: argument
+    description: 項目のキー。`mdmark-item-click` の `key` にする
+    example: T3
+  - name: items[].values
+    type: Record<string, string>
+    required: true
+    location: argument
+    description: 列名をキーにした値の組。`mountView` の `items` の 1 要素と同じ検査
+  - name: group
+    type: string
+    required: false
+    default: なし（`mountView` と同じ）
+    location: argument
+    description: ボードで列に分ける列名。`mountView` の `group` と同じ
+  - name: default
+    type: '"board" | "table"'
+    required: false
+    default: なし（`mountView` と同じ）
+    location: argument
+    description: 描いた直後に出すビュー
+  - name: filter
+    type: Record<string, FilterKind>
+    required: false
+    default: なし（絞り込みを付けない）
+    location: argument
+    description: 表形式で絞り込みを付ける列と種類
+  - name: icons
+    type: Record<string, ViewIconName>
+    required: false
+    default: なし（既定の対応）
+    location: argument
+    description: ボードの列の見出しの値からアイコンの名前を参照する対応
+response:
+  - name: mdmark-item-click.detail.key
+    type: string
+    description: 押した項目の `items[].key`
+response_notes: '`mdmark-item-click` は `<mdmark-view>` から送信する `CustomEvent` で、`bubbles` と `composed` を持つ'
+exceptions:
+  - name: なし（正常終了）
+    condition: 指定を確認してビューを描く
+  - name: なし（通知ブロック・データの誤り）
+    condition: '`mountView` の引数の検査で `TypeError` になる指定、`items` が配列でない、`items[].key` が文字列でないか重なる'
+    notes: プロパティの代入は例外を投げない。要素の中を空にして通知ブロックを配置する。タイトルは `この箇所を表示できません`、本文は最初に見つけた誤りの指定の名前（`code` 要素）と修正方法
+  - name: なし（通知ブロック・モジュールを読み込めない）
+    condition: ビューの部品のモジュールを読み込めない
+    notes: 文書のビューのマーカーと同じ読み込めない旨の通知ブロックを配置する
+constraints:
+  - item: 要素の登録
+    constraint: '`dist/index.js` を読み込んだとき、`customElements` があり `mdmark-view` がまだ登録されていなければ登録する。登録の関数は `src/elements.ts` の並びに加える'
+  - item: 描く先
+    constraint: Shadow DOM を使用せず、要素の中に class `mdmark` の要素を 1 つ配置して、その中に `mountView` と同じ処理で描く
+  - item: 描くとき
+    constraint: 要素がページにあり、`columns` と `items` の両方が指定されているときに描く。登録する前に代入したプロパティも、登録した後に読み取る
+  - item: 項目の押下
+    constraint: ボードの項目と表形式の行を押すか、フォーカスして Enter を押すと `mdmark-item-click` を送信する。ボタン・入力欄・リンクを押したときは送信しない。文書のビューのマーカーと `mountView` で描いたビューは、項目を押せるようにしない
+  - item: 描き直し
+    constraint: プロパティを代入し直すと描き直す。表示しているビュー・並べ替え・絞り込みは、同じ列名について保つ
+  - item: 片付け
+    constraint: 要素をページから取り除くと `mountView` の片付けと同じく `document` の受け取りを解除する。ページへ戻すと、保持しているプロパティで描き直す
+  - item: 対応ブラウザ
+    constraint: Chrome 99・Firefox 98・Safari 16.4 以上
+    decided_by: NFR-472-1#
+  - item: 型の配布
+    constraint: '`MdmarkViewElement`・`MdmarkViewItem`・`MdmarkViewItemClickDetail` を `dist/index.d.ts` に書き出し、`HTMLElementTagNameMap` に `mdmark-view`、`HTMLElementEventMap` に `mdmark-item-click` を加える'
+refs:
+  - DATA-797-1#
+  - IF-472-30#
+  - IF-793-1#
+test_file: tests/integration/lib/mdmark-view.browser.test.ts
+tags:
+  - name: topic:ビュー
+    main: true
+  - name: topic:api
+  - name: topic:イベント
+  - name: action:描画

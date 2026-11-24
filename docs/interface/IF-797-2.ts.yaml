@@ -1,0 +1,169 @@
+id: IF-797-2
+visibility: internal
+title: コメントをカスタム要素で付ける
+entry:
+  kind: operation
+  value: '`<mdmark-comments>`（配布物 `dist/index.js` を読み込むと登録するカスタム要素）'
+lead: アプリの画面が、自分で記載した本文を `<mdmark-comments>` で囲み、付いたコメントを JavaScript のプロパティで指定して、文書のコメントと同じ外観と操作でコメントを付けられるようにする。コメントの保存・編集・削除を要素のイベントで受け取る。
+flows:
+  - name: 正常系
+    summary: 選んだ文字にコメントを記載して保存すると保存のイベントを送信し、アプリが指定し直したコメントでマーカーを付ける
+    setup:
+      - name: 配布物を読み込んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み込み、`<mdmark-comments>` の中に `導入の手順を整える。` の `p` を持つページ。`mdmark-comment-save` を受け、`id` を振ったコメントを配列に追加して `comments` に指定し直す
+      - name: コメント
+        description: 最初は空の配列
+        notes: 記載する本文は `手順の数を <b>3</b> にする`
+      - name: Mock
+        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant C as mdmark-comments
+        A->>C: comments（空）を指定する
+        C->>C: コメントの部品のモジュールを読み込み、中の本文にコメントの操作を付ける
+        A->>C: 導入の手順 を選び、コメントを記載して保存する
+        C-->>A: mdmark-comment-save（quote・prefix・suffix・body）
+        A->>C: コメントを追加した comments を指定し直す
+        C->>A: 選んだ文字のマーカー
+      ```
+
+      <!-- /map -->
+    expected:
+      - 要素の中の文字を選ぶとコメントのボタンが出て、要素の外の文字を選んでも出ない
+      - '保存を押すと `mdmark-comment-save` が 1 回届き、`detail` が `quote: "導入の手順"`・`prefix`・`suffix`・`body` を持つ'
+      - '`comments` を指定し直すと `導入の手順` にマーカーが付き、吹き出しの `<b>3</b>` は文字のまま出る'
+      - 要素の中の `p` の文字は変わらない
+    test: test_normal
+  - name: 正常系（編集・削除する）
+    summary: '`editable`・`removable` を指定すると吹き出しに「編集」「削除」を出し、操作をイベントで送信する'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。`editable`・`removable` を `true` にし、`mdmark-comment-edit`・`mdmark-comment-remove` を受けて配列を書き換え、`comments` に指定し直す
+      - name: コメント
+        description: '`導入の手順` に付いた 1 件（`id`: `c-1`、`body`: `手順の数を 3 にする`）'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant C as mdmark-comments
+        A->>C: マーカーから吹き出しを開き、本文を編集して確定する
+        C-->>A: mdmark-comment-edit（id: c-1・body）
+        A->>C: 本文を書き換えた comments を指定し直す
+        A->>C: 吹き出しの削除を押す
+        C-->>A: mdmark-comment-remove（id: c-1）
+        A->>C: c-1 を除いた comments を指定し直す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 吹き出しに「編集」と「削除」が出る。`editable`・`removable` を省くと出ない
+      - '編集を確定すると `mdmark-comment-edit` が 1 回届き、`detail` が `{ id: "c-1", body: 新しい本文 }`。指定し直すと吹き出しに新しい本文が出る'
+      - '削除を押すと `mdmark-comment-remove` が `{ id: "c-1" }` で 1 回届き、指定し直すとマーカーが消えて `p` の文字は変わらない'
+    test: test_normal_when_edited_and_removed
+  - name: 異常系（データの誤り）
+    summary: 指定に誤りがあると、例外を投げずに本文の前へ通知ブロックを配置し、本文は残す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: 誤った指定
+        description: '`comments` に文字列を指定するものと、`comments[].id` が重なるものの 2 通り'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant C as mdmark-comments
+        A->>C: 誤った comments を代入する
+        C->>A: 本文の前に通知ブロック
+      ```
+
+      <!-- /map -->
+    expected:
+      - 2 通りとも、プロパティの代入が例外を投げない
+      - 要素の中の先頭にタイトル `この箇所を表示できません` の通知ブロックがあり、本文が誤った指定の名前（`comments`・`comments[1].id`）を `code` 要素で持つ
+      - 要素の中の `p` は残り、コメントのボタンは出ない
+    test: test_error_when_data_invalid
+idempotent: true
+side_effects: 要素の中の本文にコメントのマーカー・ボタン・入力欄・吹き出しを配置し、`document` の選択を受け取る。初めて付けるときにコメントの部品のモジュール（`dist/comments.js`）を読み込む。要素から `mdmark-comment-save`・`mdmark-comment-edit`・`mdmark-comment-remove` を送信する。保存はしない
+callers:
+  - SC-797-2#
+  - SC-797-1#
+exclusivity: 要素ごとに独立して付ける。同じマイクロタスクの中の複数の代入は、まとめて 1 回だけ付け直す
+request:
+  - name: comments
+    type: MdmarkComment[]
+    required: true
+    location: argument
+    description: 付いたコメント（要素のプロパティ）。データ『コメントのカスタム要素の指定』の `comments[]`
+    constraints: '`id` は重ならない。要素は `mountComments` の読み込みの関数が返却するコメントと同じ検査'
+  - name: editable
+    type: boolean
+    required: false
+    default: '`false`'
+    location: argument
+    description: 吹き出しに「編集」を出す
+  - name: removable
+    type: boolean
+    required: false
+    default: '`false`'
+    location: argument
+    description: 吹き出しに「削除」を出す
+response:
+  - name: mdmark-comment-save.detail
+    type: MdmarkCommentDraft
+    description: 保存するコメントの `quote`・`prefix`・`suffix`・`body`。`id` はアプリが振る
+  - name: mdmark-comment-edit.detail.id
+    type: string
+    description: 編集したコメントの `id`
+  - name: mdmark-comment-edit.detail.body
+    type: string
+    description: 確定した本文
+  - name: mdmark-comment-remove.detail.id
+    type: string
+    description: 削除するコメントの `id`
+response_notes: 3 つのイベントは `<mdmark-comments>` から送信する `CustomEvent` で、`bubbles` と `composed` を持つ。送信したら、保存は入力欄を、編集は編集欄を、削除は削除の確認を閉じ、アプリが `comments` を指定し直すまでマーカーと吹き出しは変えない。保存に失敗したことは要素へ伝えず、アプリが自分の画面で伝える
+exceptions:
+  - name: なし（正常終了）
+    condition: 指定を確認してコメントを付けられるようにする
+  - name: なし（通知ブロック・データの誤り）
+    condition: '`comments` が配列でない、要素がコメントの構造の検査に通らない、`id` が重なる、`editable`・`removable` が真偽値でない'
+    notes: プロパティの代入は例外を投げない。要素の中の本文は消さず、先頭に通知ブロック（タイトル `この箇所を表示できません`）を配置し、コメントの操作を付けない
+constraints:
+  - item: 要素の登録
+    constraint: '`dist/index.js` を読み込んだとき、`customElements` があり `mdmark-comments` がまだ登録されていなければ登録する'
+  - item: 付ける先
+    constraint: Shadow DOM を使用せず、要素の子の本文に `mountComments` と同じ処理でコメントの操作を付ける。保存・編集・削除はイベントにし、送信した後の表示は制約「イベントを送信した後の表示」に従う
+  - item: 付け直し
+    constraint: '`comments` を代入し直すとマーカーを付け直す。開いている入力欄は閉じる'
+  - item: 本文の変更
+    constraint: アプリが要素の中の本文を入れ替えたときは、次に `comments` を代入したときに箇所を探し直す
+  - item: 片付け
+    constraint: 要素をページから取り除くと `mountComments` の片付けと同じくマーカーを削除して文字を戻し、`document` の受け取りを解除する
+  - item: 対応ブラウザ
+    constraint: Chrome 99・Firefox 98・Safari 16.4 以上
+    decided_by: NFR-472-1#
+  - item: 型の配布
+    constraint: '`MdmarkCommentsElement`・`MdmarkCommentEditDetail`・`MdmarkCommentRemoveDetail` を `dist/index.d.ts` に書き出し、`HTMLElementTagNameMap` に `mdmark-comments`、`HTMLElementEventMap` に 3 つのイベントを加える'
+  - item: イベントを送信した後の表示
+    constraint: 今のコメントの処理（`src/comments/`）は、保存・編集・削除の関数の戻り値でマーカーを付ける・吹き出しを書き換える・失敗の表示を出す。カスタム要素から付けるときは、戻り値を待たずに入力欄・編集欄・削除の確認を閉じ、表示を変えない指定を今のコメントの処理に追加する。`mountComments` と文書のコメントは今の扱いのまま
+refs:
+  - DATA-797-2#
+  - IF-472-27#
+  - IF-793-1#
+test_file: tests/integration/lib/mdmark-comments.browser.test.ts
+tags:
+  - name: topic:コメント
+    main: true
+  - name: topic:api
+  - name: topic:イベント

@@ -365,6 +365,30 @@ files:
     related:
       - to: MOD-793-3
         type: implements
+  - path: views/mdmark-view.element.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「カスタム要素 `<mdmark-view>` のプロパティ・描画・描き直し・イベントの送信・登録」を受け持つ。`<mdmark-view>` の振る舞いを変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:ビュー, topic:api]
+    related:
+      - to: MOD-797-1
+        type: implements
+  - path: comments/mdmark-comments.element.ts
+    description: モジュール構成『ライブラリ本体 / ビューとコメント』のうち「カスタム要素 `<mdmark-comments>` のプロパティ・コメントの操作の付け直し・イベントの送信・登録」を受け持つ。`<mdmark-comments>` の振る舞いを変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:コメント, topic:api]
+    related:
+      - to: MOD-797-2
+        type: implements
+  - path: diagram/mdmark-graph.element.ts
+    description: モジュール構成『ライブラリ本体 / 図』のうち「カスタム要素 `<mdmark-graph>`・`<mdmark-param-graph>` のプロパティ・描画・描き直し・イベントの送信・登録」を受け持つ。グラフと操作できる部品のカスタム要素の振る舞いを変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:グラフ, topic:図, topic:api]
+    related:
+      - to: MOD-797-3
+        type: implements
+  - path: map/mdmark-map.element.ts
+    description: モジュール構成『ライブラリ本体 / map』のうち「カスタム要素 `<mdmark-map>` のプロパティ・描画・描き直し・イベントの送信・登録」を受け持つ。`<mdmark-map>` の振る舞いを変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:map, topic:図, topic:api]
+    related:
+      - to: MOD-797-4
+        type: implements
   - path: diagram/diagram-resize.interact.ts
     description: モジュール構成『ライブラリ本体 / 図』のうち「表示する枠の高さを変えるリサイズハンドルと高さの保持」を受け持つ。図の部品の描き方や操作を変えるときに参照する。
     tags: [topic:図, tool:svg]

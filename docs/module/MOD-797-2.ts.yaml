@@ -1,0 +1,150 @@
+id: MOD-797-2
+visibility: internal
+title: ライブラリ本体 / ビューとコメント / mdmark-comments.element.ts
+lead: カスタム要素 `<mdmark-comments>` のプロパティ・コメントの操作の付け直し・イベントの送信と登録を受け持ち、`<mdmark-comments>` の振る舞いを変えるときに参照する。
+test_files:
+  - tests/unit/src/comments/mdmark-comments.element.browser.test.ts
+data_models:
+  - name: MdmarkCommentEditDetail
+    title: コメントの編集のイベントの値
+    container: src/comments/mdmark-comments.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: 公開の型
+    summary: '`mdmark-comment-edit` の `detail`'
+    properties:
+      - name: id
+        type: string
+        description: 編集したコメントの `id`
+      - name: body
+        type: string
+        description: 確定した本文
+    refs:
+      - IF-797-2#response
+  - name: MdmarkCommentRemoveDetail
+    title: コメントの削除のイベントの値
+    container: src/comments/mdmark-comments.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: 公開の型
+    summary: '`mdmark-comment-remove` の `detail`'
+    properties:
+      - name: id
+        type: string
+        description: 削除するコメントの `id`
+    refs:
+      - IF-797-2#response
+classes:
+  - name: MdmarkCommentsElement
+    title: コメントのカスタム要素
+    container: src/comments/mdmark-comments.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: カスタム要素
+    kind: クラス
+    inherits: HTMLElement
+    summary: '`comments`・`editable`・`removable` を代入すると、次のマイクロタスクで確認して子の本文にコメントの操作を付け直す'
+    description: '`dist/index.js` に入れる。コメントの部品のモジュール（`dist/comments.js`）は `loadPartModule("comments")` で読み込む。要素の子の本文はアプリが配置し、書き換えない（誤りのときは先頭に通知ブロックを追加するだけ）'
+    properties:
+      - name: comments
+        type: MdmarkComment[] | undefined
+        access: public
+        description: 付いたコメント。代入すると `scheduleAttach` を呼ぶ
+      - name: editable
+        type: boolean
+        access: public
+        default: 'false'
+        description: 吹き出しに「編集」を出す
+      - name: removable
+        type: boolean
+        access: public
+        default: 'false'
+        description: 吹き出しに「削除」を出す
+      - name: controller
+        type: CommentsController | undefined
+        access: private
+        description: 今付けているコメントの操作
+    methods:
+      - name: attachNow
+        title: 付ける
+        kind: メソッド
+        summary: 指定を確認し、誤りがあれば先頭に通知ブロックを配置し、無ければイベントを送信する読み込みと保存の関数で `attachComments` を呼ぶ
+        returns:
+          type: Promise<void>
+          description: '-'
+        side_effects: 本文にマーカー・ボタン・入力欄・吹き出しを配置する。`mdmark-comment-save`・`mdmark-comment-edit`・`mdmark-comment-remove` を送信する
+        process: |-
+          1. 要素がページに無いか `comments` が `undefined` なら何もしない
+          2. 前の通知ブロックを取り除き、`controller` があれば `destroy` を呼ぶ
+          3. `comments` が配列でない、要素がコメントの構造の検査に通らない、`id` が重なる、`editable`・`removable` が真偽値でないときは、要素の先頭に `renderNotice`（`source` は `data`、`figure` は `false`、`name` は誤りの指定の名前、`reason` は誤りの内容と修正方法）の通知ブロックを配置して終える
+          4. `loadPartModule("comments")` でモジュールを読み込み、`attachComments({ root: this, store, docId: "element", closeOnEvent: true })` を呼ぶ。`store.load` は `comments` を返却し、`store.save`・`update`（`editable` のときだけ持つ）・`remove`（`removable` のときだけ持つ）はそれぞれのイベントを `bubbles`・`composed` の `CustomEvent` で送信する
+        unit_tests:
+          - name: test_attach_now
+            case: 正常
+            summary: 指定したコメントにマーカーを付ける
+            condition: '`導入の手順を整える。` の `p` を持つ要素に `導入の手順` のコメント 1 件を代入する'
+            mock: なし（ブラウザ。コメントの部品のモジュールを `setPartModuleLoader` で指定する）
+            expected: '`導入の手順` がコメントのマーカーに包まれ、`p` の文字は変わらない'
+          - name: test_attach_now_when_saved
+            case: 正常
+            summary: 保存をイベントで送信し、入力欄を閉じて表示を変えない
+            condition: 文字を選んで入力欄に本文を記載し、保存を押す
+            mock: なし
+            expected: '`mdmark-comment-save` が 1 回届き、入力欄が閉じ、マーカーも失敗の表示も無い'
+          - name: test_attach_now_when_invalid
+            case: 異常
+            summary: 誤った指定は本文を残して通知ブロックを配置する
+            condition: '`comments` に文字列を代入する'
+            mock: なし
+            expected: 代入が例外を投げず、先頭に本文に `<code>comments</code>` を持つ通知ブロックがあり、`p` が残る
+        callees:
+          - MOD-472-155#functions[checkCommentOptions]
+          - MOD-472-159#functions[loadPartModule]
+          - MOD-472-157#functions[attachComments]
+          - MOD-472-310#functions[renderNotice]
+        refs:
+          - IF-797-2#constraints[付ける先]
+          - IF-797-2#constraints[イベントを送信した後の表示]
+          - IF-797-2#exceptions
+      - name: disconnectedCallback
+        title: ページから取り除かれた
+        kind: メソッド
+        summary: '`controller.destroy` を呼んでマーカーを削除し、`document` の受け取りを解除する'
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_disconnected_callback
+            case: 正常
+            summary: 取り除くとマーカーを削除する
+            condition: マーカーを付けた要素を取り除く
+            mock: なし
+            expected: コメントのマーカーが無く、`p` の文字が元のまま
+    refs:
+      - IF-797-2#
+functions:
+  - name: defineCommentsElement
+    title: コメントのカスタム要素を登録する
+    container: src/comments/mdmark-comments.element.ts
+    kind: 関数
+    scope: internal
+    summary: '`registry` に `mdmark-comments` が登録されていなければ `MdmarkCommentsElement` を登録する'
+    args:
+      - name: registry
+        type: CustomElementRegistry
+        required: true
+        description: 登録先
+    returns:
+      type: void
+      description: '-'
+    unit_tests:
+      - name: test_define_comments_element
+        case: 正常
+        summary: 未登録なら登録し、登録済みなら何もしない
+        condition: '`get` と `define` を記録する登録先で 2 回呼ぶ'
+        mock: 登録先を記録する代役
+        expected: '`define` が `mdmark-comments` で 1 回だけ呼ばれる'
+    refs:
+      - IF-797-2#constraints[要素の登録]
+tags:
+  - name: topic:コメント
+    main: true
+  - name: topic:api
+  - name: topic:イベント

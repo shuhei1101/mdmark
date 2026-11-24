@@ -1,0 +1,150 @@
+id: MOD-797-3
+visibility: internal
+title: ライブラリ本体 / 図 / mdmark-graph.element.ts
+lead: カスタム要素 `<mdmark-graph>` と `<mdmark-param-graph>` のプロパティ・描画・描き直し・イベントの送信と登録を受け持ち、グラフと操作できる部品のカスタム要素の振る舞いを変えるときに参照する。
+test_files:
+  - tests/unit/src/diagram/mdmark-graph.element.browser.test.ts
+data_models:
+  - name: MdmarkParamChangeDetail
+    title: 値の変更のイベントの値
+    container: src/diagram/mdmark-graph.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: 公開の型
+    summary: '`mdmark-param-change` の `detail`'
+    properties:
+      - name: key
+        type: string
+        description: 動かしたスライダーの `knob.key`
+      - name: value
+        type: number
+        description: スライダーの今の値
+    refs:
+      - IF-797-4#response
+classes:
+  - name: MdmarkGraphElement
+    title: グラフのカスタム要素
+    container: src/diagram/mdmark-graph.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: カスタム要素
+    kind: クラス
+    inherits: HTMLElement
+    summary: '`definition` を代入すると、次のマイクロタスクで `chart` のマーカーの範囲と同じ図の枠とグラフか通知ブロックを描く'
+    description: 描くときは、定義を `JSON.stringify` した `chart` のマーカーの範囲の Markdown を `render` で HTML にし、`attachDiagrams` で図の枠の操作を付ける。定義の確認と誤りの通知は `readDefinition` の結果で決める
+    properties:
+      - name: definition
+        type: MdmarkChartDefinition | undefined
+        access: public
+        description: グラフの定義。代入すると `scheduleRender` を呼ぶ
+      - name: detach
+        type: (() => void) | undefined
+        access: private
+        description: 図の枠の操作を解除する関数
+    methods:
+      - name: renderNow
+        title: 描く
+        kind: メソッド
+        summary: 定義を確認し、誤りがあれば通知ブロックを、無ければ図の枠とグラフを描く
+        returns:
+          type: void
+          description: '-'
+        process: |-
+          1. 要素がページに無いか `definition` が `undefined` なら何もしない
+          2. `readDefinition("chart", JSON.stringify(definition))` が `ok: false` なら、要素の中を `div.mdmark` の中の `renderNotice`（`source` は `data`、`name` は `definition`、`reason` は `problems` の最初の文。`problems` は読み込めない箇所を文で持ち、パスを別に持たない）にして終える
+          3. 前の図の枠の高さ（表示する枠の `style.height`）と拡大の倍率（`zoomControlOf(表示する枠)?.ratio()`）を記録し、`detach` を呼ぶ
+          4. `chart` のマーカーの範囲の Markdown を `render` して要素の中の `div.mdmark` に入れ、`attachDiagrams` を付け、記録した高さを戻し、倍率は新しい表示する枠の `zoomControlOf(表示する枠)?.setRatio(記録した比)` で戻す
+        unit_tests:
+          - name: test_render_now
+            case: 正常
+            summary: 定義から図の枠とグラフを描く
+            condition: 折れ線・系列 1 つ・項目 3 つの定義
+            mock: なし（ブラウザ）
+            expected: 要素の中に `figure.mdmark-diagram` が 1 つあり、同じ定義を `render` した HTML と図の枠の中身が同じ
+          - name: test_render_now_when_invalid
+            case: 異常
+            summary: 誤った定義は通知ブロックを描く
+            condition: '`title` が無い定義を代入する'
+            mock: なし
+            expected: 代入が例外を投げず、タイトル `この図を表示できません` の通知ブロック
+          - name: test_render_now_when_redrawn
+            case: 正常
+            summary: 定義を代入し直すと、図の枠の倍率を保って描き直す
+            condition: 描いた後に拡大を 2 回押し、項目を 1 つ加えた定義を代入する
+            mock: なし（ブラウザ）
+            expected: 描き直した図の枠の倍率の文字が、代入する前と同じ
+        callees:
+          - MOD-472-171#functions[readDefinition]
+          - MOD-472-212#functions[render]
+          - MOD-472-183#functions[attachDiagrams]
+          - MOD-472-310#functions[renderNotice]
+          - MOD-472-177#functions[zoomControlOf]
+        refs:
+          - IF-797-3#constraints[描く先]
+          - IF-797-3#exceptions
+    refs:
+      - IF-797-3#
+  - name: MdmarkParamGraphElement
+    title: 操作できる部品のカスタム要素
+    container: src/diagram/mdmark-graph.element.ts
+    usecase: 部品をカスタム要素で描く
+    role: カスタム要素
+    kind: クラス
+    inherits: HTMLElement
+    summary: '`definition` を代入すると、`param` のマーカーの範囲と同じスライダーとグラフを描き、スライダーの値の変更を `mdmark-param-change` で送信する'
+    description: '`MdmarkGraphElement` と同じく `render` で描き、`attachParams` に `onChange` を指定する'
+    properties:
+      - name: definition
+        type: MdmarkParamDefinition | undefined
+        access: public
+        description: 操作できる部品の定義。代入すると `scheduleRender` を呼ぶ
+    methods:
+      - name: renderNow
+        title: 描く
+        kind: メソッド
+        summary: '`MdmarkGraphElement` の `renderNow` と同じ手順を `param` で行い、`attachParams(root, [definition], { onChange })` で `mdmark-param-change` を `bubbles`・`composed` の `CustomEvent` で送信する'
+        returns:
+          type: void
+          description: '-'
+        unit_tests:
+          - name: test_render_now_when_param_changed
+            case: 正常
+            summary: スライダーの値の変更を送信する
+            condition: '`key` が `rate` で 0〜10 の定義。スライダーを 8 にして `input` を発生させる'
+            mock: なし
+            expected: '`mdmark-param-change` が `{ key: "rate", value: 8 }` で 1 回届く。`definition` を代入したときは届かない'
+        callees:
+          - MOD-472-185#functions[attachParams]
+        refs:
+          - IF-797-4#
+    refs:
+      - IF-797-4#
+functions:
+  - name: defineGraphElements
+    title: グラフと操作できる部品のカスタム要素を登録する
+    container: src/diagram/mdmark-graph.element.ts
+    kind: 関数
+    scope: internal
+    summary: '`registry` に `mdmark-graph`・`mdmark-param-graph` が登録されていなければそれぞれ登録する'
+    args:
+      - name: registry
+        type: CustomElementRegistry
+        required: true
+        description: 登録先
+    returns:
+      type: void
+      description: '-'
+    unit_tests:
+      - name: test_define_graph_elements
+        case: 正常
+        summary: 未登録の名前だけ登録する
+        condition: '`mdmark-graph` だけが登録済みの登録先で呼ぶ'
+        mock: 登録先を記録する代役
+        expected: '`define` が `mdmark-param-graph` で 1 回だけ呼ばれる'
+    refs:
+      - IF-797-3#constraints[要素の登録]
+      - IF-797-4#constraints[要素の登録]
+tags:
+  - name: topic:グラフ
+    main: true
+  - name: topic:図
+  - name: topic:api
+  - name: topic:イベント

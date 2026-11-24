@@ -12,6 +12,10 @@ guides:
     when: アプリの画面の一覧を、mdmark の表（`<mdmark-table>`）で表示するとき
     summary: 列の定義と行のデータを JavaScript のプロパティで指定して表を描き、行の押下・セルの編集・行の追加をイベントで受け取る手順
     page: docs/guide/カスタマイズ-表をカスタム要素で使用する.mark.md
+  - name: part-elements
+    when: アプリの画面のデータを、mdmark のビュー・コメント・グラフ・操作できる部品・map の図（`<mdmark-view>`・`<mdmark-comments>`・`<mdmark-graph>`・`<mdmark-param-graph>`・`<mdmark-map>`）で表示するとき
+    summary: データを JavaScript のプロパティで指定して部品を描き、項目やノードの押下・コメントの保存・スライダーの値の変更をイベントで受け取る手順
+    page: docs/guide/カスタマイズ-部品をカスタム要素で使用する.mark.md
   - name: components
     when: 注意書き・タブ・ステップ・ファイルツリー・バッジ・脚注・注記・目次などで本文を組むとき・フォルダ構成を記載するとき
     summary: 本文の部品を記載する手順

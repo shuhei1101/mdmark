@@ -1,0 +1,39 @@
+id: DATA-797-4
+visibility: internal
+title: 'データ: map の図のカスタム要素の指定'
+lead: アプリの画面が map の図のカスタム要素の JavaScript のプロパティで指定する、Mermaid・補足・map の設定。アプリが書き込み、map の部品が参照して描く。
+datastore: JSON（アプリの画面のメモリ。mdmark は保存しない）
+fields:
+  - key: source
+    title: Mermaid
+    type: string
+    required: true
+    description: map の範囲に記載する Mermaid のコードブロックの中身。描ける種類は map の範囲と同じ
+    example: |-
+      flowchart LR
+        api[API] --> db[(DB)]
+  - key: data
+    title: 補足
+    type: object
+    description: map の範囲の補足と同じキーと意味の JSON。省くと補足の無い図を描く
+    example: '{"version": 1, "notes": {"api": {"text": "認証を受け持つ"}}}'
+  - key: options
+    title: map の設定
+    type: object
+    description: map のマーカーの設定の `title`・`focus` と同じキーと意味。`collapse` は受け付けず、要素の場所に誤りの通知を出す
+    example: '{"title": "全体の構成"}'
+lifecycle:
+  - key: （全体）
+    growth: map の図のカスタム要素 1 つに 1 件
+    retention: アプリが指定し直すか、要素がページから削除されるまで
+    deletion: mdmark は保存しない。アプリが自分の保存先で持つ
+usage:
+  - interface: 部品をカスタム要素で描く
+    access: read
+    fields:
+      - source
+      - data
+      - options
+refs:
+  - DATA-472-2#
+  - DATA-472-24#

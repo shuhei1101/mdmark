@@ -807,6 +807,18 @@ terms:
   details:
   - title: 表をカスタム要素で使用する
     href: ./カスタマイズ-表をカスタム要素で使用する.mark.md#列の定義と行のデータを指定する
+- id: part-element
+  name: 部品のカスタム要素
+  aliases:
+  - mdmark-view
+  - mdmark-comments
+  - mdmark-graph
+  - mdmark-param-graph
+  - mdmark-map
+  description: アプリの画面に配置する `<mdmark-view>`・`<mdmark-comments>`・`<mdmark-graph>`・`<mdmark-param-graph>`・`<mdmark-map>`。データを JavaScript のプロパティで指定すると、Markdown の記法で描いたときと同じ外観と操作のビュー・コメント・グラフ・操作できる部品・map の図を描き、項目やノードの押下・コメントの保存・スライダーの値の変更を要素のイベントで通知する
+  details:
+  - title: 部品をカスタム要素で使用する
+    href: ./カスタマイズ-部品をカスタム要素で使用する.mark.md
 - id: comment
   name: コメント
   description: 読者が本文の選んだ箇所に付ける意見。選んだ文字・その前後の文字・本文の組で、利用側の保存先に残る。機能 `comments` で付けられるようにする

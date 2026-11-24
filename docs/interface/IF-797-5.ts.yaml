@@ -1,0 +1,131 @@
+id: IF-797-5
+visibility: internal
+title: map の図をカスタム要素で描く
+entry:
+  kind: operation
+  value: '`<mdmark-map>`（配布物 `dist/index.js` を読み込むと登録するカスタム要素）'
+lead: アプリの画面が、`<mdmark-map>` に Mermaid と補足を JavaScript のプロパティで指定し、map の範囲で描いたときと同じ図を描く。ノードの押下を要素のイベントで受け取る。
+flows:
+  - name: 正常系
+    summary: Mermaid と補足から構成図を描き、ノードを押すとノードの ID を持つノードの押下のイベントを送信する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み込み、`<mdmark-map>` を 1 つ持つページ。`mdmark-node-click` を受け、`detail.id` を配列に記録する
+      - name: 図のデータ
+        description: 'ノード 3 つ（`api`・`db`・`ui`）と線 2 本の `flowchart LR` と、`api` に説明を付けた補足。`options` は `{ "title": "全体の構成" }`'
+      - name: Mock
+        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant M as mdmark-map
+        A->>M: source・data・options を指定する
+        M->>M: map の部品のモジュールを読み込み、配置する
+        M->>A: 要素の中に構成図
+        A->>M: api のノードを押す
+        M-->>A: mdmark-node-click（id: api）
+      ```
+
+      <!-- /map -->
+    expected:
+      - 要素の中に、同じ Mermaid と補足を map の範囲で描いたときと同じ図の枠（タイトル `全体の構成`）と3 つのノード・2 本の線がある
+      - '`api` のノードを押すと、ノードの線が強調され、`mdmark-node-click` が `{ id: "api" }` で 1 回届く。フォーカスして Enter を押しても同じ'
+      - '`api` のノードにポインターを重ねると補足の説明のツールチップが出る'
+      - 拡大・縮小・全画面のボタンや線を押しても `mdmark-node-click` は届かない
+    test: test_normal
+  - name: 異常系（データの誤り）
+    summary: Mermaid を読み込めないか指定に誤りがあると、例外を投げずに通知ブロックを配置する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。要素の後ろに `p` を持つ
+      - name: 誤った指定
+        description: '`source` に map が描けない種類（`pie`）を指定するものと、`options` に `collapse` を指定するものの 2 通り'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant M as mdmark-map
+        A->>M: 誤った指定を代入する
+        M->>A: 要素の中に通知ブロック
+      ```
+
+      <!-- /map -->
+    expected:
+      - 2 通りとも、プロパティの代入が例外を投げない
+      - 要素の中にタイトル `この図を表示できません` の通知ブロックがあり、本文が誤った指定の名前（`source`・`options.collapse`）を `code` 要素で持つ
+      - 後ろの `p` が表示されている
+    test: test_error_when_data_invalid
+idempotent: true
+side_effects: 要素の中身を書き換え、map の図の操作を付ける。初めて描くときに map の部品のモジュール（`dist/map.js`）を読み込む。要素から `mdmark-node-click` を送信する。指定された文字列とオブジェクトは書き換えない
+callers:
+  - SC-797-2#
+  - SC-797-1#
+exclusivity: 要素ごとに独立して描く。同じマイクロタスクの中の複数の代入は、まとめて 1 回だけ描く
+request:
+  - name: source
+    type: string
+    required: true
+    location: argument
+    description: Mermaid（要素のプロパティ）。データ『map の図のカスタム要素の指定』の `source`
+    constraints: map の範囲が描ける種類
+  - name: data
+    type: object
+    required: false
+    default: なし（補足の無い図）
+    location: argument
+    description: 補足。map の範囲の補足と同じキーと検査
+  - name: options
+    type: '{ title?: string; focus?: string }'
+    required: false
+    default: なし（map のマーカーの引数を省いたときと同じ）
+    location: argument
+    description: map の設定。map のマーカーの `title`・`focus` と同じ
+    constraints: '`collapse` は受け付けない'
+response:
+  - name: mdmark-node-click.detail.id
+    type: string
+    description: 押したノードの Mermaid の ID
+response_notes: '`mdmark-node-click` は `<mdmark-map>` から送信する `CustomEvent` で、`bubbles` と `composed` を持つ。グループのタイトル・線・図の枠のボタンを押したときは送信しない'
+exceptions:
+  - name: なし（正常終了）
+    condition: 指定を確認して図を描く
+  - name: なし（通知ブロック・データの誤り）
+    condition: '`source` が文字列でないか map が描けない種類、`data` が補足の検査に通らない、`options` が受け付けないキーを持つ'
+    notes: プロパティの代入は例外を投げない。通知ブロックのタイトルは `この図を表示できません`
+  - name: なし（通知ブロック・モジュールを読み込めない）
+    condition: map の部品のモジュールを読み込めない
+    notes: 文書の map の範囲と同じ読み込めない旨の通知ブロックを配置する
+constraints:
+  - item: 要素の登録
+    constraint: '`dist/index.js` を読み込んだとき、`customElements` があり `mdmark-map` がまだ登録されていなければ登録する'
+  - item: 描く先
+    constraint: Shadow DOM を使用せず、要素の中に class `mdmark` の要素を 1 つ配置して、map の範囲と同じ部品と操作で描く。部品のモジュールの読み込みは『部品のモジュールを指定する』で指定した関数を優先する
+  - item: ノードの押下
+    constraint: ノードを押すか、フォーカスして Enter を押すと、今の選択と強調に加えて `mdmark-node-click` を送信する。文書の map の範囲で描いた図は送信しない
+  - item: 描き直し
+    constraint: プロパティを代入し直すと描き直す。中へ入ったグループと開閉は、同じ ID について保つ
+  - item: 片付け
+    constraint: 要素をページから取り除くと `document` の受け取りを解除する。ページへ戻すと、保持しているプロパティで描き直す
+  - item: 対応ブラウザ
+    constraint: Chrome 99・Firefox 98・Safari 16.4 以上
+    decided_by: NFR-472-1#
+  - item: 型の配布
+    constraint: '`MdmarkMapElement`・`MdmarkNodeClickDetail` を `dist/index.d.ts` に書き出し、`HTMLElementTagNameMap` に `mdmark-map`、`HTMLElementEventMap` に `mdmark-node-click` を加える'
+refs:
+  - DATA-797-4#
+  - IF-655-1#
+  - IF-793-1#
+test_file: tests/integration/lib/mdmark-map.browser.test.ts
+tags:
+  - name: topic:map
+    main: true
+  - name: topic:図
+  - name: topic:api
+  - name: topic:イベント

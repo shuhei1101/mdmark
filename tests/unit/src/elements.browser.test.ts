@@ -6,7 +6,7 @@ const loadElements = () => import("../../../src/elements.ts");
 const loadTableElement = () =>
   import("../../../src/table/mdmark-table.element.ts");
 
-// ページでは mdmark-table を登録する（正常系）
+// ページでは表・ビュー・コメント・グラフ・操作できる部品・map の図の要素を登録する（正常系）
 test("test_define_elements", async () => {
   // 準備
   const { defineElements } = await loadElements();
@@ -15,6 +15,15 @@ test("test_define_elements", async () => {
   defineElements();
   // 検証
   expect(customElements.get("mdmark-table")).toBe(MdmarkTableElement);
+  for (const name of [
+    "mdmark-view",
+    "mdmark-comments",
+    "mdmark-graph",
+    "mdmark-param-graph",
+    "mdmark-map",
+  ]) {
+    expect(customElements.get(name), name).toBeDefined();
+  }
 });
 
 // customElements が無ければ何もしない（正常系）

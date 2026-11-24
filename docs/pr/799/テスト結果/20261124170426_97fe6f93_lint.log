@@ -1,0 +1,58 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+# 単体テスト作成の lint。Biome・ESLint・actionlint は違反なし。tsc の違反 7 件は全て実装が無いことによる（新規の要素のファイルが無い・MapHooks.onNodeClick と drawView の第 3 引数が未実装）
+
+
+> lint
+> biome check .
+
+tests/unit/src/tree/tree.syntax.test.ts:250:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+  
+    248 │ /** 言語と中身からコードブロックの行を作る */
+    249 │ const fence = (language: string, lines: string[]) => [
+  > 250 │   "```" + language,
+        │   ^^^^^^^^^^^^^^^^
+    251 │   ...lines,
+    252 │   "```",
+  
+  i Unsafe fix: Use a template literal.
+  
+    248 248 │   /** 言語と中身からコードブロックの行を作る */
+    249 249 │   const fence = (language: string, lines: string[]) => [
+    250     │ - ··"```"·+·language,
+        250 │ + ··`\`\`\`${language}`,
+    251 251 │     ...lines,
+    252 252 │     "```",
+  
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 1011 files in 969ms. No fixes applied.
+Found 1 warning.
+Found 1 info.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/comments/mdmark-comments.element.browser.test.ts(9,21): error TS2307: Cannot find module '../../../../src/comments/mdmark-comments.element.ts' or its corresponding type declarations.
+tests/unit/src/diagram/mdmark-graph.element.browser.test.ts(16,21): error TS2307: Cannot find module '../../../../src/diagram/mdmark-graph.element.ts' or its corresponding type declarations.
+tests/unit/src/map/index.browser.test.ts(373,7): error TS2353: Object literal may only specify known properties, and 'onNodeClick' does not exist in type 'MapHooks'.
+tests/unit/src/map/mdmark-map.element.browser.test.ts(9,21): error TS2307: Cannot find module '../../../../src/map/mdmark-map.element.ts' or its corresponding type declarations.
+tests/unit/src/views/index.browser.test.ts(217,7): error TS2554: Expected 2 arguments, but got 3.
+tests/unit/src/views/mdmark-view.element.browser.test.ts(9,21): error TS2307: Cannot find module '../../../../src/views/mdmark-view.element.ts' or its corresponding type declarations.
+tests/unit/src/views/mdmark-view.element.browser.test.ts(114,5): error TS2345: Argument of type 'typeof (Anonymous class)' is not assignable to parameter of type 'CustomElementConstructor'.
+  Type '(Anonymous class)' is missing the following properties from type 'HTMLElement': accessKey, accessKeyLabel, autocapitalize, autocorrect, and 318 more.
+
+> mdmark-vscode@0.2.0 typecheck
+> tsc --noEmit
+
+exit 1

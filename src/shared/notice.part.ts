@@ -34,6 +34,21 @@ const DIFF_NOTICES = {
   }),
 };
 
+/** タイトルと本文を `DIFF_NOTICES` から決める読み込めなかったものか */
+const isMessageSource = (source: string): source is keyof typeof DIFF_NOTICES =>
+  Object.hasOwn(DIFF_NOTICES, source);
+
+/** 指定の誤りの通知ブロックのタイトル: 表のカスタム要素は表、ほかの部品のカスタム要素は図かどうかで分ける */
+const dataNoticeTitle = (
+  source: "table-data" | "data",
+  figure: boolean,
+): string => {
+  if (source === "table-data") {
+    return NOTICE_TITLES.table;
+  }
+  return figure ? NOTICE_TITLES.figure : NOTICE_TITLES.block;
+};
+
 /** 外部ライブラリか拡張を読み込めないマーカーの場所、差分の取り出し元がリビジョンの一覧か本文を返却できない場所、またはまとめていないアイコンを読み込めない文書の先頭に配置する、通知ブロックの HTML を返却する */
 export function renderNotice(options: {
   /** 読み込めなかったマーカーの名前。`diff-content` では取り出せなかったリビジョンの説明（複数なら `「…」と「…」` の中身）。`diff-blocks`・`icons` では使用しない */
@@ -49,20 +64,17 @@ export function renderNotice(options: {
     | "diff-content"
     | "diff-blocks"
     | "icons"
-    | "table-data";
-  /** `table-data` の本文で、指定の名前に続ける誤りの内容と修正方法 */
+    | "table-data"
+    | "data";
+  /** `table-data`・`data` の本文で、指定の名前に続ける誤りの内容と修正方法 */
   reason?: string;
 }): string {
   const { name, figure = true, source = "library" } = options;
-  if (source === "table-data") {
-    return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${NOTICE_TITLES.table}</strong><p><code>${escapeHtml(name)}</code>${escapeHtml(options.reason ?? "")}</p></div>`;
+  if (source === "table-data" || source === "data") {
+    const title = dataNoticeTitle(source, figure);
+    return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${title}</strong><p><code>${escapeHtml(name)}</code>${escapeHtml(options.reason ?? "")}</p></div>`;
   }
-  if (
-    source === "diff-revisions" ||
-    source === "diff-content" ||
-    source === "diff-blocks" ||
-    source === "icons"
-  ) {
+  if (isMessageSource(source)) {
     const { title, body } = DIFF_NOTICES[source](name);
     return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${title}</strong><p>${body}</p></div>`;
   }

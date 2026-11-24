@@ -33,6 +33,7 @@ notes:
   公開する型とカスタム要素: |-
     `MdmarkTableElement`・`MdmarkTableColumn`・`MdmarkTableRow`・`MdmarkTableValue`・`MdmarkTableFeatures`・`MdmarkTableRowClickDetail`・`MdmarkTableCellEditDetail` を型として export する。
     `declare global` で `HTMLElementTagNameMap` に `"mdmark-table": MdmarkTableElement`、`HTMLElementEventMap` に `"mdmark-row-click": CustomEvent<MdmarkTableRowClickDetail>`・`"mdmark-cell-edit": CustomEvent<MdmarkTableCellEditDetail>`・`"mdmark-row-add": CustomEvent<Record<string, never>>` を加える。
+    同じく `MdmarkViewElement`・`MdmarkViewItem`・`MdmarkViewItemClickDetail`・`MdmarkCommentsElement`・`MdmarkCommentEditDetail`・`MdmarkCommentRemoveDetail`・`MdmarkGraphElement`・`MdmarkParamGraphElement`・`MdmarkParamChangeDetail`・`MdmarkMapElement`・`MdmarkNodeClickDetail` を型として export し、`HTMLElementTagNameMap` に `mdmark-view`・`mdmark-comments`・`mdmark-graph`・`mdmark-param-graph`・`mdmark-map`、`HTMLElementEventMap` に `mdmark-item-click`・`mdmark-comment-save`・`mdmark-comment-edit`・`mdmark-comment-remove`・`mdmark-param-change`・`mdmark-node-click` を加える。
     モジュールの最後で `defineElements()`（`src/elements.ts`）を 1 回呼ぶ。
 refs:
   - IF-793-1#constraints[型の配布]

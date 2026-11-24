@@ -40,6 +40,7 @@ export type CommentsPartModule = {
     docId: string;
     reveal?: (element: HTMLElement) => void;
     margin?: boolean;
+    closeOnEvent?: boolean;
   }) => Promise<CommentsController>;
 };
 
@@ -198,8 +199,17 @@ export async function attachComments(options: {
   reveal?: (element: HTMLElement) => void;
   /** 余白のマーカーを配置するか（既定 `false`） */
   margin?: boolean;
+  /** 保存・修正・削除の関数の戻り値を待たずに閉じ、表示を変えないか（既定 `false`。コメントのカスタム要素だけが `true` を指定する） */
+  closeOnEvent?: boolean;
 }): Promise<CommentsController> {
-  const { root, store, docId, reveal, margin = false } = options;
+  const {
+    root,
+    store,
+    docId,
+    reveal,
+    margin = false,
+    closeOnEvent = false,
+  } = options;
   let destroyed = false;
   let comments: MdmarkComment[] = [];
   // マーカー → そのマーカーに付いたコメント
@@ -363,14 +373,43 @@ export async function attachComments(options: {
   };
 
   // ─── 入力欄 ───
+  /** 入力欄の本文を返却する。空なら空の通知を出して本文の欄へフォーカスを移し、`undefined` を返却する */
+  const filledBody = (form: HTMLElement, range: Range): string | undefined => {
+    const field = form.querySelector("textarea");
+    const body = field?.value.trim() ?? "";
+    if (body !== "") {
+      return body;
+    }
+    setFormState(form, "empty");
+    placePopover({ element: form, rect: range.getBoundingClientRect() });
+    field?.focus();
+    return undefined;
+  };
+  /** 保存の関数を呼び、戻り値を待たずに入力欄を閉じる（表示はアプリが指定し直したコメントで変える） */
+  const sendDraft = (range: Range, body: string): void => {
+    void store
+      .save({ docId, comment: draftFromRange({ root, range, body }) })
+      .catch((error: unknown) => {
+        console.error(
+          "[mdmark] コメントを保存できません",
+          "save",
+          docId,
+          error,
+        );
+      });
+    closeForm(true);
+    window.getSelection()?.removeAllRanges();
+    addButton.hidden = true;
+  };
   /** 保存の関数を呼び、保存できたら入力欄を閉じて選んだ箇所にマーカーを付ける */
   const save = async (form: HTMLElement, range: Range): Promise<void> => {
     const field = form.querySelector("textarea");
-    const body = field?.value.trim() ?? "";
-    if (body === "") {
-      setFormState(form, "empty");
-      placePopover({ element: form, rect: range.getBoundingClientRect() });
-      field?.focus();
+    const body = filledBody(form, range);
+    if (body === undefined) {
+      return;
+    }
+    if (closeOnEvent) {
+      sendDraft(range, body);
       return;
     }
     setFormState(form, "saving");
@@ -508,6 +547,7 @@ export async function attachComments(options: {
         isActive: () => !destroyed,
         onUpdated,
         onRemoved,
+        closeOnEvent,
       });
     }
     bubble.focus();

@@ -102,3 +102,31 @@ test("test_render_notice_when_table_data", async () => {
     "<p><code>rows</code>に配列でない値が指定されています。</p>",
   );
 });
+
+// 部品のカスタム要素の指定の誤りのタイトルと本文を返却する（正常系）
+test("test_render_notice_when_data", async () => {
+  // 準備
+  const { renderNotice } = await loadNotice();
+  // 実行
+  const block = renderNotice({
+    name: "items[1].key",
+    figure: false,
+    source: "data",
+    reason: "がほかの項目と重なっています。",
+  });
+  const figure = renderNotice({
+    name: "options.collapse",
+    source: "data",
+    reason: "は指定できません。",
+  });
+  // 検証
+  expect(block).toContain(
+    '<strong class="mdmark-notice-title">この箇所を表示できません</strong>',
+  );
+  expect(block).toContain(
+    "<p><code>items[1].key</code>がほかの項目と重なっています。</p>",
+  );
+  expect(figure).toContain(
+    '<strong class="mdmark-notice-title">この図を表示できません</strong>',
+  );
+});

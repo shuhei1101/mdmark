@@ -98,8 +98,12 @@ function renderCard(options: {
   columns: string[];
   row: string[];
   group: number;
+  /** 項目のキー。あれば `data-key` と `tabindex` を付けて押せる項目にする */
+  key?: string | undefined;
+  /** 押せる項目のうち、Tab でフォーカスが入る項目か */
+  first?: boolean;
 }): string {
-  const { columns, row, group } = options;
+  const { columns, row, group, key, first = false } = options;
   const fields = columns
     .map((name, index) => ({ name, value: row[index] ?? "", index }))
     .filter(
@@ -111,7 +115,11 @@ function renderCard(options: {
     )
     .join("");
   const list = fields ? `<dl class="mdmark-view-fields">${fields}</dl>` : "";
-  return `<li class="mdmark-view-card"><p class="mdmark-view-card-title">${escapeHtml(row[0] ?? "")}</p>${list}</li>`;
+  const pressable =
+    key === undefined
+      ? ""
+      : ` data-key="${escapeHtml(key)}" tabindex="${first ? 0 : -1}"`;
+  return `<li class="mdmark-view-card"${pressable}><p class="mdmark-view-card-title">${escapeHtml(row[0] ?? "")}</p>${list}</li>`;
 }
 
 /** 値ごとの列に項目を並べたボードの HTML を返却する。`group` が列の位置でなければ空のボード */
@@ -126,24 +134,38 @@ export function renderViewBoard(props: {
   icons: Record<string, string>;
   /** 隠すか（既定 `false`） */
   hidden?: boolean;
+  /** 項目ごとのキー（`items` と同じ並び）。あれば項目を押せるようにする */
+  keys?: string[] | undefined;
 }): string {
-  const { columns, items, group, icons, hidden = false } = props;
+  const { columns, items, group, icons, hidden = false, keys } = props;
   const open = `<div class="mdmark-view-board" role="group" aria-label="ボード" tabindex="0"${hidden ? " hidden" : ""}>`;
   if (group < 0 || group >= columns.length) {
     return `${open}</div>`;
   }
   // 値は表に出た順に並べる
   const values = [...new Set(items.map((row) => row[group] ?? ""))];
+  const firstValue = values[0];
   const columnsHtml = values.map((value) => {
-    const rows = items.filter((row) => (row[group] ?? "") === value);
+    const indexes = items
+      .map((row, index) => ({ row, index }))
+      .filter(({ row }) => (row[group] ?? "") === value);
+    const rows = indexes.map(({ row }) => row);
     const iconName = Object.hasOwn(icons, value)
       ? icons[value]
       : Object.hasOwn(DEFAULT_VALUE_ICONS, value)
         ? DEFAULT_VALUE_ICONS[value]
         : FALLBACK_VALUE_ICON;
     const label = escapeHtml(value);
-    const cards = rows
-      .map((row) => renderCard({ columns, row, group }))
+    const cards = indexes
+      .map(({ row, index }, position) =>
+        renderCard({
+          columns,
+          row,
+          group,
+          key: keys?.[index],
+          first: value === firstValue && position === 0,
+        }),
+      )
       .join("");
     return `<div class="mdmark-view-column"><p class="mdmark-view-column-head">${viewIcon(iconName ?? FALLBACK_VALUE_ICON)}<span class="mdmark-view-column-name">${label}</span><span class="mdmark-view-column-count">${rows.length.toLocaleString("ja-JP")}</span></p><ul class="mdmark-view-cards" aria-label="${label}">${cards}</ul></div>`;
   });
@@ -181,10 +203,12 @@ export function renderView(props: {
   icons?: Record<string, string> | undefined;
   /** ボードにできない理由の記載の警告の `id` */
   boardDisabled?: string | undefined;
+  /** 項目ごとのキー（`items` と同じ並び）。あればボードの項目と表形式の行を押せるようにする */
+  keys?: string[] | undefined;
   /** ビューの要素の `id` の頭 */
   id: string;
 }): string {
-  const { columns, items, group, filters = [], icons = {}, id } = props;
+  const { columns, items, group, filters = [], icons = {}, id, keys } = props;
   const groupIndex = group === undefined ? -1 : columns.indexOf(group);
   const switchable = group !== undefined;
   const boardUsable = groupIndex >= 0 && !props.boardDisabled;
@@ -198,6 +222,7 @@ export function renderView(props: {
         group: groupIndex,
         icons,
         hidden: mode !== "board",
+        keys,
       })
     : "";
   const table = renderTable({
@@ -207,6 +232,9 @@ export function renderView(props: {
     rows: items.map((row) => row.map(escapeHtml)),
     filters,
     ...tableFilterState(props),
+    ...(keys === undefined
+      ? {}
+      : { rowKeys: keys, pressable: true, columnKeys: columns }),
     id: `${id}-table`,
   });
   return `<div class="mdmark-view">${head}<div class="mdmark-view-table"${hiddenIf(mode !== "table")}>${table}</div></div>`;
