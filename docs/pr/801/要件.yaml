@@ -1,0 +1,36 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-67.yaml
+    impact: changed
+    detail: 表のセルの中の動画と、モーダルで再生する属性を記載した段落の動画を、その場に再生バーを出さずに描くシナリオを追加する。属性を記載しない段落の動画は今までどおり
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-66.yaml
+    impact: changed
+    detail: 読者がその場に出たものを押して動画をモーダルで再生し、閉じると再生が止まって押した場所へフォーカスが戻るシナリオを追加する。画像の拡大と切り替えは今までどおり
+    depends_on:
+      - docs/scenario/SC-472-67.yaml
+docs:
+  - page: docs/guide/記載する-画像と動画を配置する.md
+    new: false
+    change: 表のセルの中の動画がモーダルで再生されることと、段落の動画をモーダルで再生する属性の記載方法を追加する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 画像の属性の一覧に、モーダルで再生する属性を追加する
+    status: todo
+  - page: docs/guide/カスタマイズ-印刷する.mark.md
+    new: false
+    change: モーダルにした動画・音声の印刷での見え方を追加する
+    status: todo
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: ライトボックスの用語の説明に、動画・音声をモーダルで再生することを追加する
+    status: todo
+scope_out:
+  - item: 画像のライトボックスの切り替えや拡大・縮小の操作の変更
+    reason: 要望に含まれない。動画を切り替えの並びに入れるかだけを設計で決める
+    plan: none
+  - item: CLI の書き出しで動画・音声を 1 枚の HTML に埋めること
+    reason: 要望に含まれない。今の書き出しは動画・音声を埋めず、モーダルにしても同じ扱いにする
+    plan: none
