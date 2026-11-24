@@ -91,6 +91,38 @@ const visibleButton = (): HTMLElement | undefined => {
 const mark = (element: HTMLElement): HTMLElement | null =>
   element.querySelector<HTMLElement>("mark.mdmark-comment-mark");
 
+/** 値が無ければ、無いものの名前で例外を投げる */
+const must = <T>(value: T | null | undefined, what: string): T => {
+  if (value === null || value === undefined) {
+    throw new Error(`${what}が無い`);
+  }
+  return value;
+};
+
+/** `root` の中の `selector` の要素を押す */
+const clickIn = (root: ParentNode, selector: string): void => {
+  must(root.querySelector<HTMLElement>(selector), selector).click();
+};
+
+/** 開いている吹き出し */
+const bubble = (): HTMLElement =>
+  must(
+    document.querySelector<HTMLElement>(".mdmark-comment-bubble"),
+    "吹き出し",
+  );
+
+/** 吹き出しの本文の文字 */
+const bubbleBody = (): string =>
+  bubble().querySelector(".mdmark-comment-body")?.textContent ?? "";
+
+/** `root` の中の本文の欄に記載して、保存のボタンを押す */
+const writeAndSave = (root: ParentNode, body: string): void => {
+  const field = must(root.querySelector("textarea"), "本文の欄");
+  field.value = body;
+  field.dispatchEvent(new Event("input", { bubbles: true }));
+  clickIn(root, ".is-primary");
+};
+
 // 選んだ文字にコメントを記載して保存すると保存のイベントを送信し、アプリが指定し直したコメントでマーカーを付ける（正常系）
 test("test_normal", async () => {
   // 準備
@@ -113,35 +145,30 @@ test("test_normal", async () => {
   // 検証: ボタンは出ない
   expect(visibleButton()).toBeUndefined();
   // 実行: 要素の中の文字を選び、コメントを記載して保存する
-  const paragraph = element.querySelector(":scope > p");
-  if (!paragraph) {
-    throw new Error("段落が無い");
-  }
+  const paragraph = must(element.querySelector(":scope > p"), "段落");
   select(paragraph, 0, 5);
   await vi.waitFor(() => expect(visibleButton()).toBeDefined());
-  visibleButton()?.click();
-  const form = document.querySelector<HTMLElement>(".mdmark-comment-form");
-  const field = form?.querySelector("textarea");
-  if (!form || !field) {
-    throw new Error("入力欄が開かない");
-  }
-  field.value = "手順の数を <b>3</b> にする";
-  field.dispatchEvent(new Event("input", { bubbles: true }));
-  form.querySelector<HTMLButtonElement>(".is-primary")?.click();
-  // 検証: 保存のイベントが 1 回届き、指定し直したコメントでマーカーが付く
-  expect(drafts).toHaveLength(1);
-  expect(drafts[0]).toMatchObject({ quote: "導入の手順", prefix: "" });
-  expect(drafts[0]?.body).toBe("手順の数を <b>3</b> にする");
-  await vi.waitFor(() => expect(mark(element)?.textContent).toBe("導入の手順"));
-  mark(element)?.click();
-  const bubble = document.querySelector(".mdmark-comment-bubble");
-  expect(bubble?.querySelector(".mdmark-comment-body")?.textContent).toBe(
+  must(visibleButton(), "コメントのボタン").click();
+  writeAndSave(
+    must(document.querySelector(".mdmark-comment-form"), "入力欄"),
     "手順の数を <b>3</b> にする",
   );
-  expect(bubble?.querySelector("b")).toBeNull();
+  // 検証: 保存のイベントが 1 回届き、指定し直したコメントでマーカーが付く
+  expect(drafts).toEqual([
+    {
+      quote: "導入の手順",
+      prefix: "",
+      suffix: "を整える。",
+      body: "手順の数を <b>3</b> にする",
+    },
+  ]);
+  await vi.waitFor(() => expect(mark(element)?.textContent).toBe("導入の手順"));
+  must(mark(element), "マーカー").click();
+  expect(bubbleBody()).toBe("手順の数を <b>3</b> にする");
+  expect(bubble().querySelector("b")).toBeNull();
   // editable・removable を省くと「編集」「削除」を出さない
-  expect(bubble?.querySelector('[data-action="edit"]')).toBeNull();
-  expect(bubble?.querySelector('[data-action="remove"]')).toBeNull();
+  expect(bubble().querySelector('[data-action="edit"]')).toBeNull();
+  expect(bubble().querySelector('[data-action="remove"]')).toBeNull();
   expect(paragraph.textContent).toBe(TEXT);
 });
 
@@ -179,32 +206,20 @@ test("test_normal_when_edited_and_removed", async () => {
   element.comments = comments;
   await vi.waitFor(() => expect(mark(element)).not.toBeNull());
   // 実行: 吹き出しを開き、本文を編集して確定する
-  mark(element)?.click();
-  const bubble = () => document.querySelector(".mdmark-comment-bubble");
-  expect(bubble()?.querySelector('[data-action="edit"]')).not.toBeNull();
-  expect(bubble()?.querySelector('[data-action="remove"]')).not.toBeNull();
-  bubble()?.querySelector<HTMLButtonElement>('[data-action="edit"]')?.click();
-  const field = bubble()?.querySelector("textarea");
-  if (!field) {
-    throw new Error("編集欄が開かない");
-  }
-  field.value = "手順の数を 4 にする";
-  field.dispatchEvent(new Event("input", { bubbles: true }));
-  bubble()?.querySelector<HTMLButtonElement>(".is-primary")?.click();
+  must(mark(element), "マーカー").click();
+  expect(bubble().querySelector('[data-action="remove"]')).not.toBeNull();
+  clickIn(bubble(), '[data-action="edit"]');
+  writeAndSave(bubble(), "手順の数を 4 にする");
   // 検証
   expect(edits).toEqual([{ id: "c-1", body: "手順の数を 4 にする" }]);
   // 指定し直したコメントでマーカーを付け直すまで待つ
   await vi.waitFor(() => {
-    mark(element)?.click();
-    expect(bubble()?.querySelector(".mdmark-comment-body")?.textContent).toBe(
-      "手順の数を 4 にする",
-    );
+    must(mark(element), "マーカー").click();
+    expect(bubbleBody()).toBe("手順の数を 4 にする");
   });
   // 実行: 削除を押して確定する
-  bubble()?.querySelector<HTMLButtonElement>('[data-action="remove"]')?.click();
-  bubble()
-    ?.querySelector<HTMLButtonElement>('[data-action="confirm-remove"]')
-    ?.click();
+  clickIn(bubble(), '[data-action="remove"]');
+  clickIn(bubble(), '[data-action="confirm-remove"]');
   // 検証
   expect(removes).toEqual([{ id: "c-1" }]);
   await vi.waitFor(() => expect(mark(element)).toBeNull());

@@ -80,6 +80,14 @@ const press = (target: Element): void => {
   target.dispatchEvent(new MouseEvent("click", point));
 };
 
+/** 値が無ければ、無いものの名前で例外を投げる */
+const must = <T>(value: T | null | undefined, what: string): T => {
+  if (value === null || value === undefined) {
+    throw new Error(`${what}が無い`);
+  }
+  return value;
+};
+
 // Mermaid と補足から構成図を描き、ノードを押すとノードの ID を持つノードの押下のイベントを送信する（正常系）
 test("test_normal", async () => {
   // 準備
@@ -95,41 +103,45 @@ test("test_normal", async () => {
   // 実行
   await settled(element);
   // 検証: 図の枠とノード・線
-  const figure = element.querySelector(
-    'figure.mdmark-diagram[data-diagram="map"]',
+  const figure = must(
+    element.querySelector('figure.mdmark-diagram[data-diagram="map"]'),
+    "map の図",
   );
-  expect(figure?.querySelector(".mdmark-diagram-title")?.textContent).toContain(
+  expect(figure.querySelector(".mdmark-diagram-title")?.textContent).toContain(
     "全体の構成",
   );
   expect(
-    figure?.querySelectorAll(".mdmark-diagram-node[data-node]"),
+    figure.querySelectorAll(".mdmark-diagram-node[data-node]"),
   ).toHaveLength(3);
-  expect(figure?.querySelectorAll(".map-wire-hit[data-wire]")).toHaveLength(2);
-  expect(figure?.textContent).toContain("認証を受け持つ");
+  expect(figure.querySelectorAll(".map-wire-hit[data-wire]")).toHaveLength(2);
+  expect(figure.textContent).toContain("認証を受け持つ");
   // 実行: api のノードを押す
-  const node = figure?.querySelector('.mdmark-diagram-node[data-node="api"]');
-  if (node) {
-    press(node);
-  }
+  const node = must(
+    figure.querySelector('.mdmark-diagram-node[data-node="api"]'),
+    "api のノード",
+  );
+  press(node);
   // 検証
   expect(ids).toEqual(["api"]);
-  expect(node?.hasAttribute("data-selected")).toBe(true);
+  expect(node.hasAttribute("data-selected")).toBe(true);
   // 実行: フォーカスして Enter を押す
-  const focusable = figure?.querySelector<HTMLElement>(
-    '[data-node="api"] > .mdmark-diagram-node-hit',
-  );
-  focusable?.focus();
+  must(
+    figure.querySelector<HTMLElement>(
+      '[data-node="api"] > .mdmark-diagram-node-hit',
+    ),
+    "api のノードの押せる要素",
+  ).focus();
   await userEvent.keyboard("{Enter}");
   // 検証
   expect(ids).toEqual(["api", "api"]);
-  // 実行: 拡大・縮小・全画面のボタンと線を押す
+  // 実行: 拡大・縮小のボタンと線を押す
   for (const tool of ["in", "out"]) {
-    figure?.querySelector<HTMLButtonElement>(`[data-tool="${tool}"]`)?.click();
+    must(
+      figure.querySelector<HTMLButtonElement>(`[data-tool="${tool}"]`),
+      `${tool} のボタン`,
+    ).click();
   }
-  const wire = figure?.querySelector('.map-wire-hit[data-wire="ui->api"]');
-  if (wire) {
-    press(wire);
-  }
+  press(must(figure.querySelector('.map-wire-hit[data-wire="ui->api"]'), "線"));
   // 検証: 届かない
   expect(ids).toEqual(["api", "api"]);
 });
