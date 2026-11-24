@@ -35,7 +35,7 @@ data_models:
         description: 動画だけ。記載したパス
       - name: items
         type: WarningItem[]
-        description: 読み込めなかった属性（知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性）
+        description: 読み込めなかった属性（知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性・音声の `thumbnail`・`poster` を持たない動画の `thumbnail`・再生のボタンの `width`・`align`）
       - name: modal
         type: boolean
         description: 動画・音声だけ。`modal` を記載したら `true`
@@ -44,7 +44,7 @@ data_models:
         description: '`poster` を持つ動画だけ。`thumbnail` を記載したら `true`'
       - name: opener
         type: boolean
-        description: 再生のボタンにするか（表のセルの中か `modal`・`thumbnail` を持つ動画・音声）。`readImages` が配置する
+        description: 再生のボタンにするか。`readImageAttributes` が、引数 `opener` が `true` か、読み込んだ `modal`・`thumbnail` が `true` のとき `true` にする
     refs:
       - IF-472-34#constraints[画像の属性]
     status: planned
@@ -95,7 +95,7 @@ functions:
     container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
-    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。`modal`・`thumbnail` は真偽値にし、音声の `thumbnail` と `poster` を持たない動画の `thumbnail` と、`opener` のときの `width`・`align` も読み込めない属性にする。読み込めない属性は適用せずに `items` に入れる'
+    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。`modal`・`thumbnail` は真偽値にし、音声の `thumbnail` と `poster` を持たない動画の `thumbnail` も読み込めない属性にする。引数 `opener` が `true` か、読み込んだ `modal`・`thumbnail` が `true` なら `opener` を `true` にし、`width`・`align` を読み込めない属性にする。読み込めない属性は適用せずに `items` に入れる'
     args:
       - name: text
         type: string
@@ -112,7 +112,7 @@ functions:
       - name: opener
         type: boolean
         required: false
-        description: 表のセルの中の動画・音声か（`width`・`align` を読み込めない属性にする。`modal`・`thumbnail` を読み込んだときも同じ）。既定 `false`
+        description: 表のセルの中の動画・音声か。既定 `false`
     returns:
       type: ImageAttributes
       description: 画像の属性
@@ -160,7 +160,7 @@ functions:
       読み込めない属性は段落の前に 1 つの記載の警告を差し込む。
       `media` がオフのときは動画・音声も `image` として扱う。
       リンクの中の画像は種類と属性を読み込むが、図にしない。
-      表のセル（`th_open`・`td_open` の後の `inline`）の中の動画・音声と、`{…}` に `modal`・`thumbnail` を記載した動画・音声は `readImageAttributes` に `opener: true` を指定し、属性に `opener: true` を配置する。表のセルの中の記載の警告は表の前に差し込む
+      表のセル（`th_open`・`td_open` の後の `inline`）の中の動画・音声は `readImageAttributes` に `opener: true` を指定する。表のセルの中の記載の警告は表の前に差し込む
     args:
       - name: state
         type: StateCore
@@ -205,6 +205,12 @@ functions:
         condition: 表のセルの `![素材 1](m1.mp4)` と `![グラフ](chart.png)`
         mock: なし
         expected: '`m1.mp4` の `meta.mdmarkImage.opener` が `true`、`chart.png` は `false`'
+      - name: test_read_images_when_opener_unreadable
+        case: 異常
+        summary: 読み込めない thumbnail の動画・音声に opener を配置しない
+        condition: '`![読み上げ](voice.mp3){thumbnail}` だけの段落と、`poster` の無い `![操作](demo.mp4){thumbnail}` だけの段落'
+        mock: なし
+        expected: どちらも `meta.mdmarkImage.opener` が `false` で、段落の前に `thumbnail` の記載の警告がある
     status: planned
   - name: buildImageFigures
     title: 画像と動画と音声を図にする
