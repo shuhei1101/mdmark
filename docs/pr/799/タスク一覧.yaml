@@ -20,7 +20,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-24T03:01:11.140485+00:00'
   - process: 複合ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T03:10:51.574200+00:00'
   - process: デザインスタイル選定
     status: skipped
     reason: カスタム要素は今の部品と同じ外観で描き、画面の見た目は変わらない（判定フローチャート『モック要否』の Q1 が NO）
@@ -32,7 +34,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-24T03:01:11.140485+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T03:10:51.574200+00:00'
   - process: モック作成
     status: skipped
     reason: カスタム要素は今の部品と同じ外観で描き、画面の見た目は変わらない（判定フローチャート『モック要否』の Q1 が NO）
