@@ -35,9 +35,9 @@
       }
     }
 
-    /* 案 C・案 D: 札とアイコンを持たず、動画の右下の角に 24×24 の押せる範囲を置く。範囲の半分（12px）は動画の外の下に出し、再生バーとは重ねない */
+    /* 案 C・案 D: 札とアイコンを持たず、動画の右下の角に 24×24 の押せる範囲を配置する。範囲の下 16px は動画の下に出し、上 8px だけ動画の角に重ねる（再生バーとは重ならない） */
     .mdmark-media-frame:is([data-mock-plan="c"], [data-mock-plan="d"]) {
-      padding-block-end: 12px;
+      padding-block-end: 16px;
 
       .mdmark-media-resize {
         inset-block-end: 0;
@@ -50,15 +50,15 @@
         display: none;
       }
 
-      /* 角の線: 動画の右下の角に沿う L 字の 2px の線（角丸は動画と同じ） */
+      /* 角の線: 動画の右下の角のすぐ下（2〜14px 下）に、右端を動画の右端に合わせた L 字の 2px の線。動画の上には重ねない（角丸は動画と同じ） */
       .mdmark-media-resize::before {
         content: "";
         position: absolute;
-        inset-block-start: 0;
-        inset-inline-start: 0;
+        inset-block-end: 2px;
+        inset-inline-end: 0;
         box-sizing: border-box;
         width: 18px;
-        height: 18px;
+        height: 12px;
         border-inline-end: 2px solid currentColor;
         border-block-end: 2px solid currentColor;
         border-end-end-radius: var(--mdmark-radius);
