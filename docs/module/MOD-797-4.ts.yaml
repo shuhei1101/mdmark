@@ -55,7 +55,7 @@ classes:
         process: |-
           1. 要素がページに無いか `source` が `undefined` なら何もしない
           2. `source` が文字列でない、`options` が `title`・`focus` のほかのキーを持つときは通知ブロックにして終える
-          3. `<!-- map: {options} -->`・Mermaid のコードブロック・`<!-- map-data: {data} -->`・`<!-- /map -->` の Markdown を `render` し、記載の警告が map の種類や補足の誤りを持つときは通知ブロックにして終える
+          3. `<!-- map: {options} -->`・Mermaid のコードブロック・`<!-- map-data: {data} -->`・`<!-- /map -->` の Markdown を `render` し、記載の警告が map の種類や補足の誤りを持つときは通知ブロックにして終える。埋める前に、`options` と `data` は `JSON.stringify` の結果の `-` を全て JSON の Unicode エスケープで記載し（`ER-472-2` の HTML コメントの決まり）、`source` は中の最も長い ``` の連続より 1 つ長い ``` のフェンスで囲む
           4. 中へ入ったグループと開閉を記録し、`detach` を呼ぶ
           5. `loadPartModule("map")` で読み込み、要素の中の `div.mdmark` に HTML を入れて `attachMap(root, config, { onNodeClick })` を呼ぶ。`onNodeClick` は `mdmark-node-click` を `bubbles`・`composed` の `CustomEvent` で送信する
           6. 記録した状態を同じ ID について戻す
@@ -72,6 +72,18 @@ classes:
             condition: '`options` に `collapse` を指定する'
             mock: なし
             expected: 代入が例外を投げず、本文に `<code>options.collapse</code>` を持つ通知ブロック
+          - name: test_render_now_when_data_has_comment_end
+            case: 正常
+            summary: '`-->` を持つ補足の文字でも、map の範囲を閉じずに図を描く'
+            condition: '`notes` の `api` の説明が `API --> DB の順に呼ぶ`'
+            mock: なし（ブラウザ。map の部品のモジュールを `setPartModuleLoader` で指定する）
+            expected: '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、図の外に本文が描かれず、`api` の説明が `API --> DB の順に呼ぶ`'
+          - name: test_render_now_when_source_has_fence
+            case: 正常
+            summary: '``` の行を持つ `source` でも、コードブロックを途中で閉じずに図を描く'
+            condition: '`flowchart LR` の途中に ``` だけの行（`%%` のコメントの行）を持つ `source`'
+            mock: なし（ブラウザ。map の部品のモジュールを `setPartModuleLoader` で指定する）
+            expected: '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、図の外に本文もマーカーも描かれない'
         callees:
           - MOD-472-212#functions[render]
           - MOD-472-159#functions[loadPartModule]
