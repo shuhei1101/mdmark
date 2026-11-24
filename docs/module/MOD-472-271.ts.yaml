@@ -44,7 +44,7 @@ data_models:
         description: '`poster` を持つ動画だけ。`thumbnail` を記載したら `true`'
       - name: opener
         type: boolean
-        description: 再生のボタンにするか。`readImageAttributes` が、引数 `opener` が `true` か、読み込んだ `modal`・`thumbnail` が `true` のとき `true` にする
+        description: 再生のボタンにするか。`readImageAttributes` が、`position.opener` が `true` か、読み込んだ `modal`・`thumbnail` が `true` のとき `true` にする
     refs:
       - IF-472-34#constraints[画像の属性]
     status: planned
@@ -95,7 +95,7 @@ functions:
     container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
-    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。`modal`・`thumbnail` は真偽値にし、音声の `thumbnail` と `poster` を持たない動画の `thumbnail` も読み込めない属性にする。引数 `opener` が `true` か、読み込んだ `modal`・`thumbnail` が `true` なら `opener` を `true` にし、`width`・`align` を読み込めない属性にする。読み込めない属性は適用せずに `items` に入れる'
+    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。`modal`・`thumbnail` は真偽値にし、音声の `thumbnail` と `poster` を持たない動画の `thumbnail` も読み込めない属性にする。`position.opener` が `true` か、読み込んだ `modal`・`thumbnail` が `true` なら `opener` を `true` にし、`width`・`align` を読み込めない属性にする。読み込めない属性は適用せずに `items` に入れる'
     args:
       - name: text
         type: string
@@ -105,14 +105,10 @@ functions:
         type: MediaKind
         required: true
         description: 画像の種類（`mediaKindOf`）
-      - name: inline
-        type: boolean
+      - name: position
+        type: '{ inline: boolean; opener?: boolean }'
         required: true
-        description: 文の中の画像か（`align` を読み込めない属性にする）
-      - name: opener
-        type: boolean
-        required: false
-        description: 表のセルの中の動画・音声か。既定 `false`
+        description: '`inline` は文の中の画像か（`align` を読み込めない属性にする）、`opener` は表のセルの中の動画・音声か（既定 `false`）'
     returns:
       type: ImageAttributes
       description: 画像の属性
@@ -144,7 +140,7 @@ functions:
       - name: test_read_image_attributes_when_modal_unreadable
         case: 異常
         summary: 読み込めない modal・thumbnail・width・align を項目にする
-        condition: '`modal`（`image`）・`thumbnail`（`audio`）・`thumbnail`（`poster` の無い `video`）・`modal width=320 align=center`（`video`）・`align=right`（`video`・`opener: true`）'
+        condition: '`modal`（`image`）・`thumbnail`（`audio`）・`thumbnail`（`poster` の無い `video`）・`modal width=320 align=center`（`video`）・`align=right`（`video`・`position.opener` が `true`）'
         mock: なし
         expected: 順に `items` が `modal`・`thumbnail`・`thumbnail`・`width=320` と `align=center`・`align=right` で、どれもその属性を適用しない
     status: planned
@@ -160,7 +156,7 @@ functions:
       読み込めない属性は段落の前に 1 つの記載の警告を差し込む。
       `media` がオフのときは動画・音声も `image` として扱う。
       リンクの中の画像は種類と属性を読み込むが、図にしない。
-      表のセル（`th_open`・`td_open` の後の `inline`）の中の動画・音声は `readImageAttributes` に `opener: true` を指定する。表のセルの中の記載の警告は表の前に差し込む
+      表のセル（`th_open`・`td_open` の後の `inline`）の中の動画・音声は `readImageAttributes` の `position.opener` に `true` を指定する。表のセルの中の記載の警告は表の前に差し込む
     args:
       - name: state
         type: StateCore
