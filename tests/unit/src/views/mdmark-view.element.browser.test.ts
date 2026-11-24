@@ -172,9 +172,7 @@ test("test_render_now", async () => {
   // 検証
   expect(element.children).toHaveLength(1);
   expect(element.firstElementChild?.classList.contains("mdmark")).toBe(true);
-  const cards = [
-    ...element.querySelectorAll<HTMLElement>(".mdmark-view-card"),
-  ];
+  const cards = [...element.querySelectorAll<HTMLElement>(".mdmark-view-card")];
   expect(cards.map((card) => card.dataset.key).sort()).toEqual([
     "T1",
     "T2",
@@ -259,9 +257,9 @@ test("test_render_now_when_items_reassigned", async () => {
   ];
   await flush();
   // 検証
-  expect(
-    element.querySelector<HTMLElement>(".mdmark-view-table")?.hidden,
-  ).toBe(false);
+  expect(element.querySelector<HTMLElement>(".mdmark-view-table")?.hidden).toBe(
+    false,
+  );
   expect(shownKeys(element)).toEqual(["T1", "T4"]);
 });
 

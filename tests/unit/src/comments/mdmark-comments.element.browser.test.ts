@@ -106,9 +106,9 @@ test("test_attach_now", async () => {
   await flush();
   // 検証
   await vi.waitFor(() =>
-    expect(
-      element.querySelector("mark.mdmark-comment-mark")?.textContent,
-    ).toBe("導入の手順"),
+    expect(element.querySelector("mark.mdmark-comment-mark")?.textContent).toBe(
+      "導入の手順",
+    ),
   );
   expect(element.querySelector("p")?.textContent).toBe(TEXT);
 });
@@ -200,8 +200,5 @@ test("test_define_comments_element", async () => {
   defineCommentsElement(registry);
   // 検証
   expect(define).toHaveBeenCalledTimes(1);
-  expect(define).toHaveBeenCalledWith(
-    "mdmark-comments",
-    MdmarkCommentsElement,
-  );
+  expect(define).toHaveBeenCalledWith("mdmark-comments", MdmarkCommentsElement);
 });

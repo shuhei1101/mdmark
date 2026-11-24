@@ -5,9 +5,9 @@ import { loadSource } from "../../helpers/lazy.ts";
 /** map の図のカスタム要素を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadElement = () =>
   loadSource(
-    import.meta.glob<typeof import("../../../../src/map/mdmark-map.element.ts")>(
-      "../../../../src/map/mdmark-map.element.ts",
-    ),
+    import.meta.glob<
+      typeof import("../../../../src/map/mdmark-map.element.ts")
+    >("../../../../src/map/mdmark-map.element.ts"),
   );
 
 /** 部品のモジュールを読み込む処理を読み込む */
