@@ -2,12 +2,12 @@ use_cases:
   - kind: composite
     scenario: docs/scenario/SC-797-1.yaml
     impact: new
-    detail: アプリの画面が配布物を読み込み、ビュー・コメント・図などの部品のカスタム要素にアプリのデータを指定して描き、利用者の操作をイベントで受け取って保存・詳細を開く流れを新規に作る（扱う部品は設計で決める）
+    detail: アプリの画面が配布物を読み込み、ビュー・コメント・グラフ・操作できる部品・map の図のカスタム要素にアプリのデータを指定して描き、利用者の操作をイベントで受け取って保存・詳細を開く流れを新規に作る
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-797-2.yaml
     impact: new
-    detail: アプリの画面が部品のカスタム要素を配置し、JavaScript のプロパティでデータを指定して描き、操作をイベントで受け取る単一 UC を新規に作る（部品ごとに分けるかは設計で決める）
+    detail: アプリの画面が部品のカスタム要素を配置し、JavaScript のプロパティでデータを指定して描き、操作をイベントで受け取る単一 UC を新規に作る（部品ごとにシナリオを分ける）
     depends_on:
       - docs/scenario/SC-797-1.yaml
   - kind: single
