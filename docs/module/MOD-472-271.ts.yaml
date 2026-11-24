@@ -36,6 +36,15 @@ data_models:
       - name: items
         type: WarningItem[]
         description: 読み込めなかった属性（知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性）
+      - name: modal
+        type: boolean
+        description: 動画・音声だけ。`modal` を記載したら `true`
+      - name: thumbnail
+        type: boolean
+        description: '`poster` を持つ動画だけ。`thumbnail` を記載したら `true`'
+      - name: opener
+        type: boolean
+        description: 再生のボタンにするか（表のセルの中か `modal`・`thumbnail` を持つ動画・音声）。`readImages` が配置する
     refs:
       - IF-472-34#constraints[画像の属性]
     status: planned
@@ -55,8 +64,8 @@ constants:
   - name: IMAGE_ATTRIBUTE_NAMES
     title: 画像の属性の名前
     container: src/media/image.syntax.ts
-    summary: '`{…}` に記載できる属性の名前。記載の警告の本文に並べる。後ろの 4 つは動画・音声だけ'
-    value: '["width", "align", "nolightbox", "autoplay", "muted", "loop", "poster"]'
+    summary: '`{…}` に記載できる属性の名前。記載の警告の本文に並べる。`autoplay` から `modal` は動画・音声だけ、`thumbnail` は動画だけ'
+    value: '["width", "align", "nolightbox", "autoplay", "muted", "loop", "poster", "modal", "thumbnail"]'
     status: planned
 functions:
   - name: mediaKindOf
@@ -86,7 +95,7 @@ functions:
     container: src/media/image.syntax.ts
     kind: 関数
     scope: internal
-    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。読み込めない属性は適用せずに `items` に入れる'
+    summary: '`{` と `}` の中の文字を空白で区切って `ImageAttributes` を作る。`width` は `1` 以上の整数か `{整数}px` を px、`1`〜`100` の `{整数}%` を % にする。`autoplay` に `muted` が無いときは `muted` を `true` にする。`modal`・`thumbnail` は真偽値にし、音声の `thumbnail` と `poster` を持たない動画の `thumbnail` と、`opener` のときの `width`・`align` も読み込めない属性にする。読み込めない属性は適用せずに `items` に入れる'
     args:
       - name: text
         type: string
@@ -100,6 +109,10 @@ functions:
         type: boolean
         required: true
         description: 文の中の画像か（`align` を読み込めない属性にする）
+      - name: opener
+        type: boolean
+        required: false
+        description: 表のセルの中の動画・音声か（`width`・`align` を読み込めない属性にする。`modal`・`thumbnail` を読み込んだときも同じ）。既定 `false`
     returns:
       type: ImageAttributes
       description: 画像の属性
@@ -122,6 +135,18 @@ functions:
         condition: '`width=big width=0% width=101% foo autoplay`（`image`）と `align=left`（`image`・文の中）'
         mock: なし
         expected: 1 つ目の `width` が無く、`items` の項目が `width=big`・`width=0%`・`width=101%`・`foo`・`autoplay` の 5 つ。2 つ目の `align` が無く、`items` の項目が `align` の 1 つ
+      - name: test_read_image_attributes_when_modal
+        case: 正常
+        summary: modal と thumbnail を読み込む
+        condition: '`modal`（`audio`）と `thumbnail poster=p.png`（`video`）'
+        mock: なし
+        expected: 1 つ目の `modal` が `true`、2 つ目の `thumbnail` が `true`、どちらも `items` が空
+      - name: test_read_image_attributes_when_modal_unreadable
+        case: 異常
+        summary: 読み込めない modal・thumbnail・width・align を項目にする
+        condition: '`modal`（`image`）・`thumbnail`（`audio`）・`thumbnail`（`poster` の無い `video`）・`modal width=320 align=center`（`video`）・`align=right`（`video`・`opener: true`）'
+        mock: なし
+        expected: 順に `items` が `modal`・`thumbnail`・`thumbnail`・`width=320` と `align=center`・`align=right` で、どれもその属性を適用しない
     status: planned
   - name: readImages
     title: 画像の属性を読み込んで種類を見分ける
@@ -134,7 +159,8 @@ functions:
       `gif` の画像に `data-gif` を、文の中の画像の `width` を `img` の `style` の `--mdmark-image-width` に付ける。
       読み込めない属性は段落の前に 1 つの記載の警告を差し込む。
       `media` がオフのときは動画・音声も `image` として扱う。
-      リンクの中の画像は種類と属性を読み込むが、図にしない
+      リンクの中の画像は種類と属性を読み込むが、図にしない。
+      表のセル（`th_open`・`td_open` の後の `inline`）の中の動画・音声と、`{…}` に `modal`・`thumbnail` を記載した動画・音声は `readImageAttributes` に `opener: true` を指定し、属性に `opener: true` を配置する。表のセルの中の記載の警告は表の前に差し込む
     args:
       - name: state
         type: StateCore
@@ -173,6 +199,12 @@ functions:
         condition: '`env.features.images` が `false` で `![グラフ](chart.png){width=300}`'
         mock: なし
         expected: 段落の文字に `{width=300}` が残る
+      - name: test_read_images_when_table_cell
+        case: 正常
+        summary: 表のセルの中の動画に opener を配置する
+        condition: 表のセルの `![素材 1](m1.mp4)` と `![グラフ](chart.png)`
+        mock: なし
+        expected: '`m1.mp4` の `meta.mdmarkImage.opener` が `true`、`chart.png` は `false`'
     status: planned
   - name: buildImageFigures
     title: 画像と動画と音声を図にする
@@ -185,6 +217,7 @@ functions:
       `media` がオンなら、`video`・`audio` の画像を部品『動画と音声』の `html_block` にし、画像 1 つだけの段落は段落ごと置き換え、文の中のものは段落の後ろに配置する。
       部品へは `meta.mdmarkImage` の属性・`src`・`alt`（子のトークンの文字）・title を指定する。
       `#only-dark`・`#only-light` のフラグメントは `only` にする。
+      `media` がオンで `meta.mdmarkImage.opener` が `true` の動画・音声は、部品『動画と音声』（`opener` は `thumbnail` と `poster` を持つとき `thumbnail`、それ以外は `button`）の再生のボタンにする。画像 1 つだけの段落は `inline: false` の `html_block` で段落ごと置き換え、表のセルの中と文の途中は `inline: true` の `html_inline` で画像のトークンの場所に置き換える（段落の後ろへ移さない）。
       文の中の `#only-*` の画像は `img` に class `mdmark-only-*` を付ける
     args:
       - name: state
@@ -195,10 +228,12 @@ functions:
     callees:
       - MOD-472-327#functions[renderImageFigure]
       - MOD-472-330#functions[renderMedia]
+      - MOD-472-330#functions[renderMediaOpener]
     refs:
       - IF-472-34#constraints[画像の図とキャプション]
       - IF-472-34#constraints[テーマごとの画像]
       - IF-472-34#constraints[動画と音声]
+      - IF-472-34#constraints[動画と音声の再生のボタン]
     unit_tests:
       - name: test_build_image_figures
         case: 正常
@@ -224,6 +259,18 @@ functions:
         condition: '`env.features.media` が `false` で `![操作](demo.mp4)` だけの段落'
         mock: なし
         expected: '`video` が無く、`figure.mdmark-image` の `img` の `src` が `demo.mp4`'
+      - name: test_build_image_figures_when_opener
+        case: 正常
+        summary: 表のセル・段落・文の途中の動画を再生のボタンにする
+        condition: 表のセルの `![素材 1](m1.mp4 "手順 1")`、動画だけの段落 `![操作](demo.mp4){modal}`、`手順は ![手順](steps.mp4){modal} で確認する。`、`![素材 2](m2.mp4){thumbnail poster=m2.png}` だけの段落
+        mock: なし
+        expected: セルの中に `button.mdmark-media-open` と `手順 1` のキャプションがあり、`demo.mp4` は `div.mdmark-media-inline-figure`、`steps.mp4` は段落の文の間のボタン、`m2.mp4` は `button.mdmark-media-thumb`。どこにも `video` が無い
+      - name: test_build_image_figures_when_opener_media_off
+        case: 正常
+        summary: media がオフなら表のセルの動画を画像のままにする
+        condition: '`env.features.media` が `false` で表のセルの `![素材 1](m1.mp4)`'
+        mock: なし
+        expected: '`button.mdmark-media-open` が無く、`img` の `src` が `m1.mp4`'
     status: planned
 lead: '画像・動画・音声の属性の読み取りと画像の図を受け持ち、画像と動画の記法を変えるときに参照する。'
 tags:

@@ -12,9 +12,11 @@ notes:
     ├── gif.part.ts          # GIF の renderGif と止める・再生するボタンの renderGifToggle
     ├── image.part.ts        # 画像の図の renderImageFigure と拡大のボタンの renderImageOpener
     ├── lightbox.part.ts     # ライトボックスの renderLightbox
-    ├── media.part.ts        # 動画と音声の renderMedia
+    ├── media.part.ts        # 動画と音声の renderMedia と再生のボタンの renderMediaOpener
+    ├── media-modal.part.ts  # 再生のダイアログの renderMediaModal
     ├── {部品}.part.stories.ts # 部品設計の states ごとのストーリー（上の部品ごとに 1 つ）
     ├── gif.interact.ts      # GIF を止める・再生するボタンを付ける
+    ├── media-modal.interact.ts # 再生のボタンで再生のダイアログを開き、閉じると止める
     └── lightbox.interact.ts # 画像を拡大のボタンで包み、ライトボックスで開いて切り替え・拡大・縮小・移動を付ける
     ```
 tags:

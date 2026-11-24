@@ -252,7 +252,7 @@ styles:
         value: '`dialog` を画面いっぱいに開き、`::backdrop` を暗くする。帯の送信し・枚数・拡大の操作・閉じるのボタンは図の全画面のボタンと同じ外観にする。`docs/mock/components/media/` の `<style>` から取る'
       - class_name: .mdmark .mdmark-media・.mdmark-media-print
         target: 動画と音声
-        value: '`video` を `--mdmark-image-width` の幅に収め、`audio` は列の幅にする。`mdmark-media-print` は画面では `display: none`。`docs/mock/components/media/` の `<style>` から取る'
+        value: '`video` を `--mdmark-image-width` の幅に収め、`audio` は列の幅にする。`mdmark-media-print` は画面では `display: none`。再生のボタン（`.mdmark-media-open`・`.mdmark-media-thumb`・`.mdmark-media-open-caption`・`.mdmark-media-inline-figure`）と再生のダイアログ（`.mdmark-media-modal`。大きさと背面はライトボックスと同じ）の値は `docs/mock/refs/801/assets/media-modal.css`。`docs/mock/components/media/` の `<style>` から取る'
       - class_name: .mdmark .mdmark-gif・.mdmark-gif-toggle
         target: GIF
         value: '`canvas` を `img` に重ね、`canvas[hidden]` を `display: none` にする。ボタンは画像の右上に配置し、`aria-pressed` で `pause` と `play` のアイコンを出し分ける。`docs/mock/components/media/` の `<style>` から取る'
@@ -261,7 +261,7 @@ styles:
         value: アイコン・タイトル・ドメインと URL を並べる枠。長い URL は折り返す。アイコンは `data-card` と `data-file-kind` ごとに `mask-image` の lucide（`globe`・`file-text`・`file-spreadsheet`・`file-archive`・`file`）で付ける。`docs/mock/components/link-card/` の `<style>` から取る
       - class_name: '@media print（画像と動画）'
         target: 画像・動画・カードの印刷
-        value: 拡大のアイコンと GIF のボタンを隠し、`mdmark-only-light` を出して `mdmark-only-dark` を隠す。`video`・`audio` を隠して `mdmark-media-print` を出す。カードの後ろにリンク先の URL を出す。色のプリセットは選んだテーマの明るい配色の値で残す
+        value: 拡大のアイコンと GIF のボタンを隠し、`mdmark-only-light` を出して `mdmark-only-dark` を隠す。`video`・`audio` を隠して `mdmark-media-print` を出す。再生のボタンは枠とアイコンを外してラベルとキャプションを本文の文字で出し（サムネイルは `poster` の画像だけ）、再生のダイアログを隠し、表の行を改ページで割らない（`docs/mock/refs/801/assets/media-modal-print.css`）。カードの後ろにリンク先の URL を出す。色のプリセットは選んだテーマの明るい配色の値で残す
       - class_name: .mdmark :is(.mdmark-fn-ref, .mdmark-footnotes)
         target: 脚注の番号・ツールチップ・末尾の一覧
         value: '`docs/mock/refs/311/assets/footnote.css` の `@layer mdmark` の中身と、印刷の `footnote-print.css`（ツールチップと戻るリンクを隠す）。番号の色は `--mdmark-color-footnote-ref`（既定 `var(--mdmark-color-link)`）。ツールチップは、枠線・角丸・背景・高さの上限・スクロールを内側の `.mdmark-fn-tip-frame` に持たせ、`.mdmark-fn-tip` は番号の側の 0.4em の `padding` だけを持つ（モックの透明な線から変えた。用語のツールチップの `.mdmark-term-tip` と `.mdmark-term-tip-frame` も同じ）。狭い画面で余白を上側に移す規則は `:not(.is-open)` に限る'

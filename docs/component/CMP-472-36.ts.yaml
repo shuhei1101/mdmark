@@ -214,7 +214,7 @@ args:
     required: false
     default: 'false'
     enabled_when: '`opener` が `none` 以外のとき'
-    description: 文の途中に配置するか。`false` は画像だけの段落の場所の `div.mdmark-media-inline-figure` に入れ、`true` はボタンとキャプションだけを返す
+    description: 文の途中か表のセルの中に配置するか。`false` は画像だけの段落の場所の `div.mdmark-media-inline-figure` に入れ、`true` はボタンとキャプションだけを返す
 css_properties:
   - name: --mdmark-image-width
     syntax: <length-percentage>
