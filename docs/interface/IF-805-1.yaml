@@ -1,0 +1,215 @@
+id: IF-805-1
+visibility: internal
+title: developの配布物を再作成する
+aliases:
+  - .github/workflows/develop-dist.yml
+entry:
+  kind: trigger
+  value: '`.github/workflows/develop-dist.yml`（`push` の `branches: [develop]` と、手動の起動 `workflow_dispatch`）'
+lead: develop の先頭の commit のソースから配布物を再作成して commit し、jsDelivr の `@develop` のキャッシュを削除する。失敗したら対応を依頼する Issue を起票する。
+permissions: '`contents: write`・`issues: write`'
+exclusivity: "同じ ref の実行は、先に起動した実行を止める（`concurrency` の `group: develop-dist-${{ inputs.ref || 'develop' }}`・`cancel-in-progress: true`）"
+side_effects: 配布物に差分があれば、対象の ref へ生成物の commit を push する。commit で変わった `dist/` の配布ファイルごとに jsDelivr のキャッシュの削除を要求する。失敗したときは失敗の Issue を起票するか、open の失敗の Issue へコメントする
+request:
+  - name: ref
+    type: 文字列
+    required: false
+    location: argument
+    default: '`develop`'
+    description: ビルドして commit を push するブランチと、キャッシュを削除する `@{ref}`
+    notes: '`on.workflow_dispatch.inputs.ref` の `type: string`。`push` での起動は `develop`。テストは develop から分けたテスト用のブランチを指定する'
+  - name: failure_label
+    type: 文字列
+    required: false
+    location: argument
+    default: '`確認:task-planner`'
+    description: 失敗の Issue に付けるラベル。同じ失敗の open の Issue もこのラベルで探す
+    notes: '`on.workflow_dispatch.inputs.failure_label` の `type: string`。テストはテスト用のラベルを指定し、task-planner のラベルを付けない'
+  - name: purge_url_prefix
+    type: 文字列
+    required: false
+    location: argument
+    default: '`https://purge.jsdelivr.net/gh/shuhei1101/mdmark@`'
+    description: キャッシュの削除の URL の頭。`{頭}{ref}/{ファイル}` を要求する
+    notes: '`on.workflow_dispatch.inputs.purge_url_prefix` の `type: string`。テストは失敗を返却する応答に向ける'
+constraints:
+  - item: ランナー
+    constraint: '`ubuntu-latest`'
+  - item: Node
+    constraint: 24（`actions/setup-node`）
+  - item: ビルド
+    constraint: '`ref` を `fetch-depth: 0` で取得し、`npm ci` の後に `npm run build -- --develop` を実行する。ビルドが失敗したら commit せずに失敗の通知へ進む'
+    decided_by: IF-472-41#constraints[配布ファイル 1 つのサイズ]
+  - item: commit と push
+    constraint: '`dist`・`plugin`・`mdmark-style`・`migrations` に差分があるときだけ、`github-actions[bot]` で `develop の配布物を再作成する（{元の commit の短縮 SHA}）` を commit し、`HEAD:{ref}` へ push する。差分が無ければ commit もキャッシュの削除もせずに成功で終える'
+    notes: '`GITHUB_TOKEN` の push は別の workflow を起動しないため、この commit で再び動かない'
+  - item: キャッシュの削除
+    constraint: push した commit で変わった `dist/` のファイル（`git diff --name-only HEAD~1 HEAD -- dist`）ごとに `{purge_url_prefix}{ref}/{ファイル}` を `curl` で GET する。応答が 200 でないか、JSON のそのファイルの `throttled` が `true` のファイルが 1 つでもあれば、全てのファイルを要求した後に失敗にし、削除できなかったファイルを失敗の通知の本文に含める
+    decided_by: API-472-2#endpoints[GET /gh/{user}/{repo}@{version}/{file}（キャッシュの削除）]
+    notes: 1 回の要求のタイムアウトは `curl --max-time 30`。再試行はしない（失敗の Issue を受けて手動で起動し直す）
+  - item: 失敗の通知
+    constraint: 'ビルド・push・キャッシュの削除のどれかが失敗したら（`if: failure()`）、`gh issue list --state open --label {failure_label}` でタイトルが `develop の配布物の再作成が失敗した（{ref}）` と一致する Issue を探す。無ければそのタイトルと `failure_label` で起票し、あればその Issue へコメントする。本文は失敗した実行の URL・元の commit の短縮 SHA・失敗した step の名前と、キャッシュの削除が失敗したときは削除できなかったファイルを持つ'
+    notes: 同じ失敗の見分け方は、ラベルと固定のタイトルで open の Issue を 1 件にまとめる方法（要件の未確定の推奨案 A）。失敗の種類で分けず、対応する人は open の Issue のコメントで履歴を確認する
+  - item: 入力の受け取り方
+    constraint: '`inputs.ref`・`inputs.failure_label`・`inputs.purge_url_prefix` は step の `env` で環境変数にしてから `run` のスクリプトで参照し、`${{ inputs.* }}` を `run` に直接記載しない'
+    notes: GitHub の Security hardening のスクリプトの差し込みを防ぐ
+  - item: lint
+    constraint: actionlint で検査し、指摘が 0 件
+overall_flow: |-
+  <!-- map -->
+
+  ```mermaid
+  flowchart TD
+    s([push か workflow_dispatch で起動])
+    subgraph build
+      a[ref を取得する]
+      n[Node と依存を入れる]
+      b[配布物をビルドする]
+      c[差分があれば commit して push する]
+      p[変わった配布ファイルのキャッシュを削除する]
+      f[失敗の Issue を起票するかコメントする]
+    end
+    s --> a --> n --> b
+    b -- 成功 --> c
+    c -- 差分なし --> ok([成功])
+    c -- push した --> p
+    p -- 全て削除した --> ok
+    b & c & p -->|"失敗（if: failure()）"| f
+    f --> ng([失敗])
+  ```
+
+  <!-- /map -->
+flows:
+  - name: 正常系
+    summary: develop への push で配布物を再作成し、変わった配布ファイルのキャッシュを削除する
+    setup:
+      - name: Mock
+        description: なし（本物の GitHub Actions と jsDelivr で実行する）
+      - name: ブランチ
+        description: '`src/` を変えた作業 PR を develop へマージした直後の develop'
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([develop への push で起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        b -- 成功 --> c[commit して develop へ push する]
+        c --> p[変わった配布ファイルのキャッシュを削除する]
+        p -- 全て削除した --> e([成功])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `success`
+      - develop の先頭が `develop の配布物を再作成する（{短縮 SHA}）` の commit
+      - step「キャッシュを削除する」のログに、commit で変わった `dist/` のファイルごとの 200 がある
+      - 失敗の Issue が起票されない
+  - name: 正常系（手動で起動する）
+    summary: '`workflow_dispatch` を入力を省いて起動し、develop の配布物を再作成する'
+    setup:
+      - name: Mock
+        description: なし（本物の GitHub Actions と jsDelivr で実行する）
+      - name: ブランチ
+        description: 前回の再作成が失敗し、`dist/` が先頭の commit のソースと合わない develop
+        notes: 入力は全て省く
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([workflow_dispatch で起動]) --> a[develop を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        b -- 成功 --> c[commit して develop へ push する]
+        c --> p[変わった配布ファイルのキャッシュを削除する]
+        p -- 全て削除した --> e([成功])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `success`
+      - develop の先頭が再作成した生成物の commit で、`dist/` がその前の commit のソースからビルドしたもの
+  - name: 異常系（ビルドが失敗する・failure）
+    summary: ビルドが失敗し、commit せずに失敗の Issue を起票して失敗で終わる
+    setup:
+      - name: Mock
+        description: '入力を `ref: {テスト用のブランチ}`・`failure_label: {テスト用のラベル}` にして手動で起動する'
+      - name: ブランチ
+        description: develop から分け、配布ファイルの上限を超える `dist/index.js` になる変更を入れたテスト用のブランチ
+        notes: テスト用のラベルの open の Issue が無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([テスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        b -->|"失敗（if: failure()）"| f[失敗の Issue を起票する] --> e([失敗])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `failure`
+      - step「差分があれば commit して push する」と「キャッシュを削除する」の結論が `skipped` で、テスト用のブランチの先頭が起動の前と同じ
+      - テスト用のラベルとタイトル `develop の配布物の再作成が失敗した（{テスト用のブランチ}）` の Issue が 1 件起票され、本文に失敗した実行の URL・元の commit の短縮 SHA・「配布物をビルドする」がある
+  - name: 異常系（失敗の Issue が open のまま再び失敗する・failure）
+    summary: 同じラベルとタイトルの open の Issue があれば、起票せずにコメントして失敗で終わる
+    setup:
+      - name: Mock
+        description: 異常系（ビルドが失敗する）と同じ入力でもう一度手動で起動する
+      - name: ブランチ
+        description: 異常系（ビルドが失敗する）の後、失敗の Issue が open のままのテスト用のブランチ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([同じテスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        b -->|"失敗（if: failure()）"| f[open の失敗の Issue へコメントする] --> e([失敗])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `failure`
+      - テスト用のラベルの open の Issue が 1 件のまま
+      - その Issue に、今回の失敗した実行の URL と元の commit の短縮 SHA のコメントがある
+  - name: 異常系（キャッシュを削除できない・failure）
+    summary: push した後にキャッシュの削除が失敗し、削除できなかったファイルを持つ失敗の Issue を起票して失敗で終わる
+    setup:
+      - name: Mock
+        description: '入力を `ref: {テスト用のブランチ}`・`failure_label: {テスト用のラベル}`・`purge_url_prefix: {失敗を返却する応答の URL の頭}` にして手動で起動する'
+        notes: 失敗を返却する応答の URL は実装で決める
+      - name: ブランチ
+        description: develop から分け、`src/` を変えたテスト用のブランチ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([テスト用の ref・ラベル・purge の URL の頭で起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        b -- 成功 --> c[commit して ref へ push する]
+        c --> p[キャッシュを削除する]
+        p -->|"失敗（if: failure()）"| f[失敗の Issue を起票する] --> e([失敗])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `failure`
+      - テスト用のブランチの先頭が再作成した生成物の commit
+      - テスト用のラベルの失敗の Issue の本文に、削除できなかった `dist/` のファイルと失敗した実行の URL がある
+notes:
+  確認の方法: フローは、単一ユースケース『developの配布物を再作成する』の E2E と、規約『Git フックと CI で動かすもの』の手順でテスト用のブランチのランナーを動かして確認する。テスト用のブランチとラベルは確認の後に削除する
+callers:
+  - SC-805-2#scenarios[正常シナリオ]
+  - SC-805-2#scenarios[正常シナリオ（手動で起動する）]
+  - SC-805-2#scenarios[異常シナリオ（ビルドが失敗する）]
+  - SC-805-2#scenarios[異常シナリオ（失敗の Issue が open のまま再び失敗する）]
+  - SC-805-2#scenarios[異常シナリオ（キャッシュを削除できない）]
+refs:
+  - API-472-2#endpoints[GET /gh/{user}/{repo}@{version}/{file}（キャッシュの削除）]
+  - IF-472-41#
+tags:
+  - name: topic:配布物
+    main: true
+  - name: topic:ci
+  - name: tool:github
+  - name: tool:jsdelivr
+  - name: action:ビルド
+  - name: topic:通知

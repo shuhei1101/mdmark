@@ -75,6 +75,43 @@ endpoints:
         condition: パッケージのそのバージョンにファイルがある
       - code: '404'
         condition: パッケージ・バージョン・ファイルのどれかが無い
+  - name: GET /gh/{user}/{repo}@{version}/{file}（キャッシュの削除）
+    method: GET
+    path: /gh/{user}/{repo}@{version}/{file}
+    summary: ブランチを指した URL のキャッシュを削除し、次の要求からそのブランチの先頭の commit のファイルを返却させる
+    idempotent: true
+    description: ホストは `https://purge.jsdelivr.net`。認証は要らない。応答は JSON で、`paths` のそのファイルの `throttled` が `true` のときは、短い間に同じファイルを削除したため削除していない
+    request:
+      - name: user
+        type: string
+        required: true
+        location: path
+        description: GitHub のユーザー名
+        example: shuhei1101
+      - name: repo
+        type: string
+        required: true
+        location: path
+        description: リポジトリ名
+        example: mdmark
+      - name: version
+        type: string
+        required: true
+        location: path
+        description: キャッシュを削除するブランチ
+        example: develop
+      - name: file
+        type: string
+        required: true
+        location: path
+        description: リポジトリの直下からのファイルのパス
+        example: dist/index.js
+    request_example: GET https://purge.jsdelivr.net/gh/shuhei1101/mdmark@develop/dist/index.js
+    status_codes:
+      - code: '200'
+        condition: 削除を受け付けた（`throttled` が `true` のときは削除していない）
+      - code: 4xx / 5xx
+        condition: 書式の誤りか jsDelivr の障害
 lead: npm と GitHub の公開リポジトリのファイルを配る無料の CDN。
 verification:
   state: 済
@@ -83,10 +120,13 @@ verification:
 base_urls:
   - env: 本番
     url: https://cdn.jsdelivr.net
+  - env: 本番（キャッシュの削除）
+    url: https://purge.jsdelivr.net
 official_url: https://www.jsdelivr.com/
 docs_url: https://github.com/jsdelivr/jsdelivr
 used_in:
   - vscode/src/
+  - .github/workflows/develop-dist.yml
 tags:
   - name: tool:jsdelivr
     main: true
