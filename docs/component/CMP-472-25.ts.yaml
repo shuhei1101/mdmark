@@ -167,7 +167,7 @@ states:
       - name: id
         value: story-view
   - name: BoardPressable
-    description: ビューのカスタム要素から描いたボード。項目を押せ、ポインターを重ねると項目の面の色が変わり、フォーカスした項目にフォーカスの枠線を出す
+    description: ビューのカスタム要素から描いたボード。項目を押せ、ポインターを重ねると項目の面を表の部品の押せる行と同じ `--mdmark-color-surface` に変え、フォーカスした項目にフォーカスの枠線を出す
     args:
       - name: columns
         value: '["タイトル","状態","担当"]'
