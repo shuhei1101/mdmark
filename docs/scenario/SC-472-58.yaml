@@ -473,7 +473,7 @@ scenarios:
       - name: 文書を描いたページ
         description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
       - name: モーダルにする動画を持つ Markdown
-        description: 表のセルの `![素材 1](m1.mp4 "手順 1 の画面")` と、動画だけの段落 `![操作の様子](demo.mp4){modal poster=demo.png}` を持つ文書
+        description: 表のセルの `![素材 1](m1.mp4 "手順 1 の画面")` と、動画だけの段落 `![操作の様子](demo.mp4 "保存までの操作"){modal}` を持つ文書
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -492,7 +492,7 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 表のセルと段落の動画の場所に、`素材 1`・`操作の様子` のラベルが文字で出ている
+      - 表のセルと段落の動画の場所に、その場に出すものとキャプション `手順 1 の画面`・`保存までの操作` が出ている
       - 再生バーとダイアログが出ていない
       - 表の行が改ページで切れない
     test: test_normal_when_modal_media_printed
