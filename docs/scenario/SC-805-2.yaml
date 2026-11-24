@@ -77,78 +77,81 @@ scenarios:
     test: test_normal_when_dispatched
   - name: 異常シナリオ（ビルドが失敗する）
     setup:
-      - name: ビルドが失敗する develop
-        description: 配布ファイルの上限を超える `dist/index.js` になる変更が入った develop
+      - name: ビルドが失敗するテスト用のブランチ
+        description: develop から分けたテスト用のブランチに、配布ファイルの上限を超える `dist/index.js` になる変更を入れたもの
       - name: Mock
-        description: 正常シナリオと同じ
+        description: workflow を、`workflow_dispatch` の入力をテスト用の値にして手動で起動する。ビルドの対象の ref はテスト用のブランチ、起票の先のラベルはテスト用のラベルにする
+        notes: 共有の develop へ push せず、`確認:task-planner` の Issue も起票しない。入力の名前と既定はインターフェース定義で決める
     flow: |-
       <!-- map -->
 
       ```mermaid
       sequenceDiagram
-        participant GH as GitHub
+        actor D as 開発者
         participant GA as GitHub Actions
-        actor T as task-planner
-        GH->>GA: develop への push で workflow を起動する
+        participant GH as GitHub
+        D->>GA: テスト用の ref とラベルを指定して workflow を手動で起動する
         GA->>GA: 配布物のビルドが失敗する
-        GA->>GH: 失敗した実行の URL と元の commit を持つ Issue を確認:task-planner を付けて起票する
-        GH-->>T: 対応を依頼する Issue
+        GA->>GH: 失敗した実行の URL と元の commit を持つ Issue を指定したラベルを付けて起票する
+        GH-->>D: 対応を依頼する Issue
       ```
 
       <!-- /map -->
     expected:
-      - develop の生成物は書き換わらない
-      - '`確認:task-planner` を付けた Issue が 1 件起票され、本文に失敗した実行の URL と元の commit の短縮 SHA がある'
+      - テスト用のブランチの生成物は書き換わらず、develop にも commit しない
+      - 指定したラベルを付けた Issue が 1 件起票され、本文に失敗した実行の URL と元の commit の短縮 SHA がある
       - workflow の実行が失敗で終わる
     test: test_error_when_build_failed
   - name: 異常シナリオ（失敗の Issue が open のまま再び失敗する）
     setup:
-      - name: 失敗の Issue が open の develop
-        description: 異常シナリオ（ビルドが失敗する）の Issue が open のまま、もう一度ビルドが失敗する変更を develop へ push する
+      - name: 失敗の Issue が open のテスト用のブランチ
+        description: 異常シナリオ（ビルドが失敗する）の後、テスト用のラベルの失敗の Issue が open のままのテスト用のブランチ
       - name: Mock
-        description: 正常シナリオと同じ
+        description: 異常シナリオ（ビルドが失敗する）と同じテスト用の ref とラベルを入力にして、もう一度手動で起動する
     flow: |-
       <!-- map -->
 
       ```mermaid
       sequenceDiagram
-        participant GH as GitHub
+        actor D as 開発者
         participant GA as GitHub Actions
-        GH->>GA: develop への push で workflow を起動する
+        participant GH as GitHub
+        D->>GA: 同じテスト用の ref とラベルを指定して workflow を手動で起動する
         GA->>GA: 配布物のビルドが失敗する
         GA->>GH: open の失敗の Issue へ失敗した実行の URL をコメントする
       ```
 
       <!-- /map -->
     expected:
-      - 新規の Issue は起票されず、open の失敗の Issue は 1 件のまま
+      - 新規の Issue は起票されず、指定したラベルの open の失敗の Issue は 1 件のまま
       - open の失敗の Issue に、今回の失敗した実行の URL と元の commit の短縮 SHA のコメントがある
     test: test_error_when_failure_issue_open
   - name: 異常シナリオ（キャッシュを削除できない）
     setup:
-      - name: 配布物の変わる develop
-        description: 正常シナリオと同じ
+      - name: 配布物の変わるテスト用のブランチ
+        description: develop から分け、`src/` を変えたテスト用のブランチ
       - name: Mock
-        description: jsDelivr の purge の要求を、失敗を返却する手元の応答に差し替える
+        description: workflow を、ビルドの対象の ref をテスト用のブランチ、起票の先のラベルをテスト用のラベル、purge の URL の頭を失敗を返却する応答に向けた `workflow_dispatch` の入力で手動で起動する
     flow: |-
       <!-- map -->
 
       ```mermaid
       sequenceDiagram
-        participant GH as GitHub
+        actor D as 開発者
         participant GA as GitHub Actions
-        participant C as jsDelivr
-        GH->>GA: develop への push で workflow を起動する
-        GA->>GH: 変わった生成物を develop へ commit して push する
-        GA->>C: @develop のキャッシュを削除する
+        participant GH as GitHub
+        participant C as 失敗を返却する応答
+        D->>GA: テスト用の ref・ラベル・purge の URL の頭を指定して workflow を手動で起動する
+        GA->>GH: 変わった生成物をテスト用のブランチへ commit して push する
+        GA->>C: キャッシュを削除する
         C-->>GA: 失敗
-        GA->>GH: 失敗した実行の URL を持つ Issue を確認:task-planner を付けて起票する
+        GA->>GH: 失敗した実行の URL を持つ Issue を指定したラベルを付けて起票する
       ```
 
       <!-- /map -->
     expected:
-      - develop の先頭が、再作成した生成物の commit になる
-      - '`確認:task-planner` を付けた Issue が起票され、キャッシュを削除できなかった配布ファイルと失敗した実行の URL がある'
+      - テスト用のブランチの先頭が、再作成した生成物の commit になる
+      - 指定したラベルを付けた Issue が起票され、キャッシュを削除できなかった配布ファイルと失敗した実行の URL がある
       - workflow の実行が失敗で終わる
     test: test_error_when_purge_failed
 tags:
