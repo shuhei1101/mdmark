@@ -1,0 +1,85 @@
+/* 動画の大きさを変えるリサイズハンドル（#805 で共有するアセット）。図の枠のリサイズハンドル（refs/42/assets/diagram.css の .mdmark-diagram-resize）と同じ見た目にする */
+@layer mdmark {
+  .mdmark {
+    /* 動画と、動画の右下に配置するハンドルを入れる入れ物。図の幅（--mdmark-image-width）に合わせる */
+    .mdmark-media-frame {
+      position: relative;
+    }
+
+    /* 案 A: 動画の下端の外側の右端に置き、再生バーと重ねない。下のキャプションとの間にハンドルの高さを空ける */
+    .mdmark-media-frame[data-mock-plan="a"] {
+      padding-block-end: 20px;
+
+      .mdmark-media-resize {
+        inset-block-end: 0;
+        inset-inline-end: 0;
+      }
+    }
+
+    /* 案 B: 動画の右上に重ね、ポインターを乗せたときかフォーカスしたときだけ出す（再生バーの全画面のボタンは右下にあるため上に置く） */
+    .mdmark-media-frame[data-mock-plan="b"] {
+      .mdmark-media-resize {
+        inset-block-start: 6px;
+        inset-inline-end: 6px;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      &:hover .mdmark-media-resize,
+      .mdmark-media-resize:focus-visible,
+      .mdmark-media-resize.is-resizing {
+        opacity: 1;
+      }
+    }
+
+    /* ハンドル: 図の枠と同じ 28×16 の札と点の並びのアイコン。斜めに動かして縦横の比率を保って幅を変える */
+    .mdmark-media-resize {
+      position: absolute;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
+      width: 28px;
+      height: 16px;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-muted);
+      cursor: nwse-resize;
+      touch-action: none;
+
+      &:hover,
+      &.is-resizing {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-heading);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+  }
+
+  /* 印刷ではハンドルを出さない */
+  @media print {
+    .mdmark .mdmark-media-resize {
+      display: none;
+    }
+
+    .mdmark .mdmark-media-frame[data-mock-plan="a"] {
+      padding-block-end: 0;
+    }
+  }
+}
