@@ -465,6 +465,14 @@ files:
     related:
       - to: IF-472-27
         type: see_also
+  - path: integration/lib/mdmark-table.browser.test.ts
+    description: ビルドした配布物を Chromium で読み込み、`<mdmark-table>` に列の定義と行のデータを指定して、表の描画・操作・行の押下・セルの編集・行の追加・誤りの通知ブロックを確認する結合テスト。表のカスタム要素を変えたときに参照する。
+    tags: [topic:結合テスト, topic:表, topic:カスタム要素, tool:vitest]
+    related:
+      - to: src/table/mdmark-table.element.ts
+        type: tests
+      - to: IF-793-1
+        type: see_also
   - path: integration/lib/mount-view.browser.test.ts
     description: インターフェース定義『ビューを描く』の正常系と異常系のフローを確認する結合テスト。この操作の入出力を変えたときに参照する。
     tags: [topic:結合テスト, tool:vitest, topic:api, topic:ビュー]
