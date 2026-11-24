@@ -129,7 +129,7 @@ classes:
         side_effects: 要素の中身を書き換える。`mdmark-item-click` を送信する関数をつなぐ
         process: |-
           1. `pending` を `false` にし、要素がページに無いか `columns`・`items` のどちらかが `undefined` なら何もしない
-          2. `items` が配列でないか `items[].key` が文字列でないか重なるとき、または `checkViewOptions` が `TypeError` を投げたときは、要素の中を `div.mdmark` の中の `renderNotice`（`source` は箇所、`name` は誤りの指定の名前）にして終える
+          2. `items` が配列でないか `items[].key` が文字列でないか重なるとき、または `checkViewOptions` が `TypeError` を投げたときは、要素の中を `div.mdmark` の中の `renderNotice`（`source` は `data`、`figure` は `false`、`name` は誤りの指定の名前、`reason` は誤りの内容と修正方法）にして終える
           3. `loadPartModule("view")` でモジュールを読み込む。読み込めなければ、文書のビューのマーカーと同じ読み込めない旨の通知ブロックにして終える
           4. 前の描画があれば表示しているビュー・並べ替え・絞り込みを記録し、`detach` を呼ぶ
           5. `drawView(this, { columns, items: items の values, group, default, filter, icons }, { keys: items の key, onItemClick })` を呼ぶ。`onItemClick` は `mdmark-item-click` を `bubbles`・`composed` の `CustomEvent` で送信する
