@@ -1,8 +1,8 @@
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-67.yaml
-    impact: run_only
-    detail: 動画を配置する記載と描いた図は変わらないが、同じ部品にリサイズハンドルを足すため動画・音声の描き方を確かめる
+    impact: changed
+    detail: 文書の作成者が、設定の既定の幅（本文の幅に対する %）で動画をまとめて小さく描ける。動画ごとの {width=…} を優先する
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-801-1.yaml
