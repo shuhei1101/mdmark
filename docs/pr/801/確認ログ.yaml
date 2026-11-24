@@ -1,0 +1,7 @@
+confirmations:
+  - topic: モーダルで再生する属性の名前
+    decision: '`modal`（推奨案 A）'
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/801#discussion_r4680182340
