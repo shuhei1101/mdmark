@@ -1,0 +1,945 @@
+$ run_url=$(gh workflow run test.yml --ref "$(git branch --show-current)" -f layer=unit | grep -o 'https://[^ ]*/actions/runs/[0-9]*') && ...（テスト実行方法の TL-5 の run_runner）
+test	Set up job	﻿2026-11-24T18:18:11.1052299Z Current runner version: '2.338.2'
+test	Set up job	2026-11-24T18:18:11.1079428Z ##[group]Runner Image Provisioner
+test	Set up job	2026-11-24T18:18:11.1080399Z Hosted Compute Agent
+test	Set up job	2026-11-24T18:18:11.1081006Z Version: 20261111.635
+test	Set up job	2026-11-24T18:18:11.1081668Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+test	Set up job	2026-11-24T18:18:11.1082480Z Build Date: 2026-11-11T01:49:01Z
+test	Set up job	2026-11-24T18:18:11.1083181Z Worker ID: {b2ef2cd0-871a-48b7-acf9-378aa1efe69d}
+test	Set up job	2026-11-24T18:18:11.1083944Z Region: northcentralus
+test	Set up job	2026-11-24T18:18:11.1084618Z Cloud: Azure
+test	Set up job	2026-11-24T18:18:11.1085139Z ##[endgroup]
+test	Set up job	2026-11-24T18:18:11.1086933Z ##[group]Operating System
+test	Set up job	2026-11-24T18:18:11.1087632Z Ubuntu
+test	Set up job	2026-11-24T18:18:11.1088250Z 26.04.1
+test	Set up job	2026-11-24T18:18:11.1088804Z LTS
+test	Set up job	2026-11-24T18:18:11.1089802Z ##[endgroup]
+test	Set up job	2026-11-24T18:18:11.1090382Z ##[group]Runner Image
+test	Set up job	2026-11-24T18:18:11.1090985Z Image: ubuntu-26.04
+test	Set up job	2026-11-24T18:18:11.1091736Z Version: 20261116.202.1
+test	Set up job	2026-11-24T18:18:11.1092865Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+test	Set up job	2026-11-24T18:18:11.1094691Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+test	Set up job	2026-11-24T18:18:11.1095678Z ##[endgroup]
+test	Set up job	2026-11-24T18:18:11.1097185Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2026-11-24T18:18:11.1099486Z Contents: read
+test	Set up job	2026-11-24T18:18:11.1100211Z Metadata: read
+test	Set up job	2026-11-24T18:18:11.1100766Z ##[endgroup]
+test	Set up job	2026-11-24T18:18:11.1102930Z Secret source: Actions
+test	Set up job	2026-11-24T18:18:11.1103996Z Cache mode: write
+test	Set up job	2026-11-24T18:18:11.1105059Z Prepare workflow directory
+test	Set up job	2026-11-24T18:18:11.1815029Z Prepare all required actions
+test	Set up job	2026-11-24T18:18:11.1891945Z Getting action download info
+test	Set up job	2026-11-24T18:18:11.4142038Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+test	Set up job	2026-11-24T18:18:11.6043222Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+test	Set up job	2026-11-24T18:18:11.7029494Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+test	Set up job	2026-11-24T18:18:11.9494348Z Complete job name: test
+test	ブランチを取得する	﻿2026-11-24T18:18:12.0369526Z ##[group]Run actions/checkout@v4
+test	ブランチを取得する	2026-11-24T18:18:12.0370468Z with:
+test	ブランチを取得する	2026-11-24T18:18:12.0370929Z   repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-24T18:18:12.0374666Z   token: ***
+test	ブランチを取得する	2026-11-24T18:18:12.0375109Z   ssh-strict: true
+test	ブランチを取得する	2026-11-24T18:18:12.0375549Z   ssh-user: git
+test	ブランチを取得する	2026-11-24T18:18:12.0375995Z   persist-credentials: true
+test	ブランチを取得する	2026-11-24T18:18:12.0376722Z   clean: true
+test	ブランチを取得する	2026-11-24T18:18:12.0377196Z   sparse-checkout-cone-mode: true
+test	ブランチを取得する	2026-11-24T18:18:12.0377731Z   fetch-depth: 1
+test	ブランチを取得する	2026-11-24T18:18:12.0378164Z   fetch-tags: false
+test	ブランチを取得する	2026-11-24T18:18:12.0378603Z   show-progress: true
+test	ブランチを取得する	2026-11-24T18:18:12.0379056Z   lfs: false
+test	ブランチを取得する	2026-11-24T18:18:12.0379481Z   submodules: false
+test	ブランチを取得する	2026-11-24T18:18:12.0379948Z   set-safe-directory: true
+test	ブランチを取得する	2026-11-24T18:18:12.0380465Z   allow-unsafe-pr-checkout: false
+test	ブランチを取得する	2026-11-24T18:18:12.0381254Z env:
+test	ブランチを取得する	2026-11-24T18:18:12.0381673Z   LAYER: unit
+test	ブランチを取得する	2026-11-24T18:18:12.0382090Z   PATHS: 
+test	ブランチを取得する	2026-11-24T18:18:12.0382517Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T18:18:12.7082010Z Syncing repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-24T18:18:12.7085339Z ##[group]Getting Git version info
+test	ブランチを取得する	2026-11-24T18:18:12.7087095Z Working directory is '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-24T18:18:12.7089341Z [command]/usr/bin/git version
+test	ブランチを取得する	2026-11-24T18:18:12.7090591Z git version 2.56.1
+test	ブランチを取得する	2026-11-24T18:18:12.7111411Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T18:18:12.7124927Z Temporarily overriding HOME='/home/runner/work/_temp/b0a73fb0-ca3a-4d0e-a8ac-f90d5a2f1241' before making global git config changes
+test	ブランチを取得する	2026-11-24T18:18:12.7127283Z Adding repository directory to the temporary git global config as a safe directory
+test	ブランチを取得する	2026-11-24T18:18:12.7129710Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-24T18:18:12.7390426Z Deleting the contents of '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-24T18:18:12.7394728Z ##[group]Initializing the repository
+test	ブランチを取得する	2026-11-24T18:18:12.7398486Z [command]/usr/bin/git init /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-24T18:18:12.7532639Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	ブランチを取得する	2026-11-24T18:18:12.7535345Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test	ブランチを取得する	2026-11-24T18:18:12.7537629Z hint: to use in all of your new repositories, which will suppress this warning,
+test	ブランチを取得する	2026-11-24T18:18:12.7539164Z hint: call:
+test	ブランチを取得する	2026-11-24T18:18:12.7539881Z hint:
+test	ブランチを取得する	2026-11-24T18:18:12.7541112Z hint: 	git config --global init.defaultBranch <name>
+test	ブランチを取得する	2026-11-24T18:18:12.7542107Z hint:
+test	ブランチを取得する	2026-11-24T18:18:12.7543163Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	ブランチを取得する	2026-11-24T18:18:12.7545215Z hint: 'development'. The just-created branch can be renamed via this command:
+test	ブランチを取得する	2026-11-24T18:18:12.7547099Z hint:
+test	ブランチを取得する	2026-11-24T18:18:12.7547746Z hint: 	git branch -m <name>
+test	ブランチを取得する	2026-11-24T18:18:12.7548475Z hint:
+test	ブランチを取得する	2026-11-24T18:18:12.7549889Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	ブランチを取得する	2026-11-24T18:18:12.7552005Z Initialized empty Git repository in /home/runner/work/mdmark/mdmark/.git/
+test	ブランチを取得する	2026-11-24T18:18:12.7556314Z [command]/usr/bin/git remote add origin https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-24T18:18:12.7605998Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T18:18:12.7607173Z ##[group]Disabling automatic garbage collection
+test	ブランチを取得する	2026-11-24T18:18:12.7611095Z [command]/usr/bin/git config --local gc.auto 0
+test	ブランチを取得する	2026-11-24T18:18:12.7643759Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T18:18:12.7645402Z ##[group]Setting up auth
+test	ブランチを取得する	2026-11-24T18:18:12.7650728Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	ブランチを取得する	2026-11-24T18:18:12.7683766Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	ブランチを取得する	2026-11-24T18:18:12.8440267Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	ブランチを取得する	2026-11-24T18:18:12.8477234Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	ブランチを取得する	2026-11-24T18:18:12.8767972Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	ブランチを取得する	2026-11-24T18:18:12.8805180Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	ブランチを取得する	2026-11-24T18:18:12.9095411Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	ブランチを取得する	2026-11-24T18:18:12.9140592Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T18:18:12.9141693Z ##[group]Fetching the repository
+test	ブランチを取得する	2026-11-24T18:18:12.9154397Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +8eb748964c166fe29edb65c6dc0af5d43dc06594:refs/remotes/origin/feat/media/video-modal
+test	ブランチを取得する	2026-11-24T18:18:15.2438797Z From https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-24T18:18:15.2440701Z  * [new ref]         8eb748964c166fe29edb65c6dc0af5d43dc06594 -> origin/feat/media/video-modal
+test	ブランチを取得する	2026-11-24T18:18:15.2444729Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T18:18:15.2445840Z ##[group]Determining the checkout info
+test	ブランチを取得する	2026-11-24T18:18:15.2448494Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T18:18:15.2455502Z [command]/usr/bin/git sparse-checkout disable
+test	ブランチを取得する	2026-11-24T18:18:15.2515123Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	ブランチを取得する	2026-11-24T18:18:15.2545991Z ##[group]Checking out the ref
+test	ブランチを取得する	2026-11-24T18:18:15.2550742Z [command]/usr/bin/git checkout --progress --force -B feat/media/video-modal refs/remotes/origin/feat/media/video-modal
+test	ブランチを取得する	2026-11-24T18:18:15.7807678Z Switched to a new branch 'feat/media/video-modal'
+test	ブランチを取得する	2026-11-24T18:18:15.7812265Z branch 'feat/media/video-modal' set up to track 'origin/feat/media/video-modal'.
+test	ブランチを取得する	2026-11-24T18:18:15.7850293Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T18:18:15.7906052Z [command]/usr/bin/git log -1 --format=%H
+test	ブランチを取得する	2026-11-24T18:18:15.7930613Z 8eb748964c166fe29edb65c6dc0af5d43dc06594
+test	Node をインストールする	﻿2026-11-24T18:18:15.8300197Z ##[group]Run actions/setup-node@v4
+test	Node をインストールする	2026-11-24T18:18:15.8300609Z with:
+test	Node をインストールする	2026-11-24T18:18:15.8301023Z   node-version: 24
+test	Node をインストールする	2026-11-24T18:18:15.8301242Z   always-auth: false
+test	Node をインストールする	2026-11-24T18:18:15.8301458Z   check-latest: false
+test	Node をインストールする	2026-11-24T18:18:15.8303815Z   token: ***
+test	Node をインストールする	2026-11-24T18:18:15.8304017Z env:
+test	Node をインストールする	2026-11-24T18:18:15.8304191Z   LAYER: unit
+test	Node をインストールする	2026-11-24T18:18:15.8304386Z   PATHS: 
+test	Node をインストールする	2026-11-24T18:18:15.8304565Z ##[endgroup]
+test	Node をインストールする	2026-11-24T18:18:15.9796730Z Found in cache @ /opt/hostedtoolcache/node/24.22.3/x64
+test	Node をインストールする	2026-11-24T18:18:15.9803202Z ##[group]Environment details
+test	Node をインストールする	2026-11-24T18:18:15.9808214Z (node:2378) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Node をインストールする	2026-11-24T18:18:15.9809328Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Node をインストールする	2026-11-24T18:18:16.3978024Z node: v24.22.3
+test	Node をインストールする	2026-11-24T18:18:16.3978410Z npm: 11.19.1
+test	Node をインストールする	2026-11-24T18:18:16.3978652Z yarn: 1.22.22
+test	Node をインストールする	2026-11-24T18:18:16.3979328Z ##[endgroup]
+test	依存をインストールする	﻿2026-11-24T18:18:16.4126724Z ##[group]Run npm ci
+test	依存をインストールする	2026-11-24T18:18:16.4127130Z npm ci
+test	依存をインストールする	2026-11-24T18:18:16.4127399Z npm --prefix vscode ci
+test	依存をインストールする	2026-11-24T18:18:16.4171754Z shell: /usr/bin/bash -e {0}
+test	依存をインストールする	2026-11-24T18:18:16.4172058Z env:
+test	依存をインストールする	2026-11-24T18:18:16.4172321Z   LAYER: unit
+test	依存をインストールする	2026-11-24T18:18:16.4172550Z   PATHS: 
+test	依存をインストールする	2026-11-24T18:18:16.4172758Z ##[endgroup]
+test	依存をインストールする	2026-11-24T18:18:29.9362008Z 
+test	依存をインストールする	2026-11-24T18:18:29.9372327Z added 551 packages, and audited 558 packages in 13s
+test	依存をインストールする	2026-11-24T18:18:29.9372927Z 
+test	依存をインストールする	2026-11-24T18:18:29.9373304Z 109 packages are looking for funding
+test	依存をインストールする	2026-11-24T18:18:29.9373852Z   run `npm fund` for details
+test	依存をインストールする	2026-11-24T18:18:29.9733176Z 
+test	依存をインストールする	2026-11-24T18:18:29.9734035Z 11 moderate severity vulnerabilities
+test	依存をインストールする	2026-11-24T18:18:29.9734471Z 
+test	依存をインストールする	2026-11-24T18:18:29.9735335Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-24T18:18:29.9736212Z   npm audit fix
+test	依存をインストールする	2026-11-24T18:18:29.9736877Z 
+test	依存をインストールする	2026-11-24T18:18:29.9737518Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-24T18:18:29.9738199Z   npm audit fix --force
+test	依存をインストールする	2026-11-24T18:18:29.9738579Z 
+test	依存をインストールする	2026-11-24T18:18:29.9738852Z Run `npm audit` for details.
+test	依存をインストールする	2026-11-24T18:18:29.9746820Z npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-24T18:18:29.9748152Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-24T18:18:29.9748970Z npm warn install-scripts
+test	依存をインストールする	2026-11-24T18:18:37.2178978Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-24T18:18:37.2179870Z 
+test	依存をインストールする	2026-11-24T18:18:37.2180293Z added 307 packages, and audited 314 packages in 7s
+test	依存をインストールする	2026-11-24T18:18:37.2180945Z 
+test	依存をインストールする	2026-11-24T18:18:37.2181582Z 93 packages are looking for funding
+test	依存をインストールする	2026-11-24T18:18:37.2182081Z   run `npm fund` for details
+test	依存をインストールする	2026-11-24T18:18:37.2342468Z 
+test	依存をインストールする	2026-11-24T18:18:37.2343059Z 6 vulnerabilities (4 moderate, 2 high)
+test	依存をインストールする	2026-11-24T18:18:37.2343466Z 
+test	依存をインストールする	2026-11-24T18:18:37.2343848Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-24T18:18:37.2344429Z   npm audit fix
+test	依存をインストールする	2026-11-24T18:18:37.2344718Z 
+test	依存をインストールする	2026-11-24T18:18:37.2354832Z npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-24T18:18:37.2356921Z npm warn install-scripts   @vscode/vsce-sign@2.1.1 (postinstall: node ./src/postinstall.js)
+test	依存をインストールする	2026-11-24T18:18:37.2358556Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-24T18:18:37.2359612Z npm warn install-scripts
+test	依存をインストールする	2026-11-24T18:18:37.2361049Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-24T18:18:37.2367771Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-24T18:18:37.2368625Z   npm audit fix --force
+test	依存をインストールする	2026-11-24T18:18:37.2369059Z 
+test	依存をインストールする	2026-11-24T18:18:37.2369561Z Run `npm audit` for details.
+test	Chromium をインストールする	﻿2026-11-24T18:18:37.2936340Z ##[group]Run npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-24T18:18:37.2936981Z npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-24T18:18:37.2971327Z shell: /usr/bin/bash -e {0}
+test	Chromium をインストールする	2026-11-24T18:18:37.2971595Z env:
+test	Chromium をインストールする	2026-11-24T18:18:37.2971783Z   LAYER: unit
+test	Chromium をインストールする	2026-11-24T18:18:37.2972214Z   PATHS: 
+test	Chromium をインストールする	2026-11-24T18:18:37.2972401Z ##[endgroup]
+test	Chromium をインストールする	2026-11-24T18:18:38.1112964Z Installing dependencies...
+test	Chromium をインストールする	2026-11-24T18:18:38.1211069Z Switching to root user to install dependencies...
+test	Chromium をインストールする	2026-11-24T18:18:38.2228485Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-24T18:18:38.2653538Z Hit:2 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+test	Chromium をインストールする	2026-11-24T18:18:38.2654761Z Get:6 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease [3964 B]
+test	Chromium をインストールする	2026-11-24T18:18:38.2678423Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease [137 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.2740506Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease [137 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.2755166Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease [137 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3009422Z Get:7 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main amd64 Packages [187 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3173264Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main amd64v3 Packages [916 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3205107Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main Translation-en [202 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3223106Z Get:14 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main arm64 Packages [173 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3234528Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe amd64v3 Packages [397 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3373110Z Get:11 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe Translation-en [126 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3392647Z Get:12 http://azure.archive.ubuntu.com/ubuntu resolute-updates/restricted amd64v3 Packages [640 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3447146Z Get:13 http://azure.archive.ubuntu.com/ubuntu resolute-updates/restricted Translation-en [132 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3469428Z Get:15 http://azure.archive.ubuntu.com/ubuntu resolute-security/main amd64v3 Packages [753 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3542777Z Get:16 http://azure.archive.ubuntu.com/ubuntu resolute-security/main Translation-en [162 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3555082Z Get:17 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe amd64v3 Packages [224 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.3584171Z Get:18 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe Translation-en [73.2 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.4040467Z Get:19 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted amd64v3 Packages [618 kB]
+test	Chromium をインストールする	2026-11-24T18:18:38.4121597Z Get:20 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted Translation-en [128 kB]
+test	Chromium をインストールする	2026-11-24T18:18:40.7734023Z Fetched 5148 kB in 0s (11.9 MB/s)
+test	Chromium をインストールする	2026-11-24T18:18:41.5319632Z Reading package lists...
+test	Chromium をインストールする	2026-11-24T18:18:41.5614861Z Reading package lists...
+test	Chromium をインストールする	2026-11-24T18:18:41.7650317Z Building dependency tree...
+test	Chromium をインストールする	2026-11-24T18:18:41.7657609Z Reading state information...
+test	Chromium をインストールする	2026-11-24T18:18:41.8007113Z libasound2t64 is already the newest version (1.2.15.3-1ubuntu1.1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8008353Z libasound2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8009767Z libatk-bridge2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8011060Z libatk-bridge2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8012419Z libatk1.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8013547Z libatk1.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8014486Z libatspi2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8015377Z libatspi2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8016203Z libcairo2 is already the newest version (1.18.4-3).
+test	Chromium をインストールする	2026-11-24T18:18:41.8017229Z libcairo2 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8018203Z libcups2t64 is already the newest version (2.4.16-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-24T18:18:41.8019828Z libcups2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8020867Z libdbus-1-3 is already the newest version (1.16.2-2ubuntu4).
+test	Chromium をインストールする	2026-11-24T18:18:41.8021876Z libdbus-1-3 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8022799Z libdrm2 is already the newest version (2.4.131-1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8023977Z libdrm2 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8024791Z libgbm1 is already the newest version (26.0.8-1ubuntu0.3).
+test	Chromium をインストールする	2026-11-24T18:18:41.8025546Z libgbm1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8026321Z libglib2.0-0t64 is already the newest version (2.88.0-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8027312Z libglib2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8028136Z libnspr4 is already the newest version (2:4.38.2-1ubuntu1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8028886Z libnspr4 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8029620Z libnss3 is already the newest version (2:3.120-1ubuntu2.2).
+test	Chromium をインストールする	2026-11-24T18:18:41.8030347Z libnss3 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8031070Z libpango-1.0-0 is already the newest version (1.57.0-1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8031839Z libpango-1.0-0 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8032594Z libx11-6 is already the newest version (2:1.8.13-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8033332Z libx11-6 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8034078Z libxcb1 is already the newest version (1.17.0-2ubuntu1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8034787Z libxcb1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8035569Z libxcomposite1 is already the newest version (1:0.4.6-1build1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8036351Z libxcomposite1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8037354Z libxdamage1 is already the newest version (1:1.1.7-1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8038088Z libxdamage1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8038845Z libxext6 is already the newest version (2:1.3.4-1build3).
+test	Chromium をインストールする	2026-11-24T18:18:41.8039574Z libxext6 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8040337Z libxfixes3 is already the newest version (1:6.0.0-2build2).
+test	Chromium をインストールする	2026-11-24T18:18:41.8041099Z libxfixes3 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8041840Z libxkbcommon0 is already the newest version (1.13.1-1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8042548Z libxkbcommon0 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8043311Z libxrandr2 is already the newest version (2:1.5.4-1build1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8044023Z libxrandr2 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8044753Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-24T18:18:41.8045761Z fonts-noto-color-emoji is already the newest version (2.051-1build1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8046992Z libfontconfig1 is already the newest version (2.17.1-3ubuntu1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8047756Z libfontconfig1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8048585Z libfreetype6 is already the newest version (2.14.2+dfsg-1ubuntu0.2).
+test	Chromium をインストールする	2026-11-24T18:18:41.8049372Z libfreetype6 set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8050199Z fonts-liberation is already the newest version (1:2.1.5-3build1).
+test	Chromium をインストールする	2026-11-24T18:18:41.8051029Z fonts-liberation set to manually installed.
+test	Chromium をインストールする	2026-11-24T18:18:41.8644231Z Solving dependencies...
+test	Chromium をインストールする	2026-11-24T18:18:41.9536298Z The following additional packages will be installed:
+test	Chromium をインストールする	2026-11-24T18:18:41.9537125Z   xfonts-encodings xfonts-utils
+test	Chromium をインストールする	2026-11-24T18:18:41.9545618Z Recommended packages:
+test	Chromium をインストールする	2026-11-24T18:18:41.9546194Z   fonts-ipafont-mincho fonts-tlwg-loma
+test	Chromium をインストールする	2026-11-24T18:18:41.9798611Z The following NEW packages will be installed:
+test	Chromium をインストールする	2026-11-24T18:18:41.9799495Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+test	Chromium をインストールする	2026-11-24T18:18:41.9814089Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+test	Chromium をインストールする	2026-11-24T18:18:41.9814833Z   xfonts-utils
+test	Chromium をインストールする	2026-11-24T18:18:42.0106366Z 0 upgraded, 9 newly installed, 0 to remove and 60 not upgraded.
+test	Chromium をインストールする	2026-11-24T18:18:42.0107239Z Need to get 21.9 MB of archives.
+test	Chromium をインストールする	2026-11-24T18:18:42.0107812Z After this operation, 80.2 MB of additional disk space will be used.
+test	Chromium をインストールする	2026-11-24T18:18:42.0108458Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-24T18:18:42.0568442Z Get:2 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-ipafont-gothic all 00303-23ubuntu1 [3703 kB]
+test	Chromium をインストールする	2026-11-24T18:18:42.2190265Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 fonts-freefont-ttf all 20211204+svn4273-4build1 [5656 kB]
+test	Chromium をインストールする	2026-11-24T18:18:42.4878876Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-tlwg-loma-otf all 1:0.7.3-1build1 [106 kB]
+test	Chromium をインストールする	2026-11-24T18:18:42.5182895Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-unifont all 1:16.0.04-1build1 [3169 kB]
+test	Chromium をインストールする	2026-11-24T18:18:42.6810515Z Get:6 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-wqy-zenhei all 0.9.45-8build1 [7863 kB]
+test	Chromium をインストールする	2026-11-24T18:18:43.0555214Z Get:7 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-encodings all 1:1.0.5-0ubuntu3 [576 kB]
+test	Chromium をインストールする	2026-11-24T18:18:43.1044781Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-utils amd64 1:7.7+7build1 [97.3 kB]
+test	Chromium をインストールする	2026-11-24T18:18:43.1347307Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-cyrillic all 1:1.0.5+nmu1build1 [384 kB]
+test	Chromium をインストールする	2026-11-24T18:18:43.1692941Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-scalable all 1:1.0.3-1.3build1 [304 kB]
+test	Chromium をインストールする	2026-11-24T18:18:43.5120052Z Fetched 21.9 MB in 1s (18.5 MB/s)
+test	Chromium をインストールする	2026-11-24T18:18:43.5375404Z Selecting previously unselected package fonts-ipafont-gothic.
+test	Chromium をインストールする	2026-11-24T18:18:43.5671367Z (Reading database ... 
+test	Chromium をインストールする	2026-11-24T18:18:43.5671747Z (Reading database ... 5%
+test	Chromium をインストールする	2026-11-24T18:18:43.5672027Z (Reading database ... 10%
+test	Chromium をインストールする	2026-11-24T18:18:43.5672295Z (Reading database ... 15%
+test	Chromium をインストールする	2026-11-24T18:18:43.5672545Z (Reading database ... 20%
+test	Chromium をインストールする	2026-11-24T18:18:43.5672793Z (Reading database ... 25%
+test	Chromium をインストールする	2026-11-24T18:18:43.5673649Z (Reading database ... 30%
+test	Chromium をインストールする	2026-11-24T18:18:43.5674183Z (Reading database ... 35%
+test	Chromium をインストールする	2026-11-24T18:18:43.5674769Z (Reading database ... 40%
+test	Chromium をインストールする	2026-11-24T18:18:43.5675101Z (Reading database ... 45%
+test	Chromium をインストールする	2026-11-24T18:18:43.5675346Z (Reading database ... 50%
+test	Chromium をインストールする	2026-11-24T18:18:43.6010234Z (Reading database ... 55%
+test	Chromium をインストールする	2026-11-24T18:18:43.6429048Z (Reading database ... 60%
+test	Chromium をインストールする	2026-11-24T18:18:43.6841508Z (Reading database ... 65%
+test	Chromium をインストールする	2026-11-24T18:18:43.7253788Z (Reading database ... 70%
+test	Chromium をインストールする	2026-11-24T18:18:43.7753064Z (Reading database ... 75%
+test	Chromium をインストールする	2026-11-24T18:18:43.8453265Z (Reading database ... 80%
+test	Chromium をインストールする	2026-11-24T18:18:43.9973210Z (Reading database ... 85%
+test	Chromium をインストールする	2026-11-24T18:18:44.1399673Z (Reading database ... 90%
+test	Chromium をインストールする	2026-11-24T18:18:44.3030875Z (Reading database ... 95%
+test	Chromium をインストールする	2026-11-24T18:18:44.3031651Z (Reading database ... 100%
+test	Chromium をインストールする	2026-11-24T18:18:44.3032728Z (Reading database ... 214296 files and directories currently installed.)
+test	Chromium をインストールする	2026-11-24T18:18:44.3074152Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-23ubuntu1_all.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.3173106Z Unpacking fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.3888355Z Selecting previously unselected package fonts-freefont-ttf.
+test	Chromium をインストールする	2026-11-24T18:18:44.4027477Z Preparing to unpack .../1-fonts-freefont-ttf_20211204+svn4273-4build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.4034988Z Unpacking fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.4867413Z Selecting previously unselected package fonts-tlwg-loma-otf.
+test	Chromium をインストールする	2026-11-24T18:18:44.5006128Z Preparing to unpack .../2-fonts-tlwg-loma-otf_1%3a0.7.3-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.5012651Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.5247633Z Selecting previously unselected package fonts-unifont.
+test	Chromium をインストールする	2026-11-24T18:18:44.5386148Z Preparing to unpack .../3-fonts-unifont_1%3a16.0.04-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.5398648Z Unpacking fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.6530266Z Selecting previously unselected package fonts-wqy-zenhei.
+test	Chromium をインストールする	2026-11-24T18:18:44.6666870Z Preparing to unpack .../4-fonts-wqy-zenhei_0.9.45-8build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.6813398Z Unpacking fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.7690200Z Selecting previously unselected package xfonts-encodings.
+test	Chromium をインストールする	2026-11-24T18:18:44.7827881Z Preparing to unpack .../5-xfonts-encodings_1%3a1.0.5-0ubuntu3_all.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.7834527Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.8145525Z Selecting previously unselected package xfonts-utils.
+test	Chromium をインストールする	2026-11-24T18:18:44.8282090Z Preparing to unpack .../6-xfonts-utils_1%3a7.7+7build1_amd64v3.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.8288927Z Unpacking xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.8672003Z Selecting previously unselected package xfonts-cyrillic.
+test	Chromium をインストールする	2026-11-24T18:18:44.8809534Z Preparing to unpack .../7-xfonts-cyrillic_1%3a1.0.5+nmu1build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.8817036Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.9152155Z Selecting previously unselected package xfonts-scalable.
+test	Chromium をインストールする	2026-11-24T18:18:44.9290162Z Preparing to unpack .../8-xfonts-scalable_1%3a1.0.3-1.3build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T18:18:44.9299048Z Unpacking xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.9757439Z Setting up fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.9909209Z Setting up fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.9925893Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.9944702Z Setting up xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-24T18:18:44.9963986Z Setting up fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-24T18:18:45.0029848Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+test	Chromium をインストールする	2026-11-24T18:18:45.0045065Z Setting up fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:45.0063079Z Setting up xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:45.0120545Z Setting up xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:45.0632567Z Setting up xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:45.1054586Z Processing triggers for man-db (2.13.1-1build1) ...
+test	Chromium をインストールする	2026-11-24T18:18:45.1082936Z Not building database; man-db/auto-update is not 'true'.
+test	Chromium をインストールする	2026-11-24T18:18:45.1098510Z Processing triggers for fontconfig (2.17.1-3ubuntu1) ...
+test	Chromium をインストールする	2026-11-24T18:18:45.8587532Z 
+test	Chromium をインストールする	2026-11-24T18:18:45.8588227Z Running kernel seems to be up-to-date.
+test	Chromium をインストールする	2026-11-24T18:18:45.8588589Z 
+test	Chromium をインストールする	2026-11-24T18:18:45.8588773Z Restarting services...
+test	Chromium をインストールする	2026-11-24T18:18:45.8685566Z 
+test	Chromium をインストールする	2026-11-24T18:18:45.8686235Z Service restarts being deferred:
+test	Chromium をインストールする	2026-11-24T18:18:45.8689111Z  systemctl restart hosted-compute-agent.service
+test	Chromium をインストールする	2026-11-24T18:18:45.8689718Z 
+test	Chromium をインストールする	2026-11-24T18:18:45.8690359Z No containers need to be restarted.
+test	Chromium をインストールする	2026-11-24T18:18:45.8697146Z 
+test	Chromium をインストールする	2026-11-24T18:18:45.8697574Z No user sessions are running outdated binaries.
+test	Chromium をインストールする	2026-11-24T18:18:45.8697844Z 
+test	Chromium をインストールする	2026-11-24T18:18:45.8698149Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+test	Chromium をインストールする	2026-11-24T18:18:46.9254755Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+test	Chromium をインストールする	2026-11-24T18:18:47.3943831Z |                                                                                |   0% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:47.6529095Z |■■■■■■■■                                                                        |  10% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:47.7379886Z |■■■■■■■■■■■■■■■■                                                                |  20% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:47.8289550Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:47.8916210Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:47.9719355Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:48.0497858Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:48.1139056Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:48.2292088Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:48.2868883Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:48.3768767Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.5487665Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+test	Chromium をインストールする	2026-11-24T18:18:51.5493092Z Downloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip
+test	Chromium をインストールする	2026-11-24T18:18:51.9213511Z |                                                                                |   0% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9266683Z |■■■■■■■■                                                                        |  10% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9298255Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9321352Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9337523Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9353394Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9373011Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9394918Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9405108Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9420068Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:51.9438577Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T18:18:52.0043448Z FFmpeg (playwright ffmpeg v1013) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1013
+test	Chromium をインストールする	2026-11-24T18:18:52.0048198Z Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+test	Chromium をインストールする	2026-11-24T18:18:52.4441711Z |                                                                                |   0% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:52.6345878Z |■■■■■■■■                                                                        |  10% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:52.7164348Z |■■■■■■■■■■■■■■■■                                                                |  20% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:52.7793060Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:52.8498344Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:52.8902087Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:52.9309499Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:52.9870540Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:53.0249557Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:53.0648652Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:53.1202121Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+test	Chromium をインストールする	2026-11-24T18:18:55.3681170Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+test	単体テストを回す	﻿2026-11-24T18:18:55.4070347Z ##[group]Run npm run test:unit 2>&1 | tee test.log
+test	単体テストを回す	2026-11-24T18:18:55.4070758Z npm run test:unit 2>&1 | tee test.log
+test	単体テストを回す	2026-11-24T18:18:55.4105770Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test	単体テストを回す	2026-11-24T18:18:55.4106116Z env:
+test	単体テストを回す	2026-11-24T18:18:55.4106302Z   LAYER: unit
+test	単体テストを回す	2026-11-24T18:18:55.4106670Z   PATHS: 
+test	単体テストを回す	2026-11-24T18:18:55.4106862Z ##[endgroup]
+test	単体テストを回す	2026-11-24T18:18:55.5196033Z 
+test	単体テストを回す	2026-11-24T18:18:55.5196744Z > test:unit
+test	単体テストを回す	2026-11-24T18:18:55.5197437Z > vitest run --project 'unit*'
+test	単体テストを回す	2026-11-24T18:18:55.5197827Z 
+test	単体テストを回す	2026-11-24T18:18:56.3031851Z 
+test	単体テストを回す	2026-11-24T18:18:56.3033308Z  RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+test	単体テストを回す	2026-11-24T18:18:56.3033935Z 
+test	単体テストを回す	2026-11-24T18:18:58.3694650Z  ✓  unit  tests/unit/src/table/table.part.test.ts (41 tests) 560ms
+test	単体テストを回す	2026-11-24T18:18:58.3729654Z    ✓ test_render_table 486ms
+test	単体テストを回す	2026-11-24T18:18:58.4211632Z  ✓  unit  tests/unit/src/map/layout.test.ts (42 tests) 601ms
+test	単体テストを回す	2026-11-24T18:18:58.4213390Z    ✓ test_layout_map 464ms
+test	単体テストを回す	2026-11-24T18:19:01.1715426Z  ✓  unit  tests/unit/src/map/map.part.test.ts (74 tests) 3352ms
+test	単体テストを回す	2026-11-24T18:19:01.1757709Z    ✓ test_render_map_flow 973ms
+test	単体テストを回す	2026-11-24T18:19:01.1783791Z    ✓ test_render_map_er 744ms
+test	単体テストを回す	2026-11-24T18:19:01.1797703Z    ✓ test_render_map_state_diagram 371ms
+test	単体テストを回す	2026-11-24T18:19:03.8501506Z  ✓  unit-browser (chromium)  tests/unit/src/table/table.interact.browser.test.ts (83 tests) 3113ms
+test	単体テストを回す	2026-11-24T18:19:03.8511326Z    ✓ test_attach_tables_when_cell_has_term 307ms
+test	単体テストを回す	2026-11-24T18:19:04.5233282Z  ✓  unit  tests/unit/src/table/table.syntax.test.ts (34 tests) 372ms
+test	単体テストを回す	2026-11-24T18:19:05.3653290Z  ✓  unit-browser (chromium)  tests/unit/src/mount.browser.test.ts (57 tests) 4617ms
+test	単体テストを回す	2026-11-24T18:19:05.3698750Z    ✓ test_mount 447ms
+test	単体テストを回す	2026-11-24T18:19:05.3702719Z    ✓ test_mount_when_mermaid 1297ms
+test	単体テストを回す	2026-11-24T18:19:05.3703974Z    ✓ test_mount_when_plain_mermaid_styled 505ms
+test	単体テストを回す	2026-11-24T18:19:05.7933416Z  ✓  unit-browser (chromium)  tests/unit/src/section/side-toc.interact.browser.test.ts (31 tests) 1196ms
+test	単体テストを回す	2026-11-24T18:19:05.8749355Z stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_closed_group_measured
+test	単体テストを回す	2026-11-24T18:19:05.8767104Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	単体テストを回す	2026-11-24T18:19:05.9416964Z stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_content_in_bottom_padding
+test	単体テストを回す	2026-11-24T18:19:05.9423847Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	単体テストを回す	2026-11-24T18:19:06.0991147Z stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_centered_content_overflows
+test	単体テストを回す	2026-11-24T18:19:06.1060397Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	単体テストを回す	2026-11-24T18:19:06.2588278Z  ✓  unit-browser (chromium)  tests/unit/src/shared/zoom.interact.browser.test.ts (30 tests) 317ms
+test	単体テストを回す	2026-11-24T18:19:06.3387578Z  ✓  unit  tests/unit/src/cli/check.test.ts (38 tests) 7543ms
+test	単体テストを回す	2026-11-24T18:19:06.3398196Z    ✓ test_run_check 6093ms
+test	単体テストを回す	2026-11-24T18:19:06.3399868Z    ✓ test_run_check_when_base_given 313ms
+test	単体テストを回す	2026-11-24T18:19:07.1393095Z  ✓  unit-browser (chromium)  tests/unit/src/map/flow-view.browser.test.ts (26 tests) 4911ms
+test	単体テストを回す	2026-11-24T18:19:07.1427977Z    ✓ test_attach_map_flow_when_toggle 428ms
+test	単体テストを回す	2026-11-24T18:19:07.1497187Z    ✓ test_attach_map_flow_when_walk_keeps_zoom 2584ms
+test	単体テストを回す	2026-11-24T18:19:07.1587850Z    ✓ test_attach_map_flow_when_changes 483ms
+test	単体テストを回す	2026-11-24T18:19:07.4188685Z  ✓  unit  tests/unit/src/config-files.test.ts (45 tests) 679ms
+test	単体テストを回す	2026-11-24T18:19:07.4277895Z    ✓ test_load_layered_config 333ms
+test	単体テストを回す	2026-11-24T18:19:07.6301027Z  ✓  unit-browser (chromium)  tests/unit/src/diff/blocks.browser.test.ts (22 tests) 243ms
+test	単体テストを回す	2026-11-24T18:19:08.9091752Z  ✓  unit  tests/unit/src/knowledge/check.test.ts (27 tests) 76ms
+test	単体テストを回す	2026-11-24T18:19:09.3790386Z  ✓  unit-browser (chromium)  tests/unit/src/comments/index.browser.test.ts (19 tests) 1399ms
+test	単体テストを回す	2026-11-24T18:19:09.3792949Z    ✓ test_attach_comments_when_loaded 452ms
+test	単体テストを回す	2026-11-24T18:19:09.6512870Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-width.interact.browser.test.ts (12 tests) 779ms
+test	単体テストを回す	2026-11-24T18:19:10.7367289Z  ✓  unit  tests/unit/scripts/build.test.ts (34 tests) 12068ms
+test	単体テストを回す	2026-11-24T18:19:10.7372546Z    ✓ test_main 3217ms
+test	単体テストを回す	2026-11-24T18:19:10.7373915Z    ✓ test_main_when_dist_file_too_large 406ms
+test	単体テストを回す	2026-11-24T18:19:10.7375627Z    ✓ test_main_when_guide_index_invalid 406ms
+test	単体テストを回す	2026-11-24T18:19:10.7377479Z    ✓ test_main_when_api_missing_in_baseline_browser 355ms
+test	単体テストを回す	2026-11-24T18:19:10.7379229Z    ✓ test_build_dist 382ms
+test	単体テストを回す	2026-11-24T18:19:10.7380394Z    ✓ test_build_dist_when_nested_css 322ms
+test	単体テストを回す	2026-11-24T18:19:10.7381638Z    ✓ test_build_dist_when_postcss_imported 468ms
+test	単体テストを回す	2026-11-24T18:19:10.7382908Z    ✓ test_build_dist_when_cli_and_viewer 464ms
+test	単体テストを回す	2026-11-24T18:19:10.7384181Z    ✓ test_build_dist_when_cli_bundles_package 613ms
+test	単体テストを回す	2026-11-24T18:19:10.7385404Z    ✓ test_emit_declarations 4022ms
+test	単体テストを回す	2026-11-24T18:19:10.7386722Z    ✓ test_emit_declarations_when_type_error 457ms
+test	単体テストを回す	2026-11-24T18:19:10.8020337Z  ✓  unit-browser (chromium)  tests/unit/src/diff/panel.browser.test.ts (14 tests) 852ms
+test	単体テストを回す	2026-11-24T18:19:11.2768625Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram.interact.browser.test.ts (18 tests) 789ms
+test	単体テストを回す	2026-11-24T18:19:12.0287596Z  ✓  unit-browser (chromium)  tests/unit/src/section/section.interact.browser.test.ts (21 tests) 782ms
+test	単体テストを回す	2026-11-24T18:19:12.0291325Z    ✓ test_attach_sections_when_row_has_term 536ms
+test	単体テストを回す	2026-11-24T18:19:12.2068535Z  ✓  unit  tests/unit/src/knowledge/matches.test.ts (20 tests) 608ms
+test	単体テストを回す	2026-11-24T18:19:12.2098950Z    ✓ test_collect_matches_ignores_avoided_terms 532ms
+test	単体テストを回す	2026-11-24T18:19:12.4979833Z  ✓  unit-browser (chromium)  tests/unit/src/mermaid.browser.test.ts (24 tests) 5770ms
+test	単体テストを回す	2026-11-24T18:19:12.4984505Z    ✓ test_attach_mermaid 2935ms
+test	単体テストを回す	2026-11-24T18:19:12.5046154Z    ✓ test_attach_mermaid_when_scheme_changed 750ms
+test	単体テストを回す	2026-11-24T18:19:12.5047690Z    ✓ test_attach_mermaid_when_detached 304ms
+test	単体テストを回す	2026-11-24T18:19:12.5067769Z    ✓ test_draw_mermaid_diagram_when_end_in_name 344ms
+test	単体テストを回す	2026-11-24T18:19:12.9427982Z  ✓  unit-browser (chromium)  tests/unit/src/footnote/footnote.interact.browser.test.ts (12 tests) 401ms
+test	単体テストを回す	2026-11-24T18:19:13.3657912Z  ✓  unit  tests/unit/src/cli/export.test.ts (29 tests) 8501ms
+test	単体テストを回す	2026-11-24T18:19:13.3687362Z    ✓ test_prepare_embeds 5912ms
+test	単体テストを回す	2026-11-24T18:19:13.3709075Z    ✓ test_run_export_when_document_missing 1466ms
+test	単体テストを回す	2026-11-24T18:19:13.5488109Z  ✓  unit  tests/unit/src/code-block/code-block.syntax.test.ts (36 tests) 176ms
+test	単体テストを回す	2026-11-24T18:19:13.6119507Z  ✓  unit-browser (chromium)  tests/unit/src/tabs/tabs.interact.browser.test.ts (18 tests) 156ms
+test	単体テストを回す	2026-11-24T18:19:13.7874740Z  ✓  unit-browser (chromium)  tests/unit/src/knowledge/term.interact.browser.test.ts (12 tests) 445ms
+test	単体テストを回す	2026-11-24T18:19:13.8037612Z  ✓  unit  tests/unit/src/cli/upgrade.test.ts (26 tests) 4468ms
+test	単体テストを回す	2026-11-24T18:19:13.8039369Z    ✓ test_write_config_version 1430ms
+test	単体テストを回す	2026-11-24T18:19:13.8067830Z    ✓ test_run_upgrade_when_local_newer 1786ms
+test	単体テストを回す	2026-11-24T18:19:14.4196370Z  ✓  unit  tests/unit/src/diagram/diagram.part.test.ts (21 tests) 234ms
+test	単体テストを回す	2026-11-24T18:19:14.4875682Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram-tips.interact.browser.test.ts (13 tests) 326ms
+test	単体テストを回す	2026-11-24T18:19:14.5577420Z  ✓  unit-browser (chromium)  tests/unit/src/map/drag.browser.test.ts (18 tests) 56ms
+test	単体テストを回す	2026-11-24T18:19:14.8579524Z  ✓  unit  tests/unit/src/map/convert.test.ts (22 tests) 506ms
+test	単体テストを回す	2026-11-24T18:19:14.8611220Z    ✓ test_convert_retired_diagrams 422ms
+test	単体テストを回す	2026-11-24T18:19:15.2561435Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests) 2957ms
+test	単体テストを回す	2026-11-24T18:19:15.2590829Z    ✓ test_panel_screen_when_rendered 824ms
+test	単体テストを回す	2026-11-24T18:19:15.2644342Z    ✓ test_panel_screen_when_reload_clicked 551ms
+test	単体テストを回す	2026-11-24T18:19:15.2969460Z  ✓  unit-browser (chromium)  tests/unit/src/mount-parts.browser.test.ts (15 tests) 562ms
+test	単体テストを回す	2026-11-24T18:19:15.3588638Z  ✓  unit  tests/unit/src/plugin/templates.test.ts (30 tests) 482ms
+test	単体テストを回す	2026-11-24T18:19:15.5889641Z  ✓  unit-browser (chromium)  tests/unit/src/map/sequence-view.browser.test.ts (14 tests) 515ms
+test	単体テストを回す	2026-11-24T18:19:15.6963505Z  ✓  unit-browser (chromium)  tests/unit/src/libraries.browser.test.ts (12 tests) 87ms
+test	単体テストを回す	2026-11-24T18:19:15.7713696Z  ✓  unit  tests/unit/src/map/check.test.ts (25 tests) 511ms
+test	単体テストを回す	2026-11-24T18:19:15.7768223Z    ✓ test_collect_map_problems 335ms
+test	単体テストを回す	2026-11-24T18:19:16.2061059Z  ✓  unit  tests/unit/src/knowledge/dictionary.test.ts (19 tests) 153ms
+test	単体テストを回す	2026-11-24T18:19:16.2894474Z  ✓  unit  tests/unit/src/code-block/code-block.part.test.ts (20 tests) 135ms
+test	単体テストを回す	2026-11-24T18:19:16.6289585Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-resize.interact.browser.test.ts (8 tests) 184ms
+test	単体テストを回す	2026-11-24T18:19:17.5709078Z  ✓  unit-browser (chromium)  tests/unit/src/viewer/bundle.browser.test.ts (12 tests) 778ms
+test	単体テストを回す	2026-11-24T18:19:17.6560056Z  ✓  unit  tests/unit/src/cli/embed.test.ts (25 tests) 879ms
+test	単体テストを回す	2026-11-24T18:19:17.6617746Z    ✓ test_used_parts 526ms
+test	単体テストを回す	2026-11-24T18:19:17.7012750Z  ✓  unit  tests/unit/src/plugin/setup/server.test.ts (17 tests) 3765ms
+test	単体テストを回す	2026-11-24T18:19:17.7058122Z    ✓ test_build_tmux_args 666ms
+test	単体テストを回す	2026-11-24T18:19:17.7128507Z    ✓ test_start_with_tmux 1495ms
+test	単体テストを回す	2026-11-24T18:19:17.7129983Z    ✓ test_list_tool_names 950ms
+test	単体テストを回す	2026-11-24T18:19:18.0239387Z  ✓  unit-browser (chromium)  tests/unit/src/map/index.browser.test.ts (14 tests) 1047ms
+test	単体テストを回す	2026-11-24T18:19:18.0271162Z    ✓ test_attach_map 440ms
+test	単体テストを回す	2026-11-24T18:19:18.2715133Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts (14 tests) 1276ms
+test	単体テストを回す	2026-11-24T18:19:18.2757089Z    ✓ test_inspect_when_play 1070ms
+test	単体テストを回す	2026-11-24T18:19:18.3686991Z  ✓  unit-browser (chromium)  tests/unit/src/tree/tree.interact.browser.test.ts (8 tests) 123ms
+test	単体テストを回す	2026-11-24T18:19:18.7495031Z  ✓  unit  tests/unit/src/plugin/tools.test.ts (21 tests) 2123ms
+test	単体テストを回す	2026-11-24T18:19:18.7518953Z    ✓ test_call_tool 955ms
+test	単体テストを回す	2026-11-24T18:19:18.9160113Z  ✓  unit-browser (chromium)  tests/unit/src/comments/bubble.browser.test.ts (8 tests) 353ms
+test	単体テストを回す	2026-11-24T18:19:18.9481598Z  ✓  unit  tests/unit/vscode/src/config.test.ts (24 tests) 890ms
+test	単体テストを回す	2026-11-24T18:19:18.9544105Z    ✓ test_resolve_config_path 597ms
+test	単体テストを回す	2026-11-24T18:19:19.4058410Z stderr | tests/unit/src/render/sanitize.test.ts > test_resolve_id_href
+test	単体テストを回す	2026-11-24T18:19:19.4114777Z [mdmark] resolveIdLink が例外を投げました Error: boom
+test	単体テストを回す	2026-11-24T18:19:19.4184522Z     at resolveIdLink (/home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:474:35)
+test	単体テストを回す	2026-11-24T18:19:19.4230570Z     at resolveIdHref (/home/runner/work/mdmark/mdmark/src/render/sanitize.ts:354:16)
+test	単体テストを回す	2026-11-24T18:19:19.4268467Z     at /home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:486:19
+test	単体テストを回す	2026-11-24T18:19:19.4317743Z     at Array.map (<anonymous>)
+test	単体テストを回す	2026-11-24T18:19:19.4368162Z     at /home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:486:5
+test	単体テストを回す	2026-11-24T18:19:19.4386270Z     at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+test	単体テストを回す	2026-11-24T18:19:19.4418137Z     at async file:///home/runner/work/mdmark/mdmark/node_modules/vitest/dist/chunks/run.Cm2sd7-x.js:2794:20
+test	単体テストを回す	2026-11-24T18:19:19.4427033Z 
+test	単体テストを回す	2026-11-24T18:19:19.4458041Z  ✓  unit  tests/unit/src/render/sanitize.test.ts (24 tests) 209ms
+test	単体テストを回す	2026-11-24T18:19:19.4860849Z  ✓  unit-browser (chromium)  tests/unit/src/highlight.browser.test.ts (9 tests) 164ms
+test	単体テストを回す	2026-11-24T18:19:19.5588266Z  ✓  unit  tests/unit/src/knowledge/aliases.test.ts (15 tests) 165ms
+test	単体テストを回す	2026-11-24T18:19:19.9392022Z  ✓  unit  tests/unit/src/cli/migrations.test.ts (23 tests) 1610ms
+test	単体テストを回す	2026-11-24T18:19:19.9418926Z    ✓ test_load_migration_versions_when_steps_invalid 1257ms
+test	単体テストを回す	2026-11-24T18:19:19.9850919Z  ✓  unit  tests/unit/src/diagram/chart.part.test.ts (15 tests) 151ms
+test	単体テストを回す	2026-11-24T18:19:20.4438670Z  ✓  unit  tests/unit/src/config.test.ts (20 tests) 106ms
+test	単体テストを回す	2026-11-24T18:19:20.5008695Z  ✓  unit-browser (chromium)  tests/unit/src/diff/minimap.browser.test.ts (7 tests) 314ms
+test	単体テストを回す	2026-11-24T18:19:20.5104285Z  ✓  unit-browser (chromium)  tests/unit/src/table/mdmark-table.element.browser.test.ts (10 tests) 782ms
+test	単体テストを回す	2026-11-24T18:19:20.8569572Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-sticky.interact.browser.test.ts (7 tests) 966ms
+test	単体テストを回す	2026-11-24T18:19:20.8604634Z    ✓ test_attach_sticky_rows_when_timeline 349ms
+test	単体テストを回す	2026-11-24T18:19:20.9075949Z  ✓  unit  tests/unit/src/knowledge/term.syntax.test.ts (14 tests) 189ms
+test	単体テストを回す	2026-11-24T18:19:21.1925788Z  ✓  unit  tests/unit/src/map/class-diagram.test.ts (15 tests) 326ms
+test	単体テストを回す	2026-11-24T18:19:21.2625423Z  ✓  unit-browser (chromium)  tests/unit/src/table/mdmark-table.interact.browser.test.ts (10 tests) 114ms
+test	単体テストを回す	2026-11-24T18:19:21.6013664Z  ✓  unit  tests/unit/src/knowledge/term-tip.part.test.ts (10 tests) 90ms
+test	単体テストを回す	2026-11-24T18:19:22.1675478Z  ✓  unit-browser (chromium)  tests/unit/src/interact.browser.test.ts (8 tests) 460ms
+test	単体テストを回す	2026-11-24T18:19:22.1889139Z  ✓  unit-browser (chromium)  tests/unit/src/code-block/code-fold.interact.browser.test.ts (7 tests) 175ms
+test	単体テストを回す	2026-11-24T18:19:22.3569306Z  ✓  unit  tests/unit/src/render/marks.test.ts (16 tests) 439ms
+test	単体テストを回す	2026-11-24T18:19:22.3591698Z    ✓ test_take_marks 342ms
+test	単体テストを回す	2026-11-24T18:19:22.7279074Z  ✓  unit-browser (chromium)  tests/unit/src/map/c4-view.browser.test.ts (11 tests) 832ms
+test	単体テストを回す	2026-11-24T18:19:22.7327790Z    ✓ test_attach_map_c4 369ms
+test	単体テストを回す	2026-11-24T18:19:22.7388536Z  ✓  unit  tests/unit/src/knowledge/glossary.syntax.test.ts (13 tests) 532ms
+test	単体テストを回す	2026-11-24T18:19:22.7417866Z    ✓ test_read_glossary_table 406ms
+test	単体テストを回す	2026-11-24T18:19:23.5409664Z  ✓  unit  tests/unit/src/mdmark-style/reply.test.ts (17 tests) 3255ms
+test	単体テストを回す	2026-11-24T18:19:23.5538426Z    ✓ test_render_reply_when_disabled 1278ms
+test	単体テストを回す	2026-11-24T18:19:23.5602631Z    ✓ test_render_reply_when_over_limit 1892ms
+test	単体テストを回す	2026-11-24T18:19:23.6198883Z  ✓  unit-browser (chromium)  tests/unit/src/map/class-view.browser.test.ts (7 tests) 553ms
+test	単体テストを回す	2026-11-24T18:19:23.7766403Z  ✓  unit  tests/unit/src/footnote/footnote.syntax.test.ts (16 tests) 345ms
+test	単体テストを回す	2026-11-24T18:19:24.0332072Z  ✓  unit  tests/unit/src/media/image.syntax.test.ts (18 tests) 145ms
+test	単体テストを回す	2026-11-24T18:19:26.7693674Z  ✓  unit  tests/unit/src/knowledge/references.test.ts (17 tests) 339ms
+test	単体テストを回す	2026-11-24T18:19:26.7695176Z    ✓ test_collect_references 310ms
+test	単体テストを回す	2026-11-24T18:19:26.8190028Z  ✓  unit-browser (chromium)  tests/unit/src/map/export.browser.test.ts (11 tests) 2368ms
+test	単体テストを回す	2026-11-24T18:19:26.8225550Z    ✓ test_export_map_svg 1072ms
+test	単体テストを回す	2026-11-24T18:19:26.8227703Z    ✓ test_export_map_svg_when_pseudo_element 443ms
+test	単体テストを回す	2026-11-24T18:19:27.3207831Z  ✓  unit  tests/unit/src/mdmark-style/blocks.test.ts (18 tests) 347ms
+test	単体テストを回す	2026-11-24T18:19:27.3261744Z    ✓ test_split_blocks 312ms
+test	単体テストを回す	2026-11-24T18:19:27.4388673Z  ✓  unit  tests/unit/src/render/mark-schema.test.ts (8 tests) 313ms
+test	単体テストを回す	2026-11-24T18:19:27.6869900Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts (12 tests) 137ms
+test	単体テストを回す	2026-11-24T18:19:27.8176143Z  ✓  unit  tests/unit/src/embedded-html/embedded-html.syntax.test.ts (14 tests) 206ms
+test	単体テストを回す	2026-11-24T18:19:27.8727243Z  ✓  unit-browser (chromium)  tests/unit/src/html-scripts.browser.test.ts (9 tests) 3815ms
+test	単体テストを回す	2026-11-24T18:19:27.8735686Z    ✓ test_run_html_scripts 3733ms
+test	単体テストを回す	2026-11-24T18:19:27.8985972Z  ✓  unit-browser (chromium)  tests/unit/src/map/mindmap-view.browser.test.ts (9 tests) 971ms
+test	単体テストを回す	2026-11-24T18:19:28.2260025Z  ✓  unit  tests/unit/src/knowledge/index-shape.test.ts (12 tests) 50ms
+test	単体テストを回す	2026-11-24T18:19:28.3166208Z  ✓  unit-browser (chromium)  tests/unit/src/map/band.browser.test.ts (10 tests) 112ms
+test	単体テストを回す	2026-11-24T18:19:28.7768494Z  ✓  unit  tests/unit/src/render/index.test.ts (13 tests) 707ms
+test	単体テストを回す	2026-11-24T18:19:28.7825302Z    ✓ test_render 538ms
+test	単体テストを回す	2026-11-24T18:19:29.0917323Z  ✓  unit-browser (chromium)  tests/unit/src/shared/part-states.interact.browser.test.ts (9 tests) 35ms
+test	単体テストを回す	2026-11-24T18:19:29.0964168Z  ✓  unit  tests/unit/scripts/baseline.test.ts (19 tests) 916ms
+test	単体テストを回す	2026-11-24T18:19:29.3027883Z  ✓  unit-browser (chromium)  tests/unit/src/map/axis-grid-view.browser.test.ts (5 tests) 702ms
+test	単体テストを回す	2026-11-24T18:19:29.3068168Z    ✓ test_attach_map_axis_grid 473ms
+test	単体テストを回す	2026-11-24T18:19:29.7309427Z  ✓  unit  tests/unit/src/tree/tree.part.test.ts (9 tests) 241ms
+test	単体テストを回す	2026-11-24T18:19:30.0059688Z  ✓  unit-browser (chromium)  tests/unit/src/code-block/code-preview.interact.browser.test.ts (6 tests) 35ms
+test	単体テストを回す	2026-11-24T18:19:30.0462036Z  ✓  unit  tests/unit/src/footnote/annotations.syntax.test.ts (13 tests) 228ms
+test	単体テストを回す	2026-11-24T18:19:30.3203628Z  ✓  unit-browser (chromium)  tests/unit/src/views/mdmark-view.element.browser.test.ts (8 tests) 873ms
+test	単体テストを回す	2026-11-24T18:19:30.5476844Z  ✓  unit  tests/unit/src/map/axis-grid.test.ts (11 tests) 61ms
+test	単体テストを回す	2026-11-24T18:19:30.5934263Z  ✓  unit-browser (chromium)  tests/unit/src/media/lightbox.interact.browser.test.ts (7 tests) 893ms
+test	単体テストを回す	2026-11-24T18:19:30.5971650Z    ✓ test_attach_lightbox_when_closed 520ms
+test	単体テストを回す	2026-11-24T18:19:31.0749116Z  ✓  unit  tests/unit/src/map/flowchart.test.ts (14 tests) 133ms
+test	単体テストを回す	2026-11-24T18:19:31.1520781Z  ✓  unit  tests/unit/scripts/storybook-render.test.ts (15 tests) 2553ms
+test	単体テストを回す	2026-11-24T18:19:31.1559745Z    ✓ test_render_part_when_notice 2179ms
+test	単体テストを回す	2026-11-24T18:19:31.2498892Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-tree.interact.browser.test.ts (6 tests) 654ms
+test	単体テストを回す	2026-11-24T18:19:31.3411284Z  ✓  unit-browser (chromium)  tests/unit/src/views/index.browser.test.ts (6 tests) 588ms
+test	単体テストを回す	2026-11-24T18:19:31.3490263Z    ✓ test_draw_view 512ms
+test	単体テストを回す	2026-11-24T18:19:31.3959050Z  ✓  unit-browser (chromium)  tests/unit/src/code-block/code-block.interact.browser.test.ts (6 tests) 125ms
+test	単体テストを回す	2026-11-24T18:19:31.6105488Z  ✓  unit  tests/unit/src/comments/comment.part.test.ts (14 tests) 145ms
+test	単体テストを回す	2026-11-24T18:19:31.6750056Z  ✓  unit  tests/unit/src/cli/build.test.ts (11 tests) 1633ms
+test	単体テストを回す	2026-11-24T18:19:31.6752432Z    ✓ test_run_build 937ms
+test	単体テストを回す	2026-11-24T18:19:31.6753876Z    ✓ test_run_build_when_build_missing 363ms
+test	単体テストを回す	2026-11-24T18:19:32.3565258Z  ✓  unit-browser (chromium)  tests/unit/src/section/back-to-top.interact.browser.test.ts (5 tests) 340ms
+test	単体テストを回す	2026-11-24T18:19:32.6258527Z  ✓  unit  tests/unit/src/render/parser.test.ts (18 tests) 751ms
+test	単体テストを回す	2026-11-24T18:19:32.6420193Z    ✓ test_create_parser_when_task_list 440ms
+test	単体テストを回す	2026-11-24T18:19:32.6974935Z  ✓  unit-browser (chromium)  tests/unit/src/viewer/view-state.browser.test.ts (9 tests) 389ms
+test	単体テストを回す	2026-11-24T18:19:32.7128963Z  ✓  unit  tests/unit/src/tree/tree.syntax.test.ts (14 tests) 185ms
+test	単体テストを回す	2026-11-24T18:19:32.9584306Z  ✓  unit  tests/unit/src/tabs/tabs.syntax.test.ts (13 tests) 183ms
+test	単体テストを回す	2026-11-24T18:19:33.1165483Z  ✓  unit  tests/unit/src/diff/compute.test.ts (10 tests) 108ms
+test	単体テストを回す	2026-11-24T18:19:33.1784060Z  ✓  unit  tests/unit/src/footnote/footnote.part.test.ts (9 tests) 93ms
+test	単体テストを回す	2026-11-24T18:19:33.5420509Z  ✓  unit-browser (chromium)  tests/unit/src/print.browser.test.ts (6 tests) 657ms
+test	単体テストを回す	2026-11-24T18:19:33.5462481Z    ✓ test_attach_print 304ms
+test	単体テストを回す	2026-11-24T18:19:33.5497777Z    ✓ test_attach_print_when_syntax 314ms
+test	単体テストを回す	2026-11-24T18:19:33.5689080Z  ✓  unit-browser (chromium)  tests/unit/src/table/table-settings.interact.browser.test.ts (4 tests) 380ms
+test	単体テストを回す	2026-11-24T18:19:33.7639658Z  ✓  unit  tests/unit/src/section/side-toc.part.test.ts (9 tests) 88ms
+test	単体テストを回す	2026-11-24T18:19:33.8159311Z  ✓  unit  tests/unit/src/knowledge/positions.test.ts (5 tests) 142ms
+test	単体テストを回す	2026-11-24T18:19:33.8607602Z  ✓  unit-browser (chromium)  tests/unit/src/comments/margin.browser.test.ts (5 tests) 381ms
+test	単体テストを回す	2026-11-24T18:19:34.4088838Z  ✓  unit  tests/unit/src/map/packet.test.ts (10 tests) 31ms
+test	単体テストを回す	2026-11-24T18:19:34.5232125Z  ✓  unit  tests/unit/scripts/build-plugin.test.ts (11 tests) 243ms
+test	単体テストを回す	2026-11-24T18:19:34.5989662Z  ✓  unit  tests/unit/src/cli/markdown-check.test.ts (10 tests) 1036ms
+test	単体テストを回す	2026-11-24T18:19:34.6017278Z    ✓ test_check_markdown_source 889ms
+test	単体テストを回す	2026-11-24T18:19:34.9672548Z  ✓  unit  tests/unit/src/cli/traces.test.ts (10 tests) 46ms
+test	単体テストを回す	2026-11-24T18:19:35.0908830Z  ✓  unit-browser (chromium)  tests/unit/src/comments/mdmark-comments.element.browser.test.ts (5 tests) 672ms
+test	単体テストを回す	2026-11-24T18:19:35.8545339Z  ✓  unit-browser (chromium)  tests/unit/src/map/list.browser.test.ts (4 tests) 808ms
+test	単体テストを回す	2026-11-24T18:19:35.8638075Z    ✓ test_attach_map_list 661ms
+test	単体テストを回す	2026-11-24T18:19:35.9740748Z  ✓  unit  tests/unit/src/map/map.syntax.test.ts (10 tests) 470ms
+test	単体テストを回す	2026-11-24T18:19:36.0341118Z  ✓  unit  tests/unit/src/markdown/pure-markdown.test.ts (8 tests) 745ms
+test	単体テストを回す	2026-11-24T18:19:36.0343785Z    ✓ test_to_pure_markdown 567ms
+test	単体テストを回す	2026-11-24T18:19:36.3410412Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/mdmark-graph.element.browser.test.ts (5 tests) 398ms
+test	単体テストを回す	2026-11-24T18:19:36.5018140Z  ✓  unit  tests/unit/vscode/src/export/html.test.ts (9 tests) 73ms
+test	単体テストを回す	2026-11-24T18:19:36.6446003Z  ✓  unit  tests/unit/src/part-modules.test.ts (11 tests) 34ms
+test	単体テストを回す	2026-11-24T18:19:36.8359637Z  ✓  unit  tests/unit/migrations/retired-diagrams.test.ts (5 tests) 1570ms
+test	単体テストを回す	2026-11-24T18:19:36.8391225Z    ✓ test_migrate_retired_diagrams 712ms
+test	単体テストを回す	2026-11-24T18:19:36.8393285Z    ✓ test_migrate_retired_diagrams_when_bundled 586ms
+test	単体テストを回す	2026-11-24T18:19:36.9208838Z  ✓  unit  tests/unit/src/map/state.test.ts (12 tests) 29ms
+test	単体テストを回す	2026-11-24T18:19:36.9655761Z  ✓  unit-browser (chromium)  tests/unit/src/map/mdmark-map.element.browser.test.ts (6 tests) 1154ms
+test	単体テストを回す	2026-11-24T18:19:36.9718512Z    ✓ test_render_now 730ms
+test	単体テストを回す	2026-11-24T18:19:37.1118783Z  ✓  unit  tests/unit/src/diagram/definition.test.ts (11 tests) 45ms
+test	単体テストを回す	2026-11-24T18:19:37.2509931Z  ✓  unit-browser (chromium)  tests/unit/src/map/er-view.browser.test.ts (4 tests) 412ms
+test	単体テストを回す	2026-11-24T18:19:37.2525668Z    ✓ test_attach_map_er 313ms
+test	単体テストを回す	2026-11-24T18:19:37.3168230Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram-resize.interact.browser.test.ts (5 tests) 132ms
+test	単体テストを回す	2026-11-24T18:19:37.4484895Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts (6 tests) 98ms
+test	単体テストを回す	2026-11-24T18:19:37.4961581Z  ✓  unit  tests/unit/vscode/src/version.test.ts (13 tests) 189ms
+test	単体テストを回す	2026-11-24T18:19:37.6664526Z  ✓  unit  tests/unit/src/plugin/guide-notice.test.ts (9 tests) 248ms
+test	単体テストを回す	2026-11-24T18:19:37.7585583Z  ✓  unit  tests/unit/src/mdmark-style/user-message.test.ts (8 tests) 430ms
+test	単体テストを回す	2026-11-24T18:19:37.7623738Z    ✓ test_render_user_message 405ms
+test	単体テストを回す	2026-11-24T18:19:38.0065190Z  ✓  unit  tests/unit/src/map/structure.test.ts (13 tests) 57ms
+test	単体テストを回す	2026-11-24T18:19:38.0773286Z stderr | tests/unit/src/inline-icons.browser.test.ts > test_load_inline_icons_when_offline
+test	単体テストを回す	2026-11-24T18:19:38.0786069Z mdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/sailboat.mjs
+test	単体テストを回す	2026-11-24T18:19:38.0789348Z stderr | tests/unit/src/inline-icons.browser.test.ts > test_load_inline_icons_when_offline
+test	単体テストを回す	2026-11-24T18:19:38.0791687Z mdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/anchor.mjs
+test	単体テストを回す	2026-11-24T18:19:38.0828592Z  ✓  unit-browser (chromium)  tests/unit/src/inline-icons.browser.test.ts (5 tests) 26ms
+test	単体テストを回す	2026-11-24T18:19:38.3937446Z  ✓  unit-browser (chromium)  tests/unit/src/map/architecture-view.browser.test.ts (3 tests) 279ms
+test	単体テストを回す	2026-11-24T18:19:38.6623142Z  ✓  unit  tests/unit/src/render/legacy-marks.test.ts (6 tests) 290ms
+test	単体テストを回す	2026-11-24T18:19:39.1999020Z  ✓  unit-browser (chromium)  tests/unit/src/map/state-view.browser.test.ts (3 tests) 361ms
+test	単体テストを回す	2026-11-24T18:19:39.2669638Z  ✓  unit  tests/unit/scripts/migrations.test.ts (9 tests) 1113ms
+test	単体テストを回す	2026-11-24T18:19:39.3283220Z  ✓  unit  tests/unit/vscode/src/export/embed.test.ts (7 tests) 1260ms
+test	単体テストを回す	2026-11-24T18:19:39.3334390Z    ✓ test_embed_local_libraries 1208ms
+test	単体テストを回す	2026-11-24T18:19:39.6682872Z  ✓  unit-browser (chromium)  tests/unit/src/viewer/index.browser.test.ts (3 tests) 380ms
+test	単体テストを回す	2026-11-24T18:19:40.1698556Z  ✓  unit  tests/unit/src/map/er.test.ts (10 tests) 401ms
+test	単体テストを回す	2026-11-24T18:19:40.1709025Z    ✓ test_parse_er_diagram 347ms
+test	単体テストを回す	2026-11-24T18:19:40.2251081Z  ✓  unit-browser (chromium)  tests/unit/src/media/gif.interact.browser.test.ts (3 tests) 148ms
+test	単体テストを回す	2026-11-24T18:19:40.5966213Z  ✓  unit  tests/unit/src/cli/export-markdown.test.ts (8 tests) 1436ms
+test	単体テストを回す	2026-11-24T18:19:40.6086705Z    ✓ test_run_export_markdown 1039ms
+test	単体テストを回す	2026-11-24T18:19:40.9603268Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx (5 tests) 658ms
+test	単体テストを回す	2026-11-24T18:19:40.9627760Z    ✓ test_preview_status 317ms
+test	単体テストを回す	2026-11-24T18:19:40.9703187Z    ✓ test_preview_status_when_reload_clicked 322ms
+test	単体テストを回す	2026-11-24T18:19:41.0269010Z  ✓  unit  tests/unit/migrations/alias-rows.test.ts (6 tests) 203ms
+test	単体テストを回す	2026-11-24T18:19:41.0770961Z  ✓  unit  tests/unit/src/table/mdmark-table.logic.test.ts (12 tests) 89ms
+test	単体テストを回す	2026-11-24T18:19:41.1339408Z  ✓  unit  tests/unit/src/plugin/http.test.ts (8 tests) 1175ms
+test	単体テストを回す	2026-11-24T18:19:41.1356950Z    ✓ test_route_request 797ms
+test	単体テストを回す	2026-11-24T18:19:41.4402674Z  ✓  unit  tests/unit/src/extensions.test.ts (10 tests) 77ms
+test	単体テストを回す	2026-11-24T18:19:41.4991540Z  ✓  unit-browser (chromium)  tests/unit/src/shared/text.interact.browser.test.ts (4 tests) 16ms
+test	単体テストを回す	2026-11-24T18:19:41.5736345Z  ✓  unit  tests/unit/src/map/c4.test.ts (11 tests) 202ms
+test	単体テストを回す	2026-11-24T18:19:41.6512672Z  ✓  unit-browser (chromium)  tests/unit/src/comments/anchor.browser.test.ts (4 tests) 12ms
+test	単体テストを回す	2026-11-24T18:19:41.6587759Z  ✓  unit-browser (chromium)  tests/unit/src/media/media-modal.interact.browser.test.ts (4 tests) 2284ms
+test	単体テストを回す	2026-11-24T18:19:41.6618075Z    ✓ test_attach_media_modal 559ms
+test	単体テストを回す	2026-11-24T18:19:41.6624650Z    ✓ test_attach_media_modal_when_closed 928ms
+test	単体テストを回す	2026-11-24T18:19:41.6647811Z    ✓ test_attach_media_modal_when_arrow 330ms
+test	単体テストを回す	2026-11-24T18:19:41.6675096Z    ✓ test_attach_media_modal_when_cleaned_up 443ms
+test	単体テストを回す	2026-11-24T18:19:42.0708379Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx (3 tests) 1162ms
+test	単体テストを回す	2026-11-24T18:19:42.0717667Z    ✓ test_use_link_clicks 732ms
+test	単体テストを回す	2026-11-24T18:19:42.0874900Z  ✓  unit  tests/unit/src/mdmark-style/document-parts.test.ts (5 tests) 402ms
+test	単体テストを回す	2026-11-24T18:19:42.0928615Z    ✓ test_render_steps 390ms
+test	単体テストを回す	2026-11-24T18:19:42.4389613Z  ✓  unit-browser (chromium)  tests/unit/src/diagram/param.interact.browser.test.ts (2 tests) 299ms
+test	単体テストを回す	2026-11-24T18:19:42.9927380Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx (3 tests) 310ms
+test	単体テストを回す	2026-11-24T18:19:43.1842885Z  ✓  unit  tests/unit/src/plugin/setup/write.test.ts (9 tests) 467ms
+test	単体テストを回す	2026-11-24T18:19:43.1913865Z    ✓ test_parse_set_args 364ms
+test	単体テストを回す	2026-11-24T18:19:43.2581505Z  ✓  unit  tests/unit/migrations/retired-er.test.ts (4 tests) 1160ms
+test	単体テストを回す	2026-11-24T18:19:43.2640150Z    ✓ test_migrate_retired_er 517ms
+test	単体テストを回す	2026-11-24T18:19:43.2687973Z    ✓ test_migrate_retired_er_when_bundled 583ms
+test	単体テストを回す	2026-11-24T18:19:43.5075131Z  ✓  unit-browser (chromium)  tests/unit/src/map/annotations.browser.test.ts (2 tests) 77ms
+test	単体テストを回す	2026-11-24T18:19:43.6248402Z  ✓  unit-browser (chromium)  tests/unit/src/layout/wide.interact.browser.test.ts (2 tests) 84ms
+test	単体テストを回す	2026-11-24T18:19:43.6892239Z  ✓  unit  tests/unit/vscode/src/preview/html.test.ts (7 tests) 67ms
+test	単体テストを回す	2026-11-24T18:19:43.8035347Z  ✓  unit  tests/unit/src/map/axis-grid-layout.test.ts (6 tests) 130ms
+test	単体テストを回す	2026-11-24T18:19:44.4471600Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx (1 test) 210ms
+test	単体テストを回す	2026-11-24T18:19:44.5258811Z  ✓  unit  tests/unit/src/plugin/prompt.test.ts (9 tests) 222ms
+test	単体テストを回す	2026-11-24T18:19:44.6382878Z  ✓  unit  tests/unit/src/cli/assets.test.ts (8 tests) 520ms
+test	単体テストを回す	2026-11-24T18:19:44.6528675Z    ✓ test_collect_asset_refs 395ms
+test	単体テストを回す	2026-11-24T18:19:44.7946873Z  ✓  unit-browser (chromium)  tests/unit/src/shared/clipboard.interact.browser.test.ts (3 tests) 7ms
+test	単体テストを回す	2026-11-24T18:19:44.8769692Z  ✓  unit-browser (chromium)  tests/unit/src/embedded-html/embedded-html.interact.browser.test.ts (1 test) 142ms
+test	単体テストを回す	2026-11-24T18:19:44.9591644Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx (3 tests) 770ms
+test	単体テストを回す	2026-11-24T18:19:44.9614149Z    ✓ test_config_band 529ms
+test	単体テストを回す	2026-11-24T18:19:44.9885410Z  ✓  unit  tests/unit/vscode/src/export/dist.test.ts (5 tests) 3454ms
+test	単体テストを回す	2026-11-24T18:19:44.9908504Z    ✓ test_extension_bundle_keeps_dynamic_import 3225ms
+test	単体テストを回す	2026-11-24T18:19:45.0239170Z  ✓  unit-browser (chromium)  tests/unit/src/shared/sticky-top.browser.test.ts (3 tests) 23ms
+test	単体テストを回す	2026-11-24T18:19:45.0279042Z  ✓  unit  tests/unit/src/map/data.test.ts (10 tests) 26ms
+test	単体テストを回す	2026-11-24T18:19:45.0298141Z  ✓  unit  tests/unit/src/media/media.part.test.ts (7 tests) 105ms
+test	単体テストを回す	2026-11-24T18:19:45.2135647Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts (2 tests) 46ms
+test	単体テストを回す	2026-11-24T18:19:45.4919074Z  ✓  unit-browser (chromium)  tests/unit/src/shared/scroller.interact.browser.test.ts (2 tests) 67ms
+test	単体テストを回す	2026-11-24T18:19:45.7358768Z  ✓  unit  tests/unit/src/views/view.syntax.test.ts (7 tests) 157ms
+test	単体テストを回す	2026-11-24T18:19:45.8958400Z  ✓  unit  tests/unit/src/render/used.test.ts (8 tests) 531ms
+test	単体テストを回す	2026-11-24T18:19:45.9017658Z    ✓ test_used_library_marks 410ms
+test	単体テストを回す	2026-11-24T18:19:45.9848877Z  ✓  unit-browser (chromium)  tests/unit/src/table/csv.interact.browser.test.ts (1 test) 63ms
+test	単体テストを回す	2026-11-24T18:19:46.5237715Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx (1 test) 44ms
+test	単体テストを回す	2026-11-24T18:19:46.6936911Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-host-messages.browser.test.tsx (2 tests) 91ms
+test	単体テストを回す	2026-11-24T18:19:46.6940294Z  ✓  unit  tests/unit/src/plugin/mcp.test.ts (5 tests) 852ms
+test	単体テストを回す	2026-11-24T18:19:46.6942119Z    ✓ test_create_mcp_server 757ms
+test	単体テストを回す	2026-11-24T18:19:46.7504048Z  ✓  unit  tests/unit/migrations/marker-json.test.ts (3 tests) 385ms
+test	単体テストを回す	2026-11-24T18:19:46.9052097Z  ✓  unit  tests/unit/src/diagram/diagram.syntax.test.ts (7 tests) 158ms
+test	単体テストを回す	2026-11-24T18:19:46.9854362Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/app/app.browser.test.tsx (1 test) 987ms
+test	単体テストを回す	2026-11-24T18:19:46.9856993Z    ✓ test_app_when_render_error 987ms
+test	単体テストを回す	2026-11-24T18:19:47.3169073Z  ✓  unit-browser (chromium)  tests/unit/src/elements.browser.test.ts (2 tests) 468ms
+test	単体テストを回す	2026-11-24T18:19:47.3208555Z    ✓ test_define_elements 462ms
+test	単体テストを回す	2026-11-24T18:19:47.3450427Z  ✓  unit-browser (chromium)  tests/unit/src/viewer/route.browser.test.ts (1 test) 87ms
+test	単体テストを回す	2026-11-24T18:19:47.3754306Z  ✓  unit  tests/unit/src/map/mindmap-layout.test.ts (5 tests) 151ms
+test	単体テストを回す	2026-11-24T18:19:47.5242265Z  ✓  unit-browser (chromium)  tests/unit/src/knowledge/dictionary.browser.test.ts (2 tests) 35ms
+test	単体テストを回す	2026-11-24T18:19:47.5771313Z  ✓  unit  tests/unit/src/render/includes.test.ts (7 tests) 124ms
+test	単体テストを回す	2026-11-24T18:19:47.7819614Z  ✓  unit  tests/unit/src/table/table-tree.syntax.test.ts (4 tests) 203ms
+test	単体テストを回す	2026-11-24T18:19:47.8369885Z  ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/main.browser.test.tsx (1 test) 326ms
+test	単体テストを回す	2026-11-24T18:19:47.8381036Z    ✓ test_start_preview_when_no_root 326ms
+test	単体テストを回す	2026-11-24T18:19:47.9533715Z  ✓  unit  tests/unit/src/plugin/session-start.test.ts (6 tests) 92ms
+test	単体テストを回す	2026-11-24T18:19:48.1308310Z  ✓  unit  tests/unit/scripts/skill-md.test.ts (5 tests) 74ms
+test	単体テストを回す	2026-11-24T18:19:48.2844179Z  ✓  unit  tests/unit/src/plugin/arguments.test.ts (11 tests) 552ms
+test	単体テストを回す	2026-11-24T18:19:48.2861909Z    ✓ test_check_arguments 544ms
+test	単体テストを回す	2026-11-24T18:19:48.3353291Z  ✓  unit  tests/unit/src/markdown/pure-blocks.logic.test.ts (8 tests) 141ms
+test	単体テストを回す	2026-11-24T18:19:48.5068897Z  ✓  unit  tests/unit/migrations/retired-map-options.test.ts (4 tests) 72ms
+test	単体テストを回す	2026-11-24T18:19:48.6331731Z  ✓  unit  tests/unit/src/cli/html.test.ts (5 tests) 23ms
+test	単体テストを回す	2026-11-24T18:19:48.8579687Z  ✓  unit  tests/unit/src/shared/notice.part.test.ts (8 tests) 10ms
+test	単体テストを回す	2026-11-24T18:19:48.9608753Z  ✓  unit  tests/unit/src/viewer/modules.test.ts (4 tests) 238ms
+test	単体テストを回す	2026-11-24T18:19:49.1407615Z  ✓  unit  tests/unit/src/cli/documents.test.ts (10 tests) 666ms
+test	単体テストを回す	2026-11-24T18:19:49.1409225Z    ✓ test_read_index_with_documents_when_missing 440ms
+test	単体テストを回す	2026-11-24T18:19:49.1748950Z  ✓  unit  tests/unit/src/views/view.part.test.ts (6 tests) 109ms
+test	単体テストを回す	2026-11-24T18:19:49.4357660Z  ✓  unit  tests/unit/src/map/mindmap.test.ts (6 tests) 75ms
+test	単体テストを回す	2026-11-24T18:19:49.5102867Z  ✓  unit  tests/unit/src/cli/aliases.test.ts (5 tests) 276ms
+test	単体テストを回す	2026-11-24T18:19:49.6608137Z  ✓  unit  tests/unit/src/plugin/setup/systemd.test.ts (8 tests) 14ms
+test	単体テストを回す	2026-11-24T18:19:49.6911800Z  ✓  unit  tests/unit/src/callout/callout.syntax.test.ts (5 tests) 70ms
+test	単体テストを回す	2026-11-24T18:19:49.7889679Z  ✓  unit  tests/unit/src/mdmark-style/settings.test.ts (9 tests) 46ms
+test	単体テストを回す	2026-11-24T18:19:49.9448468Z  ✓  unit  tests/unit/src/map/sequence.test.ts (7 tests) 88ms
+test	単体テストを回す	2026-11-24T18:19:50.1248980Z  ✓  unit  tests/unit/migrations/drop-tag-vocabulary.test.ts (6 tests) 72ms
+test	単体テストを回す	2026-11-24T18:19:50.2379283Z  ✓  unit  tests/unit/src/figure/figure.syntax.test.ts (4 tests) 68ms
+test	単体テストを回す	2026-11-24T18:19:50.3380289Z  ✓  unit  tests/unit/src/tabs/tabs.part.test.ts (6 tests) 9ms
+test	単体テストを回す	2026-11-24T18:19:50.4471396Z  ✓  unit  tests/unit/src/media/gallery.syntax.test.ts (4 tests) 72ms
+test	単体テストを回す	2026-11-24T18:19:50.6299517Z  ✓  unit  tests/unit/src/map/list.part.test.ts (3 tests) 184ms
+test	単体テストを回す	2026-11-24T18:19:50.6640466Z  ✓  unit  tests/unit/src/cli/init.test.ts (5 tests) 63ms
+test	単体テストを回す	2026-11-24T18:19:50.7611210Z  ✓  unit  tests/unit/src/mdmark-style/inline-marks.test.ts (8 tests) 139ms
+test	単体テストを回す	2026-11-24T18:19:50.8867233Z  ✓  unit  tests/unit/src/media/image.part.test.ts (6 tests) 55ms
+test	単体テストを回す	2026-11-24T18:19:51.0768810Z  ✓  unit  tests/unit/src/diagram/geometry.test.ts (8 tests) 13ms
+test	単体テストを回す	2026-11-24T18:19:51.2369367Z  ✓  unit  tests/unit/src/cli/figure-svg.test.ts (4 tests) 83ms
+test	単体テストを回す	2026-11-24T18:19:51.7314458Z  ✓  unit  tests/unit/src/steps/steps.syntax.test.ts (6 tests) 90ms
+test	単体テストを回す	2026-11-24T18:19:51.8597000Z  ✓  unit  tests/unit/src/shared/syntax-warning.syntax.test.ts (4 tests) 76ms
+test	単体テストを回す	2026-11-24T18:19:52.0855996Z  ✓  unit  tests/unit/src/table/table-tree.logic.test.ts (6 tests) 13ms
+test	単体テストを回す	2026-11-24T18:19:52.2957639Z  ✓  unit  tests/unit/src/card/card-grid.syntax.test.ts (5 tests) 124ms
+test	単体テストを回す	2026-11-24T18:19:53.5049034Z  ✓  unit  tests/unit/src/cli/backup.test.ts (4 tests) 903ms
+test	単体テストを回す	2026-11-24T18:19:53.5107857Z    ✓ test_take_backup_when_outside 835ms
+test	単体テストを回す	2026-11-24T18:19:53.8493790Z  ✓  unit  tests/unit/src/cli/main.test.ts (6 tests) 1506ms
+test	単体テストを回す	2026-11-24T18:19:53.8495006Z    ✓ test_main 983ms
+test	単体テストを回す	2026-11-24T18:19:53.8495932Z    ✓ test_main_when_keep_traces 434ms
+test	単体テストを回す	2026-11-24T18:19:54.2228675Z  ✓  unit  tests/unit/src/cli/git.test.ts (4 tests) 501ms
+test	単体テストを回す	2026-11-24T18:19:54.3830246Z  ✓  unit  tests/unit/src/map/state-diagram.test.ts (4 tests) 181ms
+test	単体テストを回す	2026-11-24T18:19:54.4955546Z  ✓  unit  tests/unit/vscode/scripts/build.test.ts (2 tests) 3516ms
+test	単体テストを回す	2026-11-24T18:19:54.4959670Z    ✓ test_build_extension 2288ms
+test	単体テストを回す	2026-11-24T18:19:54.4961104Z    ✓ test_build_extension_when_tests 1227ms
+test	単体テストを回す	2026-11-24T18:19:54.6058891Z  ✓  unit  tests/unit/src/code-block/code-fold.logic.test.ts (9 tests) 19ms
+test	単体テストを回す	2026-11-24T18:19:54.7823893Z  ✓  unit  tests/unit/src/section/section.syntax.test.ts (5 tests) 72ms
+test	単体テストを回す	2026-11-24T18:19:55.2370659Z  ✓  unit  tests/unit/src/plugin/pre-tool-use.test.ts (4 tests) 527ms
+test	単体テストを回す	2026-11-24T18:19:55.2373417Z    ✓ test_run_pre_tool_use_when_matcher 509ms
+test	単体テストを回す	2026-11-24T18:19:55.2850670Z  ✓  unit  tests/unit/src/mdmark-style/terms.test.ts (6 tests) 329ms
+test	単体テストを回す	2026-11-24T18:19:55.4728832Z  ✓  unit  tests/unit/src/render/mark-options.test.ts (7 tests) 10ms
+test	単体テストを回す	2026-11-24T18:19:55.5538596Z  ✓  unit  tests/unit/src/cli/config.test.ts (6 tests) 695ms
+test	単体テストを回す	2026-11-24T18:19:55.5541799Z    ✓ test_find_config_file_when_missing 549ms
+test	単体テストを回す	2026-11-24T18:19:55.6898122Z  ✓  unit  tests/unit/src/diff/diff-side-by-side.part.test.ts (2 tests) 13ms
+test	単体テストを回す	2026-11-24T18:19:55.7212762Z  ✓  unit  tests/unit/src/plugin/setup/status.test.ts (3 tests) 152ms
+test	単体テストを回す	2026-11-24T18:19:55.9078769Z  ✓  unit  tests/unit/src/table/table-cells.logic.test.ts (5 tests) 50ms
+test	単体テストを回す	2026-11-24T18:19:55.9845891Z  ✓  unit  tests/unit/src/embedded-html/scope-css.logic.test.ts (5 tests) 8ms
+test	単体テストを回す	2026-11-24T18:19:56.0270286Z  ✓  unit  tests/unit/src/frontmatter/frontmatter.logic.test.ts (6 tests) 9ms
+test	単体テストを回す	2026-11-24T18:19:56.1218029Z  ✓  unit  tests/unit/src/shared/style-tokens.logic.test.ts (4 tests) 15ms
+test	単体テストを回す	2026-11-24T18:19:56.2649120Z  ✓  unit  tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts (5 tests) 64ms
+test	単体テストを回す	2026-11-24T18:19:56.3058987Z  ✓  unit  tests/unit/src/media/lightbox.part.test.ts (4 tests) 64ms
+test	単体テストを回す	2026-11-24T18:19:56.3732575Z  ✓  unit  tests/unit/src/comments/spec.test.ts (4 tests) 12ms
+test	単体テストを回す	2026-11-24T18:19:56.6179020Z  ✓  unit  tests/unit/src/cli/alias-schema.test.ts (4 tests) 161ms
+test	単体テストを回す	2026-11-24T18:19:56.6913618Z  ✓  unit  tests/unit/src/map/architecture.test.ts (4 tests) 194ms
+test	単体テストを回す	2026-11-24T18:19:56.7249081Z  ✓  unit  tests/unit/src/diff/revision-picker.part.test.ts (1 test) 96ms
+test	単体テストを回す	2026-11-24T18:19:56.9192462Z  ✓  unit  tests/unit/src/plugin/setup/paths.test.ts (7 tests) 124ms
+test	単体テストを回す	2026-11-24T18:19:56.9692324Z  ✓  unit  tests/unit/src/cli/versions.test.ts (8 tests) 13ms
+test	単体テストを回す	2026-11-24T18:19:57.0514696Z  ✓  unit  tests/unit/src/cli/includes.test.ts (2 tests) 170ms
+test	単体テストを回す	2026-11-24T18:19:57.1495791Z  ✓  unit  tests/unit/src/plugin/port.test.ts (5 tests) 28ms
+test	単体テストを回す	2026-11-24T18:19:57.2549136Z  ✓  unit  tests/unit/src/diff/diff-blocks.part.test.ts (3 tests) 9ms
+test	単体テストを回す	2026-11-24T18:19:57.3898513Z  ✓  unit  tests/unit/src/highlight-lines.test.ts (4 tests) 19ms
+test	単体テストを回す	2026-11-24T18:19:57.5058696Z  ✓  unit  tests/unit/scripts/eslint.test.ts (3 tests) 26ms
+test	単体テストを回す	2026-11-24T18:19:57.7557565Z  ✓  unit  tests/unit/vscode/src/extensions-bundle.test.ts (2 tests) 570ms
+test	単体テストを回す	2026-11-24T18:19:57.7597741Z    ✓ test_bundle_extensions 501ms
+test	単体テストを回す	2026-11-24T18:19:57.8906777Z  ✓  unit  tests/unit/src/comments/anchor.test.ts (4 tests) 17ms
+test	単体テストを回す	2026-11-24T18:19:57.9945297Z  ✓  unit  tests/unit/src/shared/icons.part.test.ts (2 tests) 125ms
+test	単体テストを回す	2026-11-24T18:19:58.0405575Z  ✓  unit  tests/unit/src/mermaid-source.test.ts (5 tests) 46ms
+test	単体テストを回す	2026-11-24T18:19:58.1198751Z  ✓  unit  tests/unit/src/diff/diff-html.part.test.ts (3 tests) 11ms
+test	単体テストを回す	2026-11-24T18:19:58.1988606Z  ✓  unit  tests/unit/src/map/spec.test.ts (6 tests) 12ms
+test	単体テストを回す	2026-11-24T18:19:58.3148260Z  ✓  unit  tests/unit/src/media/media-modal.part.test.ts (2 tests) 61ms
+test	単体テストを回す	2026-11-24T18:19:58.5372481Z  ✓  unit  tests/unit/src/plugin/guide.test.ts (5 tests) 10ms
+test	単体テストを回す	2026-11-24T18:19:58.6455564Z  ✓  unit  tests/unit/src/table/csv.syntax.test.ts (4 tests) 56ms
+test	単体テストを回す	2026-11-24T18:19:58.6909015Z  ✓  unit  tests/unit/src/card/card.syntax.test.ts (5 tests) 70ms
+test	単体テストを回す	2026-11-24T18:19:58.7719550Z  ✓  unit  tests/unit/src/knowledge/paths.test.ts (6 tests) 12ms
+test	単体テストを回す	2026-11-24T18:19:58.8669225Z  ✓  unit  tests/unit/src/map/mermaid-style.test.ts (3 tests) 13ms
+test	単体テストを回す	2026-11-24T18:19:58.9105659Z  ✓  unit  tests/unit/src/diff/diff-lines.part.test.ts (2 tests) 8ms
+test	単体テストを回す	2026-11-24T18:19:59.2728923Z  ✓  unit  tests/unit/src/section/heading.syntax.test.ts (5 tests) 40ms
+test	単体テストを回す	2026-11-24T18:19:59.3993085Z  ✓  unit  tests/unit/src/knowledge/backlinks.syntax.test.ts (3 tests) 72ms
+test	単体テストを回す	2026-11-24T18:19:59.4989945Z  ✓  unit  tests/unit/src/inline/text-color.syntax.test.ts (5 tests) 95ms
+test	単体テストを回す	2026-11-24T18:19:59.6107433Z  ✓  unit  tests/unit/src/markdown/pure-inline.logic.test.ts (7 tests) 131ms
+test	単体テストを回す	2026-11-24T18:19:59.6459008Z  ✓  unit  tests/unit/src/diff/source.test.ts (6 tests) 12ms
+test	単体テストを回す	2026-11-24T18:19:59.8516671Z  ✓  unit  tests/unit/src/mdmark-style/table-layout.test.ts (7 tests) 23ms
+test	単体テストを回す	2026-11-24T18:20:00.0097575Z  ✓  unit  tests/unit/src/inline/badge.syntax.test.ts (5 tests) 58ms
+test	単体テストを回す	2026-11-24T18:20:00.0575816Z  ✓  unit  tests/unit/src/frontmatter/frontmatter.syntax.test.ts (3 tests) 240ms
+test	単体テストを回す	2026-11-24T18:20:00.1128184Z  ✓  unit  tests/unit/src/viewer/doc-list.part.test.ts (2 tests) 12ms
+test	単体テストを回す	2026-11-24T18:20:00.2875912Z  ✓  unit  tests/unit/src/media/gif.part.test.ts (3 tests) 68ms
+test	単体テストを回す	2026-11-24T18:20:00.3192586Z  ✓  unit  tests/unit/src/mdmark-style/marker-guide.test.ts (4 tests) 58ms
+test	単体テストを回す	2026-11-24T18:20:00.5024566Z  ✓  unit  tests/unit/src/diagram/param.part.test.ts (3 tests) 117ms
+test	単体テストを回す	2026-11-24T18:20:00.5350368Z  ✓  unit  tests/unit/src/views/spec.test.ts (2 tests) 37ms
+test	単体テストを回す	2026-11-24T18:20:00.5708800Z  ✓  unit  tests/unit/src/card/card.part.test.ts (3 tests) 9ms
+test	単体テストを回す	2026-11-24T18:20:00.7490046Z  ✓  unit  tests/unit/vscode/src/settings.test.ts (3 tests) 17ms
+test	単体テストを回す	2026-11-24T18:20:00.7825929Z  ✓  unit  tests/unit/src/map/sequence-rows.test.ts (4 tests) 67ms
+test	単体テストを回す	2026-11-24T18:20:00.9303576Z  ✓  unit  tests/unit/src/section/section.part.test.ts (3 tests) 6ms
+test	単体テストを回す	2026-11-24T18:20:01.1877821Z  ✓  unit  tests/unit/src/layout/wide.syntax.test.ts (3 tests) 77ms
+test	単体テストを回す	2026-11-24T18:20:01.3318879Z  ✓  unit  tests/unit/src/layout/details.syntax.test.ts (3 tests) 73ms
+test	単体テストを回す	2026-11-24T18:20:01.4358668Z  ✓  unit  tests/unit/src/layout/layout-columns.syntax.test.ts (2 tests) 59ms
+test	単体テストを回す	2026-11-24T18:20:01.4367311Z  ✓  unit  tests/unit/scripts/test-mdmark-style.test.ts (2 tests) 28ms
+test	単体テストを回す	2026-11-24T18:20:01.5580550Z  ✓  unit  tests/unit/src/callout/callout.part.test.ts (4 tests) 8ms
+test	単体テストを回す	2026-11-24T18:20:01.6559009Z  ✓  unit  tests/unit/src/plugin/setup/keys.test.ts (2 tests) 21ms
+test	単体テストを回す	2026-11-24T18:20:01.7127210Z  ✓  unit  tests/unit/vscode/src/export/write.test.ts (2 tests) 54ms
+test	単体テストを回す	2026-11-24T18:20:01.8587739Z  ✓  unit  tests/unit/migrations-dir.test.ts (4 tests) 17ms
+test	単体テストを回す	2026-11-24T18:20:01.8958837Z  ✓  unit  tests/unit/src/card/card-grid.part.test.ts (2 tests) 108ms
+test	単体テストを回す	2026-11-24T18:20:01.9600189Z  ✓  unit  tests/unit/src/shared/placement.logic.test.ts (3 tests) 7ms
+test	単体テストを回す	2026-11-24T18:20:02.0446804Z  ✓  unit  tests/unit/src/diagram/mermaid.part.test.ts (1 test) 8ms
+test	単体テストを回す	2026-11-24T18:20:02.1548839Z  ✓  unit  tests/unit/src/viewer/route.test.ts (4 tests) 11ms
+test	単体テストを回す	2026-11-24T18:20:02.2498554Z  ✓  unit  tests/unit/src/shared/collapse.logic.test.ts (4 tests) 8ms
+test	単体テストを回す	2026-11-24T18:20:02.3399263Z  ✓  unit  tests/unit/vscode/src/preview/diff-target.test.ts (3 tests) 11ms
+test	単体テストを回す	2026-11-24T18:20:02.4455360Z  ✓  unit  tests/unit/src/features.test.ts (4 tests) 8ms
+test	単体テストを回す	2026-11-24T18:20:02.4769410Z  ✓  unit  tests/unit/src/inline/inline-icon.syntax.test.ts (3 tests) 68ms
+test	単体テストを回す	2026-11-24T18:20:02.5602362Z  ✓  unit  tests/unit/src/shared/collapsible.part.test.ts (3 tests) 9ms
+test	単体テストを回す	2026-11-24T18:20:02.6557582Z  ✓  unit  tests/unit/vscode/src/preview/scroll-guard.test.ts (3 tests) 12ms
+test	単体テストを回す	2026-11-24T18:20:02.7739082Z  ✓  unit  tests/unit/src/shared/syntax-warning.part.test.ts (2 tests) 6ms
+test	単体テストを回す	2026-11-24T18:20:02.8539299Z  ✓  unit  tests/unit/src/cli/changelog.test.ts (1 test) 8ms
+test	単体テストを回す	2026-11-24T18:20:02.9790032Z  ✓  unit  tests/unit/vscode/scripts/release-check.test.ts (3 tests) 16ms
+test	単体テストを回す	2026-11-24T18:20:03.1167235Z  ✓  unit  tests/unit/src/comments/margin.test.ts (3 tests) 68ms
+test	単体テストを回す	2026-11-24T18:20:03.1476162Z  ✓  unit  tests/unit/src/plugin/setup/main.test.ts (2 tests) 412ms
+test	単体テストを回す	2026-11-24T18:20:03.1478183Z    ✓ test_run_setup 409ms
+test	単体テストを回す	2026-11-24T18:20:03.4274386Z  ✓  unit  tests/unit/src/diagram/hint.part.test.ts (1 test) 81ms
+test	単体テストを回す	2026-11-24T18:20:03.5499486Z  ✓  unit  tests/unit/src/table/row-detail.syntax.test.ts (2 tests) 80ms
+test	単体テストを回す	2026-11-24T18:20:03.6522323Z  ✓  unit  tests/unit/src/steps/steps.part.test.ts (2 tests) 6ms
+test	単体テストを回す	2026-11-24T18:20:03.7782758Z  ✓  unit  tests/unit/src/cli/prompt.test.ts (2 tests) 10ms
+test	単体テストを回す	2026-11-24T18:20:03.8080673Z  ✓  unit  tests/unit/src/viewer/options.test.ts (1 test) 494ms
+test	単体テストを回す	2026-11-24T18:20:03.8084178Z    ✓ test_rendered_options 491ms
+test	単体テストを回す	2026-11-24T18:20:03.8693724Z  ✓  unit  tests/unit/src/diff/diff-minimap.part.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-24T18:20:03.9679171Z  ✓  unit  tests/unit/src/knowledge/backlinks.part.test.ts (2 tests) 6ms
+test	単体テストを回す	2026-11-24T18:20:04.0647059Z  ✓  unit  tests/unit/src/diff/diff-message.part.test.ts (1 test) 6ms
+test	単体テストを回す	2026-11-24T18:20:04.1028700Z  ✓  unit  tests/unit/src/section/back-to-top.part.test.ts (2 tests) 71ms
+test	単体テストを回す	2026-11-24T18:20:04.1815359Z  ✓  unit  tests/unit/vscode/src/preview/links.test.ts (2 tests) 13ms
+test	単体テストを回す	2026-11-24T18:20:04.2743667Z  ✓  unit  tests/unit/src/cli/issues.test.ts (2 tests) 8ms
+test	単体テストを回す	2026-11-24T18:20:04.3570207Z  ✓  unit  tests/unit/src/shared/embed.part.test.ts (2 tests) 8ms
+test	単体テストを回す	2026-11-24T18:20:04.3896965Z  ✓  unit  tests/unit/vscode/src/preview/includes.test.ts (1 test) 12ms
+test	単体テストを回す	2026-11-24T18:20:04.4639799Z  ✓  unit  tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts (1 test) 9ms
+test	単体テストを回す	2026-11-24T18:20:04.5823739Z  ✓  unit  tests/unit/src/figure/figure.part.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-24T18:20:04.6319232Z  ✓  unit  tests/unit/src/layout/wide.part.test.ts (1 test) 77ms
+test	単体テストを回す	2026-11-24T18:20:04.8277194Z  ✓  unit  tests/unit/vscode/src/preview/assets.test.ts (2 tests) 9ms
+test	単体テストを回す	2026-11-24T18:20:05.0105403Z  ✓  unit  tests/unit/src/inline/kbd.syntax.test.ts (2 tests) 48ms
+test	単体テストを回す	2026-11-24T18:20:05.0764526Z  ✓  unit  tests/unit/src/render/page.test.ts (2 tests) 7ms
+test	単体テストを回す	2026-11-24T18:20:05.1162050Z  ✓  unit  tests/unit/src/inline/highlight.syntax.test.ts (2 tests) 49ms
+test	単体テストを回す	2026-11-24T18:20:05.1990602Z  ✓  unit  tests/unit/src/media/gallery.part.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-24T18:20:05.2924132Z  ✓  unit  tests/unit/vscode/src/webview/shared/lib/media-error.test.ts (1 test) 7ms
+test	単体テストを回す	2026-11-24T18:20:05.3583897Z  ✓  unit  tests/unit/src/inline/inline-icon.part.test.ts (1 test) 8ms
+test	単体テストを回す	2026-11-24T18:20:05.4008440Z  ✓  unit  tests/unit/src/section/toc.part.test.ts (1 test) 7ms
+test	単体テストを回す	2026-11-24T18:20:05.4786306Z  ✓  unit  tests/unit/src/inline/badge.part.test.ts (2 tests) 8ms
+test	単体テストを回す	2026-11-24T18:20:05.6831069Z  ✓  unit  tests/unit/src/layout/layout-columns.part.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-24T18:20:05.8609870Z  ✓  unit  tests/unit/src/mdmark-style/mod.test.ts (1 test) 314ms
+test	単体テストを回す	2026-11-24T18:20:05.8612189Z    ✓ test_register 312ms
+test	単体テストを回す	2026-11-24T18:20:05.9325740Z  ✓  unit  tests/unit/vscode/src/webview/shared/adapters/vscode-api.test.ts (1 test) 11ms
+test	単体テストを回す	2026-11-24T18:20:05.9690800Z  ✓  unit  tests/unit/src/section/toc.syntax.test.ts (1 test) 55ms
+test	単体テストを回す	2026-11-24T18:20:06.1071380Z  ✓  unit  tests/unit/src/diff/diff-toggle.part.test.ts (1 test) 58ms
+test	単体テストを回す	2026-11-24T18:20:06.1730794Z  ✓  unit  tests/unit/src/shared/icon-node.logic.test.ts (1 test) 7ms
+test	単体テストを回す	2026-11-24T18:20:06.2088826Z  ✓  unit  tests/unit/src/table/row-detail.part.test.ts (1 test) 35ms
+test	単体テストを回す	2026-11-24T18:20:06.3664695Z  ✓  unit  tests/unit/src/inline/highlight.part.test.ts (1 test) 6ms
+test	単体テストを回す	2026-11-24T18:20:06.4222079Z  ✓  unit  tests/unit/src/cli/icons.test.ts (1 test) 140ms
+test	単体テストを回す	2026-11-24T18:20:06.4649104Z  ✓  unit  tests/unit/src/frontmatter/frontmatter.part.test.ts (1 test) 8ms
+test	単体テストを回す	2026-11-24T18:20:06.5603905Z  ✓  unit  tests/unit/git-env.test.ts (1 test) 11ms
+test	単体テストを回す	2026-11-24T18:20:06.6347123Z  ✓  unit  tests/unit/src/shared/own.logic.test.ts (1 test) 7ms
+test	単体テストを回す	2026-11-24T18:20:06.7110390Z  ✓  unit  tests/unit/src/shared/row-hash.logic.test.ts (1 test) 7ms
+test	単体テストを回す	2026-11-24T18:20:06.7859687Z  ✓  unit  tests/unit/src/inline/text-color.part.test.ts (1 test) 6ms
+test	単体テストを回す	2026-11-24T18:20:06.9082410Z  ✓  unit  tests/unit/src/inline/kbd.part.test.ts (1 test) 7ms
+test	単体テストを回す	2026-11-24T18:20:06.9865000Z  ✓  unit  tests/unit/src/shared/colors.logic.test.ts (1 test) 5ms
+test	単体テストを回す	2026-11-24T18:20:07.1419700Z  ✓  unit  tests/unit/src/layout/pagebreak.syntax.test.ts (1 test) 49ms
+test	単体テストを回す	2026-11-24T18:20:07.1880079Z  ✓  unit  tests/unit/src/shared/escape.logic.test.ts (1 test) 6ms
+test	単体テストを回す	2026-11-24T18:20:07.4850228Z  ✓  unit  tests/unit/src/index.test.ts (1 test) 368ms
+test	単体テストを回す	2026-11-24T18:20:07.4852140Z    ✓ test_version 366ms
+test	単体テストを回す	2026-11-24T18:20:07.4959722Z 
+test	単体テストを回す	2026-11-24T18:20:07.4974615Z  Test Files  346 passed (346)
+test	単体テストを回す	2026-11-24T18:20:07.5004581Z       Tests  2926 passed (2926)
+test	単体テストを回す	2026-11-24T18:20:07.5006160Z    Start at  18:18:56
+test	単体テストを回す	2026-11-24T18:20:07.5017413Z    Duration  71.16s (worker 91%, tests 6%, import 2%, transform 1%)
+test	単体テストを回す	2026-11-24T18:20:07.5042248Z 
+test	ログを成果物に上げる	﻿2026-11-24T18:20:07.7872419Z ##[group]Run actions/upload-artifact@v4
+test	ログを成果物に上げる	2026-11-24T18:20:07.7872737Z with:
+test	ログを成果物に上げる	2026-11-24T18:20:07.7872927Z   name: test-log
+test	ログを成果物に上げる	2026-11-24T18:20:07.7873125Z   path: test.log
+test	ログを成果物に上げる	2026-11-24T18:20:07.7873332Z   if-no-files-found: ignore
+test	ログを成果物に上げる	2026-11-24T18:20:07.7873574Z   compression-level: 6
+test	ログを成果物に上げる	2026-11-24T18:20:07.7873786Z   overwrite: false
+test	ログを成果物に上げる	2026-11-24T18:20:07.7873997Z   include-hidden-files: false
+test	ログを成果物に上げる	2026-11-24T18:20:07.7874223Z env:
+test	ログを成果物に上げる	2026-11-24T18:20:07.7874392Z   LAYER: unit
+test	ログを成果物に上げる	2026-11-24T18:20:07.7874570Z   PATHS: 
+test	ログを成果物に上げる	2026-11-24T18:20:07.7874748Z ##[endgroup]
+test	ログを成果物に上げる	2026-11-24T18:20:07.9621172Z (node:5785) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	ログを成果物に上げる	2026-11-24T18:20:07.9623053Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	ログを成果物に上げる	2026-11-24T18:20:07.9667091Z With the provided path, there will be 1 file uploaded
+test	ログを成果物に上げる	2026-11-24T18:20:07.9673270Z Artifact name is valid!
+test	ログを成果物に上げる	2026-11-24T18:20:07.9674154Z Root directory input is valid!
+test	ログを成果物に上げる	2026-11-24T18:20:08.2324482Z Beginning upload of artifact content to blob storage
+test	ログを成果物に上げる	2026-11-24T18:20:08.2645451Z (node:5785) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+test	ログを成果物に上げる	2026-11-24T18:20:08.3695510Z Uploaded bytes 7172
+test	ログを成果物に上げる	2026-11-24T18:20:08.4202184Z Finished uploading artifact content to blob storage!
+test	ログを成果物に上げる	2026-11-24T18:20:08.4203247Z SHA256 digest of uploaded artifact zip is 377b01afac625bed9436bcc4b43a0d84616850e53254b8ad97592ffb6e18cd40
+test	ログを成果物に上げる	2026-11-24T18:20:08.4205094Z Finalizing artifact upload
+test	ログを成果物に上げる	2026-11-24T18:20:08.9772494Z Artifact test-log.zip successfully finalized. Artifact ID 14951906533
+test	ログを成果物に上げる	2026-11-24T18:20:08.9774456Z Artifact test-log has been successfully uploaded! Final size is 7172 bytes. Artifact ID is 14951906533
+test	ログを成果物に上げる	2026-11-24T18:20:08.9781980Z Artifact download URL: https://github.com/shuhei1101/mdmark/actions/runs/45458023879/artifacts/14951906533
+test	Post Node をインストールする	﻿2026-11-24T18:20:08.9996258Z Post job cleanup.
+test	Post Node をインストールする	2026-11-24T18:20:09.1265623Z (node:5797) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Post Node をインストールする	2026-11-24T18:20:09.1267389Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Post ブランチを取得する	﻿2026-11-24T18:20:09.1444175Z Post job cleanup.
+test	Post ブランチを取得する	2026-11-24T18:20:09.2315787Z [command]/usr/bin/git version
+test	Post ブランチを取得する	2026-11-24T18:20:09.2361251Z git version 2.56.1
+test	Post ブランチを取得する	2026-11-24T18:20:09.2400908Z Temporarily overriding HOME='/home/runner/work/_temp/f60a645d-7f90-4d73-b34d-19d53017bd16' before making global git config changes
+test	Post ブランチを取得する	2026-11-24T18:20:09.2402562Z Adding repository directory to the temporary git global config as a safe directory
+test	Post ブランチを取得する	2026-11-24T18:20:09.2407024Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	Post ブランチを取得する	2026-11-24T18:20:09.2446637Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Post ブランチを取得する	2026-11-24T18:20:09.2484826Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Post ブランチを取得する	2026-11-24T18:20:09.2784334Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Post ブランチを取得する	2026-11-24T18:20:09.2813321Z http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-24T18:20:09.2825416Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-24T18:20:09.2860375Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Post ブランチを取得する	2026-11-24T18:20:09.3175751Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Post ブランチを取得する	2026-11-24T18:20:09.3220603Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Complete job	﻿2026-11-24T18:20:09.3705537Z Cleaning up orphan processes
+test	Complete job	2026-11-24T18:20:09.4251752Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+exit=0 run=https://github.com/shuhei1101/mdmark/actions/runs/45458023879
