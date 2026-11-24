@@ -361,7 +361,7 @@ test("test_build_image_figures_when_opener", () => {
   const { html } = renderDoc(markdown);
   // 検証
   expect(html).not.toMatch(/<video\b/);
-  const cell = /<td>[^]*?m1\.mp4[^]*?<\/td>/.exec(html)?.[0] ?? "";
+  const cell = /<td[^>]*>[^]*?m1\.mp4[^]*?<\/td>/.exec(html)?.[0] ?? "";
   expect(cell).toContain('class="mdmark-media-open"');
   expect(plainText(innerHtml(cell, "mdmark-media-open-caption"))).toBe(
     "手順 1",

@@ -86,7 +86,9 @@ test("test_attach_media_modal", async () => {
   // 検証
   expect(dialog.querySelector("video")?.getAttribute("src")).toBe("m1.mp4");
   expect(playedAfterOpen).toBe(1);
-  expect(root.querySelector("dialog.mdmark-media-modal")).toBeNull();
+  await vi.waitFor(() => {
+    expect(root.querySelector("dialog.mdmark-media-modal")).toBeNull();
+  });
   expect(calls.pause).toBe(1);
   expect(document.activeElement).toBe(buttons[0]);
   expect(window.scrollY).toBe(scrollY);
@@ -106,7 +108,9 @@ test("test_attach_media_modal_when_closed", async () => {
   }
   await userEvent.click(closeButton);
   // 検証
-  expect(root.querySelector("dialog.mdmark-media-modal")).toBeNull();
+  await vi.waitFor(() => {
+    expect(root.querySelector("dialog.mdmark-media-modal")).toBeNull();
+  });
   expect(document.activeElement).toBe(buttons[0]);
   // 実行（dialog 自身を押す）
   await userEvent.click(buttons[1]);
@@ -114,7 +118,9 @@ test("test_attach_media_modal_when_closed", async () => {
   dialog.dispatchEvent(new MouseEvent("click", { bubbles: true }));
   dialog.close();
   // 検証
-  expect(root.querySelector("dialog.mdmark-media-modal")).toBeNull();
+  await vi.waitFor(() => {
+    expect(root.querySelector("dialog.mdmark-media-modal")).toBeNull();
+  });
   expect(document.activeElement).toBe(buttons[1]);
 });
 
