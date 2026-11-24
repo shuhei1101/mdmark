@@ -161,6 +161,22 @@ test("test_render_now_when_data_has_comment_end", async () => {
   );
 });
 
+// 負の数値を持つ補足でも、補足を読み込んで図を描く（正常系）
+test("test_render_now_when_data_has_negative_number", async () => {
+  // 準備
+  await loadElement();
+  const element = createMap();
+  // 実行
+  element.source = SOURCE;
+  element.data = { version: 1, layout: { api: { order: -1 } } };
+  await settled(element);
+  // 検証
+  expect(
+    element.querySelectorAll('figure.mdmark-diagram[data-diagram="map"]'),
+  ).toHaveLength(1);
+  expect(element.querySelector(".mdmark-notice")).toBeNull();
+});
+
 // ``` の行を持つ source でも、コードブロックを途中で閉じずに図を描く（正常系）
 test("test_render_now_when_source_has_fence", async () => {
   // 準備
