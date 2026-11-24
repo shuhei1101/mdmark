@@ -1,10 +1,11 @@
 import type { StateCore, Token } from "markdown-it";
 import type { WarningItem } from "../extensions.ts";
+import { markOwn } from "../shared/own.logic.ts";
 import { warningBlock } from "../shared/syntax-warning.syntax.ts";
 import { envOf, featureOn, ownBlock } from "../shared/tokens.syntax.ts";
 import { codes } from "../table/table.syntax.ts";
 import { renderImageFigure } from "./image.part.ts";
-import { renderMedia } from "./media.part.ts";
+import { renderMedia, renderMediaOpener } from "./media.part.ts";
 
 /** 画像の `src` の拡張子で見分けた種類 */
 export type MediaKind = "image" | "gif" | "video" | "audio";
@@ -17,7 +18,7 @@ export const MEDIA_EXTENSIONS: Readonly<
   audio: ["mp3", "m4a", "aac", "ogg", "oga", "opus", "wav", "flac"],
 };
 
-/** `{…}` に記載できる属性の名前。後ろの 4 つは動画・音声だけ */
+/** `{…}` に記載できる属性の名前。`autoplay` から `modal` は動画・音声だけ、`thumbnail` は動画だけ */
 export const IMAGE_ATTRIBUTE_NAMES = [
   "width",
   "align",
@@ -26,10 +27,19 @@ export const IMAGE_ATTRIBUTE_NAMES = [
   "muted",
   "loop",
   "poster",
+  "modal",
+  "thumbnail",
 ] as const;
 
 /** 動画・音声だけに記載できる属性 */
-const MEDIA_ONLY_ATTRIBUTES = ["autoplay", "muted", "loop", "poster"];
+const MEDIA_ONLY_ATTRIBUTES = [
+  "autoplay",
+  "muted",
+  "loop",
+  "poster",
+  "modal",
+  "thumbnail",
+];
 
 /** `align=` に記載できる配置 */
 const ALIGNS = ["left", "center", "right"] as const;
@@ -63,6 +73,12 @@ export type ImageAttributes = {
   poster?: string | undefined;
   /** 読み込めなかった属性 */
   items: WarningItem[];
+  /** 動画・音声だけ。`modal` を記載したら `true` */
+  modal: boolean;
+  /** `poster` を持つ動画だけ。`thumbnail` を記載したら `true` */
+  thumbnail: boolean;
+  /** 再生のボタンにするか */
+  opener: boolean;
 };
 
 /** `src` からクエリとフラグメントを除いた拡張子で、画像の種類を見分ける */
@@ -101,6 +117,8 @@ type AttributePart = {
   value: string | undefined;
   kind: MediaKind;
   inline: boolean;
+  /** 再生のボタンにする動画・音声か（`width`・`align` を読み込めない） */
+  opener: boolean;
 };
 
 /** 読み込めない属性 */
@@ -112,6 +130,12 @@ const unusable = (attribute: AttributePart): Unreadable => ({
   message: "使用できない属性です。",
 });
 
+/** 再生のボタンにした動画・音声に記載できない属性 */
+const openerOnly = (attribute: AttributePart): Unreadable => ({
+  label: attribute.part,
+  message: "再生のボタンにした動画・音声には記載できない属性です。",
+});
+
 /** `width=` を幅にする */
 const readWidthAttribute = (
   attributes: ImageAttributes,
@@ -119,6 +143,9 @@ const readWidthAttribute = (
 ): Unreadable | undefined => {
   if (attribute.value === undefined) {
     return unusable(attribute);
+  }
+  if (attribute.opener) {
+    return openerOnly(attribute);
   }
   const width = readWidth(attribute.value);
   if (width === undefined) {
@@ -137,6 +164,9 @@ const readAlignAttribute = (
   attribute: AttributePart,
 ): Unreadable | undefined => {
   const { name, value, inline, part } = attribute;
+  if (attribute.opener) {
+    return openerOnly(attribute);
+  }
   if (inline) {
     return {
       label: name,
@@ -189,6 +219,23 @@ const ATTRIBUTE_READERS: Readonly<
   autoplay: readFlagAttribute,
   muted: readFlagAttribute,
   loop: readFlagAttribute,
+  modal: (attributes, attribute) => {
+    if (attribute.part !== "modal") {
+      return unusable(attribute);
+    }
+    attributes.modal = true;
+    return undefined;
+  },
+  thumbnail: (attributes, attribute) => {
+    if (attribute.part === "thumbnail" && attribute.kind === "video") {
+      attributes.thumbnail = true;
+      return undefined;
+    }
+    return {
+      label: attribute.part,
+      message: "`poster` を記載した動画にだけ記載できる属性です。",
+    };
+  },
   poster: (attributes, attribute) => {
     if (attribute.kind === "video" && attribute.value) {
       attributes.poster = attribute.value;
@@ -217,11 +264,29 @@ const readAttribute = (
   return read ? read(attributes, attribute) : unusable(attribute);
 };
 
+/** 記載した属性の並びで、再生のボタンにするか（引数 `opener` か、読み込める `modal`・`thumbnail` を持つ） */
+function opensOf(
+  parts: string[],
+  media: { kind: MediaKind; opener: boolean },
+): boolean {
+  const { kind, opener } = media;
+  if (kind !== "video" && kind !== "audio") {
+    return false;
+  }
+  const poster = parts.some((part) => /^poster=.+/.test(part));
+  return (
+    opener ||
+    parts.includes("modal") ||
+    (kind === "video" && poster && parts.includes("thumbnail"))
+  );
+}
+
 /** `{` と `}` の中の文字を空白で区切って画像の属性を読み込む。読み込めない属性は当てずに `items` に入れる */
 export function readImageAttributes(
   text: string,
   kind: MediaKind,
   inline: boolean,
+  opener = false,
 ): ImageAttributes {
   const attributes: ImageAttributes = {
     kind,
@@ -230,8 +295,13 @@ export function readImageAttributes(
     muted: false,
     loop: false,
     items: [],
+    modal: false,
+    thumbnail: false,
+    opener: false,
   };
-  for (const part of text.split(/\s+/).filter((item) => item !== "")) {
+  const parts = text.split(/\s+/).filter((item) => item !== "");
+  attributes.opener = opensOf(parts, { kind, opener });
+  for (const part of parts) {
     const equals = part.indexOf("=");
     const unreadable = readAttribute(attributes, {
       part,
@@ -239,10 +309,19 @@ export function readImageAttributes(
       value: equals < 0 ? undefined : part.slice(equals + 1),
       kind,
       inline,
+      opener: attributes.opener,
     });
     if (unreadable) {
       attributes.items.push(unreadable);
     }
+  }
+  // poster が無い動画の thumbnail は、読み込んだ後に読み込めない属性にする
+  if (attributes.thumbnail && attributes.poster === undefined) {
+    attributes.thumbnail = false;
+    attributes.items.push({
+      label: "thumbnail",
+      message: "`poster` を記載した動画にだけ記載できる属性です。",
+    });
   }
   // 音の出る自動再生はブラウザが止めるため、ミュートにして始める
   if (attributes.autoplay) {
@@ -296,14 +375,16 @@ function readImage(
     position: number;
     sole: Token | undefined;
     images: boolean;
+    cell: boolean;
   },
 ): WarningItem[] {
-  const { children, position, sole, images } = image;
+  const { children, position, sole, images, cell } = image;
   const child = children[position] as Token;
   const kind = kindOf(state, String(child.attrGet("src") ?? ""));
   const inline = child !== sole && !isSoleWithAttributes(children, position);
   const text = images ? takeAttributeText(children[position + 1]) : "";
-  const attributes = readImageAttributes(text, kind, inline);
+  const media = kind === "video" || kind === "audio";
+  const attributes = readImageAttributes(text, kind, inline, cell && media);
   child.meta = { ...(child.meta ?? {}), mdmarkImage: attributes };
   if (kind === "gif") {
     child.attrSet("data-gif", "");
@@ -319,7 +400,9 @@ function readImage(
 export function readImages(state: StateCore): void {
   const images = featureOn(state, "images");
   const warnings: Array<{ index: number; items: WarningItem[] }> = [];
+  let cell = false;
   for (const [index, token] of state.tokens.entries()) {
+    cell = cellStateOf(token, cell);
     const children = token.children;
     if (token.type !== "inline" || !children) {
       continue;
@@ -327,7 +410,7 @@ export function readImages(state: StateCore): void {
     const sole = soleImageOf(token);
     const items = children.flatMap((child, position) =>
       child.type === "image"
-        ? readImage(state, { children, position, sole, images })
+        ? readImage(state, { children, position, sole, images, cell })
         : [],
     );
     // 属性を削除して空になった文字は、画像だけの段落を見分けられるよう取り除く
@@ -348,6 +431,17 @@ export function readImages(state: StateCore): void {
       }),
     );
   }
+}
+
+/** トークンを順に見たときに、表のセル（`th`・`td`）の中にいるか */
+function cellStateOf(token: Token, current: boolean): boolean {
+  if (token.type === "th_open" || token.type === "td_open") {
+    return true;
+  }
+  if (token.type === "th_close" || token.type === "td_close") {
+    return false;
+  }
+  return current;
 }
 
 /** `position` の画像が、直後の `{…}` を除けば段落の唯一の中身か */
@@ -463,6 +557,31 @@ function mediaHtml(image: Token, kind: "video" | "audio"): string {
   });
 }
 
+/** 再生のボタンにする動画か音声の画像のトークンから、部品『動画と音声』の再生のボタンの HTML を作る */
+function mediaOpenerHtml(
+  image: Token,
+  options: { kind: "video" | "audio"; inline: boolean },
+): string {
+  const attributes = imageAttributesOf(image);
+  const thumbnail =
+    attributes?.thumbnail === true && attributes.poster !== undefined;
+  return renderMediaOpener({
+    kind: options.kind,
+    src: String(image.attrGet("src") ?? ""),
+    alt: altOf(image),
+    ...captionOf(image),
+    ...(attributes?.poster === undefined ? {} : { poster: attributes.poster }),
+    ...playbackOf(attributes),
+    opener: thumbnail ? "thumbnail" : "button",
+    inline: options.inline,
+  });
+}
+
+/** 再生のボタンにする動画・音声か */
+function opensModal(image: Token): boolean {
+  return imageAttributesOf(image)?.opener === true;
+}
+
 /** 画像の種類が動画か音声なら、その種類を返却する */
 function mediaKindOfToken(image: Token): "video" | "audio" | undefined {
   const kind = imageAttributesOf(image)?.kind;
@@ -484,9 +603,13 @@ function soleFigure(
   }
   const soleMedia = mediaKindOfToken(sole);
   if (soleMedia) {
-    return features.media
-      ? ownBlock(state, mediaHtml(sole, soleMedia), token)
-      : undefined;
+    if (!features.media) {
+      return undefined;
+    }
+    const html = opensModal(sole)
+      ? mediaOpenerHtml(sole, { kind: soleMedia, inline: false })
+      : mediaHtml(sole, soleMedia);
+    return ownBlock(state, html, token);
   }
   return features.images
     ? ownBlock(state, imageFigureHtml(sole), token)
@@ -507,7 +630,11 @@ function splitInlineMedia(
       child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
     const kind = child.type === "image" ? mediaKindOfToken(child) : undefined;
     if (kind && features.media && linkDepth === 0) {
-      after.push(ownBlock(state, mediaHtml(child, kind), token));
+      if (opensModal(child)) {
+        children.push(openerInline(state, child, kind));
+      } else {
+        after.push(ownBlock(state, mediaHtml(child, kind), token));
+      }
       continue;
     }
     markOnlyImage(state, { child, images: features.images });
@@ -515,6 +642,33 @@ function splitInlineMedia(
   }
   inline.children = children;
   return after;
+}
+
+/** 画像のトークンを、記載した場所の再生のボタンの `html_inline` にする */
+function openerInline(
+  state: StateCore,
+  image: Token,
+  kind: "video" | "audio",
+): Token {
+  const token = new state.Token("html_inline", "", 0);
+  token.content = markOwn(
+    mediaOpenerHtml(image, { kind, inline: true }),
+    envOf(state).nonce,
+  );
+  return token;
+}
+
+/** 表のセルの中の動画・音声を、記載した場所の再生のボタンにする */
+function buildCellOpeners(state: StateCore, inline: Token): void {
+  let linkDepth = 0;
+  inline.children = (inline.children ?? []).map((child) => {
+    linkDepth +=
+      child.type === "link_open" ? 1 : child.type === "link_close" ? -1 : 0;
+    const kind = child.type === "image" ? mediaKindOfToken(child) : undefined;
+    return kind && linkDepth === 0 && opensModal(child)
+      ? openerInline(state, child, kind)
+      : child;
+  });
 }
 
 /** テーマごとの画像に、出す配色の class を付ける */
@@ -544,10 +698,15 @@ export function buildImageFigures(state: StateCore): void {
   }
   const tokens = state.tokens;
   const out: Token[] = [];
+  let cell = false;
   for (let index = 0; index < tokens.length; index++) {
     const token = tokens[index] as Token;
+    cell = cellStateOf(token, cell);
     const inline = tokens[index + 1];
     const close = tokens[index + 2];
+    if (cell && features.media && token.type === "inline") {
+      buildCellOpeners(state, token);
+    }
     if (token.type !== "paragraph_open" || inline?.type !== "inline") {
       out.push(token);
       continue;

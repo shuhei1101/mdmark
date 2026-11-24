@@ -61,6 +61,7 @@ import {
   Table,
   TriangleAlert,
   User,
+  Volume2,
   Wrench,
   X,
 } from "lucide";
@@ -143,6 +144,7 @@ const ICONS = {
   "maximize-2": Maximize2,
   pause: Pause,
   play: Play,
+  "volume-2": Volume2,
   table: Table,
   "settings-2": Settings2,
   "grip-vertical": GripVertical,

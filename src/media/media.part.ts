@@ -1,4 +1,5 @@
 import { escapeHtml } from "../shared/escape.logic.ts";
+import { iconSvg } from "../shared/icons.part.ts";
 
 /** 再生の属性（`controls`・`autoplay` など）を、頭に空白を付けて返却する */
 function mediaFlags(options: {
@@ -74,4 +75,89 @@ export function renderMedia(options: {
       ? ""
       : ` style="--mdmark-image-width: ${escapeHtml(width)}"`;
   return `<figure class="mdmark-figure mdmark-media"${style}>${player}${print}${figcaption}</figure>`;
+}
+
+/** `src` からクエリとフラグメントを除いたファイル名 */
+function fileNameOf(src: string): string {
+  const path = src.split(/[?#]/)[0] ?? "";
+  return path.slice(path.lastIndexOf("/") + 1);
+}
+
+/** 再生のボタンの `data-media-*` の属性を、頭に空白を付けて返却する */
+function openerData(options: {
+  kind: "video" | "audio";
+  src: string;
+  caption?: string | undefined;
+  poster?: string | undefined;
+  autoplay: boolean;
+  muted: boolean;
+  loop: boolean;
+}): string {
+  const { kind, src, caption, poster, autoplay, muted, loop } = options;
+  return [
+    ` data-media-kind="${kind}"`,
+    ` data-media-src="${escapeHtml(src)}"`,
+    caption ? ` data-media-caption="${escapeHtml(caption)}"` : "",
+    poster === undefined ? "" : ` data-media-poster="${escapeHtml(poster)}"`,
+    autoplay ? " data-media-autoplay" : "",
+    autoplay || muted ? " data-media-muted" : "",
+    loop ? " data-media-loop" : "",
+  ].join("");
+}
+
+/** 再生のボタン（ラベルと再生のアイコン、`thumbnail` は `poster` のサムネイル）の HTML を返却する */
+export function renderMediaOpener(options: {
+  /** 動画か音声か */
+  kind: "video" | "audio";
+  /** ファイルの URL */
+  src: string;
+  /** ラベル（空ならファイル名） */
+  alt: string;
+  /** キャプション（title） */
+  caption?: string;
+  /** サムネイルにする画像（動画だけ） */
+  poster?: string;
+  /** 開いたときに再生する */
+  autoplay?: boolean;
+  /** ミュートにして始める */
+  muted?: boolean;
+  /** 繰り返し再生する */
+  loop?: boolean;
+  /** ラベルのボタンか、`poster` のサムネイルか */
+  opener: "button" | "thumbnail";
+  /** 表のセルの中・文の途中か（`false` は段落ごと包む） */
+  inline: boolean;
+}): string {
+  const {
+    kind,
+    src,
+    alt,
+    caption,
+    poster,
+    autoplay = false,
+    muted = false,
+    loop = false,
+    opener,
+    inline,
+  } = options;
+  const label = alt === "" ? fileNameOf(src) : alt;
+  const data = openerData({
+    kind,
+    src,
+    caption,
+    poster: kind === "video" ? poster : undefined,
+    autoplay,
+    muted,
+    loop,
+  });
+  const thumbnail = opener === "thumbnail" && kind === "video" && poster;
+  const button = thumbnail
+    ? `<button class="mdmark-media-open mdmark-media-thumb" type="button" aria-haspopup="dialog" aria-label="${escapeHtml(label)}"${data}><img src="${escapeHtml(poster)}" alt=""><span class="mdmark-media-thumb-icon">${iconSvg("play")}</span></button>`
+    : `<button class="mdmark-media-open" type="button" aria-haspopup="dialog"${data}>${iconSvg(kind === "video" ? "play" : "volume-2")}<span class="mdmark-media-open-label">${escapeHtml(label)}</span></button>`;
+  const captionHtml = caption
+    ? `<span class="mdmark-media-open-caption">${escapeHtml(caption)}</span>`
+    : "";
+  return inline
+    ? `${button}${captionHtml}`
+    : `<div class="mdmark-media-inline-figure">${button}${captionHtml}</div>`;
 }

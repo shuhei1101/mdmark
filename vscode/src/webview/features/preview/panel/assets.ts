@@ -4,7 +4,8 @@ import { renderMediaError } from "../../../shared/lib/media-error.ts";
 const SCHEME_PATTERN = /^[a-z][a-z0-9+.-]*:/i;
 
 /** パスを持つ要素と、パスを持つ属性 */
-const ASSET_SELECTOR = "img[src], video[src], video[poster], audio[src]";
+const ASSET_SELECTOR =
+  "img[src], video[src], video[poster], audio[src], button.mdmark-media-open[data-media-src]";
 
 /** 記載したパスを記録する属性 */
 const SOURCE_ATTRIBUTE = "data-mdmark-src";
@@ -21,10 +22,13 @@ const isRelativePath = (value: string): boolean => {
 
 /** 要素がパスを持つ属性の名前を返却する */
 const pathAttributesOf = (element: Element): string[] => {
+  if (element.localName === "button") {
+    return ["data-media-src", "data-media-poster"];
+  }
   return element.localName === "video" ? ["src", "poster"] : ["src"];
 };
 
-/** 描いた文書の `img`・`video`・`audio` の相対パスを、重ねずに記載した順で返却する */
+/** 描いた文書の `img`・`video`・`audio` と再生のボタンの相対パスを、重ねずに記載した順で返却する */
 export const collectAssetPaths = (root: HTMLElement): string[] => {
   const paths: string[] = [];
   for (const element of root.querySelectorAll(ASSET_SELECTOR)) {
@@ -38,7 +42,7 @@ export const collectAssetPaths = (root: HTMLElement): string[] => {
   return paths;
 };
 
-/** 記載したパスが `urls` にある要素の `src`・`poster` を Webview の URL に替える。`null` のパスは替えない。動画・音声は替える前のパスを `data-mdmark-src` に記録する */
+/** 記載したパスが `urls` にある要素の `src`・`poster`・`data-media-src`・`data-media-poster` を Webview の URL に替える。`null` のパスは替えない。動画・音声は替える前のパスを `data-mdmark-src` に記録する */
 export const applyAssetUrls = (
   root: HTMLElement,
   urls: Record<string, string | null>,
