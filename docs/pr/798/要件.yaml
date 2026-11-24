@@ -1,0 +1,7 @@
+scope_out:
+  - item: プロンプトの種類 prompts の直コミットの許可
+    reason: MCP サーバーの instructions とツールの description の本文で、書き換えるとプラグインの動きが変わるため、PR でレビューを通す。dev-docs#317 にも同じ種類の許可の前例が無い（レビューで確定する）
+    plan: none
+  - item: aituber の project-index.yaml の direct_commit
+    reason: 別のリポジトリの同じ要望
+    plan: shuhei1101/aituber#222
