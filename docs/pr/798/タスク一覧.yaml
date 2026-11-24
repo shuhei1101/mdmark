@@ -95,8 +95,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-24T02:44:11.304038+00:00'
   - process: 実装
-    status: todo
+    status: done
     note: project-index.yaml の $schema の更新と direct_commit の追加
+    updated_by: planner
+    updated_at: '2026-11-24T02:47:34.713002+00:00'
   - process: 結合テスト作成
     status: skipped
     reason: コードを変えないため対象外
