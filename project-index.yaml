@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/project-index/006a49034a210dfb1eb2f8b998abad760c002f5b/schemas/project-index.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/shuhei1101/project-index/develop/schemas/project-index.schema.json
 version: "3"
 name: mdmark
 worktrees: [".claude/worktrees/*"]
@@ -15,6 +15,46 @@ when:
   - mdmark の記法・部品・図の描き方を確認するとき
   - mdmark の CLI・公開関数・設定・索引のキーを確認するとき
   - mdmark のライブラリ・CLI・VS Code 拡張機能・Claude Code プラグインの設計書・コード・テストを調べるとき
+direct_commit:
+  branch: develop
+  kinds:
+    - data
+    - architecture
+    - scenario
+    - interface
+    - module
+    - component
+    - screen
+    - config
+    - er
+    - external_api
+    - library
+    - test_procedure
+    - dev_command
+    - nonfunctional
+    - layout
+    - agent
+    - mcp_server
+    - launch
+    - agent_flow
+    - llm_call
+    - evaluation
+    - eval_criterion
+    - eval_case
+    - terms
+    - {id: files_top, body: false}
+    - {id: mock, body: false}
+    - {id: docs, body: false}
+    - {id: src, body: false}
+    - {id: tests, body: false}
+    - {id: scripts, body: false}
+    - {id: init_templates, body: false}
+    - {id: schemas, body: false}
+    - {id: migrations, body: false}
+    - {id: vscode, body: false}
+    - {id: plugin, body: false}
+    - {id: storybook, body: false}
+    - {id: workflows, body: false}
 documents:
   - id: data
     title: データ
