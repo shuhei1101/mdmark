@@ -42,7 +42,7 @@ export const collectAssetPaths = (root: HTMLElement): string[] => {
   return paths;
 };
 
-/** 記載したパスが `urls` にある要素の `src`・`poster`・`data-media-src`・`data-media-poster` を Webview の URL に替える。`null` のパスは替えない。動画・音声は替える前のパスを `data-mdmark-src` に記録する */
+/** 記載したパスが `urls` にある要素の `src`・`poster`・`data-media-src`・`data-media-poster` を Webview の URL に替える。`null` のパスは替えない。動画・音声と再生のボタンは替える前のパスを `data-mdmark-src` に記録する */
 export const applyAssetUrls = (
   root: HTMLElement,
   urls: Record<string, string | null>,
@@ -54,7 +54,10 @@ export const applyAssetUrls = (
       if (url === null || url === undefined) {
         continue;
       }
-      if (name === "src" && element.localName !== "img") {
+      if (
+        (name === "src" && element.localName !== "img") ||
+        name === "data-media-src"
+      ) {
         element.setAttribute(SOURCE_ATTRIBUTE, value);
       }
       element.setAttribute(name, url);
@@ -69,6 +72,21 @@ const formatOf = (path: string): string => {
   return dot < 0 ? "" : bare.slice(dot + 1).toLowerCase();
 };
 
+/** 記載したパス。`data-mdmark-src` を持たない再生のダイアログの中の要素は、同じ URL を持つ再生のボタンの `data-mdmark-src` から引く */
+const sourcePathOf = (root: HTMLElement, media: HTMLMediaElement): string => {
+  const own = media.getAttribute(SOURCE_ATTRIBUTE);
+  if (own !== null) {
+    return own;
+  }
+  const src = media.getAttribute("src") ?? "";
+  const opener = [
+    ...root.querySelectorAll<HTMLButtonElement>(
+      `button.mdmark-media-open[${SOURCE_ATTRIBUTE}]`,
+    ),
+  ].find((button) => button.dataset.mediaSrc === src);
+  return opener?.getAttribute(SOURCE_ATTRIBUTE) ?? src;
+};
+
 /** 描いた文書の動画・音声が再生できないとき、その要素（`figure.mdmark-media` の中なら `figure`）を通知ブロックに替える。受け取りを解除する関数を返却する */
 export const attachMediaErrors = (root: HTMLElement): (() => void) => {
   const onError = (event: Event): void => {
@@ -78,8 +96,7 @@ export const attachMediaErrors = (root: HTMLElement): (() => void) => {
     ) {
       return;
     }
-    const path =
-      media.getAttribute(SOURCE_ATTRIBUTE) ?? media.getAttribute("src") ?? "";
+    const path = sourcePathOf(root, media);
     const html = renderMediaError({
       kind: media instanceof HTMLVideoElement ? "video" : "audio",
       format: formatOf(path),
