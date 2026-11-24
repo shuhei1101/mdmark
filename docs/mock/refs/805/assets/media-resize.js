@@ -34,8 +34,6 @@
     handle.type = "button";
     handle.className = "mdmark-media-resize";
     handle.setAttribute("aria-label", `「${label}」の大きさを変える`);
-    handle.setAttribute("aria-haspopup", "true");
-    handle.setAttribute("aria-expanded", "false");
     handle.setAttribute("aria-keyshortcuts", "ArrowUp ArrowDown");
     handle.title = "ドラッグか ↑ ↓ で大きさを変える。押すと大きさのメニューを開く。ダブルクリックで元の大きさに戻す";
     handle.innerHTML = `<span class="mdmark-media-resize-grip">${GRIP}</span>`;
@@ -44,6 +42,7 @@
     // 大きさのメニュー: popover で最前面に出す
     const menu = document.createElement("div");
     menu.className = "mdmark-media-size-menu";
+    menu.id = `mock-media-size-menu-${index}`;
     menu.popover = "auto";
     menu.setAttribute("role", "group");
     menu.setAttribute("aria-label", `「${label}」の大きさ`);
@@ -52,6 +51,9 @@
       <button type="button" data-size="larger">${ICONS.larger}大きくする</button>
       <button type="button" data-size="reset">${ICONS.reset}元の大きさに戻す</button>`;
     document.body.append(menu);
+    // ハンドルを押す（動かさずに離す）か Enter・Space でメニューを開閉する。開閉・外を押して閉じる動作・aria-expanded はブラウザに任せる
+    handle.popoverTargetElement = menu;
+    handle.popoverTargetAction = "toggle";
 
     const storageKey = `mock-media-width:${location.pathname}:${index}`;
     const original = figure.style.getPropertyValue("--mdmark-image-width");
@@ -128,28 +130,26 @@
       handle.addEventListener("pointercancel", end, { once: true });
     });
 
-    // 押す（動かさずに離す）か Enter・Space: メニューを開閉する。開いたら最初の押せるボタンへフォーカスを移す
-    handle.addEventListener("click", () => {
-      if (dragged) {
-        dragged = false;
-        return;
-      }
-      if (menu.matches(":popover-open")) {
-        menu.hidePopover();
-        return;
-      }
-      updateMenu();
-      menu.showPopover();
-      placeMenu();
-      menu.querySelector("button:not(:disabled)")?.focus();
+    // ドラッグした後の click: メニューを開閉しない（popover の開閉を止める）
+    handle.addEventListener("click", (event) => {
+      if (!dragged) return;
+      dragged = false;
+      event.preventDefault();
     });
     // 大きさを変えてハンドルが動いたときとスクロールしたときも、開いているメニューをハンドルに付けて動かす
     window.addEventListener("scroll", placeMenu, { passive: true });
     window.addEventListener("resize", placeMenu);
     menu.addEventListener("toggle", (event) => {
-      handle.setAttribute("aria-expanded", String(event.newState === "open"));
+      handle.classList.toggle("is-open", event.newState === "open");
+      // 開いたら、ボタンの押せる・押せないを合わせ、ハンドルのそばに配置して、最初の押せるボタンへフォーカスを移す
+      if (event.newState === "open") {
+        updateMenu();
+        placeMenu();
+        menu.querySelector("button:not(:disabled)")?.focus();
+        return;
+      }
       // Esc・外を押して閉じたときは、フォーカスをハンドルへ戻す
-      if (event.newState === "closed" && menu.contains(document.activeElement)) handle.focus();
+      if (menu.contains(document.activeElement)) handle.focus();
     });
     menu.addEventListener("click", (event) => {
       const button = event.target.closest("button[data-size]");

@@ -30,7 +30,7 @@
       &:hover .mdmark-media-resize,
       .mdmark-media-resize:focus-visible,
       .mdmark-media-resize.is-resizing,
-      .mdmark-media-resize[aria-expanded="true"] {
+      .mdmark-media-resize.is-open {
         opacity: 1;
       }
     }
@@ -62,7 +62,7 @@
 
       &:hover .mdmark-media-resize-grip,
       &.is-resizing .mdmark-media-resize-grip,
-      &[aria-expanded="true"] .mdmark-media-resize-grip {
+      &.is-open .mdmark-media-resize-grip {
         background: var(--mdmark-color-surface);
         color: var(--mdmark-color-heading);
       }
