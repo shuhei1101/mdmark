@@ -49,13 +49,20 @@ export function renderNotice(options: {
     | "diff-content"
     | "diff-blocks"
     | "icons"
-    | "table-data";
-  /** `table-data` の本文で、指定の名前に続ける誤りの内容と修正方法 */
+    | "table-data"
+    | "data";
+  /** `table-data`・`data` の本文で、指定の名前に続ける誤りの内容と修正方法 */
   reason?: string;
 }): string {
   const { name, figure = true, source = "library" } = options;
-  if (source === "table-data") {
-    return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${NOTICE_TITLES.table}</strong><p><code>${escapeHtml(name)}</code>${escapeHtml(options.reason ?? "")}</p></div>`;
+  if (source === "table-data" || source === "data") {
+    const title =
+      source === "table-data"
+        ? NOTICE_TITLES.table
+        : figure
+          ? NOTICE_TITLES.figure
+          : NOTICE_TITLES.block;
+    return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${title}</strong><p><code>${escapeHtml(name)}</code>${escapeHtml(options.reason ?? "")}</p></div>`;
   }
   if (
     source === "diff-revisions" ||

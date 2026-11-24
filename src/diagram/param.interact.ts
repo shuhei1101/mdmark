@@ -7,10 +7,17 @@ import { paramChart, paramJson, renderCopyStatus } from "./param.part.ts";
 // 操作を付けた回数の通し番号。`id` を重ならせないために使用する
 let attachCounter = 0;
 
+/** 操作できる部品の操作を付けるときの指定 */
+export type ParamOptions = {
+  /** 操作できる部品のカスタム要素だけが指定する。スライダーの `input` ごとに、グラフを描き直した後で `knob.key` と今の値で呼ぶ */
+  onChange?: ((key: string, value: number) => void) | undefined;
+};
+
 /** 操作できる部品 1 つに、スライダーの値でグラフを再描画する操作と、今の値を写す操作を付け、削除する関数を返却する */
 function attachParam(
   root: HTMLElement,
   definition: MdmarkParamDefinition,
+  options: ParamOptions,
 ): () => void {
   const input = root.querySelector<HTMLInputElement>('input[type="range"]');
   const output = root.querySelector<HTMLOutputElement>(
@@ -75,6 +82,7 @@ function attachParam(
       // 値を変えたら前の通知は古くなる
       clearStatus();
       redraw();
+      options.onChange?.(definition.knob.key, value);
     },
     { signal },
   );
@@ -108,6 +116,7 @@ function attachParam(
 export function attachParams(
   root: HTMLElement,
   definitions: MdmarkParamDefinition[],
+  options: ParamOptions = {},
 ): () => void {
   attachCounter += 1;
   const detachers: Array<() => void> = [];
@@ -125,7 +134,7 @@ export function attachParams(
         title.replace(/-title$/, ""),
         `mdmark-param-${attachCounter}-${index}`,
       );
-      detachers.push(attachParam(param, definition));
+      detachers.push(attachParam(param, definition, options));
     });
   return () => {
     for (const detach of detachers.reverse()) {

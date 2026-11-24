@@ -41,8 +41,18 @@ export function attachCommentActions(options: {
   onUpdated: (id: string, body: string) => void;
   /** 削除できたときに通知し、同じマーカーにコメントが残るかを受け取る */
   onRemoved: (id: string) => boolean;
+  /** 修正・削除の関数の戻り値を待たずに編集欄・削除の確認を閉じ、本文の表示を変えないか（既定 `false`） */
+  closeOnEvent?: boolean;
 }): { cancel: () => boolean } {
-  const { bubble, store, docId, isActive, onUpdated, onRemoved } = options;
+  const {
+    bubble,
+    store,
+    docId,
+    isActive,
+    onUpdated,
+    onRemoved,
+    closeOnEvent = false,
+  } = options;
   const canEdit = typeof store.update === "function";
   const canRemove = typeof store.remove === "function";
   let open: OpenItem | undefined;
@@ -152,6 +162,18 @@ export function attachCommentActions(options: {
     if (!update) {
       return;
     }
+    if (closeOnEvent) {
+      void runStore(() => update({ docId, id: current.id, body }), {
+        message: "コメントを修正できません",
+        action: "update",
+        id: current.id,
+      });
+      open = undefined;
+      redraw(current.id, { body: current.body })
+        ?.querySelector<HTMLElement>('[data-action="edit"]')
+        ?.focus();
+      return;
+    }
     busy = true;
     redraw(current.id, { body: current.body, edit: edit("saving") });
     const saved = await runStore(
@@ -190,6 +212,18 @@ export function attachCommentActions(options: {
   const confirmRemove = async (current: OpenItem): Promise<void> => {
     const remove = store.remove;
     if (!remove) {
+      return;
+    }
+    if (closeOnEvent) {
+      void runStore(() => remove({ docId, id: current.id }), {
+        message: "コメントを削除できません",
+        action: "remove",
+        id: current.id,
+      });
+      open = undefined;
+      redraw(current.id, { body: current.body })
+        ?.querySelector<HTMLElement>('[data-action="remove"]')
+        ?.focus();
       return;
     }
     busy = true;

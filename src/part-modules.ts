@@ -16,6 +16,7 @@ export type MapPartModule = {
     config: ResolvedConfig,
     hooks?: {
       resolveIdLink?: ResolveIdLink;
+      onNodeClick?: (id: string) => void;
     },
   ) => () => void;
 };

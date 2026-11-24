@@ -6730,6 +6730,18 @@
       background: var(--mdmark-color-bg-opaque);
     }
 
+    /* 押せる項目（ビューのカスタム要素）: 表の押せる行と同じく、乗せた項目の面とフォーカスした項目の枠線を示す */
+    .mdmark-view-card[data-key] {
+      cursor: pointer;
+    }
+    .mdmark-view-card[data-key]:hover {
+      background: var(--mdmark-color-surface);
+    }
+    .mdmark-view-card[data-key]:focus-visible {
+      outline: 2px solid var(--mdmark-color-accent);
+      outline-offset: 2px;
+    }
+
     /* 項目のタイトル（先頭の列の値） */
     .mdmark-view-card-title {
       margin: 0;

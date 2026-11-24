@@ -88,6 +88,8 @@ type AttachContext = {
   flowIds: Map<number, Set<string>>;
   /** 構成図のノードの `id:` のリンク先を URL に変える、利用側の関数 */
   resolveIdLink: ResolveIdLink | undefined;
+  /** 構成図のノードの押下で呼ぶ、map の図のカスタム要素の関数 */
+  onNodeClick: ((id: string) => void) | undefined;
 };
 
 /** マーカーの引数 */
@@ -271,6 +273,7 @@ const attachFlowRange = (
   const handle = attachMapFlow(range, context.config, {
     args,
     resolveIdLink: context.resolveIdLink,
+    onNodeClick: context.onNodeClick,
     onWalk: () => {
       for (const entry of context.sequences) {
         if (entry.playsOver !== number || !entry.driving) continue;
@@ -346,6 +349,8 @@ const linkSequence = (context: AttachContext, entry: SequenceEntry): void => {
 export type MapHooks = {
   /** `mount` の `resolveIdLink`。構成図のノードの `id:` のリンク先を URL に変える */
   resolveIdLink?: ResolveIdLink;
+  /** map の図のカスタム要素だけが指定する。構成図のノードの押下・Enter で、今の選択と強調に加えてノードの Mermaid の ID で呼ぶ。`mount` は指定しない */
+  onNodeClick?: (id: string) => void;
 };
 
 /** `root` の中の `div.mdmark-map` ごとに、種類で構成図かシーケンス図を付け、案内と再生をつなぎ、片付ける関数を返す */
@@ -361,6 +366,7 @@ export const attachMap = (
     sequences: [],
     flowIds: new Map(),
     resolveIdLink: hooks.resolveIdLink,
+    onNodeClick: hooks.onNodeClick,
   };
   for (const range of root.querySelectorAll<HTMLElement>("div.mdmark-map"))
     attachRange(context, range);

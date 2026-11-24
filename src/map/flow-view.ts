@@ -812,11 +812,14 @@ export const attachMapFlow = (
     onWalk?: () => void;
     extension?: MapFlowExtension;
     resolveIdLink?: ResolveIdLink;
+    /** map の図のカスタム要素だけが指定する。ノードを押す・Enter で、選択に加えてノードの ID で呼ぶ */
+    onNodeClick?: (id: string) => void;
     /** 全画面のモーダルに複製した図と、元の図で読み取った定義（付け直すとき） */
     modal?: ModalFlow;
   },
 ): MapFlowHandle => {
-  const { args, onWalk, extension, resolveIdLink, modal } = options;
+  const { args, onWalk, extension, resolveIdLink, onNodeClick, modal } =
+    options;
   const { index, chart, data } = flowSourceOf(range, { extension, modal });
   const kinds = { ...config.map.kinds, ...extension?.kinds };
   const lines = { ...config.map.lines, ...extension?.lines };
@@ -1293,8 +1296,10 @@ export const attachMapFlow = (
         window.removeEventListener("pointercancel", release);
         const distance = Math.hypot(up.clientX - from.x, up.clientY - from.y);
         if (up.type !== "pointerup" || distance > DRAG_THRESHOLD) return;
-        if (node) select([node]);
-        else if (wire) selectWire(wire);
+        if (node) {
+          select([node]);
+          onNodeClick?.(node);
+        } else if (wire) selectWire(wire);
       };
       window.addEventListener("pointerup", release);
       window.addEventListener("pointercancel", release);
@@ -1315,8 +1320,10 @@ export const attachMapFlow = (
       },
       onClick: () => {
         moved = false;
-        if (node) select([node]);
-        else if (wire) selectWire(wire);
+        if (node) {
+          select([node]);
+          onNodeClick?.(node);
+        } else if (wire) selectWire(wire);
       },
     });
     const finish = () => {
@@ -1382,8 +1389,10 @@ export const attachMapFlow = (
   };
   /** キーで操作するノードか、線の両端を選び、フォーカスし直す */
   const selectKeyTarget = (keyTarget: KeyTarget, event: KeyboardEvent) => {
-    if (keyTarget.node) select([keyTarget.node]);
-    else if (keyTarget.wire) selectWire(keyTarget.wire);
+    if (keyTarget.node) {
+      select([keyTarget.node]);
+      onNodeClick?.(keyTarget.node);
+    } else if (keyTarget.wire) selectWire(keyTarget.wire);
     else return;
     event.preventDefault();
     figure.querySelector<HTMLElement>(keyTarget.selector)?.focus();

@@ -40,6 +40,7 @@ export type CommentsPartModule = {
     docId: string;
     reveal?: (element: HTMLElement) => void;
     margin?: boolean;
+    closeOnEvent?: boolean;
   }) => Promise<CommentsController>;
 };
 
@@ -198,8 +199,17 @@ export async function attachComments(options: {
   reveal?: (element: HTMLElement) => void;
   /** 余白のマーカーを配置するか（既定 `false`） */
   margin?: boolean;
+  /** 保存・修正・削除の関数の戻り値を待たずに閉じ、表示を変えないか（既定 `false`。コメントのカスタム要素だけが `true` を指定する） */
+  closeOnEvent?: boolean;
 }): Promise<CommentsController> {
-  const { root, store, docId, reveal, margin = false } = options;
+  const {
+    root,
+    store,
+    docId,
+    reveal,
+    margin = false,
+    closeOnEvent = false,
+  } = options;
   let destroyed = false;
   let comments: MdmarkComment[] = [];
   // マーカー → そのマーカーに付いたコメント
@@ -373,6 +383,23 @@ export async function attachComments(options: {
       field?.focus();
       return;
     }
+    if (closeOnEvent) {
+      // 表示はアプリが指定し直したコメントで変えるため、戻り値を待たずに閉じる
+      void store
+        .save({ docId, comment: draftFromRange({ root, range, body }) })
+        .catch((error: unknown) => {
+          console.error(
+            "[mdmark] コメントを保存できません",
+            "save",
+            docId,
+            error,
+          );
+        });
+      closeForm(true);
+      window.getSelection()?.removeAllRanges();
+      addButton.hidden = true;
+      return;
+    }
     setFormState(form, "saving");
     const saved = await saveComment(range, body);
     if (destroyed) {
@@ -508,6 +535,7 @@ export async function attachComments(options: {
         isActive: () => !destroyed,
         onUpdated,
         onRemoved,
+        closeOnEvent,
       });
     }
     bubble.focus();
