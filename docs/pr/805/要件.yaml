@@ -1,8 +1,8 @@
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-67.yaml
-    impact: changed
-    detail: 閲覧する人が段落の動画の大きさを、縦横の比率を保ったまま変えて元に戻すシナリオを追加する
+    impact: run_only
+    detail: 動画を配置する記載と描いた図は変わらないが、同じ部品にリサイズハンドルを足すため動画・音声の描き方を確かめる
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-801-1.yaml
@@ -10,14 +10,19 @@ use_cases:
     detail: 再生のボタンで再生する動画にはリサイズハンドルを付けないため記述は変わらないが、同じ部品を変えるため再生のダイアログの開閉を確かめる
     depends_on: []
   - kind: single
-    scenario: docs/scenario/SC-472-28.yaml
-    impact: changed
-    detail: develop の配布物を再作成した後、develop を指定して読み込む側に待たずに最新の配布物が返る
-    depends_on: []
-  - kind: single
     scenario: docs/scenario/SC-472-82.yaml
     impact: changed
-    detail: 配布ファイルの上限を超える変更が作業 PR のテストで分かり、develop の配布物の再作成の失敗が対応する人へ届き、手動で再作成できる
+    detail: 配布ファイルの上限を超える変更が、作業 PR で実行する結合テストで分かる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-805-1.yaml
+    impact: new
+    detail: 読者が段落の動画の大きさを、縦横の比率を保ったまま変えて元に戻す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-805-2.yaml
+    impact: new
+    detail: develop の配布物の再作成で @develop のキャッシュを削除し、失敗したら対応を依頼する Issue を起票し、手動でも再作成できる
     depends_on: []
 docs:
   - page: docs/guide/記載する-画像と動画を配置する.md

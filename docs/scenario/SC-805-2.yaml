@@ -1,0 +1,160 @@
+id: SC-805-2
+visibility: internal
+title: developの配布物を再作成する
+lead: 開発者が作業 PR を develop へマージすると、GitHub Actions が develop の配布物を再作成して commit し、jsDelivr の `@develop` のキャッシュを削除する。失敗したら対応を依頼する Issue を起票し、修正した後は手動で再作成できる。
+test_file: tests/e2e/単一ユースケース/developの配布物を再作成する.spec.ts
+primary_actor: mdmark の開発者
+stakeholders:
+  - name: mdmark の開発者
+    interest: マージするたびに手で配布物を作らずに、develop の配布物を最新にできる。失敗に気づける
+  - name: develop を読み込む利用側（dev-docs・MindStella など）
+    interest: 再作成した後、待たずに最新の配布物を読み込める
+  - name: task-planner
+    interest: 失敗を Issue で受け取り、対応を計画できる
+trigger: 開発者が develop へ push する（作業 PR のマージを含む）か、workflow を手動で起動する
+preconditions:
+  - develop に `.github/workflows/develop-dist.yml` が入っている
+  - リポジトリに `確認:task-planner` のラベルがある
+success_guarantee: develop の `dist/`・`plugin/`・`mdmark-style/`・`migrations/` の生成物が develop の先頭の commit のソースからビルドしたものになり、`@develop` の URL が待たずにその commit のファイルを返却する。
+minimal_guarantee: 再作成が失敗したときは develop の生成物を書き換えず、失敗した実行の URL を持つ `確認:task-planner` の Issue が 1 件だけ open になる。
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 配布物の変わる develop
+        description: '`src/` を変えた作業 PR を develop へマージした直後の develop'
+      - name: Mock
+        description: なし（GitHub Actions と jsDelivr で実際に実行する）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor D as 開発者
+        participant GH as GitHub
+        participant GA as GitHub Actions
+        participant C as jsDelivr
+        D->>GH: 作業 PR を develop へマージする
+        GH->>GA: develop への push で workflow を起動する
+        GA->>GA: 配布物をビルドする
+        GA->>GH: 変わった生成物を develop へ commit して push する
+        GA->>C: commit で変わった配布ファイルの @develop のキャッシュを削除する
+        C-->>GA: 削除を受け付ける
+        D->>C: @develop/dist/index.js を要求する
+        C-->>D: 再作成した commit のファイル
+      ```
+
+      <!-- /map -->
+    expected:
+      - develop の先頭が、再作成した生成物の commit になる
+      - workflow の完了の後、`https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@develop/dist/index.js` が、再作成した commit の `dist/index.js` と同じ内容を返却する
+      - 失敗の Issue は起票されない
+    test: test_normal
+  - name: 正常シナリオ（手動で起動する）
+    setup:
+      - name: 配布物が更新前のままの develop
+        description: 前回の再作成が失敗し、develop の `dist/` が先頭の commit のソースと合わない develop
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor D as 開発者
+        participant GA as GitHub Actions
+        participant C as jsDelivr
+        D->>GA: develop を指定して workflow を手動で起動する
+        GA->>GA: 配布物をビルドする
+        GA->>GA: 変わった生成物を develop へ commit して push する
+        GA->>C: 変わった配布ファイルの @develop のキャッシュを削除する
+        C-->>D: 再作成した commit のファイル
+      ```
+
+      <!-- /map -->
+    expected:
+      - develop への push を待たずに、develop の先頭が再作成した生成物の commit になる
+      - '`@develop` の URL が再作成した commit のファイルを返却する'
+    test: test_normal_when_dispatched
+  - name: 異常シナリオ（ビルドが失敗する）
+    setup:
+      - name: ビルドが失敗する develop
+        description: 配布ファイルの上限を超える `dist/index.js` になる変更が入った develop
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant GH as GitHub
+        participant GA as GitHub Actions
+        actor T as task-planner
+        GH->>GA: develop への push で workflow を起動する
+        GA->>GA: 配布物のビルドが失敗する
+        GA->>GH: 失敗した実行の URL と元の commit を持つ Issue を確認:task-planner を付けて起票する
+        GH-->>T: 対応を依頼する Issue
+      ```
+
+      <!-- /map -->
+    expected:
+      - develop の生成物は書き換わらない
+      - '`確認:task-planner` を付けた Issue が 1 件起票され、本文に失敗した実行の URL と元の commit の短縮 SHA がある'
+      - workflow の実行が失敗で終わる
+    test: test_error_when_build_failed
+  - name: 異常シナリオ（失敗の Issue が open のまま再び失敗する）
+    setup:
+      - name: 失敗の Issue が open の develop
+        description: 異常シナリオ（ビルドが失敗する）の Issue が open のまま、もう一度ビルドが失敗する変更を develop へ push する
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant GH as GitHub
+        participant GA as GitHub Actions
+        GH->>GA: develop への push で workflow を起動する
+        GA->>GA: 配布物のビルドが失敗する
+        GA->>GH: open の失敗の Issue へ失敗した実行の URL をコメントする
+      ```
+
+      <!-- /map -->
+    expected:
+      - 新規の Issue は起票されず、open の失敗の Issue は 1 件のまま
+      - open の失敗の Issue に、今回の失敗した実行の URL と元の commit の短縮 SHA のコメントがある
+    test: test_error_when_failure_issue_open
+  - name: 異常シナリオ（キャッシュを削除できない）
+    setup:
+      - name: 配布物の変わる develop
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: jsDelivr の purge の要求を、失敗を返却する手元の応答に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant GH as GitHub
+        participant GA as GitHub Actions
+        participant C as jsDelivr
+        GH->>GA: develop への push で workflow を起動する
+        GA->>GH: 変わった生成物を develop へ commit して push する
+        GA->>C: @develop のキャッシュを削除する
+        C-->>GA: 失敗
+        GA->>GH: 失敗した実行の URL を持つ Issue を確認:task-planner を付けて起票する
+      ```
+
+      <!-- /map -->
+    expected:
+      - develop の先頭が、再作成した生成物の commit になる
+      - '`確認:task-planner` を付けた Issue が起票され、キャッシュを削除できなかった配布ファイルと失敗した実行の URL がある'
+      - workflow の実行が失敗で終わる
+    test: test_error_when_purge_failed
+tags:
+  - name: topic:配布物
+    main: true
+  - name: topic:ci
+  - name: action:ビルド
+  - name: tool:jsdelivr
+  - name: topic:通知
