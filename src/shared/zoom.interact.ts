@@ -86,6 +86,10 @@ export type ZoomControl = {
   centerRect(rect: FocusRect, options: { duration: number }): void;
   /** 中身の大きさを差し替え、全体が収まる倍率に対する今の倍率の比（倍率の文字）を保つ */
   resize(next: { width: number; height: number }): void;
+  /** 全体が収まる倍率に対する今の倍率の比を返却する */
+  ratio(): number;
+  /** 倍率を「全体が収まる倍率 × `ratio`」（下限・上限に収める）にし、表示する枠の中央にあった中身の座標を中央に保つ */
+  setRatio(ratio: number): void;
   /** 付けた操作と監視を解除する */
   detach(): void;
 };
@@ -691,6 +695,15 @@ export function attachZoom(options: {
     place(clamp(ratio * state.fit), center.x, center.y);
   };
 
+  const setRatio = (ratio: number): void => {
+    stopMoving();
+    const center = {
+      x: (viewport.scrollLeft + viewport.clientWidth / 2) / state.scale,
+      y: (viewport.scrollTop + viewport.clientHeight / 2) / state.scale,
+    };
+    place(clamp(ratio * state.fit), center.x, center.y);
+  };
+
   const control: ZoomControl = {
     reset,
     fit: () => state.fit,
@@ -698,6 +711,8 @@ export function attachZoom(options: {
     focusRect,
     centerRect,
     resize,
+    ratio: () => state.scale / state.fit,
+    setRatio,
     detach: () => {
       stopMoving();
       releaseClick?.();

@@ -1,6 +1,7 @@
 import { resolveConfig } from "../config.ts";
 import { render } from "../render/index.ts";
 import { renderNotice } from "../shared/notice.part.ts";
+import { zoomControlOf } from "../shared/zoom.interact.ts";
 import {
   type DiagramDirective,
   type MdmarkChartDefinition,
@@ -112,10 +113,13 @@ abstract class DiagramElement<Definition> extends BaseElement {
     this.#draw(json, result.definition as Definition);
   }
 
-  /** 図の枠と図の部品を描いて操作を付け、前の図の枠の高さを戻す */
+  /** 図の枠と図の部品を描いて操作を付け、前の図の枠の高さと拡大の倍率を戻す */
   #draw(json: string, definition: Definition): void {
-    const height = this.querySelector<HTMLElement>(".mdmark-diagram-viewport")
-      ?.style.height;
+    const previous = this.querySelector<HTMLElement>(
+      ".mdmark-diagram-viewport",
+    );
+    const height = previous?.style.height;
+    const ratio = previous ? zoomControlOf(previous)?.ratio() : undefined;
     this.#detach?.();
     const root = this.#container(
       render(directiveMarkdown(this.directive, json)),
@@ -133,6 +137,9 @@ abstract class DiagramElement<Definition> extends BaseElement {
     );
     if (viewport && height) {
       viewport.style.height = height;
+    }
+    if (viewport && ratio !== undefined) {
+      zoomControlOf(viewport)?.setRatio(ratio);
     }
     this.#detach = () => {
       for (const detach of detachers.reverse()) {
