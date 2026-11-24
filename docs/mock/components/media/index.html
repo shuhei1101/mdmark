@@ -21,9 +21,12 @@
   <!-- 色のプリセットと、画像・動画・音声・GIF・カードの規則（#263 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/263/assets/colors.css">
   <link rel="stylesheet" href="../../refs/263/assets/media.css">
+  <!-- 動画・音声をモーダルで再生する規則（#801 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/801/assets/media-modal.css">
   <!-- 印刷の規則: 紙に出すときだけ適用する。[data-print-styles]: モックの「印刷の見え方」で preview.js が media を all に切り替える -->
   <link rel="stylesheet" href="../../refs/19/assets/syntax-print.css" media="print" data-print-styles>
   <link rel="stylesheet" href="../../refs/263/assets/media-print.css" media="print" data-print-styles>
+  <link rel="stylesheet" href="../../refs/801/assets/media-modal-print.css" media="print" data-print-styles>
   <!-- 配色の切り替え -->
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 拡張記法の操作（印刷の前後の展開を含む） -->
@@ -32,6 +35,8 @@
   <script src="../../refs/151/assets/preview.js" defer></script>
   <!-- ライトボックス・GIF の止める・再生する・テーマの切り替え（#263 で共有するアセット） -->
   <script src="../../refs/263/assets/media.js" defer></script>
+  <!-- 動画・音声の再生のダイアログ（#801 で共有するアセット） -->
+  <script src="../../refs/801/assets/media-modal.js" defer></script>
 </head>
 <body>
   <!-- モック専用の操作列: テーマ・配色・印刷の見え方の切り替え -->
@@ -157,6 +162,76 @@
 </figure>
         </article>
       </section>
+
+      <!-- 表のセルの中の動画と音声（案 A）: 属性が無くても、その場にラベルの文字と再生のアイコンのボタンを配置し、押すとダイアログで再生する -->
+      <section aria-labelledby="state-cell-a">
+        <h2 class="catalog-label" id="state-cell-a">表のセルの中の動画と音声 — 案 A: ラベルの文字と再生のアイコンのボタン（推奨）</h2>
+        <article class="mdmark">
+<table>
+<thead><tr><th>No</th><th>素材</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><button class="mdmark-media-open" type="button" data-media-open data-kind="video" data-src="../../refs/263/assets/media/demo.mp4" data-label="素材 1" aria-haspopup="dialog"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg><span class="mdmark-media-open-label">素材 1</span></button></td><td>解説の画面収録</td></tr>
+<tr><td>2</td><td><button class="mdmark-media-open" type="button" data-media-open data-kind="video" data-src="../../refs/263/assets/media/demo.mp4" data-label="素材 2" data-caption="操作の画面" aria-haspopup="dialog"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg><span class="mdmark-media-open-label">素材 2</span></button> <span class="mdmark-media-open-caption">操作の画面</span></td><td>記事のスクリーンショットから作った動画</td></tr>
+<tr><td>3</td><td><button class="mdmark-media-open" type="button" data-media-open data-kind="audio" data-src="../../refs/263/assets/media/voice.mp3" data-label="読み上げ" aria-haspopup="dialog"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/></svg><span class="mdmark-media-open-label">読み上げ</span></button></td><td>読み上げの見本</td></tr>
+<tr><td>4</td><td><button class="mdmark-media-open" type="button" data-media-open data-kind="video" data-src="../../refs/263/assets/media/demo.mp4" data-label="設定ファイルを読み込めないときに文書の先頭へ出す帯の操作を、最初から最後まで通した長い名前の素材" aria-haspopup="dialog"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg><span class="mdmark-media-open-label">設定ファイルを読み込めないときに文書の先頭へ出す帯の操作を、最初から最後まで通した長い名前の素材</span></button></td><td>長いラベル</td></tr>
+</tbody>
+</table>
+        </article>
+      </section>
+
+      <!-- 表のセルの中の動画（案 B）: poster のサムネイルに再生のアイコンを重ねる -->
+      <section aria-labelledby="state-cell-b">
+        <h2 class="catalog-label" id="state-cell-b">表のセルの中の動画 — 案 B: poster のサムネイルに再生のアイコンを重ねる</h2>
+        <article class="mdmark">
+<table>
+<thead><tr><th>No</th><th>素材</th><th>説明</th></tr></thead>
+<tbody>
+<tr><td>1</td><td><button class="mdmark-media-thumb" type="button" data-media-open data-kind="video" data-src="../../refs/263/assets/media/demo.mp4" data-label="素材 1" aria-label="素材 1を再生" aria-haspopup="dialog"><img src="../../refs/263/assets/media/demo-poster.png" alt="" width="128" height="72"><span class="mdmark-media-thumb-icon"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg></span></button></td><td>poster を持つ動画</td></tr>
+<tr><td>2</td><td><button class="mdmark-media-thumb" type="button" data-media-open data-kind="video" data-src="../../refs/263/assets/media/demo.mp4" data-label="素材 2" data-caption="操作の画面" aria-label="素材 2を再生" aria-haspopup="dialog"><span class="mdmark-media-thumb-empty"></span><span class="mdmark-media-thumb-icon"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg></span></button><span class="mdmark-media-open-caption">操作の画面</span></td><td>poster の無い動画（最初のフレームを読み込むまで面の色）</td></tr>
+<tr><td>3</td><td><button class="mdmark-media-open" type="button" data-media-open data-kind="audio" data-src="../../refs/263/assets/media/voice.mp3" data-label="読み上げ" aria-haspopup="dialog"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4.702a.705.705 0 0 0-1.203-.498L6.413 7.587A1.4 1.4 0 0 1 5.416 8H3a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h2.416a1.4 1.4 0 0 1 .997.413l3.383 3.384A.705.705 0 0 0 11 19.298z"/><path d="M16 9a5 5 0 0 1 0 6"/></svg><span class="mdmark-media-open-label">読み上げ</span></button></td><td>音声はサムネイルを持たないため案 A と同じボタン</td></tr>
+</tbody>
+</table>
+        </article>
+      </section>
+
+      <!-- modal の属性: 段落の動画はその場にボタン、文の途中の動画は文の中にボタン（案 A） -->
+      <section aria-labelledby="state-modal-attr">
+        <h2 class="catalog-label" id="state-modal-attr">modal の属性（<code>![操作の様子](demo.mp4 "保存までの操作"){modal}</code> と文の途中の <code>{modal}</code>。案 A）</h2>
+        <article class="mdmark">
+<div class="mdmark-media-inline-figure"><button class="mdmark-media-open" type="button" data-media-open data-kind="video" data-src="../../refs/263/assets/media/demo.mp4" data-label="操作の様子" data-caption="保存までの操作" aria-haspopup="dialog"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg><span class="mdmark-media-open-label">操作の様子</span></button> <span class="mdmark-media-open-caption">保存までの操作</span></div>
+<p>手順は <button class="mdmark-media-open" type="button" data-media-open data-kind="video" data-src="../../refs/263/assets/media/demo.mp4" data-label="手順" aria-haspopup="dialog"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><polygon points="6 3 20 12 6 21 6 3"/></svg><span class="mdmark-media-open-label">手順</span></button> で確認する。</p>
+        </article>
+      </section>
+
+      <!-- 再生のダイアログ（開いた見本）: 動画。前後の切り替えと枚数を持たず、閉じるボタンだけを持つ -->
+      <section aria-labelledby="state-modal-video">
+        <h2 class="catalog-label" id="state-modal-video">再生のダイアログ — 動画（開いた見本。上のボタンを押すと同じダイアログが開く）</h2>
+        <article class="mdmark">
+<div class="mdmark-media-modal is-sample" role="dialog" aria-label="素材 2">
+  <div class="mdmark-media-modal-head">
+    <p class="mdmark-media-modal-title">素材 2</p>
+    <button class="mdmark-lightbox-tool" type="button" aria-label="再生を閉じる" title="再生を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+  </div>
+  <div class="mdmark-media-modal-stage"><video controls preload="metadata" poster="../../refs/263/assets/media/demo-poster.png" aria-label="素材 2"><source src="../../refs/263/assets/media/demo.mp4" type="video/mp4"></video></div>
+  <p class="mdmark-media-modal-caption">操作の画面</p>
+</div>
+        </article>
+      </section>
+
+      <!-- 再生のダイアログ（開いた見本）: 音声。再生バーだけを中央に配置する -->
+      <section aria-labelledby="state-modal-audio">
+        <h2 class="catalog-label" id="state-modal-audio">再生のダイアログ — 音声（開いた見本）</h2>
+        <article class="mdmark">
+<div class="mdmark-media-modal is-sample" role="dialog" aria-label="読み上げ">
+  <div class="mdmark-media-modal-head">
+    <p class="mdmark-media-modal-title">読み上げ</p>
+    <button class="mdmark-lightbox-tool" type="button" aria-label="再生を閉じる" title="再生を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+  </div>
+  <div class="mdmark-media-modal-stage"><audio controls preload="metadata" aria-label="読み上げ"><source src="../../refs/263/assets/media/voice.mp3" type="audio/mpeg"></audio></div>
+  <p class="mdmark-media-modal-caption">読み上げの見本</p>
+</div>
+        </article>
+      </section>
     </div>
   </main>
 
@@ -174,6 +249,17 @@
       </div>
       <div class="mdmark-lightbox-stage"><img src="" alt=""></div>
       <p class="mdmark-lightbox-caption"></p>
+    </dialog>
+  </div>
+  <!-- 再生のダイアログ（その場に出すものを押したとき）: ライトボックスと同じ閉じ方。media-modal.js が押したボタンの動画・音声を入れる -->
+  <div class="mdmark mock-dialog-host">
+    <dialog class="mdmark-media-modal" closedby="any" aria-labelledby="media-modal-title">
+      <div class="mdmark-media-modal-head">
+        <p class="mdmark-media-modal-title" id="media-modal-title"></p>
+        <button class="mdmark-lightbox-tool" type="button" data-tool="close" aria-label="再生を閉じる" title="再生を閉じる"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg></button>
+      </div>
+      <div class="mdmark-media-modal-stage"></div>
+      <p class="mdmark-media-modal-caption" hidden></p>
     </dialog>
   </div>
 </body>
