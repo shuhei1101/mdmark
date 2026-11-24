@@ -59,6 +59,8 @@
     // ドラッグ: 右下へ動かすと大きく、左上へ動かすと小さくする。横と縦の動きのうち大きい方を幅に換算する（縦は比率で換算する）
     handle.addEventListener("pointerdown", (event) => {
       event.preventDefault();
+      // 文字の選択を止めるために既定の動作を止めるので、押したハンドルへフォーカスを移して ↑ ↓ を受け取れるようにする
+      handle.focus();
       handle.setPointerCapture(event.pointerId);
       handle.classList.add("is-resizing");
       const startX = event.clientX;
