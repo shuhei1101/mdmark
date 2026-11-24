@@ -27,7 +27,7 @@ use_cases:
 docs:
   - page: docs/guide/記載する-画像と動画を配置する.md
     new: false
-    change: 閲覧する人が動画の大きさを比率を保って変える操作と、元に戻す操作を追加する
+    change: 閲覧する人が動画の大きさを比率を保って変える操作と、元に戻す操作を追加する。属性の無い動画が設定の既定の幅で描かれることと、{width=…} を優先することを追加する
     status: todo
   - page: docs/guide/用語集.yaml
     new: false
@@ -35,7 +35,7 @@ docs:
     status: todo
   - page: docs/guide/設定.mark.md
     new: false
-    change: 動画のリサイズハンドルの機能を追加する場合に、features の行を追加する
+    change: 動画の描画時の幅の既定のキー（本文の幅に対する %。既定は 100%）と、文書ごとの上書きを追加する。動画のリサイズハンドルの機能を追加する場合は features の行も追加する
     status: todo
   - page: docs/guide/カスタマイズ-機能をオン・オフする.md
     new: false
@@ -60,6 +60,10 @@ docs:
   - page: docs/dev-command/CMD-472-1.yaml
     new: false
     change: develop-dist の手動の起動と、GitHub Actions を実行できないときに手元で再作成してキャッシュを削除する代わりの経路を追加する
+    status: todo
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 動画の描画時の幅の既定を文書ごとにマーカーで上書きする形にする場合に、そのマーカーの記載方法と引数を追加する（上書きの書き方はインターフェース定義設計で決める）
     status: todo
 scope_out:
   - item: 配布ファイル 1 つの上限（NFR-1 の 1024KB）の値の変更と、dist/index.js を小さくする作業
