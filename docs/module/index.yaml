@@ -140,6 +140,8 @@ items:
   summary: ライブラリ本体 / 公開の入口 / index.css
 - page: MOD-472-169.ts.yaml
   summary: ライブラリ本体 / 公開の入口 / index.ts
+- page: MOD-793-4.ts.yaml
+  summary: ライブラリ本体 / 公開の入口 / elements.ts
 - page: MOD-472-207.ts.yaml
   summary: ライブラリ本体 / 描く / inline-icons.ts
 - page: MOD-472-223.ts.yaml
@@ -194,6 +196,12 @@ items:
   summary: ライブラリ本体 / 表 / table-width.interact.ts
 - page: MOD-472-228.ts.yaml
   summary: ライブラリ本体 / 表 / table.interact.ts
+- page: MOD-793-1.ts.yaml
+  summary: ライブラリ本体 / 表 / mdmark-table.logic.ts
+- page: MOD-793-2.ts.yaml
+  summary: ライブラリ本体 / 表 / mdmark-table.interact.ts
+- page: MOD-793-3.ts.yaml
+  summary: ライブラリ本体 / 表 / mdmark-table.element.ts
 - page: MOD-472-220.ts.yaml
   summary: ライブラリ本体 / タブ / tabs.interact.ts
 - page: MOD-472-266.ts.yaml

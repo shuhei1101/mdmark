@@ -50,6 +50,13 @@ files:
     category: はじめに
     description: map の引数・Mermaid・補足の役割の分け方と、入れ子の自動配置・上書き・中へ入る操作の流れを説明し、map の図の配置の理由を確認するときに参照する。
     tags: [topic:仕組み, topic:図, topic:map, action:配置]
+  - path: コアコンセプト-部品をカスタム要素で配る仕組み.md
+    id: guide-concept-custom-elements
+    name: 部品をカスタム要素で配る仕組み
+    visibility: public
+    category: はじめに
+    description: 部品をカスタム要素として jsDelivr から配り、アプリの画面が `@0` で更新に追従し、操作をイベントで受け取る流れを説明し、部品のカスタム要素の配り方を確認するときに参照する。
+    tags: [topic:仕組み, topic:部品, topic:配布物]
   - path: コアコンセプト-差分を表示する仕組み.md
     id: guide-concept-diff
     name: 差分を表示する仕組み
@@ -267,6 +274,14 @@ files:
     category: 使用方法
     description: 利用側のページと拡張から部品を描く関数を呼ぶ手順と、コメントの読み込みと保存の関数の指定方法を説明し、JavaScript から部品を使うときに参照する。
     tags: [topic:部品, topic:api, topic:コメント, topic:カスタマイズ]
+  - path: カスタマイズ-表をカスタム要素で使用する.mark.md
+    id: guide-customize-table-element
+    name: 表をカスタム要素で使用する
+    aliases: [mdmark-table を使う, 表のカスタム要素を使う]
+    visibility: public
+    category: 使用方法
+    description: アプリの画面に `<mdmark-table>` を配置し、列の定義と行のデータを指定して表を描き、行の押下・セルの編集・行の追加をイベントで受け取る手順を説明し、アプリの一覧を mdmark の表で表示するときに参照する。
+    tags: [topic:表, topic:部品, topic:api, topic:イベント, topic:カスタマイズ, topic:ガイド]
   - path: カスタマイズ-印刷する.mark.md
     id: guide-customize-print
     name: 印刷する

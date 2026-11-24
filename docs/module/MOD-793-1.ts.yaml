@@ -1,0 +1,221 @@
+id: MOD-793-1
+visibility: internal
+title: ライブラリ本体 / 表 / mdmark-table.logic.ts
+lead: 表のカスタム要素の指定の確認と、表の部品の引数への変換を受け持ち、`<mdmark-table>` が受け付ける指定を変えるときに参照する。
+test_files:
+  - tests/unit/src/table/mdmark-table.logic.test.ts
+data_models:
+  - name: MdmarkTableColumn
+    title: 列の定義
+    container: src/table/mdmark-table.logic.ts
+    usecase: 表をカスタム要素で描く
+    role: 公開の型
+    summary: '`columns` の要素。`dist/index.d.ts` から公開する'
+    properties:
+      - name: key
+        type: string
+        description: 列のキー
+      - name: title
+        type: string
+        description: 列名
+      - name: pinned
+        type: boolean | undefined
+        description: 描いた直後にピン止めする
+      - name: hidden
+        type: boolean | undefined
+        description: 描いた直後に隠す
+      - name: filter
+        type: '{ type?: "select" | "text" | "date" } | undefined'
+        description: 絞り込み
+      - name: width
+        type: '{ mode?: "auto" | "wrap" | "nowrap"; min?: number; max?: number } | undefined'
+        description: 列の幅。意味は表のマーカーの設定の `columns.{列名}.width`
+      - name: editable
+        type: boolean | undefined
+        description: 編集できる列
+      - name: render
+        type: '((value: MdmarkTableValue, row: MdmarkTableRow) => Node | string) | undefined'
+        description: セルの中身の描き方
+    refs:
+      - DATA-793-1#
+      - IF-793-1#
+  - name: MdmarkTableRow
+    title: 行のデータ
+    container: src/table/mdmark-table.logic.ts
+    usecase: 表をカスタム要素で描く
+    role: 公開の型
+    summary: '`rows` の要素。値の型 `MdmarkTableValue` は `string | number | null`'
+    properties:
+      - name: key
+        type: string
+        description: 行のキー
+      - name: values
+        type: Record<string, MdmarkTableValue>
+        description: 列のキーごとの値
+  - name: MdmarkTableFeatures
+    title: 表の機能
+    container: src/table/mdmark-table.logic.ts
+    usecase: 表をカスタム要素で描く
+    role: 公開の型
+    summary: '`features`。`Partial<Record<MdmarkTableFeatureName, { enabled?: boolean }>>`'
+    description: '`MdmarkTableFeatureName` は `"sort" | "pin" | "filter" | "resize" | "count" | "columns" | "reorder" | "add"`。値は `{ enabled?: boolean }` で、`enabled` が `false` の機能を種類 `data` の既定の機能から削除し、省くか `true` なら追加する（表のマーカーの設定の `features.{機能}.enabled` と同じ）'
+  - name: TableSpecIssue
+    title: 指定の誤り
+    container: src/table/mdmark-table.logic.ts
+    usecase: 表をカスタム要素で描く
+    summary: '`checkTableSpec` が返却する、最初に見つけた誤り'
+    properties:
+      - name: path
+        type: string
+        description: 誤った指定の名前（`rows`・`columns[1].title`・`features.total` など）
+      - name: reason
+        type: string
+        description: 誤りの内容と修正方法の文。通知ブロックの本文にする
+        example: に配列でない値が指定されています。行のデータを、行ごとのオブジェクトの配列で指定してください。
+constants:
+  - name: TABLE_ELEMENT_FEATURES
+    title: 受け付ける機能
+    container: src/table/mdmark-table.logic.ts
+    summary: '`features` のキーの一覧'
+    value: '["sort", "pin", "filter", "resize", "count", "columns", "reorder", "add"]'
+functions:
+  - name: checkTableSpec
+    title: 指定を確認する
+    container: src/table/mdmark-table.logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`columns`・`rows`・`features` を確認し、最初に見つけた誤りを返却する。誤りが無ければ `undefined`'
+    args:
+      - name: spec
+        type: '{ columns: unknown; rows: unknown; features: unknown }'
+        required: true
+        description: 要素に代入された値（`features` は未指定なら `undefined`）
+    returns:
+      type: TableSpecIssue | undefined
+      description: 最初に見つけた誤り
+    process: |-
+      1. `columns` が配列で 1 つ以上。要素はオブジェクトで、`key`・`title` は空でない文字列で列の定義の中で重ならず、`pinned`・`hidden`・`editable` は真偽値、`filter` はオブジェクトで `type` は `select`・`text`・`date`、`width` はオブジェクトで `min`・`max` は正の数、`render` は関数。先頭の列は `hidden` を `true` にしない
+      2. `rows` が配列。要素はオブジェクトで、`key` は文字列で行のデータの中で重ならず、`values` はオブジェクトで値は文字列・有限の数値・`null`
+      3. `features` は `undefined` かオブジェクトで、キーは `TABLE_ELEMENT_FEATURES` のどれか、値はオブジェクトで、`enabled` は省くか真偽値
+      4. 合わない最初の指定の名前を `columns[1].title` の形式で `path` に入れ、内容と修正方法を `reason` に入れる
+    unit_tests:
+      - name: test_check_table_spec
+        case: 正常
+        summary: 正しい指定は誤りが無い
+        condition: '4 列・2 行。値に文字列・数値・`null` を含む。`features` は `{ count: {}, add: {} }`'
+        mock: なし
+        expected: '`undefined`'
+      - name: test_check_table_spec_when_rows_not_array
+        case: 異常
+        summary: 行のデータが配列でない
+        condition: '`rows` が文字列'
+        mock: なし
+        expected: '`path` が `rows`'
+      - name: test_check_table_spec_when_title_duplicated
+        case: 異常
+        summary: 列名が重なる
+        condition: '`columns[0].title` と `columns[1].title` が `担当`'
+        mock: なし
+        expected: '`path` が `columns[1].title`'
+      - name: test_check_table_spec_when_feature_unknown
+        case: 異常
+        summary: 受け付けない機能
+        condition: '`features` が `{ total: {} }`'
+        mock: なし
+        expected: '`path` が `features.total`'
+      - name: test_check_table_spec_when_feature_enabled_invalid
+        case: 異常
+        summary: 機能の enabled が真偽値でない
+        condition: '`features` が `{ resize: { enabled: "no" } }`'
+        mock: なし
+        expected: '`path` が `features.resize.enabled`'
+      - name: test_check_table_spec_when_value_invalid
+        case: 異常
+        summary: 値が文字列・有限の数値・`null` でない
+        condition: '`rows[0].values.owner` が `{}`、別のケースで `NaN`'
+        mock: なし
+        expected: どちらも `path` が `rows[0].values.owner`
+      - name: test_check_table_spec_when_first_column_hidden
+        case: 異常
+        summary: 先頭の列を隠す指定
+        condition: '`columns[0].hidden` が `true`'
+        mock: なし
+        expected: '`path` が `columns[0].hidden`'
+      - name: test_check_table_spec_when_row_key_duplicated
+        case: 異常
+        summary: 行のキーが重なる
+        condition: '`rows[0].key` と `rows[1].key` が `R1`'
+        mock: なし
+        expected: '`path` が `rows[1].key`'
+    refs:
+      - IF-793-1#exceptions
+  - name: toTableOptions
+    title: 表の部品の引数にする
+    container: src/table/mdmark-table.logic.ts
+    kind: 関数
+    scope: internal
+    summary: 確認済みの指定を `renderTable` の引数にする
+    args:
+      - name: spec
+        type: '{ columns: MdmarkTableColumn[]; rows: MdmarkTableRow[]; features: MdmarkTableFeatures | undefined }'
+        required: true
+        description: '`checkTableSpec` が誤りを返却しなかった指定'
+    returns:
+      type: TableOptions
+      description: 表の部品の引数
+    process: |-
+      1. `kind` を `data` にし、`features` を種類 `data` の既定（`sort`・`pin`・`filter`・`resize`）に、`spec.features` の `enabled` が `false` でないキー（`add` を除く）を加え、`enabled` が `false` のキーを削除した並びにする。`pinned` の列があれば `pin`、`filter` の列があれば `filter`、`hidden` の列があれば `columns` を加える
+      2. `columns` を列名をエスケープした HTML、`columnKeys` を `columns[].key`、`rows` を `cellText` をエスケープした HTML、`rowKeys` を `rows[].key` にする
+      3. `filters`（`type` を省いた列は `long` の列なら `text`、ほかは `select`）・`pin`（`pinned` の列）・`hide`（`hidden` の列）・`widthRanges`（`width.min`・`max`）・`wide`（`width.mode` が `nowrap`）・`editable`（`editable` の列）を列の位置で入れる。`long`・`noSort` は `render` と同じ決め方（`table.syntax.ts` の列の文字数）で決める
+      4. `pressable` を `true`、`addRow` を `spec.features.add` がオブジェクトかで入れる
+    unit_tests:
+      - name: test_to_table_options
+        case: 正常
+        summary: 列の定義の機能と位置を引数に写す
+        condition: '`title` は `pinned`、`state` は `filter: {}`、`owner` は `editable`、`updated` は `hidden`。`features` は `{ count: {}, reorder: {}, add: {} }`'
+        mock: なし
+        expected: '`features` が `sort`・`pin`・`filter`・`resize`・`count`・`reorder`・`columns` を持ち `add` を持たない。`pin` が `[0]`、`filters` が `[{ column: 1, kind: "select" }]`、`editable` が `[2]`、`hide` が `[3]`、`addRow` が `true`、`pressable` が `true`'
+      - name: test_to_table_options_when_html
+        case: 正常
+        summary: 列名と値をエスケープし、数値と null を文字にする
+        condition: 列名 `<b>`、値 `<script>alert(1)</script>`・`12`・`null`
+        mock: なし
+        expected: '`columns[0]` が `&lt;b&gt;`、セルが `&lt;script&gt;alert(1)&lt;/script&gt;`・`12`・空'
+      - name: test_to_table_options_when_feature_removed
+        case: 正常
+        summary: false の機能を既定から削除する
+        condition: '`features` が `{ resize: { enabled: false } }`'
+        mock: なし
+        expected: '`features` が `resize` を持たない'
+    callees:
+      - MOD-472-313#functions[escapeHtml]
+    refs:
+      - IF-793-1#constraints[描く表]
+  - name: cellText
+    title: 値を文字にする
+    container: src/table/mdmark-table.logic.ts
+    kind: 関数
+    scope: internal
+    summary: 行の値をセルに出す文字にする。数値は `String(value)`、`null` と `undefined` は空の文字
+    args:
+      - name: value
+        type: MdmarkTableValue | undefined
+        required: true
+        description: 行の値
+    returns:
+      type: string
+      description: セルに出す文字
+    unit_tests:
+      - name: test_cell_text
+        case: 正常
+        summary: 文字列・数値・null を文字にする
+        condition: '`"佐藤"`・`12.5`・`null`・`undefined`'
+        mock: なし
+        expected: '`佐藤`・`12.5`・空・空'
+    refs:
+      - IF-793-1#constraints[値の出し方]
+tags:
+  - name: topic:表
+    main: true
+  - name: topic:api
+  - name: action:確認

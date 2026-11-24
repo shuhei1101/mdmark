@@ -1,0 +1,105 @@
+id: DATA-793-1
+visibility: internal
+title: 'データ: 表のカスタム要素の指定'
+lead: アプリの画面が `<mdmark-table>` の JavaScript のプロパティで指定する、列の定義・行のデータ・表の機能。アプリが書き込み、表の部品が参照して表を描く。
+datastore: JSON（アプリの画面のメモリ。mdmark は保存しない）
+fields:
+  - key: columns[]
+    title: 列の定義
+    type: array
+    required: true
+    description: 列の定義。配列の順が、描いた直後の列の順。要素は 1 つ以上
+  - key: columns[].key
+    title: 列のキー
+    type: string
+    required: true
+    unique: 列の定義の中
+    description: 行のデータからその列の値を参照するキー。イベントで列を特定する値にもする
+    example: owner
+  - key: columns[].title
+    title: 列名
+    type: string
+    required: true
+    unique: 列の定義の中
+    description: 列の見出しに出す文字。文字のまま出し、HTML として解釈しない
+    example: 担当
+  - key: columns[].pinned
+    title: ピン止め
+    type: bool
+    description: 描いた直後にピン止めする。`pin` の機能が付く。意味は表のマーカーの設定の `columns.{列名}.pinned` と同じ
+    example: 'true'
+  - key: columns[].hidden
+    title: 最初から隠す
+    type: bool
+    description: 描いた直後に列を隠す。`columns` の機能（列の表示・非表示）が付く
+    example: 'true'
+  - key: columns[].filter
+    title: 絞り込み
+    type: object
+    description: この列に絞り込みを付ける。`filter` の機能が付く
+    example: '{"type": "select"}'
+  - key: columns[].filter.type
+    title: 絞り込みの種類
+    type: enum
+    description: '`select`（値を選ぶ）/ `text`（文字で絞る）/ `date`（日付の範囲）。省くと、表のマーカーの設定の `columns.{列名}.filter.type` と同じ決め方で決める'
+    example: select
+  - key: columns[].width
+    title: 列の幅
+    type: object
+    description: 列の幅。キー（`mode`・`min`・`max`）と意味は表のマーカーの設定の `columns.{列名}.width` と同じ。省くと自動で計算する
+    example: '{"min": 8}'
+  - key: columns[].editable
+    title: 編集できる列
+    type: bool
+    description: '`true` の列のセルを押すと、表の部品が入力欄を描いて編集を始める。省くと `false`'
+    example: 'true'
+  - key: rows[]
+    title: 行のデータ
+    type: array
+    required: true
+    description: 行のデータ。配列の順が、並べ替えていないときの行の順。空の配列は空の表を描く
+  - key: rows[].key
+    title: 行のキー
+    type: string
+    required: true
+    unique: 行のデータの中
+    description: 行を特定する値。行の押下・セルの編集のイベントでアプリへ通知し、行のデータを指定し直したときに同じ行を見分ける
+    example: FB-12
+  - key: rows[].values
+    title: 列ごとの値
+    type: object
+    required: true
+    description: '`columns[].key` をキーにした値の組。値は文字列・数値・`null` のどれかで、文字にして出し HTML として解釈しない。`null` と列のキーが無い値は空のセルにする。並べ替えと絞り込みはこの値で動き、数値は数値のまま比べる。セルの編集のイベントは、前の値を指定された型のまま、確定した値を入力欄の文字列で通知する'
+    example: '{"title": "列の幅を広げる", "owner": "佐藤"}'
+  - key: features
+    title: 表の機能
+    type: object
+    description: 種類 `data` の機能に追加する・削除する機能。受け付けるキーは `sort`・`pin`・`filter`・`resize`・`count`・`columns`・`reorder`・`add`（行の追加）で、`add` を除くキーの意味は表のマーカーの設定の `features` と同じ。`total`・`copy`・`rowlink` と知らないキーは受け付けず、表の場所に誤りの通知を出す。列の定義に記載した機能は、記載しなくても付く
+    example: '{"columns": {}, "reorder": {}, "add": {}}'
+  - key: features.add
+    title: 行の追加
+    type: object
+    description: キーを記載すると、表の下の左端に「行追加」のボタンを配置する。押すと行の追加のイベントを通知し、行はアプリが行のデータに追加する
+    example: '{}'
+lifecycle:
+  - key: （全体）
+    growth: '`<mdmark-table>` 1 つに 1 件'
+    retention: アプリが指定し直すか、要素がページから削除されるまで
+    deletion: mdmark は保存しない。アプリが自分の保存先で持つ
+  - key: rows[]
+    growth: アプリの一覧の件数。〜数千件
+    retention: 全体と同じ
+    deletion: アプリが行のデータを指定し直すと入れ替わる
+usage:
+  - interface: 表をカスタム要素で描く
+    access: read
+    fields:
+      - columns[]
+      - rows[]
+      - features
+notes:
+  セルの中身の差し替え: セルの中身の描き方（スロットか描画の関数）は、データでなく JavaScript の関数や要素になるため、インターフェース定義設計で決める。並べ替えと絞り込みは、差し替えた中身でなく `rows[].values` の値で動く
+decisions:
+  - D-869
+refs:
+  - DATA-472-25#

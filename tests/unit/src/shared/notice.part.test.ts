@@ -83,3 +83,22 @@ test("test_render_notice_when_name_has_html", async () => {
   // 検証
   expect(html).toContain("<code>&lt;b&gt;x&lt;/b&gt;</code>");
 });
+
+// 表のカスタム要素の指定の誤りのタイトルと本文を返却する（正常系）
+test("test_render_notice_when_table_data", async () => {
+  // 準備
+  const { renderNotice } = await loadNotice();
+  // 実行
+  const html = renderNotice({
+    name: "rows",
+    source: "table-data",
+    reason: "に配列でない値が指定されています。",
+  });
+  // 検証
+  expect(html).toContain(
+    '<strong class="mdmark-notice-title">この表を表示できません</strong>',
+  );
+  expect(html).toContain(
+    "<p><code>rows</code>に配列でない値が指定されています。</p>",
+  );
+});

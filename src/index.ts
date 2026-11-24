@@ -64,6 +64,36 @@ export type { MdmarkIconNode } from "./shared/icon-node.logic.ts";
 export type { StandardSchemaV1 } from "./standard-schema.ts";
 export type { MdmarkViewHandle, MdmarkViewOptions } from "./views/spec.ts";
 
+import { defineElements } from "./elements.ts";
+import type {
+  MdmarkTableCellEditDetail,
+  MdmarkTableElement,
+  MdmarkTableRowClickDetail,
+} from "./table/mdmark-table.element.ts";
+
+export type {
+  MdmarkTableCellEditDetail,
+  MdmarkTableElement,
+  MdmarkTableRowClickDetail,
+} from "./table/mdmark-table.element.ts";
+export type {
+  MdmarkTableColumn,
+  MdmarkTableFeatures,
+  MdmarkTableRow,
+  MdmarkTableValue,
+} from "./table/mdmark-table.logic.ts";
+
+declare global {
+  interface HTMLElementTagNameMap {
+    "mdmark-table": MdmarkTableElement;
+  }
+  interface HTMLElementEventMap {
+    "mdmark-row-click": CustomEvent<MdmarkTableRowClickDetail>;
+    "mdmark-cell-edit": CustomEvent<MdmarkTableCellEditDetail>;
+    "mdmark-row-add": CustomEvent<Record<string, never>>;
+  }
+}
+
 declare const __MDMARK_VERSION__: string;
 
 /** ビルドで埋めたバージョン（`v{MAJOR}.{MINOR}.{PATCH}`）を返却する */
@@ -71,3 +101,5 @@ export function version(): string {
   return __MDMARK_VERSION__;
 }
 export type { PageSettings as MdmarkPageSettings } from "./config.ts";
+
+defineElements();

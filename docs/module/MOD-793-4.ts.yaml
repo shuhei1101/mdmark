@@ -1,0 +1,44 @@
+id: MOD-793-4
+visibility: internal
+title: ライブラリ本体 / 公開の入口 / elements.ts
+lead: 配布物が登録するカスタム要素の一覧と登録を受け持ち、部品のカスタム要素を追加するときに参照する。
+test_files:
+  - tests/unit/src/elements.browser.test.ts
+constants:
+  - name: ELEMENT_DEFINERS
+    title: カスタム要素の登録の一覧
+    container: src/elements.ts
+    summary: 部品ごとの登録する関数の並び。部品のカスタム要素を追加するときは、この並びに 1 つ加える
+    value: '[defineTableElement]'
+functions:
+  - name: defineElements
+    title: カスタム要素を登録する
+    container: src/elements.ts
+    kind: 関数
+    scope: internal
+    summary: '`globalThis.customElements` があれば `ELEMENT_DEFINERS` を順に呼ぶ。無ければ（Node）何もしない。`src/index.ts` が読み込みのときに 1 回呼ぶ'
+    returns:
+      type: void
+      description: '-'
+    unit_tests:
+      - name: test_define_elements
+        case: 正常
+        summary: ページでは mdmark-table を登録する
+        condition: 配布物を読み込んだページ
+        mock: なし（ブラウザ）
+        expected: '`customElements.get("mdmark-table")` が `MdmarkTableElement`'
+      - name: test_define_elements_when_no_registry
+        case: 正常
+        summary: customElements が無ければ何もしない
+        condition: '`globalThis.customElements` を `undefined` にして呼ぶ'
+        mock: '`globalThis.customElements` を一時的に削除する'
+        expected: 例外を投げない
+    callees:
+      - MOD-793-3#functions[defineTableElement]
+    refs:
+      - IF-793-1#constraints[要素の登録]
+tags:
+  - name: topic:api
+    main: true
+  - name: topic:エントリポイント
+  - name: topic:部品

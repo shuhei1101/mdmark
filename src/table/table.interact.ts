@@ -1840,3 +1840,288 @@ export function attachTables(
     }
   };
 }
+
+/** 表の操作の状態（列を列のキーで指す） */
+export type TableState = {
+  /** 並べ替えた列と向き */
+  sort: { key: string; direction: "ascending" | "descending" } | undefined;
+  /** 適用している絞り込み */
+  filters: Array<{ key: string; value: Omit<FilterValue, "column"> }>;
+  /** 隠している列 */
+  hidden: string[];
+  /** 今の列の順 */
+  order: string[];
+  /** つまみで変えた列の幅（px） */
+  widths: Array<{ key: string; width: number }>;
+  /** ピン止めのボタンが押された列 */
+  pinned: string[];
+};
+
+/** 最下段の見出しのセル（今の並び） */
+const keyedHeads = (wrapper: HTMLElement): HTMLTableCellElement[] => [
+  ...wrapper.querySelectorAll<HTMLTableCellElement>("thead tr:last-child th"),
+];
+
+/** 見出しのセルの列のキー */
+const keyOf = (head: HTMLTableCellElement | undefined): string =>
+  head?.dataset.columnKey ?? "";
+
+/** 記載した順の列の位置ごとの列のキー（テーブル設定のパネルがあれば、その並びから引く） */
+const keysByOriginal = (wrapper: HTMLElement): string[] => {
+  const heads = keyedHeads(wrapper);
+  const items = [
+    ...wrapper.querySelectorAll<HTMLElement>(".mdmark-table-settings-item"),
+  ];
+  if (items.length !== heads.length) {
+    return heads.map(keyOf);
+  }
+  const keys: string[] = [];
+  for (const [position, item] of items.entries()) {
+    keys[Number(item.dataset.column)] = keyOf(heads[position]);
+  }
+  return keys;
+};
+
+/** ドロワーの入力欄の値 */
+const inputValues = (drawer: HTMLElement, selector: string): string[] =>
+  [...drawer.querySelectorAll<HTMLInputElement>(selector)].map(
+    (input) => input.value,
+  );
+
+/** 絞り込みのドロワーに入れた値（絞り込んでいなければ `undefined`） */
+const drawerValue = (
+  drawer: HTMLElement,
+): Omit<FilterValue, "column"> | undefined => {
+  const kind = drawer.dataset.filterKind;
+  if (kind === "select") {
+    const values = inputValues(drawer, "input[type=checkbox]:checked");
+    return values.length > 0 ? { values } : undefined;
+  }
+  if (kind === "text") {
+    const [text = ""] = inputValues(drawer, "input[type=text]");
+    return text === "" ? undefined : { text };
+  }
+  const [from = "", to = ""] = inputValues(drawer, "input[type=date]");
+  return from || to ? { from, to } : undefined;
+};
+
+/** 並べ替えた列と向き */
+const sortStateOf = (heads: HTMLTableCellElement[]): TableState["sort"] => {
+  const sorted = heads.find((head) => head.hasAttribute("aria-sort"));
+  const direction = sorted?.getAttribute("aria-sort");
+  return direction === "ascending" || direction === "descending"
+    ? { key: keyOf(sorted), direction }
+    : undefined;
+};
+
+/** `attachTables` を付けた表から、並べ替え・絞り込み・列の表示と順・列の幅・ピン止めを記録する */
+export function captureTableState(wrapper: HTMLElement): TableState {
+  const heads = keyedHeads(wrapper).filter((head) => head.dataset.columnKey);
+  const original = keysByOriginal(wrapper);
+  const filters = [
+    ...wrapper.querySelectorAll<HTMLElement>(
+      ".mdmark-filter-drawer[data-column]",
+    ),
+  ].flatMap((drawer) => {
+    const key = original[Number(drawer.dataset.column)];
+    const value = drawerValue(drawer);
+    return key && value ? [{ key, value }] : [];
+  });
+  const pressed = (head: HTMLTableCellElement): boolean =>
+    head.querySelector(".mdmark-pin")?.getAttribute("aria-pressed") === "true";
+  return {
+    sort: sortStateOf(heads),
+    filters,
+    hidden: heads.filter((head) => head.hidden).map(keyOf),
+    order: heads.map(keyOf),
+    widths: heads
+      .filter((head) => head.classList.contains("is-resized"))
+      .map((head) => ({ key: keyOf(head), width: head.offsetWidth })),
+    pinned: heads.filter(pressed).map(keyOf),
+  };
+}
+
+/** キーを押す */
+const pressKey = (target: Element, key: string): void => {
+  target.dispatchEvent(
+    new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }),
+  );
+};
+
+/** 列のキーの見出しのセル（今の並び） */
+const headOfKey = (
+  wrapper: HTMLElement,
+  key: string,
+): HTMLTableCellElement | undefined =>
+  keyedHeads(wrapper).find((head) => keyOf(head) === key);
+
+/** 記載した順の列の位置のテーブル設定の項目の中の要素 */
+const settingsControl = <T extends HTMLElement>(
+  wrapper: HTMLElement,
+  target: { original: string[]; key: string; selector: string },
+): T | null => {
+  const column = target.original.indexOf(target.key);
+  return column < 0
+    ? null
+    : wrapper.querySelector<T>(
+        `.mdmark-table-settings-item[data-column="${column}"] ${target.selector}`,
+      );
+};
+
+/** 列の今の位置 */
+const positionOf = (wrapper: HTMLElement, key: string): number =>
+  keyedHeads(wrapper).findIndex((head) => keyOf(head) === key);
+
+/** 記録した列の順に、列の並べ替えのつまみの ↑ キーで並べ直す */
+const restoreOrder = (
+  wrapper: HTMLElement,
+  state: TableState,
+  original: string[],
+): void => {
+  const wanted = state.order.filter((key) => original.includes(key));
+  for (const [position, key] of wanted.entries()) {
+    const grip = settingsControl(wrapper, {
+      original,
+      key,
+      selector: ".mdmark-table-settings-grip",
+    });
+    let tries = original.length;
+    while (grip && tries > 0 && positionOf(wrapper, key) > position) {
+      pressKey(grip, "ArrowUp");
+      tries -= 1;
+    }
+  }
+};
+
+/** 入力欄に値を入れて `input` を送る */
+const fillInput = (
+  input: HTMLInputElement | undefined,
+  text: string | undefined,
+): void => {
+  if (input && text !== undefined) {
+    input.value = text;
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }
+};
+
+/** 記録した絞り込みをドロワーの入力欄に入れて適用する */
+const restoreFilter = (
+  drawer: HTMLElement,
+  value: Omit<FilterValue, "column">,
+): void => {
+  for (const input of drawer.querySelectorAll<HTMLInputElement>(
+    "input[type=checkbox]",
+  )) {
+    if ((value.values ?? []).includes(input.value) !== input.checked) {
+      input.click();
+    }
+  }
+  fillInput(
+    drawer.querySelector<HTMLInputElement>("input[type=text]") ?? undefined,
+    value.text,
+  );
+  const [from, to] =
+    drawer.querySelectorAll<HTMLInputElement>("input[type=date]");
+  fillInput(from, value.from);
+  fillInput(to, value.to);
+};
+
+/** 記録した列の幅に、列の幅のつまみの ←・→ キーで近づける */
+const restoreWidth = (
+  head: HTMLTableCellElement | undefined,
+  width: number,
+): void => {
+  const handle = head?.querySelector<HTMLElement>(".mdmark-col-resize");
+  let tries = 200;
+  while (
+    head &&
+    handle &&
+    tries > 0 &&
+    Math.abs(width - head.offsetWidth) >= 8
+  ) {
+    pressKey(handle, width > head.offsetWidth ? "ArrowRight" : "ArrowLeft");
+    tries -= 1;
+  }
+};
+
+/** 記録した向きになるまで並べ替えのボタンを押す */
+const restoreSort = (wrapper: HTMLElement, sort: TableState["sort"]): void => {
+  const head = sort ? headOfKey(wrapper, sort.key) : undefined;
+  const button = head?.querySelector<HTMLButtonElement>(".mdmark-sort");
+  let tries = 3;
+  while (
+    head &&
+    button &&
+    tries > 0 &&
+    head.getAttribute("aria-sort") !== sort?.direction
+  ) {
+    button.click();
+    tries -= 1;
+  }
+};
+
+/** 記録した隠す列を、テーブル設定の目のアイコンで隠す */
+const restoreHidden = (
+  wrapper: HTMLElement,
+  state: TableState,
+  original: string[],
+): void => {
+  for (const key of state.hidden) {
+    const eye = settingsControl<HTMLButtonElement>(wrapper, {
+      original,
+      key,
+      selector: ".mdmark-table-settings-eye",
+    });
+    if (eye?.getAttribute("aria-pressed") === "false") {
+      eye.click();
+    }
+  }
+};
+
+/** 記録したピン止めを、列のピン止めのボタンで留める */
+const restorePins = (wrapper: HTMLElement, state: TableState): void => {
+  for (const key of state.pinned) {
+    const pin = headOfKey(wrapper, key)?.querySelector<HTMLButtonElement>(
+      ".mdmark-pin",
+    );
+    if (pin?.getAttribute("aria-pressed") === "false") {
+      pin.click();
+    }
+  }
+};
+
+/** 記録した絞り込みを、列ごとのドロワーに入れて適用する */
+const restoreFilters = (
+  wrapper: HTMLElement,
+  state: TableState,
+  original: string[],
+): void => {
+  for (const { key, value } of state.filters) {
+    const column = original.indexOf(key);
+    const drawer =
+      column < 0
+        ? null
+        : wrapper.querySelector<HTMLElement>(
+            `.mdmark-filter-drawer[data-column="${column}"]`,
+          );
+    if (drawer) {
+      restoreFilter(drawer, value);
+    }
+  }
+};
+
+/** `attachTables` を付けた直後の表に、記録した状態のうち今の表にある列の状態を、利用者の操作と同じ処理で適用する */
+export function restoreTableState(
+  wrapper: HTMLElement,
+  state: TableState,
+): void {
+  const original = keysByOriginal(wrapper);
+  restoreOrder(wrapper, state, original);
+  restoreHidden(wrapper, state, original);
+  for (const { key, width } of state.widths) {
+    restoreWidth(headOfKey(wrapper, key), width);
+  }
+  restorePins(wrapper, state);
+  restoreFilters(wrapper, state, original);
+  restoreSort(wrapper, state.sort);
+}

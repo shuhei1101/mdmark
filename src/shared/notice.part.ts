@@ -4,6 +4,7 @@ import { escapeHtml } from "./escape.logic.ts";
 const NOTICE_TITLES = {
   figure: "この図を表示できません",
   block: "この箇所を表示できません",
+  table: "この表を表示できません",
 };
 
 /** 読み込めなかったものの呼び名: 外部ライブラリか拡張か、ビューやコメントの部品のモジュールか */
@@ -47,9 +48,15 @@ export function renderNotice(options: {
     | "diff-revisions"
     | "diff-content"
     | "diff-blocks"
-    | "icons";
+    | "icons"
+    | "table-data";
+  /** `table-data` の本文で、指定の名前に続ける誤りの内容と修正方法 */
+  reason?: string;
 }): string {
   const { name, figure = true, source = "library" } = options;
+  if (source === "table-data") {
+    return `<div class="mdmark-notice" role="status"><strong class="mdmark-notice-title">${NOTICE_TITLES.table}</strong><p><code>${escapeHtml(name)}</code>${escapeHtml(options.reason ?? "")}</p></div>`;
+  }
   if (
     source === "diff-revisions" ||
     source === "diff-content" ||

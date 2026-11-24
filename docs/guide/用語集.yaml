@@ -787,6 +787,26 @@ terms:
   details:
   - title: ビュー
     href: ./記法.mark.md#ビュー
+- id: table-element
+  name: 表のカスタム要素
+  aliases:
+  - mdmark-table
+  description: アプリの画面に配置する `<mdmark-table>`。列の定義と行のデータを JavaScript のプロパティで指定すると、Markdown の表を囲んだときと同じ外観と操作の表を描き、行の押下・セルの編集・行の追加を要素のイベントで通知する
+  details:
+  - title: 表をカスタム要素で使用する
+    href: ./カスタマイズ-表をカスタム要素で使用する.mark.md
+- id: column-definition
+  name: 列の定義
+  description: '表のカスタム要素の `columns` の 1 要素。列のキー・列名と、ピン止め・最初から隠す・絞り込み・列の幅・編集できる列・セルの中身の描き方を持つ'
+  details:
+  - title: 表をカスタム要素で使用する
+    href: ./カスタマイズ-表をカスタム要素で使用する.mark.md#列の定義と行のデータを指定する
+- id: row-data
+  name: 行のデータ
+  description: '表のカスタム要素の `rows` の 1 要素。行を特定する `key` と、列のキーごとの値（文字列・数値・`null`）の `values` を持つ'
+  details:
+  - title: 表をカスタム要素で使用する
+    href: ./カスタマイズ-表をカスタム要素で使用する.mark.md#列の定義と行のデータを指定する
 - id: comment
   name: コメント
   description: 読者が本文の選んだ箇所に付ける意見。選んだ文字・その前後の文字・本文の組で、利用側の保存先に残る。機能 `comments` で付けられるようにする

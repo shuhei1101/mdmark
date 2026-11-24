@@ -1,0 +1,31 @@
+confirmations:
+  - topic: '#793 の表のカスタム要素で、長い文字を省略するか折り返すか'
+    decision: 長い文字は省略せず、今の Markdown の表の部品と同じく列の最小の幅で折り返す。収まらない表は表の中で横にスクロールする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 5bf0d22f
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4666502012
+  - topic: '#793 の表のカスタム要素で、セルの編集の入力欄を表の部品が描くか、アプリが描くか'
+    decision: 表の部品が入力欄と「行追加」のボタンを描き、確定した値をイベントで通知する。編集できる列のセルを押すと編集を始め（行の押下は通知しない）、行で F2 を押すと行の中の最初の編集できるセルを編集する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b20746a2
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4666891532
+  - topic: '#793 の表のカスタム要素の、データの誤りの通知のタイトルの文言'
+    decision: 新規に「この表を表示できません」を追加する（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: b20746a2
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4666892536
+  - topic: '#795 で project-index が応答しないときに、データ設計をどう進めるか'
+    decision: ユーザーが project-index の常駐サーバーを確認・再起動してから、データ設計を write_docs で続ける（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 61d42218
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4667023235
+  - topic: '#793 の表のカスタム要素に、アプリが指定するデータの構造'
+    decision: データの設計書（DATA-793-1）の構造で進める。列の定義・行のデータ（値は文字列・数値・null）・表の機能（sort・pin・filter・resize・count・columns・reorder・add）（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: f5f6005a
+    thread: https://github.com/shuhei1101/mdmark/pull/795#discussion_r4667328097

@@ -20,6 +20,9 @@ notes:
     ├── table-tree.interact.ts     # 階層の表の開閉・パスのツールチップとコピー・行の選択・絞り込み・見本との連動
     ├── table-width.interact.ts    # 列の中身の幅を測り、列の幅を自動で決める
     ├── table.interact.ts          # 表の並べ替え・ピン止め・絞り込み・件数・集計・コピー・行へ移る・行の URL のコピー
+    ├── mdmark-table.element.ts    # カスタム要素 `<mdmark-table>`（プロパティ・描画・描き直し・イベントの送信・登録）
+    ├── mdmark-table.interact.ts   # `<mdmark-table>` の行の押下・行のフォーカス・セルの編集・行の追加・セルの中身の差し替え
+    ├── mdmark-table.logic.ts      # `<mdmark-table>` の指定の確認と表の部品の引数への変換（DOM を使用しない）
     ├── table-cells.logic.ts       # 表の `^^`・`<<` のセルの結合の計画（トークンを使用しない）
     ├── table-tree.logic.ts        # キーのパスの分け方・階層の行の計画・YAML の見本の行のパス・階層の絞り込み（render と操作が使用する。DOM もトークンも使用しない）
     └── table.logic.ts             # 列を動かせるかの判定と列の順の入れ替え・列の幅の上限と収め方・表の並べ替えの比べ方・最下段の見出しのセル・隣り合う同じ値の結合・絞り込みの当てはめ・数の読み込み方・集計と読み込めないセル・TSV と Markdown の表・長文の列と列の幅の決め方・行を留める量（部品の表と操作が使用する）

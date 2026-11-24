@@ -388,6 +388,15 @@ styles:
       - class_name: .map-axis-wire-label[data-beside]
         target: 線より長い軸と格子の配置の図の線のラベル
         value: '`width: auto; padding: 0 6px; transform: translate(-50%, -50%); white-space: nowrap`。位置は `renderMapAxisGrid` が決めるラベルの中心'
+      - class_name: .mdmark .mdmark-table tr.mdmark-row-pressable
+        target: 行を押せる表の行
+        value: '編集できない列のセルの上で `cursor: pointer`。`:hover` の行のセルを `--mdmark-color-surface`、`:focus-visible` の行を `--mdmark-color-accent` の 2px の `outline`（`outline-offset: -2px`）にする。値は `docs/mock/refs/795/assets/mock.css` の `.mock-row-*`'
+      - class_name: .mdmark .mdmark-table td.mdmark-cell-editable と .mdmark-cell-editing
+        target: 編集できるセルと編集中のセル
+        value: '`mdmark-cell-editable` は `--mdmark-color-muted` の破線の下線（`text-underline-offset: 4px`）、`:hover` で面を `--mdmark-color-surface`・`cursor: text`。`mdmark-cell-editing` は下線を解除し `padding: 4px`、中の `.mdmark-cell-input` は幅 100%・最小幅 6em・高さ 32px 以上・`--mdmark-color-accent` の 2px の枠線、`.mdmark-cell-hint` は 12px・`--mdmark-color-muted`。値は `docs/mock/refs/795/assets/mock.css` の `.mock-cell-*`'
+      - class_name: .mdmark .mdmark-table-add
+        target: 行追加のボタン
+        value: '表の下に `margin-top: 8px`。`.mdmark-table-add-button` は高さ 32px 以上・`--mdmark-color-border` の枠線・角丸 6px・背景 `--mdmark-color-surface`、`:focus-visible` で `--mdmark-color-accent` の 2px の `outline`（`outline-offset: 2px`）。値は `docs/mock/refs/795/assets/mock.css` の `.mock-add-row*`'
     refs:
       - SCR-472-4#
       - CMP-472-65#

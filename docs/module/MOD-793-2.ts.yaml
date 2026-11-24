@@ -1,0 +1,172 @@
+id: MOD-793-2
+visibility: internal
+title: ライブラリ本体 / 表 / mdmark-table.interact.ts
+lead: 表のカスタム要素の行の押下・行のフォーカス・セルの編集・行の追加の操作と、セルの中身の差し替えを受け持ち、`<mdmark-table>` の行とセルの操作を変えるときに参照する。
+test_files:
+  - tests/unit/src/table/mdmark-table.interact.browser.test.ts
+data_models:
+  - name: TableRowHandlers
+    title: 行とセルの操作の通知先
+    container: src/table/mdmark-table.interact.ts
+    usecase: 表をカスタム要素で描く
+    summary: '`attachTableRows` に指定する関数。`<mdmark-table>` がイベントの送信につなぐ'
+    properties:
+      - name: onRowClick
+        type: '(key: string) => void'
+        description: 行の押下
+      - name: onCellEdit
+        type: '(detail: MdmarkTableCellEditDetail) => boolean'
+        description: セルの編集の確定。`false` を返却するとセルを前の値に戻す
+      - name: onRowAdd
+        type: () => void
+        description: 行の追加
+      - name: renderCell
+        type: '(cell: HTMLTableCellElement, key: string, column: number) => void'
+        description: 編集を確定したセルをもう一度描く。`<mdmark-table>` が `applyCellRenderers` と同じ処理を指定する
+      - name: valueOf
+        type: '(key: string, column: number) => MdmarkTableValue'
+        description: 編集する前の値。`rows` を指定し直してから初めて編集するセルは指定された型のまま、同じ `rows` のまま 2 回目以降に編集するセルは前回確定した文字列（`MdmarkTableElement` の `edits` の値）
+functions:
+  - name: attachTableRows
+    title: 行とセルの操作を付ける
+    container: src/table/mdmark-table.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`mdmark-row-pressable` の行と `mdmark-cell-editable` のセルと `行追加` のボタンに、行の押下・↑↓ の移動・Enter・F2・セルの編集・行の追加を付ける'
+    args:
+      - name: wrapper
+        type: HTMLElement
+        required: true
+        description: '`renderTable` が描いた `div.mdmark-table`'
+      - name: handlers
+        type: TableRowHandlers
+        required: true
+        description: 通知先
+    returns:
+      type: () => void
+      description: 受け取りを解除し、編集中のセルを取り消す関数
+    side_effects: '`wrapper` に `click`・`keydown`・`focusout` を付け、行の `tabindex` とセルの中身を書き換える'
+    process: |-
+      1. 表示している本文の行（`hidden` と `mdmark-table-empty` を除く）の最初の行を `tabindex="0"`、ほかを `-1` にする。並べ替え・絞り込みで `tabindex="0"` の行が隠れたら、表示している最初の行へ移す（`tbody` の `MutationObserver`）
+      2. `click` は、押した要素が表の中の `button`・`input`・`a`・`select`・`textarea` の中なら何もしない。`mdmark-cell-editable` のセルなら編集を始め、それ以外の本文の行のセルならその行を `tabindex="0"` にして `onRowClick(data-key)` を呼ぶ。`行追加` のボタンなら `onRowAdd()` を呼ぶ
+      3. 行の `keydown` は、↑・↓ で表示している前・次の行を `tabindex="0"` にしてフォーカスを移す（端では動かない）。Enter で `onRowClick`、F2 で行の中の最初の `mdmark-cell-editable` のセルの編集を始める（無ければ何もしない）。どれも `preventDefault` する
+      4. 編集を始めるときは、ほかのセルを編集していれば確定してから、セルの中身を記録して `renderCellEditor` の HTML に置き換え、入力欄にフォーカスを移して全てを選択する。入力欄の値は `cellText(valueOf(key, column))`
+      5. 入力欄の Enter と `focusout`（セルの外へ移るとき）で確定する。値が前の文字と同じなら記録した中身に戻す。違えば `onCellEdit({ key, column: columnKey, oldValue, value })` を呼び、`true` ならセルの `data-value` と文字を入力欄の値にして `renderCell` を呼び、`false` なら記録した中身に戻す。Enter のときは行へフォーカスを戻す
+      6. 入力欄の Esc は記録した中身に戻して行へフォーカスを戻す。入力欄の `keydown` は行まで伝えない
+    unit_tests:
+      - name: test_attach_table_rows_when_row_clicked
+        case: 正常
+        summary: 編集できない列のセルを押すと行のキーで通知し、ボタンでは通知しない
+        condition: '`R1`〜`R3` の行。`R2` の先頭のセルを押し、続けて見出しの並べ替えのボタンを押す'
+        mock: '`onRowClick` は引数を記録する'
+        expected: '`onRowClick` が `R2` で 1 回だけ呼ばれ、`R2` の行が `tabindex="0"`'
+      - name: test_attach_table_rows_when_keyboard
+        case: 正常
+        summary: ↑↓ で行を移し、Enter で通知する
+        condition: 先頭の行にフォーカスして ↓ を 2 回、↑ を 1 回、Enter
+        mock: '`onRowClick` は引数を記録する'
+        expected: フォーカスが `R2` の行にあり、`tabindex="0"` の行が 1 つだけ。`onRowClick` が `R2` で呼ばれる
+      - name: test_attach_table_rows_when_hidden_by_filter
+        case: 正常
+        summary: tabindex=0 の行が隠れると表示している最初の行へ移す
+        condition: 先頭の行に `hidden` を付ける
+        mock: なし
+        expected: 2 行目が `tabindex="0"`
+      - name: test_attach_table_rows_when_cell_edited
+        case: 正常
+        summary: 編集して Enter で確定すると通知し、セルを変更後の値にする
+        condition: '`R2` の `owner` の編集できるセル（前の値 `鈴木`）を押し、`田中` を入れて Enter'
+        mock: '`onCellEdit` は引数を記録して `true` を返却する。`valueOf` は `鈴木`。`onRowClick` と `renderCell` は呼ばれたかを記録する'
+        expected: '`onCellEdit` が `{ key: "R2", column: "owner", oldValue: "鈴木", value: "田中" }` で 1 回呼ばれ、セルの `data-value` と文字が `田中`、`renderCell` が 1 回呼ばれる。`onRowClick` は呼ばれない。フォーカスが `R2` の行'
+      - name: test_attach_table_rows_when_edit_cancelled
+        case: 正常
+        summary: Esc と値を変えない確定は通知しない
+        condition: F2 で編集を始めて入力し Esc。続けて同じセルを押して値を変えずに Enter
+        mock: '`onCellEdit` は呼ばれたかを記録する'
+        expected: '`onCellEdit` が呼ばれず、セルの中身が編集する前と同じ'
+      - name: test_attach_table_rows_when_edit_rejected
+        case: 正常
+        summary: 通知先が false を返却すると前の値に戻す
+        condition: 編集して `田中` を入れ、セルの外を押す
+        mock: '`onCellEdit` は `false` を返却する'
+        expected: セルの中身が編集する前と同じ
+      - name: test_attach_table_rows_when_row_added
+        case: 正常
+        summary: 行追加 のボタンで通知する
+        condition: '`行追加` のボタンを押す'
+        mock: '`onRowAdd` は呼ばれた回数を記録する'
+        expected: '`onRowAdd` が 1 回呼ばれる'
+      - name: test_attach_table_rows_when_detached
+        case: 正常
+        summary: 解除した後は通知せず、編集中のセルを戻す
+        condition: 編集を始めてから解除する関数を呼び、行を押す
+        mock: '`onRowClick`・`onCellEdit` は呼ばれたかを記録する'
+        expected: どちらも呼ばれず、セルの中身が編集する前と同じ
+    callees:
+      - MOD-472-315#functions[renderCellEditor]
+      - MOD-793-1#functions[cellText]
+    refs:
+      - IF-793-1#constraints[行の押下]
+      - IF-793-1#constraints[セルの編集]
+      - IF-793-1#constraints[行の追加]
+      - CMP-472-61#events
+  - name: applyCellRenderers
+    title: セルの中身を差し替える
+    container: src/table/mdmark-table.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`render` を持つ列のセルに `data-value` を付け、中身を `render(value, row)` の返却値に置き換える'
+    args:
+      - name: wrapper
+        type: HTMLElement
+        required: true
+        description: '`div.mdmark-table`'
+      - name: spec
+        type: '{ columns: MdmarkTableColumn[]; rows: MdmarkTableRow[] }'
+        required: true
+        description: 確認済みの指定
+    returns:
+      type: void
+      description: '-'
+    side_effects: セルの中身と `data-value` を書き換える
+    process: |-
+      1. `render` を持つ列ごとに、`data-key` の行のその列の `td` に `data-value` を `cellText(value)` で付ける（並べ替え・絞り込み・絞り込みの候補は `data-value` を値にする）
+      2. `render(value, row)` を呼び、`Node` はセルの子に置き換え、文字列は `textContent` にする
+      3. 例外を投げたか `Node`・文字列でない値を返却したときは、セルを `cellText(value)` の文字のままにし、元のエラーか返却値を `console.error` に出す
+    unit_tests:
+      - name: test_apply_cell_renderers
+        case: 正常
+        summary: 返却した要素を配置し、data-value に値を持たせる
+        condition: '`state` の列に class `app-badge` の `span` を返却する `render`。2 行'
+        mock: '`render` は引数を記録する'
+        expected: 2 つのセルが `span.app-badge` を持ち、`data-value` が値。`render` の第 2 引数がその行のオブジェクト
+      - name: test_apply_cell_renderers_when_render_throws
+        case: 異常
+        summary: 例外を投げると値を文字で出す
+        condition: '`render` が例外を投げる'
+        mock: '`console.error` を記録する'
+        expected: セルが値の文字。`console.error` が元のエラーで 1 回呼ばれる
+    callees:
+      - MOD-793-1#functions[cellText]
+    refs:
+      - IF-793-1#constraints[セルの中身の描き方の例外]
+  - name: renderCellContent
+    title: セル 1 つの中身を差し替える
+    container: src/table/mdmark-table.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 'セルに `data-value` を付け、列の `render` があれば中身を `render(value, row)` の返却値に置き換える（例外のときは値を文字で出して `console.error` に出す）。`applyCellRenderers` と、`<mdmark-table>` の編集の確定の `renderCell` が呼ぶ'
+    args:
+      - name: options
+        type: '{ cell: HTMLTableCellElement; column: MdmarkTableColumn; row: MdmarkTableRow; value: MdmarkTableValue }'
+        required: true
+        description: セル・列の定義・行のデータ・値
+    returns:
+      type: void
+      description: '-'
+tags:
+  - name: topic:表
+    main: true
+  - name: topic:dom
+  - name: topic:イベント
+  - name: action:操作

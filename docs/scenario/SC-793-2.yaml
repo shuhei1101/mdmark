@@ -1,0 +1,203 @@
+id: SC-793-2
+visibility: internal
+title: 表をカスタム要素で描く
+lead: アプリの画面が、配布物を読み込んだページに `<mdmark-table>` を配置し、列の定義と行のデータを JavaScript のプロパティで指定して表を描き、行の押下・セルの編集・行の追加をカスタム要素のイベントで受け取る。
+primary_actor: mdmark を使用するアプリの画面
+stakeholders:
+  - name: アプリの画面
+    interest: 表をアプリごとに作らずに、データを指定するだけで Markdown の表と同じ並べ替え・絞り込み・ピン止め・列の表示・列の並べ替え・列の幅の変更・長い文字の折り返しを使用でき、行とセルの操作を自分の処理（詳細を開く・保存する）に結び付けられる
+  - name: 利用者
+    interest: どのアプリの一覧も、mdmark の文書の表と同じ外観と操作で参照でき、長い文字が隣の列に重ならない
+trigger: アプリの画面が、データベースの一覧を表で表示する
+preconditions:
+  - ページが mdmark の配布物の JavaScript と CSS を読み込んでいる（『配布物を読み込む』）
+success_guarantee: '`<mdmark-table>` の場所に、Markdown の表を囲んだときと同じ外観と操作の表が描かれ、行の押下・セルの編集・行の追加が、操作した行（とセル）を特定できる値を持つイベントでアプリへ届く。行のデータを指定し直すと、表を描き直す。'
+minimal_guarantee: 列の定義と行のデータに誤りがあるときは、表の場所に誤りの通知を出し、ページのほかの要素は動く。行の値に記載したスクリプトは動かない。
+test_file: tests/e2e/単一ユースケース/表をカスタム要素で描く.spec.ts
+decisions:
+  - D-869
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: アプリの画面
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、`<mdmark-table>` を 1 つ持つ HTML
+        notes: 描く先の `<mdmark-table>` の幅は 800px（タイトルの列の最小の幅は収まり、4 列の最小の幅の合計は収まらず、表が横にはみ出す幅）
+      - name: 列の定義と行のデータ
+        description: タイトル・状態・担当・更新日の 4 列と 5 行。タイトルの列をピン止めし、状態の列に絞り込みを付け、列の表示と列の並べ替えを付ける（Markdown の表の `columns`・`reorder` に該当する指定）
+        notes: 1 行目のタイトルは `<script>alert(1)</script>設計`、2 行目のタイトルは列の幅を超える 200 文字
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: 列の定義と行のデータをプロパティで指定する
+        T-->>A: 表を描く
+        U->>T: 更新日の列で並べ替え、状態の列で絞り込み、担当の列の幅を広げる
+        T-->>U: 並べ替え・絞り込んだ行と広げた列
+        U->>T: テーブル設定で更新日の列を隠し、担当の列を状態の列の前へ動かす
+        T-->>U: 列を隠して並べ替えた表
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`<mdmark-table>` の場所に、Markdown の表を囲んだときと同じ見出し行・ピン止めのボタン・絞り込みのボタンを持つ 5 行の表が描かれる'
+      - 更新日の列の見出しを押すと行が更新日の順に並び、状態の絞り込みで 1 つの値を選ぶとその値の行だけが残る
+      - 担当の列の幅のつまみをドラッグすると、担当の列が広がる
+      - 200 文字のタイトルは列の最小の幅で折り返され、隣の列に重ならない。表は `<mdmark-table>` の中で横にスクロールし、ピン止めしたタイトルの列は左端に留まる
+      - 1 行目のタイトルは文字 `<script>alert(1)</script>設計` のまま出て、`script` 要素が無い
+      - テーブル設定で更新日の列を隠すと、表がタイトル・状態・担当の 3 列になる
+      - 担当の列を状態の列の前へ動かすと、見出しとセルの順がタイトル・担当・状態になる
+    test: test_normal
+  - name: 正常シナリオ（行を押す）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオと同じ。`<mdmark-table>` の行の押下のイベントを受け、受け取った行のキーを画面に出す
+      - name: 列の定義と行のデータ
+        description: 正常シナリオと同じ。行ごとに一意のキーを持つ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant T as mdmark-table
+        U->>T: 3 行目を押す
+        T-->>A: 行の押下のイベント（3 行目のキー）
+        A-->>U: 3 行目の詳細を開く
+        U->>T: 4 行目にフォーカスして Enter を押す
+        T-->>A: 行の押下のイベント（4 行目のキー）
+      ```
+
+      <!-- /map -->
+    expected:
+      - 3 行目を押すと、行の押下のイベントが 1 回届き、3 行目のキーを持つ
+      - 4 行目にフォーカスして Enter を押すと、行の押下のイベントが 4 行目のキーで届く
+      - 並べ替え・ピン止め・絞り込みのボタンを押しても、行の押下のイベントは届かない
+    test: test_normal_when_row_clicked
+  - name: 正常シナリオ（セルを編集する）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオと同じ。担当の列を編集できる列にし、セルの編集のイベントを受けて受け取った値を手元の配列に保存する
+      - name: 列の定義と行のデータ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant T as mdmark-table
+        U->>T: 2 行目の担当のセルを編集して確定する
+        T-->>A: セルの編集のイベント（2 行目のキー・担当・前の値・新しい値）
+        A->>A: 新しい値を保存する
+        T-->>U: 新しい値のセル
+        U->>T: 3 行目の担当のセルを編集して取り消す
+        T-->>U: 前の値のセル
+      ```
+
+      <!-- /map -->
+    expected:
+      - 2 行目の担当のセルを編集して確定すると、セルの編集のイベントが 1 回届き、2 行目のキー・列名 `担当`・前の値・新しい値を持つ
+      - アプリの配列に新しい値が保存され、セルに新しい値が出る
+      - 編集を取り消すと、イベントは届かず、セルは前の値のまま
+      - 編集できない列のセルは、編集を始められない
+    test: test_normal_when_cell_edited
+  - name: 正常シナリオ（行を追加する）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオと同じ。行の追加を許可し、行の追加のイベントを受けて新しい行を行のデータに追加し、プロパティに指定し直す
+      - name: 列の定義と行のデータ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant T as mdmark-table
+        U->>T: 行の追加のボタンを押す
+        T-->>A: 行の追加のイベント
+        A->>T: 新しい行を加えた行のデータを指定し直す
+        T-->>U: 6 行の表
+      ```
+
+      <!-- /map -->
+    expected:
+      - 行の追加のボタンを押すと、行の追加のイベントが 1 回届く
+      - アプリが行のデータを指定し直すと、6 行の表に描き直される
+      - 指定し直す前の並べ替えと絞り込みが残る
+    test: test_normal_when_row_added
+  - name: 正常シナリオ（セルの中身を差し替える）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオと同じ。状態の列の定義に、値をアプリのバッジにするセルの中身の描き方を指定する
+      - name: 列の定義と行のデータ
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: セルの中身の描き方を持つ列の定義と行のデータを指定する
+        T-->>U: 状態の列をアプリのバッジで描いた表
+        U->>T: 状態の列で並べ替える
+        T-->>U: 状態の値の順に並んだ行
+      ```
+
+      <!-- /map -->
+    expected:
+      - 状態の列のセルが、アプリが指定した描き方のバッジで出る
+      - 状態の列の並べ替えと絞り込みは、バッジでなく行のデータの値で動く
+    test: test_normal_when_cell_content_replaced
+  - name: 異常シナリオ（データの誤り）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオと同じ。`<mdmark-table>` の後ろに段落を 1 つ持つ
+      - name: 誤ったデータ
+        description: 行のデータに配列でないものを指定するものと、列の定義に同じ列名を 2 つ指定するものの 2 通り
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant T as mdmark-table
+        A->>T: 誤った列の定義か行のデータを指定する
+        T-->>U: 表の場所に誤りの通知
+      ```
+
+      <!-- /map -->
+    expected:
+      - 2 通りとも、`<mdmark-table>` の場所に誤った指定の名前を記載した誤りの通知が出る
+      - '`<mdmark-table>` の後ろの段落が表示されている'
+    test: test_error_when_data_invalid
+tags:
+  - name: topic:表
+    main: true
+  - name: topic:テーブル
+  - name: topic:部品
+  - name: topic:イベント
+  - name: topic:api
+  - name: tool:javascript

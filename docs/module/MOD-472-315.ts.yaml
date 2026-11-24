@@ -31,6 +31,10 @@ functions:
       | `copyFallback` のとき | `renderCopyPanel` のパネル |
       | 条件なし | `renderTotalRows` の集計の行 |
       | `rowIds` の行 | 行の `id` と行へのリンクと通知の要素 |
+      | `rowKeys` の行 | 行の `data-key`。`pressable` のときは行の `mdmark-row-pressable` と `tabindex`（`focusRow` の行だけ `0`、ほかは `-1`） |
+      | `editable` の列 | `td` の `mdmark-cell-editable`。`editing` のセルは `mdmark-cell-editing` と `renderCellEditor` の中身 |
+      | `addRow` のとき | 表の後ろの `renderAddRow` のボタン |
+      | `columnKeys` の列 | 最下段の `th` の `data-column-key`（`<mdmark-table>` が描き直しで列を見分ける） |
 
       集計の値は `filterValues` に合う行から `computeTotal` で出し、全ての行で `findUnreadableTotals` が返却した列と計算のセルは空にする。
 
@@ -510,6 +514,83 @@ functions:
         expected: '`<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">` と `aria-pressed="true"` の `code-xml` のアイコンのボタン'
         mock: なし
         summary: 押した状態を `aria-pressed` に入れる
+  - name: renderCellEditor
+    title: セルの入力欄を描く
+    container: src/table/table.part.ts
+    kind: 関数
+    scope: internal
+    summary: 編集中のセルの中身（`input.mdmark-cell-input` と案内 `span.mdmark-cell-hint`）の HTML を返却する
+    args:
+      - name: options
+        type: '{ value: string; label: string; hintId: string }'
+        required: true
+        description: 入力欄の値・スクリーンリーダー向けの名前（`{列名}（{行の番号} 行目）を編集する`）・案内の `id`
+    returns:
+      type: string
+      description: '`<input class="mdmark-cell-input" type="text" value="…" aria-label="…" aria-describedby="{hintId}"><span class="mdmark-cell-hint" id="{hintId}">Enter で確定・Esc で取り消す</span>`'
+    unit_tests:
+      - name: test_render_cell_editor
+        case: 正常
+        summary: 値と名前をエスケープした入力欄と案内を返却する
+        condition: '`{ value: "<b>鈴木", label: "担当（2 行目）を編集する", hintId: "h1" }`'
+        mock: なし
+        expected: '`value` が `&lt;b&gt;鈴木`、`aria-describedby="h1"`、案内が `Enter で確定・Esc で取り消す`'
+    callees:
+      - MOD-472-313#functions[escapeHtml]
+    refs:
+      - CMP-472-61#args[editing]
+  - name: renderAddRow
+    title: 行追加のボタンを描く
+    container: src/table/table.part.ts
+    kind: 関数
+    scope: internal
+    summary: 表の下の左端に配置する `行追加` のボタン（`div.mdmark-table-add` の中の `button.mdmark-table-add-button`。`plus` のアイコンは `aria-hidden`）の HTML を返却する
+    returns:
+      type: string
+      description: ボタンの HTML
+    unit_tests:
+      - name: test_render_add_row
+        case: 正常
+        summary: 文字を持つボタンを返却する
+        condition: 引数なし
+        mock: なし
+        expected: '`button` の文字が `行追加` で、アイコンが `aria-hidden="true"`'
+    refs:
+      - CMP-472-61#args[addRow]
+  - name: renderPlainTable
+    title: 操作を付ける前の表を描く
+    container: src/table/table.part.ts
+    kind: 関数
+    scope: internal
+    summary: '列の見出しと行のセルの HTML から、記法の表と同じ構造の操作を付ける前の表（`th` の `data-column-key`、`tr` の `data-key`・`mdmark-row-pressable`・`tabindex`、`td` の `mdmark-cell-editable` を持つ）の HTML を返却する。`<mdmark-table>` が `renderTable` の `body` に指定する'
+    args:
+      - name: options
+        type: TableOptions
+        required: true
+        description: '`columns`・`rows`・`columnKeys`・`rowKeys`・`pressable`・`focusRow`・`editable` を使用する'
+    returns:
+      type: string
+      description: '`<table tabindex="0" aria-label="表">` で始まる HTML'
+    refs:
+      - MOD-793-3#classes[MdmarkTableElement]
+  - name: cellEditorLabel
+    title: 編集中のセルの入力欄の名前を返却する
+    container: src/table/table.part.ts
+    kind: 関数
+    scope: internal
+    summary: '`{列名}（{行の番号} 行目）を編集する` を返却する'
+    args:
+      - name: column
+        type: string
+        required: true
+        description: 列名
+      - name: rowNumber
+        type: number
+        required: true
+        description: 表示している行の番号（1 始まり）
+    returns:
+      type: string
+      description: 入力欄のスクリーンリーダー向けの名前
 lead: '表・表の上のバー・集計の行・コピーのパネル・畳んだ列の HTML を受け持ち、表の部品の外観を変えるときに参照する。'
 tags:
   - name: topic:テーブル

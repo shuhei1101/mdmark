@@ -1,6 +1,11 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { restoreClipboard, stubClipboard } from "../../helpers/clipboard.ts";
-import { addStyles, createRoot, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRoot,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 
 /** 表の操作を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadTables = () => import("../../../../src/table/table.interact.ts");
@@ -2860,4 +2865,143 @@ test("test_attach_tables_when_resized_refreshes_width", async () => {
   await vi.waitFor(() => {
     expect(nameHead.style.getPropertyValue("--mdmark-auto-width")).not.toBe("");
   });
+});
+
+/** 列のキーを持つ 4 列・5 行の data の表を描き、表の操作を付けた要素 */
+async function keyedTable(
+  columns: Array<{ key: string; title: string }>,
+): Promise<{ root: HTMLElement; wrapper: HTMLElement }> {
+  const { renderPlainTable, renderTable } = await import(
+    "../../../../src/table/table.part.ts"
+  );
+  const { attachTables } = await loadTables();
+  const values: Record<string, string[]> = {
+    title: ["設計", "列の幅", "並べ替え", "ピン止め", "行を押す"],
+    state: ["未着手", "進行中", "進行中", "完了", "未着手"],
+    owner: ["佐藤", "鈴木", "佐藤", "田中", "鈴木"],
+    updated: [
+      "2026-11-20",
+      "2026-11-22",
+      "2026-11-18",
+      "2026-11-15",
+      "2026-11-21",
+    ],
+  };
+  const options = {
+    kind: "data" as const,
+    features: ["sort", "pin", "filter", "columns"],
+    columns: columns.map((column) => column.title),
+    columnKeys: columns.map((column) => column.key),
+    rows: values.title.map((_, row) =>
+      columns.map((column) => values[column.key]?.[row] ?? ""),
+    ),
+    filters: columns.flatMap((column, index) =>
+      column.key === "state"
+        ? [{ column: index, kind: "select" as const }]
+        : [],
+    ),
+  };
+  // 記法の表と同じく、操作を付ける前の表を囲みの中に配置する
+  const root = createRootFromHtml(
+    renderTable({ ...options, body: renderPlainTable(options) }),
+  );
+  detachers.push(attachTables(root));
+  const wrapper = root.querySelector<HTMLElement>(".mdmark-table");
+  if (!wrapper) {
+    throw new Error("表の囲みがありません");
+  }
+  return { root, wrapper };
+}
+
+/** 4 列（タイトル・状態・担当・更新日）の列のキーと列名 */
+const keyedColumns = [
+  { key: "title", title: "タイトル" },
+  { key: "state", title: "状態" },
+  { key: "owner", title: "担当" },
+  { key: "updated", title: "更新日" },
+];
+
+/** 4 列の表で、更新日を降順に並べ、状態を 進行中 に絞り込み、担当を隠す */
+function operateKeyedTable(root: HTMLElement): void {
+  const updated = root
+    .querySelectorAll("thead th")[3]
+    ?.querySelector<HTMLButtonElement>(".mdmark-sort");
+  updated?.click();
+  root.querySelector<HTMLButtonElement>(".mdmark-filter")?.click();
+  const drawer = root.querySelector<HTMLElement>(
+    ".mdmark-filter-drawer:not([hidden])",
+  );
+  if (drawer) {
+    findCheckbox(drawer, "進行中").click();
+  }
+  root
+    .querySelector<HTMLButtonElement>(".mdmark-table-settings-toggle")
+    ?.click();
+  const eye = root.querySelector<HTMLButtonElement>(
+    '[data-column="2"] button[aria-pressed]',
+  );
+  eye?.click();
+}
+
+// 操作した状態を列のキーで記録する（正常系）
+test("test_capture_table_state", async () => {
+  // 準備
+  const { captureTableState } = await loadTables();
+  const { root, wrapper } = await keyedTable(keyedColumns);
+  operateKeyedTable(root);
+  // 実行
+  const state = captureTableState(wrapper);
+  // 検証
+  expect(state.sort).toEqual({ key: "updated", direction: "descending" });
+  expect(state.filters.map((filter) => filter.key)).toEqual(["state"]);
+  expect(JSON.stringify(state.filters[0]?.value)).toContain("進行中");
+  expect(state.hidden).toEqual(["owner"]);
+});
+
+// 描き直した表に記録した状態を戻す（正常系）
+test("test_restore_table_state", async () => {
+  // 準備
+  const { captureTableState, restoreTableState } = await loadTables();
+  const first = await keyedTable(keyedColumns);
+  operateKeyedTable(first.root);
+  const state = captureTableState(first.wrapper);
+  const second = await keyedTable(keyedColumns);
+  // 実行
+  restoreTableState(second.wrapper, state);
+  // 検証
+  expect(
+    second.root.querySelectorAll("thead th")[3]?.getAttribute("aria-sort"),
+  ).toBe("descending");
+  expect(
+    bodyRows(second.root)
+      .filter((row) => !row.hidden)
+      .map((row) => row.children[1]?.textContent),
+  ).toEqual(["進行中", "進行中"]);
+  expect(
+    (second.root.querySelectorAll("thead th")[2] as HTMLElement | undefined)
+      ?.hidden,
+  ).toBe(true);
+});
+
+// 今の表に無い列の状態は無視する（正常系）
+test("test_restore_table_state_when_column_removed", async () => {
+  // 準備
+  const { restoreTableState } = await loadTables();
+  const { root, wrapper } = await keyedTable(keyedColumns.slice(0, 3));
+  const before = bodyRows(root).map((row) => row.children[0]?.textContent);
+  // 実行
+  const call = () =>
+    restoreTableState(wrapper, {
+      sort: { key: "updated", direction: "descending" },
+      filters: [],
+      hidden: [],
+      order: [],
+      widths: [],
+      pinned: [],
+    });
+  // 検証
+  expect(call).not.toThrow();
+  expect(bodyRows(root).map((row) => row.children[0]?.textContent)).toEqual(
+    before,
+  );
 });
