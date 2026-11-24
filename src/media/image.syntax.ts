@@ -285,9 +285,9 @@ function opensOf(
 export function readImageAttributes(
   text: string,
   kind: MediaKind,
-  inline: boolean,
-  opener = false,
+  position: { inline: boolean; opener?: boolean },
 ): ImageAttributes {
+  const { inline, opener = false } = position;
   const attributes: ImageAttributes = {
     kind,
     lightbox: true,
@@ -384,7 +384,10 @@ function readImage(
   const inline = child !== sole && !isSoleWithAttributes(children, position);
   const text = images ? takeAttributeText(children[position + 1]) : "";
   const media = kind === "video" || kind === "audio";
-  const attributes = readImageAttributes(text, kind, inline, cell && media);
+  const attributes = readImageAttributes(text, kind, {
+    inline,
+    opener: cell && media,
+  });
   child.meta = { ...(child.meta ?? {}), mdmarkImage: attributes };
   if (kind === "gif") {
     child.attrSet("data-gif", "");
@@ -658,6 +661,17 @@ function openerInline(
   return token;
 }
 
+/** `media` がオンで、表のセルの中の `inline` なら、その中の動画・音声を再生のボタンにする */
+function buildCellOpenersIn(
+  state: StateCore,
+  options: { token: Token; cell: boolean; media: boolean },
+): void {
+  const { token, cell, media } = options;
+  if (cell && media && token.type === "inline") {
+    buildCellOpeners(state, token);
+  }
+}
+
 /** 表のセルの中の動画・音声を、記載した場所の再生のボタンにする */
 function buildCellOpeners(state: StateCore, inline: Token): void {
   let linkDepth = 0;
@@ -704,9 +718,7 @@ export function buildImageFigures(state: StateCore): void {
     cell = cellStateOf(token, cell);
     const inline = tokens[index + 1];
     const close = tokens[index + 2];
-    if (cell && features.media && token.type === "inline") {
-      buildCellOpeners(state, token);
-    }
+    buildCellOpenersIn(state, { token, cell, media: features.media });
     if (token.type !== "paragraph_open" || inline?.type !== "inline") {
       out.push(token);
       continue;

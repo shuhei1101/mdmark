@@ -150,10 +150,34 @@ export function renderMediaOpener(options: {
     muted,
     loop,
   });
-  const thumbnail = opener === "thumbnail" && kind === "video" && poster;
-  const button = thumbnail
-    ? `<button class="mdmark-media-open mdmark-media-thumb" type="button" aria-haspopup="dialog" aria-label="${escapeHtml(label)}"${data}><img src="${escapeHtml(poster)}" alt=""><span class="mdmark-media-thumb-icon">${iconSvg("play")}</span></button>`
-    : `<button class="mdmark-media-open" type="button" aria-haspopup="dialog"${data}>${iconSvg(kind === "video" ? "play" : "volume-2")}<span class="mdmark-media-open-label">${escapeHtml(label)}</span></button>`;
+  const thumbnail =
+    opener === "thumbnail" && kind === "video" ? poster : undefined;
+  const button = openerButton({ kind, label, data, thumbnail });
+  return wrapOpener({ button, caption, inline });
+}
+
+/** 再生のボタンの `button` の HTML（`thumbnail` を渡すとサムネイル） */
+function openerButton(options: {
+  kind: "video" | "audio";
+  label: string;
+  data: string;
+  thumbnail: string | undefined;
+}): string {
+  const { kind, label, data, thumbnail } = options;
+  if (thumbnail !== undefined) {
+    return `<button class="mdmark-media-open mdmark-media-thumb" type="button" aria-haspopup="dialog" aria-label="${escapeHtml(label)}"${data}><img src="${escapeHtml(thumbnail)}" alt=""><span class="mdmark-media-thumb-icon">${iconSvg("play")}</span></button>`;
+  }
+  const icon = iconSvg(kind === "video" ? "play" : "volume-2");
+  return `<button class="mdmark-media-open" type="button" aria-haspopup="dialog"${data}>${icon}<span class="mdmark-media-open-label">${escapeHtml(label)}</span></button>`;
+}
+
+/** ボタンの後ろにキャプションを置き、段落なら `div.mdmark-media-inline-figure` で包む */
+function wrapOpener(options: {
+  button: string;
+  caption: string | undefined;
+  inline: boolean;
+}): string {
+  const { button, caption, inline } = options;
   const captionHtml = caption
     ? `<span class="mdmark-media-open-caption">${escapeHtml(caption)}</span>`
     : "";
