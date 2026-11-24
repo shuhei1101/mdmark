@@ -81,7 +81,7 @@ classes:
           - name: test_render_now_when_source_has_fence
             case: 正常
             summary: '``` の行を持つ `source` でも、コードブロックを途中で閉じずに図を描く'
-            condition: '`flowchart LR` の途中に ``` だけの行（`%%` のコメントの行）を持つ `source`'
+            condition: '`flowchart LR` の途中に Mermaid のコメントの行（`%%` の後ろに ``` を続けた行）を持つ `source`'
             mock: なし（ブラウザ。map の部品のモジュールを `setPartModuleLoader` で指定する）
             expected: '`figure.mdmark-diagram[data-diagram=map]` が 1 つで、図の外に本文もマーカーも描かれない'
         callees:
