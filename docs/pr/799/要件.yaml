@@ -1,0 +1,96 @@
+use_cases:
+  - kind: composite
+    scenario: docs/scenario/SC-797-1.yaml
+    impact: new
+    detail: アプリの画面が配布物を読み込み、ビュー・コメント・図などの部品のカスタム要素にアプリのデータを指定して描き、利用者の操作をイベントで受け取って保存・詳細を開く流れを新規に作る（扱う部品は設計で決める）
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-797-2.yaml
+    impact: new
+    detail: アプリの画面が部品のカスタム要素を配置し、JavaScript のプロパティでデータを指定して描き、操作をイベントで受け取る単一 UC を新規に作る（部品ごとに分けるかは設計で決める）
+    depends_on:
+      - docs/scenario/SC-797-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-81.yaml
+    impact: run_only
+    detail: ビューを描く関数・コメントを付ける関数の処理をカスタム要素と共有するため、JavaScript から描くビューとコメントが変わらないことを確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-24.yaml
+    impact: run_only
+    detail: 図の部品をカスタム要素で配ると埋め込んだ HTML のチャートと同じ部品の名前を扱うため、文書のチャートの描き方が変わらないことを確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-793-2.yaml
+    impact: run_only
+    detail: カスタム要素の登録の並びに部品を追加するため、表のカスタム要素が変わらないことを確認する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: following
+    detail: 部品のカスタム要素を別の配布ファイルに分ける場合に、ビルドで得る配布物の一覧に追随する
+    depends_on:
+      - docs/scenario/SC-797-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-15.yaml
+    impact: run_only
+    detail: ガイドの索引に行を追加するため、ガイドを参照できることを確認する
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-472-90.yaml
+    impact: run_only
+    detail: 利用側の JavaScript から描いたビューの操作が変わらないことを確認する
+    depends_on: []
+  - kind: composite
+    scenario: docs/scenario/SC-793-1.yaml
+    impact: run_only
+    detail: アプリの一覧を表のカスタム要素で探して編集する流れが変わらないことを確認する
+    depends_on: []
+docs:
+  - page: docs/guide/カスタマイズ-部品をカスタム要素で使用する.mark.md
+    new: true
+    change: アプリの画面でビュー・コメント・図などの部品のカスタム要素を読み込み、プロパティでデータを指定して、操作のイベントを受け取る手順のガイドを新規に作る（タグ topic:ガイド。扱う部品は設計で決める）
+    status: todo
+  - page: docs/guide/コアコンセプト-部品をカスタム要素で配る仕組み.md
+    new: false
+    change: 配布物が登録するカスタム要素の説明（今は <mdmark-table>）と「ほかの部品を追加する」の節を、追加した部品に合わせる
+    status: todo
+  - page: docs/guide/API.mark.md
+    new: false
+    change: 追加する部品のカスタム要素のプロパティ・属性・イベントと公開の型を追加する
+    status: todo
+  - page: docs/guide/用語集.mark.md
+    new: false
+    change: 追加する部品のカスタム要素の用語を追加する
+    status: todo
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 追加する部品のカスタム要素の用語の行を追加する
+    status: todo
+  - page: docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
+    new: false
+    change: 部品を JavaScript から使用する方法の並びに、部品のカスタム要素のガイドへのリンクを追加する
+    status: todo
+  - page: docs/guide/カスタマイズ-表をカスタム要素で使用する.mark.md
+    new: false
+    change: ほかの部品のカスタム要素のガイドへのリンクを追加する
+    status: todo
+  - page: docs/guide/files.yml
+    new: false
+    change: 新規に作るガイドのページの行（name・description・tags）を追加する
+    status: todo
+  - page: docs/guide/index.yaml
+    new: false
+    change: 新規に作るガイドのページの行を目次に追加する
+    status: todo
+  - page: plugin/guide-index.yaml
+    new: false
+    change: 部品のカスタム要素のガイドの行を追加する
+    status: todo
+scope_out:
+  - item: React から使用する薄いラッパーの配布
+    reason: '#793 の決定で見送った案（配布が 2 つになる）。表のカスタム要素と同じく、ラッパーは使用する側のアプリに置く'
+    plan: none
+  - item: アプリの画面（MindStella・AI Monitor など）の今の部品を、追加するカスタム要素に置き換える
+    reason: 使用する側のリポジトリの作業で、要望は mdmark がカスタム要素を配るところまで
+    plan: none
