@@ -40,6 +40,16 @@ fields:
     required: true
     description: 利用者が記載した本文。文字のまま出し、HTML として解釈しない
     example: 手順の数を 3 にする
+  - key: editable
+    title: 編集できる
+    type: bool
+    description: '`true` のとき、吹き出しに「編集」を出し、確定した本文を編集のイベントで通知する。省くと `false`（`mountComments` のコメントの読み込みと保存の関数が `update` を持たないときと同じ）'
+    example: 'true'
+  - key: removable
+    title: 削除できる
+    type: bool
+    description: '`true` のとき、吹き出しに「削除」を出し、押されたコメントを削除のイベントで通知する。省くと `false`（`remove` を持たないときと同じ）'
+    example: 'true'
 lifecycle:
   - key: （全体）
     growth: コメントのカスタム要素 1 つに 1 件
@@ -54,3 +64,5 @@ usage:
     access: read
     fields:
       - comments[]
+      - editable
+      - removable
