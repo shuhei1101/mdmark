@@ -3162,7 +3162,7 @@ flows:
       - name: 配布物を読み込んだ Node の処理
         description: 正常系と同じ
       - name: 読み込めない属性の Markdown
-        description: '`![グラフ](chart.png){modal width=300}`・`![読み上げ](voice.mp3){thumbnail}`・`![操作](demo.mp4){thumbnail}` をそれぞれ画像だけの段落に持つ文書'
+        description: '`![グラフ](chart.png){modal width=300}`・`![読み上げ](voice.mp3){thumbnail}`・`![操作](demo.mp4){thumbnail}`・`![操作の様子](demo2.mp4){modal width=320 align=center}` をそれぞれ画像だけの段落に持ち、表のセルに `![素材 1](m1.mp4){align=right}` を記載した文書'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-
@@ -3179,10 +3179,11 @@ flows:
 
       <!-- /map -->
     expected:
-      - 3 つの段落の前に記載の警告が 1 つずつあり、本文に `modal`・`thumbnail` と記載できる属性の名前がある
+      - 4 つの段落の前と表の前に記載の警告が 1 つずつあり、本文に読み込めない `modal`・`thumbnail`・`width=320`・`align=center`・`align=right` と記載できる属性の名前がある
       - '`chart.png` は `--mdmark-image-width: 300px` の `figure.mdmark-image`'
       - '`voice.mp3` は `button.mdmark-media-thumb` でなく、`audio` の `figure.mdmark-media`（表のセルでも `modal` でもない）'
       - '`demo.mp4` は `figure.mdmark-media` の `video`（`thumbnail` を適用せず、モーダルにしない）'
+      - '`demo2.mp4` は `div.mdmark-media-inline-figure` の中の再生のボタンで、`style` と `data-align` を持たない。表のセルの `m1.mp4` は再生のボタンで `data-align` を持たない'
     test: test_error_when_modal_attribute_unreadable
     refs:
       - SC-472-67#scenarios[異常シナリオ（画像に記載した modal）]
@@ -3549,7 +3550,7 @@ constraints:
 
       `nolightbox` は `img` に `data-nolightbox` を付ける。
 
-      知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した動画と音声だけの属性・音声に記載した `thumbnail`・`poster` を持たない動画の `thumbnail` は適用せずに、画像の前（文の中の画像は段落の前）に記載の警告を配置し、本文に読み込めない属性と記載できる属性を出す。
+      知らない属性・読み込めない値・文の中の画像の `align`・画像に記載した `autoplay`・`muted`・`loop`・`poster`・`modal`・`thumbnail`・音声に記載した `thumbnail`・`poster` を持たない動画の `thumbnail`・制約「動画と音声の再生のボタン」で再生のボタンにする動画・音声の `width`・`align` は適用せずに、画像の前（文の中の画像は段落の前）に記載の警告を配置し、本文に読み込めない属性と記載できる属性を出す。
 
       `images` がオフのときは `{…}` を記載した文字のまま出す'
   - item: 画像の図とキャプション
