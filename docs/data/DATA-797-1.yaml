@@ -1,0 +1,54 @@
+id: DATA-797-1
+visibility: internal
+title: 'データ: ビューのカスタム要素の指定'
+lead: アプリの画面がビューのカスタム要素の JavaScript のプロパティで指定する、列名・項目・ビューの設定。アプリが書き込み、ビューの部品が参照して描く。
+datastore: JSON（アプリの画面のメモリ。mdmark は保存しない）
+fields:
+  - key: columns[]
+    title: 列名
+    type: array
+    required: true
+    description: 表形式の列の並びと、ボードの項目に出す値の並び。要素は文字列で 1 つ以上。文字のまま出し、HTML として解釈しない
+    example: '["タイトル", "状態", "担当"]'
+  - key: items[]
+    title: 項目
+    type: array
+    required: true
+    description: 項目の並び。配列の順が表形式の行の順。空の配列は項目の無いビューを描く
+  - key: items[].key
+    title: 項目のキー
+    type: string
+    required: true
+    unique: 項目の並びの中
+    description: 項目を特定する値。項目の押下のイベントでアプリへ通知する。表のカスタム要素の行のキーと同じ役割
+    example: T-3
+  - key: items[].values
+    title: 列ごとの値
+    type: object
+    required: true
+    description: '`columns[]` の列名をキーにした文字列の値の組。列名の無い値は空にする。文字のまま出し、HTML として解釈しない'
+    example: '{"タイトル": "設計", "状態": "対応中", "担当": "佐藤"}'
+  - key: options
+    title: ビューの設定
+    type: object
+    description: ボード表示・描いた直後に出すビュー・列ごとの絞り込みと並べ替え。キー（`board`・`initial`・`columns`）と意味はビューのマーカーの設定と同じ。省くと表形式だけを描く
+    example: '{"board": {"group": {"column": "状態"}}, "columns": {"担当": {"filter": {}}}}'
+lifecycle:
+  - key: （全体）
+    growth: ビューのカスタム要素 1 つに 1 件
+    retention: アプリが指定し直すか、要素がページから削除されるまで
+    deletion: mdmark は保存しない。アプリが自分の保存先で持つ
+  - key: items[]
+    growth: アプリの項目の件数。〜数百件
+    retention: 全体と同じ
+    deletion: アプリが項目を指定し直すと入れ替わる
+usage:
+  - interface: 部品をカスタム要素で描く
+    access: read
+    fields:
+      - columns[]
+      - items[]
+      - options
+refs:
+  - DATA-472-23#
+  - DATA-793-1#

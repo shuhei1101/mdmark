@@ -1,0 +1,22 @@
+id: DATA-797-3
+visibility: internal
+title: 'データ: グラフ・操作できる部品のカスタム要素の指定'
+lead: アプリの画面がグラフのカスタム要素と操作できる部品のカスタム要素の JavaScript のプロパティで指定する、部品の定義。アプリが書き込み、図の部品が参照して描く。
+datastore: JSON（アプリの画面のメモリ。mdmark は保存しない）
+fields:
+  - key: definition
+    title: 部品の定義
+    type: object
+    required: true
+    description: 描く図の部品の定義。キーと意味は、グラフは `chart`、操作できる部品は `param` のマーカーの範囲に記載する JSON と同じで、同じ構造の確認を実行する
+    example: '{"type": "line", "title": "見積もりの推移", "series": [{"name": "pt", "values": [3, 5, 8]}]}'
+lifecycle:
+  - key: （全体）
+    growth: カスタム要素 1 つに 1 件
+    retention: アプリが指定し直すか、要素がページから削除されるまで
+    deletion: mdmark は保存しない。アプリが自分の保存先で持つ
+usage:
+  - interface: 部品をカスタム要素で描く
+    access: read
+    fields:
+      - definition
