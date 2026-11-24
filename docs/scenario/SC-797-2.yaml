@@ -1,0 +1,204 @@
+id: SC-797-2
+visibility: internal
+title: 部品をカスタム要素で描く
+lead: アプリの画面が、配布物を読み込んだページにビュー・コメント・グラフ・操作できる部品・map の図のカスタム要素を配置し、データを JavaScript のプロパティで指定して部品を描き、項目の押下・コメントの保存・値の変更・ノードの押下をカスタム要素のイベントで受け取る。
+primary_actor: mdmark を使用するアプリの画面
+stakeholders:
+  - name: アプリの画面
+    interest: ビュー・コメント・図をアプリごとに作らずに、データを指定するだけで文書のマーカーと同じ部品を使用でき、利用者の操作を自分の処理（詳細を開く・保存する・値を使用する）に結び付けられる
+  - name: 利用者
+    interest: どのアプリのビュー・コメント・図も、mdmark の文書と同じ外観と操作で参照できる
+trigger: アプリの画面が、手元のデータをビュー・コメント・図で表示する
+preconditions:
+  - ページが mdmark の配布物の JavaScript と CSS を読み込んでいる（『配布物を読み込む』）
+success_guarantee: カスタム要素の場所に、文書のマーカーで描いたときと同じ外観と操作の部品が描かれ、アプリの処理に結び付く操作が、操作した対象を特定できる値を持つイベントでアプリへ届く。データを指定し直すと、部品を描き直す。
+minimal_guarantee: データに誤りがあるときは、部品の場所に誤りの通知を出し、ページのほかの要素は動く。データに記載したスクリプトは動かない。
+test_file: tests/e2e/単一ユースケース/部品をカスタム要素で描く.spec.ts
+scenarios:
+  - name: 正常シナリオ（ビューを描く）
+    setup:
+      - name: アプリの画面
+        description: バージョンを固定した URL で `dist/index.js` と `dist/index.css` を読み込み、ビューのカスタム要素 `<mdmark-view>` を 1 つ持つ HTML
+      - name: ビューのデータ
+        description: タイトル・状態・担当の列名と、『ビューで項目を確認する』の正常シナリオの表と同じ 5 件の項目。状態の列でボードの列に分け、担当の列に絞り込みを付ける
+        notes: 1 件目のタイトルは `<script>alert(1)</script>設計`
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant V as mdmark-view
+        A->>V: 列名と項目をプロパティで指定する
+        V-->>U: ボード表示のビュー
+        U->>V: 表形式に切り替え、担当の列で絞り込む
+        V-->>U: 絞り込んだ項目
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`<mdmark-view>` の場所に、『ビューで項目を確認する』の正常シナリオと同じボード表示（3 つの列と項目の数）とビューの切り替えが描かれる'
+      - 表形式に切り替えて担当の絞り込みで 1 人を選ぶと、その人の項目だけが残る
+      - 1 件目のタイトルは文字 `<script>alert(1)</script>設計` のまま出て、`script` 要素が無い
+    test: test_normal_when_view_drawn
+  - name: 正常シナリオ（ビューの項目を押す）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオ（ビューを描く）と同じ。`<mdmark-view>` の項目の押下のイベントを受け、受け取った項目のキーを画面に出す
+      - name: ビューのデータ
+        description: 正常シナリオ（ビューを描く）と同じ。項目ごとに一意のキーを持つ
+      - name: Mock
+        description: 正常シナリオ（ビューを描く）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant V as mdmark-view
+        U->>V: ボード表示の 2 件目の項目を押す
+        V-->>A: 項目の押下のイベント（2 件目のキー）
+        A-->>U: 2 件目の詳細を開く
+        U->>V: 表形式に切り替え、3 件目の行にフォーカスして Enter を押す
+        V-->>A: 項目の押下のイベント（3 件目のキー）
+      ```
+
+      <!-- /map -->
+    expected:
+      - ボード表示の 2 件目の項目を押すと、項目の押下のイベントが 1 回届き、2 件目のキーを持つ
+      - 表形式の 3 件目の行にフォーカスして Enter を押すと、項目の押下のイベントが 3 件目のキーで届く
+      - ビューの切り替えと絞り込みのボタンを押しても、項目の押下のイベントは届かない
+    test: test_normal_when_view_item_clicked
+  - name: 正常シナリオ（コメントを付ける）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオ（ビューを描く）と同じ配布物を読み込み、コメントのカスタム要素 `<mdmark-comments>` の中に `導入の手順を整える。` の段落を持つ HTML。コメントの保存のイベントを受けて、受け取ったコメントを手元の配列に追加し、配列をプロパティに指定し直す
+      - name: コメントのデータ
+        description: 最初は空の配列
+      - name: コメントの本文
+        description: 利用者が入力欄に記載する本文
+        notes: '`手順の数を <b>3</b> にする`'
+      - name: Mock
+        description: 正常シナリオ（ビューを描く）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant C as mdmark-comments
+        A->>C: 空のコメントの配列をプロパティで指定する
+        U->>C: 「導入の手順」を選び、コメントのボタンを押して本文を記載し、保存する
+        C-->>A: コメントの保存のイベント（選んだ文字・前後の文字・本文）
+        A->>C: コメントを追加した配列を指定し直す
+        C-->>U: 選んだ文字のマーカー
+      ```
+
+      <!-- /map -->
+    expected:
+      - 要素の中の文字を選ぶとコメントのボタンが出て、要素の外の文字を選んでも出ない
+      - 保存を押すと、コメントの保存のイベントが 1 回届き、選んだ文字 `導入の手順`・前後の文字・本文を持つ
+      - アプリが配列を指定し直すと `導入の手順` にマーカーが付き、マーカーから開いたコメントの `<b>3</b>` は文字のまま出る
+      - 要素の中のアプリの段落の文字は変わらない
+    test: test_normal_when_comment_saved
+  - name: 正常シナリオ（グラフと操作できる部品を描く）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオ（ビューを描く）と同じ配布物を読み込み、グラフのカスタム要素 `<mdmark-chart>` と操作できる部品のカスタム要素 `<mdmark-param>` を 1 つずつ持つ HTML。操作できる部品の値の変更のイベントを受け、受け取った値を画面に出す
+      - name: 部品の定義
+        description: 『チャートを描く』の正常シナリオと同じ折れ線のグラフの定義と、スライダー 1 つ（0〜10、初期値 5）とグラフを持つ操作できる部品の定義
+      - name: Mock
+        description: 正常シナリオ（ビューを描く）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant G as mdmark-chart
+        participant P as mdmark-param
+        A->>G: グラフの定義をプロパティで指定する
+        G-->>U: 図の枠に入れたグラフ
+        A->>P: 操作できる部品の定義をプロパティで指定する
+        P-->>U: スライダーとグラフ
+        U->>P: スライダーを 8 に動かす
+        P-->>A: 値の変更のイベント（8）
+        A->>G: 点を加えた定義を指定し直す
+        G-->>U: 描き直したグラフ
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`<mdmark-chart>` の場所に、『チャートを描く』の正常シナリオと同じ図の枠とグラフが描かれる'
+      - '`<mdmark-param>` のスライダーを 8 に動かすと、グラフが 8 の値で描き直され、値の変更のイベントが値 8 で届く'
+      - グラフの定義を指定し直すと、加えた点を持つグラフに描き直される
+    test: test_normal_when_chart_drawn
+  - name: 正常シナリオ（map の図を描く）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオ（ビューを描く）と同じ配布物を読み込み、map の図のカスタム要素 `<mdmark-map>` を 1 つ持つ HTML。ノードの押下のイベントを受け、受け取ったノードの ID を画面に出す
+      - name: 図のデータ
+        description: ノード 3 つ（API・DB・画面）と線 2 本の Mermaid の flowchart と、API のノードに説明を付けた補足
+      - name: Mock
+        description: 正常シナリオ（ビューを描く）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant M as mdmark-map
+        A->>M: Mermaid と補足をプロパティで指定する
+        M-->>U: map の構成図
+        U->>M: API のノードを押す
+        M-->>A: ノードの押下のイベント（API のノードの ID）
+        A-->>U: API の詳細を開く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`<mdmark-map>` の場所に、map の範囲で描いたときと同じ構成図（3 つのノードと 2 本の線）が描かれる'
+      - API のノードを押すと、選んだノードの線が強調され、ノードの押下のイベントが API のノードの ID で届く
+      - API のノードにポインターを重ねると、補足の説明のツールチップが出る
+    test: test_normal_when_map_drawn
+  - name: 異常シナリオ（データの誤り）
+    setup:
+      - name: アプリの画面
+        description: 正常シナリオ（ビューを描く）と同じ配布物を読み込み、`<mdmark-view>`・`<mdmark-chart>`・`<mdmark-map>` を 1 つずつと、その後ろに段落を 1 つ持つ HTML
+      - name: 誤ったデータ
+        description: ビューの項目に配列でないもの、グラフの定義に知らないグラフの種類、map の Mermaid に読み込めない記載を指定する
+      - name: Mock
+        description: 正常シナリオ（ビューを描く）と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant A as アプリの画面
+        participant E as 部品のカスタム要素
+        A->>E: 誤ったデータを指定する
+        E-->>U: 部品の場所に誤りの通知
+      ```
+
+      <!-- /map -->
+    expected:
+      - 3 つの要素の場所に、誤った指定の名前を記載した誤りの通知が出る
+      - 要素の後ろの段落が表示されている
+    test: test_error_when_data_invalid
+tags:
+  - name: topic:部品
+    main: true
+  - name: topic:ビュー
+  - name: topic:コメント
+  - name: topic:図
+  - name: topic:イベント
+  - name: topic:api
+  - name: tool:javascript
