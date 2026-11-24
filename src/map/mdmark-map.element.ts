@@ -35,9 +35,9 @@ const BaseElement: typeof HTMLElement =
 /** 指定の誤り */
 type MapIssue = { name: string; reason: string };
 
-/** HTML コメントの中に埋める JSON。`-->` で閉じないよう、`-` を全て JSON の Unicode エスケープにする */
+/** HTML コメントの中に埋める JSON。`-->` で閉じないよう、`--` の 2 つ目の `-` を JSON の Unicode エスケープにする（`--` は文字列の中にだけ現れ、数値の符号は変えない） */
 const commentJson = (value: unknown): string =>
-  (JSON.stringify(value) ?? "").replaceAll("-", "\\u002d");
+  (JSON.stringify(value) ?? "").replaceAll("--", "-\\u002d");
 
 /** `source` を、中の最も長い ``` の連続より 1 つ長いフェンスのコードブロックにする */
 const fencedMermaid = (source: string): string => {
