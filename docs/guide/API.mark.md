@@ -24,6 +24,7 @@
 | [拡張を登録する](#拡張を登録する) | `registerExtension(extension)` | 利用側が自分のマーカーと、そのマーカーを描くモジュールの読み込み方を登録する |
 | [ビューを描く](#ビューを描く) | `mountView(el, opts)` | 列名と項目の値から、要素の中にボード表示と表形式のビューを描く |
 | [表をカスタム要素で描く](#表をカスタム要素で描く) | `<mdmark-table>` | 列の定義と行のデータから表を描き、行の押下・セルの編集・行の追加を要素のイベントで通知する |
+| [部品をカスタム要素で描く](#部品をカスタム要素で描く) | `<mdmark-view>`・`<mdmark-comments>`・`<mdmark-graph>`・`<mdmark-param-graph>`・`<mdmark-map>` | ビュー・コメント・グラフ・操作できる部品・map の図を描き、操作を要素のイベントで通知する |
 | [コメントを付ける](#コメントを付ける) | `mountComments(el, opts)` | 利用側の要素の中の選んだ箇所に、コメントを付けられるようにする |
 | [部品のモジュールを指定する](#部品のモジュールを指定する) | `setPartModuleLoader(name, loader)` | map・ビュー・コメントの部品と mermaid のモジュールを返却する関数を指定し、配布物の隣や `mermaid.url` から読み込まずにその関数で読み込ませる |
 | [テーマの CSS 変数](#テーマの-css-変数) | `--mdmark-*` | 外観の値を持つ変数。利用側が上書きする |
@@ -956,6 +957,72 @@ table.features = { count: {}, add: {} };
 プロパティの代入は例外を投げない。
 指定に誤りがあると、要素の中にタイトル `この表を表示できません` の通知ブロックを出し、本文に最初に見つけた誤りの指定の名前と修正方法を出す。
 `render` が例外を投げたセルは、値を文字で出し、元のエラーをコンソールに出す。
+
+## 部品をカスタム要素で描く
+
+`dist/index.js` を読み込んだページで、要素のプロパティにデータを指定し、Markdown の記法で描いたときと同じ外観と操作の部品を描く。
+手順は [部品をカスタム要素で使用する](./カスタマイズ-部品をカスタム要素で使用する.mark.md)。
+
+### リクエスト
+
+```js
+const view = document.querySelector("mdmark-view");
+view.columns = ["タイトル", "状態"];
+view.items = [{ key: "T-1", values: { タイトル: "設計", 状態: "対応中" } }];
+
+const map = document.querySelector("mdmark-map");
+map.source = "flowchart LR\n  ui --> api";
+map.options = { title: "全体の構成" };
+```
+
+<!-- table: {"kind": "data"} -->
+
+| 要素 | プロパティ | 型 | 必須 | 説明 |
+| --- | --- | --- | --- | --- |
+| `<mdmark-view>` | `columns` | `string[]` | ✓ | 列名。`mountView` の `opts.columns` と同じ |
+| `<mdmark-view>` | `items` | `MdmarkViewItem[]` | ✓ | 項目。`key`（項目の並びの中で重ならない文字列）と `values`（`mountView` の `opts.items` の 1 要素）を持つ |
+| `<mdmark-view>` | `group` | `string` |  | `mountView` の `opts.group` と同じ |
+| `<mdmark-view>` | `default` | `"board" \| "table"` |  | `mountView` の `opts.default` と同じ |
+| `<mdmark-view>` | `filter` | `Record<string, "select" \| "text" \| "date">` |  | `mountView` の `opts.filter` と同じ |
+| `<mdmark-view>` | `icons` | `Record<string, string>` |  | `mountView` の `opts.icons` と同じ |
+| `<mdmark-comments>` | `comments` | `MdmarkComment[]` | ✓ | 付いたコメント。`id` は重ならない |
+| `<mdmark-comments>` | `editable` | `boolean` |  | 吹き出しに「編集」を出す。既定は `false` |
+| `<mdmark-comments>` | `removable` | `boolean` |  | 吹き出しに「削除」を出す。既定は `false` |
+| `<mdmark-graph>` | `definition` | `object` | ✓ | `chart` のマーカーの範囲に記載する JSON と同じ定義 |
+| `<mdmark-param-graph>` | `definition` | `object` | ✓ | `param` のマーカーの範囲に記載する JSON と同じ定義 |
+| `<mdmark-map>` | `source` | `string` | ✓ | Mermaid。map の範囲で描ける種類 |
+| `<mdmark-map>` | `data` | `object` |  | 補足。map の範囲の `map-data` と同じキー |
+| `<mdmark-map>` | `options` | `{ title?: string; focus?: string }` |  | map の設定 |
+
+<!-- /table -->
+
+### レスポンス
+
+要素から次のイベントを送信する。
+どれも `CustomEvent` で、`bubbles` と `composed` を持つ。
+`<mdmark-graph>` はイベントを送信しない。
+
+| 要素 | イベント | `detail` | 説明 |
+| --- | --- | --- | --- |
+| `<mdmark-view>` | `mdmark-item-click` | `{ key }` | 項目を押した |
+| `<mdmark-comments>` | `mdmark-comment-save` | `{ quote, prefix, suffix, body }` | コメントを保存した。`id` はアプリが振る |
+| `<mdmark-comments>` | `mdmark-comment-edit` | `{ id, body }` | コメントの本文の編集を確定した |
+| `<mdmark-comments>` | `mdmark-comment-remove` | `{ id }` | コメントの削除を確定した |
+| `<mdmark-param-graph>` | `mdmark-param-change` | `{ key, value }` | スライダーの値を変えた |
+| `<mdmark-map>` | `mdmark-node-click` | `{ id }` | ノードを押した |
+
+型 `MdmarkViewElement`・`MdmarkViewItem`・`MdmarkViewItemClickDetail`・`MdmarkCommentsElement`・`MdmarkCommentEditDetail`・`MdmarkCommentRemoveDetail`・`MdmarkGraphElement`・`MdmarkParamGraphElement`・`MdmarkParamChangeDetail`・`MdmarkMapElement`・`MdmarkNodeClickDetail` は `dist/index.d.ts` から公開し、`HTMLElementTagNameMap` と `HTMLElementEventMap` に加える。
+
+### エラー
+
+プロパティの代入は例外を投げない。
+
+| 起きたこと | 動き |
+| --- | --- |
+| `<mdmark-view>`・`<mdmark-map>` の指定に誤りがある | 要素の中に通知ブロック（ビューは `この箇所を表示できません`、map の図は `この図を表示できません`）を出し、本文に最初に見つけた誤りの指定の名前と修正方法を出す |
+| `<mdmark-comments>` の指定に誤りがある | 要素の中の本文を残し、先頭にタイトル `この箇所を表示できません` の通知ブロックを配置する。コメントの操作は付けない |
+| `<mdmark-graph>`・`<mdmark-param-graph>` の定義が構造の確認に通らない | 要素の中にタイトル `この図を表示できません` の通知ブロックを出す |
+| 部品のモジュールを読み込めない | 文書の同じ記法と同じ読み込めない旨の通知ブロックを出す |
 
 ## コメントを付ける
 

@@ -50,43 +50,63 @@ docs:
   - page: docs/guide/カスタマイズ-部品をカスタム要素で使用する.mark.md
     new: true
     change: アプリの画面でビュー・コメント・図などの部品のカスタム要素を読み込み、プロパティでデータを指定して、操作のイベントを受け取る手順のガイドを新規に作る（タグ topic:ガイド。扱う部品は設計で決める）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: docs/guide/コアコンセプト-部品をカスタム要素で配る仕組み.md
     new: false
     change: 配布物が登録するカスタム要素の説明（今は <mdmark-table>）と「ほかの部品を追加する」の節を、追加した部品に合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: docs/guide/API.mark.md
     new: false
     change: 追加する部品のカスタム要素のプロパティ・属性・イベントと公開の型を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: docs/guide/用語集.mark.md
     new: false
     change: 追加する部品のカスタム要素の用語を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: docs/guide/用語集.yaml
     new: false
     change: 追加する部品のカスタム要素の用語の行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: docs/guide/カスタマイズ-部品をJavaScriptから使用する.mark.md
     new: false
     change: 部品を JavaScript から使用する方法の並びに、部品のカスタム要素のガイドへのリンクを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: docs/guide/カスタマイズ-表をカスタム要素で使用する.mark.md
     new: false
     change: ほかの部品のカスタム要素のガイドへのリンクを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: docs/guide/files.yml
     new: false
     change: 新規に作るガイドのページの行（name・description・tags）を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: docs/guide/index.yaml
     new: false
     change: 新規に作るガイドのページの行を目次に追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
   - page: plugin/guide-index.yaml
     new: false
     change: 部品のカスタム要素のガイドの行を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T07:49:54.708479+00:00'
 scope_out:
   - item: React から使用する薄いラッパーの配布
     reason: '#793 の決定で見送った案（配布が 2 つになる）。表のカスタム要素と同じく、ラッパーは使用する側のアプリに置く'

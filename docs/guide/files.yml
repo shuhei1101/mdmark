@@ -282,6 +282,14 @@ files:
     category: 使用方法
     description: アプリの画面に `<mdmark-table>` を配置し、列の定義と行のデータを指定して表を描き、行の押下・セルの編集・行の追加をイベントで受け取る手順を説明し、アプリの一覧を mdmark の表で表示するときに参照する。
     tags: [topic:表, topic:部品, topic:api, topic:イベント, topic:カスタマイズ, topic:ガイド]
+  - path: カスタマイズ-部品をカスタム要素で使用する.mark.md
+    id: guide-customize-part-elements
+    name: 部品をカスタム要素で使用する
+    aliases: [mdmark-view を使う, mdmark-map を使う, 部品のカスタム要素を使う]
+    visibility: public
+    category: 使用方法
+    description: アプリの画面にビュー・コメント・グラフ・操作できる部品・map の図のカスタム要素を配置し、プロパティでデータを指定して描き、操作をイベントで受け取る手順を説明し、アプリの画面のデータを mdmark の部品で表示するときに参照する。
+    tags: [topic:部品, topic:ビュー, topic:コメント, topic:グラフ, topic:map, topic:api, topic:イベント, topic:カスタマイズ, topic:ガイド]
   - path: カスタマイズ-印刷する.mark.md
     id: guide-customize-print
     name: 印刷する
