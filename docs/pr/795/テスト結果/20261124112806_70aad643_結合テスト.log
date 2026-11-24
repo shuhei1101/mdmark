@@ -1,0 +1,5 @@
+$ gh workflow run test.yml --ref feat/table/mdmark-table-element -f layer=integration -f paths="tests/integration/lib/mdmark-table.browser.test.ts"（run=45312414136。レビュー指摘でテストを追加した後）
+test	結合テストを回す	2026-11-24T02:27:45.5324149Z  ^[[32m✓^[[39m ^[[30m^[[46m integration-browser (chromium) ^[[49m^[[39m tests/integration/lib/mdmark-table.browser.test.ts ^[[2m(^[[22m^[[2m6 tests^[[22m^[[2m)^[[22m^[[33m 1050^[[2mms^[[22m^[[39m
+test	結合テストを回す	2026-11-24T02:27:45.5326744Z    ^[[33m^[[2m✓^[[22m^[[39m test_normal^[[33m 776^[[2mms^[[22m^[[39m
+test	結合テストを回す	2026-11-24T02:27:45.5399244Z ^[[2m Test Files ^[[22m ^[[1m^[[32m1 passed^[[39m^[[22m^[[90m (1)^[[39m
+test	結合テストを回す	2026-11-24T02:27:45.5400327Z ^[[2m      Tests ^[[22m ^[[1m^[[32m6 passed^[[39m^[[22m^[[90m (6)^[[39m
