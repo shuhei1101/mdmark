@@ -28,7 +28,7 @@ functions:
       1. `group` があれば `renderViewSwitch` と `renderViewBoard` を、無ければどちらも配置しない
       2. 列名と値をエスケープした表を `renderTable`（`kind: "data"`、`features` は `sort` と、`filters` があれば `filter`）で作り、`div.mdmark-view-table` に入れる
       3. `mode` で出さない方に `hidden` を付ける
-      4. `keys` があれば、ボードの項目と表形式の行に `data-key` を付け、ボードの先頭の項目だけを `tabindex="0"`（ほかは `-1`）にする
+      4. `keys` があれば、ボードの項目と表形式の行に `data-key` を付け、ボードの先頭の項目だけを `tabindex="0"`（ほかは `-1`）にする。表形式の `renderTable` には `rowKeys`（`keys`）・`pressable`・`columnKeys`（列名。描き直しで並べ替えと絞り込みを列のキーで保つため）を指定する
     unit_tests:
       - name: test_render_view
         case: 正常

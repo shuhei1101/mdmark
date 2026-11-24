@@ -49,9 +49,9 @@ classes:
           description: '-'
         process: |-
           1. 要素がページに無いか `definition` が `undefined` なら何もしない
-          2. `readDefinition("chart", JSON.stringify(definition))` が `ok: false` なら、要素の中を `div.mdmark` の中の `renderNotice`（`source` は `data`、`name` は `definition` に `problems` の最初の読み込めない箇所のパスを続けた名前、`reason` はその箇所の誤りの内容と修正方法）にして終える
-          3. 前の図の枠の高さと拡大の倍率を記録し、`detach` を呼ぶ
-          4. `chart` のマーカーの範囲の Markdown を `render` して要素の中の `div.mdmark` に入れ、`attachDiagrams` を付け、記録した高さと倍率を戻す
+          2. `readDefinition("chart", JSON.stringify(definition))` が `ok: false` なら、要素の中を `div.mdmark` の中の `renderNotice`（`source` は `data`、`name` は `definition`、`reason` は `problems` の最初の文。`problems` は読み込めない箇所を文で持ち、パスを別に持たない）にして終える
+          3. 前の図の枠の高さ（表示する枠の `style.height`）と拡大の倍率（`zoomControlOf(表示する枠)?.ratio()`）を記録し、`detach` を呼ぶ
+          4. `chart` のマーカーの範囲の Markdown を `render` して要素の中の `div.mdmark` に入れ、`attachDiagrams` を付け、記録した高さを戻し、倍率は新しい表示する枠の `zoomControlOf(表示する枠)?.setRatio(記録した比)` で戻す
         unit_tests:
           - name: test_render_now
             case: 正常
@@ -65,11 +65,18 @@ classes:
             condition: '`title` が無い定義を代入する'
             mock: なし
             expected: 代入が例外を投げず、タイトル `この図を表示できません` の通知ブロック
+          - name: test_render_now_when_redrawn
+            case: 正常
+            summary: 定義を代入し直すと、図の枠の倍率を保って描き直す
+            condition: 描いた後に拡大を 2 回押し、項目を 1 つ加えた定義を代入する
+            mock: なし（ブラウザ）
+            expected: 描き直した図の枠の倍率の文字が、代入する前と同じ
         callees:
           - MOD-472-171#functions[readDefinition]
           - MOD-472-212#functions[render]
           - MOD-472-183#functions[attachDiagrams]
           - MOD-472-310#functions[renderNotice]
+          - MOD-472-177#functions[zoomControlOf]
         refs:
           - IF-797-3#constraints[描く先]
           - IF-797-3#exceptions
