@@ -114,7 +114,23 @@ test("test_normal", async () => {
     figure.querySelectorAll(".mdmark-diagram-node[data-node]"),
   ).toHaveLength(3);
   expect(figure.querySelectorAll(".map-wire-hit[data-wire]")).toHaveLength(2);
-  expect(figure.textContent).toContain("認証を受け持つ");
+  // 検証: api のノードにポインターを重ねると補足の説明のツールチップが出る
+  const apiNode = must(
+    figure.querySelector<HTMLElement>('.mdmark-diagram-node[data-node="api"]'),
+    "api のノード",
+  );
+  await userEvent.hover(apiNode);
+  const info = apiNode.querySelector<HTMLElement>(".mdmark-diagram-info");
+  if (info) {
+    await userEvent.hover(info);
+  }
+  await vi.waitFor(() =>
+    expect(
+      [...figure.querySelectorAll<HTMLElement>('[role="tooltip"]')].some(
+        (tip) => !tip.hidden && tip.textContent?.includes("認証を受け持つ"),
+      ),
+    ).toBe(true),
+  );
   // 実行: api のノードを押す
   const node = must(
     figure.querySelector('.mdmark-diagram-node[data-node="api"]'),
