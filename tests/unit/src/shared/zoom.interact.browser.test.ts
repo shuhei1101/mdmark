@@ -870,3 +870,21 @@ test("test_attach_zoom_when_drag_owner", async () => {
   expect(viewport.scrollLeft).toBe(before);
   expect(onPanStart).not.toHaveBeenCalled();
 });
+
+// 全体が収まる倍率に対する比を読み、その比の倍率にする（正常系）
+test("test_attach_zoom_when_ratio", async () => {
+  // 準備
+  const first = await setUp(undefined, "fit");
+  button(first.root, "拡大").click();
+  button(first.root, "拡大").click();
+  const second = await setUp(undefined, "fit");
+  // 実行
+  const ratio = first.zoom.ratio();
+  second.zoom.setRatio(ratio);
+  const restored = zoomText(second.root);
+  second.zoom.setRatio(100);
+  // 検証
+  expect(ratio).toBeCloseTo(1.5625);
+  expect(restored).toBe("156%");
+  expect(zoomText(second.root)).toBe("500%");
+});

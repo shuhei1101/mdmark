@@ -79,6 +79,29 @@ test("test_render_now", async () => {
   expect(svgShape(element)).toEqual(svgShape(expected));
 });
 
+// 定義を代入し直すと、図の枠の倍率を保って描き直す（正常系）
+test("test_render_now_when_redrawn", async () => {
+  // 準備
+  await loadElement();
+  const element = createElement("mdmark-graph");
+  const definition = parsed<Record<string, unknown>>(REPLY_TIME_TEXT);
+  element.definition = definition;
+  await flush();
+  const zoomIn = () =>
+    element.querySelector<HTMLButtonElement>('[data-tool="in"]')?.click();
+  zoomIn();
+  zoomIn();
+  const zoomText = () =>
+    element.querySelector('[data-tool="fit"]')?.textContent ?? "";
+  const before = zoomText();
+  // 実行
+  element.definition = { ...definition, updated: "2026-11-25" };
+  await flush();
+  // 検証
+  expect(before).not.toBe("100%");
+  expect(zoomText()).toBe(before);
+});
+
 // 誤った定義は通知ブロックを描く（異常系）
 test("test_render_now_when_invalid", async () => {
   // 準備
