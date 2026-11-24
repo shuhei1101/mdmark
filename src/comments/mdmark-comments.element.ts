@@ -181,31 +181,36 @@ export class MdmarkCommentsElement extends BaseElement {
       );
       return;
     }
-    let module: Awaited<
-      ReturnType<typeof loadPartModule<"comments">>
-    >["module"];
-    try {
-      ({ module } = await loadPartModule("comments"));
-    } catch {
-      this.#showNotice(
-        renderNotice({ name: "comments", figure: false, source: "part" }),
-      );
+    const comments = [...this.#comments];
+    const controller = await this.#attachModule(comments);
+    if (!controller) {
       return;
     }
-    if (attach !== this.#attaches || !this.isConnected) {
-      return;
-    }
-    const controller = await module.attachComments({
-      root: this,
-      store: this.#store([...this.#comments]),
-      docId: ELEMENT_DOC_ID,
-      closeOnEvent: true,
-    });
     if (attach !== this.#attaches || !this.isConnected) {
       controller.detach();
       return;
     }
     this.#controller = controller;
+  }
+
+  /** コメントの部品のモジュールを読み込み、イベントを送信する読み込みと保存の関数で `attachComments` を呼ぶ。読み込めなければ通知ブロックを配置して `undefined` を返却する */
+  async #attachModule(
+    comments: MdmarkComment[],
+  ): Promise<CommentsController | undefined> {
+    try {
+      const { module } = await loadPartModule("comments");
+      return await module.attachComments({
+        root: this,
+        store: this.#store(comments),
+        docId: ELEMENT_DOC_ID,
+        closeOnEvent: true,
+      });
+    } catch {
+      this.#showNotice(
+        renderNotice({ name: "comments", figure: false, source: "part" }),
+      );
+      return undefined;
+    }
   }
 
   /** `load` は指定されたコメントを返却し、保存・修正・削除はそれぞれのイベントを送信する読み込みと保存の関数 */

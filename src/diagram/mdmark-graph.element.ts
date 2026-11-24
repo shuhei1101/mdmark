@@ -109,6 +109,11 @@ abstract class DiagramElement<Definition> extends BaseElement {
       );
       return;
     }
+    this.#draw(json, result.definition as Definition);
+  }
+
+  /** 図の枠と図の部品を描いて操作を付け、前の図の枠の高さを戻す */
+  #draw(json: string, definition: Definition): void {
     const height = this.querySelector<HTMLElement>(".mdmark-diagram-viewport")
       ?.style.height;
     this.#detach?.();
@@ -121,7 +126,7 @@ abstract class DiagramElement<Definition> extends BaseElement {
         root,
         placement: resolveConfig({}).tooltips.diagramPlacement,
       }),
-      this.attachPart(root, result.definition as Definition),
+      this.attachPart(root, definition),
     ];
     const viewport = root.querySelector<HTMLElement>(
       ".mdmark-diagram-viewport",

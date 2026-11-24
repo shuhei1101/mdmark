@@ -176,22 +176,8 @@ export class MdmarkMapElement extends BaseElement {
     }
     this.#renders += 1;
     const renderId = this.#renders;
-    const issue = checkSpec(this.#source, this.#options);
-    if (issue) {
-      this.#showNotice(issue);
-      return;
-    }
-    const markdown = mapMarkdown({
-      source: this.#source,
-      data: this.#data,
-      settings: this.#options,
-    });
-    const warning = collectWarnings(markdown)[0];
-    if (warning) {
-      this.#showNotice({
-        name: /補足/.test(warning.message) ? "data" : "source",
-        reason: `を読み込めません。${warning.message}`,
-      });
+    const markdown = this.#markdownOrNotice(this.#source);
+    if (markdown === undefined) {
       return;
     }
     let module: Awaited<ReturnType<typeof loadPartModule<"map">>>["module"];
@@ -222,6 +208,29 @@ export class MdmarkMapElement extends BaseElement {
         );
       },
     });
+  }
+
+  /** 指定を確認して map の範囲の Markdown を返却する。誤りがあれば通知ブロックにして `undefined` を返却する */
+  #markdownOrNotice(source: string): string | undefined {
+    const issue = checkSpec(source, this.#options);
+    if (issue) {
+      this.#showNotice(issue);
+      return undefined;
+    }
+    const markdown = mapMarkdown({
+      source,
+      data: this.#data,
+      settings: this.#options,
+    });
+    const warning = collectWarnings(markdown)[0];
+    if (warning) {
+      this.#showNotice({
+        name: /補足/.test(warning.message) ? "data" : "source",
+        reason: `を読み込めません。${warning.message}`,
+      });
+      return undefined;
+    }
+    return markdown;
   }
 
   /** 要素の中を、指定の誤りの通知ブロックにする */
