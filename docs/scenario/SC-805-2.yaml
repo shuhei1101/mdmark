@@ -16,7 +16,7 @@ preconditions:
   - develop に `.github/workflows/develop-dist.yml` が入っている
   - リポジトリに `確認:task-planner` のラベルがある
 success_guarantee: develop の `dist/`・`plugin/`・`mdmark-style/`・`migrations/` の生成物が develop の先頭の commit のソースからビルドしたものになり、`@develop` の URL が待たずにその commit のファイルを返却する。
-minimal_guarantee: 再作成が失敗したときは develop の生成物を書き換えず、失敗した実行の URL を持つ `確認:task-planner` の Issue が 1 件だけ open になる。
+minimal_guarantee: ビルドが失敗したときは develop の生成物を書き換えない。ビルドかキャッシュの削除が失敗したときは、失敗した実行の URL を持つ `確認:task-planner` の Issue が 1 件だけ open になる。
 scenarios:
   - name: 正常シナリオ
     setup:
