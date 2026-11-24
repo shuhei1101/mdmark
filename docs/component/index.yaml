@@ -118,6 +118,8 @@ items:
   summary: 画像を全画面で拡大し、前後へ切り替え、拡大・縮小・移動するダイアログ
 - page: CMP-472-36.ts.yaml
   summary: 再生バーとキャプションを持つ動画・音声の図
+- page: CMP-801-1.ts.yaml
+  summary: 再生のボタンから開き、動画・音声を全画面で再生するダイアログ
 - page: CMP-472-2.ts.yaml
   summary: GIF を止める・再生するボタンと、止めたときに重ねる最初のフレーム
 - page: CMP-472-9.ts.yaml

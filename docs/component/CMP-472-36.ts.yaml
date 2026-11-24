@@ -72,6 +72,90 @@ states:
         value: demo-poster.png
     notes:
       定義: 'ストーリーは `emulateMedia({ media: "print" })` で確認する'
+  - name: OpenButton
+    description: 表のセルの中の動画。ラベルの文字と再生のアイコンの再生のボタン
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: 素材 1
+      - name: opener
+        value: button
+      - name: inline
+        value: 'true'
+  - name: OpenButtonAudio
+    description: 表のセルの中の音声。音声のアイコンの再生のボタン
+    args:
+      - name: kind
+        value: audio
+      - name: src
+        value: voice.mp3
+      - name: alt
+        value: 読み上げ
+      - name: opener
+        value: button
+      - name: inline
+        value: 'true'
+  - name: OpenButtonCaption
+    description: '`modal` の属性と title を持つ段落の動画。再生のボタンの後ろにキャプション'
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: 操作の様子
+      - name: caption
+        value: 保存までの操作
+      - name: opener
+        value: button
+  - name: OpenButtonLongLabel
+    description: ラベルが長い。ボタンの中で折り返し、はみ出さない
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: 設定ファイルを読み込めないときに文書の先頭へ出すバーの操作を、最初から最後まで通した長い名前の素材
+      - name: opener
+        value: button
+      - name: inline
+        value: 'true'
+    notes:
+      定義: ストーリーの画面の幅を 390px にする
+  - name: OpenThumbnail
+    description: '`thumbnail` の属性と `poster` を持つ動画。`poster` の画像に再生のアイコンを重ねる'
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: 素材 2
+      - name: poster
+        value: demo-poster.png
+      - name: opener
+        value: thumbnail
+      - name: inline
+        value: 'true'
+  - name: OpenButtonPrint
+    description: 再生のボタンの印刷。枠と再生のアイコンを出さず、ラベルとキャプションを本文の文字で出す
+    args:
+      - name: kind
+        value: video
+      - name: src
+        value: demo.mp4
+      - name: alt
+        value: 操作の様子
+      - name: caption
+        value: 保存までの操作
+      - name: opener
+        value: button
+    notes:
+      定義: 'ストーリーは `emulateMedia({ media: "print" })` で確認する'
 lead: 拡張子が動画・音声の画像を、再生バーを持つ `video`・`audio` にして図に入れ、title をキャプションにする。印刷では動画の代わりに `poster` の画像を出す。
 args:
   - name: kind
@@ -119,6 +203,18 @@ args:
     required: false
     default: 'false'
     description: 繰り返し再生するか
+  - name: opener
+    type: 列挙
+    required: false
+    default: none
+    choices: '`none`・`button`・`thumbnail`'
+    description: '`none` は再生バーを持つ図。`button` はラベルの文字と再生のアイコンの再生のボタン、`thumbnail` は `poster` の画像に再生のアイコンを重ねた再生のボタンにし、再生バーを出さない（表のセルの中の動画・音声と、属性 `modal`・`thumbnail`）'
+  - name: inline
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`opener` が `none` 以外のとき'
+    description: 文の途中に配置するか。`false` は画像だけの段落の場所の `div.mdmark-media-inline-figure` に入れ、`true` はボタンとキャプションだけを返す
 css_properties:
   - name: --mdmark-image-width
     syntax: <length-percentage>
@@ -137,7 +233,7 @@ refs:
   - IF-472-35#constraints[印刷の画像と動画]
 status: planned
 notes:
-  HTML: '`<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: {width}"><video src="{src}" controls preload="metadata" playsinline aria-label="{alt}" poster="{poster}"></video><img class="mdmark-media-print" src="{poster}" alt=""><figcaption class="mdmark-figure-caption">{caption}</figcaption></figure>`。音声は `audio`（`playsinline` を持たない）。モックは `docs/mock/components/media/`'
+  HTML: '`<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: {width}"><video src="{src}" controls preload="metadata" playsinline aria-label="{alt}" poster="{poster}"></video><img class="mdmark-media-print" src="{poster}" alt=""><figcaption class="mdmark-figure-caption">{caption}</figcaption></figure>`。音声は `audio`（`playsinline` を持たない）。再生のボタンは `<button class="mdmark-media-open" type="button" aria-haspopup="dialog" data-media-kind data-media-src …>{アイコン}<span class="mdmark-media-open-label">{alt}</span></button><span class="mdmark-media-open-caption">{caption}</span>`（`thumbnail` は class `mdmark-media-thumb`・中身は `<img src="{poster}" alt="">` とアイコン・`aria-label="{alt}"`）。モックは `docs/mock/components/media/`'
 tags:
   - name: topic:動画
     main: true
