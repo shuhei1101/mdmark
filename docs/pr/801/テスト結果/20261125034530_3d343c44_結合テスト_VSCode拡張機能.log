@@ -1,0 +1,1427 @@
+# 手元で実行した（.github/workflows/test.yml の層は unit・integration だけで、VS Code 拡張機能の結合テストを回す層が無いため）
+$ xvfb-run -a npm --prefix vscode run test:integration
+
+> mdmark-vscode@0.2.0 test:integration
+> node scripts/build.ts --tests && node tests/integration/run.ts
+
+- Resolving version...
+✔ Validated version: 1.141.0
+- Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.141.0/linux-x64/stable?released=true
+- Downloading (343.79 MB)
+✔ Downloaded VS Code (286f582d285a0bc8cb4c5cf3217fc5811544b39a) into /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0
+[main 2026-11-24T18:41:26.256Z] [node-compile-cache] main: packaged cache inactive (status: disabled, configured: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/node-compile-cache/main, active: none)
+[main 2026-11-24T18:41:26.288Z] StorageMainService: creating application shared storage
+[main 2026-11-24T18:41:26.359Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-11-24T18:41:26.360Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[18849:1125/034126.373112:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[main 2026-11-24T18:41:26.389Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-11-24T18:41:26.390Z] update#setState disabled
+[main 2026-11-24T18:41:26.390Z] update#ctor - updates are disabled by the environment
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[main 2026-11-24T18:41:33.293Z] AgentHostProcessManager: agent host started
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[main 2026-11-24T18:41:26.951Z] [AgentHost:stderr] (node:19053) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[AgentHost:renderer] MessagePort acquired, creating client...
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Started local extension host with pid 19121.
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=121c5919-4dd9-4fb8-8370-47ad9b552087 requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=121c5919-4dd9-4fb8-8370-47ad9b552087 durationMs=-6265
+[AgentHost:renderer] Protocol connection established; clientId=121c5919-4dd9-4fb8-8370-47ad9b552087
+Started initializing default profile extensions in extensions installation folder. file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/extensions
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+Completed initializing default profile extensions in extensions installation folder. file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/extensions
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Loading development extension at /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+chatInputNotification
+DELTA: authIssuers
+Proceeding with EXTRA proposals (authIssuers) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[CloudSandboxApi] No 'github' session with scopes [read:user, user:email, repo, workflow]
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+Settings Sync: Account status changed from uninitialized to unavailable
+Unknown channel: agentHostClientByokLm
+Unknown channel: agentHostClientProxy
+Unknown channel: agentHostClientProxy
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+  バージョンを決められない（前回のバージョンが空）
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+(node:19121) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Unknown channel: agentHostClientProxy
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+    ✔ test_error_when_version_undecidable (7588ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable_on_export (2892ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (452ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_output_dir (301ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (114ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_mermaid (4052ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_tooltips_and_relative_syntax (481ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_libraries (1128ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_color_scheme (498ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_param_copy_label
+  ブラウザで開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (471ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (92ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (312ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  PDF に印刷
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (3418ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_wait_limit_reached (385ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (448ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (234ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  設定ファイルを開く
+    ✔ test_normal (224ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_template_created (47ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_template_declined
+  設定を開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (768ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで確認する
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_opened_from_diff_view (450ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+Error: Unexpected SIGPIPE
+	at process.<anonymous> (file:///home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/out/bootstrap-fork.js:4:1710)
+	at process.emit (node:events:514:28)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_commit_diff (383ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_without_diff (320ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal_when_diff_modified_side_edited (721ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+Repository not initialized: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: Repository not initialized
+stack trace: Error: Repository not initialized
+	at ar.run (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:1429)
+	at ar.checkIgnore (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:70:204)
+	at Cp.checkIgnoreSoon (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:119:22477)
+	at Timeout._onTimeout (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:39:46381)
+	at listOnTimeout (node:internal/timers:685:17)
+	at process.processTimers (node:internal/timers:618:7)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+rejected promise not handled within 1 second: Error: spawn git ENOENT
+stack trace: Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_preview (1474ms)
+  プレビューのリンクを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_external_link (321ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_markdown_link (218ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_anchor_link (593ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_side_toc_link (757ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_link_target_missing (7244ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_map_node_link (1071ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  プレビューを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3607ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_mermaid (311ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_tooltips_and_relative_syntax (554ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_range_scripts (902ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_aliases (308ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_aliases_missing (175ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_includes (370ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_same_column (360ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_already_open (352ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_version_pinned (4266ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_develop (4284ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_tags_unreachable (4208ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_theme_fixed (421ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_scheme (502ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_image (369ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_image_outside_workspace (816ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_distribution_unreachable (259ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_loading_shown (10766ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_version_missing (223ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_not_markdown (524ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+Webview.loadLocalResource - Error using fileReader. requestUri=file:///tmp/mdmark-vscode-mvMd8L/docs/media/intro.mp3, resourceToLoad=file:///tmp/mdmark-vscode-mvMd8L/docs/media/intro.mp3
+    ✔ test_normal_when_relative_media (1331ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_modal_relative_media (1340ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_unsupported_media (376ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  プレビューをリロードする
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1109ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_command (401ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_no_preview (522ms)
+  プレビューを再描画する
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1346ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_live_update_off (1024ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_saved (103ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_param_copy_label_configured (548ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_map_configured (583ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_aliases_yaml_saved (539ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_include_target_saved (1213ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_missing (395ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_revealed (2795ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_diff_revealed (1622ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_relative_library (438ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_config_unreadable (7188ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_config_fixed (401ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_library_origin_added (677ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_changed (639ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+  拡張機能の配布物を作る
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:287:19)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.141.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:293:12)
+	at onErrorNT (node:internal/child_process:525:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (2736ms)
+    ✔ test_error_when_version_mismatch (238ms)
+  エディタとプレビューのスクロールを合わせる
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal (1032ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_from_preview (1133ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_sync_off (9219ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_normal_when_in_closed_section (2052ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="local" conversationKey="vscode-chat-session://local/NzgwMmIyZmUtOTgwYy00ZDgzLWE1ODYtZDU2OTg5YjQyNmYw" modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+    ✔ test_error_when_editor_hidden (907ms)
+  85 passing (2m)
+[main 2026-11-24T18:43:10.078Z] Extension host with pid 19121 exited with code: 0, signal: unknown.
+Exit code:   0
+- Resolving version...
+✔ Validated version: 1.147.0
+- Found at https://update.code.visualstudio.com/1.147.0/linux-x64/stable?released=true
+✔ Found at https://update.code.visualstudio.com/1.147.0/linux-x64/stable?released=true
+- Downloading (395.24 MB)
+✔ Downloaded VS Code (286f582d285a0bc8cb4c5cf3217fc5811544b39a) into /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.147.0
+[main 2026-11-24T18:43:17.342Z] [node-compile-cache] main: packaged cache enabled (status: enabled, configured: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/node-compile-cache/main, active: /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/node-compile-cache/main/v24.22.1-x64-d4bb394e)
+[main 2026-11-24T18:43:17.373Z] StorageMainService: creating application shared storage
+[main 2026-11-24T18:43:17.430Z] [shared storage] Creating shared storage database at ':memory:' (wasCreated: true)
+[main 2026-11-24T18:43:17.430Z] [shared storage] Initializing fallback application storage (path: in-memory)
+[31970:1125/034317.442860:ERROR:gpu/ipc/client/command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.
+[main 2026-11-24T18:43:17.444Z] [shared storage] Fallback application storage initialized with 3 items
+[main 2026-11-24T18:43:17.445Z] update#setState disabled
+[main 2026-11-24T18:43:17.445Z] update#ctor - updates are disabled by the environment
+Via 'product.json#extensionEnabledApiProposals' extension 'ms-vscode.remote-repositories' wants API proposal 'timeline' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Via 'product.json#extensionEnabledApiProposals' extension 'github.vscode-pull-request-github' wants API proposal 'agentsWindowActivation' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+Via 'product.json#extensionEnabledApiProposals' extension 'github.remotehub' wants API proposal 'timeline' but that proposal DOES NOT EXIST. Likely, the proposal has been finalized (check 'vscode.d.ts') or was abandoned.
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[AgentHost:renderer] Acquiring MessagePort to agent host...
+[main 2026-11-24T18:43:18.232Z] AgentHostProcessManager: agent host started
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey=undefined conversationKey=undefined modelTarget=undefined storageKey="chat.currentLanguageModel.panel" widgetViewKind="view"
+[AgentHost:renderer] MessagePort acquired, creating client...
+[RemoteAgentHostProtocol] Sending initialize: address=local clientId=0388bef4-917d-4b51-9e92-64bc968de0fd requestId=1
+[RemoteAgentHostProtocol] Initialized: address=local clientId=0388bef4-917d-4b51-9e92-64bc968de0fd durationMs=423
+[AgentHost:renderer] Protocol connection established; clientId=0388bef4-917d-4b51-9e92-64bc968de0fd
+Started local extension host with pid 32278.
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+Loading development extension at /home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode
+Extension 'github.copilot-chat' appears in product.json but enables LESS API proposals than the extension wants.
+package.json (LOSES): agentSessionsWorkspace
+speech
+structuralDiff
+agentsWindowConfiguration
+chatDebug
+chatHooks
+envIsConnectionMetered
+extensionsAny
+newSymbolNamesProvider
+interactive
+codeActionAI
+activeComment
+commentReveal
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+documentFiltersExclusive
+embeddings
+findTextInFiles
+findTextInFiles2
+languageModelToolSupportsModel
+findFiles2
+textSearchProvider
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+chatParticipantAdditions
+defaultChatParticipant
+contribSourceControlInputBoxMenu
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+chatParticipantPrivate
+chatProvider
+contribDebugCreateConfiguration
+chatReferenceDiagnostic
+textSearchProvider2
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelPricing
+languageModelRateLimit
+inlineCompletionsAdditions
+chatStatusItem
+chatInputNotification
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+languageModelThinkingPart
+chatSessionsProvider
+devDeviceId
+contribEditorContentMenu
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+environmentPower
+terminalTitle
+toolInvocationApproveCombination
+chatSessionCustomizationProvider
+product.json (WINS): agentSessionsWorkspace
+agentsWindowConfiguration
+interactive
+terminalDataWriteEvent
+terminalExecuteCommandEvent
+terminalSelection
+terminalQuickFixProvider
+chatParticipantAdditions
+defaultChatParticipant
+embeddings
+chatProvider
+mappedEditsProvider
+aiRelatedInformation
+aiSettingsSearch
+codeActionAI
+findTextInFiles
+findTextInFiles2
+textSearchProvider
+textSearchProvider2
+activeComment
+commentReveal
+contribSourceControlInputBoxMenu
+contribCommentEditorActionsMenu
+contribCommentThreadAdditionalMenu
+contribCommentsViewThreadMenus
+contribChatEditorInlineGutterMenu
+extensionAffinity
+newSymbolNamesProvider
+findFiles2
+chatReferenceDiagnostic
+extensionsAny
+authLearnMore
+authIssuers
+testObserver
+aiTextSearchProvider
+documentFiltersExclusive
+chatParticipantPrivate
+contribDebugCreateConfiguration
+inlineCompletionsAdditions
+chatReferenceBinaryData
+languageModelSystem
+languageModelCapabilities
+languageModelThinkingPart
+languageModelToolSupportsModel
+chatStatusItem
+taskProblemMatcherStatus
+contribLanguageModelToolSets
+textDocumentChangeReason
+resolvers
+taskExecutionTerminal
+dataChannels
+chatSessionsProvider
+chatSessionCustomizationProvider
+devDeviceId
+contribEditorContentMenu
+tokenInformation
+toolInvocationApproveCombination
+chatPromptFiles
+mcpServerDefinitions
+tabInputMultiDiff
+workspaceTrust
+chatHooks
+chatDebug
+envIsConnectionMetered
+environmentPower
+terminalTitle
+languageModelPricing
+languageModelRateLimit
+chatInputNotification
+speech
+DELTA: structuralDiff
+Proceeding with EXTRA proposals (structuralDiff) because extension is in development mode. Still, this EXTENSION WILL BE BROKEN unless product.json is updated.
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[RemoteAgentHost] Reconciling: desired=[], current=[]
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+Settings Sync: Account status changed from uninitialized to unavailable
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+  バージョンを決められない（前回のバージョンが空）
+(node:32278) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHost] No signed-in session resolved for resource: https://api.github.com/repos
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[CopilotCliAgentPluginDiscovery] Failed to read plugin 'file:///home/shuhei2441/.copilot/installed-plugins/copilot-skills-marketplace/skill-creator' { fileOperationResult: 1 }
+[main 2026-11-24T18:43:20.626Z] [AgentHost:stderr] (node:32201) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `exe --trace-deprecation ...` to show where the warning was created)
+
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AgentHostCustomizationMarketplace] Unable to load session-bound SDK installation receipts { name: 'Error' }
+[AccountPolicyGate] apply: state=inactive, reason=undefined, isRestricted=false
+    ✔ test_error_when_version_undecidable (7463ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_version_undecidable_on_export (3031ms)
+  コマンドと通知の入口
+    ✔ test_normal_when_command_titles
+    ✔ test_normal_when_editor_title_button
+    ✔ test_normal_when_settings_button
+    ✔ test_normal_when_command_palette_conditions
+  HTML に書き出す
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal (458ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_output_dir (342ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (92ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_relative_mermaid (3635ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_tooltips_and_relative_syntax (432ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_relative_libraries (7441ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_config_color_scheme (449ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_param_copy_label (422ms)
+  ブラウザで開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal (497ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (78ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (278ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+  PDF に印刷
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal (2868ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_wait_limit_reached (1003ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_selected (465ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_output_unwritable (243ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+  設定ファイルを開く
+    ✔ test_normal (242ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_template_created (59ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_template_declined
+  設定を開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal (768ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_command_palette
+  差分ビューの変更をプレビューで確認する
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_opened_from_diff_view (486ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_commit_diff (417ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_version_without_diff (6528ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_diff_modified_side_edited (1242ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_diff_preview (1517ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+  プレビューのリンクを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_external_link (336ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_markdown_link (265ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_anchor_link (590ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_side_toc_link (6916ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_link_target_missing (1071ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_map_node_link (1137ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+  プレビューを開く
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (3137ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_mermaid (698ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_tooltips_and_relative_syntax (535ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_range_scripts (885ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_aliases (303ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_aliases_missing (219ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_includes (363ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_same_column (354ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_already_open (293ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_version_pinned (4243ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_develop (4305ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_tags_unreachable (4195ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_theme_fixed (359ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_color_scheme (496ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_relative_image (374ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_image_outside_workspace (6988ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_distribution_unreachable (295ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_loading_shown (11250ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_version_missing (259ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_not_markdown (523ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_relative_media (1330ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_modal_relative_media (841ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_unsupported_media (367ms)
+  プレビューをリロードする
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal (1620ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_from_command (384ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_no_preview (517ms)
+  プレビューを再描画する
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal (1374ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_live_update_off (508ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_config_saved (559ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_param_copy_label_configured (535ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_map_configured (572ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_aliases_yaml_saved (465ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_include_target_saved (1141ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_config_missing (378ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_revealed (2756ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_diff_revealed (1657ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_relative_library
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_config_unreadable (939ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_config_fixed (390ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_library_origin_added (624ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_color_theme_changed (582ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+  拡張機能の配布物を作る
+rejected promise not handled within 1 second: spawn git ENOENT {
+  "gitErrorCode": "NotAGitRepository"
+}Error: spawn git ENOENT
+	at ChildProcess._handle.onexit (node:internal/child_process:316:19)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+stack trace: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+spawn git ENOENT: Error: spawn git ENOENT
+	at ChildProcess.<anonymous> (/home/shuhei2441/repo/mdmark/.claude/worktrees/feat-media-video-modal/vscode/.vscode-test/vscode-linux-x64-1.147.0/resources/app/extensions/git/dist/main.js:22:9865)
+	at ChildProcess.wrapper (node:events:639:12)
+	at ChildProcess.emit (node:events:514:28)
+	at ChildProcess._handle.onexit (node:internal/child_process:322:12)
+	at onErrorNT (node:internal/child_process:554:16)
+	at process.processTicksAndRejections (node:internal/process/task_queues:90:21)
+    ✔ test_normal (2841ms)
+    ✔ test_error_when_version_mismatch (272ms)
+  エディタとプレビューのスクロールを合わせる
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal (1490ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_from_preview (1120ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_sync_off (2538ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_normal_when_in_closed_section (2057ms)
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+[ChatModelSelection] event=no-model-at-toolbar-build surface="workbench" sessionKey="agent-host-copilotcli" conversationKey="agent-host-copilotcli:/untitled-23743c41-3e97-424f-9fbb-5302f5b4e70d" modelTarget="agent-host-copilotcli" storageKey="chat.currentLanguageModel.panel.agent-host-copilotcli" widgetViewKind="view"
+    ✔ test_error_when_editor_hidden (911ms)
+  85 passing (2m)
+[main 2026-11-24T18:45:01.328Z] Extension host with pid 32278 exited with code: 0, signal: unknown.
+[main 2026-11-24T18:45:08.497Z] AgentHostStarter: cannot create window connection: Agent Host process manager is shutting down.
+Exit code:   0
+exit=0
