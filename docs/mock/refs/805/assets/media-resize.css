@@ -1,16 +1,16 @@
-/* 動画の大きさを変えるリサイズハンドル（#805 で共有するアセット）。図の枠のリサイズハンドル（refs/42/assets/diagram.css の .mdmark-diagram-resize）と同じ見た目にする */
+/* 動画の大きさを変えるリサイズハンドル（#805 で共有するアセット）。札の見た目は図の枠のリサイズハンドル（refs/42/assets/diagram.css の .mdmark-diagram-resize）と同じにする */
 @layer mdmark {
   .mdmark {
     /* 動画と、動画の右下に配置するハンドルを入れる入れ物。図の幅（--mdmark-image-width）に合わせる */
     .mdmark-media-frame {
       position: relative;
-      /* 図のグリッドは項目を左に寄せて中身の幅に縮めるため、入れ物は図の幅いっぱいに広げる */
+      /* 図のグリッドは項目を左に揃えて中身の幅に縮めるため、入れ物は図の幅いっぱいに広げる */
       justify-self: stretch;
     }
 
-    /* 案 A: 動画の下端の外側の右端に置き、再生バーと重ねない。下のキャプションとの間にハンドルの高さを空ける */
+    /* 案 A: 動画の下端の外側の右端に配置し、再生バーと重ねない。下のキャプションとの間に押せる範囲の高さ（24px）と動画との間（4px）を空ける */
     .mdmark-media-frame[data-mock-plan="a"] {
-      padding-block-end: 20px;
+      padding-block-end: 28px;
 
       .mdmark-media-resize {
         inset-block-end: 0;
@@ -18,23 +18,24 @@
       }
     }
 
-    /* 案 B: 動画の右上に重ね、ポインターを乗せたときかフォーカスしたときだけ出す（再生バーの全画面のボタンは右下にあるため上に置く） */
+    /* 案 B: 動画の右上に重ね、ポインターを乗せたときかフォーカスしたときだけ出す（再生バーの全画面のボタンは右下にあるため上に配置する） */
     .mdmark-media-frame[data-mock-plan="b"] {
       .mdmark-media-resize {
-        inset-block-start: 6px;
-        inset-inline-end: 6px;
+        inset-block-start: 4px;
+        inset-inline-end: 4px;
         opacity: 0;
         transition: opacity 0.15s;
       }
 
       &:hover .mdmark-media-resize,
       .mdmark-media-resize:focus-visible,
-      .mdmark-media-resize.is-resizing {
+      .mdmark-media-resize.is-resizing,
+      .mdmark-media-resize[aria-expanded="true"] {
         opacity: 1;
       }
     }
 
-    /* ハンドル: 図の枠と同じ 28×16 の札と点の並びのアイコン。斜めに動かして縦横の比率を保って幅を変える */
+    /* ハンドル: 押せる範囲は 28×24（タップの対象の下限 24px）。見た目は内側の 28×16 の札と点の並びのアイコン */
     .mdmark-media-resize {
       position: absolute;
       z-index: 1;
@@ -42,25 +43,41 @@
       place-items: center;
       box-sizing: border-box;
       width: 28px;
-      height: 16px;
+      height: 24px;
       padding: 0;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: 4px;
-      background: var(--mdmark-color-bg);
+      border: 0;
+      background: none;
       color: var(--mdmark-color-muted);
       cursor: nwse-resize;
       touch-action: none;
 
-      &:hover,
-      &.is-resizing {
+      &:focus-visible {
+        outline: none;
+
+        .mdmark-media-resize-grip {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: 1px;
+        }
+      }
+
+      &:hover .mdmark-media-resize-grip,
+      &.is-resizing .mdmark-media-resize-grip,
+      &[aria-expanded="true"] .mdmark-media-resize-grip {
         background: var(--mdmark-color-surface);
         color: var(--mdmark-color-heading);
       }
+    }
 
-      &:focus-visible {
-        outline: 2px solid var(--mdmark-color-link);
-        outline-offset: 1px;
-      }
+    /* 札: 図の枠のリサイズハンドルと同じ 28×16 */
+    .mdmark-media-resize-grip {
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
+      width: 28px;
+      height: 16px;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg);
 
       svg {
         width: 16px;
@@ -74,9 +91,70 @@
     }
   }
 
-  /* 印刷ではハンドルを出さない */
+  /* 大きさのメニュー: ハンドルを押す（動かさずに離す）か Enter で開く、ドラッグの代わりの 3 つのボタン。popover で最前面に出し、ハンドルの下に配置する */
+  .mdmark-media-size-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 4px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+
+    &:popover-open {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 4px;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-size: 0.875rem;
+      text-align: start;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      &:disabled {
+        color: var(--mdmark-color-muted);
+        cursor: default;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+  }
+
+  /* 印刷ではハンドルとメニューを出さない */
   @media print {
-    .mdmark .mdmark-media-resize {
+    .mdmark .mdmark-media-resize,
+    .mdmark-media-size-menu {
       display: none;
     }
 
