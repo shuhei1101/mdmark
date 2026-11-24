@@ -32,19 +32,27 @@ docs:
   - page: docs/guide/記載する-画像と動画を配置する.md
     new: false
     change: 表のセルの中の動画がモーダルで再生されることと、段落の動画をモーダルで再生する属性の記載方法を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T17:56:18.757439+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: 画像の属性の一覧に、モーダルで再生する属性を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T17:56:18.757439+00:00'
   - page: docs/guide/カスタマイズ-印刷する.mark.md
     new: false
     change: モーダルにした動画・音声の印刷での見え方を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T17:56:18.757439+00:00'
   - page: docs/guide/用語集.yaml
     new: false
     change: ライトボックスの用語の説明に、動画・音声をモーダルで再生することを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-24T17:56:18.757439+00:00'
 scope_out:
   - item: 画像のライトボックスの切り替えや拡大・縮小の操作の変更
     reason: 要望に含まれない。動画を切り替えの並びに入れるかだけを設計で決める
