@@ -1,0 +1,998 @@
+$ gh workflow run test.yml --ref "$(git branch --show-current)" -f layer=integration -f paths="tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/mdmark-comments.browser.test.ts tests/integration/lib/mdmark-graph.browser.test.ts tests/integration/lib/mdmark-map.browser.test.ts tests/integration/lib/mdmark-param-graph.browser.test.ts tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/mdmark-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/set-part-module-loader.browser.test.ts tests/integration/lib/view.story.test.ts" ... && gh run view "$run_id" --log
+# skipped 345 件は全て mount.browser.test.ts のもので、integration-browser-touch で _by_touch で終わらない 343 件、integration-browser で _by_touch で終わる 2 件を飛ばしたもの（テスト実行方法の TL-3 の決まり）
+
+test	Set up job	﻿2026-11-24T09:19:56.2749938Z Current runner version: '2.338.2'
+test	Set up job	2026-11-24T09:19:56.2775179Z ##[group]Runner Image Provisioner
+test	Set up job	2026-11-24T09:19:56.2776080Z Hosted Compute Agent
+test	Set up job	2026-11-24T09:19:56.2776672Z Version: 20261111.635
+test	Set up job	2026-11-24T09:19:56.2777403Z Commit: b8a594ea514ff44cadb5342986c68b1eac6e22ed
+test	Set up job	2026-11-24T09:19:56.2778204Z Build Date: 2026-11-11T01:49:01Z
+test	Set up job	2026-11-24T09:19:56.2778938Z Worker ID: {6febce8e-a78f-4a7b-bcce-944dfc114a02}
+test	Set up job	2026-11-24T09:19:56.2779673Z Region: westus3
+test	Set up job	2026-11-24T09:19:56.2780469Z Cloud: Azure
+test	Set up job	2026-11-24T09:19:56.2781125Z ##[endgroup]
+test	Set up job	2026-11-24T09:19:56.2782627Z ##[group]Operating System
+test	Set up job	2026-11-24T09:19:56.2783264Z Ubuntu
+test	Set up job	2026-11-24T09:19:56.2783902Z 26.04.1
+test	Set up job	2026-11-24T09:19:56.2784404Z LTS
+test	Set up job	2026-11-24T09:19:56.2784958Z ##[endgroup]
+test	Set up job	2026-11-24T09:19:56.2785553Z ##[group]Runner Image
+test	Set up job	2026-11-24T09:19:56.2786135Z Image: ubuntu-26.04
+test	Set up job	2026-11-24T09:19:56.2787149Z Version: 20261116.202.1
+test	Set up job	2026-11-24T09:19:56.2788221Z Included Software: https://github.com/actions/runner-images/blob/ubuntu26/20261116.202/images/ubuntu/Ubuntu2604-Readme.md
+test	Set up job	2026-11-24T09:19:56.2790320Z Image Release: https://github.com/actions/runner-images/releases/tag/ubuntu26%2F20261116.202
+test	Set up job	2026-11-24T09:19:56.2791291Z ##[endgroup]
+test	Set up job	2026-11-24T09:19:56.2792454Z ##[group]GITHUB_TOKEN Permissions
+test	Set up job	2026-11-24T09:19:56.2794580Z Contents: read
+test	Set up job	2026-11-24T09:19:56.2795392Z Metadata: read
+test	Set up job	2026-11-24T09:19:56.2795963Z ##[endgroup]
+test	Set up job	2026-11-24T09:19:56.2798067Z Secret source: Actions
+test	Set up job	2026-11-24T09:19:56.2799049Z Cache mode: write
+test	Set up job	2026-11-24T09:19:56.2800061Z Prepare workflow directory
+test	Set up job	2026-11-24T09:19:56.3316171Z Prepare all required actions
+test	Set up job	2026-11-24T09:19:56.3363428Z Getting action download info
+test	Set up job	2026-11-24T09:19:56.6594149Z Download action repository 'actions/checkout@v4' (SHA:11d5960a326750d5838078e36cf38b85af677262)
+test	Set up job	2026-11-24T09:19:56.7546516Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+test	Set up job	2026-11-24T09:19:56.8198518Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+test	Set up job	2026-11-24T09:19:56.9937896Z Complete job name: test
+test	ブランチを取得する	﻿2026-11-24T09:19:57.0761925Z ##[group]Run actions/checkout@v4
+test	ブランチを取得する	2026-11-24T09:19:57.0762827Z with:
+test	ブランチを取得する	2026-11-24T09:19:57.0763279Z   repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-24T09:19:57.0767076Z   token: ***
+test	ブランチを取得する	2026-11-24T09:19:57.0767515Z   ssh-strict: true
+test	ブランチを取得する	2026-11-24T09:19:57.0767952Z   ssh-user: git
+test	ブランチを取得する	2026-11-24T09:19:57.0768410Z   persist-credentials: true
+test	ブランチを取得する	2026-11-24T09:19:57.0768910Z   clean: true
+test	ブランチを取得する	2026-11-24T09:19:57.0769358Z   sparse-checkout-cone-mode: true
+test	ブランチを取得する	2026-11-24T09:19:57.0770046Z   fetch-depth: 1
+test	ブランチを取得する	2026-11-24T09:19:57.0770495Z   fetch-tags: false
+test	ブランチを取得する	2026-11-24T09:19:57.0770939Z   show-progress: true
+test	ブランチを取得する	2026-11-24T09:19:57.0771428Z   lfs: false
+test	ブランチを取得する	2026-11-24T09:19:57.0771841Z   submodules: false
+test	ブランチを取得する	2026-11-24T09:19:57.0772288Z   set-safe-directory: true
+test	ブランチを取得する	2026-11-24T09:19:57.0772798Z   allow-unsafe-pr-checkout: false
+test	ブランチを取得する	2026-11-24T09:19:57.0773554Z env:
+test	ブランチを取得する	2026-11-24T09:19:57.0773983Z   LAYER: integration
+test	ブランチを取得する	2026-11-24T09:19:57.0778576Z   PATHS: tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/mdmark-comments.browser.test.ts tests/integration/lib/mdmark-graph.browser.test.ts tests/integration/lib/mdmark-map.browser.test.ts tests/integration/lib/mdmark-param-graph.browser.test.ts tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/mdmark-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/set-part-module-loader.browser.test.ts tests/integration/lib/view.story.test.ts
+test	ブランチを取得する	2026-11-24T09:19:57.0783642Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T09:19:57.3411762Z Syncing repository: shuhei1101/mdmark
+test	ブランチを取得する	2026-11-24T09:19:57.3413593Z ##[group]Getting Git version info
+test	ブランチを取得する	2026-11-24T09:19:57.3414384Z Working directory is '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-24T09:19:57.3415541Z [command]/usr/bin/git version
+test	ブランチを取得する	2026-11-24T09:19:57.3467405Z git version 2.56.1
+test	ブランチを取得する	2026-11-24T09:19:57.3501210Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T09:19:57.3519239Z Temporarily overriding HOME='/home/runner/work/_temp/b56e4ed3-8373-4e66-92ca-7a40f8907ded' before making global git config changes
+test	ブランチを取得する	2026-11-24T09:19:57.3521316Z Adding repository directory to the temporary git global config as a safe directory
+test	ブランチを取得する	2026-11-24T09:19:57.3526609Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-24T09:19:57.3592289Z Deleting the contents of '/home/runner/work/mdmark/mdmark'
+test	ブランチを取得する	2026-11-24T09:19:57.3596508Z ##[group]Initializing the repository
+test	ブランチを取得する	2026-11-24T09:19:57.3601844Z [command]/usr/bin/git init /home/runner/work/mdmark/mdmark
+test	ブランチを取得する	2026-11-24T09:19:57.3708056Z hint: Using 'master' as the name for the initial branch. This default branch name
+test	ブランチを取得する	2026-11-24T09:19:57.3710015Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+test	ブランチを取得する	2026-11-24T09:19:57.3711523Z hint: to use in all of your new repositories, which will suppress this warning,
+test	ブランチを取得する	2026-11-24T09:19:57.3712802Z hint: call:
+test	ブランチを取得する	2026-11-24T09:19:57.3713624Z hint:
+test	ブランチを取得する	2026-11-24T09:19:57.3714342Z hint: 	git config --global init.defaultBranch <name>
+test	ブランチを取得する	2026-11-24T09:19:57.3715469Z hint:
+test	ブランチを取得する	2026-11-24T09:19:57.3716326Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+test	ブランチを取得する	2026-11-24T09:19:57.3717692Z hint: 'development'. The just-created branch can be renamed via this command:
+test	ブランチを取得する	2026-11-24T09:19:57.3719340Z hint:
+test	ブランチを取得する	2026-11-24T09:19:57.3720530Z hint: 	git branch -m <name>
+test	ブランチを取得する	2026-11-24T09:19:57.3721542Z hint:
+test	ブランチを取得する	2026-11-24T09:19:57.3722571Z hint: Disable this message with "git config set advice.defaultBranchName false"
+test	ブランチを取得する	2026-11-24T09:19:57.3724157Z Initialized empty Git repository in /home/runner/work/mdmark/mdmark/.git/
+test	ブランチを取得する	2026-11-24T09:19:57.3734200Z [command]/usr/bin/git remote add origin https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-24T09:19:57.3790977Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T09:19:57.3792407Z ##[group]Disabling automatic garbage collection
+test	ブランチを取得する	2026-11-24T09:19:57.3793788Z [command]/usr/bin/git config --local gc.auto 0
+test	ブランチを取得する	2026-11-24T09:19:57.3828665Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T09:19:57.3830497Z ##[group]Setting up auth
+test	ブランチを取得する	2026-11-24T09:19:57.3835879Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	ブランチを取得する	2026-11-24T09:19:57.3873748Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	ブランチを取得する	2026-11-24T09:19:57.4307191Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	ブランチを取得する	2026-11-24T09:19:57.4338947Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	ブランチを取得する	2026-11-24T09:19:57.4607149Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	ブランチを取得する	2026-11-24T09:19:57.4640086Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	ブランチを取得する	2026-11-24T09:19:57.4905049Z [command]/usr/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+test	ブランチを取得する	2026-11-24T09:19:57.4944337Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T09:19:57.4945698Z ##[group]Fetching the repository
+test	ブランチを取得する	2026-11-24T09:19:57.4957280Z [command]/usr/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +0cbb5059705f0e7c4b859b823991414d8113f71d:refs/remotes/origin/feat/elements/part-custom-elements
+test	ブランチを取得する	2026-11-24T09:19:59.8909061Z From https://github.com/shuhei1101/mdmark
+test	ブランチを取得する	2026-11-24T09:19:59.8911849Z  * [new ref]         0cbb5059705f0e7c4b859b823991414d8113f71d -> origin/feat/elements/part-custom-elements
+test	ブランチを取得する	2026-11-24T09:19:59.8915786Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T09:19:59.8917181Z ##[group]Determining the checkout info
+test	ブランチを取得する	2026-11-24T09:19:59.8918735Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T09:19:59.8921941Z [command]/usr/bin/git sparse-checkout disable
+test	ブランチを取得する	2026-11-24T09:19:59.8980229Z [command]/usr/bin/git config --local --unset-all extensions.worktreeConfig
+test	ブランチを取得する	2026-11-24T09:19:59.9009578Z ##[group]Checking out the ref
+test	ブランチを取得する	2026-11-24T09:19:59.9021635Z [command]/usr/bin/git checkout --progress --force -B feat/elements/part-custom-elements refs/remotes/origin/feat/elements/part-custom-elements
+test	ブランチを取得する	2026-11-24T09:20:00.4107255Z Switched to a new branch 'feat/elements/part-custom-elements'
+test	ブランチを取得する	2026-11-24T09:20:00.4113310Z branch 'feat/elements/part-custom-elements' set up to track 'origin/feat/elements/part-custom-elements'.
+test	ブランチを取得する	2026-11-24T09:20:00.4145124Z ##[endgroup]
+test	ブランチを取得する	2026-11-24T09:20:00.4195808Z [command]/usr/bin/git log -1 --format=%H
+test	ブランチを取得する	2026-11-24T09:20:00.4222222Z 0cbb5059705f0e7c4b859b823991414d8113f71d
+test	Node をインストールする	﻿2026-11-24T09:20:00.4606143Z ##[group]Run actions/setup-node@v4
+test	Node をインストールする	2026-11-24T09:20:00.4606601Z with:
+test	Node をインストールする	2026-11-24T09:20:00.4606861Z   node-version: 24
+test	Node をインストールする	2026-11-24T09:20:00.4607128Z   always-auth: false
+test	Node をインストールする	2026-11-24T09:20:00.4607400Z   check-latest: false
+test	Node をインストールする	2026-11-24T09:20:00.4610223Z   token: ***
+test	Node をインストールする	2026-11-24T09:20:00.4610520Z env:
+test	Node をインストールする	2026-11-24T09:20:00.4610760Z   LAYER: integration
+test	Node をインストールする	2026-11-24T09:20:00.4613748Z   PATHS: tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/mdmark-comments.browser.test.ts tests/integration/lib/mdmark-graph.browser.test.ts tests/integration/lib/mdmark-map.browser.test.ts tests/integration/lib/mdmark-param-graph.browser.test.ts tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/mdmark-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/set-part-module-loader.browser.test.ts tests/integration/lib/view.story.test.ts
+test	Node をインストールする	2026-11-24T09:20:00.4616826Z ##[endgroup]
+test	Node をインストールする	2026-11-24T09:20:00.6068908Z (node:2429) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Node をインストールする	2026-11-24T09:20:00.6070771Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Node をインストールする	2026-11-24T09:20:00.6072714Z Found in cache @ /opt/hostedtoolcache/node/24.22.3/x64
+test	Node をインストールする	2026-11-24T09:20:00.6074022Z ##[group]Environment details
+test	Node をインストールする	2026-11-24T09:20:01.0083517Z node: v24.22.3
+test	Node をインストールする	2026-11-24T09:20:01.0084319Z npm: 11.19.1
+test	Node をインストールする	2026-11-24T09:20:01.0085437Z yarn: 1.22.22
+test	Node をインストールする	2026-11-24T09:20:01.0087037Z ##[endgroup]
+test	依存をインストールする	﻿2026-11-24T09:20:01.0244261Z ##[group]Run npm ci
+test	依存をインストールする	2026-11-24T09:20:01.0244608Z npm ci
+test	依存をインストールする	2026-11-24T09:20:01.0244853Z npm --prefix vscode ci
+test	依存をインストールする	2026-11-24T09:20:01.0289101Z shell: /usr/bin/bash -e {0}
+test	依存をインストールする	2026-11-24T09:20:01.0289397Z env:
+test	依存をインストールする	2026-11-24T09:20:01.0289600Z   LAYER: integration
+test	依存をインストールする	2026-11-24T09:20:01.0292759Z   PATHS: tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/mdmark-comments.browser.test.ts tests/integration/lib/mdmark-graph.browser.test.ts tests/integration/lib/mdmark-map.browser.test.ts tests/integration/lib/mdmark-param-graph.browser.test.ts tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/mdmark-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/set-part-module-loader.browser.test.ts tests/integration/lib/view.story.test.ts
+test	依存をインストールする	2026-11-24T09:20:01.0295755Z ##[endgroup]
+test	依存をインストールする	2026-11-24T09:20:14.3669103Z 
+test	依存をインストールする	2026-11-24T09:20:14.3676951Z added 551 packages, and audited 558 packages in 13s
+test	依存をインストールする	2026-11-24T09:20:14.3677857Z 
+test	依存をインストールする	2026-11-24T09:20:14.3678790Z 109 packages are looking for funding
+test	依存をインストールする	2026-11-24T09:20:14.3679928Z   run `npm fund` for details
+test	依存をインストールする	2026-11-24T09:20:14.4062238Z 
+test	依存をインストールする	2026-11-24T09:20:14.4062946Z 11 moderate severity vulnerabilities
+test	依存をインストールする	2026-11-24T09:20:14.4063409Z 
+test	依存をインストールする	2026-11-24T09:20:14.4063843Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-24T09:20:14.4065030Z   npm audit fix
+test	依存をインストールする	2026-11-24T09:20:14.4065299Z 
+test	依存をインストールする	2026-11-24T09:20:14.4065752Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-24T09:20:14.4066460Z   npm audit fix --force
+test	依存をインストールする	2026-11-24T09:20:14.4066779Z 
+test	依存をインストールする	2026-11-24T09:20:14.4067065Z Run `npm audit` for details.
+test	依存をインストールする	2026-11-24T09:20:14.4073642Z npm warn install-scripts 1 package has install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-24T09:20:14.4074996Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-24T09:20:14.4075864Z npm warn install-scripts
+test	依存をインストールする	2026-11-24T09:20:14.4077082Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-24T09:20:21.6703448Z 
+test	依存をインストールする	2026-11-24T09:20:21.6704252Z added 307 packages, and audited 314 packages in 7s
+test	依存をインストールする	2026-11-24T09:20:21.6704749Z 
+test	依存をインストールする	2026-11-24T09:20:21.6705056Z 93 packages are looking for funding
+test	依存をインストールする	2026-11-24T09:20:21.6705582Z   run `npm fund` for details
+test	依存をインストールする	2026-11-24T09:20:21.6920536Z 
+test	依存をインストールする	2026-11-24T09:20:21.6941468Z npm warn install-scripts 2 packages have install scripts not yet covered by allowScripts:
+test	依存をインストールする	2026-11-24T09:20:21.6942618Z 6 vulnerabilities (4 moderate, 2 high)
+test	依存をインストールする	2026-11-24T09:20:21.6944310Z npm warn install-scripts   @vscode/vsce-sign@2.1.1 (postinstall: node ./src/postinstall.js)
+test	依存をインストールする	2026-11-24T09:20:21.6945030Z 
+test	依存をインストールする	2026-11-24T09:20:21.6945980Z npm warn install-scripts   esbuild@0.28.2 (postinstall: node install.js)
+test	依存をインストールする	2026-11-24T09:20:21.6946973Z To address issues that do not require attention, run:
+test	依存をインストールする	2026-11-24T09:20:21.6947990Z npm warn install-scripts
+test	依存をインストールする	2026-11-24T09:20:21.6948423Z   npm audit fix
+test	依存をインストールする	2026-11-24T09:20:21.6949938Z npm warn install-scripts Run `npm install-scripts ls` to review, or `npm install-scripts approve <pkg>` to allow.
+test	依存をインストールする	2026-11-24T09:20:21.6950747Z 
+test	依存をインストールする	2026-11-24T09:20:21.6951456Z To address all issues (including breaking changes), run:
+test	依存をインストールする	2026-11-24T09:20:21.6952484Z   npm audit fix --force
+test	依存をインストールする	2026-11-24T09:20:21.6952963Z 
+test	依存をインストールする	2026-11-24T09:20:21.6953368Z Run `npm audit` for details.
+test	Chromium をインストールする	﻿2026-11-24T09:20:21.7541048Z ##[group]Run npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-24T09:20:21.7541576Z npx playwright install --with-deps chromium
+test	Chromium をインストールする	2026-11-24T09:20:21.7575082Z shell: /usr/bin/bash -e {0}
+test	Chromium をインストールする	2026-11-24T09:20:21.7575355Z env:
+test	Chromium をインストールする	2026-11-24T09:20:21.7575560Z   LAYER: integration
+test	Chromium をインストールする	2026-11-24T09:20:21.7578606Z   PATHS: tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/mdmark-comments.browser.test.ts tests/integration/lib/mdmark-graph.browser.test.ts tests/integration/lib/mdmark-map.browser.test.ts tests/integration/lib/mdmark-param-graph.browser.test.ts tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/mdmark-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/set-part-module-loader.browser.test.ts tests/integration/lib/view.story.test.ts
+test	Chromium をインストールする	2026-11-24T09:20:21.7581943Z ##[endgroup]
+test	Chromium をインストールする	2026-11-24T09:20:22.5243373Z Installing dependencies...
+test	Chromium をインストールする	2026-11-24T09:20:22.5330492Z Switching to root user to install dependencies...
+test	Chromium をインストールする	2026-11-24T09:20:22.6414978Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-24T09:20:22.6571472Z Get:6 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease [3964 B]
+test	Chromium をインストールする	2026-11-24T09:20:22.6731169Z Hit:2 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+test	Chromium をインストールする	2026-11-24T09:20:22.6780899Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease [137 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.6791313Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease [137 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.6814168Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease [137 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.6965704Z Get:7 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main arm64 Packages [173 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7229404Z Get:8 https://packages.microsoft.com/ubuntu/26.04/prod resolute/main amd64 Packages [186 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7387912Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main amd64v3 Packages [914 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7459570Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute-updates/main Translation-en [201 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7521202Z Get:11 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe amd64v3 Packages [394 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7562310Z Get:12 http://azure.archive.ubuntu.com/ubuntu resolute-updates/universe Translation-en [124 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7566216Z Get:13 http://azure.archive.ubuntu.com/ubuntu resolute-updates/restricted amd64v3 Packages [640 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7694856Z Get:14 http://azure.archive.ubuntu.com/ubuntu resolute-updates/restricted Translation-en [132 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7731938Z Get:15 http://azure.archive.ubuntu.com/ubuntu resolute-security/main amd64v3 Packages [753 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7751594Z Get:16 http://azure.archive.ubuntu.com/ubuntu resolute-security/main Translation-en [162 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7768540Z Get:17 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe amd64v3 Packages [224 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.7792611Z Get:18 http://azure.archive.ubuntu.com/ubuntu resolute-security/universe Translation-en [73.2 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.8262552Z Get:19 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted amd64v3 Packages [618 kB]
+test	Chromium をインストールする	2026-11-24T09:20:22.8280921Z Get:20 http://azure.archive.ubuntu.com/ubuntu resolute-security/restricted Translation-en [128 kB]
+test	Chromium をインストールする	2026-11-24T09:20:24.8759542Z Fetched 5139 kB in 0s (11.8 MB/s)
+test	Chromium をインストールする	2026-11-24T09:20:25.5321806Z Reading package lists...
+test	Chromium をインストールする	2026-11-24T09:20:25.5590553Z Reading package lists...
+test	Chromium をインストールする	2026-11-24T09:20:25.7136228Z Building dependency tree...
+test	Chromium をインストールする	2026-11-24T09:20:25.7143887Z Reading state information...
+test	Chromium をインストールする	2026-11-24T09:20:25.7481320Z libasound2t64 is already the newest version (1.2.15.3-1ubuntu1.1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7482362Z libasound2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7483391Z libatk-bridge2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7485129Z libatk-bridge2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7486022Z libatk1.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7486790Z libatk1.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7487822Z libatspi2.0-0t64 is already the newest version (2.60.4-0ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7488938Z libatspi2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7490102Z libcairo2 is already the newest version (1.18.4-3).
+test	Chromium をインストールする	2026-11-24T09:20:25.7491069Z libcairo2 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7492191Z libcups2t64 is already the newest version (2.4.16-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-24T09:20:25.7493348Z libcups2t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7494496Z libdbus-1-3 is already the newest version (1.16.2-2ubuntu4).
+test	Chromium をインストールする	2026-11-24T09:20:25.7495466Z libdbus-1-3 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7496133Z libdrm2 is already the newest version (2.4.131-1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7496784Z libdrm2 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7497493Z libgbm1 is already the newest version (26.0.8-1ubuntu0.3).
+test	Chromium をインストールする	2026-11-24T09:20:25.7498179Z libgbm1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7499015Z libglib2.0-0t64 is already the newest version (2.88.0-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7500034Z libglib2.0-0t64 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7500813Z libnspr4 is already the newest version (2:4.38.2-1ubuntu1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7501514Z libnspr4 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7502261Z libnss3 is already the newest version (2:3.120-1ubuntu2.2).
+test	Chromium をインストールする	2026-11-24T09:20:25.7502952Z libnss3 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7503669Z libpango-1.0-0 is already the newest version (1.57.0-1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7504399Z libpango-1.0-0 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7505183Z libx11-6 is already the newest version (2:1.8.13-1ubuntu0.1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7505903Z libx11-6 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7506951Z libxcb1 is already the newest version (1.17.0-2ubuntu1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7507650Z libxcb1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7508415Z libxcomposite1 is already the newest version (1:0.4.6-1build1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7509231Z libxcomposite1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7510177Z libxdamage1 is already the newest version (1:1.1.7-1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7510876Z libxdamage1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7511662Z libxext6 is already the newest version (2:1.3.4-1build3).
+test	Chromium をインストールする	2026-11-24T09:20:25.7512390Z libxext6 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7513149Z libxfixes3 is already the newest version (1:6.0.0-2build2).
+test	Chromium をインストールする	2026-11-24T09:20:25.7513890Z libxfixes3 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7514617Z libxkbcommon0 is already the newest version (1.13.1-1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7515336Z libxkbcommon0 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7516085Z libxrandr2 is already the newest version (2:1.5.4-1build1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7516809Z libxrandr2 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7517553Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+test	Chromium をインストールする	2026-11-24T09:20:25.7518501Z fonts-noto-color-emoji is already the newest version (2.051-1build1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7519457Z libfontconfig1 is already the newest version (2.17.1-3ubuntu1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7520438Z libfontconfig1 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7521273Z libfreetype6 is already the newest version (2.14.2+dfsg-1ubuntu0.2).
+test	Chromium をインストールする	2026-11-24T09:20:25.7522060Z libfreetype6 set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.7522858Z fonts-liberation is already the newest version (1:2.1.5-3build1).
+test	Chromium をインストールする	2026-11-24T09:20:25.7523689Z fonts-liberation set to manually installed.
+test	Chromium をインストールする	2026-11-24T09:20:25.8013016Z Solving dependencies...
+test	Chromium をインストールする	2026-11-24T09:20:25.8868740Z The following additional packages will be installed:
+test	Chromium をインストールする	2026-11-24T09:20:25.8869487Z   xfonts-encodings xfonts-utils
+test	Chromium をインストールする	2026-11-24T09:20:25.8874751Z Recommended packages:
+test	Chromium をインストールする	2026-11-24T09:20:25.8875250Z   fonts-ipafont-mincho fonts-tlwg-loma
+test	Chromium をインストールする	2026-11-24T09:20:25.9071023Z The following NEW packages will be installed:
+test	Chromium をインストールする	2026-11-24T09:20:25.9071718Z   fonts-freefont-ttf fonts-ipafont-gothic fonts-tlwg-loma-otf fonts-unifont
+test	Chromium をインストールする	2026-11-24T09:20:25.9076694Z   fonts-wqy-zenhei xfonts-cyrillic xfonts-encodings xfonts-scalable
+test	Chromium をインストールする	2026-11-24T09:20:25.9077179Z   xfonts-utils
+test	Chromium をインストールする	2026-11-24T09:20:25.9292182Z 0 upgraded, 9 newly installed, 0 to remove and 57 not upgraded.
+test	Chromium をインストールする	2026-11-24T09:20:25.9292734Z Need to get 21.9 MB of archives.
+test	Chromium をインストールする	2026-11-24T09:20:25.9293209Z After this operation, 80.2 MB of additional disk space will be used.
+test	Chromium をインストールする	2026-11-24T09:20:25.9293744Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	Chromium をインストールする	2026-11-24T09:20:25.9937172Z Get:2 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-ipafont-gothic all 00303-23ubuntu1 [3703 kB]
+test	Chromium をインストールする	2026-11-24T09:20:26.1022469Z Get:3 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 fonts-freefont-ttf all 20211204+svn4273-4build1 [5656 kB]
+test	Chromium をインストールする	2026-11-24T09:20:26.2537118Z Get:4 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-tlwg-loma-otf all 1:0.7.3-1build1 [106 kB]
+test	Chromium をインストールする	2026-11-24T09:20:26.3001518Z Get:5 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-unifont all 1:16.0.04-1build1 [3169 kB]
+test	Chromium をインストールする	2026-11-24T09:20:26.4012110Z Get:6 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 fonts-wqy-zenhei all 0.9.45-8build1 [7863 kB]
+test	Chromium をインストールする	2026-11-24T09:20:26.6012898Z Get:7 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-encodings all 1:1.0.5-0ubuntu3 [576 kB]
+test	Chromium をインストールする	2026-11-24T09:20:26.6509356Z Get:8 http://azure.archive.ubuntu.com/ubuntu resolute/main amd64v3 xfonts-utils amd64 1:7.7+7build1 [97.3 kB]
+test	Chromium をインストールする	2026-11-24T09:20:26.6969182Z Get:9 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-cyrillic all 1:1.0.5+nmu1build1 [384 kB]
+test	Chromium をインストールする	2026-11-24T09:20:26.7547235Z Get:10 http://azure.archive.ubuntu.com/ubuntu resolute/universe amd64v3 xfonts-scalable all 1:1.0.3-1.3build1 [304 kB]
+test	Chromium をインストールする	2026-11-24T09:20:27.0733731Z Fetched 21.9 MB in 1s (26.0 MB/s)
+test	Chromium をインストールする	2026-11-24T09:20:27.0964294Z Selecting previously unselected package fonts-ipafont-gothic.
+test	Chromium をインストールする	2026-11-24T09:20:27.1233748Z (Reading database ... 
+test	Chromium をインストールする	2026-11-24T09:20:27.1234475Z (Reading database ... 5%
+test	Chromium をインストールする	2026-11-24T09:20:27.1234941Z (Reading database ... 10%
+test	Chromium をインストールする	2026-11-24T09:20:27.1235364Z (Reading database ... 15%
+test	Chromium をインストールする	2026-11-24T09:20:27.1235703Z (Reading database ... 20%
+test	Chromium をインストールする	2026-11-24T09:20:27.1235982Z (Reading database ... 25%
+test	Chromium をインストールする	2026-11-24T09:20:27.1236427Z (Reading database ... 30%
+test	Chromium をインストールする	2026-11-24T09:20:27.1237111Z (Reading database ... 35%
+test	Chromium をインストールする	2026-11-24T09:20:27.1237952Z (Reading database ... 40%
+test	Chromium をインストールする	2026-11-24T09:20:27.1238256Z (Reading database ... 45%
+test	Chromium をインストールする	2026-11-24T09:20:27.1238540Z (Reading database ... 50%
+test	Chromium をインストールする	2026-11-24T09:20:27.1542609Z (Reading database ... 55%
+test	Chromium をインストールする	2026-11-24T09:20:27.1921223Z (Reading database ... 60%
+test	Chromium をインストールする	2026-11-24T09:20:27.2252182Z (Reading database ... 65%
+test	Chromium をインストールする	2026-11-24T09:20:27.2666851Z (Reading database ... 70%
+test	Chromium をインストールする	2026-11-24T09:20:27.3131354Z (Reading database ... 75%
+test	Chromium をインストールする	2026-11-24T09:20:27.3850145Z (Reading database ... 80%
+test	Chromium をインストールする	2026-11-24T09:20:27.5389991Z (Reading database ... 85%
+test	Chromium をインストールする	2026-11-24T09:20:27.6798591Z (Reading database ... 90%
+test	Chromium をインストールする	2026-11-24T09:20:27.8435750Z (Reading database ... 95%
+test	Chromium をインストールする	2026-11-24T09:20:27.8436358Z (Reading database ... 100%
+test	Chromium をインストールする	2026-11-24T09:20:27.8437241Z (Reading database ... 214296 files and directories currently installed.)
+test	Chromium をインストールする	2026-11-24T09:20:27.8482420Z Preparing to unpack .../0-fonts-ipafont-gothic_00303-23ubuntu1_all.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:27.8580773Z Unpacking fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-24T09:20:27.9270753Z Selecting previously unselected package fonts-freefont-ttf.
+test	Chromium をインストールする	2026-11-24T09:20:27.9407661Z Preparing to unpack .../1-fonts-freefont-ttf_20211204+svn4273-4build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:27.9415564Z Unpacking fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.0259049Z Selecting previously unselected package fonts-tlwg-loma-otf.
+test	Chromium をインストールする	2026-11-24T09:20:28.0398560Z Preparing to unpack .../2-fonts-tlwg-loma-otf_1%3a0.7.3-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:28.0404600Z Unpacking fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.0623741Z Selecting previously unselected package fonts-unifont.
+test	Chromium をインストールする	2026-11-24T09:20:28.0759124Z Preparing to unpack .../3-fonts-unifont_1%3a16.0.04-1build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:28.0766537Z Unpacking fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.1842027Z Selecting previously unselected package fonts-wqy-zenhei.
+test	Chromium をインストールする	2026-11-24T09:20:28.1977250Z Preparing to unpack .../4-fonts-wqy-zenhei_0.9.45-8build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:28.2111516Z Unpacking fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.2965025Z Selecting previously unselected package xfonts-encodings.
+test	Chromium をインストールする	2026-11-24T09:20:28.3101916Z Preparing to unpack .../5-xfonts-encodings_1%3a1.0.5-0ubuntu3_all.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:28.3108615Z Unpacking xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.3393071Z Selecting previously unselected package xfonts-utils.
+test	Chromium をインストールする	2026-11-24T09:20:28.3532706Z Preparing to unpack .../6-xfonts-utils_1%3a7.7+7build1_amd64v3.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:28.3540329Z Unpacking xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.3878106Z Selecting previously unselected package xfonts-cyrillic.
+test	Chromium をインストールする	2026-11-24T09:20:28.4013206Z Preparing to unpack .../7-xfonts-cyrillic_1%3a1.0.5+nmu1build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:28.4020319Z Unpacking xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.4353634Z Selecting previously unselected package xfonts-scalable.
+test	Chromium をインストールする	2026-11-24T09:20:28.4489493Z Preparing to unpack .../8-xfonts-scalable_1%3a1.0.3-1.3build1_all.deb ...
+test	Chromium をインストールする	2026-11-24T09:20:28.4495739Z Unpacking xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.4972835Z Setting up fonts-wqy-zenhei (0.9.45-8build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.5115693Z Setting up fonts-freefont-ttf (20211204+svn4273-4build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.5133425Z Setting up fonts-tlwg-loma-otf (1:0.7.3-1build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.5150078Z Setting up xfonts-encodings (1:1.0.5-0ubuntu3) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.5167180Z Setting up fonts-ipafont-gothic (00303-23ubuntu1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.5228763Z update-alternatives: using /usr/share/fonts/opentype/ipafont-gothic/ipag.ttf to provide /usr/share/fonts/truetype/fonts-japanese-gothic.ttf (fonts-japanese-gothic.ttf) in auto mode
+test	Chromium をインストールする	2026-11-24T09:20:28.5250651Z Setting up fonts-unifont (1:16.0.04-1build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.5268339Z Setting up xfonts-utils (1:7.7+7build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.5322036Z Setting up xfonts-cyrillic (1:1.0.5+nmu1build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.5753782Z Setting up xfonts-scalable (1:1.0.3-1.3build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.6154263Z Processing triggers for man-db (2.13.1-1build1) ...
+test	Chromium をインストールする	2026-11-24T09:20:28.6178946Z Not building database; man-db/auto-update is not 'true'.
+test	Chromium をインストールする	2026-11-24T09:20:28.6191404Z Processing triggers for fontconfig (2.17.1-3ubuntu1) ...
+test	Chromium をインストールする	2026-11-24T09:20:29.3320845Z 
+test	Chromium をインストールする	2026-11-24T09:20:29.3321719Z Running kernel seems to be up-to-date.
+test	Chromium をインストールする	2026-11-24T09:20:29.3322185Z 
+test	Chromium をインストールする	2026-11-24T09:20:29.3322358Z Restarting services...
+test	Chromium をインストールする	2026-11-24T09:20:29.3412266Z 
+test	Chromium をインストールする	2026-11-24T09:20:29.3412809Z Service restarts being deferred:
+test	Chromium をインストールする	2026-11-24T09:20:29.3415697Z  systemctl restart hosted-compute-agent.service
+test	Chromium をインストールする	2026-11-24T09:20:29.3416103Z 
+test	Chromium をインストールする	2026-11-24T09:20:29.3416568Z No containers need to be restarted.
+test	Chromium をインストールする	2026-11-24T09:20:29.3416893Z 
+test	Chromium をインストールする	2026-11-24T09:20:29.3417233Z No user sessions are running outdated binaries.
+test	Chromium をインストールする	2026-11-24T09:20:29.3417614Z 
+test	Chromium をインストールする	2026-11-24T09:20:29.3417932Z No VM guests are running outdated hypervisor (qemu) binaries on this host.
+test	Chromium をインストールする	2026-11-24T09:20:30.1729360Z Downloading Chrome for Testing 156.0.8078.4 (playwright chromium v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-linux64.zip
+test	Chromium をインストールする	2026-11-24T09:20:30.5966189Z |                                                                                |   0% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:30.7656513Z |■■■■■■■■                                                                        |  10% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:30.8479037Z |■■■■■■■■■■■■■■■■                                                                |  20% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:30.9545076Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:31.0641948Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:31.1473737Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:31.2699579Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:31.3908118Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:31.5577544Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:31.7327960Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:31.8321565Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 191.1 MiB
+test	Chromium をインストールする	2026-11-24T09:20:34.8093853Z Chrome for Testing 156.0.8078.4 (playwright chromium v1248) downloaded to /home/runner/.cache/ms-playwright/chromium-1248
+test	Chromium をインストールする	2026-11-24T09:20:34.8098521Z Downloading FFmpeg (playwright ffmpeg v1013) from https://cdn.playwright.dev/dbazure/download/playwright/builds/ffmpeg/1013/ffmpeg-linux.zip
+test	Chromium をインストールする	2026-11-24T09:20:35.1594304Z |                                                                                |   0% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1656158Z |■■■■■■■■                                                                        |  10% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1684581Z |■■■■■■■■■■■■■■■■                                                                |  20% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1710366Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1728085Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1738264Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1754204Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1773544Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1785205Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1796340Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.1808073Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 2.2 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.2393610Z FFmpeg (playwright ffmpeg v1013) downloaded to /home/runner/.cache/ms-playwright/ffmpeg-1013
+test	Chromium をインストールする	2026-11-24T09:20:35.2397730Z Downloading Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) from https://cdn.playwright.dev/builds/cft/156.0.8078.4/linux64/chrome-headless-shell-linux64.zip
+test	Chromium をインストールする	2026-11-24T09:20:35.6635984Z |                                                                                |   0% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.7980190Z |■■■■■■■■                                                                        |  10% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.8777317Z |■■■■■■■■■■■■■■■■                                                                |  20% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:35.9486800Z |■■■■■■■■■■■■■■■■■■■■■■■■                                                        |  30% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:36.0209980Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                                |  40% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:36.0734681Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                        |  50% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:36.1153929Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                                |  60% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:36.1741240Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                        |  70% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:36.2102954Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■                |  80% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:36.2687636Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■        |  90% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:36.3047643Z |■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■■| 100% of 120 MiB
+test	Chromium をインストールする	2026-11-24T09:20:38.4687524Z Chrome Headless Shell 156.0.8078.4 (playwright chromium-headless-shell v1248) downloaded to /home/runner/.cache/ms-playwright/chromium_headless_shell-1248
+test	結合テストの道具を用意する	﻿2026-11-24T09:20:38.5068005Z ##[group]Run sudo apt-get update
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5068372Z sudo apt-get update
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5068648Z sudo apt-get install -y tmux xvfb
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5068966Z sudo loginctl enable-linger "$USER"
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5069250Z uid=$(id -u)
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5069521Z # ランナーの実測（待たずにソケットがあった。1 秒の刻みで 1 回未満）の 10 倍
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5070122Z n=0
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5070369Z until [ -S "/run/user/$uid/bus" ]; do
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5070657Z   n=$((n+1))
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5070874Z   if [ "$n" -ge 10 ]; then
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5071166Z     echo "systemd のユーザーのマネージャーが 10 秒で起動しません" >&2
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5071461Z     exit 1
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5071656Z   fi
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5071842Z   sleep 1
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5072041Z done
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5072311Z echo "XDG_RUNTIME_DIR=/run/user/$uid" >> "$GITHUB_ENV"
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5072862Z echo "DBUS_SESSION_BUS_ADDRESS=unix:path=/run/user/$uid/bus" >> "$GITHUB_ENV"
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5104926Z shell: /usr/bin/bash -e {0}
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5105179Z env:
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5105369Z   LAYER: integration
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5108146Z   PATHS: tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/mdmark-comments.browser.test.ts tests/integration/lib/mdmark-graph.browser.test.ts tests/integration/lib/mdmark-map.browser.test.ts tests/integration/lib/mdmark-param-graph.browser.test.ts tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/mdmark-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/set-part-module-loader.browser.test.ts tests/integration/lib/view.story.test.ts
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5111275Z ##[endgroup]
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5759520Z Get:1 file:/etc/apt/apt-mirrors.txt Mirrorlist [144 B]
+test	結合テストの道具を用意する	2026-11-24T09:20:38.5985470Z Hit:6 https://packages.microsoft.com/ubuntu/26.04/prod resolute InRelease
+test	結合テストの道具を用意する	2026-11-24T09:20:38.6097271Z Hit:2 http://azure.archive.ubuntu.com/ubuntu resolute InRelease
+test	結合テストの道具を用意する	2026-11-24T09:20:38.6101457Z Hit:3 http://azure.archive.ubuntu.com/ubuntu resolute-updates InRelease
+test	結合テストの道具を用意する	2026-11-24T09:20:38.6105866Z Hit:4 http://azure.archive.ubuntu.com/ubuntu resolute-backports InRelease
+test	結合テストの道具を用意する	2026-11-24T09:20:38.6109558Z Hit:5 http://azure.archive.ubuntu.com/ubuntu resolute-security InRelease
+test	結合テストの道具を用意する	2026-11-24T09:20:39.4710137Z Reading package lists...
+test	結合テストの道具を用意する	2026-11-24T09:20:39.5045550Z Reading package lists...
+test	結合テストの道具を用意する	2026-11-24T09:20:39.6567712Z Building dependency tree...
+test	結合テストの道具を用意する	2026-11-24T09:20:39.6574910Z Reading state information...
+test	結合テストの道具を用意する	2026-11-24T09:20:39.6878775Z tmux is already the newest version (3.6a-2ubuntu0.2).
+test	結合テストの道具を用意する	2026-11-24T09:20:39.6879993Z tmux set to manually installed.
+test	結合テストの道具を用意する	2026-11-24T09:20:39.6880741Z xvfb is already the newest version (2:21.1.22-1ubuntu1.3).
+test	結合テストの道具を用意する	2026-11-24T09:20:39.7463590Z Solving dependencies...
+test	結合テストの道具を用意する	2026-11-24T09:20:39.8648867Z 0 upgraded, 0 newly installed, 0 to remove and 57 not upgraded.
+test	結合テストを回す	﻿2026-11-24T09:20:39.8858428Z ##[group]Run if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-24T09:20:39.8858786Z if [ -z "$PATHS" ]; then
+test	結合テストを回す	2026-11-24T09:20:39.8859104Z   npm run test:integration 2>&1 | tee test.log
+test	結合テストを回す	2026-11-24T09:20:39.8859574Z else
+test	結合テストを回す	2026-11-24T09:20:39.8860113Z   # PATHS は空白で区切った並びのため、引用符で囲まずに分ける
+test	結合テストを回す	2026-11-24T09:20:39.8860433Z   # shellcheck disable=SC2086
+test	結合テストを回す	2026-11-24T09:20:39.8860818Z   npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log
+test	結合テストを回す	2026-11-24T09:20:39.8861188Z fi
+test	結合テストを回す	2026-11-24T09:20:39.8894557Z shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+test	結合テストを回す	2026-11-24T09:20:39.8894916Z env:
+test	結合テストを回す	2026-11-24T09:20:39.8895111Z   LAYER: integration
+test	結合テストを回す	2026-11-24T09:20:39.8897906Z   PATHS: tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/mdmark-comments.browser.test.ts tests/integration/lib/mdmark-graph.browser.test.ts tests/integration/lib/mdmark-map.browser.test.ts tests/integration/lib/mdmark-param-graph.browser.test.ts tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/mdmark-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/set-part-module-loader.browser.test.ts tests/integration/lib/view.story.test.ts
+test	結合テストを回す	2026-11-24T09:20:39.8901092Z   XDG_RUNTIME_DIR: /run/user/1001
+test	結合テストを回す	2026-11-24T09:20:39.8901423Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+test	結合テストを回す	2026-11-24T09:20:39.8901742Z   XDG_CONFIG_HOME: 
+test	結合テストを回す	2026-11-24T09:20:39.8901944Z ##[endgroup]
+test	結合テストを回す	2026-11-24T09:20:40.8890333Z 
+test	結合テストを回す	2026-11-24T09:20:40.8921515Z  RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+test	結合テストを回す	2026-11-24T09:20:40.8922152Z 
+test	結合テストを回す	2026-11-24T09:21:07.1663164Z 9:21:07 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:07.1711260Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1801503Z 91 |  `);return t.at(-1)===""&&t.pop(),t};function NT(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-24T09:21:07.1836843Z 92 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-24T09:21:07.1839093Z 93 |  ...:n,ignoreIllegals:!0});return Z3(o)}var Q3;var e5=e=>import(e);function uv(e,t,n){console.error(`${e}\u3092\u8AAD\...
+test	結合テストを回す	2026-11-24T09:21:07.1840568Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:07.1841250Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:07.1841918Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:07.1842638Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:07.1845883Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:07.1847857Z 
+test	結合テストを回す	2026-11-24T09:21:07.1848536Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:07.1849553Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1851220Z 9:21:07 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:07.1852481Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1882156Z 91 |  `);return t.at(-1)===""&&t.pop(),t};function NT(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-24T09:21:07.1891117Z 92 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-24T09:21:07.1904899Z 93 |  ...3066\u3044\u307E\u3059\u3002</p></div>',a5;var l5=e=>import(e);function d5(e){let{cache:t,importModule:n}=e,r=new ...
+test	結合テストを回す	2026-11-24T09:21:07.1908114Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:07.1909566Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:07.1910951Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:07.1911862Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:07.1915136Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:07.1917104Z 
+test	結合テストを回す	2026-11-24T09:21:07.1918155Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:07.1919724Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1921557Z 9:21:07 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:07.1923146Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1924286Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:07.1925093Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:07.1926709Z 96 |  ...:l});m&&d.push(m)}return y5(d)}var T5="1.59.0",v5=e=>import(e),M5=e=>fetch(e,{method:"HEAD"}),om=e=>`https://cdn.j...
+test	結合テストを回す	2026-11-24T09:21:07.1928145Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:07.1930145Z 97 |  `):(t.textContent??"").replace(/\n$/,"")}function sm(e,t){let n=document.createElement("template");n.innerHTML=ba({st...
+test	結合テストを回す	2026-11-24T09:21:07.1932688Z 98 |  `)return;let C=document.createElement("span");return C.className="mdmark-code-break",w.replaceWith(C),C.append(w),C})...
+test	結合テストを回す	2026-11-24T09:21:07.1934329Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:07.1937347Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:07.1939447Z 
+test	結合テストを回す	2026-11-24T09:21:07.1940479Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:07.1941860Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1943440Z 9:21:07 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:07.1944899Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1946371Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:07.1947512Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:07.1949415Z 101 |  ...verse())r()}}var T6="data-mdmark-drawn",Om;var v6=e=>import(e);async function XM(e){let{root:t,libraries:n,isCurre...
+test	結合テストを回す	2026-11-24T09:21:07.1951126Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:07.1952905Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:07.1955286Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:07.1956866Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:07.1960099Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:07.1962259Z 
+test	結合テストを回す	2026-11-24T09:21:07.1963166Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:07.1964507Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1966041Z 9:21:07 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:07.1967468Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1968923Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:07.1970116Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:07.1971723Z 101 |  ..."attachMap"]},Hm=new Map,QM=new Map,eC=new Map,A6=e=>import(e);function tC(e,t){return e instanceof Error?(e.cause...
+test	結合テストを回す	2026-11-24T09:21:07.1973610Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:07.1977582Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:07.1980784Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:07.1982392Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:07.1985446Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:07.1987446Z 
+test	結合テストを回す	2026-11-24T09:21:07.1988326Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:07.1989592Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1991289Z 9:21:07 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:07.1992757Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:07.1994055Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:07.1994979Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:07.1996582Z 101 |  ...-theme-light",oC;var sC=Promise.resolve(),Bm=0,I6=e=>import(e),qm=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+test	結合テストを回す	2026-11-24T09:21:07.1998675Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:07.2000307Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:07.2002523Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:07.2003996Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:07.2006778Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:07.2008885Z 
+test	結合テストを回す	2026-11-24T09:21:07.2009937Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:07.2011017Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.4410480Z 9:21:08 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:08.4472510Z /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.4587072Z 91 |  `);return t.at(-1)===""&&t.pop(),t};function NT(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-24T09:21:08.4643427Z 92 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-24T09:21:08.4715793Z 93 |  ...:n,ignoreIllegals:!0});return Z3(o)}var Q3;var e5=e=>import(e);function uv(e,t,n){console.error(`${e}\u3092\u8AAD\...
+test	結合テストを回す	2026-11-24T09:21:08.4724090Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:08.4754660Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:08.4892576Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:08.4911996Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:08.4930863Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:08.4940307Z 
+test	結合テストを回す	2026-11-24T09:21:08.4971731Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:08.5026439Z   File: /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5100896Z 9:21:08 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:08.5150815Z /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5281836Z 91 |  `);return t.at(-1)===""&&t.pop(),t};function NT(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-24T09:21:08.5321217Z 92 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-24T09:21:08.5388030Z 93 |  ...3066\u3044\u307E\u3059\u3002</p></div>',a5;var l5=e=>import(e);function d5(e){let{cache:t,importModule:n}=e,r=new ...
+test	結合テストを回す	2026-11-24T09:21:08.5470755Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:08.5471583Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:08.5472301Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:08.5472976Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:08.5475412Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:08.5477239Z 
+test	結合テストを回す	2026-11-24T09:21:08.5477954Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:08.5478940Z   File: /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5480447Z 9:21:08 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:08.5481607Z /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5482455Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:08.5482922Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:08.5484069Z 96 |  ...:l});m&&d.push(m)}return y5(d)}var T5="1.59.0",v5=e=>import(e),M5=e=>fetch(e,{method:"HEAD"}),om=e=>`https://cdn.j...
+test	結合テストを回す	2026-11-24T09:21:08.5485180Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:08.5486545Z 97 |  `):(t.textContent??"").replace(/\n$/,"")}function sm(e,t){let n=document.createElement("template");n.innerHTML=ba({st...
+test	結合テストを回す	2026-11-24T09:21:08.5488731Z 98 |  `)return;let C=document.createElement("span");return C.className="mdmark-code-break",w.replaceWith(C),C.append(w),C})...
+test	結合テストを回す	2026-11-24T09:21:08.5490472Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:08.5493015Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:08.5494785Z 
+test	結合テストを回す	2026-11-24T09:21:08.5495328Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:08.5496185Z   File: /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5497304Z 9:21:08 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:08.5498323Z /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5499248Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:08.5500161Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:08.5501368Z 101 |  ...verse())r()}}var T6="data-mdmark-drawn",Om;var v6=e=>import(e);async function XM(e){let{root:t,libraries:n,isCurre...
+test	結合テストを回す	2026-11-24T09:21:08.5502415Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:08.5503613Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:08.5505438Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:08.5506634Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:08.5508946Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:08.5510730Z 
+test	結合テストを回す	2026-11-24T09:21:08.5511201Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:08.5511994Z   File: /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5513477Z 9:21:08 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:08.5514623Z /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5515524Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:08.5516204Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:08.5517390Z 101 |  ..."attachMap"]},Hm=new Map,QM=new Map,eC=new Map,A6=e=>import(e);function tC(e,t){return e instanceof Error?(e.cause...
+test	結合テストを回す	2026-11-24T09:21:08.5518441Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:08.5519674Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:08.5521900Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:08.5523160Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:08.5525591Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:08.5527298Z 
+test	結合テストを回す	2026-11-24T09:21:08.5527798Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:08.5528633Z   File: /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5529911Z 9:21:08 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:08.5530891Z /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:08.5531769Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:08.5532445Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:08.5533608Z 101 |  ...-theme-light",oC;var sC=Promise.resolve(),Bm=0,I6=e=>import(e),qm=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+test	結合テストを回す	2026-11-24T09:21:08.5534664Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:08.5535929Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:08.5537746Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:08.5539009Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:08.5541542Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:08.5543215Z 
+test	結合テストを回す	2026-11-24T09:21:08.5543707Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:08.5544588Z   File: /tmp/mdmark-integration-dist-4rYC5H/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:09.7361751Z  ✓  integration-browser-touch (chromium)  tests/integration/lib/mount.browser.test.ts (345 tests | 343 skipped) 1946ms
+test	結合テストを回す	2026-11-24T09:21:09.7381364Z    ✓ test_normal_when_unmarked_table_sorted_by_touch 1643ms
+test	結合テストを回す	2026-11-24T09:21:11.3322271Z  ✓  integration-browser (chromium)  tests/integration/lib/mdmark-table.browser.test.ts (6 tests) 1163ms
+test	結合テストを回す	2026-11-24T09:21:11.3421047Z    ✓ test_normal 462ms
+test	結合テストを回す	2026-11-24T09:21:12.4081162Z 9:21:12 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:12.4108010Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:12.4139586Z 91 |  `);return t.at(-1)===""&&t.pop(),t};function NT(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-24T09:21:12.4158203Z 92 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-24T09:21:12.4174370Z 93 |  ...:n,ignoreIllegals:!0});return Z3(o)}var Q3;var e5=e=>import(e);function uv(e,t,n){console.error(`${e}\u3092\u8AAD\...
+test	結合テストを回す	2026-11-24T09:21:12.4175701Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:12.4176474Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:12.4177171Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:12.4178268Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:12.4192499Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:12.4200578Z 
+test	結合テストを回す	2026-11-24T09:21:12.4201919Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:12.4203455Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=partially-set
+test	結合テストを回す	2026-11-24T09:21:12.4204969Z 9:21:12 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:12.4206113Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:12.4207673Z 91 |  `);return t.at(-1)===""&&t.pop(),t};function NT(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-24T09:21:12.4209350Z 92 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-24T09:21:12.4212859Z 93 |  ...3066\u3044\u307E\u3059\u3002</p></div>',a5;var l5=e=>import(e);function d5(e){let{cache:t,importModule:n}=e,r=new ...
+test	結合テストを回す	2026-11-24T09:21:12.4214135Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:12.4214980Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:12.4215654Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:12.4216404Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:12.4218975Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:12.4221254Z 
+test	結合テストを回す	2026-11-24T09:21:12.4236128Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:12.4237336Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=partially-set
+test	結合テストを回す	2026-11-24T09:21:12.4238783Z 9:21:12 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:12.4241185Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:12.4242031Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:12.4242526Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:12.4244227Z 96 |  ...:l});m&&d.push(m)}return y5(d)}var T5="1.59.0",v5=e=>import(e),M5=e=>fetch(e,{method:"HEAD"}),om=e=>`https://cdn.j...
+test	結合テストを回す	2026-11-24T09:21:12.4247502Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:12.4249255Z 97 |  `):(t.textContent??"").replace(/\n$/,"")}function sm(e,t){let n=document.createElement("template");n.innerHTML=ba({st...
+test	結合テストを回す	2026-11-24T09:21:12.4252558Z 98 |  `)return;let C=document.createElement("span");return C.className="mdmark-code-break",w.replaceWith(C),C.append(w),C})...
+test	結合テストを回す	2026-11-24T09:21:12.4255409Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:12.4257962Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:12.4265767Z 
+test	結合テストを回す	2026-11-24T09:21:12.4268756Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:12.4270272Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=partially-set
+test	結合テストを回す	2026-11-24T09:21:12.4273525Z 9:21:12 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:12.4274795Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:12.4277488Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:12.4278524Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:12.4299304Z 101 |  ...verse())r()}}var T6="data-mdmark-drawn",Om;var v6=e=>import(e);async function XM(e){let{root:t,libraries:n,isCurre...
+test	結合テストを回す	2026-11-24T09:21:12.4301167Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:12.4302701Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:12.4306221Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:12.4307862Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:12.4310719Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:12.4313270Z 
+test	結合テストを回す	2026-11-24T09:21:12.4314111Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:12.4316547Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=partially-set
+test	結合テストを回す	2026-11-24T09:21:12.4318102Z 9:21:12 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:12.4319354Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:12.4320794Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:12.4321733Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:12.4323469Z 101 |  ..."attachMap"]},Hm=new Map,QM=new Map,eC=new Map,A6=e=>import(e);function tC(e,t){return e instanceof Error?(e.cause...
+test	結合テストを回す	2026-11-24T09:21:12.4325876Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:12.4327366Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:12.4330383Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:12.4332436Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:12.4335267Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:12.4337261Z 
+test	結合テストを回す	2026-11-24T09:21:12.4337978Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:12.4339212Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=partially-set
+test	結合テストを回す	2026-11-24T09:21:12.4342700Z 9:21:12 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:12.4344011Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:12.4345811Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:12.4346775Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:12.4348816Z 101 |  ...-theme-light",oC;var sC=Promise.resolve(),Bm=0,I6=e=>import(e),qm=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+test	結合テストを回す	2026-11-24T09:21:12.4351761Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:12.4353834Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:12.4363003Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:12.4380833Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:12.4383534Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:12.4385666Z 
+test	結合テストを回す	2026-11-24T09:21:12.4386311Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:12.4387660Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=partially-set
+test	結合テストを回す	2026-11-24T09:21:14.6311403Z 9:21:14 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:14.6340772Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:14.6391829Z 91 |  `);return t.at(-1)===""&&t.pop(),t};function NT(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-24T09:21:14.6478430Z 92 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-24T09:21:14.6509242Z 93 |  ...:n,ignoreIllegals:!0});return Z3(o)}var Q3;var e5=e=>import(e);function uv(e,t,n){console.error(`${e}\u3092\u8AAD\...
+test	結合テストを回す	2026-11-24T09:21:14.6523348Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:14.6524084Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:14.6524780Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:14.6525489Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:14.6527991Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:14.6529976Z 
+test	結合テストを回す	2026-11-24T09:21:14.6530693Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:14.6531804Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=args-invalid
+test	結合テストを回す	2026-11-24T09:21:14.6533267Z 9:21:14 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:14.6534382Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:14.6535936Z 91 |  `);return t.at(-1)===""&&t.pop(),t};function NT(e){let{diff:t,texts:n}=e,r={texts:n,deleted:new Set,added:new Set,sam...
+test	結合テストを回す	2026-11-24T09:21:14.6537569Z 92 |  `?(r+="</span>".repeat(n.length),t.push(r),r=n.join("")):(s==="</span>"?n.pop():s.startsWith("<span")&&n.push(s),r+=s...
+test	結合テストを回す	2026-11-24T09:21:14.6540250Z 93 |  ...3066\u3044\u307E\u3059\u3002</p></div>',a5;var l5=e=>import(e);function d5(e){let{cache:t,importModule:n}=e,r=new ...
+test	結合テストを回す	2026-11-24T09:21:14.6542593Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:14.6543710Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:14.6544353Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:14.6545101Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:14.6547606Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:14.6550711Z 
+test	結合テストを回す	2026-11-24T09:21:14.6551417Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:14.6553573Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=args-invalid
+test	結合テストを回す	2026-11-24T09:21:14.6555147Z 9:21:14 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:14.6556425Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:14.6557271Z 94 |  ${t}
+test	結合テストを回す	2026-11-24T09:21:14.6557808Z 95 |  });
+test	結合テストを回す	2026-11-24T09:21:14.6558981Z 96 |  ...:l});m&&d.push(m)}return y5(d)}var T5="1.59.0",v5=e=>import(e),M5=e=>fetch(e,{method:"HEAD"}),om=e=>`https://cdn.j...
+test	結合テストを回す	2026-11-24T09:21:14.6560343Z    |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:14.6561801Z 97 |  `):(t.textContent??"").replace(/\n$/,"")}function sm(e,t){let n=document.createElement("template");n.innerHTML=ba({st...
+test	結合テストを回す	2026-11-24T09:21:14.6564013Z 98 |  `)return;let C=document.createElement("span");return C.className="mdmark-code-break",w.replaceWith(C),C.append(w),C})...
+test	結合テストを回す	2026-11-24T09:21:14.6565730Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:14.6568716Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:14.6571224Z 
+test	結合テストを回す	2026-11-24T09:21:14.6571976Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:14.6573535Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=args-invalid
+test	結合テストを回す	2026-11-24T09:21:14.6575089Z 9:21:14 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:14.6576349Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:14.6577523Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:14.6578553Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:14.6580264Z 101 |  ...verse())r()}}var T6="data-mdmark-drawn",Om;var v6=e=>import(e);async function XM(e){let{root:t,libraries:n,isCurre...
+test	結合テストを回す	2026-11-24T09:21:14.6582479Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:14.6585529Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:14.6588389Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:14.6590247Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:14.6592936Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:14.6594918Z 
+test	結合テストを回す	2026-11-24T09:21:14.6595593Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:14.6596749Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=args-invalid
+test	結合テストを回す	2026-11-24T09:21:14.6598264Z 9:21:14 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:14.6599449Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:14.6600782Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:14.6601732Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:14.6603102Z 101 |  ..."attachMap"]},Hm=new Map,QM=new Map,eC=new Map,A6=e=>import(e);function tC(e,t){return e instanceof Error?(e.cause...
+test	結合テストを回す	2026-11-24T09:21:14.6604342Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:14.6605796Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:14.6608086Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:14.6609661Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:14.6612888Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:14.6615183Z 
+test	結合テストを回す	2026-11-24T09:21:14.6615866Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:14.6617029Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=args-invalid
+test	結合テストを回す	2026-11-24T09:21:14.6618454Z 9:21:14 AM [vite] (client) warning: 
+test	結合テストを回す	2026-11-24T09:21:14.6619619Z /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js
+test	結合テストを回す	2026-11-24T09:21:14.6621027Z 99  |  `);for(let n of t.querySelectorAll("li, p"))n.append(`
+test	結合テストを回す	2026-11-24T09:21:14.6621934Z 100 |  `);return(t.textContent??"").split(`
+test	結合テストを回す	2026-11-24T09:21:14.6623280Z 101 |  ...-theme-light",oC;var sC=Promise.resolve(),Bm=0,I6=e=>import(e),qm=e=>typeof e=="object"&&e!==null&&typeof e.initia...
+test	結合テストを回す	2026-11-24T09:21:14.6624772Z     |                                                                 ^
+test	結合テストを回す	2026-11-24T09:21:14.6626114Z 102 |  `)[0]?.trim()??"",U6=async e=>{let{mermaid:t,source:n,root:r,scope:o,config:s,id:i,frameId:a}=e,{title:l,body:d,kind:...
+test	結合テストを回す	2026-11-24T09:21:14.6634322Z 103 |  `),s=Ir({markdown:o,config:t,index:n.index,docId:n.docId,references:n.references,aliases:n.aliases}),i=document.creat...
+test	結合テストを回す	2026-11-24T09:21:14.6635844Z The above dynamic import cannot be analyzed by Vite.
+test	結合テストを回す	2026-11-24T09:21:14.6638560Z See https://vite.dev/guide/features#dynamic-import for supported dynamic import formats. If this is intended to be left as-is, you can use the /* @vite-ignore */ comment inside the import() call to suppress this warning.
+test	結合テストを回す	2026-11-24T09:21:14.6640517Z 
+test	結合テストを回す	2026-11-24T09:21:14.6641225Z   Plugin: vite:import-analysis
+test	結合テストを回す	2026-11-24T09:21:14.6642405Z   File: /tmp/mdmark-integration-dist-bZ80Iw/dist/index.js?case=args-invalid
+test	結合テストを回す	2026-11-24T09:21:17.3888080Z  ✓  integration-browser (chromium)  tests/integration/lib/set-part-module-loader.browser.test.ts (8 tests) 5907ms
+test	結合テストを回す	2026-11-24T09:21:17.3931057Z    ✓ test_normal 480ms
+test	結合テストを回す	2026-11-24T09:21:17.3966046Z    ✓ test_normal_when_partially_set 1661ms
+test	結合テストを回す	2026-11-24T09:21:17.3994615Z    ✓ test_error_when_args_invalid 1426ms
+test	結合テストを回す	2026-11-24T09:21:17.4017970Z    ✓ test_normal_when_mermaid_set 1327ms
+test	結合テストを回す	2026-11-24T09:21:17.4039469Z    ✓ test_error_when_mermaid_loader_fails 429ms
+test	結合テストを回す	2026-11-24T09:21:18.8282531Z  ✓  integration-browser (chromium)  tests/integration/lib/mount-comments.browser.test.ts (7 tests) 1240ms
+test	結合テストを回す	2026-11-24T09:21:18.8317020Z    ✓ test_normal 627ms
+test	結合テストを回す	2026-11-24T09:21:19.4262001Z  ✓  integration-browser (chromium)  tests/integration/lib/mount-view.browser.test.ts (6 tests) 309ms
+test	結合テストを回す	2026-11-24T09:21:20.2781682Z  ✓  integration-browser (chromium)  tests/integration/lib/mdmark-comments.browser.test.ts (3 tests) 727ms
+test	結合テストを回す	2026-11-24T09:21:20.2849239Z    ✓ test_error_when_data_invalid 304ms
+test	結合テストを回す	2026-11-24T09:21:21.0193410Z  ✓  integration-browser (chromium)  tests/integration/lib/mdmark-view.browser.test.ts (3 tests) 597ms
+test	結合テストを回す	2026-11-24T09:21:21.0248597Z    ✓ test_error_when_data_invalid 308ms
+test	結合テストを回す	2026-11-24T09:21:21.6677473Z  ✓  integration-browser (chromium)  tests/integration/lib/mdmark-map.browser.test.ts (2 tests) 501ms
+test	結合テストを回す	2026-11-24T09:21:21.6681439Z    ✓ test_normal 397ms
+test	結合テストを回す	2026-11-24T09:21:21.9019444Z  ✓  integration-browser (chromium)  tests/integration/lib/mdmark-param-graph.browser.test.ts (2 tests) 142ms
+test	結合テストを回す	2026-11-24T09:21:22.2287580Z  ✓  integration-browser (chromium)  tests/integration/lib/mdmark-graph.browser.test.ts (2 tests) 221ms
+test	結合テストを回す	2026-11-24T09:21:24.4282818Z stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_printed_with_syntax
+test	結合テストを回す	2026-11-24T09:21:24.4287366Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	結合テストを回す	2026-11-24T09:21:25.9344714Z stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_zoomed
+test	結合テストを回す	2026-11-24T09:21:25.9347425Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	結合テストを回す	2026-11-24T09:21:27.1265540Z stderr | tests/integration/lib/mount.browser.test.ts > test_normal_when_diagram_panned
+test	結合テストを回す	2026-11-24T09:21:27.1273203Z [Error: ResizeObserver loop completed with undelivered notifications.]
+test	結合テストを回す	2026-11-24T09:21:52.5232276Z  ✓  integration-storybook  tests/integration/lib/diagram-frame.story.test.ts (23 tests) 48122ms
+test	結合テストを回す	2026-11-24T09:21:52.5251206Z    ✓ test_fit 2886ms
+test	結合テストを回す	2026-11-24T09:21:52.5277277Z    ✓ test_fit_tall 2659ms
+test	結合テストを回す	2026-11-24T09:21:52.5291078Z    ✓ test_zoomed 3105ms
+test	結合テストを回す	2026-11-24T09:21:52.5355802Z    ✓ test_max 2007ms
+test	結合テストを回す	2026-11-24T09:21:52.5374344Z    ✓ test_min 3439ms
+test	結合テストを回す	2026-11-24T09:21:52.5375377Z    ✓ test_narrow 2498ms
+test	結合テストを回す	2026-11-24T09:21:52.5376280Z    ✓ test_fullscreen 2760ms
+test	結合テストを回す	2026-11-24T09:21:52.5377390Z    ✓ test_in_framed_surface 2093ms
+test	結合テストを回す	2026-11-24T09:21:52.5378568Z    ✓ test_in_framed_surface_fullscreen 2211ms
+test	結合テストを回す	2026-11-24T09:21:52.5379628Z    ✓ test_fit_when_resized 2574ms
+test	結合テストを回す	2026-11-24T09:21:52.5380784Z    ✓ test_fit_when_printed 2024ms
+test	結合テストを回す	2026-11-24T09:21:52.5381684Z    ✓ test_resized 2054ms
+test	結合テストを回す	2026-11-24T09:21:52.5382671Z    ✓ test_resize_handle_focused 1164ms
+test	結合テストを回す	2026-11-24T09:21:52.5383704Z    ✓ test_resize_off 1806ms
+test	結合テストを回す	2026-11-24T09:21:52.5384618Z    ✓ test_mermaid 1166ms
+test	結合テストを回す	2026-11-24T09:21:52.5385569Z    ✓ test_map 2297ms
+test	結合テストを回す	2026-11-24T09:21:52.5386482Z    ✓ test_map_in_group 1986ms
+test	結合テストを回す	2026-11-24T09:21:52.5387394Z    ✓ test_plain_map 1327ms
+test	結合テストを回す	2026-11-24T09:21:52.5388314Z    ✓ test_map_export_open 1183ms
+test	結合テストを回す	2026-11-24T09:21:52.5389372Z    ✓ test_map_list_view 1082ms
+test	結合テストを回す	2026-11-24T09:21:52.5390721Z    ✓ test_map_list_view_narrow 1228ms
+test	結合テストを回す	2026-11-24T09:21:52.5391667Z    ✓ test_map_no_list 2094ms
+test	結合テストを回す	2026-11-24T09:21:52.5392441Z    ✓ test_map_export_failed 2413ms
+test	結合テストを回す	2026-11-24T09:22:07.1007591Z  ✓  integration-storybook  tests/integration/lib/map-flow.story.test.ts (29 tests) 62675ms
+test	結合テストを回す	2026-11-24T09:22:07.1025320Z    ✓ test_default 2900ms
+test	結合テストを回す	2026-11-24T09:22:07.1027493Z    ✓ test_entered 2514ms
+test	結合テストを回す	2026-11-24T09:22:07.1028947Z    ✓ test_collapsed 2662ms
+test	結合テストを回す	2026-11-24T09:22:07.1032480Z    ✓ test_selected_one 2746ms
+test	結合テストを回す	2026-11-24T09:22:07.1033459Z    ✓ test_selected_two 3278ms
+test	結合テストを回す	2026-11-24T09:22:07.1034318Z    ✓ test_focused 3141ms
+test	結合テストを回す	2026-11-24T09:22:07.1035208Z    ✓ test_wire_reattached 2197ms
+test	結合テストを回す	2026-11-24T09:22:07.1036131Z    ✓ test_node_fit_width 1954ms
+test	結合テストを回す	2026-11-24T09:22:07.1037165Z    ✓ test_narrow 2244ms
+test	結合テストを回す	2026-11-24T09:22:07.1038171Z    ✓ test_linked_node 2173ms
+test	結合テストを回す	2026-11-24T09:22:07.1039156Z    ✓ test_group_note 1821ms
+test	結合テストを回す	2026-11-24T09:22:07.1060222Z    ✓ test_group_note_info_marker_size 1570ms
+test	結合テストを回す	2026-11-24T09:22:07.1071174Z    ✓ test_group_note_info_marker_not_overlapping 1586ms
+test	結合テストを回す	2026-11-24T09:22:07.1072753Z    ✓ test_hints_off 1474ms
+test	結合テストを回す	2026-11-24T09:22:07.1074163Z    ✓ test_accessibility 2360ms
+test	結合テストを回す	2026-11-24T09:22:07.1075739Z    ✓ test_parallel_wires 2065ms
+test	結合テストを回す	2026-11-24T09:22:07.1076914Z    ✓ test_plain 2139ms
+test	結合テストを回す	2026-11-24T09:22:07.1077808Z    ✓ test_wrapped_name 1986ms
+test	結合テストを回す	2026-11-24T09:22:07.1078697Z    ✓ test_planned_changes 1335ms
+test	結合テストを回す	2026-11-24T09:22:07.1079587Z    ✓ test_styled 2186ms
+test	結合テストを回す	2026-11-24T09:22:07.1080671Z    ✓ test_wire_ends_and_shapes 1179ms
+test	結合テストを回す	2026-11-24T09:22:07.1081620Z    ✓ test_shared_side 2268ms
+test	結合テストを回す	2026-11-24T09:22:07.1082572Z    ✓ test_wire_hit_target_size 2519ms
+test	結合テストを回す	2026-11-24T09:22:07.1083525Z    ✓ test_packet_variety 1592ms
+test	結合テストを回す	2026-11-24T09:22:07.1084371Z    ✓ test_packet_fills 2185ms
+test	結合テストを回す	2026-11-24T09:22:07.1085248Z    ✓ test_packet_palettes 2352ms
+test	結合テストを回す	2026-11-24T09:22:07.1086138Z    ✓ test_packet_source_color 2146ms
+test	結合テストを回す	2026-11-24T09:22:07.1087165Z    ✓ test_long_wire_label 2308ms
+test	結合テストを回す	2026-11-24T09:22:07.1088136Z    ✓ test_wire_route_after_drag 1728ms
+test	結合テストを回す	2026-11-24T09:22:18.1163262Z  ✓  integration-storybook  tests/integration/lib/view.story.test.ts (12 tests) 24704ms
+test	結合テストを回す	2026-11-24T09:22:18.1269941Z    ✓ test_board 1988ms
+test	結合テストを回す	2026-11-24T09:22:18.1331182Z    ✓ test_table 1612ms
+test	結合テストを回す	2026-11-24T09:22:18.1400597Z    ✓ test_table_filtered_select 1205ms
+test	結合テストを回す	2026-11-24T09:22:18.1411497Z    ✓ test_board_after_filter 2388ms
+test	結合テストを回す	2026-11-24T09:22:18.1415465Z    ✓ test_table_filtered_text 2204ms
+test	結合テストを回す	2026-11-24T09:22:18.1416913Z    ✓ test_table_no_match 1857ms
+test	結合テストを回す	2026-11-24T09:22:18.1418045Z    ✓ test_default_icons 1701ms
+test	結合テストを回す	2026-11-24T09:22:18.1419119Z    ✓ test_overridden_icons 4292ms
+test	結合テストを回す	2026-11-24T09:22:18.1421156Z    ✓ test_many_columns 1668ms
+test	結合テストを回す	2026-11-24T09:22:18.1422263Z    ✓ test_long_title_empty_value 2121ms
+test	結合テストを回す	2026-11-24T09:22:18.1423328Z    ✓ test_board_disabled 1714ms
+test	結合テストを回す	2026-11-24T09:22:18.1424273Z    ✓ test_table_only 1893ms
+test	結合テストを回す	2026-11-24T09:22:24.2924579Z  ✓  integration-storybook  tests/integration/lib/notice.story.test.ts (8 tests) 16268ms
+test	結合テストを回す	2026-11-24T09:22:24.2950934Z    ✓ test_figure 2108ms
+test	結合テストを回す	2026-11-24T09:22:24.2968231Z    ✓ test_block 2050ms
+test	結合テストを回す	2026-11-24T09:22:24.2990913Z    ✓ test_long_name 2233ms
+test	結合テストを回す	2026-11-24T09:22:24.2992075Z    ✓ test_extension 1821ms
+test	結合テストを回す	2026-11-24T09:22:24.2992986Z    ✓ test_diff_revisions 1954ms
+test	結合テストを回す	2026-11-24T09:22:24.2993959Z    ✓ test_diff_content 2383ms
+test	結合テストを回す	2026-11-24T09:22:24.2994893Z    ✓ test_diff_blocks 2064ms
+test	結合テストを回す	2026-11-24T09:22:24.2995387Z    ✓ test_icons 1596ms
+test	結合テストを回す	2026-11-24T09:22:26.8812236Z  ✓  integration-storybook  tests/integration/lib/param.story.test.ts (5 tests) 7580ms
+test	結合テストを回す	2026-11-24T09:22:26.8814196Z    ✓ test_default 1886ms
+test	結合テストを回す	2026-11-24T09:22:26.8815005Z    ✓ test_changed 2012ms
+test	結合テストを回す	2026-11-24T09:22:26.8816053Z    ✓ test_copied 1698ms
+test	結合テストを回す	2026-11-24T09:22:26.8816814Z    ✓ test_failed 928ms
+test	結合テストを回す	2026-11-24T09:22:26.8817670Z    ✓ test_custom_copy_label 944ms
+test	結合テストを回す	2026-11-24T09:22:37.9421619Z  ✓  integration-browser (chromium)  tests/integration/lib/mount.browser.test.ts (345 tests | 2 skipped) 91236ms
+test	結合テストを回す	2026-11-24T09:22:37.9423613Z    ✓ test_normal 1646ms
+test	結合テストを回す	2026-11-24T09:22:37.9425385Z    ✓ test_normal_when_library_mark 386ms
+test	結合テストを回す	2026-11-24T09:22:37.9427668Z    ✓ test_normal_when_table_pinned 481ms
+test	結合テストを回す	2026-11-24T09:22:37.9430696Z    ✓ test_normal_when_table_pin_and_wide 394ms
+test	結合テストを回す	2026-11-24T09:22:37.9432452Z    ✓ test_normal_when_table_header_stuck 5449ms
+test	結合テストを回す	2026-11-24T09:22:37.9433860Z    ✓ test_normal_when_table_header_stuck_in_scroller 2229ms
+test	結合テストを回す	2026-11-24T09:22:37.9435053Z    ✓ test_normal_when_every_table_header_stuck 2362ms
+test	結合テストを回す	2026-11-24T09:22:37.9441718Z    ✓ test_normal_when_code_copied 2126ms
+test	結合テストを回す	2026-11-24T09:22:37.9443100Z    ✓ test_normal_when_diagram_zoomed 1184ms
+test	結合テストを回す	2026-11-24T09:22:37.9444339Z    ✓ test_normal_when_diagram_panned 1436ms
+test	結合テストを回す	2026-11-24T09:22:37.9445544Z    ✓ test_normal_when_diagram_fullscreen 607ms
+test	結合テストを回す	2026-11-24T09:22:37.9446736Z    ✓ test_normal_when_diagram_tooltip 727ms
+test	結合テストを回す	2026-11-24T09:22:37.9448078Z    ✓ test_normal_when_diagram_tooltip_touch 502ms
+test	結合テストを回す	2026-11-24T09:22:37.9449383Z    ✓ test_normal_when_diagram_pinched 596ms
+test	結合テストを回す	2026-11-24T09:22:37.9451080Z    ✓ test_normal_when_destroyed_while_waiting 1112ms
+test	結合テストを回す	2026-11-24T09:22:37.9452577Z    ✓ test_normal_when_diff_blocks_updated 972ms
+test	結合テストを回す	2026-11-24T09:22:37.9465528Z    ✓ test_error_when_part_module_unavailable 422ms
+test	結合テストを回す	2026-11-24T09:22:37.9466811Z    ✓ test_normal_when_tooltip_placement_bottom 431ms
+test	結合テストを回す	2026-11-24T09:22:37.9467774Z    ✓ test_normal_when_bg_transparent_with_opaque 414ms
+test	結合テストを回す	2026-11-24T09:22:37.9468770Z    ✓ test_normal_when_no_syntax_target 311ms
+test	結合テストを回す	2026-11-24T09:22:37.9469600Z    ✓ test_normal_when_side_toc_hovered_and_pinned 436ms
+test	結合テストを回す	2026-11-24T09:22:37.9470664Z    ✓ test_normal_when_side_toc_focused 438ms
+test	結合テストを回す	2026-11-24T09:22:37.9471340Z    ✓ test_normal_when_side_toc_into_closed_section 357ms
+test	結合テストを回す	2026-11-24T09:22:37.9471981Z    ✓ test_normal_when_back_to_top_pressed 725ms
+test	結合テストを回す	2026-11-24T09:22:37.9472647Z    ✓ test_normal_when_back_to_top_in_scroll_container 730ms
+test	結合テストを回す	2026-11-24T09:22:37.9473335Z    ✓ test_normal_when_back_to_top_avoids_side_parts 667ms
+test	結合テストを回す	2026-11-24T09:22:37.9473956Z    ✓ test_normal_when_lightbox_opened 360ms
+test	結合テストを回す	2026-11-24T09:22:37.9474541Z    ✓ test_normal_when_lightbox_pinched 454ms
+test	結合テストを回す	2026-11-24T09:22:37.9475111Z    ✓ test_normal_when_gif_toggled 2152ms
+test	結合テストを回す	2026-11-24T09:22:37.9475937Z    ✓ test_normal_when_gif_reduced_motion 737ms
+test	結合テストを回す	2026-11-24T09:22:37.9476532Z    ✓ test_normal_when_side_toc_over_table 370ms
+test	結合テストを回す	2026-11-24T09:22:37.9477308Z    ✓ test_normal_when_side_toc_scrolled_to_end 365ms
+test	結合テストを回す	2026-11-24T09:22:37.9477938Z    ✓ test_normal_when_side_toc_at_scroll_edge 826ms
+test	結合テストを回す	2026-11-24T09:22:37.9478777Z    ✓ test_normal_when_node_link_opened 502ms
+test	結合テストを回す	2026-11-24T09:22:37.9479969Z    ✓ test_normal_when_wide_toggled 319ms
+test	結合テストを回す	2026-11-24T09:22:37.9480630Z    ✓ test_normal_when_wide_with_side_toc 384ms
+test	結合テストを回す	2026-11-24T09:22:37.9481219Z    ✓ test_normal_when_glossary_touch 461ms
+test	結合テストを回す	2026-11-24T09:22:37.9481828Z    ✓ test_normal_when_reordered_within_groups 346ms
+test	結合テストを回す	2026-11-24T09:22:37.9482469Z    ✓ test_normal_when_diagram_placement_top 641ms
+test	結合テストを回す	2026-11-24T09:22:37.9483070Z    ✓ test_normal_when_chart_item_tooltip 907ms
+test	結合テストを回す	2026-11-24T09:22:37.9483656Z    ✓ test_normal_when_diagram_resized 1716ms
+test	結合テストを回す	2026-11-24T09:22:37.9484224Z    ✓ test_normal_when_range_scripts 378ms
+test	結合テストを回す	2026-11-24T09:22:37.9484850Z    ✓ test_normal_when_range_scripts_enabled_by_mark 362ms
+test	結合テストを回す	2026-11-24T09:22:37.9485966Z    ✓ test_error_when_range_script_invalid 490ms
+test	結合テストを回す	2026-11-24T09:22:37.9487071Z    ✓ test_normal_when_block_spacing 1406ms
+test	結合テストを回す	2026-11-24T09:22:37.9488101Z    ✓ test_normal_when_mermaid_drawn 1097ms
+test	結合テストを回す	2026-11-24T09:22:37.9489192Z    ✓ test_normal_when_mermaid_scheme_changed 989ms
+test	結合テストを回す	2026-11-24T09:22:37.9490314Z    ✓ test_normal_when_mermaid_printed 1913ms
+test	結合テストを回す	2026-11-24T09:22:37.9491462Z    ✓ test_normal_when_mermaid_theme_configured 915ms
+test	結合テストを回す	2026-11-24T09:22:37.9492421Z    ✓ test_normal_when_no_mermaid_target 310ms
+test	結合テストを回す	2026-11-24T09:22:37.9493550Z    ✓ test_error_when_mermaid_syntax_invalid 1017ms
+test	結合テストを回す	2026-11-24T09:22:37.9494643Z    ✓ test_normal_when_mermaid_node_link 1972ms
+test	結合テストを回す	2026-11-24T09:22:37.9495800Z    ✓ test_normal_when_column_wider_than_visible_width 661ms
+test	結合テストを回す	2026-11-24T09:22:37.9496949Z    ✓ test_normal_when_pinned_column_resized 375ms
+test	結合テストを回す	2026-11-24T09:22:37.9498021Z    ✓ test_normal_when_pinned_columns_exceed_visible_width 342ms
+test	結合テストを回す	2026-11-24T09:22:37.9499087Z    ✓ test_normal_when_map_walkthrough_played 1405ms
+test	結合テストを回す	2026-11-24T09:22:37.9500305Z    ✓ test_normal_when_map_args 332ms
+test	結合テストを回す	2026-11-24T09:22:37.9501611Z    ✓ test_normal_when_many_tables_column_widths 1061ms
+test	結合テストを回す	2026-11-24T09:22:37.9502667Z    ✓ test_normal_when_map_hints_off 586ms
+test	結合テストを回す	2026-11-24T09:22:37.9503629Z    ✓ test_normal_when_plain_mermaid_map 384ms
+test	結合テストを回す	2026-11-24T09:22:37.9504845Z    ✓ test_normal_when_mermaid_syntax_samples 7168ms
+test	結合テストを回す	2026-11-24T09:22:37.9505640Z    ✓ test_normal_when_map_exported 3148ms
+test	結合テストを回す	2026-11-24T09:22:37.9506227Z    ✓ test_normal_when_map_list_view 674ms
+test	結合テストを回す	2026-11-24T09:22:37.9507036Z    ✓ test_error_when_map_png_unavailable 1096ms
+test	結合テストを回す	2026-11-24T09:22:37.9508090Z    ✓ test_normal_when_rendered 499ms
+test	結合テストを回す	2026-11-24T09:22:37.9509403Z    ✓ test_normal_when_map_group_resized 738ms
+test	結合テストを回す	2026-11-24T09:22:37.9510629Z    ✓ test_normal_when_map_fullscreen 764ms
+test	結合テストを回す	2026-11-24T09:22:37.9511177Z 
+test	結合テストを回す	2026-11-24T09:22:37.9511580Z  Test Files  16 passed (16)
+test	結合テストを回す	2026-11-24T09:22:37.9512265Z       Tests  461 passed | 345 skipped (806)
+test	結合テストを回す	2026-11-24T09:22:37.9512788Z    Start at  09:20:40
+test	結合テストを回す	2026-11-24T09:22:37.9513328Z    Duration  116.97s (tests 76%, worker 22%, import 2%, transform 1%)
+test	結合テストを回す	2026-11-24T09:22:37.9528375Z 
+test	ログを成果物に上げる	﻿2026-11-24T09:22:38.3598826Z ##[group]Run actions/upload-artifact@v4
+test	ログを成果物に上げる	2026-11-24T09:22:38.3599157Z with:
+test	ログを成果物に上げる	2026-11-24T09:22:38.3599348Z   name: test-log
+test	ログを成果物に上げる	2026-11-24T09:22:38.3599557Z   path: test.log
+test	ログを成果物に上げる	2026-11-24T09:22:38.3599971Z   if-no-files-found: ignore
+test	ログを成果物に上げる	2026-11-24T09:22:38.3600226Z   compression-level: 6
+test	ログを成果物に上げる	2026-11-24T09:22:38.3600446Z   overwrite: false
+test	ログを成果物に上げる	2026-11-24T09:22:38.3600660Z   include-hidden-files: false
+test	ログを成果物に上げる	2026-11-24T09:22:38.3600891Z env:
+test	ログを成果物に上げる	2026-11-24T09:22:38.3601068Z   LAYER: integration
+test	ログを成果物に上げる	2026-11-24T09:22:38.3603924Z   PATHS: tests/integration/lib/diagram-frame.story.test.ts tests/integration/lib/map-flow.story.test.ts tests/integration/lib/mdmark-comments.browser.test.ts tests/integration/lib/mdmark-graph.browser.test.ts tests/integration/lib/mdmark-map.browser.test.ts tests/integration/lib/mdmark-param-graph.browser.test.ts tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/mdmark-view.browser.test.ts tests/integration/lib/mount-comments.browser.test.ts tests/integration/lib/mount-view.browser.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/param.story.test.ts tests/integration/lib/set-part-module-loader.browser.test.ts tests/integration/lib/view.story.test.ts
+test	ログを成果物に上げる	2026-11-24T09:22:38.3606839Z   XDG_RUNTIME_DIR: /run/user/1001
+test	ログを成果物に上げる	2026-11-24T09:22:38.3607148Z   DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+test	ログを成果物に上げる	2026-11-24T09:22:38.3607457Z ##[endgroup]
+test	ログを成果物に上げる	2026-11-24T09:22:38.5402513Z (node:5441) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	ログを成果物に上げる	2026-11-24T09:22:38.5403520Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	ログを成果物に上げる	2026-11-24T09:22:38.5447968Z With the provided path, there will be 1 file uploaded
+test	ログを成果物に上げる	2026-11-24T09:22:38.5453181Z Artifact name is valid!
+test	ログを成果物に上げる	2026-11-24T09:22:38.5454068Z Root directory input is valid!
+test	ログを成果物に上げる	2026-11-24T09:22:38.9012543Z Beginning upload of artifact content to blob storage
+test	ログを成果物に上げる	2026-11-24T09:22:38.9315089Z (node:5441) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+test	ログを成果物に上げる	2026-11-24T09:22:39.1531686Z Uploaded bytes 4337
+test	ログを成果物に上げる	2026-11-24T09:22:39.2217238Z Finished uploading artifact content to blob storage!
+test	ログを成果物に上げる	2026-11-24T09:22:39.2218689Z SHA256 digest of uploaded artifact zip is 133cf476c4eb6fca49e6f3e943924d54ffd20896e00b659dda2da8481e92f94f
+test	ログを成果物に上げる	2026-11-24T09:22:39.2221139Z Finalizing artifact upload
+test	ログを成果物に上げる	2026-11-24T09:22:39.7561574Z Artifact test-log.zip successfully finalized. Artifact ID 14905942599
+test	ログを成果物に上げる	2026-11-24T09:22:39.7563408Z Artifact test-log has been successfully uploaded! Final size is 4337 bytes. Artifact ID is 14905942599
+test	ログを成果物に上げる	2026-11-24T09:22:39.7565415Z Artifact download URL: https://github.com/shuhei1101/mdmark/actions/runs/45364156217/artifacts/14905942599
+test	Post Node をインストールする	﻿2026-11-24T09:22:39.7763709Z Post job cleanup.
+test	Post Node をインストールする	2026-11-24T09:22:39.9039043Z (node:5454) [DEP0040] DeprecationWarning: The `punycode` module is deprecated. Please use a userland alternative instead.
+test	Post Node をインストールする	2026-11-24T09:22:39.9040703Z (Use `node --trace-deprecation ...` to show where the warning was created)
+test	Post ブランチを取得する	﻿2026-11-24T09:22:39.9216822Z Post job cleanup.
+test	Post ブランチを取得する	2026-11-24T09:22:40.0137020Z [command]/usr/bin/git version
+test	Post ブランチを取得する	2026-11-24T09:22:40.0184746Z git version 2.56.1
+test	Post ブランチを取得する	2026-11-24T09:22:40.0228040Z Temporarily overriding HOME='/home/runner/work/_temp/817d439e-cb17-4d74-aa78-30e5ac573cfb' before making global git config changes
+test	Post ブランチを取得する	2026-11-24T09:22:40.0229658Z Adding repository directory to the temporary git global config as a safe directory
+test	Post ブランチを取得する	2026-11-24T09:22:40.0234653Z [command]/usr/bin/git config --global --add safe.directory /home/runner/work/mdmark/mdmark
+test	Post ブランチを取得する	2026-11-24T09:22:40.0284378Z [command]/usr/bin/git config --local --name-only --get-regexp core\.sshCommand
+test	Post ブランチを取得する	2026-11-24T09:22:40.0323279Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+test	Post ブランチを取得する	2026-11-24T09:22:40.0630699Z [command]/usr/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+test	Post ブランチを取得する	2026-11-24T09:22:40.0658345Z http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-24T09:22:40.0671270Z [command]/usr/bin/git config --local --unset-all http.https://github.com/.extraheader
+test	Post ブランチを取得する	2026-11-24T09:22:40.0709728Z [command]/usr/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+test	Post ブランチを取得する	2026-11-24T09:22:40.0999683Z [command]/usr/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+test	Post ブランチを取得する	2026-11-24T09:22:40.1034580Z [command]/usr/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+test	Complete job	﻿2026-11-24T09:22:40.1476683Z Cleaning up orphan processes
+test	Complete job	2026-11-24T09:22:40.1909723Z ##[warning]Node.js 20 is deprecated. The following actions target Node.js 20 but are being forced to run on Node.js 24: actions/checkout@v4, actions/setup-node@v4, actions/upload-artifact@v4. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/
+exit 0
