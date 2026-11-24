@@ -156,3 +156,8 @@ test	結合テストを回す	2026-11-24T02:18:04.0761182Z ^[[2m      Tests ^[[2
 $ npx vitest run --project "integration*" tests/integration/lib/mdmark-table.browser.test.ts
  Test Files  1 passed (1)
       Tests  6 passed (6)
+
+# 層をランナーで初めて回したため、同じ範囲を手元でも個別実行して skip の件数を比べた（ランナー 345・手元 345 で一致）
+$ npx vitest run --project "integration*" tests/integration/lib/mdmark-table.browser.test.ts tests/integration/lib/table.story.test.ts tests/integration/lib/mount.browser.test.ts tests/integration/lib/notice.story.test.ts tests/integration/lib/mount-view.browser.test.ts
+ Test Files  6 passed (6)
+      Tests  444 passed | 345 skipped (789)
