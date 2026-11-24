@@ -46,7 +46,7 @@ constraints:
   - item: キャッシュの削除
     constraint: push した commit で変わった `dist/` のファイル（`git diff --name-only HEAD~1 HEAD -- dist`）ごとに `{purge_url_prefix}{ref}/{ファイル}` を `curl` で GET する。応答が 200 でないか、JSON のそのファイルの `throttled` が `true` のファイルが 1 つでもあれば、全てのファイルを要求した後に失敗にし、削除できなかったファイルを失敗の通知の本文に含める
     decided_by: API-472-2#endpoints[GET /gh/{user}/{repo}@{version}/{file}（キャッシュの削除）]
-    notes: 1 回の要求のタイムアウトは `curl --max-time 30`。再試行はしない（失敗の Issue を受けて手動で起動し直す）
+    notes: 1 回の要求のタイムアウトは `curl --max-time 30`。再試行はしない（失敗の Issue を受けて手動で起動し直す）。1 回の実行は 1 つのファイルを 1 回だけ削除し、`throttled` は数秒の間に 3 回以上削除したときに出るため（外部 API『jsDelivr』の動作確認）、続けて 2 回マージしても失敗にならない。`throttled` のときは削除していないため失敗にする
   - item: 失敗の通知
     constraint: 'ビルド・push・キャッシュの削除のどれかが失敗したら（`if: failure()`）、`gh issue list --state open --label {failure_label}` でタイトルが `develop の配布物の再作成が失敗した（{ref}）` と一致する Issue を探す。無ければそのタイトルと `failure_label` で起票し、あればその Issue へコメントする。本文は失敗した実行の URL・元の commit の短縮 SHA・失敗した step の名前と、キャッシュの削除が失敗したときは削除できなかったファイルを持つ'
     notes: 同じ失敗の見分け方は、ラベルと固定のタイトルで open の Issue を 1 件にまとめる方法（要件の未確定の推奨案 A）。失敗の種類で分けず、対応する人は open の Issue のコメントで履歴を確認する
@@ -194,6 +194,30 @@ flows:
       - 実行の結論が `failure`
       - テスト用のブランチの先頭が再作成した生成物の commit
       - テスト用のラベルの失敗の Issue の本文に、削除できなかった `dist/` のファイルと失敗した実行の URL がある
+  - name: 正常系（配布物に差分が無い）
+    summary: 配布物に差分が無ければ、commit・push・キャッシュの削除をせずに成功で終わる
+    setup:
+      - name: Mock
+        description: '入力を `ref: {テスト用のブランチ}`・`failure_label: {テスト用のラベル}` にして手動で起動する'
+      - name: ブランチ
+        description: develop から分け、配布物が先頭の commit のソースと合っているテスト用のブランチ
+        notes: 文書だけを変えた作業 PR を develop へマージした後と同じ状態
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      flowchart TD
+        s([テスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        b -- 成功 --> c[差分があれば commit して push する]
+        c -- 差分なし --> e([成功])
+      ```
+
+      <!-- /map -->
+    expected:
+      - 実行の結論が `success`
+      - テスト用のブランチの先頭が起動の前と同じ
+      - step「キャッシュを削除する」の結論が `skipped`
+      - テスト用のラベルの失敗の Issue が起票されない
 notes:
   確認の方法: フローは、単一ユースケース『developの配布物を再作成する』の E2E と、規約『Git フックと CI で動かすもの』の手順でテスト用のブランチのランナーを動かして確認する。テスト用のブランチとラベルは確認の後に削除する
 callers:

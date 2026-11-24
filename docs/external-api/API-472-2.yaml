@@ -80,7 +80,7 @@ endpoints:
     path: /gh/{user}/{repo}@{version}/{file}
     summary: ブランチを指した URL のキャッシュを削除し、次の要求からそのブランチの先頭の commit のファイルを返却させる
     idempotent: true
-    description: ホストは `https://purge.jsdelivr.net`。認証は要らない。応答は JSON で、`paths` のそのファイルの `throttled` が `true` のときは、短い間に同じファイルを削除したため削除していない
+    description: ホストは `https://purge.jsdelivr.net`。認証は要らない。応答は `id`・`status`（`finished`）・`timestamp`・`paths` を持つ JSON で、`paths` のキーは `/gh/{user}/{repo}@{version}/{file}`、値は `throttled` と提供元ごとの結果 `providers` を持つ。同じファイルを数秒の間に 3 回以上削除すると `throttled` が `true` になり（削除していない）、その後は測った 274 秒の間 `true` のままだった。続けて 2 回までは `false`
     request:
       - name: user
         type: string
@@ -115,8 +115,8 @@ endpoints:
 lead: npm と GitHub の公開リポジトリのファイルを配る無料の CDN。
 verification:
   state: 済
-  date: '2026-10-13'
-  detail: '`GET /gh/shuhei1101/mdmark@480d928/README.md` が 200、同じ commit の無いファイル `dist/index.js` と、打っていないタグ `@v9.9.9` が 404 を返却することを確認した'
+  date: '2026-11-24'
+  detail: '`GET /gh/shuhei1101/mdmark@480d928/README.md` が 200、同じ commit の無いファイル `dist/index.js` と、打っていないタグ `@v9.9.9` が 404 を返却することを確認した（2026-10-13）。キャッシュの削除は `GET https://purge.jsdelivr.net/gh/shuhei1101/mdmark@develop/dist/index.js` が 200 と `status: finished`・`throttled: false` を返却し、続けてもう 1 回も `false`、7 秒の間に 3 回目を呼ぶと 200 のまま `throttled: true` になり、10 秒おきに 274 秒呼び続けても `true` のままだったことを確認した（2026-11-24）'
 base_urls:
   - env: 本番
     url: https://cdn.jsdelivr.net
