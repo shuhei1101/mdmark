@@ -48,8 +48,13 @@
       if (save) sessionStorage.setItem(storageKey, String(clamped));
     };
 
+    // 開いたときの幅: 同じタブの中で変えた幅があればその幅、無ければ今の幅を読み上げに伝える
     const saved = Number(sessionStorage.getItem(storageKey));
-    if (saved) setWidth(saved, false);
+    setWidth(saved || video.getBoundingClientRect().width, false);
+    if (!saved) {
+      if (original) figure.style.setProperty("--mdmark-image-width", original);
+      else figure.style.removeProperty("--mdmark-image-width");
+    }
 
     // ドラッグ: 右下へ動かすと大きく、左上へ動かすと小さくする。横と縦の動きのうち大きい方を幅に換算する（縦は比率で換算する）
     handle.addEventListener("pointerdown", (event) => {
