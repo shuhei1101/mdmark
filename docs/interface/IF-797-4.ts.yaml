@@ -1,0 +1,113 @@
+id: IF-797-4
+visibility: internal
+title: 操作できる部品をカスタム要素で描く
+entry:
+  kind: operation
+  value: '`<mdmark-param-graph>`（配布物 `dist/index.js` を読み込むと登録するカスタム要素）'
+lead: アプリの画面が、`<mdmark-param-graph>` に操作できる部品の定義を JavaScript のプロパティで指定し、`param` のマーカーで描いたときと同じスライダーとグラフを描く。スライダーの値の変更を要素のイベントで受け取る。
+flows:
+  - name: 正常系
+    summary: 定義からスライダーとグラフを描き、スライダーを動かすとグラフを描き直して値の変更のイベントを送信する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み込み、`<mdmark-param-graph>` を 1 つ持つページ。`mdmark-param-change` を受け、`detail` を配列に記録する
+      - name: 操作できる部品の定義
+        description: 'スライダー 1 つ（`key`: `rate`、0〜10、`step` 1、初期値 5）と、値ごとの点を持つ折れ線のグラフ'
+      - name: Mock
+        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant P as mdmark-param-graph
+        A->>P: definition を指定する
+        P->>A: スライダーとグラフ
+        A->>P: スライダーを 8 に動かす
+        P->>A: 8 の値のグラフ
+        P-->>A: mdmark-param-change（key: rate・value: 8）
+      ```
+
+      <!-- /map -->
+    expected:
+      - 要素の中に、同じ定義を `<!-- param -->` で描いたときと同じスライダー・今の値を写すボタン・グラフがある
+      - 'スライダーを 8 に動かすと、グラフが `table["8"]` の点で描き直され、`mdmark-param-change` が `{ key: "rate", value: 8 }` で届く'
+      - → キーで値を 1 つ変えると、`mdmark-param-change` が 1 回届く
+    test: test_normal
+  - name: 異常系（定義の誤り）
+    summary: 定義が構造の確認に通らないと、例外を投げずに通知ブロックを配置する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。要素の後ろに `p` を持つ
+      - name: 誤った定義
+        description: '`table` に `knob` の範囲の値が欠けた定義'
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant P as mdmark-param-graph
+        A->>P: 誤った definition を代入する
+        P->>A: 要素の中に通知ブロック
+      ```
+
+      <!-- /map -->
+    expected:
+      - プロパティの代入が例外を投げない
+      - 要素の中にタイトル `この図を表示できません` の通知ブロックがあり、後ろの `p` が表示されている
+    test: test_error_when_definition_invalid
+idempotent: true
+side_effects: 要素の中身を書き換え、スライダーと今の値を写す操作を付ける。要素から `mdmark-param-change` を送信する。指定された定義は書き換えない
+callers:
+  - SC-797-2#
+  - SC-797-1#
+exclusivity: 要素ごとに独立して描く。同じマイクロタスクの中の複数の代入は、まとめて 1 回だけ描く
+request:
+  - name: definition
+    type: MdmarkParamDefinition
+    required: true
+    location: argument
+    description: 操作できる部品の定義（要素のプロパティ）。データ『グラフ・操作できる部品のカスタム要素の指定』の `definition`
+    constraints: '`param` のマーカーの定義と同じ構造の確認'
+response:
+  - name: mdmark-param-change.detail.key
+    type: string
+    description: 動かしたスライダーの `knob.key`
+  - name: mdmark-param-change.detail.value
+    type: number
+    description: スライダーの今の値
+response_notes: '`mdmark-param-change` は `<mdmark-param-graph>` から送信する `CustomEvent` で、`bubbles` と `composed` を持つ。スライダーの `input` ごとに送信し、`definition` を代入したときは送信しない'
+exceptions:
+  - name: なし（正常終了）
+    condition: 定義を確認して部品を描く
+  - name: なし（通知ブロック・定義の誤り）
+    condition: 定義がオブジェクトでないか、構造の確認で読み込めない箇所がある
+    notes: プロパティの代入は例外を投げない。通知ブロックのタイトルは `この図を表示できません`
+constraints:
+  - item: 要素の名前
+    constraint: '`mdmark-param-graph`。埋め込んだ HTML に記載する `<mdmark-param>` とは別の名前にし、埋め込んだ HTML の描き方を変えない'
+  - item: 要素の登録
+    constraint: '`dist/index.js` を読み込んだとき、`customElements` があり `mdmark-param-graph` がまだ登録されていなければ登録する'
+  - item: 描く先
+    constraint: Shadow DOM を使用せず、要素の中に class `mdmark` の要素を 1 つ配置して、`param` のマーカーと同じ部品と操作で描く
+  - item: 描き直し
+    constraint: '`definition` を代入し直すと描き直し、スライダーは `knob.value` に戻す'
+  - item: 対応ブラウザ
+    constraint: Chrome 99・Firefox 98・Safari 16.4 以上
+    decided_by: NFR-472-1#
+  - item: 型の配布
+    constraint: '`MdmarkParamGraphElement`・`MdmarkParamChangeDetail` を `dist/index.d.ts` に書き出し、`HTMLElementTagNameMap` に `mdmark-param-graph`、`HTMLElementEventMap` に `mdmark-param-change` を加える'
+refs:
+  - DATA-797-3#
+  - IF-793-1#
+test_file: tests/integration/lib/mdmark-param-graph.browser.test.ts
+tags:
+  - name: topic:グラフ
+    main: true
+  - name: topic:図
+  - name: topic:api
+  - name: topic:イベント

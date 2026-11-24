@@ -40,6 +40,16 @@ items:
   summary: 利用側のページと拡張のモジュールが、列名と項目の値から要素の中にボード表示と表形式のビューを描く（mountView）
 - page: IF-793-1.ts.yaml
   summary: アプリの画面が、列の定義と行のデータを指定して表を描き、行の押下・セルの編集・行の追加をイベントで受け取る（<mdmark-table>）
+- page: IF-797-1.ts.yaml
+  summary: アプリの画面が、列名と項目を指定してビューを描き、項目の押下をイベントで受け取る（<mdmark-view>）
+- page: IF-797-2.ts.yaml
+  summary: アプリの画面が、自分の本文を囲んでコメントを指定し、コメントの保存・編集・削除をイベントで受け取る（<mdmark-comments>）
+- page: IF-797-3.ts.yaml
+  summary: アプリの画面が、グラフの定義を指定して図の枠とグラフを描く（<mdmark-graph>）
+- page: IF-797-4.ts.yaml
+  summary: アプリの画面が、操作できる部品の定義を指定してスライダーとグラフを描き、値の変更をイベントで受け取る（<mdmark-param-graph>）
+- page: IF-797-5.ts.yaml
+  summary: アプリの画面が、Mermaid と補足を指定して map の図を描き、ノードの押下をイベントで受け取る（<mdmark-map>）
 - page: IF-472-27.ts.yaml
   summary: 利用側のページが、自分の要素と読み込みと保存の関数を指定し、要素の中の選んだ箇所にコメントを付ける（mountComments）
 - page: IF-472-36.ts.yaml

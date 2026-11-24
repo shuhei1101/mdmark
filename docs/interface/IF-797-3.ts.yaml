@@ -1,0 +1,112 @@
+id: IF-797-3
+visibility: internal
+title: グラフをカスタム要素で描く
+entry:
+  kind: operation
+  value: '`<mdmark-graph>`（配布物 `dist/index.js` を読み込むと登録するカスタム要素）'
+lead: アプリの画面が、`<mdmark-graph>` にグラフの定義を JavaScript のプロパティで指定し、`chart` のマーカーで描いたときと同じ図の枠とグラフを描く。
+flows:
+  - name: 正常系
+    summary: 定義から図の枠とグラフを描き、定義を指定し直すと描き直す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: ビルドした `dist/index.js` と `dist/index.css` を読み込み、`<mdmark-graph>` を 1 つ持つページ
+      - name: グラフの定義
+        description: 種類が折れ線・系列 1 つ・項目 5 つの定義
+        notes: タイトルは `<script>alert(1)</script>推移`
+      - name: Mock
+        description: 差し替える依存は無い（手元で配信した配布物をブラウザで読み込む）
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant G as mdmark-graph
+        A->>G: definition を指定する
+        G->>G: 次のマイクロタスクで定義の構造を確認する
+        G->>A: 要素の中に図の枠とグラフを描く
+        A->>G: 項目を 6 つにした definition を指定し直す
+        G->>A: 描き直したグラフ
+      ```
+
+      <!-- /map -->
+    expected:
+      - 要素の中に class `mdmark` の要素が 1 つあり、その中に同じ定義を `<!-- chart -->` で描いたときと同じ図の枠（タイトル・表示する枠・凡例・ボタンのパネル）と 5 つの点の折れ線がある
+      - タイトルが文字 `<script>alert(1)</script>推移` のまま出て、`script` 要素が無い
+      - 定義を指定し直すと 6 つの点の折れ線に描き直され、図の枠は 1 つのまま
+    test: test_normal
+  - name: 異常系（定義の誤り）
+    summary: 定義が構造の確認に通らないと、例外を投げずに通知ブロックを配置する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。要素の後ろに `p` を持つ
+      - name: 誤った定義
+        description: 種類が知らない `area3d` の定義と、`title` が無い定義の 2 通り
+      - name: Mock
+        description: 正常系と同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant A as アプリの画面
+        participant G as mdmark-graph
+        A->>G: 誤った definition を代入する
+        G->>A: 要素の中に通知ブロック
+      ```
+
+      <!-- /map -->
+    expected:
+      - 2 通りとも、プロパティの代入が例外を投げない
+      - 要素の中にタイトル `この図を表示できません` の通知ブロックがあり、本文が `chart` のマーカーの定義を読み込めないときと同じ読み込めない箇所と修正方法を持つ
+      - 後ろの `p` が表示されている
+    test: test_error_when_definition_invalid
+idempotent: true
+read_only: true
+side_effects: 要素の中身を書き換え、図の枠の拡大・縮小・全画面・リサイズハンドル・ツールチップの操作を付ける。指定された定義は書き換えない
+callers:
+  - SC-797-2#
+  - SC-797-1#
+exclusivity: 要素ごとに独立して描く。同じマイクロタスクの中の複数の代入は、まとめて 1 回だけ描く
+request:
+  - name: definition
+    type: MdmarkChartDefinition
+    required: true
+    location: argument
+    description: グラフの定義（要素のプロパティ）。データ『グラフ・操作できる部品のカスタム要素の指定』の `definition`
+    constraints: '`chart` のマーカーの定義と同じ構造の確認'
+response:
+  - name: （なし）
+    type: '-'
+    description: イベントを送信しない
+exceptions:
+  - name: なし（正常終了）
+    condition: 定義を確認してグラフを描く
+  - name: なし（通知ブロック・定義の誤り）
+    condition: 定義がオブジェクトでないか、構造の確認で読み込めない箇所がある
+    notes: プロパティの代入は例外を投げない。通知ブロックのタイトルは `この図を表示できません`
+constraints:
+  - item: 要素の名前
+    constraint: '`mdmark-graph`。埋め込んだ HTML に記載する `<mdmark-chart>` とは別の名前にし、埋め込んだ HTML の描き方を変えない'
+  - item: 要素の登録
+    constraint: '`dist/index.js` を読み込んだとき、`customElements` があり `mdmark-graph` がまだ登録されていなければ登録する'
+  - item: 描く先
+    constraint: Shadow DOM を使用せず、要素の中に class `mdmark` の要素を 1 つ配置して、`chart` のマーカーと同じ図の部品と図の枠の操作で描く
+  - item: 描き直し
+    constraint: '`definition` を代入し直すと描き直す。図の枠の高さと拡大の倍率は保つ'
+  - item: 対応ブラウザ
+    constraint: Chrome 99・Firefox 98・Safari 16.4 以上
+    decided_by: NFR-472-1#
+  - item: 型の配布
+    constraint: '`MdmarkGraphElement` を `dist/index.d.ts` に書き出し、`HTMLElementTagNameMap` に `mdmark-graph` を加える'
+refs:
+  - DATA-797-3#
+  - IF-793-1#
+test_file: tests/integration/lib/mdmark-graph.browser.test.ts
+tags:
+  - name: topic:グラフ
+    main: true
+  - name: topic:図
+  - name: topic:api
+  - name: action:描画
