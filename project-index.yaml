@@ -55,6 +55,7 @@ direct_commit:
     - {id: plugin, body: false}
     - {id: storybook, body: false}
     - {id: workflows, body: false}
+    - prompts
 documents:
   - id: data
     title: データ
