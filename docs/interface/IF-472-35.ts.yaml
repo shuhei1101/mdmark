@@ -7119,7 +7119,7 @@ flows:
       - 100px 動かした後、`scrollLeft` が増え、ツールチップが `hidden` を持つ
     test: test_normal_when_drag_on_chart_item
   - name: 正常系（図の高さを変える）
-    summary: 下端のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、全体が収まる倍率をもう一度求め、変えた高さを sessionStorage に保ち、ダブルクリックで戻す
+    summary: 下端のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、全体が収まる倍率をもう一度求め、変えた高さを sessionStorage に保ち、ダブルクリックで図の全体が収まる高さにする
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 600px
