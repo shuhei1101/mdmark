@@ -52,6 +52,8 @@
   <!-- 配色の切り替え -->
   <!-- #735 の既定の表の見本の押していないピン止めの見せ方（実装と同じ） -->
   <link rel="stylesheet" href="../../refs/735/assets/table.css">
+  <!-- #811 つまみの押せる範囲を 24px にする規則と、ドラッグしない操作の規則 -->
+  <link rel="stylesheet" href="../../refs/811/assets/table.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 表の見本の定義と組み立て（モックだけの仕組み。syntax.js より先に組み立てる） -->
   <script src="../../refs/151/assets/samples.js" defer></script>
@@ -72,6 +74,8 @@
   <script src="../../refs/438/assets/table-pin-each.js" defer></script>
   <!-- 列の見出しの右端のつまみで列の幅を変える見本の定義と操作（#449） -->
   <script src="../../refs/449/assets/table-samples.js" defer></script>
+  <!-- #811 の表の見本の定義（#449 の table-resize.js より前に読む） -->
+  <script src="../../refs/811/assets/table-samples.js" defer></script>
   <script src="../../refs/449/assets/table-resize.js" defer></script>
   <!-- 留めた列の幅の合計が見える幅を超えるときに、収まる列だけを留める見本の定義と操作（#533） -->
   <script src="../../refs/533/assets/table-samples.js" defer></script>
@@ -82,6 +86,8 @@
   <script src="../../refs/275/assets/table-merge.js" defer></script>
   <!-- 列の並べ替え・キーの階層の開閉と選択と絞り込み・見本との連動の操作（#303。syntax.js の後に読み込む） -->
   <script src="../../refs/303/assets/table.js" defer></script>
+  <!-- #811 列の幅と列の並べ替えのドラッグしない操作（#449・#184 のスクリプトの後に読む） -->
+  <script src="../../refs/811/assets/drag-alt.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/151/assets/preview.js" defer></script>
   <!-- モック専用の操作列のテーマの切り替え（#263 で共有するアセット） -->
@@ -1398,6 +1404,120 @@
           <div data-mock-table449="off"></div>
         </article>
       </section>
+
+      <!-- #811 押せる範囲をポインターの種類によらず 24px にする -->
+      <section aria-labelledby="state-811-fine">
+        <h2 class="catalog-label" id="state-811-fine">列の幅のつまみの押せる範囲（細かいポインターでも幅 24px。名前の列の見出しの右端にポインターを乗せた）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table449]: table-resize.js が描き、[data-mock811]: drag-alt.js がドラッグしない操作を付ける -->
+          <div data-mock811="width-b"><div data-mock-table449="811-fine"></div></div>
+        </article>
+        <!-- 開いたまま見せるメニューの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- #811 案 A: 列の幅をドラッグせずに変える（見出しの「列のメニュー」のボタンから、幅を広げる・狭める・元の幅に戻す） -->
+      <section aria-labelledby="state-811-width-a">
+        <h2 class="catalog-label" id="state-811-width-a">案 A: 列の幅をドラッグせずに変える（見出しの「列のメニュー」のボタンから、幅を広げる・狭める・元の幅に戻す）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table449]: table-resize.js が描き、[data-mock811]: drag-alt.js がドラッグしない操作を付ける -->
+          <div data-mock811="width-a" data-mock811-open="0"><div data-mock-table449="811-a"></div></div>
+        </article>
+        <!-- 開いたまま見せるメニューの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- #811 案 B（推奨）: 列の幅をドラッグせずに変える（つまみを 1 回押すと、つまみの下に幅を広げる・狭める・元の幅に戻すのメニューが開く。ダブルクリックとドラッグでは開かない） -->
+      <section aria-labelledby="state-811-width-b">
+        <h2 class="catalog-label" id="state-811-width-b">案 B（推奨）: 列の幅をドラッグせずに変える（つまみを 1 回押すと、つまみの下に幅を広げる・狭める・元の幅に戻すのメニューが開く。ダブルクリックとドラッグでは開かない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table449]: table-resize.js が描き、[data-mock811]: drag-alt.js がドラッグしない操作を付ける -->
+          <div data-mock811="width-b" data-mock811-open="0"><div data-mock-table449="811-b"></div></div>
+        </article>
+        <!-- 開いたまま見せるメニューの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- #811 案 B: 名前の列を列の最小幅まで狭めてメニューを開いた（「幅を狭める」は押せない） -->
+      <section aria-labelledby="state-811-width-b-min">
+        <h2 class="catalog-label" id="state-811-width-b-min">案 B: 名前の列を列の最小幅まで狭めてメニューを開いた（「幅を狭める」は押せない）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table449]: table-resize.js が描き、[data-mock811]: drag-alt.js がドラッグしない操作を付ける -->
+          <div data-mock811="width-b" data-mock811-open="0"><div data-mock-table449="811-b-min"></div></div>
+        </article>
+        <!-- 開いたまま見せるメニューの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- #811 案 C: 列の幅をドラッグせずに変える（テーブル設定の列名の行の、幅を広げる・狭める・元の幅に戻すのボタン） -->
+      <section aria-labelledby="state-811-width-c">
+        <h2 class="catalog-label" id="state-811-width-c">案 C: 列の幅をドラッグせずに変える（テーブル設定の列名の行の、幅を広げる・狭める・元の幅に戻すのボタン）</h2>
+        <article class="mdmark">
+          <!-- [data-mock-table449]: table-resize.js が描き、[data-mock811]: drag-alt.js がドラッグしない操作を付ける -->
+          <div data-mock811="width-c"><div data-mock-table449="811-c"></div></div>
+        </article>
+        <!-- 開いたまま見せるメニューの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- #811 列の並べ替えのドラッグしない操作: 列の並べ替えの案 A: テーブル設定の列名の行に、前へ移す・後ろへ移すのボタンを並べる（先頭の列の「前へ移す」と末尾の列の「後ろへ移す」は押せない） -->
+      <section aria-labelledby="state-811-reorder-a">
+        <h2 class="catalog-label" id="state-811-reorder-a">列の並べ替えの案 A: テーブル設定の列名の行に、前へ移す・後ろへ移すのボタンを並べる（先頭の列の「前へ移す」と末尾の列の「後ろへ移す」は押せない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data" data-settings data-mock811="reorder-a">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only" type="button" aria-expanded="true" aria-controls="ts-811-a" aria-label="テーブル設定" title="テーブル設定"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button>
+    </div>
+  <div class="mdmark-table-settings" id="ts-811-a" role="dialog" aria-label="テーブル設定">
+    <p class="mdmark-table-settings-title">表示と並び順</p>
+    <ul class="mdmark-table-settings-list"><li class="mdmark-table-settings-item" data-column="0" data-name="名前"><button class="mdmark-table-settings-grip" type="button" aria-label="「名前」の列を並べ替える" aria-describedby="ts-811-a-note"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></button><span class="mdmark-table-settings-name">名前</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「名前」を隠す" disabled><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></li><li class="mdmark-table-settings-item" data-column="1" data-name="型"><button class="mdmark-table-settings-grip" type="button" aria-label="「型」の列を並べ替える" aria-describedby="ts-811-a-note"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></button><span class="mdmark-table-settings-name">型</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「型」を隠す"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></li><li class="mdmark-table-settings-item" data-column="2" data-name="既定"><button class="mdmark-table-settings-grip" type="button" aria-label="「既定」の列を並べ替える" aria-describedby="ts-811-a-note"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></button><span class="mdmark-table-settings-name">既定</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「既定」を隠す"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></li><li class="mdmark-table-settings-item" data-column="3" data-name="説明"><button class="mdmark-table-settings-grip" type="button" aria-label="「説明」の列を並べ替える" aria-describedby="ts-811-a-note"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></button><span class="mdmark-table-settings-name">説明</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「説明」を隠す"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></li></ul>
+    <p class="mdmark-table-settings-note" id="ts-811-a-note">つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。先頭の列は隠せません</p>
+  </div>
+  </div>
+  <table tabindex="0" aria-label="表: 列の並べ替えの案 A: テーブル設定の列名の行に、前へ移す・後ろへ移すのボタンを並べる（先頭の列の「前へ移す」と末尾の列の「後ろへ移す」は押せない）">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">型<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">既定<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="名前"><code>features.table</code></td><td data-label="型">bool</td><td data-label="既定"><code>true</code></td><td data-label="説明">表の機能のオン・オフ</td></tr>
+      <tr><td data-label="名前"><code>features.html</code></td><td data-label="型">bool</td><td data-label="既定"><code>true</code></td><td data-label="説明">埋め込んだ HTML のオン・オフ</td></tr>
+      <tr><td data-label="名前"><code>build.include</code></td><td data-label="型">string[]</td><td data-label="既定"></td><td data-label="説明">まとめる Markdown の glob</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+        <!-- 開いたまま見せるパネルの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- #811 列の並べ替えのドラッグしない操作: 列の並べ替えの案 B（推奨）: つまみを 1 回押すと、前へ移す・後ろへ移すのメニューが開く（説明のつまみを押した。末尾の列なので「後ろへ移す」は押せない） -->
+      <section aria-labelledby="state-811-reorder-b">
+        <h2 class="catalog-label" id="state-811-reorder-b">列の並べ替えの案 B（推奨）: つまみを 1 回押すと、前へ移す・後ろへ移すのメニューが開く（説明のつまみを押した。末尾の列なので「後ろへ移す」は押せない）</h2>
+        <article class="mdmark">
+<div class="mdmark-table" data-kind="data" data-settings data-mock811="reorder-b" data-mock811-open="説明">
+  <div class="mdmark-table-bar">
+    <div class="mdmark-table-tools">
+      <button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only" type="button" aria-expanded="true" aria-controls="ts-811-b" aria-label="テーブル設定" title="テーブル設定"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg></button>
+    </div>
+  <div class="mdmark-table-settings" id="ts-811-b" role="dialog" aria-label="テーブル設定">
+    <p class="mdmark-table-settings-title">表示と並び順</p>
+    <ul class="mdmark-table-settings-list"><li class="mdmark-table-settings-item" data-column="0" data-name="名前"><button class="mdmark-table-settings-grip" type="button" aria-label="「名前」の列を並べ替える" aria-describedby="ts-811-b-note"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></button><span class="mdmark-table-settings-name">名前</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「名前」を隠す" disabled><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></li><li class="mdmark-table-settings-item" data-column="1" data-name="型"><button class="mdmark-table-settings-grip" type="button" aria-label="「型」の列を並べ替える" aria-describedby="ts-811-b-note"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></button><span class="mdmark-table-settings-name">型</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「型」を隠す"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></li><li class="mdmark-table-settings-item" data-column="2" data-name="既定"><button class="mdmark-table-settings-grip" type="button" aria-label="「既定」の列を並べ替える" aria-describedby="ts-811-b-note"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></button><span class="mdmark-table-settings-name">既定</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「既定」を隠す"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></li><li class="mdmark-table-settings-item" data-column="3" data-name="説明"><button class="mdmark-table-settings-grip" type="button" aria-label="「説明」の列を並べ替える" aria-describedby="ts-811-b-note"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/></svg></button><span class="mdmark-table-settings-name">説明</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「説明」を隠す"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"/><circle cx="12" cy="12" r="3"/></svg></button></li></ul>
+    <p class="mdmark-table-settings-note" id="ts-811-b-note">つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。先頭の列は隠せません</p>
+  </div>
+  </div>
+  <table tabindex="0" aria-label="表: 列の並べ替えの案 B（推奨）: つまみを 1 回押すと、前へ移す・後ろへ移すのメニューが開く（説明のつまみを押した。末尾の列なので「後ろへ移す」は押せない）">
+    <thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">型<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">既定<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td data-label="名前"><code>features.table</code></td><td data-label="型">bool</td><td data-label="既定"><code>true</code></td><td data-label="説明">表の機能のオン・オフ</td></tr>
+      <tr><td data-label="名前"><code>features.html</code></td><td data-label="型">bool</td><td data-label="既定"><code>true</code></td><td data-label="説明">埋め込んだ HTML のオン・オフ</td></tr>
+      <tr><td data-label="名前"><code>build.include</code></td><td data-label="型">string[]</td><td data-label="既定"></td><td data-label="説明">まとめる Markdown の glob</td></tr>
+    </tbody>
+  </table>
+</div>
+        </article>
+        <!-- 開いたまま見せるパネルの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
 
       <!-- #533 選んだ列が見える幅に収まらない（table.pin: each。案 A: 留まっていない 9 列目のボタンのピンを破線にする。9 列目が見えるまでスクロールした） -->
       <section aria-labelledby="state-533-each-a">
