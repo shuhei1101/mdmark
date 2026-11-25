@@ -1427,7 +1427,7 @@ files:
     tags: [topic:モック, topic:目次]
   - path: refs/809/index.md
     visibility: internal
-    description: '#809（図の枠のリサイズハンドルの押せる範囲と高さのメニュー・部品『media』のモックのライトボックスのボタン）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    description: '#809（図の枠のリサイズハンドルの 24px の帯・部品『media』のモックのライトボックスのボタン）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
   - path: refs/805/index.md
     visibility: internal

@@ -354,30 +354,7 @@
   cursor: pointer;
 }
 
-/* リサイズハンドル: 枠線と面を持たず、表示する枠の下端（横のスクロールバーの下）の右端に横の 2 本線だけを置く。下端の帯のどこでも上下にドラッグできる。帯の高さはタップの対象の下限の 24px */
-.map-figure .mdmark-diagram-resize {
-  position: static;
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  width: auto;
-  height: 24px;
-  padding: 0 6px;
-  border: 0;
-  border-radius: 0;
-  background: none;
-  color: var(--mdmark-color-muted);
-  cursor: ns-resize;
-  touch-action: none;
-}
-.map-figure .mdmark-diagram-resize .mdmark-diagram-icon {
-  width: 16px;
-  height: 12px;
-}
-.map-figure .mdmark-diagram-resize:hover,
-.map-figure .mdmark-diagram-resize:focus-visible {
-  color: var(--mdmark-color-text);
-}
+/* リサイズハンドル: map の図も、図の枠の部品と同じ表示する枠の下の 24px の帯と中央の横棒（refs/42/assets/diagram.css） */
 /* ノードの名前は、日本語でも文節の切れ目で折り返す */
 .map-figure .mdmark-diagram-node-name {
   word-break: auto-phrase;

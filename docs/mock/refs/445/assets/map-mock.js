@@ -78,11 +78,8 @@ const ICONS = {
   resize: '<line x1="5" x2="19" y1="9" y2="9"/><line x1="5" x2="19" y1="15" y2="15"/>',
 };
 
-/** リサイズハンドルのアイコンを、上下だけに動かせると分かる横の 2 本線にする（今の部品の点の並びを置き換える。実装では図の枠の部品で変える） */
-const replaceResizeIcon = (figure) => {
-  const handle = figure.querySelector(".mdmark-diagram-resize");
-  if (handle) handle.innerHTML = icon("resize");
-};
+/** リサイズハンドルは図の枠の部品の帯と中央の横棒のまま使う */
+const replaceResizeIcon = () => {};
 
 const icon = (name) =>
   `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;

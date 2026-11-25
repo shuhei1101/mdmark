@@ -633,56 +633,38 @@
       }
     }
 
-    /* 表示枠の高さを変えるリサイズハンドル: 表示の箱の右下の角に置き、縦にだけ動かす。押せる範囲は 28×24（タップの対象の下限 24px）で、見た目は内側の 28×16 の札（動画のリサイズハンドルと同じ） */
+    /* 表示枠の高さを変えるリサイズハンドル: 表示枠の下に高さ 24px（タップの対象の下限）の帯を置き、帯のどこでも上下にドラッグできる。
+       見た目は帯の中央の横棒だけ（shadcn/ui の Drawer の取っ手と同じ形）。表示枠の横のスクロールバーとは重ならない */
     .mdmark-diagram-resize {
-      position: absolute;
-      inset-block-end: 0;
-      inset-inline-end: 3px;
-      z-index: 3;
-      display: grid;
-      place-items: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       box-sizing: border-box;
-      width: 28px;
       height: 24px;
-      padding: 0;
-      border: 0;
-      background: none;
-      color: var(--mdmark-color-muted);
+      border-block-start: 1px solid var(--mdmark-color-border);
+      color: var(--mdmark-color-border);
       cursor: ns-resize;
       touch-action: none;
 
+      &:hover,
+      &.is-resizing {
+        color: var(--mdmark-color-muted);
+      }
+
       &:focus-visible {
-        outline: none;
-
-        .mdmark-diagram-resize-grip {
-          outline: 2px solid var(--mdmark-color-link);
-          outline-offset: 1px;
-        }
-      }
-
-      &:hover .mdmark-diagram-resize-grip,
-      &.is-resizing .mdmark-diagram-resize-grip,
-      &.is-open .mdmark-diagram-resize-grip {
-        background: var(--mdmark-color-surface);
-        color: var(--mdmark-color-heading);
-      }
-
-      .mdmark-diagram-icon {
-        width: 16px;
-        height: 16px;
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+        border-radius: 0 0 var(--mdmark-radius) var(--mdmark-radius);
+        color: var(--mdmark-color-muted);
       }
     }
 
-    /* 札: 28×16。図の右下の角から 3px 内側に配置する */
-    .mdmark-diagram-resize-grip {
-      display: grid;
-      place-items: center;
-      box-sizing: border-box;
-      width: 28px;
-      height: 16px;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: 4px;
-      background: var(--mdmark-color-bg);
+    /* 帯の中央の横棒: 幅 40px・高さ 4px の角の丸い棒 */
+    .mdmark-diagram-resize-bar {
+      width: 40px;
+      height: 4px;
+      border-radius: 9999px;
+      background: currentColor;
     }
 
     /* 線のツールチップを拾う太い透明の線 */
@@ -1377,76 +1359,6 @@
     .mdmark-diagram-viewport {
       flex: 1;
       max-height: none;
-    }
-  }
-}
-
-/* 図の高さのメニュー: リサイズハンドルを押す（動かさずに離す）か Enter で開く、ドラッグの代わりの 3 つのボタン。popover で最前面に出し、ハンドルの下に配置する（動画の大きさのメニューと同じ見た目） */
-@layer mdmark {
-  .mdmark-diagram-height-menu {
-    position: fixed;
-    inset: auto;
-    margin: 0;
-    padding: 4px;
-    border: 1px solid var(--mdmark-color-border);
-    border-radius: var(--mdmark-radius);
-    background: var(--mdmark-color-bg);
-    color: var(--mdmark-color-text);
-    box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
-
-    &:popover-open {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    button {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      min-height: 32px;
-      padding: 0 12px;
-      border: 0;
-      border-radius: 4px;
-      background: none;
-      color: inherit;
-      font: inherit;
-      font-size: 0.875rem;
-      text-align: start;
-      white-space: nowrap;
-      cursor: pointer;
-
-      &:hover:not(:disabled) {
-        background: var(--mdmark-color-surface);
-      }
-
-      &:focus-visible {
-        outline: 2px solid var(--mdmark-color-link);
-        outline-offset: -2px;
-      }
-
-      &:disabled {
-        color: var(--mdmark-color-muted);
-        cursor: default;
-      }
-
-      svg {
-        width: 16px;
-        height: 16px;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
-      }
-    }
-  }
-
-  /* 印刷ではリサイズハンドルと高さのメニューを出さない */
-  @media print {
-    .mdmark .mdmark-diagram-resize,
-    .mdmark-diagram-height-menu {
-      display: none;
     }
   }
 }

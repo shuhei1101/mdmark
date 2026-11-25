@@ -92,20 +92,11 @@
         </article>
       </section>
 
-      <!-- リサイズハンドル: 表示枠の右下の角。押せる範囲は 28×24 で、見た目は内側の 28×16 の札。ドラッグと上下キーで縦にだけ高さを変え、ダブルクリックで倍率を変えずに図の全体が収まる高さにする。押す（動かさずに離す）か Enter で高さのメニューを開く。開いたときの高さは 36rem で切られる -->
+      <!-- リサイズハンドル: 表示枠の下の高さ 24px の帯で、中央に横棒を置く。帯のどこでもドラッグと上下キーで縦にだけ高さを変え、ダブルクリックで倍率を変えずに図の全体が収まる高さにする。開いたときの高さは 36rem で切られる -->
       <section aria-labelledby="state-resize">
-        <h2 class="catalog-label" id="state-resize">リサイズハンドル（右下。押せる範囲は 28×24。ドラッグと ↑ ↓ で高さを変え、ダブルクリックで全体が収まる高さにする。押すか Enter で高さのメニューを開く）</h2>
+        <h2 class="catalog-label" id="state-resize">リサイズハンドル（表示枠の下の 24px の帯と中央の横棒。ドラッグと ↑ ↓ で高さを変え、ダブルクリックで全体が収まる高さにする。開いたときは 36rem で切る）</h2>
         <article class="mdmark">
           <figure data-mock-diagram="tall-flow"></figure>
-        </article>
-      </section>
-
-      <!-- 高さのメニュー: ドラッグの代わりに、低くする（↑ 1 回分）・高くする（↓ 1 回分）・全体が収まる高さに合わせる（ダブルクリックと同じ）の 3 つのボタン。下限の高さ（120px）では低くするを押せない。上限は持たない。Esc・メニューの外を押すと閉じ、Esc で閉じたときはハンドルへフォーカスを戻す -->
-      <section aria-labelledby="state-resize-menu">
-        <h2 class="catalog-label" id="state-resize-menu">高さのメニュー（下限の高さ 120px。低くするを押せない）</h2>
-        <article class="mdmark">
-          <!-- [data-mock-menu-open]: 高さのメニューを開いたまま見せる（モックだけの指定） -->
-          <figure data-mock-diagram="tall-flow" data-mock-height="120" data-mock-menu-open></figure>
         </article>
       </section>
 
@@ -118,7 +109,7 @@
         </article>
       </section>
 
-      <!-- リサイズハンドルの機能がオフ: 表示枠の右下にハンドルを配置しない。全画面のモーダルの中にも配置しない -->
+      <!-- リサイズハンドルの機能がオフ: 表示枠の下に帯を配置しない。全画面のモーダルの中にも配置しない -->
       <section aria-labelledby="state-resize-off">
         <h2 class="catalog-label" id="state-resize-off">リサイズハンドルの機能がオフ（配置しない。全画面のモーダルの中も配置しない）</h2>
         <!-- [data-mock-resize="off"]: diagram.js がこの中の図にリサイズハンドルを配置しない（機能をオフにした文書に該当する） -->
