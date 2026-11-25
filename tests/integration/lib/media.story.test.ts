@@ -255,47 +255,59 @@ test("test_open_button_print", async () => {
   expect(opener.caption).toBe("保存までの操作");
 });
 
-/** リサイズハンドル・L 字の線・大きさのメニューの出方 */
-async function readResize(page: Page) {
-  await page.waitForSelector("button.mdmark-media-resize", {
-    state: "attached",
-  });
+/** リサイズハンドルと L 字の線の出方 */
+async function readHandle(page: Page) {
   return page.evaluate(() => {
     const handle = document.querySelector(
       "button.mdmark-media-resize",
     ) as HTMLButtonElement;
     const box = handle.getBoundingClientRect();
-    const video = document.querySelector("figure.mdmark-media video");
-    const videoBox = video?.getBoundingClientRect();
-    const menu = document.querySelector(
-      ".mdmark-media-size-menu",
-    ) as HTMLElement | null;
-    const menuBox = menu?.getBoundingClientRect();
-    const buttons = [...(menu?.querySelectorAll("button") ?? [])];
+    const video = document.querySelector(
+      "figure.mdmark-media video",
+    ) as HTMLElement;
+    const videoBox = video.getBoundingClientRect();
     return {
       label: handle.getAttribute("aria-label"),
       width: box.width,
       height: box.height,
       right: box.right,
       bottom: box.bottom,
-      videoRight: videoBox?.right ?? 0,
-      videoBottom: videoBox?.bottom ?? 0,
+      videoRight: videoBox.right,
+      videoBottom: videoBox.bottom,
       handleDisplay: getComputedStyle(handle).display,
       line: getComputedStyle(handle, "::before").opacity,
       focused: document.activeElement === handle,
-      menuOpen: menu?.matches(":popover-open") ?? false,
-      menuDisplay: menu ? getComputedStyle(menu).display : null,
-      menuInView:
-        menuBox !== undefined &&
-        menuBox.left >= 0 &&
-        menuBox.right <= window.innerWidth,
+    };
+  });
+}
+
+/** 大きさのメニューの出方 */
+async function readMenu(page: Page) {
+  return page.evaluate(() => {
+    const menu = document.querySelector(
+      ".mdmark-media-size-menu",
+    ) as HTMLElement;
+    const box = menu.getBoundingClientRect();
+    const buttons = [...menu.querySelectorAll("button")];
+    const active = document.activeElement as HTMLElement | null;
+    return {
+      menuOpen: menu.matches(":popover-open"),
+      menuInView: box.left >= 0 && box.right <= window.innerWidth,
       labels: buttons.map((button) => button.textContent),
       disabled: buttons
         .filter((button) => button.disabled)
         .map((button) => button.dataset.size),
-      activeSize: (document.activeElement as HTMLElement | null)?.dataset.size,
+      activeSize: active?.dataset.size,
     };
   });
+}
+
+/** リサイズハンドルと大きさのメニューの出方（ハンドルを付け終えるまで待つ） */
+async function readResize(page: Page) {
+  await page.waitForSelector("button.mdmark-media-resize", {
+    state: "attached",
+  });
+  return { ...(await readHandle(page)), ...(await readMenu(page)) };
 }
 
 // 動画の右下の角に 24×24 の押せる範囲があり、L 字の線は出さない（VideoResizable）

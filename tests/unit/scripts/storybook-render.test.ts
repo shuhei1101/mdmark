@@ -250,7 +250,7 @@ test("test_render_part_when_media_resizable", async () => {
   });
   // 検証
   expect(menu).toMatch(
-    /<figure class="mdmark-figure mdmark-media"[^]*<\/figure><span data-story-media-resize="menu" hidden><\/span>/,
+    /<figure class="mdmark-figure mdmark-media"[\s\S]*<\/figure><span data-story-media-resize="menu" hidden><\/span>/,
   );
   expect(idle).toContain('<span data-story-media-resize="idle" hidden></span>');
 });
