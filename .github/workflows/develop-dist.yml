@@ -98,6 +98,8 @@ jobs:
         if: failure()
         env:
           GH_TOKEN: ${{ github.token }}
+          # ref を取得できず作業ツリーが無いときも、gh が起票するリポジトリを決められるようにする
+          GH_REPO: ${{ github.repository }}
           RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
           STEPS_JSON: ${{ toJSON(steps) }}
         run: |
