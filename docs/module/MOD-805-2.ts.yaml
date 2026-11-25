@@ -163,3 +163,5 @@ tags:
   - name: topic:動画
     main: true
   - name: action:リサイズ
+test_files:
+  - tests/unit/src/media/media-resize.interact.browser.test.ts

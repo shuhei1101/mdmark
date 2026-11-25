@@ -97,3 +97,5 @@ tags:
   - name: topic:保存
     main: true
   - name: action:リサイズ
+test_files:
+  - tests/unit/src/shared/stored-size.logic.test.ts
