@@ -78,7 +78,7 @@ export function renderMedia(options: {
 }
 
 /** `src` からクエリとフラグメントを除いたファイル名 */
-function fileNameOf(src: string): string {
+export function fileNameOf(src: string): string {
   const path = src.split(/[?#]/)[0] ?? "";
   return path.slice(path.lastIndexOf("/") + 1);
 }

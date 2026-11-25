@@ -50,6 +50,8 @@ items:
   summary: アプリの画面が、操作できる部品の定義を指定してスライダーとグラフを描き、値の変更をイベントで受け取る（<mdmark-param-graph>）
 - page: IF-797-5.ts.yaml
   summary: アプリの画面が、Mermaid と補足を指定して map の図を描き、ノードの押下をイベントで受け取る（<mdmark-map>）
+- page: IF-805-1.yaml
+  summary: develop への push か手動の起動で配布物を再作成して commit し、jsDelivr の @develop のキャッシュを削除し、失敗したら Issue を起票する（develop-dist.yml）
 - page: IF-472-27.ts.yaml
   summary: 利用側のページが、自分の要素と読み込みと保存の関数を指定し、要素の中の選んだ箇所にコメントを付ける（mountComments）
 - page: IF-472-36.ts.yaml

@@ -218,6 +218,7 @@ functions:
       `images` がオンなら、画像 1 つだけの段落（前後の空白を除く。図表の番号とギャラリーが図にしたもの・リンクの中の画像を除く）を部品『画像の図』（`opener: false`）の `html_block` に置き換える。
       `media` がオンなら、`video`・`audio` の画像を部品『動画と音声』の `html_block` にし、画像 1 つだけの段落は段落ごと置き換え、文の中のものは段落の後ろに配置する。
       部品へは `meta.mdmarkImage` の属性・`src`・`alt`（子のトークンの文字）・title を指定する。
+      再生バーを持つ動画で属性に `width` が無いときは、`env.page?.mediaWidth`、無ければ `env.mediaWidth` を `width` に指定する（どちらも無ければ指定しない）。音声と再生のボタンには指定しない。
       `#only-dark`・`#only-light` のフラグメントは `only` にする。
       `media` がオンで `meta.mdmarkImage.opener` が `true` の動画・音声は、部品『動画と音声』（`opener` は `thumbnail` と `poster` を持つとき `thumbnail`、それ以外は `button`）の再生のボタンにする。画像 1 つだけの段落は `inline: false` の `html_block` で段落ごと置き換え、表のセルの中と文の途中は `inline: true` の `html_inline` で画像のトークンの場所に置き換える（段落の後ろへ移さない）。
       文の中の `#only-*` の画像は `img` に class `mdmark-only-*` を付ける
@@ -236,6 +237,7 @@ functions:
       - IF-472-34#constraints[テーマごとの画像]
       - IF-472-34#constraints[動画と音声]
       - IF-472-34#constraints[動画と音声の再生のボタン]
+      - IF-472-34#constraints[動画と音声]
     unit_tests:
       - name: test_build_image_figures
         case: 正常
@@ -273,6 +275,12 @@ functions:
         condition: '`env.features.media` が `false` で表のセルの `![素材 1](m1.mp4)`'
         mock: なし
         expected: '`button.mdmark-media-open` が無く、`img` の `src` が `m1.mp4`'
+      - name: test_build_image_figures_when_default_video_width
+        case: 正常
+        summary: 属性の無い動画を既定の幅で描き、属性とページの設定を優先する
+        condition: '`env.mediaWidth` が `50%`。`![a](clip.mp4)`・`![b](clip.mp4){width=320}`・`![c](voice.mp3)`。別に `env.page.mediaWidth` が `80%`'
+        mock: なし
+        expected: '1 つ目の `figure` が `--mdmark-image-width: 50%`（ページの設定があるときは `80%`）、2 つ目が `320px`、音声は `--mdmark-image-width` を持たない'
     status: planned
 lead: '画像・動画・音声の属性の読み取りと画像の図を受け持ち、画像と動画の記法を変えるときに参照する。'
 tags:

@@ -123,6 +123,12 @@
           "type": "boolean",
           "default": true
         },
+        "media-resize": {
+          "title": "動画のリサイズハンドルの機能",
+          "description": "再生バーを持つ動画の右下の角に、縦横の比を保って大きさを変えるリサイズハンドルを配置する。オフのときは配置せず、動画は記載した幅のままにする。",
+          "type": "boolean",
+          "default": true
+        },
         "glossary": {
           "title": "用語の機能",
           "description": "索引の `terms` と用語集の表の用語に下線と意味のツールチップを付け、`<!-- glossary -->` の表を用語集に入れる。オフのときはマーカーを取り除き、表を普通の表として描く。",
@@ -272,6 +278,7 @@
         "figures": true,
         "diagrams": true,
         "diagram-resize": true,
+        "media-resize": true,
         "glossary": true,
         "backlinks": true,
         "html": true,
@@ -337,6 +344,20 @@
           "description": "`hover` は右端の線を出し、指すかフォーカスで目次を重ねて出す。`fixed` は目次を出すボタンでサイドバーを開閉する。描く先の要素の幅が 48rem 未満のときはどちらも狭い幅の帯で出す。`mount` は他の値を無視して `hover` にし、CLI は他の値を設定ファイルの誤りにする。",
           "enum": ["hover", "fixed"],
           "default": "hover"
+        }
+      }
+    },
+    "media": {
+      "title": "動画の設定",
+      "description": "`{width=…}` を記載していない再生バーを持つ動画の描き方。",
+      "type": "object",
+      "properties": {
+        "width": {
+          "title": "動画の既定の幅",
+          "description": "本文の幅に対する %。文書の先頭の page のマーカーの `media.width` がその文書だけ上書きし、動画ごとの `{width=…}` はどちらよりも優先する。`mount`・`render` は他の値を無視して `100%` にし、CLI は他の値を設定ファイルの誤りにする。",
+          "type": "string",
+          "pattern": "^(?:100|[1-9][0-9]?)%$",
+          "default": "100%"
         }
       }
     },

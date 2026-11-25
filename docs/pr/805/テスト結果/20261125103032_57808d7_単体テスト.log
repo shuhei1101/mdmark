@@ -1,0 +1,515 @@
+# 単体テスト（フロント）の全件実行
+# コマンド: TP-472-1 の TL-5 の run_runner（gh workflow run test.yml --ref feat/media/develop-dist-and-video-resize -f layer=unit。実行 45525849236、commit 57808d7）
+# 結果: Test Files 348 passed、Tests 2943 passed
+
+##[group]Run npm run test:unit 2>&1 | tee test.log
+npm run test:unit 2>&1 | tee test.log
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  LAYER: unit
+  PATHS: 
+##[endgroup]
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+
+ ✓  unit  tests/unit/src/table/table.part.test.ts (41 tests) 690ms
+   ✓ test_render_table 612ms
+ ✓  unit  tests/unit/src/map/layout.test.ts (42 tests) 690ms
+   ✓ test_layout_map 549ms
+ ✓  unit  tests/unit/src/map/map.part.test.ts (74 tests) 3899ms
+   ✓ test_render_map_flow 1994ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/table.interact.browser.test.ts (83 tests) 3067ms
+ ✓  unit  tests/unit/src/table/table.syntax.test.ts (34 tests) 368ms
+ ✓  unit-browser (chromium)  tests/unit/src/mount.browser.test.ts (57 tests) 4473ms
+   ✓ test_mount 471ms
+   ✓ test_mount_when_mermaid 1103ms
+   ✓ test_mount_when_plain_mermaid_styled 383ms
+ ✓  unit-browser (chromium)  tests/unit/src/section/side-toc.interact.browser.test.ts (31 tests) 1326ms
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_closed_group_measured
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_content_in_bottom_padding
+[Error: ResizeObserver loop completed with undelivered notifications.]
+stderr | tests/unit/src/map/flow-view.browser.test.ts > test_attach_map_flow_when_centered_content_overflows
+[Error: ResizeObserver loop completed with undelivered notifications.]
+ ✓  unit-browser (chromium)  tests/unit/src/shared/zoom.interact.browser.test.ts (30 tests) 608ms
+ ✓  unit  tests/unit/src/cli/check.test.ts (38 tests) 6192ms
+   ✓ test_run_check 4136ms
+   ✓ test_collect_check_issues_when_alias_drift 334ms
+   ✓ test_run_check_when_base_given 481ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/flow-view.browser.test.ts (26 tests) 5405ms
+   ✓ test_attach_map_flow_when_toggle 404ms
+   ✓ test_attach_map_flow_when_walk_keeps_zoom 2611ms
+   ✓ test_attach_map_flow_when_changes 359ms
+ ✓  unit-browser (chromium)  tests/unit/src/diff/blocks.browser.test.ts (22 tests) 141ms
+ ✓  unit  tests/unit/src/config-files.test.ts (45 tests) 596ms
+ ✓  unit  tests/unit/src/knowledge/check.test.ts (27 tests) 120ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/table-width.interact.browser.test.ts (12 tests) 801ms
+ ✓  unit-browser (chromium)  tests/unit/src/comments/index.browser.test.ts (19 tests) 1116ms
+ ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram.interact.browser.test.ts (18 tests) 1040ms
+ ✓  unit-browser (chromium)  tests/unit/src/mermaid.browser.test.ts (24 tests) 5404ms
+   ✓ test_attach_mermaid 2042ms
+   ✓ test_attach_mermaid_when_embedded 309ms
+   ✓ test_attach_mermaid_when_scheme_changed 615ms
+   ✓ test_attach_mermaid_when_detached 431ms
+   ✓ test_draw_mermaid_diagram_when_dark 384ms
+   ✓ test_draw_mermaid_diagram_when_end_in_name 334ms
+ ✓  unit-browser (chromium)  tests/unit/src/diff/panel.browser.test.ts (14 tests) 931ms
+ ✓  unit-browser (chromium)  tests/unit/src/section/section.interact.browser.test.ts (21 tests) 778ms
+   ✓ test_attach_sections_when_row_has_term 500ms
+ ✓  unit  tests/unit/scripts/build.test.ts (34 tests) 13730ms
+   ✓ test_main 3080ms
+   ✓ test_main_when_version_given 376ms
+   ✓ test_main_when_dist_file_too_large 366ms
+   ✓ test_main_when_guide_index_invalid 429ms
+   ✓ test_main_when_api_missing_in_baseline_browser 374ms
+   ✓ test_build_dist 361ms
+   ✓ test_build_dist_when_nested_css 441ms
+   ✓ test_build_dist_when_postcss_imported 584ms
+   ✓ test_build_dist_when_cli_and_viewer 702ms
+   ✓ test_build_retired_diagrams_when_er 477ms
+   ✓ test_build_dist_when_cli_bundles_package 679ms
+   ✓ test_emit_declarations 4558ms
+   ✓ test_emit_declarations_when_type_error 501ms
+ ✓  unit-browser (chromium)  tests/unit/src/knowledge/term.interact.browser.test.ts (12 tests) 451ms
+ ✓  unit-browser (chromium)  tests/unit/src/footnote/footnote.interact.browser.test.ts (12 tests) 473ms
+ ✓  unit-browser (chromium)  tests/unit/src/tabs/tabs.interact.browser.test.ts (18 tests) 188ms
+ ✓  unit  tests/unit/src/knowledge/matches.test.ts (20 tests) 430ms
+ ✓  unit  tests/unit/src/cli/export.test.ts (29 tests) 9593ms
+   ✓ test_prepare_embeds 7616ms
+   ✓ test_run_export_when_document_missing 759ms
+ ✓  unit  tests/unit/src/cli/upgrade.test.ts (26 tests) 5461ms
+   ✓ test_write_config_version 2089ms
+   ✓ test_run_upgrade_when_local_newer 2142ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/drag.browser.test.ts (18 tests) 110ms
+ ✓  unit  tests/unit/src/diagram/diagram.part.test.ts (21 tests) 251ms
+ ✓  unit  tests/unit/src/code-block/code-block.syntax.test.ts (36 tests) 213ms
+ ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram-tips.interact.browser.test.ts (13 tests) 347ms
+ ✓  unit-browser (chromium)  tests/unit/src/mount-parts.browser.test.ts (15 tests) 580ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/panel-screen.browser.test.tsx (15 tests) 3436ms
+   ✓ test_panel_screen_when_rendered 980ms
+   ✓ test_panel_screen_when_reload_clicked 728ms
+   ✓ test_panel_screen_when_config_error 313ms
+ ✓  unit  tests/unit/src/plugin/templates.test.ts (30 tests) 694ms
+ ✓  unit-browser (chromium)  tests/unit/src/libraries.browser.test.ts (12 tests) 137ms
+ ✓  unit  tests/unit/src/map/convert.test.ts (22 tests) 717ms
+   ✓ test_convert_retired_diagrams 588ms
+ ✓  unit  tests/unit/src/knowledge/dictionary.test.ts (19 tests) 244ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/table-resize.interact.browser.test.ts (8 tests) 176ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/sequence-view.browser.test.ts (14 tests) 1222ms
+   ✓ test_attach_map_sequence_when_reorder 428ms
+ ✓  unit  tests/unit/src/map/check.test.ts (25 tests) 706ms
+   ✓ test_collect_map_problems 571ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/index.browser.test.ts (14 tests) 1422ms
+   ✓ test_attach_map 310ms
+ ✓  unit  tests/unit/src/code-block/code-block.part.test.ts (20 tests) 283ms
+ ✓  unit-browser (chromium)  tests/unit/src/tree/tree.interact.browser.test.ts (8 tests) 109ms
+ ✓  unit  tests/unit/src/plugin/setup/server.test.ts (17 tests) 4295ms
+   ✓ test_build_tmux_args 579ms
+   ✓ test_start_with_tmux 1765ms
+   ✓ test_list_tool_names 1260ms
+ ✓  unit  tests/unit/src/cli/embed.test.ts (25 tests) 817ms
+   ✓ test_used_parts 460ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/document-view.browser.test.ts (14 tests) 1552ms
+   ✓ test_render 301ms
+   ✓ test_inspect_when_play 1113ms
+ ✓  unit-browser (chromium)  tests/unit/src/viewer/bundle.browser.test.ts (12 tests) 1032ms
+   ✓ test_start_bundle 385ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/mdmark-table.element.browser.test.ts (10 tests) 819ms
+ ✓  unit-browser (chromium)  tests/unit/src/highlight.browser.test.ts (9 tests) 135ms
+ ✓  unit  tests/unit/vscode/src/config.test.ts (24 tests) 1112ms
+   ✓ test_resolve_config_path 839ms
+ ✓  unit-browser (chromium)  tests/unit/src/comments/bubble.browser.test.ts (8 tests) 644ms
+   ✓ test_attach_comment_actions_when_edited 376ms
+ ✓  unit  tests/unit/src/plugin/tools.test.ts (21 tests) 2722ms
+   ✓ test_call_tool 1212ms
+stderr | tests/unit/src/render/sanitize.test.ts > test_resolve_id_href
+[mdmark] resolveIdLink が例外を投げました Error: boom
+    at resolveIdLink (/home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:474:35)
+    at resolveIdHref (/home/runner/work/mdmark/mdmark/src/render/sanitize.ts:354:16)
+    at /home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:486:19
+    at Array.map (<anonymous>)
+    at /home/runner/work/mdmark/mdmark/tests/unit/src/render/sanitize.test.ts:486:5
+    at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+    at async file:///home/runner/work/mdmark/mdmark/node_modules/vitest/dist/chunks/run.Cm2sd7-x.js:2794:20
+
+ ✓  unit  tests/unit/src/render/sanitize.test.ts (24 tests) 263ms
+ ✓  unit  tests/unit/src/knowledge/aliases.test.ts (15 tests) 167ms
+ ✓  unit  tests/unit/src/cli/migrations.test.ts (23 tests) 1822ms
+   ✓ test_load_migration_versions_when_steps_invalid 1353ms
+ ✓  unit-browser (chromium)  tests/unit/src/diff/minimap.browser.test.ts (7 tests) 447ms
+ ✓  unit  tests/unit/src/diagram/chart.part.test.ts (15 tests) 193ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/table-sticky.interact.browser.test.ts (7 tests) 1028ms
+   ✓ test_attach_sticky_rows_when_timeline 314ms
+ ✓  unit  tests/unit/src/config.test.ts (20 tests) 130ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/mdmark-table.interact.browser.test.ts (10 tests) 165ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/c4-view.browser.test.ts (11 tests) 1137ms
+   ✓ test_attach_map_c4 570ms
+ ✓  unit-browser (chromium)  tests/unit/src/interact.browser.test.ts (8 tests) 369ms
+ ✓  unit  tests/unit/src/knowledge/term.syntax.test.ts (14 tests) 367ms
+ ✓  unit  tests/unit/src/media/image.syntax.test.ts (19 tests) 305ms
+ ✓  unit  tests/unit/src/map/class-diagram.test.ts (15 tests) 421ms
+   ✓ test_parse_class_diagram 383ms
+ ✓  unit-browser (chromium)  tests/unit/src/code-block/code-fold.interact.browser.test.ts (7 tests) 138ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/class-view.browser.test.ts (7 tests) 651ms
+   ✓ test_attach_map_class 354ms
+ ✓  unit  tests/unit/src/knowledge/term-tip.part.test.ts (10 tests) 252ms
+ ✓  unit  tests/unit/src/render/marks.test.ts (16 tests) 616ms
+   ✓ test_take_marks 468ms
+ ✓  unit  tests/unit/src/mdmark-style/reply.test.ts (17 tests) 3679ms
+   ✓ test_render_reply_when_disabled 1726ms
+   ✓ test_render_reply_when_over_limit 1914ms
+ ✓  unit  tests/unit/src/knowledge/glossary.syntax.test.ts (13 tests) 331ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/mindmap-view.browser.test.ts (9 tests) 620ms
+ ✓  unit  tests/unit/src/render/mark-schema.test.ts (9 tests) 366ms
+ ✓  unit-browser (chromium)  tests/unit/src/html-scripts.browser.test.ts (9 tests) 3682ms
+   ✓ test_run_html_scripts 3581ms
+ ✓  unit  tests/unit/src/footnote/footnote.syntax.test.ts (16 tests) 305ms
+ ✓  unit-browser (chromium)  tests/unit/src/media/media-resize.interact.browser.test.ts (7 tests) 379ms
+ ✓  unit  tests/unit/src/knowledge/references.test.ts (17 tests) 601ms
+   ✓ test_collect_references 520ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/scroll.browser.test.ts (12 tests) 105ms
+ ✓  unit  tests/unit/src/mdmark-style/blocks.test.ts (18 tests) 579ms
+   ✓ test_split_blocks 547ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/band.browser.test.ts (10 tests) 205ms
+ ✓  unit  tests/unit/src/embedded-html/embedded-html.syntax.test.ts (14 tests) 348ms
+ ✓  unit  tests/unit/scripts/storybook-render.test.ts (17 tests) 3255ms
+   ✓ test_render_part_when_notice 2454ms
+   ✓ test_create_render_server_when_media_resize_script 452ms
+ ✓  unit-browser (chromium)  tests/unit/src/views/mdmark-view.element.browser.test.ts (8 tests) 651ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/export.browser.test.ts (11 tests) 6711ms
+   ✓ test_export_map_svg 3954ms
+   ✓ test_export_map_svg_when_pseudo_element 661ms
+   ✓ test_export_map_svg_when_inherited_color 473ms
+   ✓ test_attach_map_export 592ms
+   ✓ test_attach_map_export_when_png_unavailable 828ms
+ ✓  unit  tests/unit/src/knowledge/index-shape.test.ts (12 tests) 45ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/axis-grid-view.browser.test.ts (5 tests) 586ms
+   ✓ test_attach_map_axis_grid 323ms
+ ✓  unit  tests/unit/scripts/baseline.test.ts (19 tests) 1453ms
+ ✓  unit-browser (chromium)  tests/unit/src/shared/part-states.interact.browser.test.ts (9 tests) 47ms
+ ✓  unit  tests/unit/src/render/index.test.ts (13 tests) 937ms
+   ✓ test_render 674ms
+ ✓  unit  tests/unit/src/tree/tree.part.test.ts (9 tests) 216ms
+ ✓  unit-browser (chromium)  tests/unit/src/code-block/code-preview.interact.browser.test.ts (6 tests) 215ms
+ ✓  unit  tests/unit/src/footnote/annotations.syntax.test.ts (13 tests) 239ms
+ ✓  unit  tests/unit/src/map/axis-grid.test.ts (11 tests) 111ms
+ ✓  unit-browser (chromium)  tests/unit/src/views/index.browser.test.ts (6 tests) 128ms
+ ✓  unit  tests/unit/src/map/flowchart.test.ts (14 tests) 145ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/table-tree.interact.browser.test.ts (6 tests) 634ms
+ ✓  unit  tests/unit/src/comments/comment.part.test.ts (14 tests) 131ms
+ ✓  unit-browser (chromium)  tests/unit/src/code-block/code-block.interact.browser.test.ts (6 tests) 147ms
+ ✓  unit-browser (chromium)  tests/unit/src/media/lightbox.interact.browser.test.ts (7 tests) 968ms
+   ✓ test_attach_lightbox_when_closed 498ms
+ ✓  unit  tests/unit/src/render/parser.test.ts (18 tests) 748ms
+   ✓ test_create_parser_when_task_list 456ms
+ ✓  unit-browser (chromium)  tests/unit/src/print.browser.test.ts (6 tests) 224ms
+ ✓  unit  tests/unit/src/cli/build.test.ts (11 tests) 2001ms
+   ✓ test_run_build 1105ms
+   ✓ test_run_build_when_build_missing 336ms
+ ✓  unit  tests/unit/src/tree/tree.syntax.test.ts (14 tests) 202ms
+ ✓  unit-browser (chromium)  tests/unit/src/section/back-to-top.interact.browser.test.ts (5 tests) 403ms
+ ✓  unit  tests/unit/src/diff/compute.test.ts (10 tests) 76ms
+ ✓  unit  tests/unit/src/footnote/footnote.part.test.ts (9 tests) 121ms
+ ✓  unit  tests/unit/src/tabs/tabs.syntax.test.ts (13 tests) 211ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/table-settings.interact.browser.test.ts (4 tests) 482ms
+ ✓  unit  tests/unit/src/knowledge/positions.test.ts (5 tests) 136ms
+ ✓  unit  tests/unit/src/section/side-toc.part.test.ts (9 tests) 84ms
+ ✓  unit-browser (chromium)  tests/unit/src/comments/margin.browser.test.ts (5 tests) 400ms
+ ✓  unit-browser (chromium)  tests/unit/src/viewer/view-state.browser.test.ts (9 tests) 464ms
+ ✓  unit  tests/unit/scripts/build-plugin.test.ts (11 tests) 292ms
+ ✓  unit  tests/unit/src/map/packet.test.ts (10 tests) 44ms
+ ✓  unit  tests/unit/src/cli/traces.test.ts (10 tests) 32ms
+ ✓  unit  tests/unit/src/cli/markdown-check.test.ts (10 tests) 1086ms
+   ✓ test_check_markdown_source 913ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/mdmark-map.element.browser.test.ts (6 tests) 748ms
+   ✓ test_render_now 417ms
+ ✓  unit  tests/unit/src/map/map.syntax.test.ts (10 tests) 309ms
+ ✓  unit-browser (chromium)  tests/unit/src/comments/mdmark-comments.element.browser.test.ts (5 tests) 372ms
+ ✓  unit  tests/unit/vscode/src/export/html.test.ts (9 tests) 41ms
+ ✓  unit  tests/unit/src/markdown/pure-markdown.test.ts (8 tests) 768ms
+   ✓ test_to_pure_markdown 665ms
+ ✓  unit  tests/unit/src/part-modules.test.ts (11 tests) 35ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/assets.browser.test.ts (6 tests) 96ms
+ ✓  unit  tests/unit/migrations/retired-diagrams.test.ts (5 tests) 1276ms
+   ✓ test_migrate_retired_diagrams 487ms
+   ✓ test_migrate_retired_diagrams_when_bundled 652ms
+ ✓  unit  tests/unit/src/map/state.test.ts (12 tests) 42ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/list.browser.test.ts (4 tests) 673ms
+   ✓ test_attach_map_list 561ms
+ ✓  unit-browser (chromium)  tests/unit/src/diagram/mdmark-graph.element.browser.test.ts (5 tests) 364ms
+ ✓  unit  tests/unit/src/diagram/definition.test.ts (11 tests) 52ms
+ ✓  unit  tests/unit/vscode/src/version.test.ts (13 tests) 237ms
+ ✓  unit  tests/unit/src/plugin/guide-notice.test.ts (9 tests) 231ms
+stderr | tests/unit/src/inline-icons.browser.test.ts > test_load_inline_icons_when_offline
+mdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/sailboat.mjs
+stderr | tests/unit/src/inline-icons.browser.test.ts > test_load_inline_icons_when_offline
+mdmark: Lucide のアイコンを読み込めません: https://cdn.jsdelivr.net/npm/lucide@1.59.0/dist/esm/icons/anchor.mjs
+ ✓  unit-browser (chromium)  tests/unit/src/inline-icons.browser.test.ts (5 tests) 99ms
+ ✓  unit  tests/unit/src/mdmark-style/user-message.test.ts (8 tests) 508ms
+   ✓ test_render_user_message 474ms
+ ✓  unit  tests/unit/src/map/structure.test.ts (13 tests) 68ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/er-view.browser.test.ts (4 tests) 509ms
+   ✓ test_attach_map_er 341ms
+ ✓  unit  tests/unit/src/render/legacy-marks.test.ts (6 tests) 284ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/architecture-view.browser.test.ts (3 tests) 291ms
+ ✓  unit-browser (chromium)  tests/unit/src/diagram/diagram-resize.interact.browser.test.ts (5 tests) 214ms
+ ✓  unit  tests/unit/scripts/migrations.test.ts (9 tests) 889ms
+ ✓  unit  tests/unit/vscode/src/export/embed.test.ts (7 tests) 1050ms
+   ✓ test_embed_local_libraries 1007ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/state-view.browser.test.ts (3 tests) 407ms
+ ✓  unit  tests/unit/src/map/er.test.ts (10 tests) 334ms
+   ✓ test_parse_er_diagram 305ms
+ ✓  unit-browser (chromium)  tests/unit/src/media/gif.interact.browser.test.ts (3 tests) 154ms
+ ✓  unit-browser (chromium)  tests/unit/src/viewer/index.browser.test.ts (3 tests) 630ms
+   ✓ test_start_viewer 497ms
+ ✓  unit  tests/unit/src/cli/export-markdown.test.ts (8 tests) 1593ms
+   ✓ test_run_export_markdown 1066ms
+   ✓ test_run_export_markdown_when_document_missing 424ms
+ ✓  unit  tests/unit/migrations/alias-rows.test.ts (6 tests) 311ms
+ ✓  unit  tests/unit/src/table/mdmark-table.logic.test.ts (12 tests) 152ms
+ ✓  unit  tests/unit/src/extensions.test.ts (10 tests) 93ms
+ ✓  unit  tests/unit/src/plugin/http.test.ts (8 tests) 1292ms
+   ✓ test_route_request 899ms
+ ✓  unit-browser (chromium)  tests/unit/src/media/media-modal.interact.browser.test.ts (4 tests) 2399ms
+   ✓ test_attach_media_modal 552ms
+   ✓ test_attach_media_modal_when_closed 948ms
+   ✓ test_attach_media_modal_when_arrow 321ms
+   ✓ test_attach_media_modal_when_cleaned_up 564ms
+ ✓  unit  tests/unit/src/map/c4.test.ts (11 tests) 257ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/shared/components/preview-status.browser.test.tsx (5 tests) 880ms
+   ✓ test_preview_status 321ms
+   ✓ test_preview_status_when_reload_clicked 547ms
+ ✓  unit-browser (chromium)  tests/unit/src/shared/text.interact.browser.test.ts (4 tests) 18ms
+ ✓  unit-browser (chromium)  tests/unit/src/comments/anchor.browser.test.ts (4 tests) 17ms
+ ✓  unit  tests/unit/src/mdmark-style/document-parts.test.ts (5 tests) 469ms
+   ✓ test_render_steps 447ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-link-clicks.browser.test.tsx (3 tests) 1073ms
+   ✓ test_use_link_clicks 670ms
+ ✓  unit  tests/unit/src/plugin/setup/write.test.ts (9 tests) 276ms
+ ✓  unit-browser (chromium)  tests/unit/src/diagram/param.interact.browser.test.ts (2 tests) 148ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-load-mdmark.browser.test.tsx (3 tests) 264ms
+ ✓  unit  tests/unit/vscode/src/preview/html.test.ts (7 tests) 31ms
+ ✓  unit  tests/unit/migrations/retired-er.test.ts (4 tests) 1273ms
+   ✓ test_migrate_retired_er 595ms
+   ✓ test_migrate_retired_er_when_bundled 515ms
+ ✓  unit  tests/unit/src/map/axis-grid-layout.test.ts (6 tests) 144ms
+ ✓  unit-browser (chromium)  tests/unit/src/map/annotations.browser.test.ts (2 tests) 15ms
+ ✓  unit-browser (chromium)  tests/unit/src/layout/wide.interact.browser.test.ts (2 tests) 58ms
+ ✓  unit  tests/unit/src/cli/assets.test.ts (8 tests) 441ms
+   ✓ test_collect_asset_refs 327ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/shared/components/config-band.browser.test.tsx (3 tests) 550ms
+   ✓ test_config_band 317ms
+ ✓  unit  tests/unit/src/plugin/prompt.test.ts (9 tests) 79ms
+ ✓  unit-browser (chromium)  tests/unit/src/shared/clipboard.interact.browser.test.ts (3 tests) 18ms
+ ✓  unit  tests/unit/src/media/media.part.test.ts (7 tests) 119ms
+ ✓  unit  tests/unit/src/map/data.test.ts (10 tests) 58ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-scroll-sync.browser.test.tsx (1 test) 189ms
+ ✓  unit-browser (chromium)  tests/unit/src/shared/sticky-top.browser.test.ts (3 tests) 21ms
+ ✓  unit  tests/unit/vscode/src/export/dist.test.ts (5 tests) 4028ms
+   ✓ test_extension_bundle_keeps_dynamic_import 3687ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/boot.browser.test.ts (2 tests) 21ms
+ ✓  unit-browser (chromium)  tests/unit/src/shared/scroller.interact.browser.test.ts (2 tests) 19ms
+ ✓  unit-browser (chromium)  tests/unit/src/embedded-html/embedded-html.interact.browser.test.ts (1 test) 190ms
+ ✓  unit  tests/unit/src/views/view.syntax.test.ts (7 tests) 141ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-host-messages.browser.test.tsx (2 tests) 47ms
+ ✓  unit  tests/unit/src/render/used.test.ts (8 tests) 619ms
+   ✓ test_used_library_marks 507ms
+ ✓  unit-browser (chromium)  tests/unit/src/table/csv.interact.browser.test.ts (1 test) 50ms
+ ✓  unit  tests/unit/migrations/marker-json.test.ts (3 tests) 452ms
+   ✓ test_migrate_document_marks_when_bundled 327ms
+ ✓  unit  tests/unit/src/plugin/mcp.test.ts (5 tests) 1070ms
+   ✓ test_create_mcp_server 984ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/app/app.browser.test.tsx (1 test) 629ms
+   ✓ test_app_when_render_error 628ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/features/preview/panel/hooks/use-document-view.browser.test.tsx (1 test) 248ms
+ ✓  unit  tests/unit/src/diagram/diagram.syntax.test.ts (7 tests) 150ms
+ ✓  unit-browser (chromium)  tests/unit/src/elements.browser.test.ts (2 tests) 547ms
+   ✓ test_define_elements 544ms
+ ✓  unit-browser (chromium)  tests/unit/src/viewer/route.browser.test.ts (1 test) 35ms
+ ✓  unit-browser (chromium)  tests/unit/src/knowledge/dictionary.browser.test.ts (2 tests) 26ms
+ ✓  unit  tests/unit/src/render/includes.test.ts (7 tests) 159ms
+ ✓  unit  tests/unit/src/map/mindmap-layout.test.ts (5 tests) 140ms
+ ✓  unit  tests/unit/src/table/table-tree.syntax.test.ts (4 tests) 187ms
+ ✓  unit-browser (chromium)  tests/unit/vscode/src/webview/main.browser.test.tsx (1 test) 309ms
+   ✓ test_start_preview_when_no_root 309ms
+ ✓  unit  tests/unit/src/plugin/session-start.test.ts (6 tests) 111ms
+ ✓  unit  tests/unit/scripts/skill-md.test.ts (5 tests) 55ms
+ ✓  unit  tests/unit/migrations/retired-map-options.test.ts (4 tests) 49ms
+ ✓  unit  tests/unit/src/plugin/arguments.test.ts (11 tests) 494ms
+   ✓ test_check_arguments 487ms
+ ✓  unit  tests/unit/src/markdown/pure-blocks.logic.test.ts (8 tests) 168ms
+ ✓  unit  tests/unit/src/cli/html.test.ts (5 tests) 16ms
+ ✓  unit  tests/unit/src/shared/notice.part.test.ts (8 tests) 11ms
+ ✓  unit  tests/unit/src/viewer/modules.test.ts (4 tests) 211ms
+ ✓  unit  tests/unit/src/views/view.part.test.ts (6 tests) 109ms
+ ✓  unit  tests/unit/src/cli/documents.test.ts (10 tests) 727ms
+   ✓ test_read_index_with_documents_when_missing 501ms
+ ✓  unit  tests/unit/src/cli/aliases.test.ts (5 tests) 281ms
+ ✓  unit  tests/unit/src/map/mindmap.test.ts (6 tests) 62ms
+ ✓  unit  tests/unit/src/plugin/setup/systemd.test.ts (8 tests) 15ms
+ ✓  unit  tests/unit/src/callout/callout.syntax.test.ts (5 tests) 75ms
+ ✓  unit  tests/unit/src/mdmark-style/settings.test.ts (9 tests) 65ms
+ ✓  unit  tests/unit/src/map/sequence.test.ts (7 tests) 78ms
+ ✓  unit  tests/unit/migrations/drop-tag-vocabulary.test.ts (6 tests) 65ms
+ ✓  unit  tests/unit/src/tabs/tabs.part.test.ts (6 tests) 13ms
+ ✓  unit  tests/unit/src/figure/figure.syntax.test.ts (4 tests) 129ms
+ ✓  unit  tests/unit/src/media/gallery.syntax.test.ts (4 tests) 67ms
+ ✓  unit  tests/unit/src/cli/init.test.ts (5 tests) 48ms
+ ✓  unit  tests/unit/src/map/list.part.test.ts (3 tests) 177ms
+ ✓  unit  tests/unit/src/mdmark-style/inline-marks.test.ts (8 tests) 154ms
+ ✓  unit  tests/unit/src/media/image.part.test.ts (6 tests) 58ms
+ ✓  unit  tests/unit/src/diagram/geometry.test.ts (8 tests) 14ms
+ ✓  unit  tests/unit/src/cli/figure-svg.test.ts (4 tests) 94ms
+ ✓  unit  tests/unit/src/steps/steps.syntax.test.ts (6 tests) 61ms
+ ✓  unit  tests/unit/src/shared/syntax-warning.syntax.test.ts (4 tests) 90ms
+ ✓  unit  tests/unit/src/table/table-tree.logic.test.ts (6 tests) 12ms
+ ✓  unit  tests/unit/src/card/card-grid.syntax.test.ts (5 tests) 102ms
+ ✓  unit  tests/unit/src/cli/backup.test.ts (4 tests) 889ms
+   ✓ test_take_backup_when_outside 797ms
+ ✓  unit  tests/unit/src/cli/main.test.ts (6 tests) 1213ms
+   ✓ test_main 859ms
+ ✓  unit  tests/unit/src/map/state-diagram.test.ts (4 tests) 228ms
+ ✓  unit  tests/unit/src/cli/git.test.ts (4 tests) 404ms
+ ✓  unit  tests/unit/src/code-block/code-fold.logic.test.ts (9 tests) 17ms
+ ✓  unit  tests/unit/vscode/scripts/build.test.ts (2 tests) 3387ms
+   ✓ test_build_extension 2271ms
+   ✓ test_build_extension_when_tests 1113ms
+ ✓  unit  tests/unit/src/section/section.syntax.test.ts (5 tests) 77ms
+ ✓  unit  tests/unit/src/plugin/pre-tool-use.test.ts (4 tests) 518ms
+   ✓ test_run_pre_tool_use_when_matcher 479ms
+ ✓  unit  tests/unit/src/mdmark-style/terms.test.ts (6 tests) 350ms
+ ✓  unit  tests/unit/src/render/mark-options.test.ts (7 tests) 12ms
+ ✓  unit  tests/unit/src/cli/config.test.ts (6 tests) 679ms
+   ✓ test_find_config_file_when_missing 552ms
+ ✓  unit  tests/unit/src/diff/diff-side-by-side.part.test.ts (2 tests) 9ms
+ ✓  unit  tests/unit/src/plugin/setup/status.test.ts (3 tests) 131ms
+ ✓  unit  tests/unit/src/table/table-cells.logic.test.ts (5 tests) 13ms
+ ✓  unit  tests/unit/src/embedded-html/scope-css.logic.test.ts (5 tests) 7ms
+ ✓  unit  tests/unit/src/frontmatter/frontmatter.logic.test.ts (6 tests) 9ms
+ ✓  unit  tests/unit/src/shared/style-tokens.logic.test.ts (4 tests) 16ms
+ ✓  unit  tests/unit/vscode/src/webview/features/preview/panel/load-mdmark.test.ts (5 tests) 45ms
+ ✓  unit  tests/unit/src/comments/spec.test.ts (4 tests) 9ms
+ ✓  unit  tests/unit/src/media/lightbox.part.test.ts (4 tests) 75ms
+ ✓  unit  tests/unit/src/cli/alias-schema.test.ts (4 tests) 150ms
+ ✓  unit  tests/unit/src/diff/revision-picker.part.test.ts (1 test) 77ms
+ ✓  unit  tests/unit/src/map/architecture.test.ts (4 tests) 151ms
+ ✓  unit  tests/unit/src/plugin/setup/paths.test.ts (7 tests) 105ms
+ ✓  unit  tests/unit/src/cli/versions.test.ts (8 tests) 11ms
+ ✓  unit  tests/unit/src/cli/includes.test.ts (2 tests) 177ms
+ ✓  unit  tests/unit/src/plugin/port.test.ts (5 tests) 26ms
+ ✓  unit  tests/unit/src/diff/diff-blocks.part.test.ts (3 tests) 8ms
+ ✓  unit  tests/unit/src/highlight-lines.test.ts (4 tests) 28ms
+ ✓  unit  tests/unit/scripts/eslint.test.ts (3 tests) 61ms
+ ✓  unit  tests/unit/src/comments/anchor.test.ts (4 tests) 35ms
+ ✓  unit  tests/unit/src/shared/icons.part.test.ts (2 tests) 251ms
+ ✓  unit  tests/unit/vscode/src/extensions-bundle.test.ts (2 tests) 901ms
+   ✓ test_bundle_extensions 824ms
+ ✓  unit  tests/unit/src/mermaid-source.test.ts (5 tests) 13ms
+ ✓  unit  tests/unit/src/diff/diff-html.part.test.ts (3 tests) 10ms
+ ✓  unit  tests/unit/src/map/spec.test.ts (6 tests) 11ms
+ ✓  unit  tests/unit/src/media/media-modal.part.test.ts (2 tests) 67ms
+ ✓  unit  tests/unit/src/plugin/guide.test.ts (5 tests) 13ms
+ ✓  unit  tests/unit/src/table/csv.syntax.test.ts (4 tests) 63ms
+ ✓  unit  tests/unit/src/card/card.syntax.test.ts (5 tests) 79ms
+ ✓  unit  tests/unit/src/knowledge/paths.test.ts (6 tests) 8ms
+ ✓  unit  tests/unit/src/map/mermaid-style.test.ts (3 tests) 13ms
+ ✓  unit  tests/unit/src/diff/diff-lines.part.test.ts (2 tests) 10ms
+ ✓  unit  tests/unit/src/section/heading.syntax.test.ts (5 tests) 65ms
+ ✓  unit  tests/unit/src/knowledge/backlinks.syntax.test.ts (3 tests) 60ms
+ ✓  unit  tests/unit/src/inline/text-color.syntax.test.ts (5 tests) 75ms
+ ✓  unit  tests/unit/src/diff/source.test.ts (6 tests) 11ms
+ ✓  unit  tests/unit/src/markdown/pure-inline.logic.test.ts (7 tests) 120ms
+ ✓  unit  tests/unit/src/mdmark-style/table-layout.test.ts (7 tests) 32ms
+ ✓  unit  tests/unit/src/inline/badge.syntax.test.ts (5 tests) 68ms
+ ✓  unit  tests/unit/src/frontmatter/frontmatter.syntax.test.ts (3 tests) 237ms
+ ✓  unit  tests/unit/src/viewer/doc-list.part.test.ts (2 tests) 11ms
+ ✓  unit  tests/unit/src/shared/stored-size.logic.test.ts (5 tests) 8ms
+ ✓  unit  tests/unit/src/mdmark-style/marker-guide.test.ts (4 tests) 67ms
+ ✓  unit  tests/unit/src/media/gif.part.test.ts (3 tests) 83ms
+ ✓  unit  tests/unit/src/diagram/param.part.test.ts (3 tests) 132ms
+ ✓  unit  tests/unit/src/views/spec.test.ts (2 tests) 35ms
+ ✓  unit  tests/unit/src/card/card.part.test.ts (3 tests) 11ms
+ ✓  unit  tests/unit/vscode/src/settings.test.ts (3 tests) 14ms
+ ✓  unit  tests/unit/src/map/sequence-rows.test.ts (4 tests) 90ms
+ ✓  unit  tests/unit/src/section/section.part.test.ts (3 tests) 7ms
+ ✓  unit  tests/unit/src/layout/wide.syntax.test.ts (3 tests) 94ms
+ ✓  unit  tests/unit/src/layout/details.syntax.test.ts (3 tests) 59ms
+ ✓  unit  tests/unit/scripts/test-mdmark-style.test.ts (2 tests) 30ms
+ ✓  unit  tests/unit/src/callout/callout.part.test.ts (4 tests) 9ms
+ ✓  unit  tests/unit/src/layout/layout-columns.syntax.test.ts (2 tests) 89ms
+ ✓  unit  tests/unit/src/plugin/setup/keys.test.ts (2 tests) 22ms
+ ✓  unit  tests/unit/vscode/src/export/write.test.ts (2 tests) 27ms
+ ✓  unit  tests/unit/migrations-dir.test.ts (4 tests) 19ms
+ ✓  unit  tests/unit/src/card/card-grid.part.test.ts (2 tests) 105ms
+ ✓  unit  tests/unit/src/shared/placement.logic.test.ts (3 tests) 8ms
+ ✓  unit  tests/unit/src/diagram/mermaid.part.test.ts (1 test) 9ms
+ ✓  unit  tests/unit/src/viewer/route.test.ts (4 tests) 13ms
+ ✓  unit  tests/unit/src/shared/collapse.logic.test.ts (4 tests) 8ms
+ ✓  unit  tests/unit/vscode/src/preview/diff-target.test.ts (3 tests) 14ms
+ ✓  unit  tests/unit/src/inline/inline-icon.syntax.test.ts (3 tests) 40ms
+ ✓  unit  tests/unit/src/features.test.ts (4 tests) 12ms
+ ✓  unit  tests/unit/src/shared/collapsible.part.test.ts (3 tests) 5ms
+ ✓  unit  tests/unit/vscode/src/preview/scroll-guard.test.ts (3 tests) 14ms
+ ✓  unit  tests/unit/src/shared/syntax-warning.part.test.ts (2 tests) 9ms
+ ✓  unit  tests/unit/src/cli/changelog.test.ts (1 test) 10ms
+ ✓  unit  tests/unit/vscode/scripts/release-check.test.ts (3 tests) 10ms
+ ✓  unit  tests/unit/src/plugin/setup/main.test.ts (2 tests) 372ms
+   ✓ test_run_setup 369ms
+ ✓  unit  tests/unit/src/comments/margin.test.ts (3 tests) 143ms
+ ✓  unit  tests/unit/src/diagram/hint.part.test.ts (1 test) 70ms
+ ✓  unit  tests/unit/src/table/row-detail.syntax.test.ts (2 tests) 83ms
+ ✓  unit  tests/unit/src/steps/steps.part.test.ts (2 tests) 8ms
+ ✓  unit  tests/unit/src/cli/prompt.test.ts (2 tests) 10ms
+ ✓  unit  tests/unit/src/viewer/options.test.ts (1 test) 565ms
+   ✓ test_rendered_options 564ms
+ ✓  unit  tests/unit/src/diff/diff-minimap.part.test.ts (1 test) 5ms
+ ✓  unit  tests/unit/src/knowledge/backlinks.part.test.ts (2 tests) 8ms
+ ✓  unit  tests/unit/src/render/page.test.ts (3 tests) 8ms
+ ✓  unit  tests/unit/src/diff/diff-message.part.test.ts (1 test) 4ms
+ ✓  unit  tests/unit/src/section/back-to-top.part.test.ts (2 tests) 72ms
+ ✓  unit  tests/unit/vscode/src/preview/links.test.ts (2 tests) 12ms
+ ✓  unit  tests/unit/src/cli/issues.test.ts (2 tests) 10ms
+ ✓  unit  tests/unit/vscode/src/preview/includes.test.ts (1 test) 17ms
+ ✓  unit  tests/unit/src/shared/embed.part.test.ts (2 tests) 6ms
+ ✓  unit  tests/unit/vscode/src/webview/features/preview/panel/diff-source.test.ts (1 test) 11ms
+ ✓  unit  tests/unit/src/figure/figure.part.test.ts (1 test) 8ms
+ ✓  unit  tests/unit/src/layout/wide.part.test.ts (1 test) 78ms
+ ✓  unit  tests/unit/vscode/src/preview/assets.test.ts (2 tests) 13ms
+ ✓  unit  tests/unit/src/inline/kbd.syntax.test.ts (2 tests) 31ms
+ ✓  unit  tests/unit/src/media/gallery.part.test.ts (1 test) 5ms
+ ✓  unit  tests/unit/src/inline/highlight.syntax.test.ts (2 tests) 56ms
+ ✓  unit  tests/unit/vscode/src/webview/shared/lib/media-error.test.ts (1 test) 7ms
+ ✓  unit  tests/unit/src/inline/inline-icon.part.test.ts (1 test) 8ms
+ ✓  unit  tests/unit/src/section/toc.part.test.ts (1 test) 7ms
+ ✓  unit  tests/unit/src/inline/badge.part.test.ts (2 tests) 6ms
+ ✓  unit  tests/unit/src/layout/layout-columns.part.test.ts (1 test) 6ms
+ ✓  unit  tests/unit/src/mdmark-style/mod.test.ts (1 test) 336ms
+   ✓ test_register 334ms
+ ✓  unit  tests/unit/src/section/toc.syntax.test.ts (1 test) 65ms
+ ✓  unit  tests/unit/vscode/src/webview/shared/adapters/vscode-api.test.ts (1 test) 43ms
+ ✓  unit  tests/unit/src/table/row-detail.part.test.ts (1 test) 6ms
+ ✓  unit  tests/unit/src/diff/diff-toggle.part.test.ts (1 test) 61ms
+ ✓  unit  tests/unit/src/shared/icon-node.logic.test.ts (1 test) 9ms
+ ✓  unit  tests/unit/src/inline/highlight.part.test.ts (1 test) 6ms
+ ✓  unit  tests/unit/src/frontmatter/frontmatter.part.test.ts (1 test) 8ms
+ ✓  unit  tests/unit/src/cli/icons.test.ts (1 test) 129ms
+ ✓  unit  tests/unit/git-env.test.ts (1 test) 11ms
+ ✓  unit  tests/unit/src/shared/own.logic.test.ts (1 test) 5ms
+ ✓  unit  tests/unit/src/shared/row-hash.logic.test.ts (1 test) 6ms
+ ✓  unit  tests/unit/src/inline/text-color.part.test.ts (1 test) 6ms
+ ✓  unit  tests/unit/src/inline/kbd.part.test.ts (1 test) 5ms
+ ✓  unit  tests/unit/src/shared/colors.logic.test.ts (1 test) 6ms
+ ✓  unit  tests/unit/src/layout/pagebreak.syntax.test.ts (1 test) 40ms
+ ✓  unit  tests/unit/src/shared/escape.logic.test.ts (1 test) 4ms
+ ✓  unit  tests/unit/src/index.test.ts (1 test) 424ms
+   ✓ test_version 422ms
+
+ Test Files  348 passed (348)
+      Tests  2943 passed (2943)
+   Start at  01:28:14
+   Duration  74.54s (worker 91%, tests 6%, import 2%)
+

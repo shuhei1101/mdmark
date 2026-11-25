@@ -2,6 +2,8 @@ summary: 単一 / 複合ユースケースの業務フロー設計（E2E テス�
 items:
 - page: SC-472-82.yaml
   summary: 開発者が依存の導入・lint・型検査・ビルド・テストを実行し、バージョンを埋めた配布物を得る
+- page: SC-805-2.yaml
+  summary: develop への push か手動の起動で GitHub Actions が develop の配布物を再作成して @develop のキャッシュを削除し、失敗したら Issue を起票する
 - page: SC-472-28.yaml
   summary: 利用側のページがタグ・メジャーバージョンの範囲か develop を指定した URL で配布物を読み込み、公開関数を呼ぶ
 - page: SC-793-2.yaml
@@ -160,6 +162,8 @@ items:
   summary: 画像に幅・統一し・キャプションを付け、ギャラリー・テーマごとの画像・動画・音声・GIF の停止を配置する
 - page: SC-801-1.yaml
   summary: 表のセルの中の動画・音声と modal の属性の動画・音声を、押したボタンから全画面のダイアログで再生し、閉じると再生を止める
+- page: SC-805-1.yaml
+  summary: 段落の動画の右下のリサイズハンドルで、縦横の比率を保ったまま動画の全体を縮小・拡大し、ダブルクリックで元の大きさに戻す
 - page: SC-472-66.yaml
   summary: 読者が本文の画像を押すかキーで開き、ライトボックスで拡大して前後の画像へ移る
 - page: SC-472-34.yaml

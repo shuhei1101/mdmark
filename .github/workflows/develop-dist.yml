@@ -1,44 +1,132 @@
-# develop への push で配布物（dist/・plugin/ の生成物）を再作成し、差分があれば develop へ commit する
+# develop への push か手動の起動で配布物（dist/・plugin/ の生成物）を再作成し、差分があれば commit して jsDelivr の @{ref} のキャッシュを削除する。失敗したら対応を依頼する Issue を起票する
 name: develop-dist
 
 on:
   push:
     branches:
       - develop
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: ビルドして commit を push するブランチと、キャッシュを削除する @{ref}
+        type: string
+        required: false
+        default: develop
+      failure_label:
+        description: 失敗の Issue に付けるラベル。同じ失敗の open の Issue もこのラベルで探す
+        type: string
+        required: false
+        default: 確認:task-planner
+      purge_url_prefix:
+        description: キャッシュの削除の URL の頭。{頭}{ref}/{ファイル} を要求する
+        type: string
+        required: false
+        default: https://purge.jsdelivr.net/gh/shuhei1101/mdmark@
 
 permissions:
   contents: write
+  issues: write
 
-# 後から来た push のビルドが最新の develop を作るため、前のビルドは止める
+# 後から来た実行が同じ ref の最新を作るため、前の実行は止める
 concurrency:
-  group: develop-dist
+  group: develop-dist-${{ inputs.ref || 'develop' }}
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    # 入力は run に直接記載せず、環境変数で参照する
+    env:
+      REF: ${{ inputs.ref || 'develop' }}
+      FAILURE_LABEL: ${{ inputs.failure_label || '確認:task-planner' }}
+      PURGE_URL_PREFIX: ${{ inputs.purge_url_prefix || 'https://purge.jsdelivr.net/gh/shuhei1101/mdmark@' }}
     steps:
       # 移行の手順の点検が最新のバージョンのタグと比べるため、タグも取得する
-      - uses: actions/checkout@v4
+      - name: ref を取得する
+        id: checkout
+        uses: actions/checkout@v4
         with:
+          ref: ${{ env.REF }}
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - name: Node を入れる
+        id: setup_node
+        uses: actions/setup-node@v4
         with:
           node-version: 24
       - name: 依存を入れる
+        id: install
         run: npm ci
       # 埋めるバージョンは version.ini の値に +develop.{ビルドの元の commit の短縮 SHA} を添えたもの
       - name: 配布物をビルドする
+        id: build
         run: npm run build -- --develop
       # GITHUB_TOKEN の push は別のワークフローを起動しないため、この commit で再び動かない
       - name: 差分があれば commit して push する
+        id: commit
         run: |
           git add --all dist plugin mdmark-style migrations
           if git diff --cached --quiet; then
             echo "配布物に差分がありません"
+            echo "pushed=false" >> "$GITHUB_OUTPUT"
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git commit -m "develop の配布物を再作成する（${GITHUB_SHA::7}）"
-          git push origin HEAD:develop
+          git commit -m "develop の配布物を再作成する（$(git rev-parse --short=7 HEAD)）"
+          git push origin "HEAD:${REF}"
+          echo "pushed=true" >> "$GITHUB_OUTPUT"
+      # 削除できなかったファイルを failed-purges.txt に残し、全てのファイルを要求した後に失敗にする
+      - name: キャッシュを削除する
+        id: purge
+        if: steps.commit.outputs.pushed == 'true'
+        run: |
+          : > failed-purges.txt
+          for file in $(git diff --name-only HEAD~1 HEAD -- dist); do
+            response=$(curl -s --max-time 30 -w '\n%{http_code}' "${PURGE_URL_PREFIX}${REF}/${file}" || printf '\n000')
+            code=$(printf '%s' "$response" | tail -n 1)
+            throttled=$(printf '%s' "$response" | sed '$d' | jq -r '[.paths[]?.throttled] | any' 2>/dev/null || echo true)
+            echo "${file}: HTTP ${code} throttled=${throttled}"
+            if [ "$code" != "200" ] || [ "$throttled" != "false" ]; then
+              echo "$file" >> failed-purges.txt
+            fi
+          done
+          if [ -s failed-purges.txt ]; then
+            exit 1
+          fi
+      # 同じ失敗は、ラベルと固定のタイトルの open の Issue 1 件へまとめる
+      - name: 失敗の Issue を起票するかコメントする
+        if: failure()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          # ref を取得できず作業ツリーが無いときも、gh が起票するリポジトリを決められるようにする
+          GH_REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          STEPS_JSON: ${{ toJSON(steps) }}
+        run: |
+          title="develop の配布物の再作成が失敗した（${REF}）"
+          # 元の commit: 生成物を push した後は 1 つ前、それ以外は今の HEAD。ref を取得できなかったときは不明
+          if [ "${{ steps.commit.outputs.pushed }}" = "true" ]; then
+            source_sha=$(git rev-parse --short=7 HEAD~1 2>/dev/null || echo 不明)
+          else
+            source_sha=$(git rev-parse --short=7 HEAD 2>/dev/null || echo 不明)
+          fi
+          # steps は id を持つ step だけを持つため、id から step の名前へ対応させる
+          failed_steps=$(printf '%s' "$STEPS_JSON" | jq -r '
+            {checkout: "ref を取得する", setup_node: "Node を入れる", install: "依存を入れる", build: "配布物をビルドする", commit: "差分があれば commit して push する", purge: "キャッシュを削除する"} as $names
+            | to_entries[] | select(.value.outcome == "failure") | ($names[.key] // .key)' | paste -sd ',' -)
+          {
+            echo "- 失敗した実行: ${RUN_URL}"
+            echo "- 元の commit: ${source_sha}"
+            echo "- 失敗した step: ${failed_steps:-不明}"
+            if [ -s failed-purges.txt ]; then
+              echo "- キャッシュを削除できなかったファイル:"
+              sed 's/^/  - /' failed-purges.txt
+            fi
+          } > failure-body.md
+          number=$(gh issue list --state open --label "$FAILURE_LABEL" --limit 100 --json number,title \
+            --jq "map(select(.title == \"${title}\")) | .[0].number // empty")
+          if [ -n "$number" ]; then
+            gh issue comment "$number" --body-file failure-body.md
+          else
+            gh issue create --title "$title" --label "$FAILURE_LABEL" --body-file failure-body.md
+          fi

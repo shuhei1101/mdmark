@@ -1,0 +1,164 @@
+id: SC-805-1
+visibility: internal
+title: 動画の大きさを変える
+lead: 読者が、段落に埋め込んだ動画の右下のリサイズハンドルをドラッグするか上下キーを押して、縦横の比率を保ったまま動画の全体を縮小・拡大し、ダブルクリックで元の大きさに戻す。
+test_file: tests/e2e/単一ユースケース/動画の大きさを変える.spec.ts
+primary_actor: 読者
+stakeholders:
+  - name: 文書の作成者
+    interest: 動画を `{width=…}` を指定せずに配置しても、読者が前後の文と一緒に見渡せる大きさにできる
+trigger: 読者が、本文の幅いっぱいに出た動画を前後の文と一緒に見渡したくなる
+preconditions:
+  - 利用側のページが、再生バーを持つ段落の動画を持つ文書を描いている
+  - 動画と音声の機能（`media`）がオン（既定）
+success_guarantee: 動画の幅と高さが縦横の比率を保ったまま変わり、本文の幅を超えない。変えた大きさは同じタブの中で再読み込みしても保ち、ダブルクリックで元の大きさに戻る。大きさを変えた動画も再生バーで再生できる。
+minimal_guarantee: 大きさを変えられないときも、動画は元の大きさのまま再生でき、縦横の比率は崩れない。
+scenarios:
+  - name: 正常シナリオ
+    setup:
+      - name: 文書を描いたページ
+        description: バージョンを固定した URL で mdmark を読み込み、文書を描いた HTML
+        notes: 画面の幅は 1280px
+      - name: 動画の Markdown
+        description: 前後に段落を持つ、動画だけの段落 `![素材の確認](clip.mp4 "セグメント 1")` の文書
+        notes: '`clip.mp4` は 1100×720 の動画。属性は記載せず、本文の幅いっぱいに出る'
+      - name: Mock
+        description: jsDelivr を、ビルドした `dist/` を同じパスで返却する手元の応答に差し替える。動画は手元の応答で返却する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant V as 動画
+        U->>V: 右下のリサイズハンドルを左上へドラッグする
+        V-->>U: 比率を保ったまま小さくした動画
+        U->>V: リサイズハンドルにフォーカスして ↓ を押す
+        V-->>U: 比率を保ったまま大きくした動画
+        U->>V: 再生バーの再生を押す
+        V-->>U: 変えた大きさのまま再生する
+      ```
+
+      <!-- /map -->
+    expected:
+      - 動画の右下に、スクリーンリーダー向けの名前を持ち、キーボードでフォーカスできるリサイズハンドルがある。再生バーのボタンと重ならない
+      - ドラッグの後、動画の幅が小さくなり、幅と高さの比が 1100:720 のまま
+      - ↓ で動画が大きくなり、↑ で小さくなる。幅と高さの比は変わらない
+      - キャプション `セグメント 1` が、変えた幅の動画の下にある
+      - 変えた大きさのまま再生バーで再生でき、再生してもハンドルで変えた大きさが変わらない
+    test: test_normal
+  - name: 正常シナリオ（再読み込みと元の大きさに戻す）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 動画の Markdown
+        description: 正常シナリオの動画と、`![操作](demo.mp4){width=480}` の動画だけの段落を並べた文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant V as 動画
+        participant P as ページ
+        U->>V: 1 つ目の動画のリサイズハンドルをドラッグして小さくする
+        V-->>U: 小さくした 1 つ目の動画
+        U->>P: ページを再読み込みする
+        P-->>U: 変えた大きさの 1 つ目の動画
+        U->>V: 1 つ目の動画のリサイズハンドルをダブルクリックする
+        V-->>U: 元の大きさの 1 つ目の動画
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 つ目の動画を小さくしても、2 つ目の動画の幅は 480px のまま
+      - 再読み込みした後も、1 つ目の動画が変えた幅で描かれる
+      - ダブルクリックの後、1 つ目の動画が本文の幅いっぱいの元の大きさに戻り、再読み込みしても元の大きさのまま
+    test: test_normal_when_reloaded_and_reset
+  - name: 正常シナリオ（本文の幅を超えない）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ。画面の幅は 390px
+      - name: 動画の Markdown
+        description: '`![操作](demo.mp4){width=320}` の動画だけの段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant V as 動画
+        U->>V: リサイズハンドルを本文の幅を越えるまで右下へドラッグする
+        V-->>U: 本文の幅で止めた動画
+      ```
+
+      <!-- /map -->
+    expected:
+      - 動画の幅が本文の幅で止まり、横スクロールが出ない
+      - 幅と高さの比は変わらない
+    test: test_normal_when_limited_to_body_width
+  - name: 正常シナリオ（リサイズハンドルを付けない動画と音声）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ
+      - name: 動画と音声の Markdown
+        description: '`![操作](demo.mp4){modal}` の段落、表のセルの `![素材 1](m1.mp4)`、`![読み上げ](voice.mp3)` の段落、画像 `chart.png` の段落を持つ文書'
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 描いた文書
+        U->>P: 文書を開く
+        P-->>U: 再生のボタン・音声・画像を描いた文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - 再生のボタン・音声・画像のどれにもリサイズハンドルが無い
+      - 画像は今までどおり押すとライトボックスで拡大できる
+    test: test_normal_when_no_handle
+  - name: 正常シナリオ（メニューで大きさを変える）
+    setup:
+      - name: 文書を描いたページ
+        description: 正常シナリオと同じ。画面の幅は 390px で、タッチの操作で開く
+      - name: 動画の Markdown
+        description: 正常シナリオと同じ
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant V as 動画
+        U->>V: リサイズハンドルをタップする
+        V-->>U: 小さくする・大きくする・元の大きさに戻すのメニュー
+        U->>V: 小さくするを 2 回タップする
+        V-->>U: 比率を保ったまま小さくした動画
+        U->>V: 元の大きさに戻すをタップする
+        V-->>U: 元の大きさの動画
+        U->>V: メニューの外をタップする
+        V-->>U: メニューを閉じた文書
+      ```
+
+      <!-- /map -->
+    expected:
+      - リサイズハンドルの押せる範囲が 24×24 CSS px 以上
+      - タップの後、ハンドルのそばに「小さくする」「大きくする」「元の大きさに戻す」の 3 つのボタンが出て、元の大きさのままでは「元の大きさに戻す」を押せない
+      - 「小さくする」の後、動画の幅が小さくなり、幅と高さの比が 1100:720 のまま。メニューは動いたハンドルのそばに出たまま
+      - 「元の大きさに戻す」の後、動画が本文の幅いっぱいに戻る
+      - メニューの外のタップと Esc でメニューが閉じ、Esc で閉じたときはフォーカスがハンドルへ戻る
+    test: test_normal_when_resized_by_menu
+tags:
+  - name: topic:動画
+    main: true
+  - name: action:拡大

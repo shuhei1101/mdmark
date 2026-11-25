@@ -1,0 +1,222 @@
+/* 動画の大きさを変えるリサイズハンドル（#805 で共有するアセット）。札の見た目は図の枠のリサイズハンドル（refs/42/assets/diagram.css の .mdmark-diagram-resize）と同じにする */
+@layer mdmark {
+  .mdmark {
+    /* 動画と、動画の右下に配置するハンドルを入れる入れ物。図の幅（--mdmark-image-width）に合わせる */
+    .mdmark-media-frame {
+      position: relative;
+      /* 図のグリッドは項目を左に揃えて中身の幅に縮めるため、入れ物は図の幅いっぱいに広げる */
+      justify-self: stretch;
+    }
+
+    /* 案 A: 動画の下端の外側の右端に配置し、再生バーと重ねない。下のキャプションとの間に押せる範囲の高さ（24px）と動画との間（4px）を空ける */
+    .mdmark-media-frame[data-mock-plan="a"] {
+      padding-block-end: 28px;
+
+      .mdmark-media-resize {
+        inset-block-end: 0;
+        inset-inline-end: 0;
+      }
+    }
+
+    /* 案 B: 動画の右上に重ね、ポインターを乗せたときかフォーカスしたときだけ出す（再生バーの全画面のボタンは右下にあるため上に配置する） */
+    .mdmark-media-frame[data-mock-plan="b"] {
+      .mdmark-media-resize {
+        inset-block-start: 4px;
+        inset-inline-end: 4px;
+        opacity: 0;
+        transition: opacity 0.15s;
+      }
+
+      &:hover .mdmark-media-resize,
+      .mdmark-media-resize:focus-visible,
+      .mdmark-media-resize.is-resizing,
+      .mdmark-media-resize.is-open {
+        opacity: 1;
+      }
+    }
+
+    /* 案 C・案 D: 札とアイコンを持たず、動画の右下の角に 24×24 の押せる範囲を配置する。範囲の下 16px は動画の下に出し、上 8px だけ動画の角に重ねる（再生バーとは重ならない） */
+    .mdmark-media-frame:is([data-mock-plan="c"], [data-mock-plan="d"]) {
+      padding-block-end: 16px;
+
+      .mdmark-media-resize {
+        inset-block-end: 0;
+        inset-inline-end: 0;
+        width: 24px;
+        height: 24px;
+      }
+
+      .mdmark-media-resize-grip {
+        display: none;
+      }
+
+      /* 角の線: 動画の右下の角のすぐ下（2〜14px 下）に、右端を動画の右端に合わせた L 字の 2px の線。動画の上には重ねない（角丸は動画と同じ） */
+      .mdmark-media-resize::before {
+        content: "";
+        position: absolute;
+        inset-block-end: 2px;
+        inset-inline-end: 0;
+        box-sizing: border-box;
+        width: 18px;
+        height: 12px;
+        border-inline-end: 2px solid currentColor;
+        border-block-end: 2px solid currentColor;
+        border-end-end-radius: var(--mdmark-radius);
+        transition: opacity 0.15s, color 0.15s;
+      }
+
+      .mdmark-media-resize:hover,
+      .mdmark-media-resize.is-resizing,
+      .mdmark-media-resize.is-open {
+        color: var(--mdmark-color-link);
+      }
+
+      .mdmark-media-resize:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 0;
+        border-radius: var(--mdmark-radius);
+      }
+    }
+
+    /* 案 D: 角の線は、動画にポインターを乗せたときかフォーカスしたとき・操作している間だけ出す */
+    .mdmark-media-frame[data-mock-plan="d"] {
+      .mdmark-media-resize::before {
+        opacity: 0;
+      }
+
+      &:hover .mdmark-media-resize::before,
+      .mdmark-media-resize:focus-visible::before,
+      .mdmark-media-resize.is-resizing::before,
+      .mdmark-media-resize.is-open::before {
+        opacity: 1;
+      }
+    }
+
+    /* ハンドル: 押せる範囲は 28×24（タップの対象の下限 24px）。見た目は内側の 28×16 の札と点の並びのアイコン */
+    .mdmark-media-resize {
+      position: absolute;
+      z-index: 1;
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
+      width: 28px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--mdmark-color-muted);
+      cursor: nwse-resize;
+      touch-action: none;
+
+      &:focus-visible {
+        outline: none;
+
+        .mdmark-media-resize-grip {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: 1px;
+        }
+      }
+
+      &:hover .mdmark-media-resize-grip,
+      &.is-resizing .mdmark-media-resize-grip,
+      &.is-open .mdmark-media-resize-grip {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-heading);
+      }
+    }
+
+    /* 札: 図の枠のリサイズハンドルと同じ 28×16 */
+    .mdmark-media-resize-grip {
+      display: grid;
+      place-items: center;
+      box-sizing: border-box;
+      width: 28px;
+      height: 16px;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: 4px;
+      background: var(--mdmark-color-bg);
+
+      svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+  }
+
+  /* 大きさのメニュー: ハンドルを押す（動かさずに離す）か Enter で開く、ドラッグの代わりの 3 つのボタン。popover で最前面に出し、ハンドルの下に配置する */
+  .mdmark-media-size-menu {
+    position: fixed;
+    inset: auto;
+    margin: 0;
+    padding: 4px;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+    color: var(--mdmark-color-text);
+    box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+
+    &:popover-open {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    button {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 32px;
+      padding: 0 12px;
+      border: 0;
+      border-radius: 4px;
+      background: none;
+      color: inherit;
+      font: inherit;
+      font-size: 0.875rem;
+      text-align: start;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      &:disabled {
+        color: var(--mdmark-color-muted);
+        cursor: default;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
+        fill: none;
+        stroke: currentColor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
+    }
+  }
+
+  /* 印刷ではハンドルとメニューを出さない */
+  @media print {
+    .mdmark .mdmark-media-resize,
+    .mdmark-media-size-menu {
+      display: none;
+    }
+
+    .mdmark .mdmark-media-frame[data-mock-plan="a"] {
+      padding-block-end: 0;
+    }
+  }
+}

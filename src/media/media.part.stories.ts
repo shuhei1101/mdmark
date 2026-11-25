@@ -66,6 +66,84 @@ export const VideoPrint: Story = {
   },
 };
 
+export const VideoResizable: Story = {
+  name: "VideoResizable",
+  parameters: { server: { id: "media" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材の確認",
+    caption: "素材の確認",
+    poster: "demo-poster.png",
+    resizable: true,
+  },
+};
+
+export const VideoResizableHover: Story = {
+  name: "VideoResizableHover",
+  parameters: { server: { id: "media" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材の確認",
+    poster: "demo-poster.png",
+    resizeState: "hover",
+    resizable: true,
+  },
+};
+
+export const VideoResizableFocus: Story = {
+  name: "VideoResizableFocus",
+  parameters: { server: { id: "media" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材の確認",
+    poster: "demo-poster.png",
+    resizeState: "focus",
+    resizable: true,
+  },
+};
+
+export const VideoResizeMenu: Story = {
+  name: "VideoResizeMenu",
+  parameters: { server: { id: "media" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材の確認",
+    poster: "demo-poster.png",
+    resizeState: "menu",
+    resizable: true,
+  },
+};
+
+export const VideoResizableNarrow: Story = {
+  name: "VideoResizableNarrow",
+  parameters: { server: { id: "media" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材の確認",
+    width: "160px",
+    resizeState: "menu",
+    resizable: true,
+  },
+};
+
+export const VideoResizablePrint: Story = {
+  name: "VideoResizablePrint",
+  parameters: { server: { id: "media" } },
+  args: {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材の確認",
+    caption: "素材の確認",
+    poster: "demo-poster.png",
+    resizable: true,
+  },
+};
+
 export const OpenButton: Story = {
   name: "OpenButton",
   parameters: { server: { id: "media-opener" } },

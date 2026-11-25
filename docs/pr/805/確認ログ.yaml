@@ -1,0 +1,13 @@
+confirmations:
+  - topic: 埋め込んだ動画のリサイズハンドルの見た目
+    decision: 動画の右下の角の判定（24×24）だけを持ち、L 字の線は動画にポインターを乗せたときかフォーカスしたときだけ出す（別案 D）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/805#discussion_r4687652707
+  - topic: 描画時の動画のサイズのオプション
+    decision: 設定に、{width=…} を記載していない動画の描画時の幅の既定を、本文の幅に対する %（既定 100%）で追加する。文書ごとに上書きでき、動画ごとの {width=…} を優先する（推奨案 A を % で指定する形）
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/805#discussion_r4687653468

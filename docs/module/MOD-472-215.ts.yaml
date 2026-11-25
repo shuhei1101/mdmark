@@ -10,7 +10,7 @@ functions:
     kind: 関数
     scope: internal
     summary: page のマーカーの JSON のオブジェクト（マーカーの JSON Schema に通した後のもの）を記載した順に重ね、`PageSettings` にする
-    description: 'page のマーカーを複数記載したときと同じキーが何度も出たときは、後に記載した値を使用する。`scheme`・`theme`・`toc.mode` の選べる値に無い値と知らないキーは、`validateMarkOptions` が `problems`・`unknownKeys` に分けて取り除いた後のため、ここでは扱わない'
+    description: 'page のマーカーを複数記載したときと同じキーが何度も出たときは、後に記載した値を使用する。`media.width` は `mediaWidth` に入れる。`scheme`・`theme`・`toc.mode`・`media.width` の選べる値に無い値と知らないキーは、`validateMarkOptions` が `problems`・`unknownKeys` に分けて取り除いた後のため、ここでは扱わない'
     args:
       - name: options
         type: MarkOptions[]
@@ -32,6 +32,12 @@ functions:
         condition: '`[{ scheme: "dark", toc: { mode: "fixed" } }, { toc: { mode: "hover" } }]`'
         mock: なし
         expected: '`{ scheme: "dark", toc: "hover" }`'
+      - name: test_read_page_settings_when_media_width
+        case: 正常
+        summary: 動画の既定の幅を読み込む
+        condition: '`[{ media: { width: "80%" } }, { scheme: "dark" }]`'
+        mock: なし
+        expected: '`{ mediaWidth: "80%", scheme: "dark" }`'
     refs:
       - IF-472-35#constraints[ページの設定のマーカー]
     status: planned

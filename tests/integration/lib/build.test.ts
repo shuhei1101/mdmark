@@ -17,7 +17,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
-import { main } from "../../../scripts/build.ts";
+import { MAX_DIST_FILE_BYTES, main } from "../../../scripts/build.ts";
 import { migrationsDirOf } from "../../migrations-dir.ts";
 import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
@@ -468,8 +468,8 @@ test("test_normal_when_released_migrations_kept", {
   await writeFile(join(next, "marker-json.mjs"), "\n");
   await writeFile(join(next, "retired-diagrams.mjs"), "\n");
   for (const args of [["--develop"], []]) {
-    // 実行（配布ファイルの上限の超過は #601 で扱うため、上限を差し替えて呼ぶ）
-    const code = await main(args, { root, maxBytes: 20 * 1024 * 1024 });
+    // 実行（配布ファイルの上限は差し替えず、NFR-1 の上限で検査する）
+    const code = await main(args, { root, maxBytes: MAX_DIST_FILE_BYTES });
     // 検証
     expect(code).toBe(0);
     const { stdout } = await execFileAsync(
@@ -500,10 +500,10 @@ test("test_normal_when_develop", { timeout: BUILD_TIMEOUT_MS }, async () => {
     { cwd: root },
   );
   const expected = `v0.0.0+develop.${stdout.trim()}`;
-  // 実行（配布ファイルの上限の超過は #601 で扱うため、上限を差し替えて呼ぶ）
+  // 実行（配布ファイルの上限は差し替えず、NFR-1 の上限で検査する）
   const code = await main(["--develop"], {
     root,
-    maxBytes: 20 * 1024 * 1024,
+    maxBytes: MAX_DIST_FILE_BYTES,
   });
   // 検証
   expect(code).toBe(0);

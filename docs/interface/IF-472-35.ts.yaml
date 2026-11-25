@@ -11219,6 +11219,77 @@ flows:
     test: test_normal_when_media_open_printed
     refs:
       - SC-472-58#scenarios[正常シナリオ（モーダルにした動画を印刷に出す）]
+  - name: 正常系（動画の大きさを変える）
+    summary: 動画の右下の角のリサイズハンドルのドラッグ・上下キー・メニューで、縦横の比を保って動画の幅を変え、変えた幅を sessionStorage に保ち、ダブルクリックで戻す
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ。描く先の `div` の幅は 800px
+      - name: 動画を持つ Markdown
+        description: 動画だけの段落 `![素材の確認](clip.mp4)` と `![操作](demo.mp4){width=480}` を持つ文書
+        notes: '`clip.mp4` は 1100×720。動画の大きさが分かってから操作する'
+      - name: Mock
+        description: 動画は手元の応答で返却する。sessionStorage は描く前に空にする。ページの再読み込みは、同じ要素へ `destroy` の後にもう一度 `mount` することで代える
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 動画の右下の角にリサイズハンドルを配置して描く
+        P->>M: 1 つ目のハンドルを 200px 左へドラッグする
+        M->>P: 縦横の比を保って幅を 200px 小さくする
+        P->>M: ハンドルを動かさずに押す
+        M->>P: 大きさのメニューを開く
+        P->>M: 「大きくする」を押し、Esc を押す
+        M->>P: 幅を大きくし、メニューを閉じてハンドルへフォーカスを戻す
+        P->>M: destroy() の後に mount(el, { markdown })
+        M->>P: 変えた幅で動画を描く
+        P->>M: ハンドルをダブルクリックする
+        M->>P: 本文の幅に戻す
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 つ目と 2 つ目の動画に `button` のリサイズハンドルがあり、押せる範囲が 24×24 以上で、スクリーンリーダー向けの名前が `「素材の確認」の大きさを変える`・`「操作」の大きさを変える`
+      - 200px のドラッグの後、1 つ目の動画の幅が 600px、高さが幅×720÷1100（±1px）で、2 つ目の動画の幅は 480px のまま
+      - 動かさずに押した後、popover のメニューが開き、「小さくする」「大きくする」「元の大きさに戻す」の 3 つのボタンを持ち、最初のボタンにフォーカスがある
+      - 「大きくする」の後に幅が高さ 32px 分（32×1100÷720）大きくなり、Esc の後にメニューが閉じ、フォーカスがハンドルにある
+      - もう一度 mount した後、1 つ目の動画が変えた幅で描かれる
+      - ダブルクリックの後、1 つ目の動画の幅が本文の幅（800px）で、もう一度 mount しても同じ
+      - '`↓` で幅が大きくなり、本文の幅を超えない。`↑` で小さくなり、160px を下回らない'
+    test: test_normal_when_video_resized
+  - name: 正常系（動画のリサイズハンドルの機能を解除する）
+    summary: '`media-resize` がオフの文書では、動画にリサイズハンドルを配置しない。再生のボタン・音声・画像には機能によらず配置しない'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+      - name: リサイズハンドルを削除する Markdown
+        description: '先頭に `<!-- features: {"media-resize": false} -->` を持ち、動画だけの段落を持つ文書と、先頭のマーカーを持たない同じ文書。マーカーの無い文書は `![操作](demo.mp4){modal}`・表のセルの動画・音声・画像も持つ'
+      - name: Mock
+        description: 動画・音声・画像は手元の応答で返却する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: リサイズハンドルを配置せずに動画を描く
+        P->>M: mount(el2, { markdown: マーカーの無い文書 })
+        M->>P: 段落の動画だけにリサイズハンドルを配置して描く
+        P->>M: mount(el3, { markdown: マーカーの無い文書, config: { features: { "media-resize": false } } })
+        M->>P: リサイズハンドルを配置せずに描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - '`el` の動画にリサイズハンドルが無く、再生バーで再生できる'
+      - '`el2` の動画だけの段落の動画にリサイズハンドルがあり、`{modal}` の再生のボタン・表のセルの動画・音声・画像には無い'
+      - '`el3` の動画にリサイズハンドルが無い'
+    test: test_normal_when_video_resize_disabled
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -11246,6 +11317,8 @@ side_effects: '条件ごとの副作用は次のとおり。
   | map の構成図のリンク先を持つノードを動かしたとき | 次の 1 回の `click` まで `window` の `click`（キャプチャーフェーズ）を受け取る |
 
   | `diagram-resize` がオンのとき | リサイズハンドルで変えた図の高さを sessionStorage に書き込み、描くたびに読み込む（ダブルクリックで今の倍率の図の全体が収まる高さを書き込む） |
+
+  | `media-resize` がオンのとき | リサイズハンドルで変えた動画の幅を動画ごとのキーで sessionStorage に書き込み、描くたびに読み込む（元の大きさに戻したらキーを削除する） |
 
   | 操作できる部品の写すボタン・表のコピー・行の URL のコピー・コードブロックのコピー・ファイルツリーのコピーを押したとき | クリップボードに書き込む |
 
@@ -11328,7 +11401,7 @@ request:
     default: '`comments`・`html-scripts`・`frontmatter` を除く全ての機能が `true`'
     location: argument
     description: '機能のオン・オフの既定。文書の `<!-- features: {"機能": false} -->` がその文書だけ上書きする'
-    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、埋め込んだ HTML の `html`、埋め込んだ HTML と図のヒント（`data-hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、注記の `annotations`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
+    notes: 知らない機能名は無視する。機能は `print`（印刷の前に折り畳みと記法を開く）と、記法ごとの `table`・`callout`・`tabs`・`steps`・`tree`・`badge`・`code`・`toc`・`side-toc`（右側の目次）・`anchors`・`sections`・`row-details`・`figures`、先頭へ戻るボタンの `back-to-top`、図の部品の `diagrams`、図の表示する枠の高さを変えるリサイズハンドルの `diagram-resize`、動画の大きさを変えるリサイズハンドルの `media-resize`、埋め込んだ HTML の `html`、埋め込んだ HTML と図のヒント（`data-hint`）のツールチップの `hints`、用語のツールチップの `glossary`、被参照の一覧と文書の別名の `backlinks`、ビューのマーカーの `views`、脚注の `footnotes`、注記の `annotations`、選んだ箇所へのコメントの `comments`、埋め込んだ HTML の範囲の `css`・`ts`・`js` の `html-scripts`、文書の先頭のフロントマターの表示の `frontmatter`（`comments`・`html-scripts`・`frontmatter` だけ既定は `false`）、アイコンの `icon`・段組みの `columns`・蛍光ペンの `highlight`・キーの `kbd`・details の範囲の `details`・改ページの `pagebreak`・取り込みの `include`・wide の範囲の `wide`・CSV の表の `csv`・カードの格子の `card-grid`・mermaid のコードブロックを図にする `mermaid`
   - name: opts.config.libraries
     type: Record<string, string>
     required: false
@@ -12250,9 +12323,9 @@ constraints:
       `update` は差し替えた本文の page のマーカーの `theme` でもう一度決め、マーカーが無ければ `mount` に指定したテーマで描く'
     notes: テーマの値はデザイン方針の `## 採用スタイル`。描く先に属性 `data-mdmark-color-theme` を付け、`:root:has()` で適用する（モジュール構成『描く』の `COLOR_THEME_ATTRIBUTE`）
   - item: ページの設定のマーカー
-    constraint: '文書の先頭（最初の見出し・段落・表・リスト・コードブロック・HTML のブロックより前。空の行とほかのマーカーは前にあってよい）の `<!-- page: {JSON のオブジェクト} -->` を読み込み、`scheme` を `opts.config.colorScheme`、`theme` を `opts.config.colorTheme`、`toc.mode` を `opts.config.side-toc.mode` より優先して適用する（制約「配色の切り替え」「選んだテーマ」と右側の目次の出し方）。
+    constraint: '文書の先頭（最初の見出し・段落・表・リスト・コードブロック・HTML のブロックより前。空の行とほかのマーカーは前にあってよい）の `<!-- page: {JSON のオブジェクト} -->` を読み込み、`scheme` を `opts.config.colorScheme`、`theme` を `opts.config.colorTheme`、`toc.mode` を `opts.config.side-toc.mode`、`media.width` を `opts.config.media.width` より優先して適用する（制約「配色の切り替え」「選んだテーマ」と右側の目次の出し方）。
 
-      記載できるのは `scheme`（`light`・`dark`・`auto`）・`theme`（`opts.config.colorTheme` と同じ名前）・`toc.mode`（`hover`・`fixed`）で、page のマーカーを複数記載したときと同じキーが何度も出たときは後に記載した値を使用する。
+      記載できるのは `scheme`（`light`・`dark`・`auto`）・`theme`（`opts.config.colorTheme` と同じ名前）・`toc.mode`（`hover`・`fixed`）・`media.width`（`1%` 〜 `100%` の整数の %）で、page のマーカーを複数記載したときと同じキーが何度も出たときは後に記載した値を使用する。
 
       記載できるキーの選べる値に無い値は使用せず、それらを並べた記載の警告を文書の先頭に 1 つ配置する。
 
@@ -13009,6 +13082,20 @@ constraints:
 
       閉じたときと、戻り値の `destroy` で、開いている間に付けた受け取りを解除する
     notes: ライトボックスと同じ開き方・閉じ方は要件の決定。ダイアログの並びは確認ログのモックへの合意
+  - item: 動画の大きさのリサイズハンドル
+    constraint: |-
+      `media-resize` がオンのとき、文書の中の再生バーを持つ動画の図（`figure.mdmark-media` の `video`。再生のボタン・音声・画像には付けない）の動画の右下の角に、`<button type="button">` のリサイズハンドルを配置する。押せる範囲は 24×24 CSS px で、下の 16px を動画の下に出し、再生バーと重ねない。札とアイコンは持たず、動画の角のすぐ下の L 字の線は、動画にポインターを乗せたときとハンドルにフォーカスしたとき・操作している間だけ出す。スクリーンリーダー向けの名前は `「{alt}」の大きさを変える`（alt が空なら `src` のファイル名）。
+
+      ドラッグした分だけ動画の幅を変え（横と縦の動きのうち大きい方を使用し、縦は動画の縦横の比で幅に換算する）、高さは縦横の比で決める。押した後に 4px より動かしたときだけドラッグにする。フォーカスの間は `↑` で高さを 32px 分小さく、`↓` で 32px 分大きくする。
+
+      動かさずに押すか Enter・Space で、`popover` のメニュー（ハンドルが `popovertarget` で開閉する）を開き、「小さくする」「大きくする」（高さ 32px 分）「元の大きさに戻す」の 3 つのボタンを出す。下限・上限・元の大きさのときはそのボタンを押せなくし、開いたら最初の押せるボタンへフォーカスを移し、Esc・外を押して閉じたらハンドルへフォーカスを戻す。メニューはハンドルの下に右端を合わせて出し、下に入らないときは上に出し、大きさを変えてハンドルが動いたときとスクロールしたときも付いて動かす。
+
+      幅は 160px 以上、本文の幅以下にする。ダブルクリックと「元の大きさに戻す」で、記載した幅（`{width=…}` か設定の `media.width`。無ければ本文の幅）に戻す。
+
+      変えた幅を動画ごとのキーで sessionStorage に記載し、描くときに読み込んでその幅で開き、戻したらキーを削除する。変えた幅はその動画だけに適用し、同じ文書のほかの動画は変えない。sessionStorage を使用できないときは例外を外へ出さず、幅を保たない。
+
+      印刷ではハンドルとメニューを出さない。`update` でもう一度付け、`destroy` で受け取りを解除してメニューを削除する
+    notes: 見た目は確認ログの決定（案 D）。外観はモック `docs/mock/refs/805/assets/media-resize.css` の案 D。動画ごとのキーの決め方はモジュール構成設計。押せる範囲とドラッグの代わりのメニューは WCAG 2.2 の 2.5.8（24×24 CSS px）と 2.5.7
 test_file: tests/integration/lib/mount.browser.test.ts
 tags:
   - name: action:描画

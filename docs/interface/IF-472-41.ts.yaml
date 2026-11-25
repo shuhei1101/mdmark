@@ -39,6 +39,7 @@ flows:
       - '`plugin/scripts/pre-tool-use.js`・`plugin/scripts/session-start.js` があり、`plugin/guide`・`plugin/server`・`plugin/dist` が無く、`plugin/.claude-plugin/plugin.json` が `version` を持たずビルドの前と同じ中身'
       - '`dist/THIRD_PARTY_LICENSES.txt` に `dist/cli.js` にまとめた `@modelcontextprotocol/server` と、その配布物に取り込まれた `ajv` の名前とライセンスの本文がある'
       - '`migrations/next/THIRD_PARTY_LICENSES.txt` に、`migrations/next/retired-diagrams.js` にまとめた依存（`esbuild` などまとめずに読み込む依存を除く）の名前とライセンスの本文がある'
+      - '`dist/` の配布ファイル（`dist/cli.js`・`dist/viewer.js`・`dist/viewer.css` を除く）がどれも 1048576 バイト以下'
     test: test_normal
   - name: 正常系（バージョンを指定する）
     summary: '`--version` で指定したバージョンを埋めてビルドする'
@@ -372,6 +373,10 @@ constraints:
   - item: 移行の手順の配布物の書き込み先
     constraint: '`migrations/` の直下のフォルダのうち、フォルダの名前と同じ `v{MAJOR}.{MINOR}.{PATCH}` のタグが `git tag` にあるフォルダを出したバージョンとし、`legacy-marks.js`・`retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` を書き込まない。`migrations/next/` と、タグがまだ無い `migrations/v{MAJOR}.{MINOR}.{PATCH}/` には書き込む。`--develop` の有無で変えない'
     notes: タグを打つ手順で `migrations/next/` を移した `migrations/v{バージョン}/` は、タグを打つ前のビルドでは書き込み先になり、その commit に入る（CMD-472-1 の管理作業）。git の作業ツリーでないときはタグを参照できないため、全てのフォルダを出していないバージョンとして扱う
+  - item: 結合テストのビルドの上限
+    constraint: 結合テストが一時フォルダに作るビルドも、制約「配布ファイル 1 つのサイズ」と同じ上限で検査する。上限を差し替えるのは異常系（配布ファイルが上限を超える）の Mock だけにする
+    decided_by: SC-472-82#scenarios[異常シナリオ（結合テストで配布ファイルが上限を超える）]
+    notes: 作業 PR で実行する結合テストで上限の超過が分かり、develop へマージする前に止められる。jsDelivr の 20MB はこの上限より大きいため、結合テストの上限に使用しない
 test_file: tests/integration/lib/build.test.ts
 tags:
   - name: topic:配布物

@@ -21,6 +21,8 @@ export type MdmarkConfig = {
   assets?: { root?: string };
   /** 右側の目次の設定。`mode` は出し方（`hover` / `fixed`）。知らない値も受けて `resolveConfig` が `hover` にするため、型は `string` */
   "side-toc"?: { mode?: string };
+  /** 動画の設定。`width` は `{width=…}` を記載していない動画の幅の既定（`1%` 〜 `100%`）。知らない値も受けて `resolveConfig` が落とすため、型は `string` */
+  media?: { width?: string };
   /** 表の設定。`pin` はピン止めの動き（`each` / `through`）。知らない値も受けて `resolveConfig` が `each` にするため、型は `string`。`pin_default` は描いた直後に既定の列を留めるか。読み込めない値も受けて `resolveConfig` が `false` にするため、型は `unknown` */
   table?: { pin?: string; pin_default?: unknown; long_column_min?: unknown };
   /** 配色のテーマの名前（`COLOR_THEMES` のどれか）。知らない値も受けて `resolveConfig` が `DEFAULT_COLOR_THEME` にするため、型は `string` */
@@ -83,6 +85,8 @@ export type PageSettings = {
   theme?: ColorTheme;
   /** `toc=` の値 */
   toc?: SideTocMode;
+  /** `media.width` の値（`MEDIA_WIDTH_PATTERN` に合うもの） */
+  mediaWidth?: string;
 };
 
 /** 対応表の行: マーカー 1 つのモジュールの URL と、図のマーカーか */
@@ -105,6 +109,8 @@ export type ResolvedConfig = {
   syntax: { url: string };
   /** 設定の `side-toc.mode` が `fixed` のときだけ `fixed`、それ以外は `hover` */
   sideToc: { mode: SideTocMode };
+  /** 設定の `media.width` が `MEDIA_WIDTH_PATTERN` に合い `100%` でなければその値、それ以外は `undefined` */
+  media: { width: string | undefined };
   /** `pin` は設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`。`pinDefault` は設定の `table.pin_default` が `true` のときだけ `true`、それ以外は `false`。`longColumnMin` は設定の `table.long_column_min` が 0 より大きい有限の数ならその値、それ以外は `DEFAULT_LONG_COLUMN_MIN_EM` */
   table: { pin: TablePinMode; pinDefault: boolean; longColumnMin: number };
   /** 設定の `colorTheme` が `COLOR_THEMES` にあればその値、それ以外は `DEFAULT_COLOR_THEME` */
@@ -183,6 +189,7 @@ export const DEFAULT_FEATURES: Record<string, boolean> = {
   gallery: true,
   lightbox: true,
   media: true,
+  "media-resize": true,
   gif: true,
   cards: true,
   icon: true,
@@ -330,6 +337,17 @@ function resolveLabels(
   };
 }
 
+/** 設定とページの設定の `media.width` が合うべき書式（`1%` 〜 `100%` の整数の %） */
+export const MEDIA_WIDTH_PATTERN = /^(?:100|[1-9][0-9]?)%$/;
+
+/** `MEDIA_WIDTH_PATTERN` に合い `100%` でない値だけを返却する（`100%` は既定と同じため指定しない） */
+const resolveMediaWidth = (width: unknown): string | undefined =>
+  typeof width === "string" &&
+  MEDIA_WIDTH_PATTERN.test(width) &&
+  width !== "100%"
+    ? width
+    : undefined;
+
 /** 利用側の設定に既定を当て、型の合わない値を落とした設定を返却する */
 export function resolveConfig(options: {
   /** 利用側の設定 */
@@ -349,6 +367,7 @@ export function resolveConfig(options: {
     mermaid: resolveMermaid(config.mermaid),
     // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
     sideToc: { mode: config["side-toc"]?.mode === "fixed" ? "fixed" : "hover" },
+    media: { width: resolveMediaWidth(config.media?.width) },
     table: resolveTable(config.table),
     // テーマ・明暗は、COLOR_THEMES・COLOR_SCHEMES にある値だけを受け、他の値は既定にする
     colorTheme: oneOf(COLOR_THEMES, config.colorTheme) ?? DEFAULT_COLOR_THEME,

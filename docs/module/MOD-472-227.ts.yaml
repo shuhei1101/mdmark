@@ -25,6 +25,7 @@ functions:
       | `lightbox` | `attachLightbox` |
       | `gif` | `attachLightbox` の後に `attachGifs`（GIF の包みが拡大のボタンを含むため） |
       | `media` | `attachMediaModal` |
+      | `media` と `media-resize` | `attachMediaResizes`（`storage` は `sessionStorage`。参照で例外になるときは `null`） |
 
       `attachSections`・`attachTables`・`attachTabs` をこの順にするのは、付けたときも `hashchange` も、`attachTables` が行へ送信する前に `attachSections` が URL の `#ID` の指す閉じたセクションを開くため。
 
@@ -52,6 +53,7 @@ functions:
       - 'MOD-472-238#functions[attachFootnotes]'
       - MOD-472-348#functions[attachDetailsStates]
       - MOD-801-2#functions[attachMediaModal]
+      - MOD-805-2#functions[attachMediaResizes]
     unit_tests:
       - name: test_attach_interactions
         case: 正常

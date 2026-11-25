@@ -1,5 +1,7 @@
 import { expect, test } from "vitest";
+import { resolveConfig } from "../../../../src/config.ts";
 import type { ImageAttributes } from "../../../../src/media/image.syntax.ts";
+import { renderDocument } from "../../../../src/render/index.ts";
 import { flattenTokens, parseWithRules } from "../../helpers/core-rules.ts";
 import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
 import { renderDoc } from "../../helpers/render.ts";
@@ -395,4 +397,34 @@ test("test_build_image_figures_when_opener_media_off", () => {
   // 検証
   expect(html).not.toContain("mdmark-media-open");
   expect(findTag(html, "<img")).toContain('src="m1.mp4"');
+});
+
+// 属性の無い動画を既定の幅で描き、属性とページの設定を優先する（正常系）
+test("test_build_image_figures_when_default_video_width", () => {
+  // 準備
+  const body = [
+    "![a](clip.mp4)",
+    "",
+    "![b](clip.mp4){width=320}",
+    "",
+    "![c](voice.mp3)",
+    "",
+  ].join("\n");
+  const config = resolveConfig({ config: { media: { width: "50%" } } });
+  // 実行
+  const byConfig = renderDocument({ markdown: body, config }).html;
+  const byPage = renderDocument({
+    markdown: `<!-- page: {"media": {"width": "80%"}} -->\n\n${body}`,
+    config,
+  }).html;
+  // 検証: 設定の既定の幅
+  const figures = findTags(byConfig, "<figure");
+  expect(figures[0]).toContain("--mdmark-image-width: 50%");
+  expect(figures[1]).toContain("--mdmark-image-width: 320px");
+  expect(figures[2]).not.toContain("--mdmark-image-width");
+  // 検証: ページの設定を優先する
+  const pageFigures = findTags(byPage, "<figure");
+  expect(pageFigures[0]).toContain("--mdmark-image-width: 80%");
+  expect(pageFigures[1]).toContain("--mdmark-image-width: 320px");
+  expect(pageFigures[2]).not.toContain("--mdmark-image-width");
 });

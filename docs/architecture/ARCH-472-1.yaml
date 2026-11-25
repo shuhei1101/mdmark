@@ -144,7 +144,7 @@ subsystems:
 lead: mdmark の配布物が、開発者のビルドから利用側のページへ届くまでの全体構成。
 external_systems:
   - name: jsDelivr
-    purpose: GitHub のリポジトリのバージョンのタグが指す配布物を、利用側のページへ配る
+    purpose: GitHub のリポジトリのバージョンのタグが指す配布物を、利用側のページへ配る。develop の配布物を再作成した後は、GitHub Actions が変わった配布ファイルの `@develop` のキャッシュを削除する
     direction: 受信のみ
     protocol: HTTPS
     detail: API-472-2#
@@ -172,14 +172,15 @@ external_systems:
       - IF-472-22#constraints[バージョンの決め方]
     status: planned
   - name: GitHub Actions と GitHub Releases
-    purpose: '`vscode-v*` のタグで拡張機能の .vsix を作り、そのタグの Release に添える。develop への push で `dist/`・`plugin/` の生成物を再作成し、差分があれば develop へ commit する。手動の起動で、テスト実行方法の実行場所が `runner` の層のテストを回し、ログを成果物に上げる'
+    purpose: '`vscode-v*` のタグで拡張機能の .vsix を作り、そのタグの Release に添える。develop への push か手動の起動で `dist/`・`plugin/` の生成物を再作成し、差分があれば develop へ commit して jsDelivr の `@develop` のキャッシュを削除する。失敗したら `確認:task-planner` の Issue を起票する。手動の起動で、テスト実行方法の実行場所が `runner` の層のテストを回し、ログを成果物に上げる'
     direction: 送信のみ
-    protocol: GitHub Actions のワークフロー（`.github/workflows/vscode-release.yml`・`.github/workflows/test.yml`）と `gh release`・`gh workflow run`
+    protocol: GitHub Actions のワークフロー（`.github/workflows/vscode-release.yml`・`.github/workflows/test.yml`・`.github/workflows/develop-dist.yml`）と `gh release`・`gh workflow run`・`gh issue`
     detail: LIB-472-34#
     cost: 公開リポジトリの GitHub Actions は無料。Release に .vsix を残す
     refs:
       - IF-472-23#
       - IF-472-44#
+      - IF-805-1#
     status: planned
   - name: Visual Studio Marketplace
     purpose: '`vscode-v*` のタグのワークフローが、Release に添えた .vsix を拡張機能 `ShuheiNishikawa.mdmark-vscode` の新規のバージョンとして公開し、文書の作成者の VS Code へ更新を届ける'

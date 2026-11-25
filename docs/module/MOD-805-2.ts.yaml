@@ -1,0 +1,167 @@
+id: MOD-805-2
+visibility: internal
+title: ライブラリ本体 / 画像と動画 / media-resize.interact.ts
+lead: 再生バーを持つ動画の大きさを変えるリサイズハンドルと大きさのメニュー、変えた幅の保持を受け持ち、動画のリサイズの操作を変えるときに参照する。
+constants:
+  - name: MEDIA_WIDTH_KEY_PREFIX
+    title: 動画の幅のキーの頭
+    container: src/media/media-resize.interact.ts
+    summary: リサイズハンドルで変えた幅を sessionStorage に記載するキーの頭
+    value: '"mdmark-media-width:"'
+    status: planned
+  - name: MEDIA_RESIZE
+    title: 動画のリサイズの量
+    container: src/media/media-resize.interact.ts
+    summary: 1 回の `↑`・`↓` とメニューのボタンで変える高さ・幅の下限・ドラッグにする動きの下限（px）
+    value: '{ step: 32, minWidth: 160, dragThreshold: 4 }'
+    refs:
+      - IF-472-35#constraints[動画の大きさのリサイズハンドル]
+    status: planned
+functions:
+  - name: attachMediaResizes
+    title: 動画にリサイズハンドルを付ける
+    container: src/media/media-resize.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`root` の中の再生バーを持つ動画ごとに、入れ物・リサイズハンドル・大きさのメニューを配置して `attachMediaResize` を呼ぶ'
+    description: |-
+      対象は `figure.mdmark-media > video`（再生のボタン・音声は対象外）。
+      動画を `div.mdmark-media-frame` で包み、その中に `<button type="button" class="mdmark-media-resize" aria-label="「{alt}」の大きさを変える" aria-keyshortcuts="ArrowUp ArrowDown">`（alt は `video` の `aria-label`、空なら `src` のファイル名）を配置する。
+      大きさのメニューは `div.mdmark-media-size-menu`（`popover="auto"`・`role="group"`・`aria-label="「{alt}」の大きさ"`、中に `data-size` が `smaller`・`larger`・`reset` の 3 つの `button`。アイコンは lucide の `minus`・`plus`・`rotate-ccw`）を図の後ろに配置し、ハンドルの `popoverTargetElement` にする。
+      キーは `mediaWidthKey`（`index` は `root` の中の対象の動画の通し番号）。
+      返却した関数は全ての `detach` を呼び、配置した入れ物・ハンドル・メニューを削除して動画を図の直下へ戻す
+    args:
+      - name: options
+        type: '{ root: HTMLElement; storage: Storage | null }'
+        required: true
+        description: 描いた文書の根と、幅を保つ先（sessionStorage を使用できないときは `null`）
+    returns:
+      type: () => void
+      description: 配置した要素と操作を削除する関数
+    callees:
+      - '#functions[attachMediaResize]'
+      - '#functions[mediaWidthKey]'
+    unit_tests:
+      - name: test_attach_media_resizes
+        case: 正常
+        summary: 再生バーを持つ動画だけにハンドルとメニューを配置し、削除で元に戻す
+        condition: 動画の図 2 つ（1 つは `aria-label` が空で `src` が `clips/demo.mp4?v=1`）・音声の図・再生のボタンを持つ `root`。返却した関数を呼ぶ
+        mock: '`storage` は `null`'
+        expected: 動画の図だけが `div.mdmark-media-frame` と `button.mdmark-media-resize` とメニューを持ち、2 つ目のハンドルの名前が `「demo.mp4」の大きさを変える`。呼んだ後は入れ物・ハンドル・メニューが無く、`video` が `figure` の直下にある
+    refs:
+      - IF-472-35#constraints[動画の大きさのリサイズハンドル]
+      - CMP-472-36#
+    status: planned
+  - name: attachMediaResize
+    title: 動画 1 つにリサイズの操作を付ける
+    container: src/media/media-resize.interact.ts
+    kind: 関数
+    scope: internal
+    summary: リサイズハンドルと大きさのメニューで、縦横の比を保って動画の幅を変える操作を付ける
+    description: |-
+      | 操作 | 幅の変え方 |
+      | --- | --- |
+      | `pointerdown`（既定の動作を止めてハンドルへフォーカスし、`setPointerCapture`）から `pointerup` まで | 押した場所から `MEDIA_RESIZE.dragThreshold` より動いた後、横の動きと「縦の動き ÷ 縦横の比」の絶対値の大きい方を、押したときの幅に加える |
+      | ドラッグした後の `click` | 既定の動作を止め、メニューを開閉しない |
+      | フォーカスの間の `ArrowUp`・`ArrowDown` | `MEDIA_RESIZE.step ÷ 縦横の比` ずつ小さく・大きくする |
+      | メニューの `smaller`・`larger` | 同上。押したボタンが押せなくなったら押せるボタンへフォーカスを移す |
+      | `dblclick` とメニューの `reset` | 幅を戻す（`--mdmark-image-width` を `render` が付けた値にし、無ければ削除する）。`dblclick` は開いたメニューを閉じる |
+
+      縦横の比は `videoHeight ÷ videoWidth`（読み込んでいないときは描いた `video` の高さ ÷ 幅）。
+      幅は `clampMediaWidth` で収め、図の `style` の `--mdmark-image-width` に `{幅}px` で入れる。
+      変えた幅は `writeStoredSize` で `storage` の `key` に記載し、戻したら `null` でキーを削除する。付けたときは `readStoredSize` で読み込む。
+      ドラッグの間はハンドルに class `is-resizing`、メニューを開いている間は class `is-open` を付ける。
+      メニューの `toggle` で開いたら、下限・上限・元の大きさのボタンを `disabled` にし、ハンドルの下に右端を合わせて配置し（下に入らなければ上）、最初の押せるボタンへフォーカスする。閉じたときにフォーカスがメニューの中ならハンドルへ戻す。
+      開いている間は、幅を変えたときと `window` の `scroll`・`resize` でもう一度配置する
+    args:
+      - name: options
+        type: '{ figure: HTMLElement; video: HTMLVideoElement; handle: HTMLButtonElement; menu: HTMLElement; key: string; storage: Storage | null; maxWidth: () => number }'
+        required: true
+        description: 動画の図・動画・リサイズハンドル・大きさのメニュー・幅を保つキー・保つ先・本文の幅を返却する関数
+    returns:
+      type: '{ restored: number | null; detach: () => void }'
+      description: 付けたときに `storage` から読み込んで適用した幅（無ければ `null`）と、操作を削除する関数
+    callees:
+      - '#functions[clampMediaWidth]'
+      - MOD-805-3#functions[readStoredSize]
+      - MOD-805-3#functions[writeStoredSize]
+    unit_tests:
+      - name: test_attach_media_resize
+        case: 正常
+        summary: ドラッグと上下キーで縦横の比を保って幅を変えて保つ
+        condition: 幅 800px・`videoWidth` 1100・`videoHeight` 720 の動画、`maxWidth` が `800`。ハンドルを 200px 左へドラッグし、`ArrowDown` を押す
+        mock: '`storage` に `Map` で包んだ `Storage` の構造のオブジェクトを指定する'
+        expected: '`--mdmark-image-width` が `600px`、`649px`（600 + 32 × 1100 ÷ 720 を丸めた値）の順になり、`storage` の `key` が `649`'
+      - name: test_attach_media_resize_when_click_without_drag
+        case: 正常
+        summary: 動かさずに押すとメニューを開き、ドラッグした後は開かない
+        condition: 3px だけ動かして離す。別に 100px 動かして離す
+        mock: 同上
+        expected: 1 つ目は幅が変わらずメニューが開き、「元の大きさに戻す」が `disabled` で「小さくする」にフォーカスがある。2 つ目は幅が変わりメニューが開かない
+      - name: test_attach_media_resize_when_reset
+        case: 正常
+        summary: ダブルクリックで記載した幅に戻し、キーを削除する
+        condition: '`--mdmark-image-width: 50%` の図で幅を 300px にした後に `dblclick`'
+        mock: 同上
+        expected: '`--mdmark-image-width` が `50%`、`storage` に `key` が無い'
+      - name: test_attach_media_resize_when_restored
+        case: 正常
+        summary: 保った幅で開き、読み込めない値は使用しない
+        condition: '`storage` の `key` が `420` のときと `abc` のとき'
+        mock: 同上
+        expected: '`420` では `restored` が `420` で `--mdmark-image-width` が `420px`。`abc` では `restored` が `null` で幅を変えない'
+    refs:
+      - IF-472-35#constraints[動画の大きさのリサイズハンドル]
+    status: planned
+  - name: clampMediaWidth
+    title: 動画の幅を収める
+    container: src/media/media-resize.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 幅を `MEDIA_RESIZE.minWidth` 以上、本文の幅以下の整数にする（本文の幅が下限より狭いときは本文の幅）
+    args:
+      - name: options
+        type: '{ width: number; maxWidth: number }'
+        required: true
+        description: 変える幅と本文の幅（px）
+    returns:
+      type: number
+      description: 収めた幅（px）
+    unit_tests:
+      - name: test_clamp_media_width
+        case: 正常
+        summary: 下限と本文の幅に収める
+        condition: '`{ width: 100, maxWidth: 800 }`・`{ width: 900.4, maxWidth: 800 }`・`{ width: 412.6, maxWidth: 800 }`・`{ width: 200, maxWidth: 120 }`'
+        mock: なし
+        expected: '`160`・`800`・`413`・`120`'
+    status: planned
+  - name: mediaWidthKey
+    title: 動画の幅のキー
+    container: src/media/media-resize.interact.ts
+    kind: 関数
+    scope: internal
+    summary: '`storedSizeKey` で頭を `MEDIA_WIDTH_KEY_PREFIX`、名前を `src` にした `{MEDIA_WIDTH_KEY_PREFIX}{pathname}#{index}:{src}` を返却する。同じページの同じ順の同じ動画だけが同じ幅を読み込む'
+    args:
+      - name: options
+        type: '{ pathname: string; index: number; src: string }'
+        required: true
+        description: ページの `location.pathname`、`root` の中の対象の動画の番号（0 から）、動画の `src` の属性の値
+    returns:
+      type: string
+      description: sessionStorage のキー
+    unit_tests:
+      - name: test_media_width_key
+        case: 正常
+        summary: ページ・順・`src` でキーを作る
+        condition: '`{ pathname: "/docs/a.html", index: 1, src: "clip.mp4" }`'
+        mock: なし
+        expected: '`mdmark-media-width:/docs/a.html#1:clip.mp4`'
+    status: planned
+    callees:
+      - MOD-805-3#functions[storedSizeKey]
+tags:
+  - name: topic:動画
+    main: true
+  - name: action:リサイズ
+test_files:
+  - tests/unit/src/media/media-resize.interact.browser.test.ts

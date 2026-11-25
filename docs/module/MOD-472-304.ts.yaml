@@ -47,6 +47,9 @@ data_models:
       - name: map
         type: '{ node_fit?: "height" | "width"; url_state?: boolean; kinds?: Record<string, MapKind>; lines?: Record<string, MapLine> }'
         description: map の図のノードの広げ方・クエリ文字列に保つか・ノードの種類・線の種類（インターフェース定義『文書を描く』の `opts.config.map.*`）
+      - name: media
+        type: '{ width?: string } | undefined'
+        description: 動画の設定。`width` は `{width=…}` を記載していない動画の幅の既定（`1%` 〜 `100%`）。知らない値も受けて `resolveConfig` が落とすため、型は `string`
   - name: LibraryEntry
     title: 対応表の行
     container: src/config.ts
@@ -101,6 +104,9 @@ data_models:
       - name: table
         type: '{ pin: TablePinMode; pinDefault: boolean; longColumnMin: number }'
         description: '`pin` は設定の `table.pin` が `through` のときだけ `through`、それ以外は `each`。`pinDefault` は設定の `table.pin_default` が `true` のときだけ `true`、それ以外は `false`。`longColumnMin` は設定の `table.long_column_min` が 0 より大きい有限の数ならその値、それ以外は `DEFAULT_LONG_COLUMN_MIN_EM`'
+      - name: media
+        type: '{ width: string | undefined }'
+        description: 設定の `media.width` が `MEDIA_WIDTH_PATTERN` に合い `100%` でなければその値、それ以外は `undefined`
   - name: MermaidTheme
     title: mermaid のテーマ
     container: src/config.ts
@@ -149,6 +155,9 @@ data_models:
       - name: toc
         type: SideTocMode | undefined
         description: '`toc=` の値'
+      - name: mediaWidth
+        type: string | undefined
+        description: '`media.width` の値（`MEDIA_WIDTH_PATTERN` に合うもの）'
     status: planned
   - name: TablePinMode
     title: 表のピン止めの動き
@@ -162,7 +171,7 @@ constants:
     title: 機能の既定
     container: src/config.ts
     summary: このバージョンが知っている機能とその既定。機能を作る Issue が行を追加する
-    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, annotations: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, mermaid: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "markdown-buttons": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true, "card-grid": true, frontmatter: false, map: true }'
+    value: '{ print: true, table: true, callout: true, tabs: true, steps: true, tree: true, badge: true, footnotes: true, annotations: true, code: true, syntax: true, toc: true, anchors: true, sections: true, "row-details": true, figures: true, diagrams: true, "diagram-resize": true, glossary: true, backlinks: true, html: true, hints: true, mermaid: true, views: true, comments: false, "html-scripts": false, "side-toc": true, "back-to-top": true, "markdown-buttons": true, "text-color": true, images: true, gallery: true, lightbox: true, media: true, "media-resize": true, gif: true, cards: true, icon: true, columns: true, highlight: true, kbd: true, details: true, pagebreak: true, include: true, wide: true, csv: true, "card-grid": true, frontmatter: false, map: true }'
     refs:
       - CFG-472-3#settings[features.print]
   - name: DEFAULT_LIBRARIES
@@ -269,6 +278,14 @@ constants:
     usecase: Mermaidと補足で図を描く
     summary: '`map.lines` の `head` に記載できる値'
     value: '["filled", "open", "none"]'
+  - name: MEDIA_WIDTH_PATTERN
+    title: 動画の既定の幅の書式
+    container: src/config.ts
+    summary: 設定とページの設定の `media.width` が合うべき書式（`1%` 〜 `100%` の整数の %）
+    value: /^(?:100|[1-9][0-9]?)%$/
+    refs:
+      - CFG-472-3#settings[media.width]
+    status: planned
 functions:
   - name: resolveConfig
     title: 設定に既定を適用する
@@ -289,6 +306,8 @@ functions:
       `html-scripts.url` は文字列のときだけ取って `htmlScripts.url` に入れ、無い値・他の型は `DEFAULT_HTML_SCRIPTS_URL` にする。
 
       `side-toc.mode` は `fixed` のときだけ `fixed` にし、無い値・他の値は `hover` にする。
+
+      `media.width` は `MEDIA_WIDTH_PATTERN` に合う文字列のときだけ `media.width` に入れ、無い値・他の値・`100%` は `undefined` にする。
 
       `table.pin` は `through` のときだけ `through` にし、無い値・他の値は `each` にする。`table.pin_default` は `true` のときだけ `pinDefault` を `true` にし、無い値・他の値は `false` にする。
 

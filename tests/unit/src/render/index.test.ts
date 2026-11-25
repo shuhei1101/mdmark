@@ -29,6 +29,7 @@ function resolvedConfig(
       themeVariables: {},
     },
     sideToc: { mode: "hover" },
+    media: { width: undefined },
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },

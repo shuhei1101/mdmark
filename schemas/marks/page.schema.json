@@ -19,6 +19,17 @@
         }
       },
       "additionalProperties": false
+    },
+    "media": {
+      "type": "object",
+      "properties": {
+        "width": {
+          "type": "string",
+          "pattern": "^(?:100|[1-9][0-9]?)%$",
+          "examples": ["80%"]
+        }
+      },
+      "additionalProperties": false
     }
   },
   "additionalProperties": false

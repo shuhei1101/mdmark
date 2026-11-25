@@ -402,6 +402,10 @@ items:
   summary: ライブラリ本体 / 画像と動画 / media-modal.part.ts
 - page: MOD-801-2.ts.yaml
   summary: ライブラリ本体 / 画像と動画 / media-modal.interact.ts
+- page: MOD-805-2.ts.yaml
+  summary: ライブラリ本体 / 画像と動画 / media-resize.interact.ts
+- page: MOD-805-3.ts.yaml
+  summary: ライブラリ本体 / 記法の共通 / stored-size.logic.ts
 - page: MOD-472-145.ts.yaml
   summary: ライブラリ本体 / 図 / mermaid.part.ts
 - page: MOD-472-310.ts.yaml

@@ -99,6 +99,7 @@ export function renderDocument(options: {
     libraries: options.config.libraries,
     defaults: options.config.features,
     labels: options.config.labels,
+    mediaWidth: options.config.media.width,
     featureOptions: [],
     markNotes: [],
     features: {},

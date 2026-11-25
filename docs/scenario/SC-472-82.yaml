@@ -261,6 +261,30 @@ scenarios:
     test: test_normal_when_released_migrations_kept
     notes:
       出したバージョン: '`migrations/` のフォルダの名前と同じ `v{X}.{Y}.{Z}` のタグがあるバージョン。タグを打つ手順で `migrations/next/` を `migrations/v{バージョン}/` へ移した後のビルドは、まだタグが無いため、そのフォルダへ書き込む。'
+  - name: 異常シナリオ（結合テストで配布ファイルが上限を超える）
+    setup:
+      - name: 依存を入れた作業ツリー
+        description: '`npm ci` を実行した作業ツリー'
+      - name: Mock
+        description: 非機能要件の配布ファイル 1 つの上限（`scripts/build.ts` の `MAX_DIST_FILE_BYTES`）をテスト用に小さく差し替える
+        notes: 上限を 1 バイトにして、結合テストのビルドが必ず超えるようにする。結合テストのビルドが jsDelivr の 20MB ではなくこの上限で検査することを確認する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor D as 開発者
+        participant N as npm
+        D->>N: npm run test:integration
+        N->>N: 一時フォルダに配布物をビルドし、配布ファイルのサイズを上限と比べる
+        N-->>D: 超えたファイルとサイズを出して fail する
+      ```
+
+      <!-- /map -->
+    expected:
+      - 結合テストが fail し、終了コードが 0 以外
+      - 出力に超えたファイル名・サイズ・上限が出る
+    test: test_error_when_dist_file_over_limit_in_tests
 lead: 開発者が、クローンしたリポジトリで依存の導入・lint・型検査・ビルド・テストを順に実行し、バージョンを埋めた配布物を `dist/` に得る。
 primary_actor: mdmark の開発者
 trigger: リポジトリをクローンした直後か、変更を commit する前

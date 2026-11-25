@@ -12,6 +12,7 @@ import { attachWideToggles } from "./layout/wide.interact.ts";
 import { attachGifs } from "./media/gif.interact.ts";
 import { attachLightbox } from "./media/lightbox.interact.ts";
 import { attachMediaModal } from "./media/media-modal.interact.ts";
+import { attachMediaResizes } from "./media/media-resize.interact.ts";
 import type { MdmarkColumnsChange } from "./mount.ts";
 import {
   attachSections,
@@ -120,6 +121,15 @@ function attachBlocks(context: InteractionContext): Array<() => void> {
   return detachers;
 }
 
+/** 動画の幅を保つ先（sessionStorage）。参照で例外になる環境では `null` */
+const sessionStorageOrNull = (): Storage | null => {
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+};
+
 /** 埋め込んだ HTML の幅とヒント・画像の拡大・部品の開閉の記録・GIF の操作を付ける */
 function attachMedia(context: InteractionContext): Array<() => void> {
   const { root, features, partStates } = context;
@@ -145,6 +155,11 @@ function attachMedia(context: InteractionContext): Array<() => void> {
   }
   if (features.media === true) {
     detachers.push(attachMediaModal(root));
+    if (features["media-resize"] === true) {
+      detachers.push(
+        attachMediaResizes({ root, storage: sessionStorageOrNull() }),
+      );
+    }
   }
   if (partStates !== undefined) {
     detachers.push(attachDetailsStates({ root, states: partStates }));

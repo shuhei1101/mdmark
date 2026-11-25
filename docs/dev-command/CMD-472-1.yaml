@@ -271,7 +271,25 @@ categories:
       git push origin v{バージョン}
       ```
 
-      develop へ push すると、GitHub Actions の `develop-dist.yml` が `npm run build -- --develop` で `dist/`・`plugin/` の生成物を再作成し、差分があれば develop へ commit する（手順 5 の commit の後も同じ）。
+      develop へ push すると、GitHub Actions の `develop-dist.yml` が `npm run build -- --develop` で `dist/`・`plugin/` の生成物を再作成し、差分があれば develop へ commit して、変わった配布ファイルの jsDelivr の `@develop` のキャッシュを削除する（手順 5 の commit の後も同じ）。
+      失敗したときは `確認:task-planner` の Issue が起票される。修正した後は、develop への push を待たずに手動で起動する。
+
+      ```bash
+      gh workflow run develop-dist.yml --ref develop
+      ```
+
+      GitHub Actions を実行できないときは、develop の worktree で同じ再作成を手元で行う（差分が無ければ commit とキャッシュの削除を飛ばす）。
+
+      ```bash
+      npm ci
+      npm run build -- --develop
+      git add --all dist plugin mdmark-style migrations
+      git commit -m "develop の配布物を再作成する（$(git rev-parse --short=7 HEAD)）"
+      git push origin HEAD:develop
+      for f in $(git diff --name-only HEAD~1 HEAD -- dist); do curl -s --max-time 30 "https://purge.jsdelivr.net/gh/shuhei1101/mdmark@develop/$f"; done
+      ```
+
+      キャッシュの削除の応答の `throttled` が `true` のファイルは、時間を空けてそのファイルだけをもう一度削除する。
       release を develop へ戻すバックマージで `dist/`・`plugin/` が競合したときは、develop 側を採って取り込み、取り込みの push でワークフローに再作成させる。
 
       ```bash

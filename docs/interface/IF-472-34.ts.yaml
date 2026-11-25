@@ -3187,6 +3187,38 @@ flows:
     test: test_error_when_modal_attribute_unreadable
     refs:
       - SC-472-67#scenarios[異常シナリオ（画像に記載した modal）]
+  - name: 正常系（設定の既定の幅で動画を描く）
+    summary: '`width` の属性を持たない動画を、ページの設定のマーカーか設定の `media.width` の幅で描き、`width` の属性を優先する'
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 動画の Markdown
+        description: '`![素材 1](clip.mp4)`・`![素材 2](clip.mp4){width=320}`・`![読み上げ](voice.mp3)` をそれぞれ画像だけの段落に持つ文書と、同じ本文の先頭に `<!-- page: {"media": {"width": "80%"}} -->` を持つ文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown, { config: { media: { width: "50%" } } })
+        M-->>C: 属性の無い動画を 50% にした HTML 文字列
+        C->>M: render(page のマーカーを持つ markdown, { config: { media: { width: "50%" } } })
+        M-->>C: 属性の無い動画を 80% にした HTML 文字列
+        C->>M: render(markdown)
+        M-->>C: 今と同じ HTML 文字列
+      ```
+
+      <!-- /map -->
+    expected:
+      - '1 回目の 1 つ目の動画の `figure` が `style="--mdmark-image-width: 50%"` を持つ'
+      - '2 つ目の動画の `figure` はどの回も `--mdmark-image-width: 320px` を持つ'
+      - 音声の `figure` は `--mdmark-image-width` を持たない
+      - '2 回目の 1 つ目の動画の `figure` が `--mdmark-image-width: 80%` を持ち、本文にマーカーの文字が無い'
+      - 3 回目の 1 つ目の動画の `figure` が `style` を持たず、設定を指定しないときの今の文字列と同じ
+    test: test_normal_when_default_video_width
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返却する。
 idempotent: true
 side_effects: なし（外部ライブラリも読み込まない）
@@ -3572,6 +3604,8 @@ constraints:
 
       title は `figcaption` にする。
 
+      `width` の属性を持たない `video` の `figure` は、ページの設定のマーカーの `media.width`、無ければ `opts.config.media.width` の値を `style="--mdmark-image-width: {値}"` に入れる（どちらも無いか値が `100%` のときは `style` を付けない）。`width` の属性を持つ動画はその幅を優先する。音声と再生のボタンには適用しない。
+
       `media` がオフのときは、今のとおり画像として描く'
     notes: '`mdmark-media-print` は印刷のときだけ CSS で出す。プレビューで再生できない形式は VS Code 拡張機能が通知する'
   - item: GIF
@@ -3767,7 +3801,7 @@ constraints:
       `csv` がオフのときは制約「コードブロック」のとおり描く'
     notes: 読み取りは自前の同期の処理（ライブラリ選定で決定）。外観はモック `docs/mock/components/csv-table/`
   - item: ページの設定のマーカー
-    constraint: '文書の先頭の `<!-- page: {JSON のオブジェクト} -->` は本文に出さない。記載できるキーの知らない値があるときは文書の先頭に、先頭に無い page のマーカーはその場所に、インターフェース定義『文書を描く』の制約「ページの設定のマーカー」と同じ記載の警告を出す。知らないキーは警告を出さずに無視する。明暗・テーマ・右側の目次の出し方は描く先の要素とページに適用するもので、`render` の文字列には含めない'
+    constraint: '文書の先頭の `<!-- page: {JSON のオブジェクト} -->` は本文に出さない。記載できるキーの知らない値があるときは文書の先頭に、先頭に無い page のマーカーはその場所に、インターフェース定義『文書を描く』の制約「ページの設定のマーカー」と同じ記載の警告を出す。知らないキーは警告を出さずに無視する。明暗・テーマ・右側の目次の出し方は描く先の要素とページに適用するもので、`render` の文字列には含めない。`media.width` は制約「動画と音声」のとおり `render` の文字列に含める'
   - item: カードの格子
     constraint: '`card-grid` がオンのとき、`<!-- cards -->` 〜 `<!-- /cards -->` の中身のリスト 1 つを `<ul class="mdmark-card-grid">` にし、項目ごとの `<li>` に、リンクを持つ項目は `<a class="mdmark-card-grid-item" href="{最初のリンク先}">`、持たない項目は `<div class="mdmark-card-grid-item">` を配置する。
 

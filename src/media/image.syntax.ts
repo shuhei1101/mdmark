@@ -549,14 +549,27 @@ const playbackOf = (
   loop: attributes?.loop ?? false,
 });
 
-/** 動画か音声の画像のトークンから部品『動画と音声』の HTML を作る */
-function mediaHtml(image: Token, kind: "video" | "audio"): string {
+/** 動画か音声の画像のトークンから部品『動画と音声』の HTML を作る。`width` の属性の無い動画は、ページの設定か設定の動画の既定の幅にする */
+function mediaHtml(
+  state: StateCore,
+  image: Token,
+  kind: "video" | "audio",
+): string {
+  const attributes = mediaAttributesOf(imageAttributesOf(image));
+  const env = envOf(state);
+  const defaultWidth =
+    kind === "video" && attributes.width === undefined
+      ? (env.page?.mediaWidth ?? env.mediaWidth)
+      : undefined;
   return renderMedia({
     kind,
     src: String(image.attrGet("src") ?? ""),
     alt: altOf(image),
     ...captionOf(image),
-    ...mediaAttributesOf(imageAttributesOf(image)),
+    ...attributes,
+    ...(defaultWidth === undefined || defaultWidth === "100%"
+      ? {}
+      : { width: defaultWidth }),
   });
 }
 
@@ -611,7 +624,7 @@ function soleFigure(
     }
     const html = opensModal(sole)
       ? mediaOpenerHtml(sole, { kind: soleMedia, inline: false })
-      : mediaHtml(sole, soleMedia);
+      : mediaHtml(state, sole, soleMedia);
     return ownBlock(state, html, token);
   }
   return features.images
@@ -636,7 +649,7 @@ function splitInlineMedia(
       if (opensModal(child)) {
         children.push(openerInline(state, child, kind));
       } else {
-        after.push(ownBlock(state, mediaHtml(child, kind), token));
+        after.push(ownBlock(state, mediaHtml(state, child, kind), token));
       }
       continue;
     }

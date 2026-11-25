@@ -8,13 +8,11 @@ import {
 } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
-import { main } from "../../scripts/build.ts";
+import { MAX_DIST_FILE_BYTES, main } from "../../scripts/build.ts";
 import { copyPluginInputs, writeRootPackageJson } from "./plugin-inputs.ts";
 
 // 埋めてビルドするバージョン
 const BUILT_VERSION = "v0.0.1";
-// 配布ファイル 1 つの上限（jsDelivr の 20MB）
-const MAX_BYTES = 20 * 1024 * 1024;
 
 /** `v0.0.1` を埋めてビルドした配布物を、一時フォルダの作業ツリーに作る。作業ツリーの場所と、削除する関数を返却する */
 export async function createBuiltRoot(): Promise<{
@@ -66,7 +64,7 @@ export async function createBuiltRoot(): Promise<{
     join(root, "node_modules"),
     "dir",
   );
-  const code = await main([], { root, maxBytes: MAX_BYTES });
+  const code = await main([], { root, maxBytes: MAX_DIST_FILE_BYTES });
   if (code !== 0) {
     throw new Error("結合テスト用の配布物をビルドできなかった");
   }

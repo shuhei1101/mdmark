@@ -62,6 +62,38 @@ new MutationObserver(attachStoryDiagrams).observe(document.documentElement, {
 });
 attachStoryDiagrams();
 
+// 動画のリサイズハンドルのストーリー（`data-story-media-resize` のマーカーを持つもの）は、描いた直後にハンドルを付け、マーカーの状態にする
+const resizable = new WeakSet<Element>();
+/** マーカーを持つ描く先の要素にリサイズハンドルを付ける。`hover` はテストが動画にポインターを乗せて確認する */
+const attachStoryMediaResizes = async (): Promise<void> => {
+  for (const marker of document.querySelectorAll<HTMLElement>(
+    "[data-story-media-resize]",
+  )) {
+    const root = marker.closest<HTMLElement>(".mdmark");
+    if (!root || resizable.has(root)) {
+      continue;
+    }
+    resizable.add(root);
+    const { attachMediaResizes } = await import(
+      /* @vite-ignore */ `${window.location.origin}/render/media-resize.js`
+    );
+    attachMediaResizes({ root, storage: null });
+    const handle = root.querySelector<HTMLButtonElement>(
+      ".mdmark-media-resize",
+    );
+    if (marker.dataset.storyMediaResize === "focus") {
+      handle?.focus();
+    } else if (marker.dataset.storyMediaResize === "menu") {
+      handle?.click();
+    }
+  }
+};
+new MutationObserver(attachStoryMediaResizes).observe(
+  document.documentElement,
+  { childList: true, subtree: true },
+);
+attachStoryMediaResizes();
+
 // 表のストーリー（`.mdmark-table` を持つもの）は、描いた直後に見出し行と集計の行を画面に留める操作を付ける（`mount` が全ての表に付けるのと同じ）
 const stuck = new WeakSet<Element>();
 /** 表に見出し行と集計の行を留める操作を付ける。読み込んだ時点でも 1 度呼ぶ */

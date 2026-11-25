@@ -71,6 +71,8 @@ export type MarkSchema = {
   minimum?: number;
   maximum?: number;
   minLength?: number;
+  pattern?: string;
+  examples?: unknown[];
 };
 
 /** マーカーの設定の誤り 1 つ */
@@ -192,6 +194,9 @@ const exampleOf = (node: MarkSchema, root: MarkSchema): unknown => {
   if (resolved.enum?.[0] !== undefined) {
     return resolved.enum[0];
   }
+  if (resolved.examples?.[0] !== undefined) {
+    return resolved.examples[0];
+  }
   return exampleOfType(resolved, root);
 };
 
@@ -212,6 +217,16 @@ const expectedObject = (resolved: MarkSchema): string => {
     : "オブジェクト";
 };
 
+/** 文字のスキーマが受け付ける値の説明（正規表現を持つときは例の書式） */
+const expectedString = (resolved: MarkSchema): string => {
+  if (resolved.pattern !== undefined && resolved.examples?.[0] !== undefined) {
+    return `\`${showChoice(resolved.examples[0])}\` の書式の文字`;
+  }
+  return resolved.minLength !== undefined && resolved.minLength > 0
+    ? `${resolved.minLength} 文字以上の文字`
+    : "文字";
+};
+
 /** スキーマの型が受け付ける値の説明 */
 const expectedOfType = (resolved: MarkSchema): string => {
   switch (resolved.type) {
@@ -220,9 +235,7 @@ const expectedOfType = (resolved: MarkSchema): string => {
     case "array":
       return "配列";
     case "string":
-      return resolved.minLength !== undefined && resolved.minLength > 0
-        ? `${resolved.minLength} 文字以上の文字`
-        : "文字";
+      return expectedString(resolved);
     case "integer":
       return expectedInteger(resolved);
     case "number":
@@ -293,7 +306,7 @@ const invalidResult = (node: MarkSchema, at: CheckAt): Checked => ({
   unknownKeys: [],
 });
 
-/** 数・文字の値が、範囲・最短の長さから外れるか */
+/** 数・文字の値が、範囲・最短の長さ・正規表現から外れるか */
 const outOfRange = (resolved: MarkSchema, value: unknown): boolean => {
   if (typeof value === "number") {
     return (
@@ -303,8 +316,9 @@ const outOfRange = (resolved: MarkSchema, value: unknown): boolean => {
   }
   return (
     typeof value === "string" &&
-    resolved.minLength !== undefined &&
-    value.length < resolved.minLength
+    ((resolved.minLength !== undefined && value.length < resolved.minLength) ||
+      (resolved.pattern !== undefined &&
+        !new RegExp(resolved.pattern, "u").test(value)))
   );
 };
 

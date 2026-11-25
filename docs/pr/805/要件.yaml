@@ -1,0 +1,100 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-67.yaml
+    impact: changed
+    detail: 文書の作成者が、設定の既定の幅（本文の幅に対する %）で動画をまとめて小さく描ける。動画ごとの {width=…} を優先する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-801-1.yaml
+    impact: run_only
+    detail: 再生のボタンで再生する動画にはリサイズハンドルを付けないため記述は変わらないが、同じ部品を変えるため再生のダイアログの開閉を確かめる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: changed
+    detail: 配布ファイルの上限を超える変更が、作業 PR で実行する結合テストで分かる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-805-1.yaml
+    impact: new
+    detail: 読者が段落の動画の大きさを、縦横の比率を保ったまま変えて元に戻す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-805-2.yaml
+    impact: new
+    detail: develop の配布物の再作成で @develop のキャッシュを削除し、失敗したら対応を依頼する Issue を起票し、手動でも再作成できる
+    depends_on: []
+docs:
+  - page: docs/guide/記載する-画像と動画を配置する.md
+    new: false
+    change: 閲覧する人が動画の大きさを比率を保って変える操作と、元に戻す操作を追加する。属性の無い動画が設定の既定の幅で描かれることと、{width=…} を優先することを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 用語『リサイズハンドル』の説明に、動画の大きさを比率を保って変えるハンドルを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: 動画の描画時の幅の既定のキー（本文の幅に対する %。既定は 100%）と、文書ごとの上書きを追加する。動画のリサイズハンドルの機能を追加する場合は features の行も追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    new: false
+    change: 動画のリサイズハンドルの機能を追加する場合に、オン・オフの例を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/guide/導入-配布物を読み込む.md
+    new: false
+    change: develop を指定した URL が、develop の配布物を再作成した後に最新の配布物を返すことを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/architecture/ARCH-472-1.yaml
+    new: false
+    change: 外部システム『GitHub Actions と GitHub Releases』『jsDelivr』に、再作成の失敗の Issue の起票と、@develop のキャッシュの削除を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/external-api/API-472-2.yaml
+    new: false
+    change: purge のエンドポイントと上限を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/nonfunctional/NFR-472-1.yaml
+    new: false
+    change: NFR-1 の超過を確認する時点に、作業 PR の結合テストを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: develop-dist の手動の起動と、GitHub Actions を実行できないときに手元で再作成してキャッシュを削除する代わりの経路を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 動画の描画時の幅の既定を文書ごとにマーカーで上書きする形にする場合に、そのマーカーの記載方法と引数を追加する（上書きの書き方はインターフェース定義設計で決める）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
+scope_out:
+  - item: 配布ファイル 1 つの上限（NFR-1 の 1024KB）の値の変更と、dist/index.js を小さくする作業
+    reason: '要望は上限の超過をマージの前に分かるようにすることで、値は #802 の中で利用者が上げたため'
+    plan: none
+  - item: 音声と、再生のボタン（表のセルの中・modal・thumbnail）で出す動画のリサイズハンドル
+    reason: 要望は段落に埋め込んだ動画が本文の幅いっぱいに出ることで、音声は縦横の比率を持たず、再生のボタンは全画面のダイアログで再生するため
+    plan: none
+  - item: 図の枠のリサイズハンドルの押せる範囲（24px に足りない）と、ドラッグの代替のタップ・クリックの手段
+    reason: 規約『レイアウト』のタップ領域と規約『操作とアクセシビリティ』の 2.5.7 から外れているが、要望は動画のリサイズハンドルで、図の枠は含まれない
+    plan: '#806'
+  - item: 部品『media』のモックで refs/263/assets/media.js がライトボックスに無いボタンを探して出るスクリプトのエラー
+    reason: この PR の変更より前から起きる不具合で、要望に含まれない
+    plan: '#807'

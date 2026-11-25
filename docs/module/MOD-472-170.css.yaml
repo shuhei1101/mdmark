@@ -397,6 +397,15 @@ styles:
       - class_name: .mdmark .mdmark-table-add
         target: 行追加のボタン
         value: '表の下に `margin-top: 8px`。`.mdmark-table-add-button` は高さ 32px 以上・`--mdmark-color-border` の枠線・角丸 6px・背景 `--mdmark-color-surface`、`:focus-visible` で `--mdmark-color-accent` の 2px の `outline`（`outline-offset: 2px`）。値は `docs/mock/refs/795/assets/mock.css` の `.mock-add-row*`'
+      - class_name: .mdmark .mdmark-media-frame・.mdmark-media-resize
+        target: 動画のリサイズハンドル
+        value: '入れ物は `position: relative`・`justify-self: stretch`・`padding-block-end: 16px`。ハンドルは入れ物の右下に `position: absolute` で幅と高さ 24px、`cursor: nwse-resize`・`touch-action: none`、`::before` の L 字の 2px の線（18×12、動画の右端に合わせる）は入れ物のホバー・`:focus-visible`・`.is-resizing`・`.is-open` のときだけ `opacity: 1`。値は `docs/mock/refs/805/assets/media-resize.css` の案 D（`data-mock-plan` の属性のセレクタは写さない）'
+      - class_name: .mdmark .mdmark-media-size-menu
+        target: 動画の大きさのメニュー
+        value: 'popover で `position: fixed`・`inset: auto`・`margin: 0`。開いたときは縦に並べ、ボタンは高さ 32px 以上で押せないときは弱めの文字の色。値は `docs/mock/refs/805/assets/media-resize.css`'
+      - class_name: '@media print（動画のリサイズハンドル）'
+        target: 動画のリサイズハンドルの印刷
+        value: ハンドルと大きさのメニューを隠し、入れ物の `padding-block-end` を 0 にする
     refs:
       - SCR-472-4#
       - CMP-472-65#
