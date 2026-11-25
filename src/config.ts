@@ -342,7 +342,9 @@ export const MEDIA_WIDTH_PATTERN = /^(?:100|[1-9][0-9]?)%$/;
 
 /** `MEDIA_WIDTH_PATTERN` に合い `100%` でない値だけを返却する（`100%` は既定と同じため指定しない） */
 const resolveMediaWidth = (width: unknown): string | undefined =>
-  typeof width === "string" && MEDIA_WIDTH_PATTERN.test(width) && width !== "100%"
+  typeof width === "string" &&
+  MEDIA_WIDTH_PATTERN.test(width) &&
+  width !== "100%"
     ? width
     : undefined;
 

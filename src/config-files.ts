@@ -5,8 +5,8 @@ import type { CheckIssue } from "./cli/check.ts";
 import { isLocalVersion } from "./cli/versions.ts";
 import {
   MARK_NAME_PATTERN,
-  MEDIA_WIDTH_PATTERN,
   type MdmarkConfig,
+  MEDIA_WIDTH_PATTERN,
 } from "./config.ts";
 
 /** `mdmark build` が読み込む設定の `build` */

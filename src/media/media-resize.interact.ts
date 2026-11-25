@@ -35,10 +35,7 @@ export const clampMediaWidth = (options: {
   maxWidth: number;
 }): number =>
   Math.round(
-    Math.min(
-      options.maxWidth,
-      Math.max(MEDIA_RESIZE.minWidth, options.width),
-    ),
+    Math.min(options.maxWidth, Math.max(MEDIA_RESIZE.minWidth, options.width)),
   );
 
 /** 同じページの同じ順の同じ動画だけが同じ幅を読み込む、sessionStorage のキー */
@@ -263,9 +260,9 @@ export const attachMediaResize = (options: {
   menu.addEventListener(
     "click",
     (event) => {
-      const button = (event.target as Element | null)?.closest<HTMLButtonElement>(
-        "button[data-size]",
-      );
+      const button = (
+        event.target as Element | null
+      )?.closest<HTMLButtonElement>("button[data-size]");
       if (!button) {
         return;
       }
@@ -288,7 +285,9 @@ export const attachMediaResize = (options: {
   // 保った幅は、操作で変えるときと同じく範囲に収めて適用する
   const kept = readStoredSize(storage, key);
   const restored =
-    kept === null ? null : clampMediaWidth({ width: kept, maxWidth: maxWidth() });
+    kept === null
+      ? null
+      : clampMediaWidth({ width: kept, maxWidth: maxWidth() });
   if (restored !== null) {
     figure.style.setProperty(WIDTH_PROPERTY, `${restored}px`);
   }
