@@ -1,0 +1,35 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 読者が、図の表示する枠の高さを、ドラッグ・ダブルクリックをせずにタップ・クリックだけで変え、元の高さに戻せる。リサイズハンドルの押せる範囲が 24 x 24 CSS px 以上になる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-62.yaml
+    impact: run_only
+    detail: 機能 diagram-resize をオフにした文書でリサイズハンドルとドラッグの代わりの操作が出ないことを、同じ部品を変えるため確かめる
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 読者ができることの、リサイズハンドルで表示する枠の高さを変える・元に戻す操作に、ドラッグ・ダブルクリックをしない操作を追加する
+    status: todo
+  - page: docs/guide/構成図の決まり.mark.md
+    new: false
+    change: 操作の表の「表示する枠の高さ」の行に、ドラッグの代わりの操作と押せる範囲を追加する
+    status: todo
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: mermaid の図の操作の説明のリサイズハンドルの操作を、図を描くと同じ内容に揃える
+    status: todo
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 用語『リサイズハンドル』の説明に、図の部品のリサイズハンドルのドラッグの代わりの操作を追加する
+    status: todo
+scope_out:
+  - item: 表の列の幅のつまみの押せる幅（細かいポインターで 12px）と、列の幅を変えるドラッグの代替
+    reason: 同じ規約の同じ型の箇所だが、要望の図の枠のリサイズハンドルとは別の部品で、この作業 PR がマージされなくても同じ内容で成り立つ
+    plan: '#810'
+  - item: 動画のリサイズハンドル（#805 で押せる範囲 24×24 と大きさのメニューにした）の見た目と操作の変更
+    reason: 要望に含まれない。図の枠のリサイズハンドルの代替の操作を動画のハンドルと揃えるかは設計で決めるが、動画のハンドル自体は変えない
+    plan: none
