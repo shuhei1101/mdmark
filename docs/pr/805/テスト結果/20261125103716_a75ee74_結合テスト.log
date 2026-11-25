@@ -1,0 +1,40 @@
+# 結合テスト（フロント）の build.test.ts の実行（レビューの指摘で上限の差し替えを外した後）
+# コマンド: TP-472-1 の TL-3 の run_runner（gh workflow run test.yml --ref feat/media/develop-dist-and-video-resize -f layer=integration -f paths="tests/integration/lib/build.test.ts"。実行 45526792357、commit a75ee74）
+# 結果: Test Files 1 passed、Tests 10 passed
+
+##[group]Run if [ -z "$PATHS" ]; then
+if [ -z "$PATHS" ]; then
+  npm run test:integration 2>&1 | tee test.log
+else
+  # PATHS は空白で区切った並びのため、引用符で囲まずに分ける
+  # shellcheck disable=SC2086
+  npx vitest run --project 'integration*' $PATHS 2>&1 | tee test.log
+fi
+shell: /usr/bin/bash --noprofile --norc -e -o pipefail {0}
+env:
+  LAYER: integration
+  PATHS: tests/integration/lib/build.test.ts
+  XDG_RUNTIME_DIR: /run/user/1001
+  DBUS_SESSION_BUS_ADDRESS: unix:path=/run/user/1001/bus
+  XDG_CONFIG_HOME: 
+##[endgroup]
+
+ RUN  v5.0.4 /home/runner/work/mdmark/mdmark
+
+ ✓  integration-node  tests/integration/lib/build.test.ts (10 tests) 40262ms
+   ✓ test_normal 7208ms
+   ✓ test_normal_when_version_given 6448ms
+   ✓ test_error_when_version_format_invalid 475ms
+   ✓ test_error_when_dist_file_too_large 1530ms
+   ✓ test_error_when_api_missing_in_baseline_browser 5669ms
+   ✓ test_error_when_schema_changed_without_steps 664ms
+   ✓ test_error_when_next_steps_left_in_release 567ms
+   ✓ test_error_when_steps_invalid 529ms
+   ✓ test_normal_when_released_migrations_kept 10935ms
+   ✓ test_normal_when_develop 6061ms
+
+ Test Files  1 passed (1)
+      Tests  10 passed (10)
+   Start at  01:35:44
+   Duration  46.58s (tests 99%, import 1%)
+
