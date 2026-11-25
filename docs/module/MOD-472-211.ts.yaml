@@ -72,6 +72,9 @@ data_models:
       - name: resolveIdLink
         type: ResolveIdLink | undefined
         description: 利用側の `opts.resolveIdLink`（`renderDocument` が入れる）。コアルール `resolveIdLinks` が読み込む
+      - name: mediaWidth
+        type: string | undefined
+        description: 既定を適用した設定の `media.width`（`renderDocument` が入れる。`buildImageFigures` が `env.page?.mediaWidth` が無いときに使用する）
   - name: FoundMark
     title: 取得したマーカー
     container: src/render/parser.ts
