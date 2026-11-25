@@ -25,10 +25,13 @@
   let menuId = 0;
 
   /** 開いたメニューを閉じ、開いた元へフォーカスを戻す */
+  /** 開閉の状態を属性で持てる開き元か（ボタン）。separator のつまみには aria-expanded を付けない */
+  const canExpand = (opener) => opener.getAttribute("role") !== "separator";
+
   const closeMenu = (menu, opener, focus = true) => {
     if (menu.hidden) return;
     menu.hidden = true;
-    opener.setAttribute?.("aria-expanded", "false");
+    if (canExpand(opener)) opener.setAttribute("aria-expanded", "false");
     if (focus) opener.focus();
   };
 
@@ -63,7 +66,7 @@
     host.append(menu);
     menu.style.top = `${box.bottom - hostBox.top + 4}px`;
     menu.style.left = `${Math.max(0, Math.min(box.left - hostBox.left, hostBox.width - menu.offsetWidth))}px`;
-    opener.setAttribute?.("aria-expanded", "true");
+    if (canExpand(opener)) opener.setAttribute("aria-expanded", "true");
     menu.addEventListener("keydown", (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
