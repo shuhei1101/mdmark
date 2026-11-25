@@ -229,6 +229,32 @@ test("test_render_part_when_frame_width", async () => {
   );
 });
 
+// リサイズハンドルを持つ動画に、ハンドルの状態のストーリーのマーカーを付ける（正常系）
+test("test_render_part_when_media_resizable", async () => {
+  // 準備
+  const { renderPart } = await loadRender();
+  const base = {
+    kind: "video",
+    src: "demo.mp4",
+    alt: "素材の確認",
+    resizable: "true",
+  };
+  // 実行
+  const menu = renderPart({
+    component: "media",
+    params: new URLSearchParams({ ...base, resizeState: "menu" }),
+  });
+  const idle = renderPart({
+    component: "media",
+    params: new URLSearchParams(base),
+  });
+  // 検証
+  expect(menu).toMatch(
+    /<figure class="mdmark-figure mdmark-media"[^]*<\/figure><span data-story-media-resize="menu" hidden><\/span>/,
+  );
+  expect(idle).toContain('<span data-story-media-resize="idle" hidden></span>');
+});
+
 // 見本の SVG のファイルを読み込み、図の枠で包んで描く（正常系）
 test("test_render_part_when_mermaid_diagram", async () => {
   // 準備
@@ -307,6 +333,24 @@ test("test_create_render_server_when_sticky_script", async () => {
     "text/javascript; charset=utf-8",
   );
   expect(await response.text()).toContain("attachStickyRows");
+});
+
+// 動画のリサイズハンドルの処理をまとめて返却する（正常系）
+test("test_create_render_server_when_media_resize_script", async () => {
+  // 準備
+  const { createRenderServer } = await loadRender();
+  const root = resolve(import.meta.dirname, "../../..");
+  const port = await listen(createRenderServer({ root }));
+  // 実行
+  const response = await fetch(
+    `http://127.0.0.1:${port}/render/media-resize.js`,
+  );
+  // 検証
+  expect(response.status).toBe(200);
+  expect(response.headers.get("content-type")).toBe(
+    "text/javascript; charset=utf-8",
+  );
+  expect(await response.text()).toContain("attachMediaResizes");
 });
 
 // 知らない部品は 404 を返却する（正常系）
