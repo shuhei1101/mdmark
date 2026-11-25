@@ -313,7 +313,11 @@ styles:
           値は `docs/mock/refs/308/assets/table.css`（包みの端の影を除く）'
       - class_name: .mdmark .mdmark-diagram-resize・.mdmark-diagram-item-hit・.mdmark-diagram-group-info
         target: 図のリサイズハンドル・グラフの項目の該当し・map の構成図のグループのタイトルのマーカー
-        value: 'リサイズハンドルは表示するノードの右下の角に `position: absolute` で配置し、`cursor: ns-resize`・`touch-action: none`、ホバーと `.is-resizing` で面の色、フォーカスの枠を持つ。
+        value: 'リサイズハンドルは表示する枠の後ろに配置する高さ 24px の帯（`display: flex` で中の横棒を中央に配置し、枠線と面を持たない）で、`cursor: ns-resize`・`touch-action: none`、文字の色は `--mdmark-color-muted`、ホバー・`.is-resizing`・`:focus-visible` で `--mdmark-color-text`、`:focus-visible` で内側にリンクの色の 2px の枠を持つ。
+
+          中の `.mdmark-diagram-resize-bar` は 40×4px・角丸 `9999px`・背景 `currentColor`。
+
+          map の図だけのリサイズハンドルの規則（`.mdmark-diagram[data-diagram="map"] .mdmark-diagram-resize`）は削除し、全ての図で同じ規則にする。
 
           クリックを受ける円は透明で `pointer-events: all`、フォーカスしたときにリンクの色の輪。
 

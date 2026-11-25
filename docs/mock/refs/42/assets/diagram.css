@@ -633,40 +633,38 @@
       }
     }
 
-    /* 表示枠の高さを変えるリサイズハンドル: 表示の箱の右下の角に置き、縦にだけ動かす */
+    /* 表示枠の高さを変えるリサイズハンドル: 表示枠の下に高さ 24px（タップの対象の下限）の帯を置き、帯のどこでも上下にドラッグできる。
+       枠線と面を持たず、見た目は帯の中央の横棒だけ（shadcn/ui の Drawer の取っ手と同じ形）。表示枠の横のスクロールバーとは重ならない */
     .mdmark-diagram-resize {
-      position: absolute;
-      inset-block-end: 3px;
-      inset-inline-end: 3px;
-      z-index: 3;
-      display: grid;
-      place-items: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       box-sizing: border-box;
-      width: 28px;
-      height: 16px;
-      padding: 0;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: 4px;
-      background: var(--mdmark-color-bg);
+      height: 24px;
+      /* 横棒は背景とのコントラスト 3:1 以上（WCAG 2.2 の 1.4.11） */
       color: var(--mdmark-color-muted);
       cursor: ns-resize;
       touch-action: none;
 
       &:hover,
       &.is-resizing {
-        background: var(--mdmark-color-surface);
-        color: var(--mdmark-color-heading);
+        color: var(--mdmark-color-text);
       }
 
       &:focus-visible {
         outline: 2px solid var(--mdmark-color-link);
-        outline-offset: 1px;
+        outline-offset: -2px;
+        border-radius: 0 0 var(--mdmark-radius) var(--mdmark-radius);
+        color: var(--mdmark-color-text);
       }
+    }
 
-      .mdmark-diagram-icon {
-        width: 16px;
-        height: 16px;
-      }
+    /* 帯の中央の横棒: 幅 40px・高さ 4px の角の丸い棒 */
+    .mdmark-diagram-resize-bar {
+      width: 40px;
+      height: 4px;
+      border-radius: 9999px;
+      background: currentColor;
     }
 
     /* 線のツールチップを拾う太い透明の線 */

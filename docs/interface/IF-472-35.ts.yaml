@@ -7119,7 +7119,7 @@ flows:
       - 100px 動かした後、`scrollLeft` が増え、ツールチップが `hidden` を持つ
     test: test_normal_when_drag_on_chart_item
   - name: 正常系（図の高さを変える）
-    summary: 下端のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、全体が収まる倍率をもう一度求め、変えた高さを sessionStorage に保ち、ダブルクリックで戻す
+    summary: 下端のリサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、全体が収まる倍率をもう一度求め、変えた高さを sessionStorage に保ち、ダブルクリックで図の全体が収まる高さにする
     setup:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 600px
@@ -7153,7 +7153,7 @@ flows:
 
       <!-- /map -->
     expected:
-      - リサイズハンドルが `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前を持ち、`aria-valuenow` が表示する枠の高さ
+      - 表示する枠の下端に、枠線と面を持たない高さ 24 CSS px 以上の帯のリサイズハンドルがあり、中央に横棒がある。リサイズハンドルが `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前を持ち、`aria-valuenow` が表示する枠の高さ
       - 200px のドラッグの後、表示する枠の高さが 200 増え、幅と倍率が変わらず、`aria-valuenow` が変更後の高さ
       - '`0` の後の倍率が「表示する枠の幅 ÷ 図の幅」「表示する枠の高さ ÷ 図の高さ」、1 の最小（mermaid の図の収まる倍率の下限 0.75 を下回らない）'
       - '`↑` の後に表示する枠の高さが 32 減り、`↓` の後に 32 増える。高さは図の全体が今の倍率で収まる高さを超えない'
@@ -7542,7 +7542,7 @@ flows:
       - flowchart の図の枠のタイトルが front matter の `title` の文字で、sequenceDiagram の図の枠のタイトルが `シーケンス図`
       - flowchart のノードの塗り・枠線・文字の計算済みの色が、`--mdmark-color-surface`・`--mdmark-color-border`・`--mdmark-color-text` の計算済みの色と一致し、枠線の `stroke` が `url(` で始まらない
       - sequenceDiagram の `actor` の場所に、lucide の人のアイコンの `svg` がある
-      - 図の枠の右上のパネルに拡大・縮小・全画面のボタン、右下にリサイズハンドルがある
+      - 図の枠の右上のパネルに拡大・縮小・全画面のボタン、表示する枠の下端にリサイズハンドルがある
     test: test_normal_when_mermaid_drawn
   - name: 正常系（明暗が変わったら mermaid の図を再描画する）
     summary: 描く先の配色の明暗が変わったら、変わった後の CSS 変数で mermaid の図を再描画する
@@ -12634,26 +12634,28 @@ constraints:
     decided_by: SC-472-25#scenarios[正常シナリオ（利用側の pre への汎用の CSS）]
     notes: 優先のさせ方は確認ログの決定（層の外に詳細度の高いセレクタ、推奨案 A）。外観はモック `docs/mock/refs/328/assets/wrap.css`
   - item: 図の高さのリサイズハンドル
-    constraint: '`diagram-resize` がオンのとき、文書の中の図の部品（埋め込んだ HTML の中のチャートを含む）の表示する枠の右下に、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前 `「{図の題名}」の表示の高さ` と、`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（表示する枠の高さの px）を持つリサイズハンドルを配置する。
+    constraint: '`diagram-resize` がオンのとき、文書の中の図の部品（埋め込んだ HTML の中のチャートを含む）の表示する枠の下端に、枠線と面を持たない高さ 24 CSS px 以上の帯で、中央に横棒を持ち、表示する枠の横のスクロールバーと重ならない、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・スクリーンリーダー向けの名前 `「{図の題名}」の表示の高さ` と、`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（表示する枠の高さの px。`aria-valuemax` は 120px・図の全体が今の倍率で収まる高さ・今の高さの最大）を持つリサイズハンドルを配置する。
+
+      帯のどこを押してもドラッグできる。
 
       ドラッグした分だけ表示する枠の高さを変え（幅は変えない）、フォーカスの間は `↑` で 32px 低く、`↓` で 32px 高くする。
 
-      高さは 120px 以上、図の全体が今の倍率で収まる高さ以下にする。
+      高さは 120px 以上、図の全体が今の倍率で収まる高さ以下にする（map の図は上限を持たず、ドラッグした分だけ高くする）。
 
       高さを変えたら今の倍率と位置は保ち、全体が収まる倍率（下限と倍率のボタンの戻し先）をもう一度求める。
 
       文書の中の図のこの倍率は、高さを変える前は幅だけ、変えた後は幅と変えた高さで決める。
 
-      ダブルクリックで定義と `--mdmark-diagram-max-height` から決定する高さに戻す。
+      ダブルクリックで、倍率を変えずに今の倍率の図の全体が収まる高さにする。
 
-      変えた高さを図ごとのキーで sessionStorage に記載し、描くときに読み込んでその高さで開き、戻したらキーを削除する。
+      変えた高さを図ごとのキーで sessionStorage に記載し、描くときに読み込んでその高さで開く。
 
       sessionStorage を使用できないときは例外を外へ出さず、高さを保たない。
 
       全画面のモーダルの中と印刷では出さない。
 
       `update` でもう一度付け、`destroy` で受け取りを解除する'
-    notes: '上限は [図のリサイズハンドルで、表示の範囲の max-height（36rem）より高くできない](https://github.com/shuhei1101/mdmark/issues/198) の修正（今の倍率の図の高さ）のまま。図ごとのキーの決め方はモジュール構成設計。1 回の量と下限はモックの値'
+    notes: '押せる範囲は [図の枠のリサイズハンドルの押せる範囲を 24px 以上にする](https://github.com/shuhei1101/mdmark/issues/806) の修正。見た目は確認ログの決定（帯と中央の横棒、推奨案 A）で、外観はモック `docs/mock/refs/42/assets/diagram.css`。図ごとのキーの決め方はモジュール構成設計。1 回の量と下限はモックの値'
   - item: ブロックの間隔
     constraint: 本文の直下・セクションの中身（`.mdmark-section-body`）・タブの中身（`.mdmark-tab-panel`）のブロック同士の縦の間を `--mdmark-space`、リストの項目・引用・`details`・行の詳細（`.mdmark-row-detail > td`）の中のブロック同士の間を `calc(var(--mdmark-space) / 2)` にする。後のブロックがコードブロック（`.mdmark-code`）・ファイルツリー（`.mdmark-tree`）・記法の部品のときも同じ間を空ける。見出しは上の余白に、区切り線は上下の余白に、自分の規則の値を使用する。先頭のブロックの上には間を空けない
     notes: '[コードブロックとファイルツリーの直前の要素との間隔が 0px になり、くっついて表示される](https://github.com/shuhei1101/mdmark/issues/326)'

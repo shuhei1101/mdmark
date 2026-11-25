@@ -57,7 +57,7 @@ states:
   - name: ResizeHandleFocused
     description: リサイズハンドルにフォーカスした。フォーカスの枠が見える
   - name: ResizeOff
-    description: 機能 `diagram-resize` がオフ。右下にリサイズハンドルが無い
+    description: 機能 `diagram-resize` がオフ。表示する枠の下端にリサイズハンドルが無い
     args:
       - name: resizable
         value: "'false'"
@@ -222,8 +222,10 @@ states:
       定義: MapExportOpen と同じ図で、PNG にできなかった後の状態（`role="status"` の文を入れた要素）を描く。`HTMLCanvasElement.prototype.toBlob` を `null` を渡す関数に差し替えて PNG を押す動きは、単体テスト `test_attach_map_export_when_png_unavailable` で確認する
   - name: FitTall
     description: 縦に長い図を `--mdmark-diagram-max-height` で切られた表示する枠で開いたとき。全体が収まる倍率でも図が枠に縦に収まらず、表示する枠は `data-at-fit` を持たずに縦にもスクロールする（指の縦の移動で図の中を動かせる）
+  - name: ResizeHandleHover
+    description: リサイズハンドルにポインターを乗せた。中央の横棒の色が `--mdmark-color-text` になる
 lead: |-
-  図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、表示する枠の右上に重ねたボタンのパネルと、拡大・縮小・移動・ピンチ・全画面のモーダルと、表示する枠の高さを変える右下のリサイズハンドルを持つ。
+  図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、表示する枠の右上に重ねたボタンのパネルと、拡大・縮小・移動・ピンチ・全画面のモーダルと、表示する枠の高さを変える下端のリサイズハンドルを持つ。
   パネルと表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方（図の枠の幅が 30rem 未満のとき 1.5rem）、パネルの余白は 0.125rem。
 args:
   - name: kind
@@ -338,7 +340,7 @@ events:
   - name: 高さを変える・戻す
     when: リサイズハンドルをドラッグする、フォーカスして `↑`・`↓` を押す。ダブルクリックする
     value: 表示する枠の高さとリサイズハンドルの `aria-valuenow`
-    description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px 以上で上限は持たない）、全体が収まる倍率をもう一度求める。ダブルクリックで倍率を変えずに、今の倍率の図の全体が収まる高さにする'
+    description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px 以上。`kind` が `map` の図を除き、今の倍率の図の全体が収まる高さを超えない）、全体が収まる倍率をもう一度求める。ダブルクリックで倍率を変えずに、今の倍率の図の全体が収まる高さにする'
   - name: パネルを開く・畳む
     when: 開閉のボタンを押す
     value: '`panelOpen`（開閉のボタンの `aria-expanded`）'
@@ -369,7 +371,7 @@ accessibility:
   - パネルは `role="toolbar"` と `aria-label="「{題名}」の表示"` を持つ。縮小・拡大・全画面・開閉のボタンはアイコンだけで、スクリーンリーダー向けの名前を `縮小`・`拡大`・`全画面で開く`・`全画面を閉じる`・`表示の操作を開く`（開いたとき `表示の操作を閉じる`）にする。開閉のボタンは `aria-expanded` を持ち、畳んだときも開いたときもパネルの右上の同じ位置にある。ボタンは 24px 四方を下回らない
   - 倍率は縮小と拡大の間のボタンに、全体が収まる倍率を 100% とした今の倍率を `125%` の構造（等幅の数字）で出し、スクリーンリーダー向けの名前を `倍率 {今の倍率}。全体が収まる倍率に戻す` にする（今の名前 `全体が収まる倍率に戻す` で探せる。[コードブロックの HTML を表示し、図・チャートの部品とヒントを持たせる](https://github.com/shuhei1101/mdmark/issues/6) の確認ログ）
   - 凡例は `aria-label="凡例"` の `ul` で、色の見本に名前を並べ、色だけで意味を伝えない
-  - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に配置する枠線と面を持たない帯で、横の 2 本線のアイコン（lucide の `equal`）を持つ `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
+  - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に配置する枠線と面を持たない高さ 24 CSS px 以上の帯で、中央に 40×4 CSS px の角の丸い横棒（`span.mdmark-diagram-resize-bar`。色は平常時 `--mdmark-color-muted`、ポインターを乗せたとき・フォーカスの間・操作している間は `--mdmark-color-text`）を持ち、帯のどこでもドラッグできる `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は 120px・今の倍率の図の全体が収まる高さ・今の高さの最大）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
   - 書き出すボタンはアイコンだけで、スクリーンリーダー向けの名前を `図を書き出す` にし、`aria-expanded` と、開く要素を指す `aria-controls` を持つ（`aria-haspopup` は付けない）。開く要素の 2 つのボタンは文字「SVG」「PNG」を持ち、Tab で移る
   - 一覧の表示のボタンはアイコンだけで、スクリーンリーダー向けの名前を `一覧で表示` にし、`aria-pressed` で切り替えた状態を伝える
 status: planned

@@ -488,9 +488,11 @@ test("test_render_diagram_frame_when_resizable", async () => {
   expect(lowHandle).toContain('aria-valuenow="120"');
   expect(lowHandle).toContain('aria-valuemax="120"');
   expect(lowHandle).toContain('aria-valuetext="120px"');
-  expect(outerHtml(omitted, 'class="mdmark-diagram-resize"')).toContain(
-    iconSvg("equal"),
+  const handleHtml = outerHtml(omitted, 'class="mdmark-diagram-resize"');
+  expect(handleHtml.match(/class="mdmark-diagram-resize-bar"/g)).toHaveLength(
+    1,
   );
+  expect(handleHtml).not.toContain("<svg");
   expect(off).not.toContain("mdmark-diagram-resize");
   expect(modal).not.toContain("mdmark-diagram-resize");
 });
@@ -595,7 +597,7 @@ test("test_render_diagram_frame_when_resize_strip", async () => {
   expect(html.indexOf("mdmark-diagram-resize")).toBeGreaterThan(
     html.indexOf("mdmark-diagram-viewport"),
   );
-  expect(handle?.[1]).toContain(iconSvg("equal"));
+  expect(handle?.[1]).toContain('<span class="mdmark-diagram-resize-bar">');
 });
 
 // グラフの項目の名前と値を出す（正常系）

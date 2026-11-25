@@ -929,7 +929,7 @@
     figure.dataset.kind = def.kind;
     // グループのタイトルを上端に留めるか（定義の stickyTitles: false で切る）
     figure.dataset.stickyTitles = def.stickyTitles === false ? "off" : "on";
-    // リサイズハンドル: 文書の中の図だけに置く（全画面のモーダルの中と、機能をオフにした文書には置かない）。高さを ↑↓ で変える区切りとして role="separator" にし、今の高さを aria-valuenow で伝える
+    // リサイズハンドル: 文書の中の図だけに置く（全画面のモーダルの中と、機能をオフにした文書には置かない）。高さを ↑↓ で変える区切りとして role="separator" にし、今の高さを aria-valuenow で伝える。見た目は表示枠の下の 24px の帯の中央の横棒（shadcn/ui の Drawer の取っ手と同じ形）
     const resizable = !modal && !figure.closest('[data-mock-resize="off"]');
     const legend = legendItems(def, fid);
     figure.innerHTML = `
@@ -942,7 +942,7 @@
         <div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${fid}-title" aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight">
           <div class="mdmark-diagram-sizer"><div class="mdmark-diagram-stage" style="width:${body.width}px;height:${body.height}px">${body.html}</div></div>
         </div>
-        ${resizable ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${esc(def.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで元の高さに戻す">${icon("grip")}</div>` : ""}
+        ${resizable ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${esc(def.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする"><span class="mdmark-diagram-resize-bar"></span></div>` : ""}
         ${tips.list.map((t) => `<div class="mdmark-diagram-tip" id="${t.id}" role="tooltip" data-tip-for="${esc(t.label)}" hidden>${t.html}</div>`).join("")}
       </div>
       <ul class="mdmark-diagram-legend" aria-label="凡例"${legend.length ? "" : " hidden"}>${legend.join("")}</ul>
@@ -1005,9 +1005,10 @@
     const handleEl = figure.querySelector(".mdmark-diagram-resize");
     const updateHandle = () => {
       if (!handleEl) return;
-      const max = Math.round(state.height * Math.max(state.scale, Math.min(1, viewport.clientWidth / state.width)));
+      // 上限は持たないため、aria-valuemax は図の全体が収まる高さ（図の高さ × 今の倍率）と今の高さの大きいほう
+      const fit = Math.round(state.height * state.scale);
       handleEl.setAttribute("aria-valuemin", String(RESIZE_MIN_PX));
-      handleEl.setAttribute("aria-valuemax", String(Math.max(RESIZE_MIN_PX, max)));
+      handleEl.setAttribute("aria-valuemax", String(Math.max(RESIZE_MIN_PX, fit, Math.round(viewport.offsetHeight))));
       handleEl.setAttribute("aria-valuenow", String(Math.round(viewport.offsetHeight)));
     };
 
@@ -1237,13 +1238,12 @@
       }
     }).observe(viewport);
 
-    // リサイズハンドル: ドラッグと上下キーで表示枠の高さを縦にだけ変え、ダブルクリックで定義から決まる高さに戻す。変えた高さは同じタブの間 sessionStorage に持つ
+    // リサイズハンドル: ドラッグと上下キーで表示枠の高さを縦にだけ変え、ダブルクリックで倍率を変えずに図の全体が収まる高さにする。変えた高さは同じタブの間 sessionStorage に持つ
     const handle = figure.querySelector(".mdmark-diagram-resize");
     const heightKey = `${HEIGHT_KEY_PREFIX}:${location.pathname}:${[...document.querySelectorAll(".mdmark-diagram")].indexOf(figure)}`;
-    /** 表示枠の高さを変える。上限は、幅で決まる倍率と今の倍率の大きいほうで図の全体が収まる高さ。 */
+    /** 表示枠の高さを変える。下限は RESIZE_MIN_PX で、上限は持たない（図の高さ × 今の倍率を越えても高くできる）。 */
     const setHeight = (h) => {
-      const max = state.height * Math.max(state.scale, Math.min(1, viewport.clientWidth / state.width));
-      state.userHeight = Math.round(Math.max(RESIZE_MIN_PX, Math.min(max, h)));
+      state.userHeight = Math.round(Math.max(RESIZE_MIN_PX, h));
       viewport.style.maxHeight = "none";
       viewport.style.height = `${state.userHeight}px`;
       sessionStorage.setItem(heightKey, String(state.userHeight));
@@ -1284,12 +1284,7 @@
         event.stopPropagation();
         setHeight(viewport.offsetHeight + delta);
       });
-      handle.addEventListener("dblclick", () => {
-        state.userHeight = null;
-        viewport.style.maxHeight = "";
-        sessionStorage.removeItem(heightKey);
-        reset();
-      });
+      handle.addEventListener("dblclick", () => setHeight(state.height * state.scale));
     }
 
     reset();

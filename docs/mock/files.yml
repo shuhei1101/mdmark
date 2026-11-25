@@ -1425,6 +1425,10 @@ files:
     visibility: internal
     description: '部品『右側の目次』のモック: 狭い幅の目次のバーを留める位置に固定する今の見せ方と、案 A（本文の先頭にだけ配置する）・案 B（下へスクロール中は隠す）・案 C（目次を開くボタンだけを固定する）を、スマートフォンの幅の見本で並べる。狭い幅の目次の見せ方を決めるときに参照する。'
     tags: [topic:モック, topic:目次]
+  - path: refs/809/index.md
+    visibility: internal
+    description: '#809（図の枠のリサイズハンドルの 24px の帯・部品『media』のモックのライトボックスのボタン）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
   - path: refs/805/index.md
     visibility: internal
     description: '#805（埋め込んだ動画に比率を保つリサイズハンドルを付ける）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'

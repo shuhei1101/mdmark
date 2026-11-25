@@ -1,0 +1,49 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 読者が、表示する枠の下端の高さ 24 CSS px 以上の帯のリサイズハンドルで、図の表示する枠の高さを変える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-62.yaml
+    impact: changed
+    detail: 機能 diagram-resize をオフにした文書で、表示する枠の下端にリサイズハンドルが出ない
+    depends_on: []
+docs:
+  - page: docs/guide/図を描く-図を描く.md
+    new: false
+    change: 読者ができることの、リサイズハンドルの場所と見た目を、表示する枠の下端の高さ 24px 以上の帯と中央の横棒にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T11:06:08.114025+00:00'
+  - page: docs/guide/構成図の決まり.mark.md
+    new: false
+    change: 操作の表の「表示する枠の高さ」の行を、下端の押せる範囲 24px 以上の帯と、図の全体が収まる高さを越えても高くできることにする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T11:06:08.114025+00:00'
+  - page: docs/guide/図を描く-mermaidの図を描く.md
+    new: false
+    change: mermaid の図の操作の説明のリサイズハンドルの場所を、図を描くと同じ内容に揃える
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T11:06:08.114025+00:00'
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 用語『リサイズハンドル』の説明の図の部品のリサイズハンドルの場所を、右下から表示する枠の下端にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T11:06:08.114025+00:00'
+  - page: docs/guide/カスタマイズ-機能をオン・オフする.md
+    change: 機能 `diagram-resize` の説明の図のリサイズハンドルの場所を、右下から表示する枠の下端にする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T11:10:33.338357+00:00'
+    new: false
+scope_out:
+  - item: 表の列の幅のつまみの押せる幅（細かいポインターで 12px）と、列の幅を変えるドラッグの代替
+    reason: 同じ規約の同じ型の箇所だが、要望の図の枠のリサイズハンドルとは別の部品で、この作業 PR がマージされなくても同じ内容で成り立つ
+    plan: '#810'
+  - item: 動画のリサイズハンドル（#805 で押せる範囲 24×24 と大きさのメニューにした）の見た目と操作の変更
+    reason: 要望に含まれない。図の枠のリサイズハンドルの代替の操作を動画のハンドルと揃えるかは設計で決めるが、動画のハンドル自体は変えない
+    plan: none

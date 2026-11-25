@@ -67,6 +67,11 @@ export const ResizeHandleFocused: Story = {
   args: { focusResize: true },
 };
 
+export const ResizeHandleHover: Story = {
+  name: "ResizeHandleHover",
+  parameters: { server: { id: "diagram-frame" } },
+};
+
 export const ResizeOff: Story = {
   name: "ResizeOff",
   parameters: { server: { id: "diagram-frame" } },

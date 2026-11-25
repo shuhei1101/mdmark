@@ -14311,6 +14311,19 @@ test("test_normal_when_diagram_resized", async () => {
   expect(handle.getAttribute("aria-label")).toBe(
     "「縦に長いデータ」の表示の高さ",
   );
+  // 検証: 表示する枠の下端の高さ 24px 以上の帯で、中央に横棒がある
+  const strip = handle.getBoundingClientRect();
+  const frameBox = viewportOf(figure).getBoundingClientRect();
+  expect(strip.height).toBeGreaterThanOrEqual(24);
+  expect(strip.top).toBeGreaterThanOrEqual(frameBox.bottom - 1);
+  const bar = find<HTMLElement>(handle, ".mdmark-diagram-resize-bar");
+  const barBox = bar.getBoundingClientRect();
+  expect(barBox.width).toBeCloseTo(40, 0);
+  expect(barBox.height).toBeCloseTo(4, 0);
+  expect(
+    Math.abs(barBox.left + barBox.width / 2 - (strip.left + strip.width / 2)),
+  ).toBeLessThanOrEqual(1);
+  expect(handle.querySelector("svg")).toBeNull();
   await vi.waitFor(() => expect(scaleOf(figure)).toBeGreaterThan(0));
   const opened = viewportHeight(figure);
   const openedScale = scaleOf(figure);
@@ -15885,7 +15898,15 @@ test(
       expect(
         figure.querySelector('button[aria-label="全画面で開く"]'),
       ).not.toBeNull();
-      expect(figure.querySelector(".mdmark-diagram-resize")).not.toBeNull();
+      // リサイズハンドルは表示する枠の下端にある
+      expect(
+        find<HTMLElement>(
+          figure,
+          ".mdmark-diagram-resize",
+        ).getBoundingClientRect().top,
+      ).toBeGreaterThanOrEqual(
+        viewportOf(figure).getBoundingClientRect().bottom - 1,
+      );
     }
   },
   MERMAID_WAIT_MS + 30_000,
