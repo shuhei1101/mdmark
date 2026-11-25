@@ -4,7 +4,7 @@
 // モックの見本だけの指定: data-mock-zoom（開いたときの倍率）・data-mock-scroll（開いたときの位置。図の座標の "x,y"）・
 // data-mock-open（開いたままにするツールチップの持ち主。線の id・"node:{箱の id}"・"term:{語}"）・data-mock-copy（"copied" / "failed" の知らせを出したまま）・
 // data-mock-hints="off"（機能 hints をオフにした文書。figure か祖先に書く。線の詳細・箱の入力・処理・出力・箱の hint のツールチップと印を出さない）・
-// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-fit-min（全体が収まる倍率の下限。figure か祖先に書く。map の図は 1）・data-mock-touch="native"（指の 1 本のドラッグをブラウザのスクロール、ピンチを図の倍率にする。figure か祖先に書く）・data-mock-zoom-range（倍率の範囲 "{下限},{上限}"。開いたときの倍率に対する比。figure か祖先に書く）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）
+// data-mock-resize="off"（リサイズハンドルの機能をオフにした文書。figure か祖先に書く）・data-mock-fit-min（全体が収まる倍率の下限。figure か祖先に書く。map の図は 1）・data-mock-touch="native"（指の 1 本のドラッグをブラウザのスクロール、ピンチを図の倍率にする。figure か祖先に書く）・data-mock-zoom-range（倍率の範囲 "{下限},{上限}"。開いたときの倍率に対する比。figure か祖先に書く）・data-mock-height（リサイズハンドルで変えた高さ（px）。sessionStorage を読まずにその高さで開く）・data-mock-menu-open（リサイズハンドルの高さのメニューを開いたまま見せる）
 
 // sample.js・glossary.js と同じ大域に読むため、宣言をブロックに閉じる
 {
@@ -39,6 +39,9 @@
     foldColumns: '<path d="m7 20 5-5 5 5"/><path d="m7 4 5 5 5-5"/>',
     unfoldColumns: '<path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/>',
     // リサイズハンドル（lucide の grip-horizontal）
+    minus: '<path d="M5 12h14"/>',
+    plus: '<path d="M5 12h14"/><path d="M12 5v14"/>',
+    "fold-vertical": '<path d="M12 22v-6"/><path d="M12 8V2"/><path d="M4 12H2"/><path d="M10 12H8"/><path d="M16 12h-2"/><path d="M22 12h-2"/><path d="m15 19-3-3-3 3"/><path d="m15 5-3 3-3-3"/>',
     grip: '<circle cx="12" cy="9" r="1"/><circle cx="19" cy="9" r="1"/><circle cx="5" cy="9" r="1"/><circle cx="12" cy="15" r="1"/><circle cx="19" cy="15" r="1"/><circle cx="5" cy="15" r="1"/>',
   };
 
@@ -929,7 +932,7 @@
     figure.dataset.kind = def.kind;
     // グループのタイトルを上端に留めるか（定義の stickyTitles: false で切る）
     figure.dataset.stickyTitles = def.stickyTitles === false ? "off" : "on";
-    // リサイズハンドル: 文書の中の図だけに置く（全画面のモーダルの中と、機能をオフにした文書には置かない）。高さを ↑↓ で変える区切りとして role="separator" にし、今の高さを aria-valuenow で伝える
+    // リサイズハンドル: 文書の中の図だけに置く（全画面のモーダルの中と、機能をオフにした文書には置かない）。押す（動かさずに離す）か Enter で高さのメニューを開くボタンにする（動画のリサイズハンドルと同じ）
     const resizable = !modal && !figure.closest('[data-mock-resize="off"]');
     const legend = legendItems(def, fid);
     figure.innerHTML = `
@@ -942,7 +945,7 @@
         <div class="mdmark-diagram-viewport" tabindex="0" role="group" aria-roledescription="図" aria-labelledby="${fid}-title" aria-keyshortcuts="+ - 0 ArrowLeft ArrowUp ArrowDown ArrowRight">
           <div class="mdmark-diagram-sizer"><div class="mdmark-diagram-stage" style="width:${body.width}px;height:${body.height}px">${body.html}</div></div>
         </div>
-        ${resizable ? `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${esc(def.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで元の高さに戻す">${icon("grip")}</div>` : ""}
+        ${resizable ? `<button class="mdmark-diagram-resize" type="button" aria-label="「${esc(def.title)}」の表示の高さを変える" aria-keyshortcuts="ArrowUp ArrowDown" title="ドラッグか ↑ ↓ で高さを変える。押すと高さのメニューを開く。ダブルクリックで図の全体が収まる高さにする"><span class="mdmark-diagram-resize-grip">${icon("grip")}</span></button>` : ""}
         ${tips.list.map((t) => `<div class="mdmark-diagram-tip" id="${t.id}" role="tooltip" data-tip-for="${esc(t.label)}" hidden>${t.html}</div>`).join("")}
       </div>
       <ul class="mdmark-diagram-legend" aria-label="凡例"${legend.length ? "" : " hidden"}>${legend.join("")}</ul>
@@ -1001,14 +1004,11 @@
     };
     viewport.addEventListener("scroll", stickHeads, { passive: true });
 
-    /** リサイズハンドルの今の高さ・最小・最大（px）を読み上げに伝える。 */
-    const handleEl = figure.querySelector(".mdmark-diagram-resize");
+    /** 高さのメニューの「低くする」を、表示枠が下限の高さのときは押せなくする（上限は持たない）。 */
+    let heightMenu = null;
     const updateHandle = () => {
-      if (!handleEl) return;
-      const max = Math.round(state.height * Math.max(state.scale, Math.min(1, viewport.clientWidth / state.width)));
-      handleEl.setAttribute("aria-valuemin", String(RESIZE_MIN_PX));
-      handleEl.setAttribute("aria-valuemax", String(Math.max(RESIZE_MIN_PX, max)));
-      handleEl.setAttribute("aria-valuenow", String(Math.round(viewport.offsetHeight)));
+      if (!heightMenu) return;
+      heightMenu.querySelector('[data-height="lower"]').disabled = viewport.offsetHeight <= RESIZE_MIN_PX + 0.5;
     };
 
     /** グループ（システムの枠・層）のタイトルを、グループが表示枠に見えている間だけ上端に留める。システムの枠のタイトルの下に層のタイトルを重ねる。 */
@@ -1237,13 +1237,12 @@
       }
     }).observe(viewport);
 
-    // リサイズハンドル: ドラッグと上下キーで表示枠の高さを縦にだけ変え、ダブルクリックで定義から決まる高さに戻す。変えた高さは同じタブの間 sessionStorage に持つ
+    // リサイズハンドル: ドラッグ・上下キー・高さのメニューで表示枠の高さを縦にだけ変え、ダブルクリックとメニューで図の全体が収まる高さにする。変えた高さは同じタブの間 sessionStorage に持つ
     const handle = figure.querySelector(".mdmark-diagram-resize");
     const heightKey = `${HEIGHT_KEY_PREFIX}:${location.pathname}:${[...document.querySelectorAll(".mdmark-diagram")].indexOf(figure)}`;
-    /** 表示枠の高さを変える。上限は、幅で決まる倍率と今の倍率の大きいほうで図の全体が収まる高さ。 */
+    /** 表示枠の高さを変える。下限は RESIZE_MIN_PX で、上限は持たない（図の高さ × 今の倍率を越えても高くできる）。 */
     const setHeight = (h) => {
-      const max = state.height * Math.max(state.scale, Math.min(1, viewport.clientWidth / state.width));
-      state.userHeight = Math.round(Math.max(RESIZE_MIN_PX, Math.min(max, h)));
+      state.userHeight = Math.round(Math.max(RESIZE_MIN_PX, h));
       viewport.style.maxHeight = "none";
       viewport.style.height = `${state.userHeight}px`;
       sessionStorage.setItem(heightKey, String(state.userHeight));
@@ -1253,6 +1252,18 @@
       state.atFit = false;
       apply(Math.max(state.fit, state.scale));
       updateHandle();
+      placeHeightMenu();
+    };
+    /** 倍率を変えずに、図の全体が収まる高さ（図の高さ × 今の倍率）にする。 */
+    const fitHeight = () => setHeight(state.height * state.scale);
+    /** 開いている高さのメニューを、ハンドルの下に右端を合わせて配置する。下に入らなければ上に配置する。 */
+    const placeHeightMenu = () => {
+      if (!heightMenu?.matches(":popover-open")) return;
+      const rect = handle.getBoundingClientRect();
+      const below = rect.bottom + 4;
+      const top = below + heightMenu.offsetHeight > window.innerHeight ? rect.top - 4 - heightMenu.offsetHeight : below;
+      heightMenu.style.top = `${top}px`;
+      heightMenu.style.left = `${Math.max(8, rect.right - heightMenu.offsetWidth)}px`;
     };
     if (handle) {
       const saved = Number(figure.dataset.mockHeight ?? sessionStorage.getItem(heightKey));
@@ -1260,15 +1271,64 @@
         state.userHeight = saved;
         viewport.style.maxHeight = "none";
       }
+      // 高さのメニュー: ハンドルを押す（動かさずに離す）か Enter・Space で開く、ドラッグの代わりの 3 つのボタン。popover で最前面に出す。開閉・外を押して閉じる動作・Esc・aria-expanded はブラウザに任せる
+      heightMenu = document.createElement("div");
+      heightMenu.className = "mdmark-diagram-height-menu";
+      heightMenu.popover = "auto";
+      heightMenu.setAttribute("role", "group");
+      heightMenu.setAttribute("aria-label", `「${figure.querySelector(".mdmark-diagram-title").textContent}」の表示の高さ`);
+      heightMenu.innerHTML = `
+        <button type="button" data-height="lower">${icon("minus")}低くする</button>
+        <button type="button" data-height="higher">${icon("plus")}高くする</button>
+        <button type="button" data-height="fit">${icon("fold-vertical")}全体が収まる高さに合わせる</button>`;
+      document.body.append(heightMenu);
+      handle.popoverTargetElement = heightMenu;
+      handle.popoverTargetAction = "toggle";
+      heightMenu.addEventListener("toggle", (event) => {
+        handle.classList.toggle("is-open", event.newState === "open");
+        // 開いたら、ボタンの押せる・押せないを合わせ、ハンドルのそばに配置して、最初の押せるボタンへフォーカスを移す
+        if (event.newState === "open") {
+          updateHandle();
+          placeHeightMenu();
+          heightMenu.querySelector("button:not(:disabled)")?.focus();
+          return;
+        }
+        // Esc・外を押して閉じたときは、フォーカスをハンドルへ戻す
+        if (heightMenu.contains(document.activeElement)) handle.focus();
+      });
+      heightMenu.addEventListener("click", (event) => {
+        const button = event.target.closest("button[data-height]");
+        if (!button) return;
+        if (button.dataset.height === "lower") setHeight(viewport.offsetHeight - RESIZE_STEP_PX);
+        if (button.dataset.height === "higher") setHeight(viewport.offsetHeight + RESIZE_STEP_PX);
+        if (button.dataset.height === "fit") fitHeight();
+        // 押したボタンが押せなくなったら、押せるボタンへフォーカスを移す
+        if (button.disabled) heightMenu.querySelector("button:not(:disabled)")?.focus();
+      });
+      // 高さを変えてハンドルが動いたときとスクロールしたときも、開いているメニューをハンドルに付けて動かす
+      window.addEventListener("scroll", placeHeightMenu, { passive: true });
+      window.addEventListener("resize", placeHeightMenu);
+
+      // ドラッグ: 押した後に DRAG_THRESHOLD を超えて動かしたらドラッグとして扱い、離した後の click でメニューを開かない
       let resizing = null;
+      let dragged = false;
       handle.addEventListener("pointerdown", (event) => {
         if (event.button !== 0) return;
         resizing = { y: event.clientY, height: viewport.offsetHeight, id: event.pointerId };
+        dragged = false;
         handle.setPointerCapture(event.pointerId);
-        handle.classList.add("is-resizing");
       });
       handle.addEventListener("pointermove", (event) => {
-        if (resizing && event.pointerId === resizing.id) setHeight(resizing.height + event.clientY - resizing.y);
+        if (!resizing || event.pointerId !== resizing.id) return;
+        if (!dragged && Math.abs(event.clientY - resizing.y) < DRAG_THRESHOLD) return;
+        dragged = true;
+        handle.classList.add("is-resizing");
+        setHeight(resizing.height + event.clientY - resizing.y);
+      });
+      handle.addEventListener("click", (event) => {
+        if (!dragged) return;
+        dragged = false;
+        event.preventDefault();
       });
       const endResize = () => {
         resizing = null;
@@ -1284,15 +1344,20 @@
         event.stopPropagation();
         setHeight(viewport.offsetHeight + delta);
       });
+      // ダブルクリック: 倍率を変えずに図の全体が収まる高さにする（2 回目の押下で開いたメニューは閉じる）
       handle.addEventListener("dblclick", () => {
-        state.userHeight = null;
-        viewport.style.maxHeight = "";
-        sessionStorage.removeItem(heightKey);
-        reset();
+        fitHeight();
+        if (heightMenu.matches(":popover-open")) heightMenu.hidePopover();
       });
     }
 
     reset();
+
+    // モックの見本: 高さのメニューを開いたまま見せる（[data-mock-menu-open]。開いた位置を保つため、外を押しても閉じない manual にする）
+    if (heightMenu && figure.dataset.mockMenuOpen !== undefined) {
+      heightMenu.popover = "manual";
+      requestAnimationFrame(() => heightMenu.showPopover());
+    }
 
     // モックの見本: 開いたときの倍率と位置を変えて見せる
     if (figure.dataset.mockZoom) {
