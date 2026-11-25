@@ -354,7 +354,42 @@
   cursor: pointer;
 }
 
-/* リサイズハンドル: map の図も、図の枠の部品と同じ表示する枠の下の 24px の帯と中央の横棒（refs/42/assets/diagram.css） */
+/* リサイズハンドル: 図の枠の部品（refs/42/assets/diagram.css）と同じく、表示する枠の下に高さ 24px（タップの対象の下限）の帯を置き、帯のどこでも上下にドラッグできる。
+   枠線と面を持たず、見た目は帯の中央の横棒だけ（shadcn/ui の Drawer の取っ手と同じ形）。横棒は背景とのコントラスト 3:1 以上 */
+.map-figure .mdmark-diagram-resize {
+  position: static;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  width: auto;
+  height: 24px;
+  padding: 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  color: var(--mdmark-color-muted);
+  cursor: ns-resize;
+  touch-action: none;
+}
+.map-figure .mdmark-diagram-resize:hover,
+.map-figure .mdmark-diagram-resize.is-resizing {
+  background: none;
+  color: var(--mdmark-color-text);
+}
+.map-figure .mdmark-diagram-resize:focus-visible {
+  outline: 2px solid var(--mdmark-color-link);
+  outline-offset: -2px;
+  border-radius: 0 0 var(--mdmark-radius) var(--mdmark-radius);
+  color: var(--mdmark-color-text);
+}
+/* 帯の中央の横棒: 幅 40px・高さ 4px の角の丸い棒 */
+.map-figure .mdmark-diagram-resize-bar {
+  width: 40px;
+  height: 4px;
+  border-radius: 9999px;
+  background: currentColor;
+}
 /* ノードの名前は、日本語でも文節の切れ目で折り返す */
 .map-figure .mdmark-diagram-node-name {
   word-break: auto-phrase;

@@ -75,11 +75,13 @@ const ICONS = {
   server: '<rect width="20" height="8" x="2" y="2" rx="2" ry="2"/><rect width="20" height="8" x="2" y="14" rx="2" ry="2"/><line x1="6" x2="6.01" y1="6" y2="6"/><line x1="6" x2="6.01" y1="18" y2="18"/>',
   bot: '<path d="M12 8V4H8"/><rect width="16" height="12" x="4" y="8" rx="2"/><path d="M2 14h2"/><path d="M20 14h2"/><path d="M15 13v2"/><path d="M9 13v2"/>',
   expand: '<path d="m9 18 6-6-6-6"/>',
-  resize: '<line x1="5" x2="19" y1="9" y2="9"/><line x1="5" x2="19" y1="15" y2="15"/>',
 };
 
-/** リサイズハンドルは図の枠の部品の帯と中央の横棒のまま使う */
-const replaceResizeIcon = () => {};
+/** リサイズハンドルのアイコンを、帯の中央の横棒にする（今の部品のアイコンを置き換える。実装では図の枠の部品で変える） */
+const replaceResizeIcon = (figure) => {
+  const handle = figure.querySelector(".mdmark-diagram-resize");
+  if (handle) handle.innerHTML = '<span class="mdmark-diagram-resize-bar"></span>';
+};
 
 const icon = (name) =>
   `<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[name]}</svg>`;
