@@ -2550,6 +2550,47 @@ test("test_normal_when_cards", async () => {
   expect(html).not.toContain("iframe");
 });
 
+// width の属性を持たない動画を、ページの設定のマーカーか設定の media.width の幅で描き、width の属性を優先する（正常系（設定の既定の幅で動画を描く））
+test("test_normal_when_default_video_width", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    "![素材 1](clip.mp4)",
+    "",
+    "![素材 2](clip.mp4){width=320}",
+    "",
+    "![読み上げ](voice.mp3)",
+  ].join("\n");
+  const marked = `<!-- page: {"media": {"width": "80%"}} -->\n\n${markdown}`;
+  const config = { media: { width: "50%" } };
+  // 実行
+  const first = render(markdown, { config });
+  const second = render(marked, { config });
+  const third = render(markdown);
+  // 検証
+  const videoFigures = (html: string) =>
+    startTags(html, "figure").filter((tag) => tag.includes("mdmark-media"));
+  const [firstVideo, firstSized, firstAudio] = videoFigures(first);
+  expect(firstVideo).toBe(
+    '<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: 50%">',
+  );
+  for (const html of [first, second, third]) {
+    expect(videoFigures(html)[1]).toBe(
+      '<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: 320px">',
+    );
+  }
+  expect(firstSized).toContain("320px");
+  expect(firstAudio).toBe('<figure class="mdmark-figure mdmark-media">');
+  expect(videoFigures(second)[0]).toBe(
+    '<figure class="mdmark-figure mdmark-media" style="--mdmark-image-width: 80%">',
+  );
+  expect(second).not.toContain("page:");
+  expect(videoFigures(third)[0]).toBe(
+    '<figure class="mdmark-figure mdmark-media">',
+  );
+  expect(third).toBe(render(markdown, { config: {} }));
+});
+
 // 文書のマーカーで削除した新しい記法を、普通の Markdown として描く（正常系）
 test("test_normal_when_media_features_disabled", async () => {
   // 準備

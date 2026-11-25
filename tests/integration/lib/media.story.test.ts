@@ -254,3 +254,139 @@ test("test_open_button_print", async () => {
   expect(opener.label).toBe("操作の様子");
   expect(opener.caption).toBe("保存までの操作");
 });
+
+/** リサイズハンドル・L 字の線・大きさのメニューの出方 */
+async function readResize(page: Page) {
+  await page.waitForSelector("button.mdmark-media-resize", {
+    state: "attached",
+  });
+  return page.evaluate(() => {
+    const handle = document.querySelector(
+      "button.mdmark-media-resize",
+    ) as HTMLButtonElement;
+    const box = handle.getBoundingClientRect();
+    const video = document.querySelector("figure.mdmark-media video");
+    const videoBox = video?.getBoundingClientRect();
+    const menu = document.querySelector(
+      ".mdmark-media-size-menu",
+    ) as HTMLElement | null;
+    const menuBox = menu?.getBoundingClientRect();
+    const buttons = [...(menu?.querySelectorAll("button") ?? [])];
+    return {
+      label: handle.getAttribute("aria-label"),
+      width: box.width,
+      height: box.height,
+      right: box.right,
+      bottom: box.bottom,
+      videoRight: videoBox?.right ?? 0,
+      videoBottom: videoBox?.bottom ?? 0,
+      handleDisplay: getComputedStyle(handle).display,
+      line: getComputedStyle(handle, "::before").opacity,
+      focused: document.activeElement === handle,
+      menuOpen: menu?.matches(":popover-open") ?? false,
+      menuDisplay: menu ? getComputedStyle(menu).display : null,
+      menuInView:
+        menuBox !== undefined &&
+        menuBox.left >= 0 &&
+        menuBox.right <= window.innerWidth,
+      labels: buttons.map((button) => button.textContent),
+      disabled: buttons
+        .filter((button) => button.disabled)
+        .map((button) => button.dataset.size),
+      activeSize: (document.activeElement as HTMLElement | null)?.dataset.size,
+    };
+  });
+}
+
+// 動画の右下の角に 24×24 の押せる範囲があり、L 字の線は出さない（VideoResizable）
+test("test_video_resizable", async () => {
+  // 準備・実行
+  const page = await open("video-resizable");
+  // 検証
+  const resize = await readResize(page);
+  expect(resize.label).toBe("「素材の確認」の大きさを変える");
+  expect(resize.width).toBeGreaterThanOrEqual(24);
+  expect(resize.height).toBeGreaterThanOrEqual(24);
+  expect(Math.abs(resize.right - resize.videoRight)).toBeLessThanOrEqual(1);
+  // 押せる範囲の下 16px は動画の下に出し、再生バーと重ねない
+  expect(Math.abs(resize.bottom - resize.videoBottom - 16)).toBeLessThanOrEqual(
+    1,
+  );
+  expect(resize.line).toBe("0");
+  expect(resize.menuOpen).toBe(false);
+});
+
+// 動画にポインターを乗せると、角のすぐ下に L 字の線を出す（VideoResizableHover）
+test("test_video_resizable_hover", async () => {
+  // 準備
+  const page = await open("video-resizable-hover");
+  await page.waitForSelector("button.mdmark-media-resize", {
+    state: "attached",
+  });
+  // 実行
+  await page.hover("figure.mdmark-media video");
+  // 検証
+  await expect.poll(async () => (await readResize(page)).line).not.toBe("0");
+});
+
+// ハンドルにフォーカスすると、L 字の線とフォーカスの枠線を出す（VideoResizableFocus）
+test("test_video_resizable_focus", async () => {
+  // 準備・実行
+  const page = await open("video-resizable-focus");
+  // 検証
+  await expect.poll(async () => (await readResize(page)).focused).toBe(true);
+  const resize = await readResize(page);
+  expect(resize.line).not.toBe("0");
+  const outline = await page
+    .locator("button.mdmark-media-resize")
+    .evaluate((element) => getComputedStyle(element).outlineStyle);
+  expect(outline).not.toBe("none");
+});
+
+// 大きさのメニューを開き、元の大きさのときは「元の大きさに戻す」を押せない（VideoResizeMenu）
+test("test_video_resize_menu", async () => {
+  // 準備・実行
+  const page = await open("video-resize-menu");
+  // 検証
+  await expect.poll(async () => (await readResize(page)).menuOpen).toBe(true);
+  const resize = await readResize(page);
+  expect(resize.labels).toEqual([
+    "小さくする",
+    "大きくする",
+    "元の大きさに戻す",
+  ]);
+  expect(resize.disabled).toContain("reset");
+  expect(resize.menuInView).toBe(true);
+  expect(resize.activeSize).toBe("smaller");
+});
+
+// 幅 160px（下限）の動画では、メニューが画面の中に収まり、「小さくする」を押せない（VideoResizableNarrow）
+test("test_video_resizable_narrow", async () => {
+  // 準備・実行
+  const page = await open("video-resizable-narrow");
+  // 検証
+  await expect.poll(async () => (await readResize(page)).menuOpen).toBe(true);
+  const resize = await readResize(page);
+  expect(resize.disabled).toContain("smaller");
+  expect(resize.menuInView).toBe(true);
+  expect(resize.right).toBeLessThanOrEqual(
+    await page.evaluate(() => window.innerWidth),
+  );
+});
+
+// 印刷では、ハンドルとメニューを出さず、poster の画像とキャプションを出す（VideoResizablePrint）
+test("test_video_resizable_print", async () => {
+  // 準備
+  const page = await open("video-resizable-print");
+  await page.waitForSelector("button.mdmark-media-resize", {
+    state: "attached",
+  });
+  // 実行
+  await page.emulateMedia({ media: "print" });
+  // 検証
+  const resize = await readResize(page);
+  expect(resize.handleDisplay).toBe("none");
+  const media = await readMedia(page, "figure.mdmark-media video");
+  expect(media.printDisplay).toBe("block");
+  expect(media.caption).toBe("素材の確認");
+});

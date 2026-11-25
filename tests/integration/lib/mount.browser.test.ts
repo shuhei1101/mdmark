@@ -14426,6 +14426,180 @@ test("test_normal_when_diagram_resize_disabled", async () => {
   expect(el3.querySelector(".mdmark-diagram-resize")).toBeNull();
 });
 
+/** 動画の図の幅（px） */
+function figureWidth(figure: Element): number {
+  return figure.getBoundingClientRect().width;
+}
+
+/** 図の動画の大きさが分かるまで待つ */
+async function waitVideoSize(figure: Element): Promise<HTMLVideoElement> {
+  const video = find<HTMLVideoElement>(figure, "video");
+  await vi.waitFor(() => expect(video.videoWidth).toBeGreaterThan(0), {
+    timeout: 10000,
+  });
+  return video;
+}
+
+/** リサイズハンドルを `dx` px だけ横へドラッグする */
+function dragMediaHandle(handle: HTMLElement, dx: number): void {
+  const box = handle.getBoundingClientRect();
+  const pointer = {
+    bubbles: true,
+    pointerId: 1,
+    pointerType: "mouse",
+    button: 0,
+    clientY: box.top + box.height / 2,
+  };
+  const x = box.left + box.width / 2;
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...pointer, clientX: x }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointermove", { ...pointer, clientX: x + dx }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...pointer, clientX: x + dx }),
+  );
+}
+
+// リサイズハンドルのドラッグ・上下キー・メニューで縦横の比を保って動画の幅を変え、sessionStorage に保ち、ダブルクリックで戻す（正常系（動画の大きさを変える））
+test("test_normal_when_video_resized", async () => {
+  // 準備
+  sessionStorage.clear();
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const el = createElement();
+  el.style.width = "800px";
+  el.style.setProperty("--mdmark-padding", "0");
+  const markdown = [
+    `![素材の確認](${SAMPLE_VIDEO_URL})`,
+    "",
+    `![操作](${SAMPLE_VIDEO_URL}#b){width=480}`,
+    "",
+  ].join("\n");
+  const first = await mountTracked(el, { markdown });
+  let [figure, other] = [...el.querySelectorAll("figure.mdmark-media")];
+  if (!figure || !other) {
+    throw new Error("動画の図が 2 つ無い");
+  }
+  const video = await waitVideoSize(figure);
+  const ratio = video.videoHeight / video.videoWidth;
+  const handles = [
+    ...el.querySelectorAll<HTMLButtonElement>("button.mdmark-media-resize"),
+  ];
+  // 検証: リサイズハンドルの名前と押せる範囲
+  expect(handles.map((handle) => handle.getAttribute("aria-label"))).toEqual([
+    "「素材の確認」の大きさを変える",
+    "「操作」の大きさを変える",
+  ]);
+  for (const handle of handles) {
+    const box = handle.getBoundingClientRect();
+    expect(box.width).toBeGreaterThanOrEqual(24);
+    expect(box.height).toBeGreaterThanOrEqual(24);
+  }
+  let handle = handles[0] as HTMLButtonElement;
+  expect(figureWidth(figure)).toBeCloseTo(800, 0);
+  // 実行・検証: 200px 左へドラッグする
+  dragMediaHandle(handle, -200);
+  expect(figureWidth(figure)).toBeCloseTo(600, 0);
+  expect(
+    Math.abs(video.getBoundingClientRect().height - 600 * ratio),
+  ).toBeLessThanOrEqual(1);
+  expect(figureWidth(other)).toBeCloseTo(480, 0);
+  // 実行・検証: 動かさずに押すと大きさのメニューを開き、最初のボタンにフォーカスがある
+  await userEvent.click(handle);
+  const menu = find<HTMLElement>(el, ".mdmark-media-size-menu:popover-open");
+  expect(
+    [...menu.querySelectorAll("button")].map((button) => button.textContent),
+  ).toEqual(["小さくする", "大きくする", "元の大きさに戻す"]);
+  await vi.waitFor(() =>
+    expect(document.activeElement?.textContent).toBe("小さくする"),
+  );
+  // 実行・検証: 「大きくする」を押し、Esc で閉じてハンドルへフォーカスを戻す
+  await userEvent.click(find<HTMLButtonElement>(menu, '[data-size="larger"]'));
+  const larger = 600 + Math.round(32 / ratio);
+  expect(Math.abs(figureWidth(figure) - larger)).toBeLessThanOrEqual(1);
+  await userEvent.keyboard("{Escape}");
+  await vi.waitFor(() => expect(menu.matches(":popover-open")).toBe(false));
+  expect(document.activeElement).toBe(handle);
+  const kept = figureWidth(figure);
+  // 実行・検証: もう一度 mount すると、変えた幅で描く
+  first.destroy();
+  const second = await mountTracked(el, { markdown });
+  figure = find(el, "figure.mdmark-media");
+  await waitVideoSize(figure);
+  expect(Math.abs(figureWidth(figure) - kept)).toBeLessThanOrEqual(1);
+  // 実行・検証: ↓ で大きくし、本文の幅を超えない
+  handle = find<HTMLButtonElement>(el, "button.mdmark-media-resize");
+  handle.focus();
+  for (let i = 0; i < 10; i++) {
+    await userEvent.keyboard("{ArrowDown}");
+  }
+  expect(figureWidth(figure)).toBeCloseTo(800, 0);
+  // 実行・検証: ↑ で小さくし、160px を下回らない
+  for (let i = 0; i < 20; i++) {
+    await userEvent.keyboard("{ArrowUp}");
+  }
+  expect(figureWidth(figure)).toBeCloseTo(160, 0);
+  // 実行・検証: ダブルクリックで本文の幅に戻し、もう一度 mount しても同じ
+  await userEvent.dblClick(handle);
+  expect(figureWidth(figure)).toBeCloseTo(800, 0);
+  second.destroy();
+  await mountTracked(el, { markdown });
+  figure = find(el, "figure.mdmark-media");
+  await waitVideoSize(figure);
+  expect(figureWidth(figure)).toBeCloseTo(800, 0);
+  sessionStorage.clear();
+});
+
+// media-resize がオフの文書と設定では、動画にリサイズハンドルを配置せず、再生のボタン・表のセル・音声・画像には機能によらず配置しない（正常系（動画のリサイズハンドルの機能を解除する））
+test("test_normal_when_video_resize_disabled", async () => {
+  // 準備
+  const video = `![素材の確認](${SAMPLE_VIDEO_URL})`;
+  const plain = [
+    video,
+    "",
+    `![操作](${SAMPLE_VIDEO_URL}#m){modal}`,
+    "",
+    "| 手順 | 素材 |",
+    "| --- | --- |",
+    `| 1 | ![素材 1](${SAMPLE_VIDEO_URL}#t) |`,
+    "",
+    `![読み上げ](${SAMPLE_AUDIO_URL})`,
+    "",
+    "![画面](demo-poster.png)",
+    "",
+  ].join("\n");
+  const el = createElement();
+  const el2 = createElement();
+  const el3 = createElement();
+  // 実行
+  await mountTracked(el, {
+    markdown: `<!-- features: {"media-resize": false} -->\n\n${video}`,
+  });
+  await mountTracked(el2, { markdown: plain });
+  await mountTracked(el3, {
+    markdown: plain,
+    config: { features: { "media-resize": false } },
+  });
+  // 検証
+  expect(el.querySelector(".mdmark-media-resize")).toBeNull();
+  expect(find<HTMLVideoElement>(el, "video").controls).toBe(true);
+  expect(el.textContent).not.toContain("features:");
+  const handles = el2.querySelectorAll(".mdmark-media-resize");
+  expect(handles).toHaveLength(1);
+  expect(handles[0]?.getAttribute("aria-label")).toBe(
+    "「素材の確認」の大きさを変える",
+  );
+  expect(el2.querySelector("td .mdmark-media-resize")).toBeNull();
+  expect(
+    el2.querySelector("figure:has(audio) .mdmark-media-resize"),
+  ).toBeNull();
+  expect(
+    el2.querySelector("figure.mdmark-image .mdmark-media-resize"),
+  ).toBeNull();
+  expect(el3.querySelector(".mdmark-media-resize")).toBeNull();
+});
+
 /** 列名と 3 行の表を、`<!-- table: {"kind": "data"} -->` で囲んだ Markdown にする */
 function dataTableMarkdown(columns: string[]): string {
   const rows = [1, 2, 3].map(
