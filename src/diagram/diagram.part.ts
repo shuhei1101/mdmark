@@ -837,7 +837,7 @@ function exportPanel(frame: DiagramFrame): string {
 function resizeHandle(frame: DiagramFrame, fitHeight: number): string {
   if (frame.resizable === false || frame.modal === true) return "";
   const height = Math.round(Math.max(RESIZE.min, fitHeight));
-  return `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" aria-valuenow="${height}" aria-valuemin="${RESIZE.min}" aria-valuemax="${height}" aria-valuetext="${height}px" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする">${iconSvg("equal")}</div>`;
+  return `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="「${escapeHtml(frame.title)}」の表示の高さ" aria-keyshortcuts="ArrowUp ArrowDown" aria-valuenow="${height}" aria-valuemin="${RESIZE.min}" aria-valuemax="${height}" aria-valuetext="${height}px" title="ドラッグか ↑ ↓ で高さを変える。ダブルクリックで図の全体が収まる高さにする"><span class="mdmark-diagram-resize-bar"></span></div>`;
 }
 
 /** タイトルの横の範囲と更新日（どちらかが無ければ空） */

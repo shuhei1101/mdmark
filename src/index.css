@@ -10363,40 +10363,36 @@
       padding: 0;
     }
 
-    /* 表示枠の高さを変えるリサイズハンドル: 表示のノードの右下の角に配置し、縦にだけ動かす */
+    /* 表示枠の高さを変えるリサイズハンドル: 表示する枠の後ろに高さ 24px（タップの対象の下限）の帯を配置し、帯のどこでも上下にドラッグできる。
+       枠線と面を持たず、見た目は帯の中央の横棒だけ。表示する枠の横のスクロールバーとは重ならない */
     .mdmark-diagram-resize {
-      position: absolute;
-      inset-block-end: 3px;
-      inset-inline-end: 3px;
-      z-index: 3;
-      display: grid;
-      place-items: center;
+      display: flex;
+      justify-content: center;
+      align-items: center;
       box-sizing: border-box;
-      width: 28px;
-      height: 16px;
-      padding: 0;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: 4px;
-      background: var(--mdmark-color-bg-opaque);
+      height: 24px;
       color: var(--mdmark-color-muted);
       cursor: ns-resize;
       touch-action: none;
 
       &:hover,
       &.is-resizing {
-        background: var(--mdmark-color-surface);
-        color: var(--mdmark-color-heading);
+        color: var(--mdmark-color-text);
       }
 
       &:focus-visible {
         outline: 2px solid var(--mdmark-color-link);
-        outline-offset: 1px;
+        outline-offset: -2px;
+        border-radius: 0 0 var(--mdmark-radius) var(--mdmark-radius);
+        color: var(--mdmark-color-text);
       }
+    }
 
-      .mdmark-diagram-icon {
-        width: 16px;
-        height: 16px;
-      }
+    .mdmark-diagram-resize-bar {
+      width: 40px;
+      height: 4px;
+      border-radius: 9999px;
+      background: currentColor;
     }
 
     /* グラフの点のツールチップを取得する透明の円。フォーカスした点は輪で示す */
@@ -11563,32 +11559,6 @@
     cursor: pointer;
   }
 
-  /* リサイズハンドル: 枠線と面を持たず、表示する枠の下端（横のスクロールバーの下）の右端に横の 2 本線だけを置く。下端の帯のどこでも上下にドラッグできる */
-  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-resize {
-    position: static;
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    width: auto;
-    height: 12px;
-    padding: 0 6px;
-    border: 0;
-    border-radius: 0;
-    background: none;
-    color: var(--mdmark-color-muted);
-    cursor: ns-resize;
-    touch-action: none;
-  }
-  .mdmark-diagram[data-diagram="map"]
-    .mdmark-diagram-resize
-    .mdmark-diagram-icon {
-    width: 16px;
-    height: 12px;
-  }
-  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-resize:hover,
-  .mdmark-diagram[data-diagram="map"] .mdmark-diagram-resize:focus-visible {
-    color: var(--mdmark-color-text);
-  }
   /* ノードの名前は、日本語でも文節の切れ目で折り返す */
   .mdmark-diagram[data-diagram="map"] .mdmark-diagram-node-name {
     word-break: auto-phrase;
