@@ -25,15 +25,15 @@ functions:
       | `dblclick` | 倍率を変えずに `fit()`（今の倍率の図の全体が収まる高さ）にする |
 
       高さは `clampDiagramHeight` で収める。
-      変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax`（今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext`（`{高さ}px`）を書き換え、`onResize` を呼ぶ。
+      変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax`（`RESIZE.min`・今の倍率の図の全体が収まる高さ・今の高さの最大）・`aria-valuetext`（`{高さ}px`）を書き換え、`onResize` を呼ぶ。
 
-      変えた高さは `writeStoredSize` で `storage` の `key` に記載し、戻したら `null` でキーを削除する。付けたときは `readStoredSize` で読み込む。
+      変えた高さは `writeStoredSize` で `storage` の `key` に記載する。付けたときは `readStoredSize` で読み込む。
       ドラッグの間はリサイズハンドルに class `is-resizing` を付ける
     args:
       - name: options
-        type: '{ viewport: HTMLElement; handle: HTMLElement; key: string; storage: Storage | null; fit: () => number; onResize: (height: number | null) => void }'
+        type: '{ viewport: HTMLElement; handle: HTMLElement; key: string; storage: Storage | null; fit: () => number; onResize: (height: number) => void }'
         required: true
-        description: 表示する枠・リサイズハンドル・高さを保つキー（`diagramHeightKey`）・保つ先・今の倍率の図の全体が収まる高さを返却する関数・高さを変えたとき（戻したときは `null`）に呼ぶ関数
+        description: 表示する枠・リサイズハンドル・高さを保つキー（`diagramHeightKey`）・保つ先・今の倍率の図の全体が収まる高さを返却する関数・高さを変えたときに変えた高さで呼ぶ関数
     returns:
       type: '{ restored: number | null; detach: () => void }'
       description: 付けたときに `storage` から読み込んで適用した高さ（無ければ `null`）と、操作を削除する関数

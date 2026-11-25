@@ -26,7 +26,7 @@ functions:
       | 拡大の `disabled` | `zoom >= fit × ZOOM.maxRatio` |
       | 表示する枠の `data-at-fit` | `zoom <= fit` |
 
-      `resizable` が `true`（既定。`modal` のときは配置しない）なら、表示するノードの右下に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`）を配置する。
+      `resizable` が `true`（既定。`modal` のときは配置しない）なら、表示する枠の下端に部品設計『図の枠』のリサイズハンドル（`div.mdmark-diagram-resize`）を配置する。
       リサイズハンドルは次の初めの値を持ち、`mount` が表示する枠の高さを測って書き換える。
 
       | 属性 | 初めの値 |
@@ -43,7 +43,7 @@ functions:
       - name: frame
         type: '{ kind; title; scope?; updated?; legend; zoom?; fit?; fitMin?: number; modal?; resizable?: boolean; wide?: boolean; panelOpen?: boolean; tools?: Array<{ name: string; label: string; disabled?: boolean }>; exportable?: boolean; exportOpen?: boolean; listable?: boolean; listView?: boolean; id: string }'
         required: true
-        description: 部品設計の引数（`panelOpen` はパネルを開いた状態で描く。ストーリーの状態が指定する）と、開いたときの倍率の下限（`fitMin`。mermaid の図が指定する。map の図は `1`）と、タイトル・ツールチップに使用する `id` の頭。`wide` は本文の幅との切り替えのボタンを出さず、`tools` はパネルの先頭に並べるボタン（外へ戻るは `data-tool="back"`）。リサイズハンドルは表示する枠の下端（横のスクロールバーの下）の帯にし、アイコンを `iconSvg("equal")` にする
+        description: 部品設計の引数（`panelOpen` はパネルを開いた状態で描く。ストーリーの状態が指定する）と、開いたときの倍率の下限（`fitMin`。mermaid の図が指定する。map の図は `1`）と、タイトル・ツールチップに使用する `id` の頭。`wide` は本文の幅との切り替えのボタンを出さず、`tools` はパネルの先頭に並べるボタン（外へ戻るは `data-tool="back"`）。リサイズハンドルは表示する枠の下端（横のスクロールバーの下）の帯にし、中に横棒の `span.mdmark-diagram-resize-bar` を 1 つ持つ（アイコンは持たない）
       - name: body
         type: '{ html: string; width: number; height: number; tips: string }'
         required: true
@@ -75,7 +75,7 @@ functions:
         summary: 'リサイズハンドルを配置し、モーダルと `resizable: false` では配置しない'
         condition: '`resizable` を省いた枚、`resizable: false` の枚、`modal: true` の枚'
         mock: なし
-        expected: 省いた枚だけ `div.mdmark-diagram-resize` があり、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・`aria-label="「{題名}」の表示の高さ"`・`equal` のアイコンを持つ。`aria-valuenow`・`aria-valuemax` が `body.height × zoom` を丸めた値（`RESIZE.min` より低い本体では `RESIZE.min`）、`aria-valuemin` が `RESIZE.min`、`aria-valuetext` が `{aria-valuenow}px`
+        expected: 省いた枚だけ `div.mdmark-diagram-resize` があり、`role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"`・`aria-label="「{題名}」の表示の高さ"`・中に `span.mdmark-diagram-resize-bar` を 1 つ持ち、`svg` を持たない。`aria-valuenow`・`aria-valuemax` が `body.height × zoom` を丸めた値（`RESIZE.min` より低い本体では `RESIZE.min`）、`aria-valuemin` が `RESIZE.min`、`aria-valuetext` が `{aria-valuenow}px`
       - name: test_render_diagram_frame_when_no_legend
         case: 正常
         summary: 凡例の項目が空なら凡例を隠す
@@ -99,7 +99,7 @@ functions:
         summary: リサイズハンドルの帯
         condition: '`resizable: true`'
         mock: なし
-        expected: リサイズハンドルが表示する枠の後ろにあり、`equal` のアイコンを持つ
+        expected: リサイズハンドルが表示する枠の後ろにあり、中に横棒の `span.mdmark-diagram-resize-bar` を持つ
       - name: test_render_diagram_frame_when_panel_open
         case: 正常
         summary: パネルを開いた状態で描く
