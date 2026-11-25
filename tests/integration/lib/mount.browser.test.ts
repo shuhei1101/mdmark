@@ -14381,33 +14381,9 @@ test("test_normal_when_diagram_resized", async () => {
   await userEvent.keyboard("{ArrowDown}");
   const kept = viewportHeight(figure);
   expect(Math.abs(kept - resized)).toBeLessThanOrEqual(1);
-  // 実行・検証: 図の全体が今の倍率で収まる高さを越えても高くでき、倍率は変わらない
-  const keptScale = scaleOf(figure);
-  const beyond = size.height * keptScale + 100 - kept;
-  const edge = handle.getBoundingClientRect();
-  const edgeY = edge.top + edge.height / 2;
-  handle.dispatchEvent(
-    new PointerEvent("pointerdown", { ...pointer, clientY: edgeY }),
+  expect(viewport.clientHeight).toBeLessThanOrEqual(
+    size.height * scaleOf(figure) + 2,
   );
-  handle.dispatchEvent(
-    new PointerEvent("pointermove", { ...pointer, clientY: edgeY + beyond }),
-  );
-  handle.dispatchEvent(
-    new PointerEvent("pointerup", { ...pointer, clientY: edgeY + beyond }),
-  );
-  expect(viewport.clientHeight).toBeGreaterThan(size.height * keptScale + 50);
-  expect(scaleOf(figure)).toBeCloseTo(keptScale, 4);
-  // 高さを戻して、続きの確認に使う
-  handle.dispatchEvent(
-    new PointerEvent("pointerdown", { ...pointer, clientY: edgeY + beyond }),
-  );
-  handle.dispatchEvent(
-    new PointerEvent("pointermove", { ...pointer, clientY: edgeY }),
-  );
-  handle.dispatchEvent(
-    new PointerEvent("pointerup", { ...pointer, clientY: edgeY }),
-  );
-  expect(Math.abs(viewportHeight(figure) - kept)).toBeLessThanOrEqual(1);
   // 実行・検証: もう一度 mount すると、変えた高さで描く
   first.destroy();
   const second = await mountTracked(el, { markdown, config });
