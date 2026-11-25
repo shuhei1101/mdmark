@@ -343,6 +343,30 @@ test("test_resized", async () => {
   const handle = page.locator(".mdmark-diagram-resize");
   await expect(handle.getAttribute("role")).resolves.toBe("separator");
   await expect(handle.isVisible()).resolves.toBe(true);
+  // リサイズハンドルは表示する枠の下の高さ 24px 以上の帯で、中央に 40×4 の横棒がある
+  const strip = await page.evaluate(() => {
+    const box = (selector: string) =>
+      document.querySelector(selector)?.getBoundingClientRect();
+    const handleBox = box(".mdmark-diagram-resize");
+    const viewportBox = box(".mdmark-diagram-viewport");
+    const barBox = box(".mdmark-diagram-resize-bar");
+    return {
+      height: handleBox?.height ?? 0,
+      belowViewport: (handleBox?.top ?? 0) >= (viewportBox?.bottom ?? 0) - 1,
+      barWidth: barBox?.width ?? 0,
+      barHeight: barBox?.height ?? 0,
+      barOffset: Math.abs(
+        (barBox?.left ?? 0) +
+          (barBox?.width ?? 0) / 2 -
+          ((handleBox?.left ?? 0) + (handleBox?.width ?? 0) / 2),
+      ),
+    };
+  });
+  expect(strip.height).toBeGreaterThanOrEqual(24);
+  expect(strip.belowViewport).toBe(true);
+  expect(strip.barWidth).toBeCloseTo(40, 0);
+  expect(strip.barHeight).toBeCloseTo(4, 0);
+  expect(strip.barOffset).toBeLessThanOrEqual(1);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -370,7 +394,23 @@ test("test_resize_handle_focused", async () => {
   expect(focus.width).toBeGreaterThanOrEqual(2);
 });
 
-// 機能 diagram-resize がオフの図は、右下にリサイズハンドルが無い（ResizeOff）
+// リサイズハンドルにポインターを乗せると、中央の横棒の色が --mdmark-color-text になる（ResizeHandleHover）
+test("test_resize_handle_hover", async () => {
+  // 準備
+  const page = await openFrame("resize-handle-hover", true);
+  const bar = page.locator(".mdmark-diagram-resize-bar");
+  const muted = await resolveColor(page, "var(--mdmark-color-muted)");
+  const text = await resolveColor(page, "var(--mdmark-color-text)");
+  const barColor = () =>
+    bar.evaluate((node) => getComputedStyle(node).backgroundColor);
+  await expect(barColor()).resolves.toBe(muted);
+  // 実行
+  await page.locator(".mdmark-diagram-resize").hover();
+  // 検証
+  await expect(barColor()).resolves.toBe(text);
+});
+
+// 機能 diagram-resize がオフの図は、表示する枠の下端にリサイズハンドルが無い（ResizeOff）
 test("test_resize_off", async () => {
   // 準備・実行
   const page = await openFrame("resize-off", true);

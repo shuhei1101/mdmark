@@ -14311,6 +14311,19 @@ test("test_normal_when_diagram_resized", async () => {
   expect(handle.getAttribute("aria-label")).toBe(
     "「縦に長いデータ」の表示の高さ",
   );
+  // 検証: 表示する枠の下端の高さ 24px 以上の帯で、中央に横棒がある
+  const strip = handle.getBoundingClientRect();
+  const frameBox = viewportOf(figure).getBoundingClientRect();
+  expect(strip.height).toBeGreaterThanOrEqual(24);
+  expect(strip.top).toBeGreaterThanOrEqual(frameBox.bottom - 1);
+  const bar = find<HTMLElement>(handle, ".mdmark-diagram-resize-bar");
+  const barBox = bar.getBoundingClientRect();
+  expect(barBox.width).toBeCloseTo(40, 0);
+  expect(barBox.height).toBeCloseTo(4, 0);
+  expect(
+    Math.abs(barBox.left + barBox.width / 2 - (strip.left + strip.width / 2)),
+  ).toBeLessThanOrEqual(1);
+  expect(handle.querySelector("svg")).toBeNull();
   await vi.waitFor(() => expect(scaleOf(figure)).toBeGreaterThan(0));
   const opened = viewportHeight(figure);
   const openedScale = scaleOf(figure);
@@ -14368,9 +14381,33 @@ test("test_normal_when_diagram_resized", async () => {
   await userEvent.keyboard("{ArrowDown}");
   const kept = viewportHeight(figure);
   expect(Math.abs(kept - resized)).toBeLessThanOrEqual(1);
-  expect(viewport.clientHeight).toBeLessThanOrEqual(
-    size.height * scaleOf(figure) + 2,
+  // 実行・検証: 図の全体が今の倍率で収まる高さを越えても高くでき、倍率は変わらない
+  const keptScale = scaleOf(figure);
+  const beyond = size.height * keptScale + 100 - kept;
+  const edge = handle.getBoundingClientRect();
+  const edgeY = edge.top + edge.height / 2;
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...pointer, clientY: edgeY }),
   );
+  handle.dispatchEvent(
+    new PointerEvent("pointermove", { ...pointer, clientY: edgeY + beyond }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...pointer, clientY: edgeY + beyond }),
+  );
+  expect(viewport.clientHeight).toBeGreaterThan(size.height * keptScale + 50);
+  expect(scaleOf(figure)).toBeCloseTo(keptScale, 4);
+  // 高さを戻して、続きの確認に使う
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...pointer, clientY: edgeY + beyond }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointermove", { ...pointer, clientY: edgeY }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...pointer, clientY: edgeY }),
+  );
+  expect(Math.abs(viewportHeight(figure) - kept)).toBeLessThanOrEqual(1);
   // 実行・検証: もう一度 mount すると、変えた高さで描く
   first.destroy();
   const second = await mountTracked(el, { markdown, config });
@@ -15885,7 +15922,12 @@ test(
       expect(
         figure.querySelector('button[aria-label="全画面で開く"]'),
       ).not.toBeNull();
-      expect(figure.querySelector(".mdmark-diagram-resize")).not.toBeNull();
+      const resize = figure.querySelector(".mdmark-diagram-resize");
+      expect(resize).not.toBeNull();
+      // リサイズハンドルは表示する枠の下端にある
+      expect(resize?.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+        viewportOf(figure).getBoundingClientRect().bottom - 1,
+      );
     }
   },
   MERMAID_WAIT_MS + 30_000,
