@@ -17,7 +17,7 @@
     /* 列の幅のメニュー・列の移動のメニュー: つまみの下に重ねる小さいパネル */
     .mdmark-811-menu {
       position: absolute;
-      z-index: 5;
+      z-index: 50;
       display: flex;
       flex-direction: column;
       min-inline-size: 10rem;

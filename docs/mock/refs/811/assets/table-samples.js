@@ -11,8 +11,8 @@
   ];
 
   T["811-fine"] = { label: "細かいポインターの画面の、押せる範囲を 24px にしたつまみ", head, body, resize: true, wide: "説明", state: { 0: "hover" } };
-  T["811-a"] = { label: "案 A: 見出しのメニューから列の幅を変える表", head, body, resize: true, wide: "説明" };
-  T["811-b"] = { label: "案 B: つまみを押して開くメニューから列の幅を変える表", head, body, resize: true, wide: "説明" };
+  T["811-a"] = { label: "案 A: 見出しのメニューから列の幅を変える表", head, body, resize: true, wide: "説明", widths: { 0: 32 } };
+  T["811-b"] = { label: "案 B: 名前の列を 2 回広げてから、つまみを押して開くメニューで列の幅を変える表", head, body, resize: true, wide: "説明", widths: { 0: 32 } };
   T["811-b-min"] = { label: "案 B: 列の最小幅まで狭めてメニューを開いた表", head, body, resize: true, wide: "説明", widths: { 0: -2000 } };
   T["811-c"] = { label: "案 C: テーブル設定の列名の行から列の幅を変える表", head, body, resize: true, wide: "説明" };
 }
