@@ -2759,6 +2759,18 @@ files:
     related:
       - to: src/diagram/diagram-resize.interact.ts
         type: tests
+  - path: unit/src/media/media-resize.interact.browser.test.ts
+    description: 'src/media/media-resize.interact.ts（「動画の大きさを変えるリサイズハンドルと大きさのメニュー、幅の保持」）を確認するブラウザで実行する単体テスト。media-resize.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:動画]
+    related:
+      - to: src/media/media-resize.interact.ts
+        type: tests
+  - path: unit/src/shared/stored-size.logic.test.ts
+    description: 'src/shared/stored-size.logic.ts（「リサイズハンドルで変えた大きさの保存・読み込みとキー」）を確認する単体テスト。stored-size.logic.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
+    tags: [topic:単体テスト, tool:vitest, topic:保存]
+    related:
+      - to: src/shared/stored-size.logic.ts
+        type: tests
   - path: unit/src/shared/part-states.interact.browser.test.ts
     description: 'src/shared/part-states.interact.ts を確認するブラウザで実行する単体テスト。part-states.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。'
     tags: [topic:単体テスト, tool:vitest]

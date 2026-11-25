@@ -31,3 +31,16 @@ test("test_read_page_settings_when_repeated", async () => {
   // 検証
   expect(settings).toEqual({ scheme: "dark", toc: "hover" });
 });
+
+// 動画の既定の幅を読み込む（正常系）
+test("test_read_page_settings_when_media_width", async () => {
+  // 準備
+  const { readPageSettings } = await loadPage();
+  // 実行
+  const settings = readPageSettings([
+    { media: { width: "80%" } },
+    { scheme: "dark" },
+  ]);
+  // 検証
+  expect(settings).toEqual({ mediaWidth: "80%", scheme: "dark" });
+});
