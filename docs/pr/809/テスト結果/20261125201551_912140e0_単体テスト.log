@@ -1,0 +1,50 @@
+$ npm run test:unit
+（Red: 実装の前。fail は図の枠のリサイズハンドルの横棒が未実装の 2 件だけ）
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-diagram-resize-handle-target-and-media-mock-error
+
+ ❯ |unit| tests/unit/src/diagram/diagram.part.test.ts (21 tests | 2 failed) 3542ms
+   × test_render_diagram_frame_when_resizable 10ms
+   × test_render_diagram_frame_when_resize_strip 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/diagram/diagram.part.test.ts > test_render_diagram_frame_when_resizable
+AssertionError: Target cannot be null or undefined.
+ ❯ tests/unit/src/diagram/diagram.part.test.ts:492:66
+    490|   expect(lowHandle).toContain('aria-valuetext="120px"');
+    491|   const handleHtml = outerHtml(omitted, 'class="mdmark-diagram-resize"…
+    492|   expect(handleHtml.match(/class="mdmark-diagram-resize-bar"/g)).toHav…
+       |                                                                  ^
+    493|     1,
+    494|   );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  |unit| tests/unit/src/diagram/diagram.part.test.ts > test_render_diagram_frame_when_resize_strip
+AssertionError: expected '<svg class="mdmark-diagram-icon" view…' to contain '<span class="mdmark-diagram-resize-ba…'
+
+Expected: "<span class="mdmark-diagram-resize-bar">"
+Received: "<svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" x2="19" y1="9" y2="9"></line><line x1="5" x2="19" y1="15" y2="15"></line></svg>"
+
+ ❯ tests/unit/src/diagram/diagram.part.test.ts:600:23
+    598|     html.indexOf("mdmark-diagram-viewport"),
+    599|   );
+    600|   expect(handle?.[1]).toContain('<span class="mdmark-diagram-resize-ba…
+       |                       ^
+    601| });
+    602|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 347 passed (348)
+      Tests  2 failed | 2941 passed (2943)
+   Start at  20:15:06
+   Duration  36.17s (worker 84%, tests 11%, import 5%, transform 1%)
+
+exit=1
