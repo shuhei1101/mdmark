@@ -2,12 +2,12 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 読者が、図の表示する枠の高さを、ドラッグ・ダブルクリックをせずにタップ・クリックだけで変え、元の高さに戻せる。リサイズハンドルの押せる範囲が 24 x 24 CSS px 以上になる
+    detail: 読者が、表示する枠の下端の高さ 24 CSS px 以上の帯のリサイズハンドルで、図の表示する枠の高さを変える
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-62.yaml
-    impact: run_only
-    detail: 機能 diagram-resize をオフにした文書でリサイズハンドルとドラッグの代わりの操作が出ないことを、同じ部品を変えるため確かめる
+    impact: changed
+    detail: 機能 diagram-resize をオフにした文書で、表示する枠の下端にリサイズハンドルが出ない
     depends_on: []
 docs:
   - page: docs/guide/図を描く-図を描く.md

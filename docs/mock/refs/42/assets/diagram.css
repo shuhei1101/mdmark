@@ -641,20 +641,21 @@
       align-items: center;
       box-sizing: border-box;
       height: 24px;
-      color: var(--mdmark-color-border);
+      /* 横棒は背景とのコントラスト 3:1 以上（WCAG 2.2 の 1.4.11） */
+      color: var(--mdmark-color-muted);
       cursor: ns-resize;
       touch-action: none;
 
       &:hover,
       &.is-resizing {
-        color: var(--mdmark-color-muted);
+        color: var(--mdmark-color-text);
       }
 
       &:focus-visible {
         outline: 2px solid var(--mdmark-color-link);
         outline-offset: -2px;
         border-radius: 0 0 var(--mdmark-radius) var(--mdmark-radius);
-        color: var(--mdmark-color-muted);
+        color: var(--mdmark-color-text);
       }
     }
 
