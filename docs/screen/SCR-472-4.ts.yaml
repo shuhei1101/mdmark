@@ -1560,7 +1560,7 @@ elements:
       - name: caption
         value: 画像の title
       - name: width
-        value: 属性の `width=`
+        value: 属性の `width=`。無ければ動画はページの設定のマーカーか設定の `media.width`（`100%` のときは指定しない）。リサイズハンドルで変えた幅が sessionStorage にあればその幅
       - name: poster
         value: 属性の `poster=`
       - name: autoplay
@@ -1569,13 +1569,18 @@ elements:
         value: 属性に `muted` か `autoplay` があるとき `true`
       - name: loop
         value: 属性に `loop` があるとき `true`
+      - name: resizable
+        value: 機能 `media-resize` がオンで、再生バーを持つ動画のとき `true`
     position: 描く先の要素
     description: 拡張子が動画・音声の画像を、再生バーを持つ要素にして図に入れる（表のセルの中と属性 `modal`・`thumbnail` のものは要素「動画・音声の再生のボタン」）。文の中に記載しても段落の後ろに配置する。印刷では動画の代わりに `poster` の画像を出す
     visible_when: 文書に拡張子が動画・音声の画像があり、`media` がオンのとき
     tab_order: 0
     refs:
       - IF-472-34#constraints[動画と音声]
+      - IF-472-35#constraints[動画の大きさのリサイズハンドル]
+      - IF-472-35#constraints[ページの設定のマーカー]
     status: planned
+    action: 再生バーを持つ動画は、右下の角のリサイズハンドルのドラッグと `↑`・`↓` で縦横の比を保って幅を変え、動かさずに押すか Enter・Space で大きさのメニュー（小さくする・大きくする・元の大きさに戻す）を開き、ダブルクリックで記載した幅に戻す。幅は 160px 以上、本文の幅以下
   - name: GIF のボタン
     id: gif-toggle
     kind: button
