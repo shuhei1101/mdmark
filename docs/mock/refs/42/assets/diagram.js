@@ -1281,7 +1281,8 @@
         <button type="button" data-height="lower">${icon("minus")}低くする</button>
         <button type="button" data-height="higher">${icon("plus")}高くする</button>
         <button type="button" data-height="fit">${icon("fold-vertical")}全体が収まる高さに合わせる</button>`;
-      document.body.append(heightMenu);
+      // 図の中に置き、文書のランドマークの中に収める（popover で最前面に出すため、図の枠の overflow には切られない）
+      figure.append(heightMenu);
       handle.popoverTargetElement = heightMenu;
       handle.popoverTargetAction = "toggle";
       heightMenu.addEventListener("toggle", (event) => {
