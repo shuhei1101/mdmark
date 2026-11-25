@@ -28,7 +28,7 @@ const MAX_WIDTH = 800;
 
 /** 動画の図の HTML（幅は `--mdmark-image-width`、無ければ本文の幅） */
 const figureHtml = (options: { label: string; src: string; style?: string }) =>
-  `<figure class="mdmark-figure mdmark-media"${options.style === undefined ? "" : ` style="${options.style}"`}><video src="${options.src}" controls preload="metadata" aria-label="${options.label}" style="display: block; width: var(--mdmark-image-width, 100%)"></video></figure>`;
+  `<figure class="mdmark-figure mdmark-media" style="margin: 0;${options.style === undefined ? "" : ` ${options.style}`}"><video src="${options.src}" controls preload="metadata" aria-label="${options.label}" style="display: block; width: var(--mdmark-image-width, 100%)"></video></figure>`;
 
 /** 動画の縦横の大きさを 1100×720 にする */
 function setVideoSize(video: HTMLVideoElement): void {
@@ -163,13 +163,15 @@ test("test_attach_media_resize_when_click_without_drag", async () => {
   // 実行: 3px だけ動かして離す
   drag(handle, 3);
   handle.click();
-  // 検証
+  // 検証（メニューの toggle のイベントは開いた後に届くため、届くまで待つ）
   expect(widthOf(figure)).toBe("");
   expect(menu.matches(":popover-open")).toBe(true);
+  await vi.waitFor(() => {
+    expect(document.activeElement?.getAttribute("data-size")).toBe("smaller");
+  });
   expect(
     menu.querySelector<HTMLButtonElement>('[data-size="reset"]')?.disabled,
   ).toBe(true);
-  expect(document.activeElement?.getAttribute("data-size")).toBe("smaller");
   // 準備: メニューを閉じる
   menu.hidePopover();
   // 実行: 100px 動かして離す
