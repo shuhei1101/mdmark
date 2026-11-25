@@ -17,7 +17,7 @@ import { join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { promisify } from "node:util";
 import { afterAll, afterEach, beforeAll, expect, test, vi } from "vitest";
-import { main } from "../../../scripts/build.ts";
+import { MAX_DIST_FILE_BYTES, main } from "../../../scripts/build.ts";
 import { migrationsDirOf } from "../../migrations-dir.ts";
 import { copyPluginInputs, writeRootPackageJson } from "../plugin-inputs.ts";
 
@@ -469,7 +469,7 @@ test("test_normal_when_released_migrations_kept", {
   await writeFile(join(next, "retired-diagrams.mjs"), "\n");
   for (const args of [["--develop"], []]) {
     // 実行（配布ファイルの上限は差し替えず、NFR-1 の上限で検査する）
-    const code = await main(args, { root });
+    const code = await main(args, { root, maxBytes: MAX_DIST_FILE_BYTES });
     // 検証
     expect(code).toBe(0);
     const { stdout } = await execFileAsync(
@@ -501,7 +501,10 @@ test("test_normal_when_develop", { timeout: BUILD_TIMEOUT_MS }, async () => {
   );
   const expected = `v0.0.0+develop.${stdout.trim()}`;
   // 実行（配布ファイルの上限は差し替えず、NFR-1 の上限で検査する）
-  const code = await main(["--develop"], { root });
+  const code = await main(["--develop"], {
+    root,
+    maxBytes: MAX_DIST_FILE_BYTES,
+  });
   // 検証
   expect(code).toBe(0);
   expect(await readBuiltVersion(root)).toBe(expected);
