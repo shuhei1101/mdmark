@@ -6,10 +6,9 @@ use_cases:
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-793-2.yaml
-    impact: following
-    detail: アプリの画面の表も、Markdown の表と同じ列の幅と列の並べ替えの操作になる
-    depends_on:
-      - docs/scenario/SC-472-73.yaml
+    impact: run_only
+    detail: アプリの画面の表も Markdown の表と同じ操作を持ち、シナリオは「同じ操作」として記載済みで変わらないが、つまみの変更が壊しうる
+    depends_on: []
 docs:
   - page: docs/guide/記載する-表に機能を付ける.md
     new: false
