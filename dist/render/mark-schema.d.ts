@@ -18,8 +18,6 @@ export type MarkSchema = {
     minimum?: number;
     maximum?: number;
     minLength?: number;
-    pattern?: string;
-    examples?: unknown[];
 };
 /** マーカーの設定の誤り 1 つ */
 export type MarkProblem = {

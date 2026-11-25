@@ -19,8 +19,6 @@ export declare function renderMedia(options: {
     /** 繰り返し再生する */
     loop?: boolean;
 }): string;
-/** `src` からクエリとフラグメントを除いたファイル名 */
-export declare function fileNameOf(src: string): string;
 /** 再生のボタン（ラベルと再生のアイコン、`thumbnail` は `poster` のサムネイル）の HTML を返却する */
 export declare function renderMediaOpener(options: {
     /** 動画か音声か */

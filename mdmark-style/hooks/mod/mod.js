@@ -17477,7 +17477,6 @@ var DEFAULT_FEATURES = {
   gallery: true,
   lightbox: true,
   media: true,
-  "media-resize": true,
   gif: true,
   cards: true,
   icon: true,
@@ -17572,8 +17571,6 @@ function resolveLabels(labels) {
     paramCopy: typeof paramCopy === "string" && paramCopy !== "" ? paramCopy : DEFAULT_LABELS.paramCopy
   };
 }
-var MEDIA_WIDTH_PATTERN = /^(?:100|[1-9][0-9]?)%$/;
-var resolveMediaWidth = (width) => typeof width === "string" && MEDIA_WIDTH_PATTERN.test(width) && width !== "100%" ? width : void 0;
 function resolveConfig(options) {
   const { config: config2 = {}, defaultLibraries = DEFAULT_LIBRARIES } = options;
   return {
@@ -17587,7 +17584,6 @@ function resolveConfig(options) {
     mermaid: resolveMermaid(config2.mermaid),
     // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
     sideToc: { mode: config2["side-toc"]?.mode === "fixed" ? "fixed" : "hover" },
-    media: { width: resolveMediaWidth(config2.media?.width) },
     table: resolveTable(config2.table),
     // テーマ・明暗は、COLOR_THEMES・COLOR_SCHEMES にある値だけを受け、他の値は既定にする
     colorTheme: oneOf(COLOR_THEMES, config2.colorTheme) ?? DEFAULT_COLOR_THEME,
@@ -18749,17 +18745,6 @@ var page_schema_default = {
         }
       },
       additionalProperties: false
-    },
-    media: {
-      type: "object",
-      properties: {
-        width: {
-          type: "string",
-          pattern: "^(?:100|[1-9][0-9]?)%$",
-          examples: ["80%"]
-        }
-      },
-      additionalProperties: false
     }
   },
   additionalProperties: false
@@ -19234,9 +19219,6 @@ var exampleOf = (node, root) => {
   if (resolved.enum?.[0] !== void 0) {
     return resolved.enum[0];
   }
-  if (resolved.examples?.[0] !== void 0) {
-    return resolved.examples[0];
-  }
   return exampleOfType(resolved, root);
 };
 var expectedInteger = (resolved) => {
@@ -19250,12 +19232,6 @@ var expectedObject = (resolved) => {
   const keys = Object.keys(resolved.properties ?? {});
   return keys.length > 0 ? `${keys.map((key) => `\`${key}\``).join("\u30FB")} \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8` : "\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8";
 };
-var expectedString = (resolved) => {
-  if (resolved.pattern !== void 0 && resolved.examples?.[0] !== void 0) {
-    return `\`${showChoice(resolved.examples[0])}\` \u306E\u66F8\u5F0F\u306E\u6587\u5B57`;
-  }
-  return resolved.minLength !== void 0 && resolved.minLength > 0 ? `${resolved.minLength} \u6587\u5B57\u4EE5\u4E0A\u306E\u6587\u5B57` : "\u6587\u5B57";
-};
 var expectedOfType = (resolved) => {
   switch (resolved.type) {
     case "object":
@@ -19263,7 +19239,7 @@ var expectedOfType = (resolved) => {
     case "array":
       return "\u914D\u5217";
     case "string":
-      return expectedString(resolved);
+      return resolved.minLength !== void 0 && resolved.minLength > 0 ? `${resolved.minLength} \u6587\u5B57\u4EE5\u4E0A\u306E\u6587\u5B57` : "\u6587\u5B57";
     case "integer":
       return expectedInteger(resolved);
     case "number":
@@ -19322,7 +19298,7 @@ var outOfRange = (resolved, value) => {
   if (typeof value === "number") {
     return resolved.minimum !== void 0 && value < resolved.minimum || resolved.maximum !== void 0 && value > resolved.maximum;
   }
-  return typeof value === "string" && (resolved.minLength !== void 0 && value.length < resolved.minLength || resolved.pattern !== void 0 && !new RegExp(resolved.pattern, "u").test(value));
+  return typeof value === "string" && resolved.minLength !== void 0 && value.length < resolved.minLength;
 };
 var violates = (resolved, value) => !matchesType(resolved.type, value) || resolved.enum !== void 0 && !resolved.enum.includes(value) || resolved.const !== void 0 && resolved.const !== value || outOfRange(resolved, value);
 var checkAnyOf = (node, context) => {
