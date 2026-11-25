@@ -28,43 +28,63 @@ docs:
   - page: docs/guide/記載する-画像と動画を配置する.md
     new: false
     change: 閲覧する人が動画の大きさを比率を保って変える操作と、元に戻す操作を追加する。属性の無い動画が設定の既定の幅で描かれることと、{width=…} を優先することを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/guide/用語集.yaml
     new: false
     change: 用語『リサイズハンドル』の説明に、動画の大きさを比率を保って変えるハンドルを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/guide/設定.mark.md
     new: false
     change: 動画の描画時の幅の既定のキー（本文の幅に対する %。既定は 100%）と、文書ごとの上書きを追加する。動画のリサイズハンドルの機能を追加する場合は features の行も追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/guide/カスタマイズ-機能をオン・オフする.md
     new: false
     change: 動画のリサイズハンドルの機能を追加する場合に、オン・オフの例を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/guide/導入-配布物を読み込む.md
     new: false
     change: develop を指定した URL が、develop の配布物を再作成した後に最新の配布物を返すことを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/architecture/ARCH-472-1.yaml
     new: false
     change: 外部システム『GitHub Actions と GitHub Releases』『jsDelivr』に、再作成の失敗の Issue の起票と、@develop のキャッシュの削除を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/external-api/API-472-2.yaml
     new: false
     change: purge のエンドポイントと上限を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/nonfunctional/NFR-472-1.yaml
     new: false
     change: NFR-1 の超過を確認する時点に、作業 PR の結合テストを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/dev-command/CMD-472-1.yaml
     new: false
     change: develop-dist の手動の起動と、GitHub Actions を実行できないときに手元で再作成してキャッシュを削除する代わりの経路を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: 動画の描画時の幅の既定を文書ごとにマーカーで上書きする形にする場合に、そのマーカーの記載方法と引数を追加する（上書きの書き方はインターフェース定義設計で決める）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-25T00:26:26.326171+00:00'
 scope_out:
   - item: 配布ファイル 1 つの上限（NFR-1 の 1024KB）の値の変更と、dist/index.js を小さくする作業
     reason: '要望は上限の超過をマージの前に分かるようにすることで、値は #802 の中で利用者が上げたため'
