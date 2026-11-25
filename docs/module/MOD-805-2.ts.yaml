@@ -69,8 +69,7 @@ functions:
 
       縦横の比は `videoHeight ÷ videoWidth`（読み込んでいないときは描いた `video` の高さ ÷ 幅）。
       幅は `clampMediaWidth` で収め、図の `style` の `--mdmark-image-width` に `{幅}px` で入れる。
-      変えた幅を `storage` の `key` に整数の文字で記載し、戻したらキーを削除する。
-      `storage` の読み込みと保存の例外は捕まえて保たない。読み込んだ値が正の整数でなければ使用しない。
+      変えた幅は `writeStoredSize` で `storage` の `key` に記載し、戻したら `null` でキーを削除する。付けたときは `readStoredSize` で読み込む。
       ドラッグの間はハンドルに class `is-resizing`、メニューを開いている間は class `is-open` を付ける。
       メニューの `toggle` で開いたら、下限・上限・元の大きさのボタンを `disabled` にし、ハンドルの下に右端を合わせて配置し（下に入らなければ上）、最初の押せるボタンへフォーカスする。閉じたときにフォーカスがメニューの中ならハンドルへ戻す。
       開いている間は、幅を変えたときと `window` の `scroll`・`resize` でもう一度配置する
@@ -84,6 +83,8 @@ functions:
       description: 付けたときに `storage` から読み込んで適用した幅（無ければ `null`）と、操作を削除する関数
     callees:
       - '#functions[clampMediaWidth]'
+      - MOD-805-3#functions[readStoredSize]
+      - MOD-805-3#functions[writeStoredSize]
     unit_tests:
       - name: test_attach_media_resize
         case: 正常
@@ -109,12 +110,6 @@ functions:
         condition: '`storage` の `key` が `420` のときと `abc` のとき'
         mock: 同上
         expected: '`420` では `restored` が `420` で `--mdmark-image-width` が `420px`。`abc` では `restored` が `null` で幅を変えない'
-      - name: test_attach_media_resize_when_storage_throws
-        case: 異常
-        summary: 保つ先が例外を投げても幅を変える
-        condition: '`getItem`・`setItem` が例外を投げる `storage`。`ArrowUp` を押す'
-        mock: 例外を投げる `Storage` の構造のオブジェクト
-        expected: 例外を外へ出さず、幅が小さくなる
     refs:
       - IF-472-35#constraints[動画の大きさのリサイズハンドル]
     status: planned
@@ -145,7 +140,7 @@ functions:
     container: src/media/media-resize.interact.ts
     kind: 関数
     scope: internal
-    summary: '`{MEDIA_WIDTH_KEY_PREFIX}{pathname}#{index}:{src}` を返却する。同じページの同じ順の同じ動画だけが同じ幅を読み込む'
+    summary: '`storedSizeKey` で頭を `MEDIA_WIDTH_KEY_PREFIX`、名前を `src` にした `{MEDIA_WIDTH_KEY_PREFIX}{pathname}#{index}:{src}` を返却する。同じページの同じ順の同じ動画だけが同じ幅を読み込む'
     args:
       - name: options
         type: '{ pathname: string; index: number; src: string }'
@@ -162,6 +157,8 @@ functions:
         mock: なし
         expected: '`mdmark-media-width:/docs/a.html#1:clip.mp4`'
     status: planned
+    callees:
+      - MOD-805-3#functions[storedSizeKey]
 tags:
   - name: topic:動画
     main: true

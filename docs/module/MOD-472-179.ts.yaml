@@ -27,9 +27,7 @@ functions:
       高さは `clampDiagramHeight` で収める。
       変えるたびに `aria-valuenow`・`aria-valuemin`・`aria-valuemax`（今の倍率の図の全体が収まる高さと今の高さの大きいほう）・`aria-valuetext`（`{高さ}px`）を書き換え、`onResize` を呼ぶ。
 
-      変えた高さを `storage` の `key` に整数の文字で記載し、戻したらキーを削除する。
-      `storage` の読み込みと保存の例外は捕まえて保たない。
-      読み込んだ値が正の整数でなければ使用しない。
+      変えた高さは `writeStoredSize` で `storage` の `key` に記載し、戻したら `null` でキーを削除する。付けたときは `readStoredSize` で読み込む。
       ドラッグの間はリサイズハンドルに class `is-resizing` を付ける
     args:
       - name: options
@@ -41,6 +39,8 @@ functions:
       description: 付けたときに `storage` から読み込んで適用した高さ（無ければ `null`）と、操作を削除する関数
     callees:
       - 'MOD-472-173#functions[clampDiagramHeight]'
+      - MOD-805-3#functions[readStoredSize]
+      - MOD-805-3#functions[writeStoredSize]
     status: planned
     unit_tests:
       - name: test_attach_diagram_resize
@@ -72,7 +72,7 @@ functions:
     container: src/diagram/diagram-resize.interact.ts
     kind: 関数
     scope: internal
-    summary: '`{DIAGRAM_HEIGHT_KEY_PREFIX}{pathname}#{index}:{title}` を返却する。同じページの同じ順の同じ題名の図だけが同じ高さを読み込む'
+    summary: '`storedSizeKey` で頭を `DIAGRAM_HEIGHT_KEY_PREFIX`、名前を `title` にした `{DIAGRAM_HEIGHT_KEY_PREFIX}{pathname}#{index}:{title}` を返却する。同じページの同じ順の同じ題名の図だけが同じ高さを読み込む'
     args:
       - name: options
         type: '{ pathname: string; index: number; title: string }'
@@ -89,6 +89,8 @@ functions:
         mock: なし
         expected: '`mdmark-diagram-height:/docs/a.html#1:問い合わせの流れ`'
     status: planned
+    callees:
+      - MOD-805-3#functions[storedSizeKey]
 lead: '表示ブロックの高さを変えるリサイズハンドルと高さの保持を受け持ち、図のリサイズの操作を変えるときに参照する。'
 tags:
   - name: topic:図

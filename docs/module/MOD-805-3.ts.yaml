@@ -1,0 +1,99 @@
+id: MOD-805-3
+visibility: internal
+title: ライブラリ本体 / 記法の共通 / stored-size.logic.ts
+lead: リサイズハンドルで変えた大きさの sessionStorage への保存・読み込みとキーの作り方を受け持ち、図と動画の大きさの保ち方を変えるときに参照する。
+functions:
+  - name: readStoredSize
+    title: 保った大きさを読み込む
+    container: src/shared/stored-size.logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`storage` の `key` の値が正の整数の文字ならその数を、それ以外・保つ先が無い・例外のときは `null` を返却する（例外を外へ出さない）'
+    args:
+      - name: storage
+        type: Storage | null
+        required: true
+        description: 保つ先
+      - name: key
+        type: string
+        required: true
+        description: キー
+    returns:
+      type: number | null
+      description: 保った大きさ（px）
+    unit_tests:
+      - name: test_read_stored_size
+        case: 正常
+        summary: 正の整数だけを読み込む
+        condition: '`key` の値が `420`・`abc`・`0`・無いときと、`storage` が `null` のとき'
+        mock: '`Map` で包んだ `Storage` の構造のオブジェクト'
+        expected: '`420`・`null`・`null`・`null`・`null`'
+      - name: test_read_stored_size_when_storage_throws
+        case: 異常
+        summary: 保つ先の例外を外へ出さない
+        condition: '`getItem` が例外を投げる `storage`'
+        mock: 例外を投げる `Storage` の構造のオブジェクト
+        expected: '`null` を返却し、例外を投げない'
+    status: planned
+  - name: writeStoredSize
+    title: 大きさを保つ
+    container: src/shared/stored-size.logic.ts
+    kind: 関数
+    scope: internal
+    summary: 大きさを `storage` の `key` に整数の文字で記載し、`null` のときはキーを削除する（保つ先が無いときは何もしない。例外を外へ出さない）
+    args:
+      - name: storage
+        type: Storage | null
+        required: true
+        description: 保つ先
+      - name: key
+        type: string
+        required: true
+        description: キー
+      - name: size
+        type: number | null
+        required: true
+        description: 保つ大きさ（px）。`null` はキーを削除する
+    returns:
+      type: void
+      description: なし
+    unit_tests:
+      - name: test_write_stored_size
+        case: 正常
+        summary: 記載し、`null` で削除する
+        condition: '`468` を保った後に `null` を保つ'
+        mock: '`Map` で包んだ `Storage` の構造のオブジェクト'
+        expected: 1 回目の後に `key` が `468`、2 回目の後に `key` が無い
+      - name: test_write_stored_size_when_storage_throws
+        case: 異常
+        summary: 保つ先の例外を外へ出さない
+        condition: '`setItem`・`removeItem` が例外を投げる `storage`'
+        mock: 例外を投げる `Storage` の構造のオブジェクト
+        expected: 例外を投げない
+    status: planned
+  - name: storedSizeKey
+    title: 大きさのキー
+    container: src/shared/stored-size.logic.ts
+    kind: 関数
+    scope: internal
+    summary: '`{prefix}{pathname}#{index}:{name}` を返却する。同じページの同じ順の同じ名前の対象だけが同じ大きさを読み込む'
+    args:
+      - name: options
+        type: '{ prefix: string; pathname: string; index: number; name: string }'
+        required: true
+        description: キーの頭、ページの `location.pathname`、`root` の中の対象の通し番号（0 から）、対象の名前（図の題名・動画の `src`）
+    returns:
+      type: string
+      description: sessionStorage のキー
+    unit_tests:
+      - name: test_stored_size_key
+        case: 正常
+        summary: 頭・ページ・順・名前でキーを作る
+        condition: '`{ prefix: "p:", pathname: "/docs/a.html", index: 1, name: "clip.mp4" }`'
+        mock: なし
+        expected: '`p:/docs/a.html#1:clip.mp4`'
+    status: planned
+tags:
+  - name: topic:保存
+    main: true
+  - name: action:リサイズ
