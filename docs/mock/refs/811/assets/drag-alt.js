@@ -133,7 +133,6 @@
         const button = document.createElement("button");
         button.type = "button";
         button.className = "mdmark-811-colmenu";
-        button.setAttribute("aria-haspopup", "true");
         button.setAttribute("aria-expanded", "false");
         button.setAttribute("aria-label", `「${nameOf(handle)}」の列のメニュー`);
         button.title = button.getAttribute("aria-label");
