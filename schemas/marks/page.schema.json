@@ -25,7 +25,8 @@
       "properties": {
         "width": {
           "type": "string",
-          "pattern": "^(?:100|[1-9][0-9]?)%$"
+          "pattern": "^(?:100|[1-9][0-9]?)%$",
+          "examples": ["80%"]
         }
       },
       "additionalProperties": false

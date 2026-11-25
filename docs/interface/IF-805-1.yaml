@@ -95,7 +95,7 @@ flows:
       flowchart TD
         s([develop への push で起動]) --> a[ref を取得する] --> n[Node を入れる] --> d[依存を入れる] --> b[配布物をビルドする]
         b -- 成功 --> c[commit して develop へ push する]
-        c --> p[変わった配布ファイルのキャッシュを削除する]
+        c --> p[キャッシュを削除する]
         p -- 全て削除した --> e([成功])
       ```
 
@@ -120,7 +120,7 @@ flows:
       flowchart TD
         s([workflow_dispatch で起動]) --> a[develop を取得する] --> n[Node を入れる] --> d[依存を入れる] --> b[配布物をビルドする]
         b -- 成功 --> c[commit して develop へ push する]
-        c --> p[変わった配布ファイルのキャッシュを削除する]
+        c --> p[キャッシュを削除する]
         p -- 全て削除した --> e([成功])
       ```
 

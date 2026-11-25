@@ -28,6 +28,8 @@ const KNOWN_KEYWORDS = new Set([
   "minimum",
   "maximum",
   "minLength",
+  "pattern",
+  "examples",
 ]);
 
 /** ER 図の列 */
@@ -229,6 +231,29 @@ test("test_validate_mark_options_when_required_missing", async () => {
   expect(table.problems.map((problem) => problem.path)).toEqual(["tree.key"]);
   // 用語集の表の term・meaning は alias_row が無いときだけ必須で、スキーマでは必須にせず表の読み取りが確かめる（ER 図『用語集の表のマーカーの設定』）
   expect(glossary.problems).toEqual([]);
+});
+
+// 正規表現に合わない文字を除いて問題にし、合う文字はそのまま返却する（異常系）
+test("test_validate_mark_options_when_pattern", async () => {
+  // 準備
+  const { validateMarkOptions } = await loadMarkSchema();
+  // 実行
+  const invalid = validateMarkOptions({
+    name: "page",
+    options: { media: { width: "150%" } },
+  });
+  const valid = validateMarkOptions({
+    name: "page",
+    options: { media: { width: "80%" } },
+  });
+  // 検証
+  expect(invalid.options).toEqual({ media: {} });
+  expect(invalid.problems.map((problem) => problem.path)).toEqual([
+    "media.width",
+  ]);
+  expect(invalid.problems[0]?.message).toContain("80%");
+  expect(valid.options).toEqual({ media: { width: "80%" } });
+  expect(valid.problems).toEqual([]);
 });
 
 // スキーマの無い名前は確かめない（正常系）
