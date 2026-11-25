@@ -344,24 +344,26 @@ test("test_resized", async () => {
   await expect(handle.getAttribute("role")).resolves.toBe("separator");
   await expect(handle.isVisible()).resolves.toBe(true);
   // リサイズハンドルは表示する枠の下の高さ 24px 以上の帯で、中央に 40×4 の横棒がある
-  const strip = await page.evaluate(() => {
-    const box = (selector: string) =>
-      document.querySelector(selector)?.getBoundingClientRect();
-    const handleBox = box(".mdmark-diagram-resize");
-    const viewportBox = box(".mdmark-diagram-viewport");
-    const barBox = box(".mdmark-diagram-resize-bar");
-    return {
-      height: handleBox?.height ?? 0,
-      belowViewport: (handleBox?.top ?? 0) >= (viewportBox?.bottom ?? 0) - 1,
-      barWidth: barBox?.width ?? 0,
-      barHeight: barBox?.height ?? 0,
-      barOffset: Math.abs(
-        (barBox?.left ?? 0) +
-          (barBox?.width ?? 0) / 2 -
-          ((handleBox?.left ?? 0) + (handleBox?.width ?? 0) / 2),
-      ),
-    };
-  });
+  const [handleBox, viewportBox, barBox] = await Promise.all(
+    [
+      ".mdmark-diagram-resize",
+      ".mdmark-diagram-viewport",
+      ".mdmark-diagram-resize-bar",
+    ].map((selector) =>
+      page
+        .locator(selector)
+        .evaluate((node) => node.getBoundingClientRect().toJSON() as DOMRect),
+    ),
+  );
+  const strip = {
+    height: handleBox.height,
+    belowViewport: handleBox.top >= viewportBox.bottom - 1,
+    barWidth: barBox.width,
+    barHeight: barBox.height,
+    barOffset: Math.abs(
+      barBox.left + barBox.width / 2 - (handleBox.left + handleBox.width / 2),
+    ),
+  };
   expect(strip.height).toBeGreaterThanOrEqual(24);
   expect(strip.belowViewport).toBe(true);
   expect(strip.barWidth).toBeCloseTo(40, 0);

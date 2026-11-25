@@ -15898,10 +15898,13 @@ test(
       expect(
         figure.querySelector('button[aria-label="全画面で開く"]'),
       ).not.toBeNull();
-      const resize = figure.querySelector(".mdmark-diagram-resize");
-      expect(resize).not.toBeNull();
       // リサイズハンドルは表示する枠の下端にある
-      expect(resize?.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+      expect(
+        find<HTMLElement>(
+          figure,
+          ".mdmark-diagram-resize",
+        ).getBoundingClientRect().top,
+      ).toBeGreaterThanOrEqual(
         viewportOf(figure).getBoundingClientRect().bottom - 1,
       );
     }
