@@ -11,3 +11,9 @@ confirmations:
     approver: shuhei1101
     commit:
     thread: https://github.com/shuhei1101/mdmark/pull/809#discussion_r4690097156
+  - topic: 図の枠のリサイズハンドルの見た目
+    decision: 表示する枠の下の高さ 24px の帯と、中央の 40×4 の横棒にする（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 8609fe96
+    thread: https://github.com/shuhei1101/mdmark/pull/809#discussion_r4690284819
