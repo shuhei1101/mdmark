@@ -12,19 +12,19 @@ use_cases:
 docs:
   - page: docs/guide/図を描く-図を描く.md
     new: false
-    change: 読者ができることの、リサイズハンドルで表示する枠の高さを変える・元に戻す操作に、ドラッグ・ダブルクリックをしない操作を追加する
+    change: 読者ができることの、リサイズハンドルの場所と見た目を、表示する枠の下端の高さ 24px 以上の帯と中央の横棒にする
     status: todo
   - page: docs/guide/構成図の決まり.mark.md
     new: false
-    change: 操作の表の「表示する枠の高さ」の行に、ドラッグの代わりの操作と押せる範囲を追加する
+    change: 操作の表の「表示する枠の高さ」の行を、下端の押せる範囲 24px 以上の帯と、図の全体が収まる高さを越えても高くできることにする
     status: todo
   - page: docs/guide/図を描く-mermaidの図を描く.md
     new: false
-    change: mermaid の図の操作の説明のリサイズハンドルの操作を、図を描くと同じ内容に揃える
+    change: mermaid の図の操作の説明のリサイズハンドルの場所を、図を描くと同じ内容に揃える
     status: todo
   - page: docs/guide/用語集.yaml
     new: false
-    change: 用語『リサイズハンドル』の説明に、図の部品のリサイズハンドルのドラッグの代わりの操作を追加する
+    change: 用語『リサイズハンドル』の説明の図の部品のリサイズハンドルの場所を、右下から表示する枠の下端にする
     status: todo
 scope_out:
   - item: 表の列の幅のつまみの押せる幅（細かいポインターで 12px）と、列の幅を変えるドラッグの代替
