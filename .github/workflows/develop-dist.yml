@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - develop
+      - feat/media/develop-dist-and-video-resize
   workflow_dispatch:
     inputs:
       ref:
@@ -29,7 +30,7 @@ permissions:
 
 # 後から来た実行が同じ ref の最新を作るため、前の実行は止める
 concurrency:
-  group: develop-dist-${{ inputs.ref || 'develop' }}
+  group: develop-dist-${{ inputs.ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
@@ -37,7 +38,7 @@ jobs:
     runs-on: ubuntu-latest
     # 入力は run に直接記載せず、環境変数で参照する
     env:
-      REF: ${{ inputs.ref || 'develop' }}
+      REF: ${{ inputs.ref || github.ref_name }}
       FAILURE_LABEL: ${{ inputs.failure_label || '確認:task-planner' }}
       PURGE_URL_PREFIX: ${{ inputs.purge_url_prefix || 'https://purge.jsdelivr.net/gh/shuhei1101/mdmark@' }}
     steps:
