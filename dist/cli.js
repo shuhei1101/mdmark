@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.b5baf1f";
+  return "v0.14.0+develop.2fd9bd9";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -67006,6 +67006,7 @@ var DEFAULT_FEATURES = {
   gallery: true,
   lightbox: true,
   media: true,
+  "media-resize": true,
   gif: true,
   cards: true,
   icon: true,
@@ -67100,6 +67101,8 @@ function resolveLabels(labels) {
     paramCopy: typeof paramCopy === "string" && paramCopy !== "" ? paramCopy : DEFAULT_LABELS.paramCopy
   };
 }
+var MEDIA_WIDTH_PATTERN = /^(?:100|[1-9][0-9]?)%$/;
+var resolveMediaWidth = (width) => typeof width === "string" && MEDIA_WIDTH_PATTERN.test(width) && width !== "100%" ? width : void 0;
 function resolveConfig(options) {
   const { config: config3 = {}, defaultLibraries = DEFAULT_LIBRARIES } = options;
   return {
@@ -67113,6 +67116,7 @@ function resolveConfig(options) {
     mermaid: resolveMermaid(config3.mermaid),
     // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
     sideToc: { mode: config3["side-toc"]?.mode === "fixed" ? "fixed" : "hover" },
+    media: { width: resolveMediaWidth(config3.media?.width) },
     table: resolveTable(config3.table),
     // テーマ・明暗は、COLOR_THEMES・COLOR_SCHEMES にある値だけを受け、他の値は既定にする
     colorTheme: oneOf(COLOR_THEMES, config3.colorTheme) ?? DEFAULT_COLOR_THEME,
@@ -67378,6 +67382,7 @@ var CONFIG_KEY_VALIDATORS = [
   ["mermaid", kept(isValidMermaid)],
   ["assets", kept(isValidAssets)],
   ["side-toc", kept(isValidSideToc)],
+  ["media", kept(isValidMedia)],
   ["table", kept(isValidTable)],
   ["map", kept(isValidMap)],
   ["aliases", validateAliases],
@@ -67487,6 +67492,29 @@ function isValidSideToc(value, file, issues) {
         file,
         "side-toc.mode",
         "`side-toc.mode` \u306F `hover` \u304B `fixed` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return false;
+  }
+  return true;
+}
+function isValidMedia(value, file, issues) {
+  if (!isRecord4(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "media",
+        "`media` \u306F `width` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return false;
+  }
+  if (value.width !== void 0 && !(typeof value.width === "string" && MEDIA_WIDTH_PATTERN.test(value.width))) {
+    issues.push(
+      schemaIssue(
+        file,
+        "media.width",
+        "`media.width` \u306F `1%`\u301C`100%` \u306E\u6574\u6570\u306E %\uFF08\u4F8B `50%`\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -78097,6 +78125,17 @@ var page_schema_default = {
         }
       },
       additionalProperties: false
+    },
+    media: {
+      type: "object",
+      properties: {
+        width: {
+          type: "string",
+          pattern: "^(?:100|[1-9][0-9]?)%$",
+          examples: ["80%"]
+        }
+      },
+      additionalProperties: false
     }
   },
   additionalProperties: false
@@ -78571,6 +78610,9 @@ var exampleOf = (node2, root2) => {
   if (resolved.enum?.[0] !== void 0) {
     return resolved.enum[0];
   }
+  if (resolved.examples?.[0] !== void 0) {
+    return resolved.examples[0];
+  }
   return exampleOfType(resolved, root2);
 };
 var expectedInteger = (resolved) => {
@@ -78584,6 +78626,12 @@ var expectedObject = (resolved) => {
   const keys = Object.keys(resolved.properties ?? {});
   return keys.length > 0 ? `${keys.map((key) => `\`${key}\``).join("\u30FB")} \u3092\u6301\u3064\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8` : "\u30AA\u30D6\u30B8\u30A7\u30AF\u30C8";
 };
+var expectedString = (resolved) => {
+  if (resolved.pattern !== void 0 && resolved.examples?.[0] !== void 0) {
+    return `\`${showChoice(resolved.examples[0])}\` \u306E\u66F8\u5F0F\u306E\u6587\u5B57`;
+  }
+  return resolved.minLength !== void 0 && resolved.minLength > 0 ? `${resolved.minLength} \u6587\u5B57\u4EE5\u4E0A\u306E\u6587\u5B57` : "\u6587\u5B57";
+};
 var expectedOfType = (resolved) => {
   switch (resolved.type) {
     case "object":
@@ -78591,7 +78639,7 @@ var expectedOfType = (resolved) => {
     case "array":
       return "\u914D\u5217";
     case "string":
-      return resolved.minLength !== void 0 && resolved.minLength > 0 ? `${resolved.minLength} \u6587\u5B57\u4EE5\u4E0A\u306E\u6587\u5B57` : "\u6587\u5B57";
+      return expectedString(resolved);
     case "integer":
       return expectedInteger(resolved);
     case "number":
@@ -78650,7 +78698,7 @@ var outOfRange2 = (resolved, value) => {
   if (typeof value === "number") {
     return resolved.minimum !== void 0 && value < resolved.minimum || resolved.maximum !== void 0 && value > resolved.maximum;
   }
-  return typeof value === "string" && resolved.minLength !== void 0 && value.length < resolved.minLength;
+  return typeof value === "string" && (resolved.minLength !== void 0 && value.length < resolved.minLength || resolved.pattern !== void 0 && !new RegExp(resolved.pattern, "u").test(value));
 };
 var violates = (resolved, value) => !matchesType2(resolved.type, value) || resolved.enum !== void 0 && !resolved.enum.includes(value) || resolved.const !== void 0 && resolved.const !== value || outOfRange2(resolved, value);
 var checkAnyOf = (node2, context) => {
@@ -78884,6 +78932,10 @@ var readPageSettings = (options) => {
     const toc = option.toc;
     if (typeof toc?.mode === "string") {
       settings.toc = toc.mode;
+    }
+    const media = option.media;
+    if (typeof media?.width === "string") {
+      settings.mediaWidth = media.width;
     }
   }
   return settings;
@@ -81553,13 +81605,17 @@ var playbackOf = (attributes) => ({
   muted: attributes?.muted ?? false,
   loop: attributes?.loop ?? false
 });
-function mediaHtml(image2, kind) {
+function mediaHtml(state, image2, kind) {
+  const attributes = mediaAttributesOf(imageAttributesOf(image2));
+  const env = envOf(state);
+  const defaultWidth = kind === "video" && attributes.width === void 0 ? env.page?.mediaWidth ?? env.mediaWidth : void 0;
   return renderMedia({
     kind,
     src: String(image2.attrGet("src") ?? ""),
     alt: altOf(image2),
     ...captionOf(image2),
-    ...mediaAttributesOf(imageAttributesOf(image2))
+    ...attributes,
+    ...defaultWidth === void 0 || defaultWidth === "100%" ? {} : { width: defaultWidth }
   });
 }
 function mediaOpenerHtml(image2, options) {
@@ -81594,7 +81650,7 @@ function soleFigure(state, paragraph2) {
     if (!features.media) {
       return void 0;
     }
-    const html = opensModal(sole) ? mediaOpenerHtml(sole, { kind: soleMedia, inline: false }) : mediaHtml(sole, soleMedia);
+    const html = opensModal(sole) ? mediaOpenerHtml(sole, { kind: soleMedia, inline: false }) : mediaHtml(state, sole, soleMedia);
     return ownBlock(state, html, token);
   }
   return features.images ? ownBlock(state, imageFigureHtml(sole), token) : void 0;
@@ -81611,7 +81667,7 @@ function splitInlineMedia(state, paragraph2) {
       if (opensModal(child)) {
         children.push(openerInline(state, child, kind));
       } else {
-        after.push(ownBlock(state, mediaHtml(child, kind), token));
+        after.push(ownBlock(state, mediaHtml(state, child, kind), token));
       }
       continue;
     }
@@ -89128,6 +89184,7 @@ function renderDocument(options) {
     libraries: options.config.libraries,
     defaults: options.config.features,
     labels: options.config.labels,
+    mediaWidth: options.config.media.width,
     featureOptions: [],
     markNotes: [],
     features: {},
@@ -89971,6 +90028,18 @@ var KEY_STEPS = {
   ArrowUp: -RESIZE.step,
   ArrowDown: RESIZE.step
 };
+
+// src/media/media-resize.interact.ts
+var MEDIA_RESIZE = { step: 32, minWidth: 160, dragThreshold: 4 };
+var KEY_STEPS2 = {
+  ArrowUp: -MEDIA_RESIZE.step,
+  ArrowDown: MEDIA_RESIZE.step
+};
+var MENU_HTML = [
+  `<button type="button" data-size="smaller">${iconSvg("minus")}\u5C0F\u3055\u304F\u3059\u308B</button>`,
+  `<button type="button" data-size="larger">${iconSvg("plus")}\u5927\u304D\u304F\u3059\u308B</button>`,
+  `<button type="button" data-size="reset">${iconSvg("rotate-ccw")}\u5143\u306E\u5927\u304D\u3055\u306B\u623B\u3059</button>`
+].join("");
 
 // src/tree/tree.interact.ts
 var measureContext = typeof document === "undefined" ? void 0 : document.createElement("canvas").getContext("2d");
