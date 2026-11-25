@@ -16,6 +16,8 @@ constants:
         value: '`light`・`dark`（既定 `light`。`VSCode/*` のストーリーの配色）'
       - key: parameters.a11y
         value: '`{ test: "error" }`（addon-a11y の違反をストーリーの失敗にする）'
+      - key: 動画のリサイズハンドルのストーリー
+        value: '読み込んだ時点と DOM が変わるたびに、`data-story-media-resize` のマーカーを持つ描く先の要素（class `mdmark`）ごとに 1 度だけ、`/render/media-resize.js` の `attachMediaResizes({ root, storage: null })` を呼ぶ。マーカーの値が `focus` ならリサイズハンドルへフォーカスし、`menu` ならリサイズハンドルを押して大きさのメニューを開く（`idle`・`hover` は何もしない。`hover` はテストが動画にポインターを乗せて確認する）'
 lead: 'ストーリーの既定の設定を受け持ち、Storybook のストーリーの既定を変えるときに参照する。'
 tags:
   - name: topic:部品
