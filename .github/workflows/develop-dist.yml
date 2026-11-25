@@ -43,18 +43,22 @@ jobs:
     steps:
       # 移行の手順の点検が最新のバージョンのタグと比べるため、タグも取得する
       - name: ref を取得する
+        id: checkout
         uses: actions/checkout@v4
         with:
           ref: ${{ env.REF }}
           fetch-depth: 0
       - name: Node を入れる
+        id: setup_node
         uses: actions/setup-node@v4
         with:
           node-version: 24
       - name: 依存を入れる
+        id: install
         run: npm ci
       # 埋めるバージョンは version.ini の値に +develop.{ビルドの元の commit の短縮 SHA} を添えたもの
       - name: 配布物をビルドする
+        id: build
         run: npm run build -- --develop
       # GITHUB_TOKEN の push は別のワークフローを起動しないため、この commit で再び動かない
       - name: 差分があれば commit して push する
@@ -73,6 +77,7 @@ jobs:
           echo "pushed=true" >> "$GITHUB_OUTPUT"
       # 削除できなかったファイルを failed-purges.txt に残し、全てのファイルを要求した後に失敗にする
       - name: キャッシュを削除する
+        id: purge
         if: steps.commit.outputs.pushed == 'true'
         run: |
           : > failed-purges.txt
@@ -97,17 +102,20 @@ jobs:
           STEPS_JSON: ${{ toJSON(steps) }}
         run: |
           title="develop の配布物の再作成が失敗した（${REF}）"
-          # 元の commit: 生成物を push した後は 1 つ前、それ以外は今の HEAD
+          # 元の commit: 生成物を push した後は 1 つ前、それ以外は今の HEAD。ref を取得できなかったときは不明
           if [ "${{ steps.commit.outputs.pushed }}" = "true" ]; then
-            source_sha=$(git rev-parse --short=7 HEAD~1)
+            source_sha=$(git rev-parse --short=7 HEAD~1 2>/dev/null || echo 不明)
           else
-            source_sha=$(git rev-parse --short=7 HEAD)
+            source_sha=$(git rev-parse --short=7 HEAD 2>/dev/null || echo 不明)
           fi
-          failed_steps=$(printf '%s' "$STEPS_JSON" | jq -r 'to_entries[] | select(.value.outcome == "failure") | .key' | paste -sd ',' -)
+          # steps は id を持つ step だけを持つため、id から step の名前へ対応させる
+          failed_steps=$(printf '%s' "$STEPS_JSON" | jq -r '
+            {checkout: "ref を取得する", setup_node: "Node を入れる", install: "依存を入れる", build: "配布物をビルドする", commit: "差分があれば commit して push する", purge: "キャッシュを削除する"} as $names
+            | to_entries[] | select(.value.outcome == "failure") | ($names[.key] // .key)' | paste -sd ',' -)
           {
             echo "- 失敗した実行: ${RUN_URL}"
             echo "- 元の commit: ${source_sha}"
-            echo "- 失敗した step: ${failed_steps:-配布物をビルドする}"
+            echo "- 失敗した step: ${failed_steps:-不明}"
             if [ -s failed-purges.txt ]; then
               echo "- キャッシュを削除できなかったファイル:"
               sed 's/^/  - /' failed-purges.txt
