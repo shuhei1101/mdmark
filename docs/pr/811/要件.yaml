@@ -1,0 +1,25 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 読者が、表の列の幅を 24 CSS px 以上のつまみから変え、ドラッグをせずにクリック・タップだけでも列の幅を変えて元に戻し、テーブル設定の列の順をクリック・タップだけでも変える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-793-2.yaml
+    impact: following
+    detail: アプリの画面の表も、Markdown の表と同じ列の幅と列の並べ替えの操作になる
+    depends_on:
+      - docs/scenario/SC-472-73.yaml
+docs:
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 列の幅と列の並べ替えの機能の説明に、ドラッグをしない操作と、つまみの押せる範囲を追加する
+    status: todo
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 用語『列の幅のつまみ』『列の並べ替え』『テーブル設定』の説明に、ドラッグをしない操作を追加する
+    status: todo
+scope_out:
+  - item: 表以外の部品のドラッグの操作（map の図の移動・差分のミニマップ・シーケンス図の参加者の並べ替え等）のドラッグの代わりの有無の点検
+    reason: 要望は表の部品に限る。表以外の部品は別の部品で、この作業 PR がマージされなくても同じ内容で成り立つが、代わりの操作の有無をこの作業で調べていない
+    plan: to_file
