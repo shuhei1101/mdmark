@@ -38,6 +38,19 @@ tables:
         description: 右側の目次の出し方
         enum_values: '`hover` / `fixed`'
         example: '"fixed"'
+      - name: media
+        title: 動画
+        source: DATA-472-20#fields[media]
+        type: object
+        description: 動画の設定
+        example: '{"width": "80%"}'
+      - name: media.width
+        title: 動画の既定の幅
+        source: DATA-472-20#fields[media.width]
+        type: string
+        description: '`{width=…}` を記載していない動画の幅'
+        check: '`^(?:100|[1-9][0-9]?)%$`（`1%`〜`100%` の整数の %）'
+        example: '"80%"'
     description: '`page` を複数記載したときは、後の値を使用する。'
 notes:
   見本: |-

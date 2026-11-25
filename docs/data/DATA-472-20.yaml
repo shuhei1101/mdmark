@@ -24,5 +24,15 @@ fields:
   type: string
   description: 右側の目次の出し方
   example: fixed
+- key: media
+  title: 動画
+  type: object
+  description: 動画の設定
+  example: '{"width": "80%"}'
+- key: media.width
+  title: 動画の既定の幅
+  type: string
+  description: '`{width=…}` を記載していない動画の幅（本文の幅に対する `1%`〜`100%` の整数の %）'
+  example: 80%
 refs:
 - ER-477-14#tables[page]

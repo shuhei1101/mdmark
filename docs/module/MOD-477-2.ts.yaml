@@ -9,7 +9,7 @@ data_models:
     title: マーカーの JSON Schema
     container: src/render/mark-schema.ts
     usecase: 共通
-    summary: '使用する JSON Schema の範囲（`type`・`enum`・`const`・`properties`・`required`・`additionalProperties`・`items`・`anyOf`・`minimum`・`maximum`・`minLength`・`$ref` の `#/$defs/`）だけを持つ型'
+    summary: '使用する JSON Schema の範囲（`type`・`enum`・`const`・`properties`・`required`・`additionalProperties`・`items`・`anyOf`・`minimum`・`maximum`・`minLength`・`pattern`・`examples`・`$ref` の `#/$defs/`）だけを持つ型'
     description: 'これ以外のキーワードを持つスキーマは、`MARK_SCHEMAS` の単体テストで誤りにする（読み取らないキーワードを使用しない）'
   - name: MarkProblem
     title: マーカーの設定の誤り
@@ -36,7 +36,9 @@ functions:
     kind: 関数
     scope: internal
     summary: '`MARK_SCHEMAS` の名前のスキーマで `options` を確認し、型・選べる値・必須に合わない値を `problems`、スキーマに無いキーを `unknownKeys` にし、どちらも除いた設定を返却する'
-    description: 'スキーマの無い名前（拡張・`libraries`・`map`・`map-data`）は確認しずにそのまま返却する。必須のキーが欠けたオブジェクトはオブジェクトごと除く。`additionalProperties` がスキーマのとき（`columns.{列名}`・`board.values.{値}`）は、キーを任意の文字として値だけを確認する'
+    description: '`pattern` を持つ文字の値は、正規表現に合わなければ範囲の誤りと同じく除いて問題にし、文の受け付ける値は `examples` の最初の値の書式（例もその値）にする。
+
+      スキーマの無い名前（拡張・`libraries`・`map`・`map-data`）は確認しずにそのまま返却する。必須のキーが欠けたオブジェクトはオブジェクトごと除く。`additionalProperties` がスキーマのとき（`columns.{列名}`・`board.values.{値}`）は、キーを任意の文字として値だけを確認する'
     args:
       - name: options
         type: '{ name: string; options: MarkOptions }'
@@ -82,6 +84,12 @@ functions:
         condition: リポジトリの `docs/er/ER-477-*.yaml` のテーブルの列（キーのパス・型・必須・選べる値）と `MARK_SCHEMAS`
         mock: なし
         expected: 食い違いと、`MarkSchema` に無いキーワードが 0 件
+      - name: test_validate_mark_options_when_pattern
+        case: 異常
+        summary: 正規表現に合わない文字を除いて問題にし、合う文字はそのまま返却する
+        condition: '`page` と `{ media: { width: "150%" } }`。別に `{ media: { width: "80%" } }`'
+        mock: なし
+        expected: '1 つ目は `options` が `{ media: {} }`、`problems` が `media.width` の 1 件で、文に `80%` を含む。2 つ目は `options` が同じ値で `problems` が空'
   - name: markOptionNotes
     title: マーカーの注記を作る
     container: src/render/mark-schema.ts
