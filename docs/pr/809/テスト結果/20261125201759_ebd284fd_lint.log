@@ -1,0 +1,64 @@
+$ (rc=0; npm run lint || rc=1; npm run lint:eslint || rc=1; npm run typecheck || rc=1; npm --prefix vscode run typecheck || rc=1; actionlint || rc=1; exit $rc)
+
+> lint
+> biome check .
+
+tests/unit/src/tree/tree.syntax.test.ts:250:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+  
+    248 │ /** 言語と中身からコードブロックの行を作る */
+    249 │ const fence = (language: string, lines: string[]) => [
+  > 250 │   "```" + language,
+        │   ^^^^^^^^^^^^^^^^
+    251 │   ...lines,
+    252 │   "```",
+  
+  i Unsafe fix: Use a template literal.
+  
+    248 248 │   /** 言語と中身からコードブロックの行を作る */
+    249 249 │   const fence = (language: string, lines: string[]) => [
+    250     │ - ··"```"·+·language,
+        250 │ + ··`\`\`\`${language}`,
+    251 251 │     ...lines,
+    252 252 │     "```",
+  
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 1030 files in 1477ms. No fixes applied.
+Found 1 warning.
+Found 1 info.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+npm warn deprecated eslint@9.39.5: This version is no longer supported. Please see https://eslint.org/version-support for other options.
+
+added 323 packages, and audited 324 packages in 7s
+
+138 packages are looking for funding
+  run `npm fund` for details
+
+9 moderate severity vulnerabilities
+
+To address issues that do not require attention, run:
+  npm audit fix
+
+To address all issues, run:
+  npm audit fix --force
+
+Run `npm audit` for details.
+
+> typecheck
+> tsc --noEmit
+
+
+> mdmark-vscode@0.2.0 typecheck
+> tsc --noEmit
+
+exit=0

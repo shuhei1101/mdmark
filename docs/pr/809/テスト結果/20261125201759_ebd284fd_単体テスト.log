@@ -1,0 +1,15 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-diagram-resize-handle-target-and-media-mock-error
+
+
+ Test Files  348 passed (348)
+      Tests  2943 passed (2943)
+   Start at  20:16:33
+   Duration  35.21s (worker 84%, tests 11%, import 5%, transform 1%)
+
+exit=0
