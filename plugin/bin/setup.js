@@ -14927,6 +14927,12 @@ var mdmark_config_schema_default = {
           type: "boolean",
           default: true
         },
+        "media-resize": {
+          title: "\u52D5\u753B\u306E\u30EA\u30B5\u30A4\u30BA\u30CF\u30F3\u30C9\u30EB\u306E\u6A5F\u80FD",
+          description: "\u518D\u751F\u30D0\u30FC\u3092\u6301\u3064\u52D5\u753B\u306E\u53F3\u4E0B\u306E\u89D2\u306B\u3001\u7E26\u6A2A\u306E\u6BD4\u3092\u4FDD\u3063\u3066\u5927\u304D\u3055\u3092\u5909\u3048\u308B\u30EA\u30B5\u30A4\u30BA\u30CF\u30F3\u30C9\u30EB\u3092\u914D\u7F6E\u3059\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u914D\u7F6E\u305B\u305A\u3001\u52D5\u753B\u306F\u8A18\u8F09\u3057\u305F\u5E45\u306E\u307E\u307E\u306B\u3059\u308B\u3002",
+          type: "boolean",
+          default: true
+        },
         glossary: {
           title: "\u7528\u8A9E\u306E\u6A5F\u80FD",
           description: "\u7D22\u5F15\u306E `terms` \u3068\u7528\u8A9E\u96C6\u306E\u8868\u306E\u7528\u8A9E\u306B\u4E0B\u7DDA\u3068\u610F\u5473\u306E\u30C4\u30FC\u30EB\u30C1\u30C3\u30D7\u3092\u4ED8\u3051\u3001`<!-- glossary -->` \u306E\u8868\u3092\u7528\u8A9E\u96C6\u306B\u5165\u308C\u308B\u3002\u30AA\u30D5\u306E\u3068\u304D\u306F\u30DE\u30FC\u30AB\u30FC\u3092\u53D6\u308A\u9664\u304D\u3001\u8868\u3092\u666E\u901A\u306E\u8868\u3068\u3057\u3066\u63CF\u304F\u3002",
@@ -15076,6 +15082,7 @@ var mdmark_config_schema_default = {
         figures: true,
         diagrams: true,
         "diagram-resize": true,
+        "media-resize": true,
         glossary: true,
         backlinks: true,
         html: true,
@@ -15141,6 +15148,20 @@ var mdmark_config_schema_default = {
           description: "`hover` \u306F\u53F3\u7AEF\u306E\u7DDA\u3092\u51FA\u3057\u3001\u6307\u3059\u304B\u30D5\u30A9\u30FC\u30AB\u30B9\u3067\u76EE\u6B21\u3092\u91CD\u306D\u3066\u51FA\u3059\u3002`fixed` \u306F\u76EE\u6B21\u3092\u51FA\u3059\u30DC\u30BF\u30F3\u3067\u30B5\u30A4\u30C9\u30D0\u30FC\u3092\u958B\u9589\u3059\u308B\u3002\u63CF\u304F\u5148\u306E\u8981\u7D20\u306E\u5E45\u304C 48rem \u672A\u6E80\u306E\u3068\u304D\u306F\u3069\u3061\u3089\u3082\u72ED\u3044\u5E45\u306E\u5E2F\u3067\u51FA\u3059\u3002`mount` \u306F\u4ED6\u306E\u5024\u3092\u7121\u8996\u3057\u3066 `hover` \u306B\u3057\u3001CLI \u306F\u4ED6\u306E\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
           enum: ["hover", "fixed"],
           default: "hover"
+        }
+      }
+    },
+    media: {
+      title: "\u52D5\u753B\u306E\u8A2D\u5B9A",
+      description: "`{width=\u2026}` \u3092\u8A18\u8F09\u3057\u3066\u3044\u306A\u3044\u518D\u751F\u30D0\u30FC\u3092\u6301\u3064\u52D5\u753B\u306E\u63CF\u304D\u65B9\u3002",
+      type: "object",
+      properties: {
+        width: {
+          title: "\u52D5\u753B\u306E\u65E2\u5B9A\u306E\u5E45",
+          description: "\u672C\u6587\u306E\u5E45\u306B\u5BFE\u3059\u308B %\u3002\u6587\u66F8\u306E\u5148\u982D\u306E page \u306E\u30DE\u30FC\u30AB\u30FC\u306E `media.width` \u304C\u305D\u306E\u6587\u66F8\u3060\u3051\u4E0A\u66F8\u304D\u3057\u3001\u52D5\u753B\u3054\u3068\u306E `{width=\u2026}` \u306F\u3069\u3061\u3089\u3088\u308A\u3082\u512A\u5148\u3059\u308B\u3002`mount`\u30FB`render` \u306F\u4ED6\u306E\u5024\u3092\u7121\u8996\u3057\u3066 `100%` \u306B\u3057\u3001CLI \u306F\u4ED6\u306E\u5024\u3092\u8A2D\u5B9A\u30D5\u30A1\u30A4\u30EB\u306E\u8AA4\u308A\u306B\u3059\u308B\u3002",
+          type: "string",
+          pattern: "^(?:100|[1-9][0-9]?)%$",
+          default: "100%"
         }
       }
     },
@@ -15909,6 +15930,7 @@ var totalFormat = new Intl.NumberFormat("ja", { maximumFractionDigits: 2 });
 
 // src/config.ts
 var MARK_NAME_PATTERN = /^[a-z][a-z0-9-]*$/;
+var MEDIA_WIDTH_PATTERN = /^(?:100|[1-9][0-9]?)%$/;
 
 // src/config-files.ts
 function isRecord(value) {
@@ -16106,6 +16128,7 @@ var CONFIG_KEY_VALIDATORS = [
   ["mermaid", kept(isValidMermaid)],
   ["assets", kept(isValidAssets)],
   ["side-toc", kept(isValidSideToc)],
+  ["media", kept(isValidMedia)],
   ["table", kept(isValidTable)],
   ["map", kept(isValidMap)],
   ["aliases", validateAliases],
@@ -16215,6 +16238,29 @@ function isValidSideToc(value, file, issues) {
         file,
         "side-toc.mode",
         "`side-toc.mode` \u306F `hover` \u304B `fixed` \u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return false;
+  }
+  return true;
+}
+function isValidMedia(value, file, issues) {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "media",
+        "`media` \u306F `width` \u3092\u6301\u3064\u30AD\u30FC\u3068\u5024\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
+      )
+    );
+    return false;
+  }
+  if (value.width !== void 0 && !(typeof value.width === "string" && MEDIA_WIDTH_PATTERN.test(value.width))) {
+    issues.push(
+      schemaIssue(
+        file,
+        "media.width",
+        "`media.width` \u306F `1%`\u301C`100%` \u306E\u6574\u6570\u306E %\uFF08\u4F8B `50%`\uFF09\u3067\u8A18\u8F09\u3057\u3066\u304F\u3060\u3055\u3044\u3002"
       )
     );
     return false;
@@ -41086,7 +41132,7 @@ if (import.meta.main) {
     argv: process.argv.slice(2),
     env: process.env,
     pluginRoot: join5(import.meta.dirname, ".."),
-    version: localVersionOf("v0.14.0+develop.b5baf1f"),
+    version: localVersionOf("v0.14.0+develop.758231a"),
     run: runExternal,
     stdout: (line) => console.log(line),
     stderr: (line) => console.error(line)
