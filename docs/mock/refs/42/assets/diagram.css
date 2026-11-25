@@ -634,14 +634,13 @@
     }
 
     /* 表示枠の高さを変えるリサイズハンドル: 表示枠の下に高さ 24px（タップの対象の下限）の帯を置き、帯のどこでも上下にドラッグできる。
-       見た目は帯の中央の横棒だけ（shadcn/ui の Drawer の取っ手と同じ形）。表示枠の横のスクロールバーとは重ならない */
+       枠線と面を持たず、見た目は帯の中央の横棒だけ（shadcn/ui の Drawer の取っ手と同じ形）。表示枠の横のスクロールバーとは重ならない */
     .mdmark-diagram-resize {
       display: flex;
       justify-content: center;
       align-items: center;
       box-sizing: border-box;
       height: 24px;
-      border-block-start: 1px solid var(--mdmark-color-border);
       color: var(--mdmark-color-border);
       cursor: ns-resize;
       touch-action: none;
