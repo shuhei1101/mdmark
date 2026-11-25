@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.2fd9bd9";
+  return "v0.14.0+develop.2d6d268";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -85206,7 +85206,7 @@ function exportPanel(frame) {
 function resizeHandle(frame, fitHeight) {
   if (frame.resizable === false || frame.modal === true) return "";
   const height = Math.round(Math.max(RESIZE.min, fitHeight));
-  return `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A\u306E\u9AD8\u3055" aria-keyshortcuts="ArrowUp ArrowDown" aria-valuenow="${height}" aria-valuemin="${RESIZE.min}" aria-valuemax="${height}" aria-valuetext="${height}px" title="\u30C9\u30E9\u30C3\u30B0\u304B \u2191 \u2193 \u3067\u9AD8\u3055\u3092\u5909\u3048\u308B\u3002\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3067\u56F3\u306E\u5168\u4F53\u304C\u53CE\u307E\u308B\u9AD8\u3055\u306B\u3059\u308B">${iconSvg("equal")}</div>`;
+  return `<div class="mdmark-diagram-resize" role="separator" tabindex="0" aria-orientation="horizontal" aria-label="\u300C${escapeHtml2(frame.title)}\u300D\u306E\u8868\u793A\u306E\u9AD8\u3055" aria-keyshortcuts="ArrowUp ArrowDown" aria-valuenow="${height}" aria-valuemin="${RESIZE.min}" aria-valuemax="${height}" aria-valuetext="${height}px" title="\u30C9\u30E9\u30C3\u30B0\u304B \u2191 \u2193 \u3067\u9AD8\u3055\u3092\u5909\u3048\u308B\u3002\u30C0\u30D6\u30EB\u30AF\u30EA\u30C3\u30AF\u3067\u56F3\u306E\u5168\u4F53\u304C\u53CE\u307E\u308B\u9AD8\u3055\u306B\u3059\u308B"><span class="mdmark-diagram-resize-bar"></span></div>`;
 }
 function frameMeta(frame) {
   return frame.scope === void 0 || frame.updated === void 0 ? "" : `<span class="mdmark-diagram-meta">\u7BC4\u56F2: ${escapeHtml2(frame.scope)}\u30FB\u66F4\u65B0\u65E5: <time datetime="${escapeHtml2(frame.updated)}">${escapeHtml2(frame.updated)}</time></span>`;

@@ -18,8 +18,8 @@ export declare const attachDiagramResize: (options: {
     storage: Storage | null;
     /** 今の倍率の図の全体が収まる高さを返却する */
     fit: () => number;
-    /** 高さを変えたとき（戻したときは `null`）に呼ぶ */
-    onResize: (height: number | null) => void;
+    /** 高さを変えたときに、変えた高さで呼ぶ */
+    onResize: (height: number) => void;
 }) => {
     restored: number | null;
     detach: () => void;
