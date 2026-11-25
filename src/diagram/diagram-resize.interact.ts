@@ -1,3 +1,8 @@
+import {
+  readStoredSize,
+  storedSizeKey,
+  writeStoredSize,
+} from "../shared/stored-size.logic.ts";
 import { clampDiagramHeight, RESIZE } from "./geometry.ts";
 
 /** リサイズハンドルで変えた高さを sessionStorage に記載するキーの頭 */
@@ -18,38 +23,12 @@ export const diagramHeightKey = (options: {
   index: number;
   title: string;
 }): string =>
-  `${DIAGRAM_HEIGHT_KEY_PREFIX}${options.pathname}#${options.index}:${options.title}`;
-
-/** 保った高さを読み込む。読み込めない・正の整数でないときは `null`（保つ先の例外は外へ出さない） */
-const readHeight = (storage: Storage | null, key: string): number | null => {
-  try {
-    const value = storage?.getItem(key);
-    if (value === null || value === undefined || !/^\d+$/.test(value)) {
-      return null;
-    }
-    const height = Number(value);
-    return height > 0 ? height : null;
-  } catch {
-    return null;
-  }
-};
-
-/** 高さを保つ（`null` はキーを削除する）。保つ先の例外は外へ出さない */
-const writeHeight = (
-  storage: Storage | null,
-  key: string,
-  height: number | null,
-): void => {
-  try {
-    if (height === null) {
-      storage?.removeItem(key);
-    } else {
-      storage?.setItem(key, String(height));
-    }
-  } catch {
-    // 保てないときは、高さを保たずに変えるだけにする
-  }
-};
+  storedSizeKey({
+    prefix: DIAGRAM_HEIGHT_KEY_PREFIX,
+    pathname: options.pathname,
+    index: options.index,
+    name: options.title,
+  });
 
 /** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで今の倍率の図の全体が収まる高さにし、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を削除する関数を返却する */
 export const attachDiagramResize = (options: {
@@ -86,7 +65,7 @@ export const attachDiagramResize = (options: {
     const next = clampDiagramHeight(height);
     viewport.style.height = `${next}px`;
     updateValues(next);
-    writeHeight(storage, key, next);
+    writeStoredSize(storage, key, next);
     onResize(next);
   };
 
@@ -150,7 +129,7 @@ export const attachDiagramResize = (options: {
   );
 
   // 保った高さは、操作で変えるときと同じく範囲に収めて適用する
-  const kept = readHeight(storage, key);
+  const kept = readStoredSize(storage, key);
   const restored = kept === null ? null : clampDiagramHeight(kept);
   if (restored === null) {
     updateValues(viewport.getBoundingClientRect().height);

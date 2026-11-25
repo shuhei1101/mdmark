@@ -449,6 +449,12 @@ files:
     related:
       - to: MOD-472-231
         type: implements
+  - path: shared/stored-size.logic.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通 / stored-size.logic.ts』の「リサイズハンドルで変えた大きさの sessionStorage への保存・読み込みとキーの作り方」を受け持つ。図と動画の大きさの保ち方を変えるときに参照する。
+    tags: [topic:保存]
+    related:
+      - to: MOD-805-3
+        type: implements
   - path: shared/scroller.interact.ts
     description: モジュール構成『ライブラリ本体 / 記法の共通』のうち「要素をスクロールする一番近い祖先の要素を見つける（先頭へ戻るボタンと差分のミニマップが使用する）」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
     tags: [topic:dom, topic:イベント]
@@ -1330,6 +1336,12 @@ files:
     tags: [topic:dom, topic:イベント, topic:動画, topic:音声]
     related:
       - to: MOD-801-2
+        type: implements
+  - path: media/media-resize.interact.ts
+    description: モジュール構成『ライブラリ本体 / 画像と動画 / media-resize.interact.ts』の「再生バーを持つ動画の大きさを縦横の比を保って変えるリサイズハンドルと大きさのメニュー、変えた幅の保持」を受け持つ。描いた文書での読者の操作を変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:動画]
+    related:
+      - to: MOD-805-2
         type: implements
   - path: media/media.part.ts
     description: モジュール構成『ライブラリ本体 / 画像と動画』のうち「動画と音声の renderMedia」を受け持つ。部品が返却する HTML を変えるときに参照する。

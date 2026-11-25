@@ -63,13 +63,14 @@ overall_flow: |-
     s([push か workflow_dispatch で起動])
     subgraph build
       a[ref を取得する]
-      n[Node と依存を入れる]
+      n[Node を入れる]
+      d[依存を入れる]
       b[配布物をビルドする]
       c[差分があれば commit して push する]
-      p[変わった配布ファイルのキャッシュを削除する]
+      p[キャッシュを削除する]
       f[失敗の Issue を起票するかコメントする]
     end
-    s --> a --> n --> b
+    s --> a --> n --> d --> b
     b -- 成功 --> c
     c -- 差分なし --> ok([成功])
     c -- push した --> p
@@ -92,7 +93,7 @@ flows:
 
       ```mermaid
       flowchart TD
-        s([develop への push で起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        s([develop への push で起動]) --> a[ref を取得する] --> n[Node を入れる] --> d[依存を入れる] --> b[配布物をビルドする]
         b -- 成功 --> c[commit して develop へ push する]
         c --> p[変わった配布ファイルのキャッシュを削除する]
         p -- 全て削除した --> e([成功])
@@ -117,7 +118,7 @@ flows:
 
       ```mermaid
       flowchart TD
-        s([workflow_dispatch で起動]) --> a[develop を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        s([workflow_dispatch で起動]) --> a[develop を取得する] --> n[Node を入れる] --> d[依存を入れる] --> b[配布物をビルドする]
         b -- 成功 --> c[commit して develop へ push する]
         c --> p[変わった配布ファイルのキャッシュを削除する]
         p -- 全て削除した --> e([成功])
@@ -140,7 +141,7 @@ flows:
 
       ```mermaid
       flowchart TD
-        s([テスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        s([テスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node を入れる] --> d[依存を入れる] --> b[配布物をビルドする]
         b -->|"失敗（if: failure()）"| f[失敗の Issue を起票する] --> e([失敗])
       ```
 
@@ -161,7 +162,7 @@ flows:
 
       ```mermaid
       flowchart TD
-        s([同じテスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        s([同じテスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node を入れる] --> d[依存を入れる] --> b[配布物をビルドする]
         b -->|"失敗（if: failure()）"| f[open の失敗の Issue へコメントする] --> e([失敗])
       ```
 
@@ -183,7 +184,7 @@ flows:
 
       ```mermaid
       flowchart TD
-        s([テスト用の ref・ラベル・purge の URL の頭で起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        s([テスト用の ref・ラベル・purge の URL の頭で起動]) --> a[ref を取得する] --> n[Node を入れる] --> d[依存を入れる] --> b[配布物をビルドする]
         b -- 成功 --> c[commit して ref へ push する]
         c --> p[キャッシュを削除する]
         p -->|"失敗（if: failure()）"| f[失敗の Issue を起票する] --> e([失敗])
@@ -207,7 +208,7 @@ flows:
 
       ```mermaid
       flowchart TD
-        s([テスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node と依存を入れる] --> b[配布物をビルドする]
+        s([テスト用の ref とラベルで起動]) --> a[ref を取得する] --> n[Node を入れる] --> d[依存を入れる] --> b[配布物をビルドする]
         b -- 成功 --> c[差分があれば commit して push する]
         c -- 差分なし --> e([成功])
       ```

@@ -9053,6 +9053,123 @@
       display: none;
     }
 
+    /* 動画のリサイズハンドル: `docs/mock/refs/805/assets/media-resize.css` の案 D から取る */
+    /* 動画とハンドルを入れる入れ物。図のグリッドは項目を左に揃えて中身の幅に縮めるため、図の幅いっぱいに広げる。下にハンドルの押せる範囲の 16px を空ける */
+    .mdmark-media-frame {
+      position: relative;
+      justify-self: stretch;
+      padding-block-end: 16px;
+    }
+
+    /* ハンドル: 札とアイコンを持たず、動画の右下の角に 24×24 の押せる範囲を配置する。範囲の下 16px は動画の下に出し、再生バーとは重ねない */
+    .mdmark-media-resize {
+      position: absolute;
+      inset-block-end: 0;
+      inset-inline-end: 0;
+      z-index: 1;
+      box-sizing: border-box;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      background: none;
+      color: var(--mdmark-color-muted);
+      cursor: nwse-resize;
+      touch-action: none;
+
+      /* 角の線: 動画の右下の角のすぐ下に、右端を動画の右端に合わせた L 字の 2px の線。動画にポインターを乗せたときとフォーカス・操作の間だけ出す */
+      &::before {
+        content: "";
+        position: absolute;
+        inset-block-end: 2px;
+        inset-inline-end: 0;
+        box-sizing: border-box;
+        width: 18px;
+        height: 12px;
+        border-inline-end: 2px solid currentColor;
+        border-block-end: 2px solid currentColor;
+        border-end-end-radius: var(--mdmark-radius);
+        opacity: 0;
+        transition:
+          opacity 0.15s,
+          color 0.15s;
+      }
+
+      &:hover,
+      &.is-resizing,
+      &.is-open {
+        color: var(--mdmark-color-link);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 0;
+        border-radius: var(--mdmark-radius);
+      }
+    }
+
+    .mdmark-media-frame:hover .mdmark-media-resize::before,
+    .mdmark-media-resize:focus-visible::before,
+    .mdmark-media-resize.is-resizing::before,
+    .mdmark-media-resize.is-open::before {
+      opacity: 1;
+    }
+
+    /* 大きさのメニュー: ハンドルを押す（動かさずに離す）か Enter で開く、ドラッグの代わりの 3 つのボタン。popover で最前面に出し、ハンドルのそばに配置する */
+    .mdmark-media-size-menu {
+      position: fixed;
+      inset: auto;
+      margin: 0;
+      padding: 4px;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      color: var(--mdmark-color-text);
+      box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
+
+      &:popover-open {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      button {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 32px;
+        padding: 0 12px;
+        border: 0;
+        border-radius: 4px;
+        background: none;
+        color: inherit;
+        font: inherit;
+        font-size: 0.875rem;
+        text-align: start;
+        white-space: nowrap;
+        cursor: pointer;
+
+        &:hover:not(:disabled) {
+          background: var(--mdmark-color-surface);
+        }
+
+        &:focus-visible {
+          outline: 2px solid var(--mdmark-color-link);
+          outline-offset: -2px;
+        }
+
+        &:disabled {
+          color: var(--mdmark-color-muted);
+          cursor: default;
+        }
+
+        svg {
+          width: 16px;
+          height: 16px;
+        }
+      }
+    }
+
     /* 再生のボタンと再生のダイアログ: `docs/mock/refs/801/assets/media-modal.css` から取る */
     /* 文の中に並ぶボタン: 本文の行の高さに収め、表の行を高くしない */
     .mdmark-media-open {
@@ -9636,6 +9753,16 @@
 
       .mdmark-media :is(video, audio) {
         display: none;
+      }
+
+      /* 動画のリサイズハンドルとメニュー: 出さず、入れ物の下の余白も外す */
+      .mdmark-media-resize,
+      .mdmark-media-size-menu {
+        display: none;
+      }
+
+      .mdmark-media-frame {
+        padding-block-end: 0;
       }
 
       .mdmark-media > .mdmark-media-print {

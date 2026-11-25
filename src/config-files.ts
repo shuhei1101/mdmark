@@ -3,7 +3,11 @@ import { parse, YAMLParseError } from "yaml";
 import { validateAliasRows } from "./cli/alias-schema.ts";
 import type { CheckIssue } from "./cli/check.ts";
 import { isLocalVersion } from "./cli/versions.ts";
-import { MARK_NAME_PATTERN, type MdmarkConfig } from "./config.ts";
+import {
+  MARK_NAME_PATTERN,
+  MEDIA_WIDTH_PATTERN,
+  type MdmarkConfig,
+} from "./config.ts";
 
 /** `mdmark build` が読み込む設定の `build` */
 export type BuildConfig = {
@@ -307,6 +311,7 @@ const CONFIG_KEY_VALIDATORS: Array<[string, KeyValidator]> = [
   ["mermaid", kept(isValidMermaid)],
   ["assets", kept(isValidAssets)],
   ["side-toc", kept(isValidSideToc)],
+  ["media", kept(isValidMedia)],
   ["table", kept(isValidTable)],
   ["map", kept(isValidMap)],
   ["aliases", validateAliases],
@@ -457,6 +462,38 @@ function isValidSideToc(
         file,
         "side-toc.mode",
         "`side-toc.mode` は `hover` か `fixed` で記載してください。",
+      ),
+    );
+    return false;
+  }
+  return true;
+}
+
+/** 設定の `media` を検める。キーと値の構造でなければ、`width` が `MEDIA_WIDTH_PATTERN` に合う文字列でなければ、`schema` のずれを追加して `false` を返却する */
+function isValidMedia(
+  value: unknown,
+  file: string,
+  issues: CheckIssue[],
+): boolean {
+  if (!isRecord(value)) {
+    issues.push(
+      schemaIssue(
+        file,
+        "media",
+        "`media` は `width` を持つキーと値で記載してください。",
+      ),
+    );
+    return false;
+  }
+  if (
+    value.width !== undefined &&
+    !(typeof value.width === "string" && MEDIA_WIDTH_PATTERN.test(value.width))
+  ) {
+    issues.push(
+      schemaIssue(
+        file,
+        "media.width",
+        "`media.width` は `1%`〜`100%` の整数の %（例 `50%`）で記載してください。",
       ),
     );
     return false;

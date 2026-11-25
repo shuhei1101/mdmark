@@ -15,6 +15,10 @@ export const readPageSettings = (options: MarkOptions[]): PageSettings => {
     if (typeof toc?.mode === "string") {
       settings.toc = toc.mode as SideTocMode;
     }
+    const media = option.media as { width?: unknown } | undefined;
+    if (typeof media?.width === "string") {
+      settings.mediaWidth = media.width;
+    }
   }
   return settings;
 };

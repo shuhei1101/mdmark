@@ -94,6 +94,8 @@ export type RenderEnv = {
   pageOptions?: Array<{ raw: string; options: MarkOptions }>;
   /** `pageOptions` を読み込んだページの設定（`resolvePageSettings` が入れる） */
   page?: PageSettings;
+  /** 既定を適用した設定の `media.width`（`renderDocument` が入れる。`buildImageFigures` が `page.mediaWidth` が無いときに使用する） */
+  mediaWidth?: string | undefined;
   /** 見出しの ID と文字 */
   headings: Array<{ level: number; id: string; text: string }>;
   /** 描くごとに作る、mdmark が出した要素のマーカーの値 */
