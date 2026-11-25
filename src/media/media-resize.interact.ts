@@ -239,6 +239,16 @@ export const attachMediaResize = (options: {
     { signal },
   );
 
+  // メニュー: toggle のイベントは開いた後に届くため、配置するまで隠し、ブラウザの既定の位置でハンドルへの次の押下を受けないようにする
+  menu.addEventListener(
+    "beforetoggle",
+    (event) => {
+      if ((event as ToggleEvent).newState === "open") {
+        menu.style.visibility = "hidden";
+      }
+    },
+    { signal },
+  );
   // メニュー: 開いたらボタンの押せる・押せないを合わせ、配置して最初の押せるボタンへフォーカスし、閉じたらハンドルへ戻す
   menu.addEventListener(
     "toggle",
@@ -248,6 +258,7 @@ export const attachMediaResize = (options: {
       if (open) {
         updateMenu();
         placeMenu();
+        menu.style.removeProperty("visibility");
         menu.querySelector<HTMLButtonElement>("button:not(:disabled)")?.focus();
         return;
       }
