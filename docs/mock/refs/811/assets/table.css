@@ -165,6 +165,16 @@
         outline: 2px solid var(--mdmark-color-link);
         outline-offset: 1px;
       }
+
+      & .mdmark-icon {
+        inline-size: 16px;
+        block-size: 16px;
+        fill: none;
+        stroke: currentcolor;
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+      }
     }
 
     .mdmark-811-tablemenu-panel {
