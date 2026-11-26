@@ -599,6 +599,38 @@ function insertTableMenu(options: {
   };
 }
 
+/** 表のメニュー・テーブル設定のパネル・絞り込みのドロワーを、押したボタンの下に右端をそろえて配置する。画面の端からはみ出さないようにし、下に入らなければボタンの上に配置する */
+function placeDrawerAt(drawer: HTMLElement, button: HTMLElement): void {
+  const rect = button.getBoundingClientRect();
+  const left = Math.min(
+    Math.max(rect.right - drawer.offsetWidth, VIEWPORT_GUTTER),
+    window.innerWidth - drawer.offsetWidth - VIEWPORT_GUTTER,
+  );
+  const below = rect.bottom + DRAWER_GAP;
+  const top =
+    below + drawer.offsetHeight > window.innerHeight - VIEWPORT_GUTTER
+      ? Math.max(VIEWPORT_GUTTER, rect.top - drawer.offsetHeight - DRAWER_GAP)
+      : below;
+  drawer.style.left = `${left}px`;
+  drawer.style.top = `${top}px`;
+}
+
+/** 囲む要素の中の `hidden` を持たない表のメニューとテーブル設定のパネルを、表のメニューのボタンの下に右端をそろえて配置する。ボタンが無ければ何もしない */
+export function placeOpenTablePanels(wrapper: HTMLElement): void {
+  const button = ownElement<HTMLElement>(wrapper, "button.mdmark-table-menu");
+  if (!button) {
+    return;
+  }
+  for (const panel of ownElements<HTMLElement>(
+    wrapper,
+    ".mdmark-table-menu-panel, .mdmark-table-settings",
+  )) {
+    if (!panel.hidden) {
+      placeDrawerAt(panel, button);
+    }
+  }
+}
+
 /** 表のメニューのボタンを持つ囲む要素に、ボタンを見出し行の縦の中央と表の見えている右端に合わせる位置を CSS 変数（`--mdmark-table-menu-top`・`--mdmark-table-menu-end`）で入れる。ボタンや表が無ければ何もしない */
 export function placeTableMenuButton(wrapper: HTMLElement): void {
   const button = ownElement<HTMLElement>(wrapper, "button.mdmark-table-menu");
@@ -1003,20 +1035,7 @@ function attachTable(
   let openState: { drawer: HTMLElement; button: HTMLElement } | undefined;
   /** ドロワーを押したボタンの下に配置し、画面の端からはみ出さないようにする */
   const placeDrawer = (drawer: HTMLElement, button: HTMLElement): void => {
-    const rect = button.getBoundingClientRect();
-    // 表のメニュー・テーブル設定のパネル・絞り込みのドロワーは、ボタンの右端に合わせる
-    const start = rect.right - drawer.offsetWidth;
-    const left = Math.min(
-      Math.max(start, VIEWPORT_GUTTER),
-      window.innerWidth - drawer.offsetWidth - VIEWPORT_GUTTER,
-    );
-    const below = rect.bottom + DRAWER_GAP;
-    const top =
-      below + drawer.offsetHeight > window.innerHeight - VIEWPORT_GUTTER
-        ? Math.max(VIEWPORT_GUTTER, rect.top - drawer.offsetHeight - DRAWER_GAP)
-        : below;
-    drawer.style.left = `${left}px`;
-    drawer.style.top = `${top}px`;
+    placeDrawerAt(drawer, button);
   };
   /** 開いている間だけ受け取る: ドロワーの外を押したら閉じる */
   const onPointerDown = (event: Event): void => {

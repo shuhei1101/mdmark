@@ -10079,6 +10079,7 @@
   /* 列の一覧の 1 行: つまみ・列名・目のアイコン */
   .mdmark-table-settings-item {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.25rem;
     min-block-size: 2rem;
@@ -10149,9 +10150,10 @@
     box-shadow: inset 0 -3px 0 var(--mdmark-color-link);
   }
 
-  /* 列の移動のメニュー: 開いたつまみの行の下に、アイコンと文字の 2 つのボタンを縦に並べる */
+  /* 列の移動のメニュー: 開いたつまみの行の中で、つまみと列名の下に折り返し、アイコンと文字の 2 つのボタンを縦に並べる */
   .mdmark-table-move-menu {
     display: flex;
+    flex: 1 0 calc(100% - 2rem);
     flex-direction: column;
     margin: 0 0 0.25rem 2rem;
     padding: 0.25rem;

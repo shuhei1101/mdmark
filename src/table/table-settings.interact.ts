@@ -218,12 +218,12 @@ export function attachTableSettings(options: {
     side: "before" | "after",
   ): HTMLButtonElement | null | undefined =>
     moveMenu?.querySelector<HTMLButtonElement>(`button[data-move="${side}"]`);
-  /** 列の移動のメニューを開いた項目の後ろに配置し、動かせない向きのボタンを `disabled` にする */
+  /** 列の移動のメニューを開いた項目の中の末尾に配置し、動かせない向きのボタンを `disabled` にする */
   const placeMoveMenu = (item: HTMLElement): void => {
     if (!moveMenu) {
       return;
     }
-    item.after(moveMenu);
+    item.append(moveMenu);
     moveMenu.setAttribute(
       "aria-label",
       `「${item.dataset.name ?? ""}」の列の移動`,
@@ -302,10 +302,35 @@ export function attachTableSettings(options: {
   list.addEventListener("dragover", onDragOver);
   list.addEventListener("drop", onDrop);
   list.addEventListener("dragend", onDragEnd);
+  /** 列の移動のメニューとそのつまみの外を押したら、メニューを閉じる */
+  const onPointerDown = (event: PointerEvent): void => {
+    const target = event.target as Node | null;
+    if (
+      moveTarget &&
+      target &&
+      !moveMenu?.contains(target) &&
+      !moveTarget.grip.contains(target)
+    ) {
+      closeMoveMenu(false);
+    }
+  };
+  // パネルを閉じたら、列の移動のメニューも閉じる
+  const panelObserver = new MutationObserver(() => {
+    if (panel.hidden && moveOpen()) {
+      closeMoveMenu(false);
+    }
+  });
+  panelObserver.observe(panel, {
+    attributes: true,
+    attributeFilter: ["hidden"],
+  });
   list.addEventListener("keydown", onKeyDown);
   list.addEventListener("click", onClick);
+  document.addEventListener("pointerdown", onPointerDown);
   return () => {
     list.removeEventListener("click", onClick);
+    document.removeEventListener("pointerdown", onPointerDown);
+    panelObserver.disconnect();
     closeMoveMenu(false);
     list.removeEventListener("dragstart", onDragStart);
     list.removeEventListener("dragenter", onDragOver);

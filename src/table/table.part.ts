@@ -832,14 +832,15 @@ export function renderTableSettings(options: TableSettingsOptions): string {
   const showing = options.features.includes("columns");
   const reordering = options.features.includes("reorder");
   const noteId = `${id}-settings-note`;
-  const items = renderSettingsItems({ options, noteId, showing, reordering });
+  const context = { options, noteId, showing, reordering };
+  const items = renderSettingsItems(context);
   const note = [
     reordering
       ? "つまみをドラッグするか、つまみを押して開くメニュー・↑・↓ キーで並べ替えます。"
       : "",
     showing ? "先頭の列は隠せません" : "",
   ].join("");
-  return `<div class="mdmark-table-settings" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="テーブル設定"><p class="mdmark-table-settings-title">${showing ? "表示と並び順" : "並び順"}</p><ul class="mdmark-table-settings-list">${items}</ul><p class="mdmark-table-settings-note" id="${escapeHtml(noteId)}">${note}</p></div>`;
+  return `<div class="mdmark-table-settings" id="${escapeHtml(menuId(id))}" role="dialog" aria-label="テーブル設定"><p class="mdmark-table-settings-title">${showing ? "表示と並び順" : "並び順"}</p><ul class="mdmark-table-settings-list">${items}</ul>${renderClosedMoveMenu(context)}<p class="mdmark-table-settings-note" id="${escapeHtml(noteId)}">${note}</p></div>`;
 }
 
 /** テーブル設定の一覧の描き方 */
@@ -873,15 +874,21 @@ function renderSettingsItems(context: SettingsListContext): string {
     }
     previous = key;
     const movable = (counts.get(key) ?? 0) > 1;
-    items.push(renderSettingsItem(context, { column, key, movable }));
-    if (context.reordering && context.options.moveMenu === column) {
-      items.push(renderOpenMoveMenu(context.options, column));
-    }
+    const item = renderSettingsItem(context, { column, key, movable });
+    // 開いた列の移動のメニューは、そのつまみの行の中の末尾に配置する
+    items.push(
+      context.reordering && context.options.moveMenu === column
+        ? item.replace(
+            /<\/li>$/,
+            `${renderOpenMoveMenu(context.options, column)}</li>`,
+          )
+        : item,
+    );
   }
-  return items.join("") + renderClosedMoveMenu(context);
+  return items.join("");
 }
 
-/** 列の移動のメニューを開いていないときに一覧の末尾に配置する、閉じた列の移動のメニューの HTML を返却する（開いていれば空） */
+/** 列の移動のメニューを開いていないときに一覧の後ろに配置する、閉じた列の移動のメニューの HTML を返却する（開いていれば空） */
 function renderClosedMoveMenu(context: SettingsListContext): string {
   const { moveMenu, order, id } = context.options;
   const open = moveMenu !== undefined && order.includes(moveMenu);

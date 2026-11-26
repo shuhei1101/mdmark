@@ -94,7 +94,7 @@ new MutationObserver(attachStoryMediaResizes).observe(
 );
 attachStoryMediaResizes();
 
-// 表のストーリー（`.mdmark-table` を持つもの）は、描いた直後に見出し行と集計の行を画面に留める操作を付け、表のメニューのボタンの位置を合わせる（`mount` が全ての表に付けるのと同じ）
+// 表のストーリー（`.mdmark-table` を持つもの）は、描いた直後に見出し行と集計の行を画面に留める操作を付け、表のメニューのボタンと開いて描いた表のメニュー・パネルの位置を合わせる（`mount` が全ての表に付けるのと同じ）
 const stuck = new WeakSet<Element>();
 /** 表に見出し行と集計の行を留める操作を付ける。読み込んだ時点でも 1 度呼ぶ */
 const attachStoryTables = async (): Promise<void> => {
@@ -108,11 +108,12 @@ const attachStoryTables = async (): Promise<void> => {
       /* @vite-ignore */ `${window.location.origin}/render/sticky.js`
     );
     attachStickyRows(root);
-    const { placeTableMenuButton } = await import(
+    const { placeTableMenuButton, placeOpenTablePanels } = await import(
       /* @vite-ignore */ `${window.location.origin}/render/tables.js`
     );
     for (const wrapper of root.querySelectorAll<HTMLElement>(".mdmark-table")) {
       placeTableMenuButton(wrapper);
+      placeOpenTablePanels(wrapper);
     }
   }
 };
