@@ -258,8 +258,8 @@ test("test_attach_table_settings_when_move_menu", async () => {
   grip.click();
   expect(grip.getAttribute("aria-expanded")).toBe("true");
   expect(moveMenu(root).hasAttribute("hidden")).toBe(false);
-  expect(grip.closest(".mdmark-table-settings-item")?.nextElementSibling).toBe(
-    moveMenu(root),
+  expect(moveMenu(root).parentElement).toBe(
+    grip.closest(".mdmark-table-settings-item"),
   );
   expect(document.activeElement).toBe(moveButton(root, "before"));
   // 実行・検証: 前へ移すで 1 つ動き、メニューは開いたまま

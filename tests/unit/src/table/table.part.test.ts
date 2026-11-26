@@ -1175,11 +1175,13 @@ test("test_render_table_settings_when_move_menu", async () => {
     "false",
     "false",
   ]);
+  // 検証: どの場合も一覧の直下には li だけを配置する
+  for (const html of [first, middle, closed]) {
+    const list = innerHtml(html, 'class="mdmark-table-settings-list"');
+    expect(list.replace(/<li\b[\s\S]*?<\/li>/g, "")).toBe("");
+  }
   const item = outerHtml(first, 'data-column="0"');
-  const afterItem = first.slice(first.indexOf(item) + item.length);
-  expect(afterItem.startsWith('<div class="mdmark-table-move-menu"')).toBe(
-    true,
-  );
+  expect(item).toContain('<div class="mdmark-table-move-menu"');
   const menu = findTag(first, "mdmark-table-move-menu");
   expect(menu).toContain('role="group"');
   expect(menu).toContain('aria-label="「名前」の列の移動"');
@@ -1191,6 +1193,9 @@ test("test_render_table_settings_when_move_menu", async () => {
   expect(findTag(middle, 'data-move="after"')).not.toMatch(/\sdisabled\b/);
   // 検証: 閉じたメニュー
   expect(findTag(closed, "mdmark-table-move-menu")).toMatch(/\shidden\b/);
+  expect(closed.indexOf("mdmark-table-move-menu")).toBeGreaterThan(
+    closed.indexOf("</ul>"),
+  );
   for (const tag of findTags(closed, "mdmark-table-settings-grip")) {
     expect(tag).toContain('aria-expanded="false"');
   }
