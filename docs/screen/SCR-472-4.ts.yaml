@@ -118,7 +118,7 @@ elements:
         value: 読者がつまみで指定した列の幅（`resize` の表だけ。描くたびに空に戻る）
       - name: resizing
         value: 読者がつまみをドラッグしている列の位置
-    action: 'テーブル設定のパネルで列を動かす・隠す（要素「表のテーブル設定のパネル」）。列の見出しの右端のつまみで列の幅を変える（要素「表の列の幅のつまみ」）。`tree` の表は、行を押して選ぶと同じ親の範囲の縦線を濃くし、もう一度押すと解く。`columns` の機能の表で列の表示を切り替えるたびに、`opts.onColumnsChange` に表の番号と隠している列の名前を指定する'
+    action: '見出し行の右上の表のメニューのボタンで表のメニューを開き、件数を確認し、テーブル設定・集計・表のコピー・元の CSV の表示を選ぶ（要素「表のメニュー」）。テーブル設定のパネルで列を動かす・隠す（要素「表のテーブル設定のパネル」）。列の見出しの右端のつまみで列の幅を変える（要素「表の列の幅のつまみ」）。`tree` の表は、行を押して選ぶと同じ親の範囲の縦線を濃くし、もう一度押すと解く。`columns` の機能の表で列の表示を切り替えるたびに、`opts.onColumnsChange` に表の番号と隠している列の名前を指定する'
     action_ref: IF-472-35#constraints[列の表示の通知]
     notes:
       エラーメッセージ: 'マーカーの誤りは表の前の記載の警告で通知する。`mark` はそのマーカーの文字。表に無い列名の `tree.key.column`: `{mark} の tree.key.column の列 {列名} が表にありません。表の列は {列の並び} です。階層にせずに描いています。` / 無い見出しの `tree.example.heading`: `{mark} の tree.example.heading の見出し {見出し} が文書に無いか、直下にタブがありません。見本を配置せずに描いています。`。文中のマーカー・列名・見出しは行内のコードにする'
@@ -1186,28 +1186,28 @@ elements:
       - IF-472-35#constraints[余白のマーカー]
       - IF-472-35#constraints[余白のマーカーから移る]
     status: planned
-  - name: 表の集計のボタン
+  - name: 表のメニューの集計の項目
     id: table-totals-toggle
     kind: button
-    position: 描く先の要素 > 表 > 帯
-    description: 表の上の帯に配置し、表の集計のメニューを開閉する。`sigma` のアイコンを文言の前に配置し、`aria-expanded`・`aria-controls` を持つ。集計の行を 1 つでも隠しているときは押した外観（`is-active`）にし、スクリーンリーダー向けの名前に `（{隠している数} 件を隠しています）` を含める
+    position: 描く先の要素 > 表 > 表のメニュー
+    description: 表のメニューに並べる、`sigma` のアイコンと文字の項目。表のメニューの中に表の集計のメニューを開閉し、`aria-expanded`・`aria-controls` を持つ。集計の行を 1 つでも隠しているときは押した外観（`is-active`）にし、スクリーンリーダー向けの名前に `（{隠している数} 件を隠しています）` を含める
     label: 集計
     visible_when: '`total` の機能の表で、印刷していないとき'
     initial_state: 活性
     initial_value: 閉じた状態（`aria-expanded="false"`）
-    action: 押すと表の集計のメニューを開き、もう一度押すと閉じる
+    action: 押すと表のメニューの中に表の集計のメニューを開き、もう一度押すと閉じる
     refs:
       - IF-472-35#constraints[表の操作]
     status: planned
   - name: 表の集計のメニュー
     id: table-totals-menu
     kind: dialog
-    position: 描く先の要素 > 表
-    description: タイトル `表示する集計` と、マーカーの `columns.{列名}.total[].calc` に記載した計算の名前のチェックボックスを `合計`・`平均`・`件数` の順に並べる。`role="dialog"`・`aria-label="表示する集計"`。開いたら最初のチェックボックスへフォーカスを移し、外を押すか Esc で閉じる（Esc は表の集計のボタンへフォーカスを戻す）
+    position: 描く先の要素 > 表 > 表のメニュー
+    description: タイトル `表示する集計` と、マーカーの `columns.{列名}.total[].calc` に記載した計算の名前のチェックボックスを `合計`・`平均`・`件数` の順に並べる。表のメニューの中に開く。`role="dialog"`・`aria-label="表示する集計"`。開いたら最初のチェックボックスへフォーカスを移し、外を押すか Esc で表のメニューごと閉じる（Esc は表のメニューのボタンへフォーカスを戻す）
     label: 表示する集計
     io: 入力
     type: 真偽値
-    visible_when: 表の集計のボタンで開いたとき
+    visible_when: 表のメニューの集計の項目で開いたとき
     initial_value: 全ての計算にチェックが入った状態（選択は覚えず、再描画すると戻る）
     options: マーカーの `columns.{列名}.total[].calc` に記載した計算（`合計`・`平均`・`件数` の順。複数選べる）
     action: チェックを解除した計算の集計の行を隠し、入れた計算の行を出して、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` をスクリーンリーダーで通知する
@@ -1217,24 +1217,24 @@ elements:
   - name: 表のコピーの形式のメニュー
     id: table-copy-menu
     kind: dialog
-    position: 描く先の要素 > 表
-    description: '`表をコピー` のボタン（`copy` のアイコンだけで、ツールチップとスクリーンリーダー向けの名前が `表をコピー`。`aria-expanded`・`aria-controls` で開閉を示す）が開くメニュー。タイトル `コピーの形式` と、形式の名前と用途を 2 行で出すボタンを 2 つ並べる。`role="dialog"`・`aria-label="コピーの形式"`。開閉の作法はテーブル設定のパネルと同じ'
+    position: 描く先の要素 > 表 > 表のメニュー
+    description: '表のメニューの「表をコピー」の項目（`copy` のアイコンと文字。`aria-expanded`・`aria-controls` で開閉を示す）が表のメニューの中に開くメニュー。タイトル `コピーの形式` と、形式の名前と用途を 2 行で出すボタンを 2 つ並べる。`role="dialog"`・`aria-label="コピーの形式"`。開いたら最初のボタンへフォーカスを移し、Esc で表のメニューごと閉じて表のメニューのボタンへ戻す'
     label: コピーの形式
-    visible_when: '`表をコピー` のボタンで開いたとき'
+    visible_when: '表のメニューの「表をコピー」で開いたとき'
     options: '`Markdown の表`（文書に貼るとそのまま表になる）・`TSV`（表計算ソフトに貼るとセルに分かれる）の順'
-    action: 形式を押すとメニューを閉じ、表示している行と列をその形式でクリップボードへ写す。書き込めたら `表をコピー` のアイコンを `check`、ツールチップとスクリーンリーダー向けの名前を `コピーしました` にして 2 秒で戻し、`{形式の名前}をコピーしました` をスクリーンリーダーで通知する。書き込めなければ表のコピーできないときのパネルを出す
+    action: 形式を押すと形式のメニューと表のメニューを閉じてフォーカスを表のメニューのボタンへ戻し、表示している行と列をその形式でクリップボードへ写す。書き込めたら表のメニューのボタンのアイコンを `check` にして 2 秒で戻し、`{形式の名前}をコピーしました` をスクリーンリーダーで通知する。書き込めなければアイコンを `circle-alert` にし、表のコピーできないときのパネルを出す
     refs:
       - IF-472-35#constraints[表の操作]
     status: planned
   - name: 表のコピーできないときのパネル
     id: table-copy-panel
     kind: group
-    position: 描く先の要素 > 表 > 帯の直後
+    position: 描く先の要素 > 表 > 表の前
     description: クリップボードに書き込めなかったときに出し、コピーする中身を手動でコピーさせる。タイトル（`circle-alert` のアイコン付き）・閉じるボタン（`x` のアイコン、スクリーンリーダー向けの名前 `閉じる`）・案内・コピーする中身を入れた読み取り専用の `textarea`（6 行）を持つ。`role="group"` でタイトルを名前にする。出したら `textarea` へフォーカスを移して中身を全て選択し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` をスクリーンリーダーで通知する
     label: タイトル `クリップボードにコピーできませんでした`、案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`
     io: 表示
     visible_when: 表のコピーで `navigator.clipboard` が無いか書き込みを拒まれたとき
-    action: 閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを `表をコピー` に戻す。もう一度コピーするときは前のパネルを閉じてから記載する
+    action: 閉じるボタンか、パネルの中にフォーカスがある間の Esc で閉じ、フォーカスを表のメニューのボタンに戻す。もう一度コピーするときは前のパネルを閉じてから記載する
     refs:
       - IF-472-35#constraints[表の操作]
     status: planned
@@ -1698,16 +1698,16 @@ elements:
       - IF-472-34#constraints[注記]
       - IF-472-35#constraints[map の図の注記の区分]
     status: planned
-  - name: 表のテーブル設定のボタン
+  - name: 表のメニューのテーブル設定の項目
     id: table-settings-toggle
     kind: button
-    position: 描く先の要素 > 表 > 帯
-    description: 表の上の帯に配置するアイコンだけのボタン（lucide の `settings-2`）。名前はツールチップと `aria-label` に持ち、`aria-expanded`・`aria-controls` でパネルの開閉を示す。列を隠しているときは、隠した列の数のバッジを出し、スクリーンリーダー向けの名前を `テーブル設定（{隠した列の数} 列を非表示）` にする
-    label: テーブル設定（ツールチップとスクリーンリーダー）
+    position: 描く先の要素 > 表 > 表のメニュー
+    description: 表のメニューに並べる、lucide の `settings-2` のアイコンと文字の項目。`aria-controls` でテーブル設定のパネルを指す。列を隠していることは、表のメニューのボタンのバッジと `aria-label` で示す
+    label: テーブル設定
     visible_when: '`columns`・`reorder` のどちらかの機能の表で、印刷していないとき'
     initial_state: 活性
-    initial_value: 閉じた状態（`aria-expanded="false"`）
-    action: 押すと表のテーブル設定のパネルを開き、もう一度押すと閉じる
+    initial_value: 表のメニューを閉じた状態では出さない
+    action: 押すと表のメニューを閉じ、表のテーブル設定のパネルを開く
     refs:
       - IF-472-35#constraints[表の操作]
     status: planned
@@ -1715,7 +1715,7 @@ elements:
     id: table-col-resize
     kind: separator
     position: 描く先の要素 > 表 > 最下段の各列の見出しのセルの右端
-    description: '見出しのセルの右端に重ねた 12px の範囲で、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に、右端の罫線の位置に 2px の線をリンクの色で出し、ポインターを `col-resize` にする。ポインターが粗い画面（`(pointer: coarse)`）では線を常に薄く出して押せる範囲を 24px にし、見出しのセルの右の余白を 24px 広げて見出しのボタンと重ねない。`role="separator"`・`aria-orientation="vertical"`・`tabindex="0"`'
+    description: '見出しのセルの右端に重ねた幅 24px・高さが見出しのセルの高さの範囲で（どの画面でも）、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に、右端の罫線の位置に 2px の線をリンクの色で出し、ポインターを `col-resize` にする。見出しのセルの右の余白を 24px 広げて見出しのボタンと重ねない。ポインターが粗い画面（`(pointer: coarse)`）では線を常に薄く出す。`role="separator"`・`aria-orientation="vertical"`・`tabindex="0"`'
     label: 「{列名}」の列の幅（`aria-label`）
     io: 入力
     type: 列の幅（px）
@@ -1732,24 +1732,30 @@ elements:
     position: 描く先の要素 > 表
     description: |-
       タイトル（`columns` の機能があれば `表示と並び順`、`reorder` だけなら `並び順`）、列名の一覧、操作の案内を並べる。
+
       一覧の各行は `reorder` のとき並べ替えのつまみ、`columns` のとき表示・非表示の目のアイコンを持つ。
+
       結合した見出しを持つ表は、一覧を結合した見出しの範囲ごと・範囲の外の列に分ける。
+
       設定の `table.pin` が `through` の表は、一覧の先頭に `columns.{列名}.pinned` で留めた列も分ける（`each` の表は留めた列で分けない）。
+
       `role="dialog"`・`aria-label="テーブル設定"`。
-      ボタンの左端に合わせてボタンの下に開き、右側の目次より奥に描く（右側の目次が重なるときは目次を手前にする）。
-      開いたら最初のつまみか目のアイコンへフォーカスを移し、外を押すか Esc で閉じる（Esc はテーブル設定のボタンへフォーカスを戻す）
+
+      表のメニューのボタンの下に開き、右側の目次より奥に描く（右側の目次が重なるときは目次を手前にする）。
+
+      開いたら最初のつまみか目のアイコンへフォーカスを移し、外を押すか Esc で閉じる（Esc は表のメニューのボタンへフォーカスを戻す）
     label: 表示と並び順・並び順
     io: 入力
     type: 列の順と列ごとの表示・非表示
-    visible_when: 表のテーブル設定のボタンで開いたとき
+    visible_when: 表のメニューのテーブル設定の項目で開いたとき
     initial_value: Markdown に記載した列の順で、`columns.{列名}.hidden` の列を隠した状態（順と表示は覚えず、再描画すると戻る）
-    action: つまみをドラッグ＆ドロップするか、つまみにフォーカスして ↑・↓ キーで列を動かす（同じ範囲の中だけ。`through` の表は同じピン止めの側の中だけで、`each` の表は留めているかを列が持ったまま動く）。目のアイコンで列を隠す・出す。Markdown に記載した先頭の列は隠せない
+    action: つまみをドラッグ＆ドロップするか、つまみにフォーカスして ↑・↓ キーで列を動かす（同じ範囲の中だけ。`through` の表は同じピン止めの側の中だけで、`each` の表は留めているかを列が持ったまま動く）。つまみを動かさずに押すか Enter・Space で表の列の移動のメニューを開く。目のアイコンで列を隠す・出す。Markdown に記載した先頭の列は隠せない
     refs:
       - IF-472-35#constraints[列の並べ替え]
       - IF-472-35#constraints[表の操作]
     status: planned
     notes:
-      エラーメッセージ: '案内の文言: `つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。先頭の列は隠せません`（`reorder` の機能だけの表は後ろの文を出さない。`columns` の機能だけの表は `先頭の列は隠せません` だけ）'
+      エラーメッセージ: '案内の文言: `つまみをドラッグするか、つまみを押して開くメニュー・↑・↓ キーで並べ替えます。先頭の列は隠せません`（`reorder` の機能だけの表は後ろの文を出さない。`columns` の機能だけの表は `先頭の列は隠せません` だけ）'
   - name: 階層の表の開閉のボタン
     id: tree-toggle
     kind: button
@@ -1952,19 +1958,19 @@ elements:
       - IF-472-35#constraints[wide の幅の切り替え]
     status: planned
   - id: csv-raw-toggle
-    name: RAW のボタン
+    name: 表で表示のボタン
     kind: button
-    label: なし（スクリーンリーダー向けの名前 `元の CSV を表示`）
-    description: CSV の表の帯の右端に配置するコードのアイコンのボタン
-    position: 描く先の要素 > CSV の表 > 帯の右端
+    label: なし（ツールチップとスクリーンリーダー向けの名前 `表で表示`）
+    description: 元の CSV を出している間だけ、コードブロックの右上に重ねる lucide の `table` のアイコンだけのボタン（幅・高さとも 24 CSS px 以上。表のメニューのボタンと同じ外観）。元の CSV は表のメニューの「元の CSV を表示」で出す
+    position: 描く先の要素 > CSV の表 > 元の CSV の右上
     component: CMP-472-61#
     args:
       - name: rawCsv
         value: 言語 `csv` のコードブロックに記載したとおりの CSV
       - name: rawShown
         value: 読者が押すたびに入れ替える
-    action: 押すと表を隠して元の CSV を出し、もう一度押すと表に戻す
-    visible_when: '`csv` がオンで、表が言語 `csv` のコードブロックから作られたとき'
+    action: 押すと元の CSV を隠して表に戻し、表のメニューのボタンへフォーカスを移す
+    visible_when: '`csv` がオンで、表が言語 `csv` のコードブロックから作られ、元の CSV を出しているとき'
     refs:
       - IF-472-35#constraints[CSV の表と元の CSV の切り替え]
     status: planned
@@ -2151,6 +2157,43 @@ elements:
     action: 閉じるボタン・Esc・ダイアログの外の背景で閉じ、再生を止めてフォーカスを押した再生のボタンへ戻す。文書のスクロールの位置は開く前のまま
     refs:
       - IF-472-35#constraints[動画と音声の再生のダイアログ]
+    status: planned
+  - name: 表のメニューのボタン
+    id: table-menu-toggle
+    kind: button
+    position: 描く先の要素 > 表 > 見出し行の右上
+    description: 表を囲む要素の右上（見出し行の中で、最も右の見えている列の列の幅のつまみの左）に、表の横のスクロールの外で重ねる lucide の `ellipsis` のアイコンだけのボタン（幅・高さとも 24 CSS px 以上）。横にスクロールしても表の右端に残り、縦は見出し行と一緒に留まる。`aria-expanded`・`aria-controls` で表のメニューの開閉を示し、`aria-haspopup` を持たない。列を隠しているときは隠した列の数のバッジを出す。表のコピーの結果でアイコンを 2 秒の間 `check`・`circle-alert` に替える
+    label: なし（ツールチップ `表のメニュー`、スクリーンリーダー向けの名前 `表のメニュー（{表示している行の数} / {全ての行の数} 件・{隠した列の数} 列を非表示）`。件数と隠した列が無い表は `表のメニュー`）
+    visible_when: '`count`・`columns`・`reorder`・`total`・`copy` のどれかの機能の表か CSV の表で、表を出していて、印刷していないとき'
+    initial_state: 活性
+    initial_value: 閉じた状態（`aria-expanded="false"`）
+    action: 押すと表のメニューを開き、もう一度押すと閉じる
+    refs:
+      - IF-472-35#constraints[表の操作]
+    status: planned
+  - name: 表のメニュー
+    id: table-menu
+    kind: group
+    position: 描く先の要素 > 表 > 表のメニューのボタンの下
+    description: '`role="group"`・`aria-label="表のメニュー"`。`count` の表では先頭に件数を出し、続けて機能を持つ表だけに「テーブル設定」（`columns`・`reorder`）・「集計」（`total`）・「表をコピー」（`copy`）・「元の CSV を表示」（CSV の表）のアイコンと文字の項目をこの順に並べる。開いたら最初の項目（項目が無い表は `tabindex="-1"` のメニューそのもの）へフォーカスを移し、外を押すか Esc で閉じる（Esc は表のメニューのボタンへフォーカスを戻す）'
+    label: 表のメニュー
+    display_format: 件数は `{表示している行の数} / {全ての行の数} 件を表示`（キーの階層の表は補った行を数えない）
+    visible_when: 表のメニューのボタンで開いたとき
+    action: 「テーブル設定」はメニューを閉じてテーブル設定のパネルを開き、「集計」「表をコピー」はメニューの中にそれぞれのメニューを開き、「元の CSV を表示」はメニューを閉じて表と表のメニューのボタンを隠し、元の CSV と表で表示のボタンを出して「表で表示」へフォーカスを移す
+    refs:
+      - IF-472-35#constraints[表の操作]
+      - IF-472-35#constraints[CSV の表と元の CSV の切り替え]
+    status: planned
+  - name: 表の列の移動のメニュー
+    id: table-move-menu
+    kind: group
+    position: 描く先の要素 > 表 > 表のテーブル設定のパネル > 押したつまみの近く
+    description: '`role="group"`・`aria-label="「{列名}」の列の移動"`。`前へ移す`・`後ろへ移す` のボタンを並べる。同じ範囲の中でその向きへ動かせないボタンは `disabled`。開いたら押せる最初のボタンへフォーカスを移し、メニューの外を押すか Esc で閉じる（Esc は開いたつまみへフォーカスを戻す）。つまみは `aria-expanded`・`aria-controls` で開閉を示す'
+    label: 「{列名}」の列の移動
+    visible_when: '`reorder` の表のテーブル設定のパネルで、動かせる列のつまみを 4px 以上動かさずに押すか、つまみにフォーカスして Enter・Space を押したとき'
+    action: ボタンを押すとその列を同じ範囲の中で 1 つ前・後ろへ動かし、メニューを開いたままにする。押したボタンが `disabled` になったらもう一方のボタンへフォーカスを移す
+    refs:
+      - IF-472-35#constraints[列の並べ替え]
     status: planned
 mock: docs/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が追加する UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張のマーカーの場所・拡張記法の部品・記載の警告）を持つ。
