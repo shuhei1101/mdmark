@@ -122,15 +122,19 @@
   &[aria-pressed="true"] {
     border-color: var(--mdmark-color-link);
     background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent);
-    color: var(--mdmark-color-link);
-  }
-
-  .mock820-check {
-    display: none;
   }
 
   &[aria-pressed="true"] .mock820-check {
-    display: inline-block;
+    color: var(--mdmark-color-link);
+  }
+
+  /* チェックの印: 押す前も場所を空けておき、押してもボタンの幅を変えない */
+  .mock820-check {
+    visibility: hidden;
+  }
+
+  &[aria-pressed="true"] .mock820-check {
+    visibility: visible;
   }
 
   &:focus-visible {
