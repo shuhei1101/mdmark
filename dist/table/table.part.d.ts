@@ -64,6 +64,10 @@ export type TableOptions = {
     hiddenColumns?: number[];
     /** 列の表示のメニューを開いているか */
     openColumns?: boolean;
+    /** 表のメニューを開いているか */
+    openMenu?: boolean;
+    /** テーブル設定の一覧で列の移動のメニューを開いている列（元の列の位置） */
+    moveMenu?: number;
     /** 集計する列（`data-total`） */
     totals?: TableTotal[];
     /** コピーのボタンの状態（既定 `idle`） */
@@ -190,10 +194,8 @@ export type TableOptions = {
     /** 表の下の左端に `行追加` のボタンを配置するか */
     addRow?: boolean;
 };
-/** CSV の表の RAW のボタンを右端に配置する帯の HTML を返却する */
-export declare const renderRawBar: (pressed: boolean) => string;
-/** CSV の表の RAW のボタンの HTML を返却する */
-export declare const renderRawToggle: (pressed: boolean) => string;
+/** 元の CSV の右上に重ねる「表で表示」のボタンの HTML を返却する（元の CSV を出していなければ `hidden` を付ける） */
+export declare const renderRawToggle: (shown: boolean) => string;
 /** 多段の見出しのセル */
 export type TableHeadCell = {
     /** セルの HTML */
@@ -281,8 +283,8 @@ export declare const COPY_FORMATS: {
         readonly note: "表計算ソフトに貼るとセルに分かれる";
     };
 };
-/** `renderTableBar` の引数 */
-export type TableBarOptions = {
+/** `renderTableMenu` の引数 */
+export type TableMenuOptions = {
     /** メニューの id の頭 */
     id: string;
     /** 付ける機能 */
@@ -295,6 +297,8 @@ export type TableBarOptions = {
     total: number;
     /** 隠している列の位置 */
     hiddenColumns: number[];
+    /** 表のメニューを開いているか（既定 `false`） */
+    openMenu?: boolean;
     /** テーブル設定のパネルを開いているか（既定 `false`） */
     openColumns?: boolean;
     /** 今の列の順（既定は元の列の順） */
@@ -311,7 +315,9 @@ export type TableBarOptions = {
         target: number;
         side: "before" | "after";
     };
-    /** コピーのボタンの状態（既定 `idle`） */
+    /** 列の移動のメニューを開いている列 */
+    moveMenu?: number;
+    /** コピーの結果（既定 `idle`） */
     copyState?: CopyState;
     /** 集計する計算 */
     totals?: TotalCalc[];
@@ -321,23 +327,34 @@ export type TableBarOptions = {
     openTotals?: boolean;
     /** コピーの形式のメニューを開いているか（既定 `false`） */
     openCopy?: boolean;
+    /** CSV の表か（「元の CSV を表示」を並べる） */
+    raw?: boolean;
 };
-/** 表の上の帯（件数・テーブル設定・集計・コピーのボタン）と、テーブル設定のパネル・集計・コピーの形式のメニューの HTML を返却する。付けた機能が無ければ空 */
-export declare function renderTableBar(options: TableBarOptions): {
-    bar: string;
-    menus: string;
-};
-/** 表の帯に配置する、テーブル設定のアイコンだけのボタンの HTML を返却する */
-export declare function renderSettingsToggle(options: {
-    /** パネルの id の頭 */
-    id: string;
+/** 表のメニューのボタンのスクリーンリーダー向けの名前を返却する */
+export declare function tableMenuLabel(options: {
+    /** 件数（`count` の機能が無ければ省く） */
+    count?: {
+        shown: number;
+        total: number;
+    } | undefined;
     /** 隠している列の数 */
     hidden: number;
-    /** パネルを開いているか */
-    open: boolean;
 }): string;
-/** テーブル設定のボタンの隠した列の数とスクリーンリーダー向けの名前を書き換える */
-export declare function updateSettingsToggle(toggle: HTMLElement, hidden: number): void;
+/** 表のメニューのボタンの中身（コピーの結果のアイコンと隠した列の数のバッジ）の HTML を返却する */
+export declare function renderTableMenuButtonContent(copyState: CopyState, hidden: number): string;
+/** 表のメニューのボタンと、表のメニュー（件数・項目・集計とコピーの形式のメニュー）・テーブル設定のパネルの HTML を返却する。件数・項目のどちらも無ければ両方とも空 */
+export declare function renderTableMenu(options: TableMenuOptions): {
+    button: string;
+    menus: string;
+};
+/** 表のメニューのボタンの隠した列の数・`is-active`・スクリーンリーダー向けの名前を書き換える */
+export declare function updateTableMenuButton(button: HTMLElement, options: {
+    count?: {
+        shown: number;
+        total: number;
+    } | undefined;
+    hidden: number;
+}): void;
 /** `renderTableSettings` の引数 */
 export type TableSettingsOptions = {
     /** パネルの id の頭 */
@@ -362,8 +379,25 @@ export type TableSettingsOptions = {
         target: number;
         side: "before" | "after";
     };
+    /** 列の移動のメニューを開いている列（元の列の位置） */
+    moveMenu?: number | undefined;
 };
-/** テーブル設定のパネル（タイトル・列名の一覧・案内）の HTML を返却する。`hidden` は付けない */
+/** 今の列の順で、列 `column` を `side` の向きの隣の列と入れ替えられるか（同じまとまりの隣の列があるか） */
+export declare function canMoveColumnTo(options: {
+    order: number[];
+    groups: Array<string | undefined>;
+    pinned: number;
+    column: number;
+    side: "before" | "after";
+}): boolean;
+/** 列の移動のメニュー（`前へ移す`・`後ろへ移す`）の HTML を返却する。`column` が無ければ `hidden` を付ける */
+export declare function renderMoveMenu(options: {
+    id: string;
+    name: string | undefined;
+    before: boolean;
+    after: boolean;
+}): string;
+/** テーブル設定のパネル（タイトル・列名の一覧・列の移動のメニュー・案内）の HTML を返却する。`hidden` は付けない */
 export declare function renderTableSettings(options: TableSettingsOptions): string;
 /** 階層の表のキーのセルの中身（深さの数の縦線・末尾の名前・配列の `[]`・必須の *）の HTML を返却する */
 export declare function renderTreeKeyCell(options: {

@@ -3,6 +3,10 @@ import type { MdmarkColumnsChange } from "../mount.ts";
 import type { PartStates } from "../shared/part-states.interact.ts";
 import { compareCells, type FilterValue, matchesFilter } from "./table.logic.ts";
 export { compareCells, type FilterValue, matchesFilter };
+/** 囲む要素の中の `hidden` を持たない表のメニューとテーブル設定のパネルを、表のメニューのボタンの下に右端をそろえて配置する。ボタンが無ければ何もしない */
+export declare function placeOpenTablePanels(wrapper: HTMLElement): void;
+/** 表のメニューのボタンを持つ囲む要素に、ボタンを見出し行の縦の中央と表の見えている右端に合わせる位置を CSS 変数（`--mdmark-table-menu-top`・`--mdmark-table-menu-end`）で入れる。ボタンや表が無ければ何もしない */
+export declare function placeTableMenuButton(wrapper: HTMLElement): void;
 /** 各 `mdmark-table` の `data-features`・`data-filter`・`data-pin` を読み込み、見出しにボタンとドロワーを配置して、並べ替え・ピン止め・絞り込みを付ける。`onColumnsChange` を指定したときは列の表示を切り替えるたびに通知する。ボタン・ドロワー・受け取り・`ResizeObserver` を削除する関数を返却する */
 export declare function attachTables(root: HTMLElement, options?: {
     /** 列の表示を切り替えたときに通知する */

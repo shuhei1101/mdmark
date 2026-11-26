@@ -12477,7 +12477,7 @@ var require_lucide = __commonJS({
       ],
       ["path", { d: "M12 17.66L12 22" }]
     ];
-    var CodeXml3 = [
+    var CodeXml2 = [
       ["path", { d: "m18 16 4-4-4-4" }],
       ["path", { d: "m6 8-4 4 4 4" }],
       ["path", { d: "m14.5 4-5 16" }]
@@ -24858,9 +24858,9 @@ var require_lucide = __commonJS({
       Clover,
       Club,
       Code,
-      Code2: CodeXml3,
+      Code2: CodeXml2,
       CodeSquare: SquareCode,
-      CodeXml: CodeXml3,
+      CodeXml: CodeXml2,
       Coffee,
       Cog,
       Coins,
@@ -27055,9 +27055,9 @@ var require_lucide = __commonJS({
     exports.Clover = Clover;
     exports.Club = Club;
     exports.Code = Code;
-    exports.Code2 = CodeXml3;
+    exports.Code2 = CodeXml2;
     exports.CodeSquare = SquareCode;
-    exports.CodeXml = CodeXml3;
+    exports.CodeXml = CodeXml2;
     exports.Coffee = Coffee;
     exports.Cog = Cog;
     exports.Coins = Coins;
@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.14.0+develop.2d6d268";
+  return "v0.14.0+develop.0413662";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -74226,55 +74226,6 @@ function assignHeadingIds(state) {
   }
 }
 
-// src/table/table.part.ts
-var import_lucide2 = __toESM(require_lucide(), 1);
-
-// src/shared/icon-node.logic.ts
-function iconNodeBody(node2) {
-  return node2.map(([tag, attributes]) => {
-    const attrs = Object.entries(attributes).filter(([, value]) => value !== void 0).map(([name, value]) => ` ${name}="${value}"`).join("");
-    return `<${tag}${attrs}></${tag}>`;
-  }).join("");
-}
-function iconSvgOf(body) {
-  return `<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
-}
-var ALLOWED_ELEMENTS = /* @__PURE__ */ new Set([
-  "path",
-  "circle",
-  "rect",
-  "line",
-  "polyline",
-  "polygon",
-  "ellipse"
-]);
-var ALLOWED_ATTRIBUTES = /* @__PURE__ */ new Set([
-  "d",
-  "cx",
-  "cy",
-  "r",
-  "rx",
-  "ry",
-  "x",
-  "y",
-  "x1",
-  "y1",
-  "x2",
-  "y2",
-  "width",
-  "height",
-  "points"
-]);
-var iconNodeSvg = (node2) => {
-  const body = node2.filter(([tag]) => ALLOWED_ELEMENTS.has(tag)).map(([tag, attributes]) => {
-    const attrs = Object.entries(attributes).filter(
-      ([name, value]) => ALLOWED_ATTRIBUTES.has(name) && typeof value === "string"
-    ).map(([name, value]) => ` ${name}="${escapeHtml2(value)}"`).join("");
-    return `<${tag}${attrs}></${tag}>`;
-  }).join("");
-  return `<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
-};
-
 // src/shared/collapsible.part.ts
 function renderCollapsible(options) {
   const { title, open: open2, body, className } = options;
@@ -74459,8 +74410,7 @@ function yamlLinePaths(lines) {
 }
 
 // src/table/table.part.ts
-var renderRawBar = (pressed) => `<div class="mdmark-table-bar mdmark-raw-bar"><div class="mdmark-table-tools">${renderRawToggle(pressed)}</div></div>`;
-var renderRawToggle = (pressed) => `<button class="mdmark-raw-toggle" type="button" aria-label="\u5143\u306E CSV \u3092\u8868\u793A" aria-pressed="${pressed}">${iconSvgOf(iconNodeBody(import_lucide2.CodeXml))}</button>`;
+var renderRawToggle = (shown) => `<button class="mdmark-raw-toggle" type="button" aria-label="\u8868\u3067\u8868\u793A" title="\u8868\u3067\u8868\u793A"${shown ? "" : " hidden"}>${iconSvg("table")}</button>`;
 function plainText2(html) {
   return html.replace(/<[^>]*>/g, "").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
 }
@@ -74570,10 +74520,6 @@ var COPY_STATES = {
   copied: { label: "\u30B3\u30D4\u30FC\u3057\u307E\u3057\u305F", icon: "check" },
   failed: { label: "\u30B3\u30D4\u30FC\u3067\u304D\u307E\u305B\u3093\u3067\u3057\u305F", icon: "circle-alert" }
 };
-function renderCopyButtonContent(state) {
-  const { icon, label } = COPY_STATES[state];
-  return `${iconSvg(icon)}<span class="mdmark-visually-hidden mdmark-copy-label">${label}</span>`;
-}
 var COPY_FORMATS = {
   markdown: {
     name: "Markdown \u306E\u8868",
@@ -74584,71 +74530,106 @@ var COPY_FORMATS = {
 function menuId(id) {
   return `${id}-settings`;
 }
+function tableMenuId(id) {
+  return `${id}-menu`;
+}
 function totalsMenuId(id) {
   return `${id}-totals`;
 }
 function copyMenuId(id) {
   return `${id}-copy`;
 }
-function renderTableBar(options) {
-  const state = barStateOf(options);
-  const count = options.features.includes("count") ? renderTableCount(options) : "";
-  const tools = renderBarTools(options, state);
-  const { totaling, copying, copyState } = state;
-  const status = totaling || copying ? `<span class="mdmark-visually-hidden mdmark-table-status" role="status">${copying && copyState !== "idle" ? COPY_STATES[copyState].label : ""}</span>` : "";
-  return {
-    bar: count || tools ? `<div class="mdmark-table-bar">${count}${tools}${status}</div>` : "",
-    menus: renderBarMenus(options, state)
-  };
-}
-function barStateOf(options) {
+function menuStateOf(options) {
   const { features } = options;
   const calcs = TOTAL_CALCS.filter((calc) => options.totals?.includes(calc));
   return {
     calcs,
     shownCalcs: new Set(options.shownTotals ?? calcs),
+    counting: features.includes("count"),
     settings: features.includes("columns") || features.includes("reorder"),
     totaling: features.includes("total") && calcs.length > 0,
     copying: features.includes("copy"),
-    copyState: options.copyState ?? "idle"
+    raw: options.raw === true
   };
 }
-function renderBarTools(options, state) {
-  const { id } = options;
-  const { calcs, shownCalcs, settings, totaling, copying, copyState } = state;
-  const settingsToggle = settings ? renderSettingsToggle({
-    id,
-    hidden: new Set(options.hiddenColumns).size,
-    open: options.openColumns ?? false
-  }) : "";
-  const totalsToggle = totaling ? renderTotalsToggle({
-    id,
-    hiddenCalcs: calcs.filter((calc) => !shownCalcs.has(calc)).length,
-    open: options.openTotals ?? false
-  }) : "";
-  const copy = copying ? renderCopyToggle({ id, copyState, open: options.openCopy ?? false }) : "";
-  return settingsToggle || totalsToggle || copy ? `<div class="mdmark-table-tools">${settingsToggle}${totalsToggle}${copy}</div>` : "";
+var MENU_ICONS = {
+  idle: "ellipsis",
+  copied: "check",
+  failed: "circle-alert"
+};
+function tableMenuLabel(options) {
+  const { count, hidden } = options;
+  const parts = [
+    count ? `${count.shown} / ${count.total} \u4EF6` : "",
+    hidden > 0 ? `${hidden} \u5217\u3092\u975E\u8868\u793A` : ""
+  ].filter((part) => part !== "");
+  return parts.length > 0 ? `\u8868\u306E\u30E1\u30CB\u30E5\u30FC\uFF08${parts.join("\u30FB")}\uFF09` : "\u8868\u306E\u30E1\u30CB\u30E5\u30FC";
 }
-function renderBarMenus(options, state) {
-  const { id } = options;
-  const { calcs, shownCalcs, settings, totaling, copying } = state;
-  return [
-    settings ? renderSettingsPanel(options) : "",
-    totaling ? renderTotalsMenu({ id, calcs, shownCalcs, open: options.openTotals }) : "",
-    copying ? renderCopyMenu({ id, open: options.openCopy }) : ""
+function renderTableMenuButtonContent(copyState, hidden) {
+  return `${iconSvg(MENU_ICONS[copyState])}<span class="mdmark-table-tool-badge" aria-hidden="true"${hidden > 0 ? "" : " hidden"}>${hidden}</span>`;
+}
+function renderTableMenu(options) {
+  const state = menuStateOf(options);
+  const { counting, settings, totaling, copying, raw } = state;
+  if (!(counting || settings || totaling || copying || raw)) {
+    return { button: "", menus: "" };
+  }
+  const expanded = [
+    options.openMenu,
+    options.openTotals,
+    options.openCopy
+  ].some((open2) => open2 === true);
+  const button = renderMenuButton(options, { counting, expanded });
+  const live = counting ? '<span class="mdmark-visually-hidden mdmark-table-count-live" aria-live="polite"></span>' : "";
+  const copyState = options.copyState ?? "idle";
+  const status = `<span class="mdmark-visually-hidden mdmark-table-status" role="status">${copyState === "idle" ? "" : COPY_STATES[copyState].label}</span>`;
+  return {
+    button,
+    menus: `${renderMenuPanel(options, state, expanded)}${settings ? renderSettingsPanel(options) : ""}${live}${status}`
+  };
+}
+function renderMenuButton(options, state) {
+  const { id, shown, total } = options;
+  const hidden = new Set(options.hiddenColumns).size;
+  const copyState = options.copyState ?? "idle";
+  const label = tableMenuLabel({
+    count: state.counting ? { shown, total } : void 0,
+    hidden
+  });
+  return `<button class="mdmark-table-menu${hidden > 0 ? " is-active" : ""}" type="button" data-state="${copyState}" aria-expanded="${state.expanded}" aria-controls="${escapeHtml2(tableMenuId(id))}" title="\u8868\u306E\u30E1\u30CB\u30E5\u30FC" aria-label="${label}">${renderTableMenuButtonContent(copyState, hidden)}</button>`;
+}
+function renderMenuPanel(options, state, open2) {
+  const { id, shown, total } = options;
+  const { calcs, shownCalcs, counting, settings, totaling, copying, raw } = state;
+  const count = counting ? `<p class="mdmark-table-count">${shown} / ${total} \u4EF6\u3092\u8868\u793A</p>` : "";
+  const hiddenCalcs = calcs.filter((calc) => !shownCalcs.has(calc)).length;
+  const items = [
+    settings ? menuItem({
+      action: "settings",
+      icon: "settings-2",
+      text: "\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A",
+      attributes: ` aria-controls="${escapeHtml2(menuId(id))}"`
+    }) : "",
+    totaling ? `${menuItem({
+      action: "totals",
+      icon: "sigma",
+      text: `\u96C6\u8A08<span class="mdmark-visually-hidden">${hiddenCalcs > 0 ? `\uFF08${hiddenCalcs} \u4EF6\u3092\u975E\u8868\u793A\u306B\u3057\u3066\u3044\u307E\u3059\uFF09` : ""}</span>`,
+      attributes: ` aria-expanded="${options.openTotals === true}" aria-controls="${escapeHtml2(totalsMenuId(id))}"`,
+      active: hiddenCalcs > 0
+    })}${renderTotalsMenu({ id, calcs, shownCalcs, open: options.openTotals })}` : "",
+    copying ? `${menuItem({
+      action: "copy",
+      icon: "copy",
+      text: "\u8868\u3092\u30B3\u30D4\u30FC",
+      attributes: ` aria-expanded="${options.openCopy === true}" aria-controls="${escapeHtml2(copyMenuId(id))}"`
+    })}${renderCopyMenu({ id, open: options.openCopy })}` : "",
+    raw ? menuItem({ action: "raw", icon: "code-xml", text: "\u5143\u306E CSV \u3092\u8868\u793A" }) : ""
   ].join("");
+  const focusable = items === "" ? ' tabindex="-1"' : "";
+  return `<div class="mdmark-table-menu-panel" id="${escapeHtml2(tableMenuId(id))}" role="group" aria-label="\u8868\u306E\u30E1\u30CB\u30E5\u30FC"${focusable}${open2 ? "" : " hidden"}>${count}${items}</div>`;
 }
-function renderTableCount(options) {
-  const { shown, total } = options;
-  return `<p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${total} \u4EF6</span><span class="mdmark-visually-hidden">${total} \u4EF6\u4E2D ${shown} \u4EF6\u3092\u8868\u793A</span></p>`;
-}
-function renderTotalsToggle(options) {
-  const { id, hiddenCalcs, open: open2 } = options;
-  return `<button class="mdmark-table-tool mdmark-totals-toggle${hiddenCalcs > 0 ? " is-active" : ""}" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(totalsMenuId(id))}">${iconSvg("sigma")}\u96C6\u8A08<span class="mdmark-visually-hidden">${hiddenCalcs > 0 ? `\uFF08${hiddenCalcs} \u4EF6\u3092\u975E\u8868\u793A\u306B\u3057\u3066\u3044\u307E\u3059\uFF09` : ""}</span></button>`;
-}
-function renderCopyToggle(options) {
-  const { id, copyState, open: open2 } = options;
-  return `<button class="mdmark-table-tool mdmark-copy is-icon-only" type="button" title="${COPY_STATES[copyState].label}" data-state="${copyState}" aria-expanded="${open2}" aria-controls="${escapeHtml2(copyMenuId(id))}">${renderCopyButtonContent(copyState)}</button>`;
+function menuItem(item) {
+  return `<button class="mdmark-table-menu-item${item.active === true ? " is-active" : ""}" type="button" data-action="${item.action}"${item.attributes ?? ""}>${iconSvg(item.icon)}<span>${item.text}</span></button>`;
 }
 function renderSettingsPanel(options) {
   const { id, features, labels } = options;
@@ -74664,7 +74645,8 @@ function renderSettingsPanel(options) {
     groups: options.groups ?? labels.map(() => void 0),
     groupLabels: options.groupLabels,
     pinned: options.pinned ?? 0,
-    dragging: options.dragging
+    dragging: options.dragging,
+    moveMenu: options.moveMenu
   }).replace(/^<div /, `<div${open2 ? "" : " hidden"} `);
 }
 function renderTotalsMenu(options) {
@@ -74672,36 +74654,48 @@ function renderTotalsMenu(options) {
   const totalItems = calcs.map(
     (calc) => `<li><label><input type="checkbox" value="${calc}"${shownCalcs.has(calc) ? " checked" : ""}>${TOTAL_LABELS[calc]}</label></li>`
   ).join("");
-  return `<div class="mdmark-totals-menu mdmark-table-menu" id="${escapeHtml2(totalsMenuId(id))}" role="dialog" aria-label="\u8868\u793A\u3059\u308B\u96C6\u8A08"${open2 ? "" : " hidden"}><p class="mdmark-totals-title">\u8868\u793A\u3059\u308B\u96C6\u8A08</p><ul class="mdmark-totals-options">${totalItems}</ul></div>`;
+  return `<div class="mdmark-totals-menu mdmark-table-submenu" id="${escapeHtml2(totalsMenuId(id))}" role="dialog" aria-label="\u8868\u793A\u3059\u308B\u96C6\u8A08"${open2 ? "" : " hidden"}><p class="mdmark-totals-title">\u8868\u793A\u3059\u308B\u96C6\u8A08</p><ul class="mdmark-totals-options">${totalItems}</ul></div>`;
 }
 function renderCopyMenu(options) {
   const formats = ["markdown", "tsv"].map(
     (format3) => `<button class="mdmark-copy-format" type="button" data-format="${format3}"><span class="mdmark-copy-format-name">${COPY_FORMATS[format3].name}</span><span class="mdmark-copy-format-note">${COPY_FORMATS[format3].note}</span></button>`
   ).join("");
-  return `<div class="mdmark-copy-menu mdmark-table-menu" id="${escapeHtml2(copyMenuId(options.id))}" role="dialog" aria-label="\u30B3\u30D4\u30FC\u306E\u5F62\u5F0F"${options.open ? "" : " hidden"}>${formats}</div>`;
-}
-function settingsLabel(hidden) {
-  return hidden > 0 ? `\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A\uFF08${hidden} \u5217\u3092\u975E\u8868\u793A\uFF09` : "\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A";
-}
-function renderSettingsToggle(options) {
-  const { id, hidden, open: open2 } = options;
-  return `<button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only${hidden > 0 ? " is-active" : ""}" type="button" aria-expanded="${open2}" aria-controls="${escapeHtml2(menuId(id))}" aria-label="${settingsLabel(hidden)}" title="\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A">${iconSvg("settings-2")}<span class="mdmark-table-tool-badge" aria-hidden="true"${hidden > 0 ? "" : " hidden"}>${hidden}</span></button>`;
+  return `<div class="mdmark-copy-menu mdmark-table-submenu" id="${escapeHtml2(copyMenuId(options.id))}" role="dialog" aria-label="\u30B3\u30D4\u30FC\u306E\u5F62\u5F0F"${options.open ? "" : " hidden"}>${formats}</div>`;
 }
 function placeKey(options) {
   const { column, groups, pinned } = options;
   return column < pinned ? "pinned" : groups[column] ?? "";
+}
+function moveMenuId(id) {
+  return `${id}-move`;
+}
+function canMoveColumnTo(options) {
+  const { order, groups, pinned, column, side } = options;
+  const index = order.indexOf(column);
+  const neighbor = order[side === "before" ? index - 1 : index + 1];
+  if (index === -1 || neighbor === void 0) {
+    return false;
+  }
+  return placeKey({ column, groups, pinned }) === placeKey({ column: neighbor, groups, pinned });
+}
+function renderMoveMenu(options) {
+  const { id, name, before, after } = options;
+  const open2 = name !== void 0;
+  const label = open2 ? `\u300C${escapeHtml2(name)}\u300D\u306E\u5217\u306E\u79FB\u52D5` : "\u5217\u306E\u79FB\u52D5";
+  return `<div class="mdmark-table-move-menu" id="${escapeHtml2(moveMenuId(id))}" role="group" aria-label="${label}"${open2 ? "" : " hidden"}><button type="button" data-move="before"${before ? "" : " disabled"}>${iconSvg("chevron-up")}\u524D\u3078\u79FB\u3059</button><button type="button" data-move="after"${after ? "" : " disabled"}>${iconSvg("chevron-down")}\u5F8C\u308D\u3078\u79FB\u3059</button></div>`;
 }
 function renderTableSettings(options) {
   const { id } = options;
   const showing = options.features.includes("columns");
   const reordering = options.features.includes("reorder");
   const noteId = `${id}-settings-note`;
-  const items = renderSettingsItems({ options, noteId, showing, reordering });
+  const context = { options, noteId, showing, reordering };
+  const items = renderSettingsItems(context);
   const note = [
-    reordering ? "\u3064\u307E\u307F\u3092\u30C9\u30E9\u30C3\u30B0\u3059\u308B\u304B\u3001\u3064\u307E\u307F\u306B\u30D5\u30A9\u30FC\u30AB\u30B9\u3057\u3066 \u2191\u30FB\u2193 \u30AD\u30FC\u3067\u4E26\u3079\u66FF\u3048\u307E\u3059\u3002" : "",
+    reordering ? "\u3064\u307E\u307F\u3092\u30C9\u30E9\u30C3\u30B0\u3059\u308B\u304B\u3001\u3064\u307E\u307F\u3092\u62BC\u3057\u3066\u958B\u304F\u30E1\u30CB\u30E5\u30FC\u30FB\u2191\u30FB\u2193 \u30AD\u30FC\u3067\u4E26\u3079\u66FF\u3048\u307E\u3059\u3002" : "",
     showing ? "\u5148\u982D\u306E\u5217\u306F\u96A0\u305B\u307E\u305B\u3093" : ""
   ].join("");
-  return `<div class="mdmark-table-settings" id="${escapeHtml2(menuId(id))}" role="dialog" aria-label="\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A"><p class="mdmark-table-settings-title">${showing ? "\u8868\u793A\u3068\u4E26\u3073\u9806" : "\u4E26\u3073\u9806"}</p><ul class="mdmark-table-settings-list">${items}</ul><p class="mdmark-table-settings-note" id="${escapeHtml2(noteId)}">${note}</p></div>`;
+  return `<div class="mdmark-table-settings" id="${escapeHtml2(menuId(id))}" role="dialog" aria-label="\u30C6\u30FC\u30D6\u30EB\u8A2D\u5B9A"><p class="mdmark-table-settings-title">${showing ? "\u8868\u793A\u3068\u4E26\u3073\u9806" : "\u4E26\u3073\u9806"}</p><ul class="mdmark-table-settings-list">${items}</ul>${renderClosedMoveMenu(context)}<p class="mdmark-table-settings-note" id="${escapeHtml2(noteId)}">${note}</p></div>`;
 }
 function renderSettingsItems(context) {
   const { order, groups, pinned } = context.options;
@@ -74722,9 +74716,30 @@ function renderSettingsItems(context) {
     }
     previous = key;
     const movable = (counts.get(key) ?? 0) > 1;
-    items.push(renderSettingsItem(context, { column, key, movable }));
+    const item = renderSettingsItem(context, { column, key, movable });
+    items.push(
+      context.reordering && context.options.moveMenu === column ? item.replace(
+        /<\/li>$/,
+        `${renderOpenMoveMenu(context.options, column)}</li>`
+      ) : item
+    );
   }
   return items.join("");
+}
+function renderClosedMoveMenu(context) {
+  const { moveMenu, order, id } = context.options;
+  const open2 = moveMenu !== void 0 && order.includes(moveMenu);
+  return context.reordering && !open2 ? renderMoveMenu({ id, name: void 0, before: false, after: false }) : "";
+}
+function renderOpenMoveMenu(options, column) {
+  const { order, groups, pinned } = options;
+  const can = (side) => canMoveColumnTo({ order, groups, pinned, column, side });
+  return renderMoveMenu({
+    id: options.id,
+    name: options.columns[column] ?? "",
+    before: can("before"),
+    after: can("after")
+  });
 }
 function settingsGroupHeading(key, groupLabels) {
   if (key === "pinned") {
@@ -74740,7 +74755,7 @@ function renderSettingsItem(context, item) {
   const { column, key, movable } = item;
   const name = options.columns[column] ?? "";
   const draggingClass = settingsDraggingClass(options.dragging, column);
-  const grip = reordering ? `<button class="mdmark-table-settings-grip" type="button" aria-label="\u300C${escapeHtml2(name)}\u300D\u306E\u5217\u3092\u4E26\u3079\u66FF\u3048\u308B" aria-describedby="${escapeHtml2(noteId)}"${movable ? ' draggable="true"' : " disabled"}>${iconSvg("grip-vertical")}</button>` : "";
+  const grip = reordering ? `<button class="mdmark-table-settings-grip" type="button" aria-label="\u300C${escapeHtml2(name)}\u300D\u306E\u5217\u3092\u4E26\u3079\u66FF\u3048\u308B" aria-describedby="${escapeHtml2(noteId)}" aria-expanded="${options.moveMenu === column}" aria-controls="${escapeHtml2(moveMenuId(options.id))}"${movable ? ' draggable="true"' : " disabled"}>${iconSvg("grip-vertical")}</button>` : "";
   const isHidden = options.hidden.includes(column);
   const eye = showing ? `<button class="mdmark-table-settings-eye" type="button" aria-pressed="${isHidden}" aria-label="\u300C${escapeHtml2(name)}\u300D\u3092${isHidden ? "\u8868\u793A" : "\u96A0\u3059"}"${column === 0 ? " disabled" : ""}>${iconSvg(isHidden ? "eye-off" : "eye")}</button>` : "";
   return `<li class="mdmark-table-settings-item${draggingClass}" data-column="${column}" data-name="${escapeHtml2(name)}" data-place="${escapeHtml2(key)}">${grip}<span class="mdmark-table-settings-name">${escapeHtml2(name)}</span>${eye}</li>`;
@@ -74850,6 +74865,13 @@ function isCheckValue(text2) {
 function renderTableBody(options, id) {
   const context = bodyContextOf(options, id);
   const { columns, rows, hidden } = context;
+  const menuParts = (shown) => renderTableMenu(tableMenuOptionsOf(context, shown));
+  if (menuParts(rows.length).button !== "") {
+    context.menuSpace = lastShownColumn(
+      options.order ?? columns.map((_, index) => index),
+      hidden
+    );
+  }
   const drawers = [];
   const headCell = (column, index) => {
     const cell = renderHeadCell(context, { column, index });
@@ -74866,12 +74888,13 @@ function renderTableBody(options, id) {
   const body = order.map((rowIndex) => renderBodyRow(context, { rowIndex, spanOf })).join("");
   const empty = `<tr class="mdmark-table-empty"${shownRows.length > 0 ? " hidden" : ""}><td colspan="${columns.length - hidden.size}">\u4E00\u81F4\u3059\u308B\u884C\u304C\u3042\u308A\u307E\u305B\u3093</td></tr>`;
   const footer = renderBodyFooter(context, shownRows);
-  const { bar, menus } = renderTableBar(
-    tableBarOptionsOf(context, shownRows.length)
-  );
+  const { button, menus } = menuParts(shownRows.length);
   const panel = options.copyFallback ? renderCopyPanel({ id: `${id}-panel`, ...options.copyFallback }) : "";
   const tableHtml = `<table tabindex="0" aria-label="\u8868"${autoWidthAttribute(context.autoWidthOf)}><thead>${head}</thead><tbody>${body}${empty}</tbody>${footer}</table>`;
-  return `${bar}${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${options.addRow ? renderAddRow() : ""}${menus}${drawers.join("")}`;
+  return `${panel}<div class="mdmark-table-scroll">${options.order ? reorderCellsHtml(tableHtml, options.order) : tableHtml}</div>${button}${options.addRow ? renderAddRow() : ""}${menus}${drawers.join("")}`;
+}
+function lastShownColumn(order, hidden) {
+  return order.filter((column) => !hidden.has(column)).at(-1);
 }
 function bodyContextOf(options, id) {
   const columns = options.columns ?? [];
@@ -74985,7 +75008,7 @@ function renderHeadCell(context, cell) {
     'class="mdmark-col-resize is-dragging"'
   ) : header;
   return {
-    html: `<th${cellClass(context, index)}${columnKeyAttribute(options, index)}${headWidthStyle(context, index)}${sorted}${hiddenAttribute(context, index)}>${resizedHeader}</th>`,
+    html: `<th${cellClass(context, index, context.menuSpace === index ? ["mdmark-th-menu-space"] : [])}${columnKeyAttribute(options, index)}${headWidthStyle(context, index)}${sorted}${hiddenAttribute(context, index)}>${resizedHeader}</th>`,
     drawer: tools.drawer
   };
 }
@@ -75167,7 +75190,7 @@ function renderBodyFooter(context, shownRows) {
     labels
   });
 }
-function tableBarOptionsOf(context, shown) {
+function tableMenuOptionsOf(context, shown) {
   const { options, id, rows, hidden, labels } = context;
   return {
     id,
@@ -75185,7 +75208,10 @@ function tableBarOptionsOf(context, shown) {
     order: options.order,
     ...headGroupOptions(options),
     pinned: throughPinnedOf(options),
-    dragging: options.dragging
+    dragging: options.dragging,
+    moveMenu: options.moveMenu,
+    openMenu: options.openMenu ?? false,
+    raw: options.rawCsv !== void 0
   };
 }
 function headGroupOptions(options) {
@@ -75265,8 +75291,22 @@ function renderTreeTable(options, id) {
   const body = rendered.map((row2) => row2.html).join("");
   const shown = rendered.filter((row2) => row2.counted).length;
   const counted = plans.filter((plan) => !plan.virtual).length;
-  const count = options.features.includes("count") ? `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">${shown} / ${counted} \u4EF6</span><span class="mdmark-visually-hidden">${counted} \u4EF6\u4E2D ${shown} \u4EF6\u3092\u8868\u793A</span></p></div>` : "";
-  const table2 = `<div class="mdmark-table" data-kind="${options.kind ?? "default"}" data-features="${options.features.join(" ")}" data-tree="${tree}">${count}<div class="mdmark-table-scroll"><table tabindex="0" aria-label="\u8868"><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table></div></div>`;
+  const { button, menus } = renderTableMenu({
+    id,
+    features: options.features.filter((feature) => feature === "count"),
+    labels: context.shownColumns.map(
+      (column) => plainText2(columns[column] ?? "")
+    ),
+    shown,
+    total: counted,
+    hiddenColumns: [],
+    openMenu: options.openMenu ?? false
+  });
+  const spacedHead = button === "" ? head : head.replace(
+    /<th>(?![\s\S]*<th>)/,
+    '<th class="mdmark-th-menu-space">'
+  );
+  const table2 = `<div class="mdmark-table" data-kind="${options.kind ?? "default"}" data-features="${options.features.join(" ")}" data-tree="${tree}"><div class="mdmark-table-scroll"><table tabindex="0" aria-label="\u8868"><thead><tr>${spacedHead}</tr></thead><tbody>${body}</tbody></table></div>${button}${menus}</div>`;
   const example = options.example;
   if (!example) {
     return table2;
@@ -75510,17 +75550,21 @@ function wrapCollapse(options, content) {
 function renderCsvTable(parts) {
   const { options, kind, attributes, inner, rawCsv } = parts;
   const shown = options.rawShown ?? false;
-  const bar = options.body === void 0 ? renderRawBar(shown) : "";
+  const toggle = options.body === void 0 ? renderRawToggle(shown) : "";
   const raw = `<pre class="mdmark-raw"${shown ? "" : " hidden"} tabindex="0" aria-label="\u5143\u306E CSV"><code class="language-csv">${escapeHtml2(rawCsv)}</code></pre>`;
   const viewAttribute = shown ? ' data-view="raw"' : "";
   const shownInner = shown ? hideTableOf(inner) : inner;
-  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${attributes}>${bar}${shownInner}${raw}</div>`;
+  return `<div class="mdmark-table" data-kind="${kind}" data-features="${options.features.join(" ")}" data-source="csv"${viewAttribute}${attributes}>${shownInner}${raw}${toggle}</div>`;
 }
 function hideTableOf(inner) {
-  return inner.includes('<div class="mdmark-table-scroll">') ? inner.replace(
+  const hiddenTable = inner.includes('<div class="mdmark-table-scroll">') ? inner.replace(
     '<div class="mdmark-table-scroll">',
     '<div class="mdmark-table-scroll" hidden>'
   ) : inner.replace(/^<table(?=[\s>])/, "<table hidden");
+  return hiddenTable.replace(
+    /<button class="mdmark-table-menu(?=[\s"])/,
+    (tag) => `${tag.replace("<button", "<button hidden")}`
+  );
 }
 
 // src/table/table-cells.logic.ts
@@ -82006,6 +82050,52 @@ var outermostRanges = (pairs, length) => {
     end = close < 0 ? length : close;
   }
   return result;
+};
+
+// src/shared/icon-node.logic.ts
+function iconNodeBody(node2) {
+  return node2.map(([tag, attributes]) => {
+    const attrs = Object.entries(attributes).filter(([, value]) => value !== void 0).map(([name, value]) => ` ${name}="${value}"`).join("");
+    return `<${tag}${attrs}></${tag}>`;
+  }).join("");
+}
+function iconSvgOf(body) {
+  return `<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
+}
+var ALLOWED_ELEMENTS = /* @__PURE__ */ new Set([
+  "path",
+  "circle",
+  "rect",
+  "line",
+  "polyline",
+  "polygon",
+  "ellipse"
+]);
+var ALLOWED_ATTRIBUTES = /* @__PURE__ */ new Set([
+  "d",
+  "cx",
+  "cy",
+  "r",
+  "rx",
+  "ry",
+  "x",
+  "y",
+  "x1",
+  "y1",
+  "x2",
+  "y2",
+  "width",
+  "height",
+  "points"
+]);
+var iconNodeSvg = (node2) => {
+  const body = node2.filter(([tag]) => ALLOWED_ELEMENTS.has(tag)).map(([tag, attributes]) => {
+    const attrs = Object.entries(attributes).filter(
+      ([name, value]) => ALLOWED_ATTRIBUTES.has(name) && typeof value === "string"
+    ).map(([name, value]) => ` ${name}="${escapeHtml2(value)}"`).join("");
+    return `<${tag}${attrs}></${tag}>`;
+  }).join("");
+  return `<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true">${body}</svg>`;
 };
 
 // src/inline/inline-icon.part.ts
@@ -94343,11 +94433,11 @@ var parseErDiagram = (source) => {
 };
 
 // src/map/lucide-names.ts
-var import_lucide3 = __toESM(require_lucide(), 1);
+var import_lucide2 = __toESM(require_lucide(), 1);
 var kebab = (name) => name.replace(/([a-z0-9])([A-Z])/g, "$1-$2").replace(/([A-Z])([A-Z][a-z])/g, "$1-$2").replace(/([a-zA-Z])([0-9])/g, "$1-$2").toLowerCase();
 var names;
 var lucideIconNames = () => {
-  names ??= new Set(Object.keys(import_lucide3.icons).map(kebab));
+  names ??= new Set(Object.keys(import_lucide2.icons).map(kebab));
   return names;
 };
 
@@ -96973,13 +97063,13 @@ async function runExportMarkdown(options, io) {
 }
 
 // src/cli/icons.ts
-var import_lucide4 = __toESM(require_lucide(), 1);
+var import_lucide3 = __toESM(require_lucide(), 1);
 var ICON_CODE_PATTERN = /`icon:\s*([^`\s]+)\s*`/g;
 var pascalName = (name) => name.split("-").map((part) => part ? `${part[0]?.toUpperCase()}${part.slice(1)}` : "").join("");
 var collectIconNodes = (markdowns) => {
   const icons2 = {};
   const missing = /* @__PURE__ */ new Set();
-  const table2 = import_lucide4.icons;
+  const table2 = import_lucide3.icons;
   for (const markdown of markdowns) {
     for (const match of markdown.matchAll(ICON_CODE_PATTERN)) {
       const name = match[1] ?? "";
