@@ -604,8 +604,8 @@ export function renderTableMenu(options: TableMenuOptions): {
   const live = counting
     ? '<span class="mdmark-visually-hidden mdmark-table-count-live" aria-live="polite"></span>'
     : "";
-  const status =
-    '<span class="mdmark-visually-hidden mdmark-table-status" role="status"></span>';
+  const copyState = options.copyState ?? "idle";
+  const status = `<span class="mdmark-visually-hidden mdmark-table-status" role="status">${copyState === "idle" ? "" : COPY_STATES[copyState].label}</span>`;
   return {
     button,
     menus: `${renderMenuPanel(options, state, expanded)}${settings ? renderSettingsPanel(options) : ""}${live}${status}`,
