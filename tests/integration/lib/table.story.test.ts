@@ -1,5 +1,6 @@
 import type { Locator, Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
+import { iconSvg } from "../../../src/shared/icons.part.ts";
 import {
   contrastRatio,
   countColorPixels,
@@ -805,39 +806,60 @@ function totalRows(page: Page): Promise<string[][]> {
   );
 }
 
-/** 件数の要素の、画面に出る文字を返却する（スクリーンリーダー向けの文字は含めない） */
-function countText(page: Page): Promise<string> {
-  return page.locator(".mdmark-table-count [aria-hidden='true']").innerText();
+/** 表のメニューのボタンの `aria-label` の件数（`{表示している行の数} / {全ての行の数} 件`）を返却する */
+async function countText(page: Page): Promise<string> {
+  const label =
+    (await page
+      .locator("button.mdmark-table-menu")
+      .getAttribute("aria-label")) ?? "";
+  return /（(\d+ \/ \d+ 件)/.exec(label)?.[1] ?? "";
 }
 
-// 件数を表の上に出す（Count）
+/** lucide のアイコンの path の `d` の値 */
+function iconPaths(name: "check" | "circle-alert" | "ellipsis"): string[] {
+  return [...iconSvg(name).matchAll(/\sd="([^"]*)"/g)].map(
+    (match) => match[1] ?? "",
+  );
+}
+
+/** 表のメニューのボタンのアイコンの path の `d` の値 */
+function menuIconPaths(page: Page): Promise<string[]> {
+  return page
+    .locator("button.mdmark-table-menu svg path")
+    .evaluateAll((paths) => paths.map((path) => path.getAttribute("d") ?? ""));
+}
+
+// 件数を表のメニューのボタンの名前に出し、表の上にバーを配置しない（Count）
 test("test_count", async () => {
   // 準備・実行
   const page = await open("count");
   // 検証
-  await expect(countText(page)).resolves.toBe("3 / 3 件");
+  await expect(page.locator(".mdmark-table-bar").count()).resolves.toBe(0);
   await expect(
-    page.locator(".mdmark-table-count").getAttribute("aria-live"),
-  ).resolves.toBe("polite");
+    page.locator("button.mdmark-table-menu").getAttribute("aria-label"),
+  ).resolves.toBe("表のメニュー（3 / 3 件）");
+  await expect(countText(page)).resolves.toBe("3 / 3 件");
 });
 
-// 絞り込んだ後の件数を出す（CountFiltered）
+// 絞り込んだ後の件数を表のメニューのボタンの名前に出す（CountFiltered）
 test("test_count_filtered", async () => {
   // 準備・実行
   const page = await open("count-filtered");
   // 検証
-  await expect(countText(page)).resolves.toBe("2 / 3 件");
+  await expect(
+    page.locator("button.mdmark-table-menu").getAttribute("aria-label"),
+  ).resolves.toBe("表のメニュー（2 / 3 件）");
   await expect(visibleRows(page)).resolves.toBe(2);
 });
 
-// hide= の列を隠し、帯にテーブル設定のアイコンだけのボタンと、隠した列の数のバッジを出す（ColumnsHidden）
+// 説明の列を隠し、表のメニューのボタンに隠した列の数のバッジを出す（ColumnsHidden）
 test("test_columns_hidden", async () => {
   // 準備・実行
   const page = await open("columns-hidden");
   // 検証
-  const toggle = page.locator(".mdmark-table-settings-toggle");
-  await expect(toggle.getAttribute("aria-label")).resolves.toBe(
-    "テーブル設定（1 列を非表示）",
+  const toggle = page.locator("button.mdmark-table-menu");
+  await expect(toggle.getAttribute("aria-label")).resolves.toContain(
+    "1 列を非表示",
   );
   await expect(
     toggle.locator(".mdmark-table-tool-badge").innerText(),
@@ -868,8 +890,8 @@ test("test_columns_menu_open", async () => {
   await expect(eyes.nth(2).getAttribute("aria-pressed")).resolves.toBe("true");
   await expect(panel.innerText()).resolves.toContain("先頭の列は隠せません");
   await expect(
-    page.locator(".mdmark-table-settings-toggle").getAttribute("aria-expanded"),
-  ).resolves.toBe("true");
+    page.locator("button.mdmark-table-menu").getAttribute("aria-expanded"),
+  ).resolves.toBe("false");
   // 最後の列を隠していても、表の右端は外側の枠の 1px だけ（表に重なるパネルは隠して測る）
   await page.addStyleTag({
     content: ".mdmark-table-settings { display: none; }",
@@ -884,7 +906,7 @@ test("test_columns_menu_open", async () => {
 test("test_totals", async () => {
   // 準備・実行: 表が画面に収まる高さにする（集計の行を画面の下端に留めず、元の位置で線を測る）
   const page = await holder.openStory("parts-table--totals", {
-    width: 420,
+    width: 480,
     height: 800,
   });
   // 検証
@@ -931,27 +953,27 @@ test("test_totals_empty", async () => {
   await expect(countText(page)).resolves.toBe("0 / 4 件");
 });
 
-// コピーしたことを通知する（Copied）
+// コピーしたことを表のメニューのボタンのアイコンと role="status" の要素で伝える（Copied）
 test("test_copied", async () => {
   // 準備・実行
   const page = await open("copied");
   // 検証
-  const button = page.locator(".mdmark-copy");
+  const button = page.locator("button.mdmark-table-menu");
   await expect(button.getAttribute("data-state")).resolves.toBe("copied");
-  await expect(button.innerText()).resolves.toContain("コピーしました");
+  await expect(menuIconPaths(page)).resolves.toEqual(iconPaths("check"));
   await expect(page.locator(".mdmark-table-status").innerText()).resolves.toBe(
     "コピーしました",
   );
 });
 
-// コピーできなかったことを通知する（CopyFailed）
+// コピーできなかったことを表のメニューのボタンのアイコンで伝える（CopyFailed）
 test("test_copy_failed", async () => {
   // 準備・実行
   const page = await open("copy-failed");
   // 検証
-  const button = page.locator(".mdmark-copy");
+  const button = page.locator("button.mdmark-table-menu");
   await expect(button.getAttribute("data-state")).resolves.toBe("failed");
-  await expect(button.innerText()).resolves.toContain("コピーできませんでした");
+  await expect(menuIconPaths(page)).resolves.toEqual(iconPaths("circle-alert"));
 });
 
 // 行へのリンクを持ち、指している行を強調する（RowLinkTarget）
@@ -977,9 +999,13 @@ test("test_all_features", async () => {
   // 検証
   await expect(countText(page)).resolves.toBe("3 / 3 件");
   await expect(
-    page.locator(".mdmark-table-settings-toggle").count(),
+    page
+      .locator('button.mdmark-table-menu-item[data-action="settings"]')
+      .count(),
   ).resolves.toBe(1);
-  await expect(page.locator(".mdmark-copy").count()).resolves.toBe(1);
+  await expect(
+    page.locator('button.mdmark-table-menu-item[data-action="copy"]').count(),
+  ).resolves.toBe(1);
   await expect(totalRows(page)).resolves.toEqual([["合計", "", "25"]]);
   expect((await hiddenCells(page, 1)).every(Boolean)).toBe(true);
   await expect(page.locator(".mdmark-row-anchor").count()).resolves.toBe(3);
@@ -997,7 +1023,7 @@ test("test_totals_unreadable", async () => {
   ]);
 });
 
-// 集計のメニューを開くと、合計・平均・件数のチェックボックスに全てチェックが入っている（TotalsMenuOpen）
+// 表のメニューの中の集計のメニューを開くと、合計・平均・件数のチェックボックスに全てチェックが入っている（TotalsMenuOpen）
 test("test_totals_menu_open", async () => {
   // 準備・実行
   const page = await open("totals-menu-open");
@@ -1022,12 +1048,19 @@ test("test_totals_menu_open", async () => {
     { value: "count", checked: true, label: "件数" },
   ]);
   await expect(
-    page.locator(".mdmark-totals-toggle").getAttribute("aria-expanded"),
+    page
+      .locator('button.mdmark-table-menu-item[data-action="totals"]')
+      .getAttribute("aria-expanded"),
   ).resolves.toBe("true");
+  await expect(
+    menu.evaluate((element) =>
+      Boolean(element.closest(".mdmark-table-menu-panel")),
+    ),
+  ).resolves.toBe(true);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// 平均と件数のチェックを解除すると、合計の行だけを出し、集計のボタンが隠していることを示す（TotalsHidden）
+// 平均と件数のチェックを解除すると、合計の行だけを出し、表のメニューの「集計」の項目が隠していることを示す（TotalsHidden）
 test("test_totals_hidden", async () => {
   // 準備・実行
   const page = await open("totals-hidden");
@@ -1046,7 +1079,9 @@ test("test_totals_hidden", async () => {
     { kind: "count", hidden: true },
   ]);
   await expect(rows.locator("visible=true").count()).resolves.toBe(1);
-  const toggle = page.locator(".mdmark-totals-toggle");
+  const toggle = page.locator(
+    'button.mdmark-table-menu-item[data-action="totals"]',
+  );
   await expect(
     toggle.evaluate((el) => el.classList.contains("is-active")),
   ).resolves.toBe(true);
@@ -1055,7 +1090,7 @@ test("test_totals_hidden", async () => {
   ).resolves.toBe("（2 件を非表示にしています）");
 });
 
-// コピーの形式のメニューを開くと、Markdown の表と TSV の 2 つを用途と並べて出す（CopyMenuOpen）
+// 表のメニューの中のコピーの形式のメニューを開くと、Markdown の表と TSV の 2 つを用途と並べて出す（CopyMenuOpen）
 test("test_copy_menu_open", async () => {
   // 準備・実行
   const page = await open("copy-menu-open");
@@ -1083,27 +1118,32 @@ test("test_copy_menu_open", async () => {
     },
   ]);
   await expect(
-    page.locator(".mdmark-copy").getAttribute("aria-expanded"),
+    page
+      .locator('button.mdmark-table-menu-item[data-action="copy"]')
+      .getAttribute("aria-expanded"),
   ).resolves.toBe("true");
+  await expect(
+    menu.evaluate((element) =>
+      Boolean(element.closest(".mdmark-table-menu-panel")),
+    ),
+  ).resolves.toBe(true);
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
-// クリップボードに書き込めないときは、手動でコピーするパネルを帯の直後に出し、中身を読み取り専用で並べる（CopyFallback）
+// クリップボードに書き込めないときは、手動でコピーするパネルを表を包む要素の直前に出し、中身を読み取り専用で並べる（CopyFallback）
 test("test_copy_fallback", async () => {
   // 準備・実行
   const page = await open("copy-fallback");
   // 検証
-  const button = page.locator(".mdmark-copy");
+  const button = page.locator("button.mdmark-table-menu");
   await expect(button.getAttribute("data-state")).resolves.toBe("failed");
-  await expect(button.innerText()).resolves.toContain("コピーできませんでした");
+  await expect(menuIconPaths(page)).resolves.toEqual(iconPaths("circle-alert"));
   const panel = page.locator(".mdmark-copy-panel");
   await expect(panel.count()).resolves.toBe(1);
   await expect(panel.getAttribute("role")).resolves.toBe("group");
   await expect(
-    page
-      .locator(".mdmark-table-bar")
-      .evaluate((bar) => bar.nextElementSibling?.className),
-  ).resolves.toBe("mdmark-copy-panel");
+    panel.evaluate((element) => element.nextElementSibling?.className),
+  ).resolves.toBe("mdmark-table-scroll");
   await expect(panel.innerText()).resolves.toContain(
     "クリップボードにコピーできませんでした",
   );
@@ -1719,23 +1759,18 @@ test("test_merge_invalid", async () => {
   expect(order).toBeGreaterThan(0);
 });
 
-// CSV の表は、帯の右端に押していない RAW のボタンを配置し、元の CSV を隠す（CsvTable）
+// CSV の表は、表のメニューの最後に「元の CSV を表示」の項目を持ち、元の CSV と「表で表示」のボタンを隠す（CsvTable）
 test("test_csv_table", async () => {
   // 準備・実行
   const page = await open("csv-table");
   // 検証
-  const button = page.locator(".mdmark-raw-toggle");
-  await expect(button.getAttribute("aria-label")).resolves.toBe(
-    "元の CSV を表示",
-  );
-  await expect(button.getAttribute("aria-pressed")).resolves.toBe("false");
-  const box = await button.boundingBox();
-  const wrapper = await page.locator(".mdmark-table").boundingBox();
-  expect(box?.width).toBeGreaterThanOrEqual(24);
-  expect((box?.x ?? 0) + (box?.width ?? 0)).toBeCloseTo(
-    (wrapper?.x ?? 0) + (wrapper?.width ?? 0),
-    0,
-  );
+  await expect(page.locator(".mdmark-table-bar").count()).resolves.toBe(0);
+  const last = page.locator("button.mdmark-table-menu-item").last();
+  await expect(last.getAttribute("data-action")).resolves.toBe("raw");
+  await expect(last.innerText()).resolves.toBe("元の CSV を表示");
+  await expect(
+    page.locator("button.mdmark-raw-toggle").isVisible(),
+  ).resolves.toBe(false);
   await expect(
     page
       .locator("pre.mdmark-raw")
@@ -1743,28 +1778,36 @@ test("test_csv_table", async () => {
   ).resolves.toBe("hidden");
 });
 
-// RAW のボタンを押した状態は、表を隠して記載したとおりの CSV を出し、ボタンを青の面にする（CsvRaw）
+// 元の CSV を出した状態は、表と表のメニューのボタンを隠して記載したとおりの CSV を出し、右上に「表で表示」のボタンを重ねる（CsvRaw）
 test("test_csv_raw", async () => {
   // 準備・実行
   const page = await open("csv-raw");
-  const plain = await open("csv-table");
   // 検証
-  const read = (target: Page) =>
-    target.locator(".mdmark-raw-toggle").evaluate((button) => ({
-      pressed: button.getAttribute("aria-pressed"),
-      background: getComputedStyle(button).backgroundColor,
-    }));
-  const pressed = await read(page);
-  expect(pressed.pressed).toBe("true");
-  expect(pressed.background).not.toBe((await read(plain)).background);
   await expect(
     page
       .locator(".mdmark-table table")
       .evaluate((t) => getComputedStyle(t).visibility),
   ).resolves.toBe("hidden");
-  await expect(page.locator("pre.mdmark-raw").innerText()).resolves.toContain(
-    '北山,"東京, 本社",1200',
-  );
+  await expect(
+    page.locator("button.mdmark-table-menu").isVisible(),
+  ).resolves.toBe(false);
+  const pre = page.locator("pre.mdmark-raw");
+  await expect(pre.innerText()).resolves.toContain('北山,"東京, 本社",1200');
+  const toggle = page.locator("button.mdmark-raw-toggle");
+  await expect(toggle.getAttribute("aria-label")).resolves.toBe("表で表示");
+  const box = await toggle.boundingBox();
+  const preBox = await pre.boundingBox();
+  expect(box?.width).toBeGreaterThanOrEqual(24);
+  expect(box?.height).toBeGreaterThanOrEqual(24);
+  // 「表で表示」のボタンは元の CSV の右上の角に重なる
+  expect((box?.y ?? 0) - (preBox?.y ?? 0)).toBeGreaterThanOrEqual(0);
+  expect((box?.y ?? 0) - (preBox?.y ?? 0)).toBeLessThan(16);
+  const rightGap =
+    (preBox?.x ?? 0) +
+    (preBox?.width ?? 0) -
+    ((box?.x ?? 0) + (box?.width ?? 0));
+  expect(rightGap).toBeGreaterThanOrEqual(0);
+  expect(rightGap).toBeLessThan(16);
 });
 
 /** テーブル設定の一覧の項目の列名を、並んだ順に返却する */
@@ -1869,7 +1912,7 @@ test("test_reordered", async () => {
   expect((await hiddenCells(page, 1)).some(Boolean)).toBe(false);
   await expect(
     page
-      .locator(".mdmark-table-settings-toggle .mdmark-table-tool-badge")
+      .locator("button.mdmark-table-menu .mdmark-table-tool-badge")
       .innerText(),
   ).resolves.toBe("1");
 });
@@ -2056,10 +2099,10 @@ test("test_tree_example_hidden", async () => {
   );
 });
 
-/** 帯のボタンの見えている文字（スクリーンリーダー向けの文字を除く）と、幅・高さ */
+/** 表のメニューのボタンの見えている文字（スクリーンリーダー向けの文字とバッジを除く）と、幅・高さ */
 function toolBoxes(page: Page) {
   return page
-    .locator("#storybook-root .mdmark-table-tools > button")
+    .locator("#storybook-root button.mdmark-table-menu")
     .evaluateAll((buttons) =>
       buttons.map((button) => {
         const copy = button.cloneNode(true) as HTMLElement;
@@ -2080,22 +2123,23 @@ function toolBoxes(page: Page) {
     );
 }
 
-// 帯は、テーブル設定とコピーのボタンがアイコンだけで、テーブル設定に隠した列の数のバッジを持つ（ColumnsButtonA）
+// 表のメニューのボタンはアイコンだけで、隠した列の数のバッジを持つ（ColumnsButtonA）
 test("test_columns_button_a", async () => {
   // 準備・実行
   const page = await open("columns-button-a");
   // 検証
   const tools = await toolBoxes(page);
-  expect(tools).toHaveLength(2);
-  for (const button of tools) {
-    expect(button.text).toBe("");
-    expect(Math.abs(button.width - button.height)).toBeLessThanOrEqual(1);
-  }
-  expect(tools[0]?.title).toBe("テーブル設定");
-  expect(tools[0]?.name).toBe("テーブル設定（1 列を非表示）");
+  expect(tools).toHaveLength(1);
+  const [button] = tools;
+  expect(button?.text).toBe("");
+  expect(
+    Math.abs((button?.width ?? 0) - (button?.height ?? 0)),
+  ).toBeLessThanOrEqual(1);
+  expect(button?.title).toBe("表のメニュー");
+  expect(button?.name).toBe("表のメニュー（3 / 3 件・1 列を非表示）");
   await expect(
     page
-      .locator(".mdmark-table-settings-toggle .mdmark-table-tool-badge")
+      .locator("button.mdmark-table-menu .mdmark-table-tool-badge")
       .innerText(),
   ).resolves.toBe("1");
   await expect(pageOverflows(page)).resolves.toBe(false);
@@ -2203,4 +2247,180 @@ test("test_wide_resized", async () => {
   );
   expect(cells[0]?.whiteSpace).not.toBe("nowrap");
   expect(cells[0]?.lines).toBeGreaterThan(1);
+});
+
+/** preview が表のメニューのボタンの位置（囲む要素の `--mdmark-table-menu-end`）を入れるまで待つ */
+async function waitForMenuPlaced(page: Page): Promise<void> {
+  await page.waitForFunction(() =>
+    [...document.querySelectorAll<HTMLElement>(".mdmark-table")].some(
+      (wrapper) => wrapper.style.getPropertyValue("--mdmark-table-menu-end"),
+    ),
+  );
+}
+
+/** 要素の矩形（無ければ例外） */
+async function boxOf(locator: Locator): Promise<{
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}> {
+  const box = await locator.boundingBox();
+  if (!box) {
+    throw new Error("矩形が無い");
+  }
+  return box;
+}
+
+/** 2 つの矩形が重なるか */
+function boxesOverlap(
+  a: { x: number; y: number; width: number; height: number },
+  b: { x: number; y: number; width: number; height: number },
+): boolean {
+  return (
+    a.x < b.x + b.width &&
+    b.x < a.x + a.width &&
+    a.y < b.y + b.height &&
+    b.y < a.y + a.height
+  );
+}
+
+// 見出し行の右上の表のメニューを開くと、件数と「テーブル設定」「集計」「表をコピー」の項目を並べ、ボタンは最後の列のつまみの左にある（TableMenuOpen）
+test("test_table_menu_open", async () => {
+  // 準備・実行: 表がはみ出さない幅で開く（はみ出す表は TableMenuOverflow）
+  const page = await holder.openStory("parts-table--table-menu-open", {
+    width: 800,
+    height: 600,
+  });
+  await waitForMenuPlaced(page);
+  // 検証: メニューの中身
+  const menu = page.locator(".mdmark-table-menu-panel:not([hidden])");
+  await expect(menu.count()).resolves.toBe(1);
+  await expect(menu.locator(".mdmark-table-count").innerText()).resolves.toBe(
+    "3 / 3 件を表示",
+  );
+  await expect(
+    menu.locator("button.mdmark-table-menu-item").allInnerTexts(),
+  ).resolves.toEqual(["テーブル設定", "集計", "表をコピー"]);
+  // 検証: ボタンは最後の列のつまみの左にあり、見出しのボタンとつまみに重ならない
+  const button = await boxOf(page.locator("button.mdmark-table-menu"));
+  const lastHead = page.locator("#storybook-root thead th").last();
+  const grip = await boxOf(lastHead.locator(".mdmark-col-resize"));
+  expect(button.x + button.width).toBeLessThanOrEqual(grip.x + 1);
+  for (const other of await lastHead
+    .locator(".mdmark-sort, .mdmark-filter, .mdmark-pin")
+    .all()) {
+    if (await other.isVisible()) {
+      expect(boxesOverlap(button, await boxOf(other))).toBe(false);
+    }
+  }
+  // 検証: メニューはボタンの下に右端をそろえて開く
+  const menuBox = await boxOf(menu);
+  expect(
+    Math.abs(menuBox.x + menuBox.width - (button.x + button.width)),
+  ).toBeLessThanOrEqual(1);
+  expect(Math.abs(menuBox.y - (button.y + button.height))).toBeLessThanOrEqual(
+    4,
+  );
+});
+
+// 件数だけの表のメニューは件数の文字だけを持ち、メニューそのものがフォーカスを受ける（TableMenuCountOnly）
+test("test_table_menu_count_only", async () => {
+  // 準備・実行
+  const page = await open("table-menu-count-only");
+  // 検証
+  const menu = page.locator(".mdmark-table-menu-panel:not([hidden])");
+  await expect(menu.innerText()).resolves.toBe("3 / 3 件を表示");
+  await expect(menu.getAttribute("tabindex")).resolves.toBe("-1");
+  await expect(
+    menu.locator("button.mdmark-table-menu-item").count(),
+  ).resolves.toBe(0);
+});
+
+// はみ出す表のメニューのボタンは、横のスクロールの外にあり、表を横にスクロールしても表の右上に残る（TableMenuOverflow）
+test("test_table_menu_overflow", async () => {
+  // 準備・実行
+  const page = await open("table-menu-overflow");
+  await waitForMenuPlaced(page);
+  const button = page.locator("button.mdmark-table-menu");
+  const scroller = page.locator(".mdmark-table-scroll");
+  // 検証
+  await expect(
+    button.evaluate((element) =>
+      Boolean(element.closest(".mdmark-table-scroll")),
+    ),
+  ).resolves.toBe(false);
+  await expect(
+    scroller.evaluate((element) => element.scrollWidth > element.clientWidth),
+  ).resolves.toBe(true);
+  const before = await boxOf(button);
+  // 実行: 表を右端まで横にスクロールする
+  await scroller.evaluate((element) => {
+    element.scrollLeft = element.scrollWidth;
+  });
+  // 検証: ボタンは同じ位置にあり、見出し行の上に重なって押せる
+  const after = await boxOf(button);
+  expect(after).toEqual(before);
+  const head = await boxOf(page.locator("#storybook-root thead tr"));
+  expect(after.y).toBeGreaterThanOrEqual(head.y);
+  expect(after.y + after.height).toBeLessThanOrEqual(head.y + head.height);
+  await expect(
+    button.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return element.contains(
+        document.elementFromPoint(
+          rect.left + rect.width / 2,
+          rect.top + rect.height / 2,
+        ),
+      );
+    }),
+  ).resolves.toBe(true);
+});
+
+// テーブル設定の既定のつまみの列の移動のメニューを、つまみの行の中に開き、どちらのボタンも押せる（ReorderMoveMenu）
+test("test_reorder_move_menu", async () => {
+  // 準備・実行
+  const page = await open("reorder-move-menu");
+  // 検証
+  const item = page.locator('.mdmark-table-settings-item[data-name="既定"]');
+  await expect(
+    item.locator(".mdmark-table-settings-grip").getAttribute("aria-expanded"),
+  ).resolves.toBe("true");
+  const menu = item.locator(".mdmark-table-move-menu");
+  await expect(menu.isVisible()).resolves.toBe(true);
+  await expect(menu.getAttribute("aria-label")).resolves.toBe(
+    "「既定」の列の移動",
+  );
+  await expect(menu.locator("button").allInnerTexts()).resolves.toEqual([
+    "前へ移す",
+    "後ろへ移す",
+  ]);
+  for (const button of await menu.locator("button").all()) {
+    await expect(button.isDisabled()).resolves.toBe(false);
+  }
+  // 検証: 一覧の直下は li だけ
+  await expect(
+    page
+      .locator(".mdmark-table-settings-list")
+      .evaluate((list) =>
+        [...list.children].every((child) => child.tagName === "LI"),
+      ),
+  ).resolves.toBe(true);
+});
+
+// 先頭の名前の列の移動のメニューは、前へ移すが押せない（ReorderMoveMenuFirst）
+test("test_reorder_move_menu_first", async () => {
+  // 準備・実行
+  const page = await open("reorder-move-menu-first");
+  // 検証
+  const menu = page.locator(
+    '.mdmark-table-settings-item[data-name="名前"] .mdmark-table-move-menu',
+  );
+  await expect(menu.isVisible()).resolves.toBe(true);
+  await expect(
+    menu.locator('button[data-move="before"]').isDisabled(),
+  ).resolves.toBe(true);
+  await expect(
+    menu.locator('button[data-move="after"]').isDisabled(),
+  ).resolves.toBe(false);
 });
