@@ -1,0 +1,11 @@
+confirmations:
+  - topic: 列の幅を、ドラッグをせずに変える操作の構造
+    decision: 幅を広げる・狭めるのボタンやメニューは追加せず、今のドラッグ・←→ キー・ダブルクリック・ダブルタップ・Enter のままにする（案 A・B・C のどれでもない）
+    decided_by: reply
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/811#discussion_r4709824242
+  - topic: 列の並べ替えを、ドラッグをせずに変える操作の構造
+    decision: テーブル設定の列名の行のつまみを 1 回押すと「前へ移す」「後ろへ移す」のメニューが開く（推奨案 B）
+    decided_by: reply
+    approver: shuhei1101
+    thread: https://github.com/shuhei1101/mdmark/pull/811#discussion_r4709825588

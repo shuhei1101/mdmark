@@ -1,4 +1,4 @@
-// #811 の表の見本の定義（#449 の table-resize.js が描き、drag-alt.js がドラッグしない操作を付ける）。
+// #811 の表の見本の定義（#449 の table-resize.js が描く）。
 // 書き方は #449 の table-samples.js と同じ。名前は 811- で始め、#449 の定義と重ねない
 
 {
@@ -11,8 +11,4 @@
   ];
 
   T["811-fine"] = { label: "細かいポインターの画面の、押せる範囲を 24px にしたつまみ", head, body, resize: true, wide: "説明", state: { 0: "hover" } };
-  T["811-a"] = { label: "案 A: 見出しのメニューから列の幅を変える表", head, body, resize: true, wide: "説明", widths: { 0: 32 } };
-  T["811-b"] = { label: "案 B: 名前の列を 2 回広げてから、つまみを押して開くメニューで列の幅を変える表", head, body, resize: true, wide: "説明", widths: { 0: 32 } };
-  T["811-b-min"] = { label: "案 B: 列の最小幅まで狭めてメニューを開いた表", head, body, resize: true, wide: "説明", widths: { 0: -2000 } };
-  T["811-c"] = { label: "案 C: テーブル設定の列名の行から列の幅を変える表", head, body, resize: true, wide: "説明" };
 }

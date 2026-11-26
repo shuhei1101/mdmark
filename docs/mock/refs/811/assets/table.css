@@ -1,5 +1,5 @@
 /* #811 の表の追加分: 列の幅のつまみの押せる範囲を、ポインターの種類によらず 24px にする規則と、
-   ドラッグしない操作（列の幅のメニュー・列の移動のメニュー・列名の行のボタン）の規則。
+   列の並べ替えの、つまみを押して開くメニューの規則。
    #449 の追加分（refs/449/assets/table.css）と #184 のテーブル設定（refs/303/assets/table.css）の後に読む */
 
 @layer mdmark {
@@ -14,7 +14,7 @@
       cursor: col-resize;
     }
 
-    /* 列の幅のメニュー・列の移動のメニュー: つまみの下に重ねる小さいパネル */
+    /* 列の移動のメニュー: つまみの下に重ねる小さいパネル */
     .mdmark-811-menu {
       position: absolute;
       z-index: 50;
@@ -70,8 +70,61 @@
       }
     }
 
-    /* 案 A: 見出しのメニューのボタン */
-    .mdmark-811-colmenu {
+    /* メニューを開いたままの見本の分の余白（モック専用） */
+    [data-mock811] {
+      position: relative;
+    }
+  }
+}
+
+/* #811 表の操作のバーを、表の高さを増やさずに置く案 */
+@layer mdmark {
+  .mdmark {
+    /* 案 A: 表の右上の角に重ねる */
+    .mdmark-table.mdmark-811-corner {
+      position: relative;
+    }
+
+    .mdmark-811-corner-tools {
+      position: absolute;
+      inset-block-start: 0.25rem;
+      inset-inline-end: 0.25rem;
+      z-index: 4;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+      padding: 0.125rem 0.25rem;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg);
+      box-shadow: 0 2px 6px rgb(0 0 0 / 10%);
+      opacity: 0;
+      transition: opacity 120ms;
+
+      & .mdmark-table-count {
+        margin: 0 0.25rem;
+        color: var(--mdmark-color-muted);
+        font-size: 0.8125rem;
+        white-space: nowrap;
+      }
+    }
+
+    .mdmark-811-corner:is(:hover, :focus-within, .is-shown) .mdmark-811-corner-tools {
+      opacity: 1;
+    }
+
+    @media (pointer: coarse) {
+      .mdmark-811-corner-tools {
+        opacity: 1;
+      }
+    }
+
+    /* 案 B: 見出し行の右端の表のメニュー */
+    .mdmark-table.mdmark-811-headmenu {
+      position: relative;
+    }
+
+    .mdmark-811-tablemenu {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -83,56 +136,22 @@
       background: transparent;
       color: var(--mdmark-color-muted);
       cursor: pointer;
-    }
 
-    /* 案 C・列の並べ替えの案 A: 列名の行に並べる 24px のボタン */
-    .mdmark-811-row-tools {
-      display: inline-flex;
-      gap: 0.125rem;
-      margin-inline-start: auto;
-
-      & button {
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        inline-size: 1.75rem;
-        block-size: 1.75rem;
-        padding: 0;
-        border: 0;
-        border-radius: var(--mdmark-radius);
-        background: transparent;
-        color: var(--mdmark-color-muted);
-        cursor: pointer;
-
-        &:disabled {
-          opacity: 0.4;
-          cursor: not-allowed;
-        }
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
       }
     }
 
-    /* 案 C の列名の一覧（列の幅のボタンだけを並べる見本） */
-    .mdmark-811-width-list {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-      max-inline-size: 22rem;
-      margin: 0.5rem 0 0;
-      padding: 0.5rem;
-      border: 1px solid var(--mdmark-color-border);
-      border-radius: var(--mdmark-radius);
-      list-style: none;
-
-      & li {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
+    .mdmark-811-tablemenu-panel {
+      inset-block-start: 2.5rem;
+      inset-inline-end: 0;
     }
 
-    /* メニューを開いたままの見本の分の余白（モック専用） */
-    [data-mock811] {
-      position: relative;
+    .mdmark-811-menu-count {
+      margin: 0.25rem 0.5rem;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
     }
   }
 }
