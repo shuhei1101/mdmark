@@ -16,7 +16,7 @@ functions:
 
       | 表の機能・属性 | 付けるもの |
       | --- | --- |
-      | `count`・`columns`・`reorder`・`total`・`copy` | `renderTableBar` の帯とメニュー（テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0） |
+      | `count`・`columns`・`reorder`・`total`・`copy`・`data-source="csv"` | `renderTableMenu` の表のメニューのボタンとメニューを `div.mdmark-table-scroll` の外に配置し、最も右の見えている列の最下段の `th` に `mdmark-th-menu-space` を付ける（CSV の表は `raw` を真にする。テーブル設定の一覧を分ける留めた列の数は `data-pin` がある表だけ数え、無い表は 0） |
       | `columns`・`reorder` | `attachTableSettings` でテーブル設定 |
       | `data-tree` | `attachTableTree` で階層の操作 |
       | `total` | `renderTotalRows` の集計の行 |
@@ -25,8 +25,8 @@ functions:
       | 全ての表 | `attachAutoColumnWidths` で列の幅を自動で決める処理 |
 
       表を横にスクロールさせるのは表を包む `div.mdmark-table-scroll` で、ピン止めを適用するはみ出しはその要素の `scrollWidth` と `clientWidth` で決める。
-      列の表示を切り替えるたびに、テーブル設定のボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。
-      コピーの結果はボタンの `title` とスクリーンリーダー向けの名前を書き換えて示す。
+      列の表示を切り替えるたびに、表のメニューのボタンの隠した列の数のバッジ（`span.mdmark-table-tool-badge`。0 列なら `hidden` にする）・`is-active`・`aria-label` を書き換える。
+      コピーの結果は表のメニューのボタンの `data-state` とアイコンを書き換えて示す。
 
       `thead` が複数の行を持つ表は `bottomHeadCells` で列ごとの最下段の見出しのセルを決め、ボタンをそのセルにだけ配置し、列の位置はそのセルの列で数える（`cellIndex` を使用しない）。
       `data-merge-columns` の表は、並べ替え・絞り込みのたびに、表示している本文の行のその列の値から `mergeSpans` で結合を決め、始まりのセルに `rowspan` と `is-merged`、続くセルに `hidden` をもう一度付ける。
@@ -37,9 +37,9 @@ functions:
 
       並べ替えは降順 → 昇順 → 元の並び（描いたときの順を行に記録する）を繰り返し、`th` の `aria-sort` を付与・解除する。行の詳細の行はその行に付いて動かす。ピン止めのボタンは `ResizeObserver` で表がはみ出すときだけ出し、留める列の位置の集まり（付けたときは `pinDefault`（既定 false）を指定した `initialPinnedColumns`、ボタンを押すと `togglePinnedColumn`）のセルに、表がはみ出す間だけ `position: sticky` と `pinOffsets` の `left`（`each` は `right` も）を適用する（はみ出さない間は留めず、留める列は記録したまま）。列の幅は見出しの列ごとのセルの `offsetWidth`（隠した列は 0）で測る。ボタンの `aria-pressed` は、`each` は留めた列、`through` は留めた最も右の列だけを `true` にする。境の線は、表を包む要素の `scroll` と留める列を変えるたびに、左端に留まっている最も右の列のセルに `is-pinned-edge`、右端に留まっている最も左の列のセルに `is-pinned-edge-end` を付ける（留まっているかは列の元の位置と `scrollLeft`・`clientWidth`・`pinOffsets` で決める）。`thead` が複数の行を持つ表の見出しのセルは、またぐ列が全て留める列のときだけ留め、`left` は最初の列、`right` は最後の列の値にする。セルの値は `cellValue` で読み込む（`data-check` の列は `data-value`）。絞り込みのドロワーは `hidden` と `aria-expanded` で開閉し、同時に 1 つだけ開く。開いたら最初の入力欄へフォーカスを移し（スマホでもボタンの押下の処理の中で移す）、開いている間だけ `document` の `pointerdown`（外を押す）と `keydown`（Esc）を受け取る。「絞り込みを解除」はその列の入力を空にして絞り込みをもう一度適用する（ドロワーの中の押下を外の押下として扱わない）。列ごとの絞り込みは `matchesFilter` で重ねて適用し、合わない行に `hidden` を付ける。
 
-      件数と集計の行は、絞り込みを適用するたびに、行の詳細・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から再作成する（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読み込めないセルを持つ列と計算を記録し、そのセルは再作成しても空にする。`集計` のボタンのメニュー（`表示する集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、ボタンの `is-active` とスクリーンリーダー向けの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を帯の `mdmark-table-status` に入れる（選択は覚えない）。テーブル設定のパネル・集計のメニュー・コピーの形式のメニューは絞り込みのドロワーと同じ開閉の受け取りを使用する（同時に開くのはドロワーとパネル・メニューを合わせて 1 つ）。列の表示と順の切り替え（テーブル設定のパネルの目のアイコンとつまみ）は `attachTableSettings` に任せ、切り替えても列の幅は再計算しない。ピン止めの左端からの位置は隠した列を除いてもう一度測る。`onColumnsChange` を指定したときは、`attachTableSettings` が目のアイコンで列の表示を切り替えた後に、`{ tableIndex, hidden }` で 1 回呼ぶ。`tableIndex` は付けたときに `root` の中の `columns` の表（`.mdmark-diff-block[data-kind="del"]` の中の表を除く）を文書の順に並べた位置、`hidden` は隠している列の見出しのセルの `visibleText` を列の順に並べた変更後の配列。例外を投げたら、`onColumnsChange` と元のエラーを `console.error` に出して続ける。
+      件数と集計の行は、絞り込みを適用するたびに、行の詳細・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行から再作成する（集計は `computeTotal`）。集計の行は計算ごとの 1 行で、付けたときに全ての本文の行から `findUnreadableTotals` で数として読み込めないセルを持つ列と計算を記録し、そのセルは再作成しても空にする。表のメニューの集計の項目のメニュー（`表示する集計`）のチェックボックスに合わせて計算の行の `hidden` を切り替え、項目の `is-active` とスクリーンリーダー向けの名前を書き換え、`{計算の名前}の行を出しました`・`{計算の名前}の行を隠しました` を表を囲む要素の `mdmark-table-status` に入れる（選択は覚えない）。表のメニューとテーブル設定のパネルは絞り込みのドロワーと同じ開閉の受け取りを使用する（同時に開くのはドロワー・パネル・表のメニューを合わせて 1 つ。開いているものの判定は class `mdmark-table-menu-panel`・`mdmark-table-settings`・ドロワーで行い、`mdmark-table-submenu` は表のメニューの一部として扱う）。表のメニューは開いたら最初の項目（項目が無ければ `tabindex="-1"` のメニューそのもの）へフォーカスを移す。集計・コピーの形式のメニューは表のメニューの中で開閉し（同時に開くのは 1 つ）、Esc と外を押したときは表のメニューごと閉じて表のメニューのボタンへフォーカスを戻す。「テーブル設定」は表のメニューを閉じてからパネルを開き、Esc でパネルを閉じたら表のメニューのボタンへフォーカスを戻す。件数は、表のメニューのボタンの `aria-label`・メニューの `p.mdmark-table-count`・`mdmark-table-count-live` を書き換える。列の表示と並び順が変わるたびに、`mdmark-th-menu-space` を最も右の見えている列の最下段の `th` に付け直す。列の表示と順の切り替え（テーブル設定のパネルの目のアイコンとつまみ）は `attachTableSettings` に任せ、切り替えても列の幅は再計算しない。ピン止めの左端からの位置は隠した列を除いてもう一度測る。`onColumnsChange` を指定したときは、`attachTableSettings` が目のアイコンで列の表示を切り替えた後に、`{ tableIndex, hidden }` で 1 回呼ぶ。`tableIndex` は付けたときに `root` の中の `columns` の表（`.mdmark-diff-block[data-kind="del"]` の中の表を除く）を文書の順に並べた位置、`hidden` は隠している列の見出しのセルの `visibleText` を列の順に並べた変更後の配列。例外を投げたら、`onColumnsChange` と元のエラーを `console.error` に出して続ける。
 
-      コピーは形式のボタンの `data-format` で、見出しの行と、行の詳細・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行と階層の表の畳んで隠した行（補った行 `is-virtual` を除く）の、テーブル設定で隠していない列の `visibleText`（階層の表のキーの列は行の `data-path`）を `tableToMarkdown` か `tableToTsv` にして `copyText` で書き込む。書き込めたらボタンを `copied` にして 2 秒で `idle` に戻し、`{形式の名前}をコピーしました` を `mdmark-table-status` に入れる。書き込めなければボタンを `failed` にし、前のパネルを取り除いてから帯の直後に `renderCopyPanel` のパネルを配置し、`textarea` へフォーカスを移して `select()` し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` を入れる。パネルは閉じるボタンか、パネルの中の Esc で取り除き、フォーカスを `表をコピー` に戻す。
+      コピーは形式のボタンの `data-format` で（押すと形式のメニューと表のメニューを閉じてフォーカスを表のメニューのボタンに戻す）、見出しの行と、行の詳細・`一致する行がありません` の行を除く本文の行のうち `hidden` を持たない行と階層の表の畳んで隠した行（補った行 `is-virtual` を除く）の、テーブル設定で隠していない列の `visibleText`（階層の表のキーの列は行の `data-path`）を `tableToMarkdown` か `tableToTsv` にして `copyText` で書き込む。書き込めたら表のメニューのボタンを `copied` にして 2 秒で `idle` に戻し、`{形式の名前}をコピーしました` を `mdmark-table-status` に入れる。書き込めなければ表のメニューのボタンを `failed` にし、前のパネルを取り除いてから `div.mdmark-table-scroll` の直前に `renderCopyPanel` のパネルを配置し、`textarea` へフォーカスを移して `select()` し、`クリップボードにコピーできませんでした。選択した{形式の名前}を手動でコピーできます` を入れる。パネルは閉じるボタンか、パネルの中の Esc で取り除き、フォーカスを表のメニューのボタンに戻す。
 
       行へ移る処理は、`followHash` が `true` のときだけ、付けたときと `hashchange` で `rowIdFromHash` の ID を持つ行を探し、囲む閉じた `details` を開き（閉じたセクションは、`attachInteractions` が先に付けた `attachSections` が同じきっかけで開いている）、行が `hidden` ならその表の絞り込みを全て削除し、`scrollIntoView` してその行だけに `data-target` を付ける。行へのリンクのマーカーを押すと、移る動きはそのままにマーカーの `href` プロパティ（解決済みの絶対 URL）を `copyText` で記載し、描いたときにマーカーの横へ配置した `mdmark-row-link-notice` に `data-state` と文言（`リンクをコピーしました`・`リンクをコピーできませんでした`）を入れて 2 秒後に空に戻す。
 
@@ -77,6 +77,7 @@ functions:
       - 'MOD-472-218#functions[fitPinnedColumns]'
       - 'MOD-472-226#functions[attachColumnResize]'
       - 'MOD-472-218#functions[columnWidthLimit]'
+      - MOD-472-315#functions[renderTableMenu]
     unit_tests:
       - name: test_attach_tables_when_sorted
         case: 正常
@@ -137,25 +138,25 @@ functions:
         summary: 絞り込みに合わせて件数と計算ごとの集計の行を再作成する
         condition: '`data-features="sort pin filter count total"`・`data-filter="0:text"`・`data-total="0:count 1:sum 2:avg"` の表（名前 `りんご`・`みかん`・`りんご飴`・`ぶどう`、数量 `10`・`2`・`33`・空、単価 `100`・`200`・`300`・`400`）を `りんご` で絞り込む'
         mock: なし
-        expected: 絞り込む前は `4 / 4 件` と、`合計 45`・`平均 250`・`件数 4` の 3 行がこの順、後は `2 / 4 件` と `合計 43`・`平均 200`・`件数 2`、絞り込みを `存在しない` にした後は `0 / 4 件` と `合計 0`・`平均 —`・`件数 0`（`一致する行がありません` の行を数えない）
+        expected: 表のメニューのボタンの `aria-label` とメニューの件数が、絞り込む前は `4 / 4 件` と、`合計 45`・`平均 250`・`件数 4` の 3 行がこの順、後は `2 / 4 件` と `合計 43`・`平均 200`・`件数 2`、絞り込みを `存在しない` にした後は `0 / 4 件` と `合計 0`・`平均 —`・`件数 0`（`一致する行がありません` の行を数えない）
       - name: test_attach_tables_when_columns_toggled
         case: 正常
         summary: テーブル設定のパネルの目のアイコンで列を出し入れし、Esc でパネルを閉じる
-        condition: '`data-features="sort pin filter columns total"`・`data-hide="1"`・`data-total="2:sum"` の 3 列の表で、テーブル設定のパネルを開き、目のアイコンで 2 列目を表示して 3 列目を隠し、Esc'
+        condition: '`data-features="sort pin filter columns total"`・`data-hide="1"`・`data-total="2:sum"` の 3 列の表で、表のメニューのボタンとテーブル設定を押してパネルを開き、目のアイコンで 2 列目を表示して 3 列目を隠し、Esc'
         mock: なし
-        expected: 付けた直後は 2 列目の `th`・`td` が `hidden`、開いた後は 1 列目の目のアイコンが `disabled` で 2 つ目の目のアイコンにフォーカス、切り替えた後は 3 列目の `th`・`td`・集計のセルが `hidden` で 2 列目は `hidden` を持たない、Esc の後はパネルが `hidden` でテーブル設定のボタンにフォーカス
+        expected: 付けた直後は 2 列目の `th`・`td` が `hidden`、開いた後は 1 列目の目のアイコンが `disabled` で 2 つ目の目のアイコンにフォーカス、切り替えた後は 3 列目の `th`・`td`・集計のセルが `hidden` で 2 列目は `hidden` を持たない、開いた後は表のメニューが `hidden`、Esc の後はパネルが `hidden` で表のメニューのボタンにフォーカス
       - name: test_attach_tables_when_copied
         case: 正常
         summary: 形式のメニューで TSV を選び、表示している行と列をコピーして 2 秒でボタンを戻す
-        condition: '`data-features="sort pin filter columns copy"`・`data-hide="1"`・`data-filter="0:text"` の表（列 `名前`・`説明`・`更新日`、名前 `りんご`・`みかん`・`りんご飴`、更新日 `2026-10-01`・`2026-10-10`・`2026-10-20`）を `りんご` で絞り、`表をコピー` を押して `TSV` を押す'
+        condition: '`data-features="sort pin filter columns copy"`・`data-hide="1"`・`data-filter="0:text"` の表（列 `名前`・`説明`・`更新日`、名前 `りんご`・`みかん`・`りんご飴`、更新日 `2026-10-01`・`2026-10-10`・`2026-10-20`）を `りんご` で絞り、表のメニューのボタンと「表をコピー」を押して `TSV` を押す'
         mock: '`navigator.clipboard.writeText` を記録して解決する関数に、時計を偽の時計に差し替える'
-        expected: '`表をコピー` を押した後に形式のメニューが `hidden` を持たず、`TSV` を押した後にメニューが `hidden` でフォーカスが `表をコピー`。`名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20` で 1 回呼ばれ、ボタンが `data-state="copied"`、`mdmark-table-status` が `TSVをコピーしました`、2 秒進めると `idle`'
+        expected: '「表をコピー」を押した後に形式のメニューが `hidden` を持たず、`TSV` を押した後に形式のメニューと表のメニューが `hidden` でフォーカスが表のメニューのボタン。`名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20` で 1 回呼ばれ、表のメニューのボタンが `data-state="copied"` と `check` のアイコン、`mdmark-table-status` が `TSVをコピーしました`、2 秒進めると `idle`'
       - name: test_attach_tables_when_copy_denied
         case: 正常
         summary: 拒まれたら手動でコピーするパネルを出し、Esc で閉じる
-        condition: '`data-features="copy"` の表で `表をコピー` を押して `Markdown の表` を押し、パネルの中で Esc'
+        condition: '`data-features="copy"` の表で 表のメニューの「表をコピー」を押して `Markdown の表` を押し、パネルの中で Esc'
         mock: '`navigator.clipboard.writeText` を `NotAllowedError` で拒む関数に、時計を偽の時計に差し替える'
-        expected: ボタンが `data-state="failed"` で 2 秒進めても変わらず、帯の直後に `mdmark-copy-panel` があり、`textarea` にフォーカスがあって中身が全て選ばれ、`mdmark-table-status` が `クリップボードにコピーできませんでした。選択したMarkdown の表を手動でコピーできます`。Esc の後はパネルが無くフォーカスが `表をコピー`。`unhandledrejection` が起きない
+        expected: 表のメニューのボタンが `data-state="failed"` で 2 秒進めても変わらず、`div.mdmark-table-scroll` の直前に `mdmark-copy-panel` があり、`textarea` にフォーカスがあって中身が全て選ばれ、`mdmark-table-status` が `クリップボードにコピーできませんでした。選択したMarkdown の表を手動でコピーできます`。Esc の後はパネルが無くフォーカスが表のメニューのボタン。`unhandledrejection` が起きない
       - name: test_attach_tables_when_row_linked
         case: 正常
         summary: '#ID が指す行を開いて強調し、hashchange で移す'
@@ -165,7 +166,7 @@ functions:
       - name: test_attach_tables_when_copied_markdown
         case: 正常
         summary: Markdown の表の形式で写す
-        condition: '`data-features="copy"` の表（列 `名前`・`式`、行 `a`・`x | y`）で `表をコピー` を押して `Markdown の表` を押す'
+        condition: '`data-features="copy"` の表（列 `名前`・`式`、行 `a`・`x | y`）で 表のメニューの「表をコピー」を押して `Markdown の表` を押す'
         mock: '`navigator.clipboard.writeText` を記録して解決する関数に差し替える'
         expected: '`| 名前 | 式 |\n| --- | --- |\n| a | x \| y |` で 1 回呼ばれ、`mdmark-table-status` が `Markdown の表をコピーしました`'
       - name: test_attach_tables_when_totals_unreadable
@@ -177,9 +178,9 @@ functions:
       - name: test_attach_tables_when_totals_toggled
         case: 正常
         summary: 集計のメニューで計算の行を隠して出し、スクリーンリーダーで通知する
-        condition: '`data-features="total"`・`data-total="1:sum 1:avg"` の表で `集計` を押し、`平均` のチェックを解除し、もう一度入れ、Esc'
+        condition: '`data-features="total"`・`data-total="1:sum 1:avg"` の表で 表のメニューのボタンと集計の項目を押し、`平均` のチェックを解除し、もう一度入れ、Esc'
         mock: なし
-        expected: 開いた後はメニューが `hidden` を持たず最初のチェックボックスにフォーカス、削除した後は平均の行が `hidden` でボタンが `is-active`・スクリーンリーダー向けの名前に `（1 件を非表示にしています）`・`mdmark-table-status` が `平均の行を隠しました`、もう一度入れた後は平均の行が `hidden` を持たず `平均の行を出しました`、Esc の後はメニューが `hidden` で `集計` にフォーカス
+        expected: 開いた後はメニューが `hidden` を持たず最初のチェックボックスにフォーカス、削除した後は平均の行が `hidden` で集計の項目が `is-active`・スクリーンリーダー向けの名前に `（1 件を非表示にしています）`・`mdmark-table-status` が `平均の行を隠しました`、もう一度入れた後は平均の行が `hidden` を持たず `平均の行を出しました`、Esc の後は集計のメニューと表のメニューが `hidden` で表のメニューのボタンにフォーカス
       - name: test_attach_tables_when_row_link_copied
         case: 正常
         summary: 行へのリンクのマーカーを押すと行の絶対 URL をコピーし、通知を 2 秒出す
@@ -306,6 +307,18 @@ functions:
         condition: '`test_attach_tables_when_auto_width` の表に `columns` の機能を付けて幅 1280px で付け、テーブル設定の目のアイコンで状態の列を隠す'
         mock: なし
         expected: 残った名前・説明の列の見出しのセルの `offsetWidth` が隠す前と同じ（差が 1px 以内）
+      - name: test_attach_tables_when_menu_opened
+        case: 正常
+        summary: 表のメニューを開閉し、最初の項目へフォーカスを移し、Esc と外で閉じる
+        condition: '`data-features="count columns copy"` の表と `data-features="count"` の表。それぞれ表のメニューのボタンを押し、Esc、もう一度押してメニューの外を `pointerdown`'
+        mock: なし
+        expected: 1 つ目は押した後にボタンが `aria-expanded="true"`、メニューが `hidden` を持たずテーブル設定の項目にフォーカス、2 つ目は `tabindex="-1"` のメニューそのものにフォーカス。Esc の後はメニューが `hidden` でボタンが `aria-expanded="false"` とフォーカスを持ち、外の `pointerdown` の後もメニューが `hidden`
+      - name: test_attach_tables_when_menu_space_moved
+        case: 正常
+        summary: 最後の列を隠すと、表のメニューのボタンの余白を取る列を付け直す
+        condition: '`data-features="columns"` の 3 列の表で、3 列目を目のアイコンで隠し、もう一度出す'
+        mock: なし
+        expected: 付けた直後は 3 列目の `th` だけが `mdmark-th-menu-space`、隠した後は 2 列目の `th` だけ、出した後は 3 列目の `th` だけが持つ
     refs:
       - IF-472-35#constraints[列の表示の通知]
       - 'MOD-472-218#functions[computeTotal]'

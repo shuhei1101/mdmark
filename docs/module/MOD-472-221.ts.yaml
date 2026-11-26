@@ -33,6 +33,8 @@ functions:
       値は付けたときと、各表とスクロールする場所の要素の `ResizeObserver`（絞り込み・集計の出し入れ・幅の変化で表や区画の高さが変わったとき）でもう一度求める。
       `readStickyTop(table)` の値は付けたときと `resize`・`ResizeObserver` の通知のときだけ求めて表ごとに保持し、`scroll` では保持した値を使用する（測るための要素を毎フレーム配置しない）。
       `script` の表が 1 つでもあり得るため、`window` の `scroll`（capture・passive のため、スクロールする場所の要素の `scroll` も受け取る。もう一度求めるのは `requestAnimationFrame` で 1 フレームに 1 回）と `resize` でももう一度求める。
+      表を囲む要素（`.mdmark-table`）が表のメニューのボタン（`button.mdmark-table-menu`。横のスクロールの外に重ねる）を持つ表は、ボタンを見出し行と同じだけ下へずらす。`script` の表は `--mdmark-sticky-head-shift` を囲む要素にも入れ、`timeline` の表は囲む要素に `timeline-scope` で留める要素の view timeline の名前を持ち上げて、ボタンに見出し行と同じアニメーションを適用する（`timeline` にする判定の `CSS.supports(...)` に `timeline-scope` を加え、使用できないブラウザは `script` にする）。
+
       本文の行が 1 つもない表は留めない
     kind: 関数
     scope: internal
@@ -88,6 +90,12 @@ functions:
         condition: '`root` に `--mdmark-sticky-top: calc(.25rem * 24)` を適用し、本文 60 行の表を付け、見出し行の上端が画面の上端より 300px 上になるまでスクロールして 1 フレーム待つ'
         mock: '`CSS.supports` を `false` を返却する関数に差し替える'
         expected: 見出し行の上端が画面の上端から 96px ±1px
+      - name: test_attach_sticky_rows_when_table_menu
+        case: 正常
+        summary: 表のメニューのボタンを見出し行と同じだけ下へずらす
+        condition: 表のメニューのボタンを持つ本文 60 行の表（ボタンは先に `attachTables` で配置する）を付け、見出し行の上端が画面の上端より 300px 上になるまでスクロールして 1 フレーム待つ。`CSS.supports` が `false` と `true` の 2 通り
+        mock: '`CSS.supports` を `false`・`true` を返却する関数に差し替える'
+        expected: どちらもボタンの上端と見出し行の上端の差がスクロールの前と同じ（±1px）。`false` のときは囲む要素の `--mdmark-sticky-head-shift` が 300px
     callees:
       - 'MOD-472-371#functions[readStickyTop]'
       - 'MOD-472-218#functions[stickyShift]'
