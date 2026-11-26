@@ -132,8 +132,9 @@ function countText(root: HTMLElement): string {
 /** 表のメニューのボタンのスクリーンリーダー向けの名前を返却する */
 function menuLabel(root: HTMLElement): string {
   return (
-    root.querySelector("button.mdmark-table-menu")?.getAttribute("aria-label") ??
-    ""
+    root
+      .querySelector("button.mdmark-table-menu")
+      ?.getAttribute("aria-label") ?? ""
   );
 }
 
@@ -3083,7 +3084,9 @@ test("test_attach_tables_when_menu_opened", async () => {
   expect(button.getAttribute("aria-expanded")).toBe("true");
   expect(panel.hasAttribute("hidden")).toBe(false);
   expect(document.activeElement).toBe(
-    first.querySelector('button.mdmark-table-menu-item[data-action="settings"]'),
+    first.querySelector(
+      'button.mdmark-table-menu-item[data-action="settings"]',
+    ),
   );
   // 実行・検証: Esc で閉じてボタンへフォーカスを戻す
   pressEscape();
@@ -3114,8 +3117,9 @@ test("test_attach_tables_when_menu_space_moved", async () => {
   const { root } = createRoot(menuTable(["columns"]));
   detachers.push(attachTables(root));
   const spaced = (): number[] =>
-    [...root.querySelectorAll<HTMLElement>("thead th")].flatMap((cell, index) =>
-      cell.classList.contains("mdmark-th-menu-space") ? [index] : [],
+    [...root.querySelectorAll<HTMLElement>("thead th")].flatMap(
+      (cell, index) =>
+        cell.classList.contains("mdmark-th-menu-space") ? [index] : [],
     );
   // 実行・検証: 付けた直後は 3 列目
   expect(spaced()).toEqual([2]);

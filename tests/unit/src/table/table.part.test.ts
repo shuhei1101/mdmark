@@ -152,7 +152,9 @@ test("test_render_table_when_all_features", async () => {
   const scroll = outerHtml(html, 'class="mdmark-table-scroll"');
   expect(scroll).not.toContain("mdmark-table-menu");
   const button = findTag(html, 'class="mdmark-table-menu"');
-  expect(button).toContain('aria-label="表のメニュー（3 / 3 件・1 列を非表示）"');
+  expect(button).toContain(
+    'aria-label="表のメニュー（3 / 3 件・1 列を非表示）"',
+  );
   const menu = outerHtml(html, "mdmark-table-menu-panel");
   expect(plainText(menu)).toContain("3 / 3 件を表示");
   expect(menu).toContain('data-action="settings"');
@@ -235,10 +237,9 @@ test("test_render_table_menu", async () => {
   // 検証: コピーの形式のメニュー
   expect(findTag(menus, 'aria-label="コピーの形式"')).toMatch(/\shidden\b/);
   const formats = findTags(menus, "data-format=");
-  expect(formats.map((item) => /data-format="([^"]*)"/.exec(item)?.[1])).toEqual([
-    "markdown",
-    "tsv",
-  ]);
+  expect(
+    formats.map((item) => /data-format="([^"]*)"/.exec(item)?.[1]),
+  ).toEqual(["markdown", "tsv"]);
 });
 
 // コピーできなかったボタンを返却する（正常系）
@@ -327,7 +328,9 @@ test("test_render_table_menu_when_copy_menu_open", async () => {
   });
   // 検証
   const panel = outerHtml(menus, "mdmark-table-menu-panel");
-  expect(findTag(panel, 'data-action="copy"')).toContain('aria-expanded="true"');
+  expect(findTag(panel, 'data-action="copy"')).toContain(
+    'aria-expanded="true"',
+  );
   const submenu = findTag(panel, 'aria-label="コピーの形式"');
   expect(submenu).toContain("mdmark-table-submenu");
   expect(submenu).not.toMatch(/\shidden\b/);
@@ -688,7 +691,11 @@ test("test_render_table_when_copy_fallback", async () => {
   const panelAt = html.indexOf('<div class="mdmark-copy-panel"');
   expect(panelAt).toBeGreaterThanOrEqual(0);
   const afterBar = html.slice(panelAt);
-  expect(afterBar.slice(outerHtml(afterBar, "mdmark-copy-panel").length).startsWith('<div class="mdmark-table-scroll"')).toBe(true);
+  expect(
+    afterBar
+      .slice(outerHtml(afterBar, "mdmark-copy-panel").length)
+      .startsWith('<div class="mdmark-table-scroll"'),
+  ).toBe(true);
   expect(panelAt).toBeLessThan(scrollAt);
   expect(findTag(afterBar, "mdmark-copy-panel")).toContain('role="group"');
   expect(plainText(afterBar)).toContain("「TSV」の中身を選択しています。");
@@ -1170,7 +1177,9 @@ test("test_render_table_settings_when_move_menu", async () => {
   ]);
   const item = outerHtml(first, 'data-column="0"');
   const afterItem = first.slice(first.indexOf(item) + item.length);
-  expect(afterItem.startsWith('<div class="mdmark-table-move-menu"')).toBe(true);
+  expect(afterItem.startsWith('<div class="mdmark-table-move-menu"')).toBe(
+    true,
+  );
   const menu = findTag(first, "mdmark-table-move-menu");
   expect(menu).toContain('role="group"');
   expect(menu).toContain('aria-label="「名前」の列の移動"');

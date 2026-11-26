@@ -229,7 +229,10 @@ function moveMenu(root: HTMLElement): HTMLElement {
 }
 
 /** 列の移動のメニューの `before`・`after` のボタン（無ければ例外） */
-function moveButton(root: HTMLElement, move: "before" | "after"): HTMLButtonElement {
+function moveButton(
+  root: HTMLElement,
+  move: "before" | "after",
+): HTMLButtonElement {
   const button = moveMenu(root).querySelector<HTMLButtonElement>(
     `button[data-move="${move}"]`,
   );

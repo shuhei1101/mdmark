@@ -349,7 +349,9 @@ test.each([false, true])(
     const menuRect = menu?.getBoundingClientRect();
     const buttonBottom = button.getBoundingClientRect().bottom;
     expect(menuRect).toBeDefined();
-    expect(Math.abs((menuRect?.top ?? 0) - buttonBottom)).toBeLessThanOrEqual(4);
+    expect(Math.abs((menuRect?.top ?? 0) - buttonBottom)).toBeLessThanOrEqual(
+      4,
+    );
     expect(menuRect && inViewport(menuRect)).toBe(true);
     // 実行・検証: テーブル設定のパネルもボタンの直下で画面の中にある
     root
