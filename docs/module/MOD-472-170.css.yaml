@@ -417,7 +417,7 @@ styles:
 
           表のメニューのボタンは表を囲む要素に `position: absolute` で重ね、見出し行の縦の中央で、右端から列の幅のつまみの幅（24px）と 0.125rem だけ左に配置する（`z-index` は留めた見出し行より上）。幅・高さとも 24px 以上で、留めた見出し行と同じだけ `translate` で下へずらす（`script` は囲む要素の `--mdmark-sticky-head-shift`、`timeline` は見出し行と同じアニメーション）。`.mdmark-th-menu-space` の `th` はボタンの幅の分の右の余白を取る。
 
-          表のメニューはボタンの下に右端をそろえて開き、テーブル設定のパネルより手前に描く（`z-index: 50`）。件数と項目の間に線を引き、項目はアイコンと文字の高さ 32px 以上の行にする。`.mdmark-table-submenu` は表のメニューの中の項目の下に字下げして並べる。`.mdmark-table-move-menu` は開いたつまみの行の下に、アイコンと文字の 2 つのボタンを縦に並べる。
+          表のメニューはボタンの下に右端をそろえて開き、テーブル設定のパネルより手前に描く（`z-index: 50`）。表のメニュー（中の `.mdmark-table-submenu` を含む）とテーブル設定のパネル（`.mdmark-table-settings`）も、ボタンと同じだけ `translate` で下へずらし（`script` は囲む要素の `--mdmark-sticky-head-shift`、`timeline` は見出し行と同じアニメーション。どちらにするかは `attachStickyRows` が留める要素に付けた `data-mdmark-sticky` で分ける）、見出し行を留めている間もボタンの直下に開く。件数と項目の間に線を引き、項目はアイコンと文字の高さ 32px 以上の行にする。`.mdmark-table-submenu` は表のメニューの中の項目の下に字下げして並べる。`.mdmark-table-move-menu` は開いたつまみの行の下に、アイコンと文字の 2 つのボタンを縦に並べる。
 
           `.mdmark-raw-toggle` は `pre.mdmark-raw` の右上に `position: absolute` で重ね、表のメニューのボタンと同じ外観にする。
 
