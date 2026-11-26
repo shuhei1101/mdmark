@@ -138,6 +138,7 @@
 
       /* 最後の列の見出しは、つまみと表のメニューのボタンの分だけ右を空け、絞り込み・ピン止めのボタンと重ねない */
       & thead th:last-child:has(> .mdmark-col-resize) {
+        min-inline-size: 12rem;
         padding-inline-end: calc(48px + 0.5rem);
       }
 
