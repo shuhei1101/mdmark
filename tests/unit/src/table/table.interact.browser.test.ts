@@ -124,9 +124,40 @@ function dataTableWithCopy(values: string[]): string {
   ].join("\n");
 }
 
-/** 件数の要素の文字を返却する */
+/** 表のメニューの先頭の件数の文字を返却する */
 function countText(root: HTMLElement): string {
   return root.querySelector(".mdmark-table-count")?.textContent ?? "";
+}
+
+/** 表のメニューのボタンのスクリーンリーダー向けの名前を返却する */
+function menuLabel(root: HTMLElement): string {
+  return (
+    root
+      .querySelector("button.mdmark-table-menu")
+      ?.getAttribute("aria-label") ?? ""
+  );
+}
+
+/** 表のメニューのボタンを押してメニューを開き、`action` の項目を押す */
+function chooseMenuItem(
+  root: HTMLElement,
+  action: "settings" | "totals" | "copy" | "raw",
+): HTMLButtonElement {
+  findButton(root, "button.mdmark-table-menu").click();
+  const item = findButton(
+    root,
+    `button.mdmark-table-menu-item[data-action="${action}"]`,
+  );
+  item.click();
+  return item;
+}
+
+/** lucide のアイコンの中身（`<svg>` の中）を返却する */
+async function iconBody(name: "check" | "circle-alert"): Promise<string> {
+  const { iconSvg } = await import("../../../../src/shared/icons.part.ts");
+  const holder = document.createElement("div");
+  holder.innerHTML = iconSvg(name);
+  return holder.querySelector("svg")?.innerHTML ?? "";
 }
 
 /** 描いた要素から、クラスで探したボタンを返却する（無ければ例外） */
@@ -932,8 +963,7 @@ test("test_attach_tables_when_check_column", async () => {
   const shown = bodyRows(root).filter((row) => !row.hidden);
   expect(shown.map((row) => row.cells[0]?.textContent)).toEqual(["a", "c"]);
   // 実行・検証: TSV でコピーする
-  findButton(root, "button.mdmark-copy").click();
-  findButton(root, 'button.mdmark-copy-format[data-format="tsv"]').click();
+  chooseCopyFormat(root, "tsv");
   await vi.waitFor(() => {
     expect(writeText).toHaveBeenCalledTimes(1);
   });
@@ -1033,7 +1063,8 @@ test("test_attach_tables_when_counted", async () => {
   );
   // 実行・検証: 絞り込む前
   detachers.push(attachTables(root));
-  expect(countText(root)).toContain("4 / 4 件");
+  expect(menuLabel(root)).toBe("表のメニュー（4 / 4 件）");
+  expect(countText(root)).toBe("4 / 4 件を表示");
   expect(totalRowTexts(root)).toEqual(["合計45", "平均250", "件数4"]);
   // 実行・検証: 「りんご」で絞り込む
   const table = root.querySelector<HTMLElement>(".mdmark-table");
@@ -1041,13 +1072,20 @@ test("test_attach_tables_when_counted", async () => {
     throw new Error("表が無い");
   }
   inputFilterText(table, "りんご");
-  expect(countText(root)).toContain("2 / 4 件");
+  expect(menuLabel(root)).toBe("表のメニュー（2 / 4 件）");
+  expect(countText(root)).toBe("2 / 4 件を表示");
   expect(totalRowTexts(root)).toEqual(["合計43", "平均200", "件数2"]);
   // 実行・検証: 一致する行が無い
   inputFilterText(table, "存在しない");
-  expect(countText(root)).toContain("0 / 4 件");
+  expect(menuLabel(root)).toBe("表のメニュー（0 / 4 件）");
+  expect(countText(root)).toBe("0 / 4 件を表示");
   expect(totalRowTexts(root)).toEqual(["合計0", "平均—", "件数0"]);
 });
+
+/** セレクタの要素が `hidden` を持つか（要素が無ければ `undefined`） */
+function hiddenAt(root: HTMLElement, selector: string): boolean | undefined {
+  return root.querySelector(selector)?.hasAttribute("hidden");
+}
 
 // テーブル設定のパネルの目のアイコンで列を出し入れし、Esc でパネルを閉じる（正常系）
 test("test_attach_tables_when_columns_toggled", async () => {
@@ -1075,16 +1113,16 @@ test("test_attach_tables_when_columns_toggled", async () => {
   for (const cell of [...columnCells(root, 0), ...columnCells(root, 2)]) {
     expect(cell.hasAttribute("hidden")).toBe(false);
   }
-  // 実行・検証: テーブル設定のパネルを開く
-  const toggle = findButton(root, "button.mdmark-table-settings-toggle");
-  toggle.click();
-  const panel = root.querySelector<HTMLElement>(".mdmark-table-settings");
+  // 実行・検証: 表のメニューのテーブル設定でパネルを開く
+  const toggle = findButton(root, "button.mdmark-table-menu");
+  chooseMenuItem(root, "settings");
+  expect(hiddenAt(root, ".mdmark-table-menu-panel")).toBe(true);
   const eyes = [
-    ...(panel?.querySelectorAll<HTMLButtonElement>(
-      "button.mdmark-table-settings-eye",
-    ) ?? []),
+    ...root.querySelectorAll<HTMLButtonElement>(
+      ".mdmark-table-settings button.mdmark-table-settings-eye",
+    ),
   ];
-  expect(panel?.hasAttribute("hidden")).toBe(false);
+  expect(hiddenAt(root, ".mdmark-table-settings")).toBe(false);
   expect(eyes).toHaveLength(3);
   expect(eyes[0].disabled).toBe(true);
   expect(document.activeElement).toBe(eyes[1]);
@@ -1101,20 +1139,20 @@ test("test_attach_tables_when_columns_toggled", async () => {
   document.activeElement?.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
   );
-  expect(panel?.hasAttribute("hidden")).toBe(true);
+  expect(hiddenAt(root, ".mdmark-table-settings")).toBe(true);
   expect(document.activeElement).toBe(toggle);
 });
 
-/** `表をコピー` を押してコピーの形式のメニューを開き、形式のボタンを押す */
+/** 表のメニューの「表をコピー」でコピーの形式のメニューを開き、形式のボタンを押す */
 function chooseCopyFormat(root: HTMLElement, format: "markdown" | "tsv"): void {
-  findButton(root, "button.mdmark-copy").click();
+  chooseMenuItem(root, "copy");
   findButton(
     root,
     `button.mdmark-copy-format[data-format="${format}"]`,
   ).click();
 }
 
-/** 帯のスクリーンリーダー向けの要素の文字を返却する */
+/** 表を囲む要素のスクリーンリーダー向けの要素の文字を返却する */
 function statusText(root: HTMLElement): string {
   return root.querySelector(".mdmark-table-status")?.textContent ?? "";
 }
@@ -1148,22 +1186,25 @@ test("test_attach_tables_when_copied", async () => {
     throw new Error("表が無い");
   }
   inputFilterText(table, "りんご");
-  const button = findButton(root, "button.mdmark-copy");
+  const button = findButton(root, "button.mdmark-table-menu");
   const menu = root.querySelector<HTMLElement>(".mdmark-copy-menu");
-  // 実行・検証: ボタンを押すと形式のメニューが開く
-  button.click();
+  const tableMenu = root.querySelector<HTMLElement>(".mdmark-table-menu-panel");
+  // 実行・検証: 表のメニューの「表をコピー」を押すと形式のメニューが開く
+  chooseMenuItem(root, "copy");
   expect(menu?.hasAttribute("hidden")).toBe(false);
   // 実行: TSV を選ぶ
   findButton(root, 'button.mdmark-copy-format[data-format="tsv"]').click();
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: メニューを閉じてフォーカスを戻し、コピーした中身と、コピーしたことの通知
+  // 検証: 形式のメニューと表のメニューを閉じてフォーカスを戻し、コピーした中身と、コピーしたことの通知
   expect(menu?.hasAttribute("hidden")).toBe(true);
+  expect(tableMenu?.hasAttribute("hidden")).toBe(true);
   expect(document.activeElement).toBe(button);
   expect(writeText).toHaveBeenCalledTimes(1);
   expect(writeText).toHaveBeenCalledWith(
     "名前\t更新日\nりんご\t2026-10-01\nりんご飴\t2026-10-20",
   );
   expect(button.dataset.state).toBe("copied");
+  expect(button.innerHTML).toContain(await iconBody("check"));
   expect(statusText(root)).toBe("TSVをコピーしました");
   // 実行・検証: 2 秒たつとボタンが戻る
   await vi.advanceTimersByTimeAsync(2000);
@@ -1257,20 +1298,20 @@ test("test_attach_tables_when_copy_denied", async () => {
     ].join("\n"),
   );
   detachers.push(attachTables(root));
-  const button = findButton(root, "button.mdmark-copy");
+  const button = findButton(root, "button.mdmark-table-menu");
   // 実行
   chooseCopyFormat(root, "markdown");
   await vi.advanceTimersByTimeAsync(0);
-  // 検証: 失敗が残り、2 秒たっても戻らず、帯の直後にパネルが出る
+  // 検証: 失敗が残り、2 秒たっても戻らず、表を包む要素の直前にパネルが出る
   try {
     expect(button.dataset.state).toBe("failed");
     await vi.advanceTimersByTimeAsync(2000);
     expect(button.dataset.state).toBe("failed");
     const panel = root.querySelector<HTMLElement>(".mdmark-copy-panel");
     expect(panel).not.toBeNull();
-    expect(root.querySelector(".mdmark-table-bar")?.nextElementSibling).toBe(
-      panel,
-    );
+    expect(
+      root.querySelector(".mdmark-table-scroll")?.previousElementSibling,
+    ).toBe(panel);
     // 検証: textarea にフォーカスがあり、中身が全て選ばれている
     const textarea = panel?.querySelector("textarea");
     expect(document.activeElement).toBe(textarea);
@@ -1413,8 +1454,9 @@ test("test_attach_tables_when_totals_toggled", async () => {
     ].join("\n"),
   );
   detachers.push(attachTables(root));
-  const toggle = findButton(root, "button.mdmark-totals-toggle");
+  const button = findButton(root, "button.mdmark-table-menu");
   const menu = root.querySelector<HTMLElement>(".mdmark-totals-menu");
+  const tableMenu = root.querySelector<HTMLElement>(".mdmark-table-menu-panel");
   const avgRow = (): HTMLElement | null =>
     root.querySelector<HTMLElement>('tfoot tr[data-total-kind="avg"]');
   const checkbox = (calc: string): HTMLInputElement => {
@@ -1426,8 +1468,8 @@ test("test_attach_tables_when_totals_toggled", async () => {
     }
     return input;
   };
-  // 実行・検証: メニューを開く
-  toggle.click();
+  // 実行・検証: 表のメニューの集計の項目でメニューを開く
+  const toggle = chooseMenuItem(root, "totals");
   expect(menu?.hasAttribute("hidden")).toBe(false);
   expect(document.activeElement).toBe(checkbox("sum"));
   // 実行・検証: 平均のチェックを解除すると平均の行が隠れる
@@ -1440,12 +1482,13 @@ test("test_attach_tables_when_totals_toggled", async () => {
   checkbox("avg").click();
   expect(avgRow()?.hasAttribute("hidden")).toBe(false);
   expect(statusText(root)).toBe("平均の行を出しました");
-  // 実行・検証: Esc でメニューを閉じてボタンへフォーカスを戻す
+  // 実行・検証: Esc で表のメニューごと閉じて表のメニューのボタンへフォーカスを戻す
   document.activeElement?.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
   );
   expect(menu?.hasAttribute("hidden")).toBe(true);
-  expect(document.activeElement).toBe(toggle);
+  expect(tableMenu?.hasAttribute("hidden")).toBe(true);
+  expect(document.activeElement).toBe(button);
 });
 
 // 行へのリンクのマーカーを押すと行の絶対 URL をコピーし、通知を 2 秒出す（正常系）
@@ -2414,7 +2457,7 @@ function columnsTable(hide?: string): string {
 
 /** テーブル設定のパネルを開き、列ごとの目のアイコンを返却する */
 function columnEyes(wrapper: HTMLElement): HTMLButtonElement[] {
-  findButton(wrapper, "button.mdmark-table-settings-toggle").click();
+  chooseMenuItem(wrapper, "settings");
   return [
     ...wrapper.querySelectorAll<HTMLButtonElement>(
       ".mdmark-table-settings button.mdmark-table-settings-eye",
@@ -2521,21 +2564,17 @@ test("test_attach_tables_when_columns_callback_throws", async () => {
   );
 });
 
-/** テーブル設定のボタンのバッジの文字（隠していれば null） */
+/** 表のメニューのボタンのバッジの文字（隠していれば null） */
 function badgeText(root: HTMLElement): string | null {
   const badge = root.querySelector<HTMLElement>(
-    "button.mdmark-table-settings-toggle .mdmark-table-tool-badge",
+    "button.mdmark-table-menu .mdmark-table-tool-badge",
   );
   return badge && !badge.hidden ? (badge.textContent ?? "") : null;
 }
 
-/** テーブル設定のボタンのスクリーンリーダー向けの名前 */
+/** 表のメニューのボタンのスクリーンリーダー向けの名前 */
 function toggleName(root: HTMLElement): string {
-  return (
-    root
-      .querySelector("button.mdmark-table-settings-toggle")
-      ?.getAttribute("aria-label") ?? ""
-  );
+  return menuLabel(root);
 }
 
 /** テーブル設定のパネルの、元の位置 `column` の列の目のアイコンを押す */
@@ -2566,14 +2605,14 @@ test("test_attach_tables_when_columns_badge", async () => {
   // 実行・検証: 付けた直後
   detachers.push(attachTables(root));
   expect(badgeText(root)).toBe("1");
-  expect(toggleName(root)).toBe("テーブル設定（1 列を非表示）");
-  const toggle = findButton(root, "button.mdmark-table-settings-toggle");
-  toggle.click();
+  expect(toggleName(root)).toBe("表のメニュー（1 列を非表示）");
+  const toggle = findButton(root, "button.mdmark-table-menu");
+  chooseMenuItem(root, "settings");
   // 実行・検証: 2 列目を表示する
   clickEye(root, 1);
   expect(badgeText(root)).toBeNull();
   expect(toggle.classList.contains("is-active")).toBe(false);
-  expect(toggleName(root)).toBe("テーブル設定");
+  expect(toggleName(root)).toBe("表のメニュー");
   // 実行・検証: 2 列目と 3 列目を隠す
   clickEye(root, 1);
   clickEye(root, 2);
@@ -2934,9 +2973,7 @@ function operateKeyedTable(root: HTMLElement): void {
   if (drawer) {
     findCheckbox(drawer, "進行中").click();
   }
-  root
-    .querySelector<HTMLButtonElement>(".mdmark-table-settings-toggle")
-    ?.click();
+  chooseMenuItem(root, "settings");
   const eye = root.querySelector<HTMLButtonElement>(
     '[data-column="2"] button[aria-pressed]',
   );
@@ -3004,4 +3041,95 @@ test("test_restore_table_state_when_column_removed", async () => {
   expect(bodyRows(root).map((row) => row.children[0]?.textContent)).toEqual(
     before,
   );
+});
+
+/** 3 列 3 行の表を、指定した `features` の表のマーカーで囲んだ Markdown */
+function menuTable(features: string[]): string {
+  const json = Object.fromEntries(features.map((name) => [name, {}]));
+  return [
+    `<!-- table: {"kind": "data", "features": ${JSON.stringify(json)}} -->`,
+    "",
+    "| 名前 | 説明 | 更新日 |",
+    "| --- | --- | --- |",
+    "| りんご | 描画を速くする | 2026-10-01 |",
+    "| みかん | 印刷を修正する | 2026-10-10 |",
+    "| りんご飴 | 描画の崩れを修正する | 2026-10-20 |",
+    "",
+    "<!-- /table -->",
+    "",
+  ].join("\n");
+}
+
+// 表のメニューを開閉し、最初の項目へフォーカスを移し、Esc と外で閉じる（正常系）
+test("test_attach_tables_when_menu_opened", async () => {
+  // 準備
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    `${menuTable(["count", "columns", "copy"])}\n${menuTable(["count"])}`,
+  );
+  detachers.push(attachTables(root));
+  const [first, second] = [
+    ...root.querySelectorAll<HTMLElement>(":scope .mdmark-table"),
+  ];
+  if (!first || !second) {
+    throw new Error("表が 2 つ無い");
+  }
+  const pressEscape = (): void => {
+    document.activeElement?.dispatchEvent(
+      new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+    );
+  };
+  // 実行・検証: 1 つ目の表のメニューを開く
+  const button = findButton(first, "button.mdmark-table-menu");
+  const panel = findButtonLike(first, ".mdmark-table-menu-panel");
+  button.click();
+  expect(button.getAttribute("aria-expanded")).toBe("true");
+  expect(panel.hasAttribute("hidden")).toBe(false);
+  expect(document.activeElement).toBe(
+    first.querySelector(
+      'button.mdmark-table-menu-item[data-action="settings"]',
+    ),
+  );
+  // 実行・検証: Esc で閉じてボタンへフォーカスを戻す
+  pressEscape();
+  expect(panel.hasAttribute("hidden")).toBe(true);
+  expect(button.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(button);
+  // 実行・検証: メニューの外を押すと閉じる
+  button.click();
+  document.body.dispatchEvent(
+    new PointerEvent("pointerdown", { bubbles: true }),
+  );
+  expect(panel.hasAttribute("hidden")).toBe(true);
+  // 実行・検証: 項目の無いメニューはメニューそのものへフォーカスを移す
+  const countOnly = findButton(second, "button.mdmark-table-menu");
+  const countPanel = findButtonLike(second, ".mdmark-table-menu-panel");
+  countOnly.click();
+  expect(countPanel.getAttribute("tabindex")).toBe("-1");
+  expect(document.activeElement).toBe(countPanel);
+  pressEscape();
+  expect(countPanel.hasAttribute("hidden")).toBe(true);
+  expect(document.activeElement).toBe(countOnly);
+});
+
+// 最後の列を隠すと、表のメニューのボタンの余白を取る列を付け直す（正常系）
+test("test_attach_tables_when_menu_space_moved", async () => {
+  // 準備
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(menuTable(["columns"]));
+  detachers.push(attachTables(root));
+  const spaced = (): number[] =>
+    [...root.querySelectorAll<HTMLElement>("thead th")].flatMap(
+      (cell, index) =>
+        cell.classList.contains("mdmark-th-menu-space") ? [index] : [],
+    );
+  // 実行・検証: 付けた直後は 3 列目
+  expect(spaced()).toEqual([2]);
+  // 実行・検証: 3 列目を隠すと 2 列目
+  chooseMenuItem(root, "settings");
+  clickEye(root, 2);
+  expect(spaced()).toEqual([1]);
+  // 実行・検証: 3 列目を出すと 3 列目に戻る
+  clickEye(root, 2);
+  expect(spaced()).toEqual([2]);
 });

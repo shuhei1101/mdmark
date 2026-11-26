@@ -1,0 +1,54 @@
+# コマンド: npm run check
+# 残る警告（plugin/bin/setup.js の大きさ）と情報は作業 PR が変えていないファイルのもの
+
+
+> check
+> npm run lint && npm run lint:eslint && npm run typecheck && npm run typecheck:vscode
+
+
+> lint
+> biome check .
+
+tests/unit/src/tree/tree.syntax.test.ts:250:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+  
+    248 │ /** 言語と中身からコードブロックの行を作る */
+    249 │ const fence = (language: string, lines: string[]) => [
+  > 250 │   "```" + language,
+        │   ^^^^^^^^^^^^^^^^
+    251 │   ...lines,
+    252 │   "```",
+  
+  i Unsafe fix: Use a template literal.
+  
+    248 248 │   /** 言語と中身からコードブロックの行を作る */
+    249 249 │   const fence = (language: string, lines: string[]) => [
+    250     │ - ··"```"·+·language,
+        250 │ + ··`\`\`\`${language}`,
+    251 251 │     ...lines,
+    252 252 │     "```",
+  
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 1030 files in 1217ms. No fixes applied.
+Found 1 warning.
+Found 1 info.
+
+> lint:eslint
+> node scripts/eslint.ts
+
+
+> typecheck
+> tsc --noEmit
+
+
+> typecheck:vscode
+> tsc --noEmit -p vscode
+
+EXIT=0

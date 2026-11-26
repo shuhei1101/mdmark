@@ -288,3 +288,89 @@ test("test_attach_sticky_rows_when_in_wide_range", async () => {
   });
   expect(Math.abs(head.getBoundingClientRect().top)).toBeLessThanOrEqual(1);
 });
+
+/** `columns` の機能と集計の行を持ち、本文の行の数だけ行を持つ表の文書 */
+function menuTable(rows: number): string {
+  return longTable(rows).replace(
+    '"kind": "data", ',
+    '"kind": "data", "features": {"columns": {}}, ',
+  );
+}
+
+/** セレクタの要素の上端がボタンの下端の直下（±4px）にあり、矩形が画面の中に入っていることを確かめる */
+function expectBelowButton(
+  root: HTMLElement,
+  selector: string,
+  button: HTMLElement,
+): void {
+  const element = root.querySelector<HTMLElement>(selector);
+  if (!element) {
+    throw new Error(`要素が無い: ${selector}`);
+  }
+  const rect = element.getBoundingClientRect();
+  expect(
+    Math.abs(rect.top - button.getBoundingClientRect().bottom),
+  ).toBeLessThanOrEqual(4);
+  expect(inViewport(rect)).toBe(true);
+}
+
+/** 矩形が画面の中に入っているか */
+function inViewport(rect: DOMRect): boolean {
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= document.documentElement.clientHeight &&
+    rect.right <= document.documentElement.clientWidth
+  );
+}
+
+// 表のメニューのボタンを見出し行と同じだけ下へずらす（正常系）
+test.each([false, true])(
+  "test_attach_sticky_rows_when_table_menu (CSS.supports: %s)",
+  async (supports) => {
+    // 準備
+    addStyles();
+    vi.spyOn(CSS, "supports").mockReturnValue(supports);
+    const { attachStickyRows } = await loadSticky();
+    const { attachTables } = await loadTables();
+    const { root } = createRoot(menuTable(60));
+    detachers.push(attachTables(root));
+    const head = headCell(root);
+    const button = root.querySelector<HTMLButtonElement>(
+      "button.mdmark-table-menu",
+    );
+    if (!button) {
+      throw new Error("表のメニューのボタンが無い");
+    }
+    const offset =
+      button.getBoundingClientRect().top - head.getBoundingClientRect().top;
+    const headTop = head.getBoundingClientRect().top + window.scrollY;
+    detachers.push(attachStickyRows(root));
+    // 実行: 見出し行の上端が画面の上端より 300px 上になるまでスクロールする
+    window.scrollTo(0, headTop + 300);
+    await nextFrame();
+    // 検証: ボタンが見出し行と同じだけずれる
+    if (!supports) {
+      await vi.waitFor(() => {
+        expect(stickyVar(root, "--mdmark-sticky-head-shift")).toBe("300px");
+      });
+    }
+    // スクロール連動のアニメーションは数フレーム後に進むため、見出し行が上端に留まるまで待つ
+    await vi.waitFor(() => {
+      expect(Math.abs(head.getBoundingClientRect().top)).toBeLessThanOrEqual(1);
+      const now =
+        button.getBoundingClientRect().top - head.getBoundingClientRect().top;
+      expect(Math.abs(now - offset)).toBeLessThanOrEqual(1);
+    });
+    // 実行・検証: 開いた表のメニューがボタンの直下で画面の中にある
+    button.click();
+    expectBelowButton(root, ".mdmark-table-menu-panel", button);
+    // 実行・検証: テーブル設定のパネルもボタンの直下で画面の中にある
+    root
+      .querySelector<HTMLButtonElement>(
+        'button.mdmark-table-menu-item[data-action="settings"]',
+      )
+      ?.click();
+    expectBelowButton(root, ".mdmark-table-settings", button);
+  },
+);

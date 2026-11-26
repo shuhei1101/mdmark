@@ -19,6 +19,14 @@ function rowsOf(html: string): string[] {
 /** 中身の差し込みインターフェースの処理を読み込む */
 const loadOwn = () => import("../../../../src/shared/own.logic.ts");
 
+/** lucide のアイコンの中身（`<svg>` の中）を返却する */
+async function iconBody(
+  name: "circle-alert" | "code-xml" | "table" | "check",
+): Promise<string> {
+  const { iconSvg } = await import("../../../../src/shared/icons.part.ts");
+  return innerHtml(iconSvg(name), "<svg");
+}
+
 // 囲みに種類・機能・絞り込みを属性で持たせる（正常系）
 test("test_render_table", async () => {
   // 準備
@@ -107,6 +115,7 @@ test("test_render_table_when_feature_attributes", async () => {
   expect(wrapper).toContain('data-hide="1"');
   expect(wrapper).toContain('data-total="2:sum"');
   expect(html).not.toContain("mdmark-table-bar");
+  expect(html).not.toContain('class="mdmark-table-menu');
   expect(html).not.toContain("mdmark-table-total");
 });
 
@@ -138,11 +147,22 @@ test("test_render_table_when_all_features", async () => {
     rowIds: ["なつめ", "かりん", "ざくろ"],
     targetRow: 1,
   });
-  // 検証: 帯
-  const bar = innerHtml(html, 'class="mdmark-table-bar"');
-  expect(bar).toContain("3 / 3 件");
-  expect(bar).toContain("mdmark-table-settings-toggle");
-  expect(bar).toContain("表をコピー");
+  // 検証: 表の上のバーが無く、表のメニューのボタンを横のスクロールの外に配置する
+  expect(html).not.toContain("mdmark-table-bar");
+  const scroll = outerHtml(html, 'class="mdmark-table-scroll"');
+  expect(scroll).not.toContain("mdmark-table-menu");
+  const button = findTag(html, 'class="mdmark-table-menu');
+  expect(button).toContain(
+    'aria-label="表のメニュー（3 / 3 件・1 列を非表示）"',
+  );
+  const menu = outerHtml(html, "mdmark-table-menu-panel");
+  expect(plainText(menu)).toContain("3 / 3 件を表示");
+  expect(menu).toContain('data-action="settings"');
+  expect(menu).toContain('data-action="copy"');
+  // 検証: 最も右の見えている列の見出しのセルにボタンの余白を取る
+  const headCells = findTags(innerHtml(html, "<thead"), "<th");
+  expect(headCells[2]).toContain("mdmark-th-menu-space");
+  expect(headCells[0]).not.toContain("mdmark-th-menu-space");
   // 検証: 隠した説明の列の見出し・セル・集計のセル
   const head = innerHtml(html, "<thead");
   expect(findTags(head, "<th")[1]).toMatch(/\shidden\b/);
@@ -172,12 +192,12 @@ test("test_render_table_when_all_features", async () => {
   }
 });
 
-// 件数とテーブル設定とコピーの帯を返却する（正常系）
-test("test_render_table_bar", async () => {
+// 件数とテーブル設定とコピーの項目を持つ表のメニューを返却する（正常系）
+test("test_render_table_menu", async () => {
   // 準備
-  const { renderTableBar } = await loadTable();
+  const { renderTableMenu } = await loadTable();
   // 実行
-  const { bar, menus } = renderTableBar({
+  const { button, menus } = renderTableMenu({
     id: "t1",
     features: ["count", "columns", "copy"],
     labels: ["名前", "説明", "更新日"],
@@ -185,46 +205,49 @@ test("test_render_table_bar", async () => {
     total: 3,
     hiddenColumns: [1],
   });
-  // 検証: 帯
-  expect(findTag(bar, 'aria-live="polite"')).toContain("mdmark-table-count");
-  expect(bar).toContain("2 / 3 件");
-  expect(bar).toContain("3 件中 2 件を表示");
-  const toggle = findTag(bar, "mdmark-table-settings-toggle");
-  expect(toggle).toContain('aria-expanded="false"');
-  expect(toggle).toContain("is-icon-only");
-  expect(toggle).toContain("is-active");
-  expect(toggle).toContain('title="テーブル設定"');
-  expect(toggle).toContain('aria-label="テーブル設定（1 列を非表示）"');
-  expect(plainText(outerHtml(bar, "mdmark-table-tool-badge"))).toBe("1");
-  const copy = findTag(bar, "mdmark-copy");
-  expect(copy).toContain('data-state="idle"');
-  expect(copy).toContain("is-icon-only");
-  expect(copy).toContain('title="表をコピー"');
-  expect(outerHtml(bar, "mdmark-copy")).not.toContain("chevron-down");
-  expect(findTag(bar, "mdmark-table-status")).toContain('role="status"');
+  // 検証: 表のメニューのボタン
+  const tag = findTag(button, 'class="mdmark-table-menu');
+  expect(tag).toContain('aria-expanded="false"');
+  expect(tag).toContain('title="表のメニュー"');
+  expect(tag).toContain('aria-label="表のメニュー（2 / 3 件・1 列を非表示）"');
+  expect(tag).toContain('data-state="idle"');
+  expect(tag).toContain("is-active");
+  expect(tag).not.toContain("aria-haspopup");
+  expect(plainText(outerHtml(button, "mdmark-table-tool-badge"))).toBe("1");
+  expect(plainText(button).replace("1", "").trim()).toBe("");
+  // 検証: 表のメニュー
+  const panel = findTag(menus, "mdmark-table-menu-panel");
+  expect(panel).toContain('role="group"');
+  expect(panel).toContain('aria-label="表のメニュー"');
+  expect(panel).toMatch(/\shidden\b/);
+  expect(plainText(outerHtml(menus, "mdmark-table-count"))).toBe(
+    "2 / 3 件を表示",
+  );
+  const items = findTags(menus, "mdmark-table-menu-item");
+  expect(items.map((item) => /data-action="([^"]*)"/.exec(item)?.[1])).toEqual([
+    "settings",
+    "copy",
+  ]);
   // 検証: テーブル設定のパネル
   expect(findTag(menus, 'class="mdmark-table-settings"')).toMatch(/\shidden\b/);
   const eyes = findTags(menus, "mdmark-table-settings-eye");
   expect(eyes).toHaveLength(3);
   expect(eyes[0]).toMatch(/\sdisabled\b/);
   expect(eyes[1]).not.toMatch(/\sdisabled\b/);
-  expect(menus).toContain("先頭の列は隠せません");
-  expect(menus).not.toContain("リセット");
   // 検証: コピーの形式のメニュー
   expect(findTag(menus, 'aria-label="コピーの形式"')).toMatch(/\shidden\b/);
   const formats = findTags(menus, "data-format=");
-  expect(formats.map((tag) => /data-format="([^"]*)"/.exec(tag)?.[1])).toEqual([
-    "markdown",
-    "tsv",
-  ]);
+  expect(
+    formats.map((item) => /data-format="([^"]*)"/.exec(item)?.[1]),
+  ).toEqual(["markdown", "tsv"]);
 });
 
 // コピーできなかったボタンを返却する（正常系）
-test("test_render_table_bar_when_copy_failed", async () => {
+test("test_render_table_menu_when_copy_failed", async () => {
   // 準備
-  const { renderTableBar } = await loadTable();
+  const { renderTableMenu } = await loadTable();
   // 実行
-  const { bar, menus } = renderTableBar({
+  const { button, menus } = renderTableMenu({
     id: "t1",
     features: ["copy"],
     labels: ["名前", "説明"],
@@ -234,19 +257,21 @@ test("test_render_table_bar_when_copy_failed", async () => {
     copyState: "failed",
   });
   // 検証
-  expect(findTag(bar, "mdmark-copy")).toContain('data-state="failed"');
-  expect(bar).toContain("コピーできませんでした");
-  expect(bar).not.toContain("mdmark-table-count");
-  expect(bar).not.toContain("mdmark-table-settings-toggle");
-  expect(menus).not.toContain("mdmark-table-settings");
+  const tag = findTag(button, 'class="mdmark-table-menu');
+  expect(tag).toContain('data-state="failed"');
+  expect(tag).toContain('aria-label="表のメニュー"');
+  expect(button).toContain(await iconBody("circle-alert"));
+  expect(menus).not.toContain("mdmark-table-count");
+  expect(menus).not.toContain('data-action="settings"');
+  expect(menus).not.toContain('class="mdmark-table-settings"');
 });
 
-// 集計のボタンとメニューを返却し、隠している計算の数をスクリーンリーダー向けの名前に加える（正常系）
-test("test_render_table_bar_when_totals", async () => {
+// 集計の項目とメニューを表のメニューの中に返却し、隠している計算の数をスクリーンリーダー向けの名前に加える（正常系）
+test("test_render_table_menu_when_totals", async () => {
   // 準備
-  const { renderTableBar } = await loadTable();
+  const { renderTableMenu } = await loadTable();
   // 実行
-  const { bar, menus } = renderTableBar({
+  const { button, menus } = renderTableMenu({
     id: "t1",
     features: ["total"],
     labels: ["名前", "数量", "単価"],
@@ -257,17 +282,24 @@ test("test_render_table_bar_when_totals", async () => {
     shownTotals: ["sum"],
     openTotals: true,
   });
-  // 検証: 集計のボタン
-  const toggle = findTag(bar, "mdmark-totals-toggle");
-  expect(toggle).toContain("is-active");
-  expect(toggle).toContain('aria-expanded="true"');
-  expect(outerHtml(bar, "mdmark-totals-toggle")).toContain(
+  // 検証: 表のメニューのボタンと表のメニュー
+  expect(findTag(button, 'class="mdmark-table-menu')).toContain(
+    'aria-expanded="true"',
+  );
+  const panel = outerHtml(menus, "mdmark-table-menu-panel");
+  expect(findTag(panel, "mdmark-table-menu-panel")).not.toMatch(/\shidden\b/);
+  // 検証: 集計の項目
+  const item = findTag(panel, 'data-action="totals"');
+  expect(item).toContain("is-active");
+  expect(item).toContain('aria-expanded="true"');
+  expect(outerHtml(panel, 'data-action="totals"')).toContain(
     "（2 件を非表示にしています）",
   );
-  // 検証: 集計のメニュー
-  const menu = findTag(menus, 'aria-label="表示する集計"');
-  expect(menu).not.toMatch(/\shidden\b/);
-  const checkboxes = findTags(menus, 'type="checkbox"');
+  // 検証: 集計のメニューは表のメニューの中にある
+  const submenu = findTag(panel, 'aria-label="表示する集計"');
+  expect(submenu).toContain("mdmark-table-submenu");
+  expect(submenu).not.toMatch(/\shidden\b/);
+  const checkboxes = findTags(panel, 'type="checkbox"');
   expect(checkboxes.map((tag) => /value="([^"]*)"/.exec(tag)?.[1])).toEqual([
     "sum",
     "avg",
@@ -278,18 +310,14 @@ test("test_render_table_bar_when_totals", async () => {
     false,
     false,
   ]);
-  const text = plainText(menus);
-  for (const name of ["合計", "平均", "件数"]) {
-    expect(text).toContain(name);
-  }
 });
 
-// コピーの形式のメニューを開いた帯を返却する（正常系）
-test("test_render_table_bar_when_copy_menu_open", async () => {
+// コピーの形式のメニューを表のメニューの中に開いて返却する（正常系）
+test("test_render_table_menu_when_copy_menu_open", async () => {
   // 準備
-  const { renderTableBar } = await loadTable();
+  const { renderTableMenu } = await loadTable();
   // 実行
-  const { bar, menus } = renderTableBar({
+  const { menus } = renderTableMenu({
     id: "t1",
     features: ["copy"],
     labels: ["名前", "説明"],
@@ -299,13 +327,80 @@ test("test_render_table_bar_when_copy_menu_open", async () => {
     openCopy: true,
   });
   // 検証
-  expect(findTag(bar, "mdmark-copy")).toContain('aria-expanded="true"');
-  expect(findTag(menus, 'aria-label="コピーの形式"')).not.toMatch(/\shidden\b/);
-  const text = plainText(menus);
+  const panel = outerHtml(menus, "mdmark-table-menu-panel");
+  expect(findTag(panel, 'data-action="copy"')).toContain(
+    'aria-expanded="true"',
+  );
+  const submenu = findTag(panel, 'aria-label="コピーの形式"');
+  expect(submenu).toContain("mdmark-table-submenu");
+  expect(submenu).not.toMatch(/\shidden\b/);
+  const text = plainText(panel);
   expect(text.indexOf("Markdown の表")).toBeGreaterThanOrEqual(0);
   expect(text).toContain("文書に貼るとそのまま表になる");
   expect(text.indexOf("TSV")).toBeGreaterThan(text.indexOf("Markdown の表"));
   expect(text).toContain("表計算ソフトに貼るとセルに分かれる");
+});
+
+// 項目の無いメニューはメニューそのものがフォーカスを受ける（正常系）
+test("test_render_table_menu_when_count_only", async () => {
+  // 準備
+  const { renderTableMenu } = await loadTable();
+  // 実行
+  const { button, menus } = renderTableMenu({
+    id: "t1",
+    features: ["count"],
+    labels: ["名前", "説明"],
+    shown: 3,
+    total: 3,
+    hiddenColumns: [],
+    openMenu: true,
+  });
+  // 検証
+  const panel = findTag(menus, "mdmark-table-menu-panel");
+  expect(panel).toContain('tabindex="-1"');
+  expect(panel).not.toMatch(/\shidden\b/);
+  expect(plainText(outerHtml(menus, "mdmark-table-menu-panel")).trim()).toBe(
+    "3 / 3 件を表示",
+  );
+  expect(findTag(button, 'class="mdmark-table-menu')).toContain(
+    'aria-label="表のメニュー（3 / 3 件）"',
+  );
+});
+
+// CSV の表のメニューの最後に「元の CSV を表示」を並べる（正常系）
+test("test_render_table_menu_when_raw", async () => {
+  // 準備
+  const { renderTableMenu } = await loadTable();
+  // 実行
+  const withCopy = renderTableMenu({
+    id: "t1",
+    features: ["count", "copy"],
+    labels: ["名前", "金額"],
+    shown: 2,
+    total: 2,
+    hiddenColumns: [],
+    raw: true,
+  });
+  const rawOnly = renderTableMenu({
+    id: "t2",
+    features: [],
+    labels: ["名前", "金額"],
+    shown: 2,
+    total: 2,
+    hiddenColumns: [],
+    raw: true,
+  });
+  // 検証
+  const items = findTags(withCopy.menus, "mdmark-table-menu-item");
+  expect(items.map((item) => /data-action="([^"]*)"/.exec(item)?.[1])).toEqual([
+    "copy",
+    "raw",
+  ]);
+  const raw = outerHtml(withCopy.menus, 'data-action="raw"');
+  expect(raw).toContain(await iconBody("code-xml"));
+  expect(plainText(raw)).toBe("元の CSV を表示");
+  expect(rawOnly.button).toContain('class="mdmark-table-menu');
+  expect(rawOnly.menus).toContain('data-action="raw"');
 });
 
 // 計算ごとに行を分け、名前と値を出して隠した列のセルを隠す（正常系）
@@ -572,10 +667,10 @@ test("test_render_table_when_totals_hidden", async () => {
     ]),
   );
   expect(hidden).toEqual({ sum: false, avg: true, count: true });
-  expect(findTag(html, "mdmark-totals-toggle")).toContain("is-active");
+  expect(findTag(html, 'data-action="totals"')).toContain("is-active");
 });
 
-// クリップボードに書き込めなかったときのパネルを帯の直後に出す（正常系）
+// クリップボードに書き込めなかったときのパネルを表を包む要素の前に出す（正常系）
 test("test_render_table_when_copy_fallback", async () => {
   // 準備
   const { renderTable } = await loadTable();
@@ -592,9 +687,16 @@ test("test_render_table_when_copy_fallback", async () => {
     copyFallback: { format: "tsv", text: "名前\t数量" },
   });
   // 検証
-  const bar = outerHtml(html, 'class="mdmark-table-bar"');
-  const afterBar = html.slice(html.indexOf(bar) + bar.length);
-  expect(afterBar.startsWith('<div class="mdmark-copy-panel"')).toBe(true);
+  const scrollAt = html.indexOf('<div class="mdmark-table-scroll"');
+  const panelAt = html.indexOf('<div class="mdmark-copy-panel"');
+  expect(panelAt).toBeGreaterThanOrEqual(0);
+  const afterBar = html.slice(panelAt);
+  expect(
+    afterBar
+      .slice(outerHtml(afterBar, "mdmark-copy-panel").length)
+      .startsWith('<div class="mdmark-table-scroll"'),
+  ).toBe(true);
+  expect(panelAt).toBeLessThan(scrollAt);
   expect(findTag(afterBar, "mdmark-copy-panel")).toContain('role="group"');
   expect(plainText(afterBar)).toContain("「TSV」の中身を選択しています。");
   expect(findTag(afterBar, "<textarea")).toMatch(/\sreadonly\b/);
@@ -1048,6 +1150,57 @@ test("test_render_table_settings_when_groups", async () => {
   ]);
 });
 
+// 開いたつまみの後ろに列の移動のメニューを出し、動かせない向きを `disabled` にする（正常系）
+test("test_render_table_settings_when_move_menu", async () => {
+  // 準備
+  const { renderTableSettings } = await loadTable();
+  const options = {
+    id: "t1",
+    columns: ["名前", "型", "既定", "説明"],
+    order: [0, 1, 2, 3],
+    hidden: [],
+    features: ["reorder" as const],
+    groups: [undefined, undefined, undefined, undefined],
+    pinned: 0,
+  };
+  // 実行
+  const first = renderTableSettings({ ...options, moveMenu: 0 });
+  const middle = renderTableSettings({ ...options, moveMenu: 2 });
+  const closed = renderTableSettings(options);
+  // 検証: 先頭の列のメニュー
+  const grips = findTags(first, "mdmark-table-settings-grip");
+  expect(grips.map((tag) => /aria-expanded="([^"]*)"/.exec(tag)?.[1])).toEqual([
+    "true",
+    "false",
+    "false",
+    "false",
+  ]);
+  // 検証: どの場合も一覧の直下には li だけを配置する
+  for (const html of [first, middle, closed]) {
+    const list = innerHtml(html, 'class="mdmark-table-settings-list"');
+    expect(list.replace(/<li\b[\s\S]*?<\/li>/g, "")).toBe("");
+  }
+  const item = outerHtml(first, 'data-column="0"');
+  expect(item).toContain('<div class="mdmark-table-move-menu"');
+  const menu = findTag(first, "mdmark-table-move-menu");
+  expect(menu).toContain('role="group"');
+  expect(menu).toContain('aria-label="「名前」の列の移動"');
+  expect(menu).not.toMatch(/\shidden\b/);
+  expect(findTag(first, 'data-move="before"')).toMatch(/\sdisabled\b/);
+  expect(findTag(first, 'data-move="after"')).not.toMatch(/\sdisabled\b/);
+  // 検証: 途中の列のメニュー
+  expect(findTag(middle, 'data-move="before"')).not.toMatch(/\sdisabled\b/);
+  expect(findTag(middle, 'data-move="after"')).not.toMatch(/\sdisabled\b/);
+  // 検証: 閉じたメニュー
+  expect(findTag(closed, "mdmark-table-move-menu")).toMatch(/\shidden\b/);
+  expect(closed.indexOf("mdmark-table-move-menu")).toBeGreaterThan(
+    closed.indexOf("</ul>"),
+  );
+  for (const tag of findTags(closed, "mdmark-table-settings-grip")) {
+    expect(tag).toContain('aria-expanded="false"');
+  }
+});
+
 // 深さの数の縦線と、配列の `[]`・必須の * を配置する（正常系）
 test("test_render_tree_key_cell", async () => {
   // 準備
@@ -1111,20 +1264,87 @@ test("test_render_tree_tools", async () => {
   expect(plainText(example).trim()).toBe("見本を隠す");
 });
 
-// 押した状態を `aria-pressed` に入れる（正常系）
+// 元の CSV を出している間だけボタンを出す（正常系）
 test("test_render_raw_toggle", async () => {
   // 準備
   const { renderRawToggle } = await loadTable();
   // 実行
-  const off = renderRawToggle(false);
-  const on = renderRawToggle(true);
+  const hidden = renderRawToggle(false);
+  const shown = renderRawToggle(true);
   // 検証
-  expect(off).toContain(
-    '<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">',
+  for (const html of [hidden, shown]) {
+    const tag = findTag(html, "<button");
+    expect(tag).toContain('class="mdmark-raw-toggle"');
+    expect(tag).toContain('type="button"');
+    expect(tag).toContain('aria-label="表で表示"');
+    expect(tag).toContain('title="表で表示"');
+    expect(tag).not.toContain("aria-pressed");
+    expect(html).toContain(await iconBody("table"));
+    expect(plainText(html).trim()).toBe("");
+  }
+  expect(findTag(hidden, "<button")).toMatch(/\shidden\b/);
+  expect(findTag(shown, "<button")).not.toMatch(/\shidden\b/);
+});
+
+// 元の CSV を出している間は表と表のメニューのボタンを隠し、表で表示のボタンを出す（正常系）
+test("test_render_table_when_raw_shown", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  const options: TableOptions = {
+    kind: "data",
+    features: ["sort", "pin", "filter"],
+    columns: ["名前", "拠点", "金額"],
+    rows: [
+      ["北山", "東京, 本社", "1200"],
+      ["南田", "大阪", "800"],
+    ],
+    rawCsv: '名前,拠点,金額\n北山,"東京, 本社",1200\n南田,大阪,800',
+  };
+  // 実行
+  const table = renderTable(options);
+  const raw = renderTable({ ...options, rawShown: true });
+  // 検証: 表を出している
+  expect(table).not.toContain("mdmark-table-bar");
+  expect(table).toContain('data-action="raw"');
+  expect(findTag(table, 'class="mdmark-raw"')).toMatch(/\shidden\b/);
+  expect(findTag(table, "mdmark-raw-toggle")).toMatch(/\shidden\b/);
+  // 検証: 元の CSV を出している
+  expect(findTag(raw, 'class="mdmark-table-scroll"')).toMatch(/\shidden\b/);
+  expect(findTag(raw, 'class="mdmark-table-menu"')).toMatch(/\shidden\b/);
+  expect(findTag(raw, 'class="mdmark-raw"')).not.toMatch(/\shidden\b/);
+  expect(findTag(raw, "mdmark-raw-toggle")).not.toMatch(/\shidden\b/);
+});
+
+// キーの階層の表の件数を表のメニューに出し、補った行を数えない（正常系）
+test("test_render_table_when_tree_counted", async () => {
+  // 準備
+  const { renderTable } = await loadTable();
+  // 実行
+  const html = renderTable({
+    kind: "data",
+    features: ["sort", "pin", "filter", "count"],
+    columns: ["キー", "型", "必須", "既定", "説明"],
+    rows: [
+      ["features.table", "bool", "✓", "true", "表の機能"],
+      ["aliases[].id", "string", "", "", "別名の ID"],
+    ],
+    tree: 0,
+    treeType: 1,
+    treeRequired: 2,
+    treeDefault: 3,
+  });
+  // 検証
+  expect(html).not.toContain("mdmark-table-bar");
+  expect(findTag(html, 'class="mdmark-table-menu"')).toContain(
+    'aria-label="表のメニュー（2 / 2 件）"',
   );
-  expect(on).toContain('aria-pressed="true"');
-  expect(off).toContain("<svg");
-  expect(off).toContain("</button>");
+  expect(plainText(outerHtml(html, "mdmark-table-count"))).toBe(
+    "2 / 2 件を表示",
+  );
+  const headCells = findTags(innerHtml(html, "<thead"), "<th").filter(
+    (cell) => !/\shidden\b/.test(cell),
+  );
+  expect(headCells.at(-1)).toContain("mdmark-th-menu-space");
 });
 
 // resize の機能を持つ列の見出しに、列の幅のつまみを出す（正常系）

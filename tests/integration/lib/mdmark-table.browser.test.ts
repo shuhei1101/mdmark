@@ -221,9 +221,11 @@ const filterState = (element: Element, value: string): void => {
   checkbox.click();
 };
 
-/** 件数の表示の文字 */
+/** 表のメニューのボタンの `aria-label` の件数（`{表示している行の数} / {全ての行の数} 件`） */
 const countText = (element: Element): string =>
-  find(element, ".mdmark-table-count span[aria-hidden]").textContent ?? "";
+  /（(\d+ \/ \d+ 件)/.exec(
+    find(element, "button.mdmark-table-menu").getAttribute("aria-label") ?? "",
+  )?.[1] ?? "";
 
 /** キーを押す */
 const press = (target: Element, key: string): void => {
@@ -232,13 +234,14 @@ const press = (target: Element, key: string): void => {
   );
 };
 
-/** テーブル設定を開き、記載した順の列の位置の項目の要素を返却する関数を返却する */
+/** 表のメニューのテーブル設定を開き、記載した順の列の位置の項目の要素を返却する関数を返却する */
 const openSettings = (
   element: Element,
 ): ((column: number, selector: string) => HTMLElement) => {
+  find<HTMLButtonElement>(element, "button.mdmark-table-menu").click();
   find<HTMLButtonElement>(
     element,
-    "button.mdmark-table-settings-toggle",
+    'button.mdmark-table-menu-item[data-action="settings"]',
   ).click();
   const panel = find<HTMLElement>(element, ".mdmark-table-settings");
   return (column, selector) =>

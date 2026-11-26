@@ -91,7 +91,7 @@ styles:
         target: 印刷のときの記法
         value: |-
           表の絞り込み・ピン止め・開閉のボタンとタブの並びを隠し、見出し行・集計の行・列を留めず（`animation` と `transform` を削除する。この規則も `.mdmark` の `&` でなく `[data-mdmark-sticky]` を起点にし、`.mdmark-table` で包まない表にも適用する）、セルの余白を詰める。
-          集計とコピーの形式のメニュー・コピーできないときのパネル・行の URL の通知を隠し、`data-auto-width` の表の固定の列の幅（`table-layout` の `fixed` と `--mdmark-auto-width`・`--mdmark-auto-table-width`）を適用しない（`docs/mock/refs/151/assets/table-print.css`）。
+          表のメニューのボタン・表のメニューの項目と集計とコピーの形式のメニュー・コピーできないときのパネル・行の URL の通知を隠し、表のメニュー（`div.mdmark-table-menu-panel`）は `hidden` に関わらず `display: block`・`position: static` で表の上に出して件数の `p.mdmark-table-count` だけを見せ、`data-auto-width` の表の固定の列の幅（`table-layout` の `fixed` と `--mdmark-auto-width`・`--mdmark-auto-table-width`）を適用しない（`docs/mock/refs/151/assets/table-print.css`）。
           コードブロックのコピーのボタンを隠し、言語のラベルは残す（`docs/mock/refs/151/assets/code-block-print.css`）。
           飾ったコードブロックはタイトル・行番号・行の背景色と `+`・`-` を出したまま行を折り返し、行番号は折り返した最初の 1 行にだけ出す（`docs/mock/refs/65/assets/code-block-print.css`）。
           `[data-printing]` のタブは全ての中身をタブ名をタイトルにして縦に並べる。
@@ -410,6 +410,18 @@ styles:
       - class_name: '@media print（動画のリサイズハンドル）'
         target: 動画のリサイズハンドルの印刷
         value: ハンドルと大きさのメニューを隠し、入れ物の `padding-block-end` を 0 にする
+      - class_name: .mdmark .mdmark-table-menu・.mdmark-table-menu-panel・.mdmark-table-submenu・.mdmark-table-move-menu・.mdmark-raw-toggle・.mdmark-th-menu-space
+        target: 表のメニューと列の移動のメニュー・表で表示のボタン
+        value: |-
+          表の上のバー（`.mdmark-table-bar`）の規則を削除し、モック `docs/mock/refs/811/assets/table.css` の案 B（`mdmark-811-headmenu`・`mdmark-811-tablemenu`・`mdmark-811-menu`・`mdmark-811-raw-back`）から取る。
+
+          表のメニューのボタンは表を囲む要素に `position: absolute` で重ね、見出し行の縦の中央で、表の見えている右端から列の幅のつまみの幅（24px）と 0.125rem だけ左に配置する（見出し行の縦の中央と表の見えている右端は、描く処理が囲む要素の `--mdmark-table-menu-top`・`--mdmark-table-menu-end` に入れる。`z-index` は留めた見出し行より上）。幅・高さとも 24px 以上で、留めた見出し行と同じだけ `translate` で下へずらす（`script` は囲む要素の `--mdmark-sticky-head-shift`、`timeline` は見出し行と同じアニメーション）。`.mdmark-th-menu-space` の `th` はボタンの幅の分の右の余白を取る。
+
+          表のメニューはボタンの下に右端をそろえて開き、テーブル設定のパネルより手前に描く（`z-index: 50`）。ボタンをずらす規則は、`attachStickyRows` が囲む要素に付けた `data-mdmark-sticky-menu` の値で分ける。表のメニュー（中の `.mdmark-table-submenu` を含む）とテーブル設定のパネル（`.mdmark-table-settings`）は `position: fixed` で、描く処理がずらした後のボタンの位置から配置するため、`translate` でずらさずに見出し行を留めている間もボタンの直下に開く。件数と項目の間に線を引き、項目はアイコンと文字の高さ 32px 以上の行にする。`.mdmark-table-submenu` は表のメニューの中の項目の下に字下げして並べる。`.mdmark-table-move-menu` は開いたつまみの行の下に、アイコンと文字の 2 つのボタンを縦に並べる。
+
+          `.mdmark-raw-toggle` は `pre.mdmark-raw` の右上に `position: absolute` で重ね、表のメニューのボタンと同じ外観にする。
+
+          列の幅のつまみ（`.mdmark-col-resize`）は `(pointer: coarse)` に限らず押せる幅を 24px、見出しのセルの右の余白を 24px 広げる（線を常に薄く出すのは `(pointer: coarse)` だけ）
     refs:
       - SCR-472-4#
       - CMP-472-65#

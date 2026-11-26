@@ -16,7 +16,7 @@ functions:
       | `render` | 表を `SLOT_MARKER` にして囲みだけを使用する |
       | Storybook | `columns`・`rows` と状態の引数で、操作を付けた後の外観を作る |
 
-      Storybook の状態の引数は `sort`・`overflow`・`pinned`・`unpinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`autoWidths`。
+      Storybook の状態の引数は `sort`・`overflow`・`pinned`・`unpinned`・`openFilter`・`filterValues`・`hiddenColumns`・`openColumns`・`copyState`・`targetRow`・`shownTotals`・`openTotals`・`openCopy`・`copyFallback`・`rowLinkNotice`・`autoWidths`・`openMenu`・`moveMenu`・`rawShown`。
 
       折り畳みの見出しは `title` か `表（{`rows` の数か `rowCount`} 行）`。
       表（と `SLOT_MARKER`）は横にスクロールさせる `div.mdmark-table-scroll` で包む（計画書の案 A。表の `tabindex="0"` と `aria-label` は `table` に残す）。
@@ -27,7 +27,9 @@ functions:
 
       | 条件 | 描くもの |
       | --- | --- |
-      | 条件なし | `renderTableBar` の帯とメニュー |
+      | 条件なし | `renderTableMenu` の表のメニューのボタンとメニュー（`div.mdmark-table-scroll` の外に配置し、最も右の見えている列の最下段の `th` に class `mdmark-th-menu-space` を付ける。キーの階層の表も同じで、件数は補った行を数えない） |
+
+        | `rawCsv` のとき | `pre.mdmark-raw` と、その右上の `renderRawToggle` のボタン。`rawShown` のときは表を包む要素と表のメニューのボタンに `hidden` を付け、`pre` とボタンの `hidden` を解除する |
       | `copyFallback` のとき | `renderCopyPanel` のパネル |
       | 条件なし | `renderTotalRows` の集計の行 |
       | `rowIds` の行 | 行の `id` と行へのリンクと通知の要素 |
@@ -68,11 +70,12 @@ functions:
       - '#functions[renderTableTools]'
       - 'MOD-472-313#functions[escapeHtml]'
       - '#functions[renderTotalRows]'
-      - '#functions[renderTableBar]'
       - '#functions[renderCopyPanel]'
       - MOD-472-218#functions[bottomHeadCells]
       - MOD-472-218#functions[mergeSpans]
       - '#functions[renderCheckCell]'
+      - '#functions[renderTableMenu]'
+      - '#functions[renderRawToggle]'
     unit_tests:
       - name: test_render_table
         case: 正常
@@ -97,13 +100,13 @@ functions:
         summary: 囲みに隠す列と集計する列を属性で持たせる
         condition: '`features: [sort, pin, filter, columns, total]`、`hide: [1]`、`totals: [{2, sum}]`、`body: SLOT_MARKER`'
         mock: なし
-        expected: 囲みが `data-hide="1"`・`data-total="2:sum"` を持ち、帯と集計の行を持たない
+        expected: 囲みが `data-hide="1"`・`data-total="2:sum"` を持ち、表のメニューのボタンと集計の行を持たない
       - name: test_render_table_when_all_features
         case: 正常
         summary: 5 つの機能の状態を描く
         condition: '部品設計の `AllFeatures`（`hide: [1]`、`totals: [{2, sum}]`、`rowIds`）に `targetRow: 1`'
         mock: なし
-        expected: 帯に `3 / 3 件`・テーブル設定のボタン・`表をコピー`、説明の列の見出し・セル・集計のセルが `hidden`、`tfoot` に `合計 25`、各行に `id` と `mdmark-row-anchor`、2 行目だけ `data-target`
+        expected: '`mdmark-table-bar` が無く、`div.mdmark-table-scroll` の外に `aria-label` が `表のメニュー（3 / 3 件・1 列を非表示）` の `button.mdmark-table-menu` があり、メニューに `3 / 3 件を表示`・テーブル設定・表をコピーの項目、最も右の見えている列の `th` が `mdmark-th-menu-space`、説明の列の見出し・セル・集計のセルが `hidden`、`tfoot` に `合計 25`、各行に `id` と `mdmark-row-anchor`、2 行目だけ `data-target`'
       - name: test_render_table_when_totals_unreadable
         case: 正常
         summary: 数として読み込めないセルを持つ列の合計と平均を空にし、計算ごとの行を出す
@@ -115,13 +118,13 @@ functions:
         summary: 出さない計算の集計の行を隠す
         condition: '部品設計の `TotalsHidden`（`shownTotals: [sum]`）'
         mock: なし
-        expected: 平均と件数の行が `hidden`、合計の行が `hidden` を持たず、`集計` のボタンが `is-active`
+        expected: 平均と件数の行が `hidden`、合計の行が `hidden` を持たず、表のメニューの集計の項目が `is-active`
       - name: test_render_table_when_copy_fallback
         case: 正常
-        summary: クリップボードに書き込めなかったときのパネルを帯の直後に出す
+        summary: クリップボードに書き込めなかったときのパネルを表を包む要素の前に出す
         condition: '部品設計の `CopyFallback`（`copyFallback: { format: tsv, text: "名前\t数量" }`、`copyState: failed`）'
         mock: なし
-        expected: '`mdmark-table-bar` の直後に `role="group"` の `mdmark-copy-panel` があり、案内が `「TSV」の中身を選択しています。` で始まり、`textarea` が `readonly` で中身が `名前\t数量`'
+        expected: '`div.mdmark-table-scroll` の直前に `role="group"` の `mdmark-copy-panel` があり、案内が `「TSV」の中身を選択しています。` で始まり、`textarea` が `readonly` で中身が `名前\t数量`'
       - name: test_render_table_when_row_link_notice
         case: 正常
         summary: 行の URL をコピーした結果をマーカーの横の通知に出す
@@ -171,6 +174,18 @@ functions:
         mock: なし
         expected: 1 列目の `th` の `style` に `width:200px`・`min-width:200px`・`--mdmark-column-min-width:200px` があり、1 列目のセルが `is-resized`、1 列目の `mdmark-col-resize` が `is-dragging` を持つ
 
+      - name: test_render_table_when_raw_shown
+        case: 正常
+        summary: 元の CSV を出している間は表と表のメニューのボタンを隠し、表で表示のボタンを出す
+        condition: 部品設計の `CsvTable` と `CsvRaw`
+        mock: なし
+        expected: '`CsvTable` は `mdmark-table-bar` が無く、表のメニューに `raw` の項目があり、`pre.mdmark-raw` と `button.mdmark-raw-toggle` が `hidden`。`CsvRaw` は `div.mdmark-table-scroll` と `button.mdmark-table-menu` が `hidden` で、`pre.mdmark-raw` と `button.mdmark-raw-toggle` が `hidden` を持たない'
+      - name: test_render_table_when_tree_counted
+        case: 正常
+        summary: キーの階層の表の件数を表のメニューに出し、補った行を数えない
+        condition: 部品設計の `Tree` に `features` の `count` を加えたもの
+        mock: なし
+        expected: '`mdmark-table-bar` が無く、`button.mdmark-table-menu` の `aria-label` とメニューの件数が補った行を除いた行の数で、最後の列の `th` が `mdmark-th-menu-space` を持つ'
   - name: renderCheckCell
     title: 真偽値のセルの中身を描く
     container: src/table/table.part.ts
@@ -245,66 +260,79 @@ functions:
         condition: '`features: [pin]`、列名 `名前`、`pinVisible: true`、`pinPressed: true`、`pinUnpinned: true` と、`pinUnpinned` を省いたもの'
         mock: なし
         expected: 1 つ目の `mdmark-pin` が `is-unpinned` を持ち、`aria-label` と `title` が `「名前」の列をピン止め（表の幅に収まらないため留まっていません）`、`aria-pressed="true"`。2 つ目は `is-unpinned` を持たず、`aria-label` が `「名前」の列をピン止め`
-  - name: renderTableBar
-    title: 表の上の帯とテーブル設定のパネルを描く
+  - name: renderTableMenu
+    title: 表のメニューのボタンとメニューを描く
     container: src/table/table.part.ts
     kind: 関数
     scope: internal
-    summary: '表の上の帯と、テーブル設定のパネル・集計とコピーの形式のメニューの HTML を返却する'
+    summary: '表のメニューのボタンと、表のメニュー（件数・項目・集計とコピーの形式のメニュー）・テーブル設定のパネルの HTML を返却する'
     description: |-
-      帯には `count`・`columns`・`reorder`・`total`・`copy` のうち付けた機能の要素として、件数・テーブル設定・`集計`・`表をコピー` と `mdmark-table-status` を並べる。
+      ボタンは `<button class="mdmark-table-menu" type="button">`（lucide の `ellipsis`。`copyState` が `copied` なら `check`、`failed` なら `circle-alert` にし、`data-state` に入れる）で、`title="表のメニュー"`・`aria-expanded`（`openMenu`・`openTotals`・`openCopy` のどれかのとき `true`）・`aria-controls` を持ち、`aria-haspopup` を持たない。隠した列があればバッジ `span.mdmark-table-tool-badge` と `is-active` を付ける。
 
-      | 帯の要素 | 中身 |
+      | `aria-label` | 条件 |
       | --- | --- |
-      | テーブル設定 | アイコンだけのボタン（`settings-2`）。隠した列の数のバッジと、隠した列があるとき `テーブル設定（{数} 列を非表示）` の `aria-label` |
-      | `mdmark-table-status` | スクリーンリーダーに使用する `role="status"` |
+      | `表のメニュー（{shown} / {total} 件・{隠した列の数} 列を非表示）` | `count` で列を隠している |
+      | `表のメニュー（{shown} / {total} 件）` | `count` で列を隠していない |
+      | `表のメニュー（{隠した列の数} 列を非表示）` | `count` でなく列を隠している |
+      | `表のメニュー` | それ以外 |
 
-      | パネル・メニュー | 中身 |
-      | --- | --- |
-      | テーブル設定のパネル | `renderTableSettings` |
-      | 集計のメニュー | タイトル `表示する集計` と、集計する計算の `value` を持つチェックボックス |
-      | コピーの形式のメニュー | `Markdown の表`・`TSV` の形式の名前と用途 |
+      メニューは `<div class="mdmark-table-menu-panel" role="group" aria-label="表のメニュー">` で、`count` のとき先頭に `p.mdmark-table-count`（`{shown} / {total} 件を表示`）を配置し、続けて機能を持つときだけ次の項目をこの順に並べる。項目が 1 つも無ければパネルに `tabindex="-1"` を付ける。`openMenu` でなければ `hidden` を付ける（`openTotals`・`openCopy` のときは付けない）。
 
-      `集計` のボタンは出さない計算があれば `is-active` にし、スクリーンリーダー向けの名前に `（{隠している数} 件を非表示にしています）` を加える。
-      テーブル設定と `表をコピー` のボタンは class `is-icon-only` でアイコンだけを見せ、`title` を持つ。
-      `表をコピー` は `mdmark-visually-hidden` のスクリーンリーダー向けの名前（`copyState` の文言）を持つ。
-      列を隠しているときはテーブル設定のボタンに `is-active` を付ける。
+      | 項目（`button.mdmark-table-menu-item`） | 機能 | `data-action` | アイコン | 持つもの |
+      | --- | --- | --- | --- | --- |
+      | テーブル設定 | `columns`・`reorder` | `settings` | `settings-2` | パネルを指す `aria-controls` |
+      | 集計 | `total` | `totals` | `sigma` | `aria-expanded`・`aria-controls`。出さない計算があれば `is-active` とスクリーンリーダー向けの `（{隠している数} 件を非表示にしています）` |
+      | 表をコピー | `copy` | `copy` | `copy` | `aria-expanded`・`aria-controls` |
+      | 元の CSV を表示 | `raw` が真 | `raw` | `code-xml` | なし |
 
-      アイコンは lucide の `settings-2`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`（`sigma` は `src/shared/icons.part.ts` に追加する）。
-      `mount` が描いた表に追加するのにも使用する
+      集計のメニュー（`div.mdmark-totals-menu.mdmark-table-submenu`、タイトル `表示する集計` と計算の `value` を持つチェックボックス）とコピーの形式のメニュー（`div.mdmark-copy-menu.mdmark-table-submenu`、`Markdown の表`・`TSV` の形式の名前と用途）はメニューの中のその項目の後ろに配置し、`openTotals`・`openCopy` でなければ `hidden` にする。テーブル設定のパネルは `renderTableSettings` でメニューの外に配置し、`openColumns` でなければ `hidden` にする。
+
+      アイコンは lucide の `ellipsis`・`settings-2`・`sigma`・`copy`・`code-xml`・`check`・`circle-alert`（`ellipsis` は `src/shared/icons.part.ts` に追加する）。`mount` が描いた表に追加するのにも使用する
     args:
       - name: options
-        type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openColumns?: boolean; copyState?: "idle" | "copied" | "failed"; totals?: TotalCalc[]; shownTotals?: TotalCalc[]; openTotals?: boolean; openCopy?: boolean }'
+        type: '{ id: string; features: string[]; labels: string[]; shown: number; total: number; hiddenColumns: number[]; openMenu?: boolean; openColumns?: boolean; copyState?: "idle" | "copied" | "failed"; totals?: TotalCalc[]; shownTotals?: TotalCalc[]; openTotals?: boolean; openCopy?: boolean; raw?: boolean }'
         required: true
-        description: メニューの id の頭、機能、列名、表示している行の数、全ての行の数、隠している列、テーブル設定のパネルを開いているか、コピーのボタンの状態、表が持つ集計の計算、出している計算（既定は `totals` の全て）、集計のメニューを開いているか、コピーの形式のメニューを開いているか
+        description: メニューの id の頭、機能、列名、表示している行の数、全ての行の数、隠している列、表のメニューを開いているか、テーブル設定のパネルを開いているか、コピーの結果、表が持つ集計の計算、出している計算（既定は `totals` の全て）、集計のメニューを開いているか、コピーの形式のメニューを開いているか、CSV の表か（「元の CSV を表示」を並べる）
     returns:
-      type: '{ bar: string; menus: string }'
-      description: 帯と、テーブル設定のパネル・集計・コピーの形式のうち付けた機能のメニューをつないだもの（該当する機能が無ければ空）
+      type: '{ button: string; menus: string }'
+      description: 表のメニューのボタンと、表のメニュー・テーブル設定のパネルをつないだもの（件数・項目のどちらも無ければ両方とも空）
     unit_tests:
-      - name: test_render_table_bar
+      - name: test_render_table_menu
         case: 正常
-        summary: 件数とテーブル設定とコピーの帯を返却する
+        summary: 件数とテーブル設定とコピーの項目を持つ表のメニューを返却する
         condition: '`features: [count, columns, copy]`、列名 `名前`・`説明`・`更新日`、`shown: 2`、`total: 3`、`hiddenColumns: [1]`'
         mock: なし
-        expected: '`bar` に `aria-live="polite"` の `2 / 3 件` とスクリーンリーダー `3 件中 2 件を表示`、`aria-expanded="false"`・`is-icon-only`・`is-active`・`title="テーブル設定"` で、見える文字を持たず、`aria-label` が `テーブル設定（1 列を非表示）` のテーブル設定のボタン（バッジ `1`）、`data-state="idle"`・`is-icon-only`・`title="表をコピー"` で `chevron-down` を持たないコピーのボタン、`role="status"` の `mdmark-table-status`。`menus` のテーブル設定のパネルが `hidden` で、名前の目のアイコンが `disabled`、案内に `先頭の列は隠せません` があり、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
-      - name: test_render_table_bar_when_copy_failed
+        expected: '`button` が `aria-expanded="false"`・`title="表のメニュー"`・`aria-label="表のメニュー（2 / 3 件・1 列を非表示）"`・`data-state="idle"`・`is-active`・バッジ `1` を持ち、見える文字と `aria-haspopup` を持たない。`menus` の `role="group"` のメニューが `hidden` で、先頭が `2 / 3 件を表示`、項目が `settings`・`copy` の順。テーブル設定のパネルが `hidden` で、名前の目のアイコンが `disabled`、コピーの形式のメニューが `hidden` で `data-format` が `markdown`・`tsv` のボタンを持つ'
+      - name: test_render_table_menu_when_copy_failed
         case: 正常
         summary: コピーできなかったボタンを返却する
         condition: '`features: [copy]`、`copyState: failed`'
         mock: なし
-        expected: '`bar` のボタンが `data-state="failed"` と `コピーできませんでした` を持ち、件数とテーブル設定のボタンが無く、`menus` にテーブル設定のパネルが無い'
-      - name: test_render_table_bar_when_totals
+        expected: '`button` が `data-state="failed"` と `circle-alert` のアイコン、`aria-label="表のメニュー"` を持ち、メニューに件数とテーブル設定の項目が無く、`menus` にテーブル設定のパネルが無い'
+      - name: test_render_table_menu_when_totals
         case: 正常
-        summary: 集計のボタンとメニューを返却し、隠している計算の数をスクリーンリーダー向けの名前に加える
+        summary: 集計の項目とメニューを表のメニューの中に返却し、隠している計算の数をスクリーンリーダー向けの名前に加える
         condition: '`features: [total]`、`totals: [sum, avg, count]`、`shownTotals: [sum]`、`openTotals: true`'
         mock: なし
-        expected: '`bar` の `mdmark-totals-toggle` が `is-active` と `aria-expanded="true"` と `（2 件を非表示にしています）` を持つ。`menus` の `aria-label="表示する集計"` のメニューが `hidden` を持たず、`合計`・`平均`・`件数` のチェックボックスのうち `合計` だけ `checked`'
-      - name: test_render_table_bar_when_copy_menu_open
+        expected: '`button` が `aria-expanded="true"`。メニューが `hidden` を持たず、`data-action="totals"` の項目が `is-active` と `aria-expanded="true"` と `（2 件を非表示にしています）` を持ち、その後ろの `aria-label="表示する集計"` の `mdmark-table-submenu` が `hidden` を持たず、`合計` だけ `checked`'
+      - name: test_render_table_menu_when_copy_menu_open
         case: 正常
-        summary: コピーの形式のメニューを開いた帯を返却する
+        summary: コピーの形式のメニューを表のメニューの中に開いて返却する
         condition: '`features: [copy]`、`openCopy: true`'
         mock: なし
-        expected: '`表をコピー` が `aria-expanded="true"`、`menus` の `aria-label="コピーの形式"` のメニューが `hidden` を持たず、`Markdown の表`（`文書に貼るとそのまま表になる`）・`TSV`（`表計算ソフトに貼るとセルに分かれる`）の順'
+        expected: '`data-action="copy"` の項目が `aria-expanded="true"`、`aria-label="コピーの形式"` のメニューが `hidden` を持たず、`Markdown の表`（`文書に貼るとそのまま表になる`）・`TSV`（`表計算ソフトに貼るとセルに分かれる`）の順'
+      - name: test_render_table_menu_when_count_only
+        case: 正常
+        summary: 項目の無いメニューはメニューそのものがフォーカスを受ける
+        condition: '`features: [count]`、`shown: 3`、`total: 3`、`openMenu: true`'
+        mock: なし
+        expected: メニューが `tabindex="-1"` を持ち `hidden` を持たず、`3 / 3 件を表示` だけを持つ。`button` の `aria-label` が `表のメニュー（3 / 3 件）`
+      - name: test_render_table_menu_when_raw
+        case: 正常
+        summary: CSV の表のメニューの最後に「元の CSV を表示」を並べる
+        condition: '`features: [count, copy]`、`raw: true`'
+        mock: なし
+        expected: '項目が `copy`・`raw` の順で、`raw` の項目が `code-xml` のアイコンと文字 `元の CSV を表示` を持つ。`features: []`・`raw: true` でも `button` と `raw` の項目を返却する'
     refs:
       - 'MOD-472-313#functions[escapeHtml]'
   - name: renderTotalRows
@@ -344,7 +372,7 @@ functions:
   - name: renderCopyPanel
     title: 表のコピーできないときのパネルを描く
     container: src/table/table.part.ts
-    summary: クリップボードに書き込めなかったときに帯の直後へ配置するパネルの HTML を返却する
+    summary: クリップボードに書き込めなかったときに表を包む要素の前へ配置するパネルの HTML を返却する
     description: |-
       パネルは `<div class="mdmark-copy-panel" role="group" aria-labelledby>` で、次を持つ。
 
@@ -397,10 +425,10 @@ functions:
     kind: 関数
     scope: internal
     summary: 部品設計『表』のテーブル設定のパネル（タイトル・列名の一覧・案内）の HTML を返却する
-    description: タイトルは `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、`pinned` の列（`through` の表の `pinned` で留めた列）・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを配置する。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。ストーリーと `mount` が同じ HTML を使用する
+    description: タイトルは `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、`pinned` の列（`through` の表の `pinned` で留めた列）・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを配置する。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。つまみは `aria-expanded`（`moveMenu` の列だけ `true`）と列の移動のメニューを指す `aria-controls` を持つ。パネルは列の移動のメニュー `div.mdmark-table-move-menu`（`aria-label` が `「{列名}」の列の移動`、`data-move` が `before`・`after` の `前へ移す`・`後ろへ移す` のボタン。その向きへ `canMoveColumn` で動かせないボタンは `disabled`）を 1 つ持ち、`moveMenu` があればその列の行（`li`）の中の末尾に `hidden` を付けずに配置し、無ければ一覧（`ul`）の後ろに `hidden` で配置する（`ul` の直下には `li` だけを配置する）。ストーリーと `mount` が同じ HTML を使用する
     args:
       - name: options
-        type: '{ id: string; columns: string[]; order: number[]; hidden: number[]; features: TableFeature[]; groups: Array<string | undefined>; pinned: number; dragging?: { column: number; target: number; side: "before" | "after" } }'
+        type: '{ id: string; columns: string[]; order: number[]; hidden: number[]; features: TableFeature[]; groups: Array<string | undefined>; pinned: number; dragging?: { column: number; target: number; side: "before" | "after" }; moveMenu?: number }'
         required: true
         description: '`columns` は元の列の順の列名、`order` は今の列の順、`groups` は列ごとの結合した見出しの範囲、`pinned` は `through` の表で `columns.{列名}.pinned` で留めた列の数（`each` の表と `pinned` が無い表は 0。`each` の表は留めた列で一覧を分けない）'
     returns:
@@ -425,6 +453,12 @@ functions:
         condition: '`groups` が `[undefined,"0:1","0:1","0:1",undefined]`、`pinned` が 1'
         mock: なし
         expected: '`mdmark-table-settings-group` が 3 つで、名前と備考のつまみが `disabled`'
+      - name: test_render_table_settings_when_move_menu
+        case: 正常
+        summary: 開いたつまみの後ろに列の移動のメニューを出し、動かせない向きを `disabled` にする
+        condition: '`columns` が `["名前","型","既定","説明"]`、`order` が `[0,1,2,3]`、`features` に `reorder`、`moveMenu` が 0 と 2'
+        mock: なし
+        expected: '`moveMenu: 0` では名前のつまみだけ `aria-expanded="true"`、その行の `li` の中の `aria-label="「名前」の列の移動"` のメニューが `hidden` を持たず、`前へ移す` が `disabled`。`moveMenu: 2` では `前へ移す`・`後ろへ移す` のどちらも `disabled` を持たない。どの場合も `ul` の直下の要素は `li` だけ。`moveMenu` を省くとメニューが `ul` の後ろで `hidden` で全てのつまみが `aria-expanded="false"`'
     status: planned
   - name: renderTreeKeyCell
     title: 階層の表のキーのセルを返却する
@@ -494,26 +528,26 @@ functions:
         expected: '`aria-expanded="false"`・`aria-label="aliases[] を開く"` のボタン、`aria-label="全体のパスをコピー"` のボタン、`aria-controls="t-example"` で文字が `見本を隠す` のボタン'
     status: planned
   - name: renderRawToggle
-    title: RAW のボタンを描く
+    title: 表で表示のボタンを描く
     container: src/table/table.part.ts
-    summary: 部品設計『表』の RAW のボタンの HTML を返却する。`renderTable` は `rawCsv` を受けると `data-source="csv"` と `pre.mdmark-raw` を出し、帯の右端にこのボタンを配置する
+    summary: 部品設計『表』の「表で表示」のボタンの HTML を返却する。`renderTable` は `rawCsv` を受けると `data-source="csv"` と `pre.mdmark-raw` を出し、`pre` の右上にこのボタンを重ねる
     kind: 関数
     scope: internal
     args:
-      - name: pressed
+      - name: shown
         type: boolean
         required: true
-        description: 押した状態か
+        description: 元の CSV を出しているか（`false` なら `hidden` を付ける）
     returns:
       type: string
       description: 部品の HTML
     unit_tests:
       - name: test_render_raw_toggle
         case: 正常
+        summary: 元の CSV を出している間だけボタンを出す
         condition: '`false` と `true`'
-        expected: '`<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">` と `aria-pressed="true"` の `code-xml` のアイコンのボタン'
         mock: なし
-        summary: 押した状態を `aria-pressed` に入れる
+        expected: どちらも `<button class="mdmark-raw-toggle" type="button" aria-label="表で表示" title="表で表示">` で `table` のアイコンだけを持ち、`aria-pressed` を持たない。`false` だけ `hidden` を持つ
   - name: renderCellEditor
     title: セルの入力欄を描く
     container: src/table/table.part.ts

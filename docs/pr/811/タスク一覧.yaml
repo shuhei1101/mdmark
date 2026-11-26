@@ -1,0 +1,97 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 変更する箇所の設計書が既にあるため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではないため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: '押せる範囲の拡大と、押して開く操作は #805・#809 で実装済みの仕組みで足り、未検証の技術機構に依存しないため対象外'
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: ユースケースの連鎖が変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: デザイン方針（docs/design-policy.md）があり、変更が見た目の方向を変えないため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更が無いため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T15:52:41.524180+00:00'
+    note: モック作成で要望に加えた表の操作のバー（表のメニュー）を、SC-472-73 のシナリオに反映する
+  - process: モック作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T15:50:25.493476+00:00'
+  - process: データ設計
+    status: skipped
+    reason: データストアの構造が変わらないため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: インターフェース定義設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:13:03.841642+00:00'
+  - process: エージェント・MCP サーバー設計
+    status: skipped
+    reason: エージェント・MCP サーバーを追加・変更しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: エージェントフロー・LLM 呼び出し設計
+    status: skipped
+    reason: エージェントフロー・LLM の呼び出しを追加・変更しないため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: 精度評価設計
+    status: skipped
+    reason: LLM・意思決定モデルを使用するノードが無いため対象外
+    updated_by: planner
+    updated_at: '2026-11-25T12:08:15.966290+00:00'
+  - process: 部品設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:35:01.695021+00:00'
+  - process: 画面設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:35:01.695021+00:00'
+  - process: モジュール構成設計
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:48:37.084052+00:00'
+  - process: ドキュメント修正
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T17:00:07.625541+00:00'
+  - process: 単体テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T17:21:18.750208+00:00'
+  - process: 実装
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T17:47:54.848456+00:00'
+  - process: 結合テスト作成
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T18:37:57.060433+00:00'

@@ -1763,13 +1763,18 @@
       white-space: normal;
     }
 
-    /* 列の幅のつまみ: 見出しのセルの右端に重ね、押せる幅を取る。線は右端の罫線の位置に 2px で引く */
+    /* 列の幅のつまみを持つ見出しのセル: つまみが見出しのボタンと重ならないよう、つまみの幅だけ右の余白を広げる */
+    .mdmark-table thead th:has(> .mdmark-col-resize) {
+      padding-inline-end: calc(24px + 0.25em);
+    }
+
+    /* 列の幅のつまみ: 見出しのセルの右端に重ね、ポインターの種類によらず押せる幅を 24px 取る。線は右端の罫線の位置に 2px で引く */
     .mdmark-table .mdmark-col-resize {
       position: absolute;
       inset-block: 0;
       inset-inline-end: 0;
       z-index: 1;
-      width: 12px;
+      width: 24px;
       cursor: col-resize;
       touch-action: none;
 
@@ -1802,18 +1807,10 @@
       opacity: 0.4;
     }
 
-    /* ポインターが粗い画面: つまみの線を常に薄く出して押せる幅を 24px にし、見出しのボタンと重ならないよう右の余白を広げる */
+    /* ポインターが粗い画面: つまみの線を常に薄く出す */
     @media (pointer: coarse) {
-      .mdmark-table thead th:has(> .mdmark-col-resize) {
-        padding-inline-end: calc(24px + 0.25em);
-      }
-
-      .mdmark-table .mdmark-col-resize {
-        width: 24px;
-
-        &::after {
-          opacity: 0.4;
-        }
+      .mdmark-table .mdmark-col-resize::after {
+        opacity: 0.4;
       }
     }
 
@@ -2111,72 +2108,116 @@
       }
     }
 
-    /* 表の上の道具の帯: 件数と、列の表示の切り替え・コピーのボタンを表の左端から並べ、狭い幅では折り返す */
-    .mdmark-table-bar {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 0.4rem 0.75rem;
-      align-items: center;
-      font-size: 0.875rem;
+    /* 表のメニューのボタンを重ねる表の入れ物: ボタンの位置の基準にする */
+    .mdmark-table:has(button.mdmark-table-menu) {
+      position: relative;
     }
 
-    /* 件数: 等幅数字で、絞り込みで数が変わっても幅を揺らさない */
-    .mdmark-table-count {
-      margin: 0;
-      color: var(--mdmark-color-muted);
-      font-variant-numeric: tabular-nums;
-      white-space: nowrap;
-    }
-
-    /* 帯のボタンのまとまり: ボタン同士を詰めて並べる */
-    .mdmark-table-tools {
-      display: inline-flex;
-      flex-wrap: wrap;
-      gap: 0.4rem;
-    }
-
-    /* 帯のボタン（列の表示・表をコピー）: アイコンと動詞の文字。絞り込みを解除するボタンと同じ線と面 */
-    .mdmark-table-tool {
-      display: inline-flex;
-      gap: 0.35em;
-      align-items: center;
-      height: 1.875rem;
-      padding: 0 0.65em;
-      border: 1px solid var(--mdmark-color-border);
+    /* 表のメニューのボタン: 見出し行の縦の中央、最も右の見えている列の列の幅のつまみの左に重ねる（位置は描く処理が見出し行と表の右端から入れる）。
+       横にスクロールしても表の右端に残し、留めた見出し行より手前（同じ z-index のピン止めした見出しのセルには DOM の順で勝つ）、右側の目次より奥に描く */
+    button.mdmark-table-menu {
+      position: absolute;
+      inset-block-start: var(--mdmark-table-menu-top, 0.375rem);
+      inset-inline-end: calc(
+        var(--mdmark-table-menu-end, 0px) +
+        24px +
+        0.125rem
+      );
+      z-index: 4;
+      display: inline-grid;
+      place-items: center;
+      box-sizing: border-box;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
       border-radius: calc(var(--mdmark-radius) - 2px);
-      background: var(--mdmark-color-surface);
-      color: var(--mdmark-color-text);
+      background: var(--mdmark-color-table-head);
+      color: var(--mdmark-color-muted);
       font: inherit;
-      white-space: nowrap;
       cursor: pointer;
 
-      &:hover {
-        border-color: var(--mdmark-color-muted);
+      &[hidden] {
+        display: none;
+      }
+
+      &:hover,
+      &[aria-expanded="true"] {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
       }
 
       &:focus-visible {
         outline: 2px solid var(--mdmark-color-link);
-        outline-offset: 2px;
+        outline-offset: 1px;
       }
 
-      /* 列を隠している間の列の表示のボタン: 本文の地と塗ったアイコンで、全ての列を出しているときと見分ける */
+      /* 列を隠している間: アイコンを本文の色にし、バッジと合わせて全ての列を出しているときと見分ける */
       &.is-active {
-        border-color: var(--mdmark-color-muted);
-        background: var(--mdmark-color-bg-opaque);
-
-        .mdmark-diagram-icon {
-          fill: currentColor;
-          fill-opacity: 0.25;
-        }
+        color: var(--mdmark-color-text);
       }
 
-      /* コピーした・できなかったの通知: アイコンの色に加えて文字でも示す */
+      /* コピーした・できなかったの通知: アイコンの色で示す */
       &[data-state="copied"] .mdmark-diagram-icon {
         color: var(--mdmark-color-callout-tip);
       }
 
       &[data-state="failed"] .mdmark-diagram-icon {
         color: var(--mdmark-color-callout-caution);
+      }
+    }
+
+    /* 表のメニューのボタンの余白を取る見出しのセル: 列の幅のつまみとボタンの幅だけ右を空け、見出しのボタンと重ねない */
+    .mdmark-table thead th.mdmark-th-menu-space {
+      padding-inline-end: calc(48px + 0.5rem);
+    }
+
+    /* 表のメニューの件数: 等幅数字で、絞り込みで数が変わっても幅を揺らさない。項目との間に線を引く */
+    .mdmark-table-count {
+      margin: 0;
+      padding: 0.25rem 0.5rem;
+      color: var(--mdmark-color-muted);
+      font-size: 0.8125rem;
+      font-variant-numeric: tabular-nums;
+      white-space: nowrap;
+
+      &:not(:last-child) {
+        margin-block-end: 0.25rem;
+        border-block-end: 1px solid var(--mdmark-color-border);
+      }
+    }
+
+    /* 表のメニューの項目: アイコンと文字の行で、高さ 32px 以上 */
+    .mdmark-table-menu-item {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+      box-sizing: border-box;
+      width: 100%;
+      min-height: 2rem;
+      padding: 0.25rem 0.5rem;
+      border: 0;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: transparent;
+      color: var(--mdmark-color-text);
+      font: inherit;
+      text-align: start;
+      white-space: nowrap;
+      cursor: pointer;
+
+      &:hover,
+      &[aria-expanded="true"] {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      /* 計算を隠している間の集計の項目: アイコンを太くする */
+      &.is-active .mdmark-diagram-icon {
+        stroke-width: 3;
       }
     }
 
@@ -2274,8 +2315,13 @@
       background: var(--mdmark-color-current-bg);
     }
 
-    /* 帯のボタンと行へのリンクの lucide のアイコン: 文字の大きさに統一する */
-    :is(.mdmark-table-tool, .mdmark-row-anchor) .mdmark-diagram-icon {
+    /* 表のメニューのボタンと項目と行へのリンクの lucide のアイコン: 文字の大きさに統一する */
+    :is(
+        .mdmark-table-menu,
+        .mdmark-table-menu-item,
+        .mdmark-table-move-menu button,
+        .mdmark-row-anchor
+      ) .mdmark-diagram-icon {
       flex: none;
       width: 1em;
       height: 1em;
@@ -2330,6 +2376,22 @@
           calc(var(--mdmark-sticky-head-start) + var(--mdmark-sticky-head-max));
       }
 
+      /* animation-timeline の表のメニューのボタン: 留める要素のタイムラインを囲む要素へ持ち上げ、見出し行と同じアニメーションで下げる */
+      [data-mdmark-sticky-menu="timeline"] {
+        timeline-scope: --mdmark-table;
+
+        button.mdmark-table-menu {
+          animation: mdmark-table-head linear both;
+          animation-timeline: --mdmark-table;
+          animation-range: exit-crossing var(--mdmark-sticky-head-start)
+            exit-crossing
+            calc(
+              var(--mdmark-sticky-head-start) +
+              var(--mdmark-sticky-head-max)
+            );
+        }
+      }
+
       /* animation-timeline の集計の行: 表の下端が画面の下端より下にある間は上げ、本文の最初の行で止める */
       [data-mdmark-sticky="timeline"] tfoot td {
         animation: mdmark-table-foot linear both;
@@ -2346,6 +2408,11 @@
 
     /* スクリプト の見出し行: スクロールに合わせて処理が求めたずれだけ下げる */
     [data-mdmark-sticky="script"] thead th {
+      transform: translateY(var(--mdmark-sticky-head-shift, 0px));
+    }
+
+    /* スクリプト の表のメニューのボタン: 見出し行と同じだけ下げる（開いたメニュー・パネルはボタンの位置から描く処理が配置する） */
+    [data-mdmark-sticky-menu="script"] button.mdmark-table-menu {
       transform: translateY(var(--mdmark-sticky-head-shift, 0px));
     }
 
@@ -2407,18 +2474,12 @@
       box-shadow: inset 1px 0 var(--mdmark-color-border);
     }
 
-    /* ---------- 道具の帯のメニュー（集計・コピーの形式） ---------- */
+    /* ---------- 表のメニュー（件数・項目と、中の集計・コピーの形式のメニュー） ---------- */
 
-    /* 集計のボタン: 計算を隠している間は、列の表示のボタンと同じく本文の地と塗ったアイコンで示す */
-    .mdmark-totals-toggle.is-active .mdmark-diagram-icon {
-      fill: none;
-      stroke-width: 3;
-    }
-
-    /* 集計・コピーの形式のメニュー: 列の表示のメニューと同じ外観で、押したボタンの下に重ねて開く（位置は描く処理がボタンから入れる） */
-    .mdmark-table-menu {
+    /* 表のメニュー: 表のメニューのボタンの下に右端をそろえて重ねて開き、テーブル設定のパネルより手前に描く（位置は描く処理がボタンから入れる） */
+    .mdmark-table-menu-panel {
       position: fixed;
-      z-index: 10;
+      z-index: 50;
       box-sizing: border-box;
       width: min(16rem, calc(100vw - 32px));
       max-height: min(24rem, calc(100vh - 32px));
@@ -2432,6 +2493,25 @@
       font-family: var(--mdmark-font-body);
       font-size: 0.875rem;
       line-height: 1.5;
+
+      &[hidden] {
+        display: none;
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+    }
+
+    /* 表のメニューの中の集計・コピーの形式のメニュー: 開いた項目の下に字下げして並べる */
+    .mdmark-table-submenu {
+      margin-block: 0.25rem;
+      padding-inline-start: 1.5rem;
+
+      &[hidden] {
+        display: none;
+      }
 
       /* メニューの中のまとまり同士の間隔 */
       > * + * {
@@ -2737,11 +2817,6 @@
 
     /* 開いた閉じた表の見出し: 中の表との間を空ける */
     .mdmark-table-details[open] > summary {
-      margin-block-end: calc(var(--mdmark-space) / 2);
-    }
-
-    /* 閉じた表の中の帯: 表との間を本文と同じに空ける */
-    .mdmark-table-details > .mdmark-table-bar {
       margin-block-end: calc(var(--mdmark-space) / 2);
     }
 
@@ -3467,20 +3542,33 @@
 
     /* ---------- CSV の表 ---------- */
 
-    /* CSV の表: 記法の表と同じく本文の幅に広げ、RAW のボタンの帯を表の右端の真上に配置する。表（包む要素）と元の CSV は同じ場所に重ね、見せない側は visibility で隠して幅と高さを保つ */
+    /* CSV の表: 記法の表と同じく本文の幅に広げる。表（包む要素）と元の CSV と「表で表示」のボタンは同じ場所に重ね、見せない側は visibility で隠して幅と高さを保つ */
     .mdmark-table[data-source="csv"] {
       width: 100%;
       max-width: 100%;
       justify-items: stretch;
 
-      > .mdmark-table-bar {
-        display: flex;
-        justify-content: flex-end;
+      > :is(.mdmark-table-scroll, table, .mdmark-raw, .mdmark-raw-toggle) {
+        grid-area: 1 / 1;
+        margin: 0;
       }
 
-      > :is(.mdmark-table-scroll, table, .mdmark-raw) {
-        grid-area: 2 / 1;
-        margin: 0;
+      /* コピーできないときのパネルを出している間は、パネルの下の行に重ねる */
+      &:has(> .mdmark-copy-panel)
+        > :is(.mdmark-table-scroll, table, .mdmark-raw, .mdmark-raw-toggle) {
+        grid-row: 2;
+      }
+
+      /* 「表で表示」のボタン: 元の CSV の右上に重ねる */
+      > .mdmark-raw-toggle {
+        z-index: 1;
+        align-self: start;
+        justify-self: end;
+        margin: 0.375rem;
+      }
+
+      > .mdmark-raw-toggle[hidden] {
+        display: none;
       }
 
       > :is(.mdmark-table-scroll, table, .mdmark-raw)[hidden] {
@@ -3493,44 +3581,34 @@
       }
     }
 
-    /* RAW のボタン: コードのアイコン。押していないときは控えめな色、押したときは青のアイコンと薄い青の面 */
+    /* 「表で表示」のボタン: 表のメニューのボタンと同じ外観の、表のアイコンだけのボタン */
     .mdmark-raw-toggle {
       appearance: none;
       display: inline-grid;
       place-items: center;
-      width: 1.9em;
-      height: 1.9em;
-      min-width: 24px;
-      min-height: 24px;
+      box-sizing: border-box;
+      width: 24px;
+      height: 24px;
       padding: 0;
       border: 0;
-      border-radius: 4px;
-      background: none;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: var(--mdmark-color-table-head);
       color: var(--mdmark-color-muted);
       font: inherit;
       cursor: pointer;
 
-      .mdmark-icon {
-        width: 1.1em;
-        height: 1.1em;
-        fill: none;
-        stroke: currentColor;
-        stroke-width: 2;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+      .mdmark-diagram-icon {
+        width: 1em;
+        height: 1em;
       }
 
-      &:hover,
-      &[aria-pressed="true"] {
-        color: var(--mdmark-color-accent-blue-text);
-      }
-
-      &[aria-pressed="true"] {
-        background: var(--mdmark-color-accent-blue-bg);
+      &:hover {
+        background: var(--mdmark-color-surface);
+        color: var(--mdmark-color-text);
       }
 
       &:focus-visible {
-        outline: 2px solid var(--mdmark-color-accent-blue-text);
+        outline: 2px solid var(--mdmark-color-link);
         outline-offset: 1px;
       }
     }
@@ -3993,7 +4071,8 @@
           .mdmark-col-resize,
           .mdmark-row-toggle,
           .mdmark-anchor,
-          .mdmark-table-tools,
+          .mdmark-table-menu,
+          .mdmark-raw-toggle,
           .mdmark-row-anchor
         ) {
         display: none;
@@ -4006,9 +4085,36 @@
         transform: none;
       }
 
-      /* 紙では押せない操作（集計・コピーの形式のメニュー、コピーできないときのパネル、行の URL の通知）: 出さない */
-      :is(.mdmark-table-menu, .mdmark-copy-panel, .mdmark-row-link-notice) {
+      /* 紙では押せない操作（表のメニューの項目、コピーできないときのパネル、行の URL の通知）: 出さない */
+      :is(
+          .mdmark-table-menu-panel > :not(.mdmark-table-count),
+          .mdmark-copy-panel,
+          .mdmark-row-link-notice
+        ) {
         display: none;
+      }
+
+      /* 表のメニューの件数: 紙では表の上に本文の文字で出す */
+      .mdmark-table-menu-panel,
+      .mdmark-table-menu-panel[hidden]:has(> .mdmark-table-count) {
+        position: static;
+        grid-row: 1;
+        display: block;
+        width: auto;
+        max-height: none;
+        padding: 0;
+        overflow: visible;
+        border: 0;
+        background: none;
+      }
+
+      .mdmark-table-menu-panel:not(:has(> .mdmark-table-count)) {
+        display: none;
+      }
+
+      .mdmark-table-count {
+        padding: 0;
+        border: 0;
       }
 
       /* 集計の行: 紙では縦にスクロールしないので下端に留めない */
@@ -9945,22 +10051,19 @@
     }
   }
 
-  /* テーブル設定のパネル: 表の上の帯のボタンで開く。列の一覧を縦に並べる */
-  /* 配置場所は帯のボタンに合わせて placeDrawer が決める */
+  /* テーブル設定のパネル: 表のメニューのテーブル設定で開く。列の一覧を縦に並べる */
+  /* 配置場所は表のメニューのボタンに合わせて placeDrawer が決める */
   .mdmark-table-settings {
     position: fixed;
     z-index: 20;
     box-sizing: border-box;
     inline-size: min(16rem, calc(100vw - 32px));
-    margin-block-start: 0.25rem;
+    margin: 0;
     padding: calc(var(--mdmark-space) * 0.5);
     border: 1px solid var(--mdmark-color-border);
     border-radius: var(--mdmark-radius);
     background: var(--mdmark-color-bg);
     box-shadow: 0 4px 12px rgb(0 0 0 / 0.12);
-  }
-  .mdmark-table-bar {
-    position: relative;
   }
   .mdmark-table-settings-title {
     margin: 0 0 0.25rem;
@@ -9976,6 +10079,7 @@
   /* 列の一覧の 1 行: つまみ・列名・目のアイコン */
   .mdmark-table-settings-item {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: 0.25rem;
     min-block-size: 2rem;
@@ -10044,6 +10148,52 @@
   }
   .mdmark-table-settings-item.is-drop-after {
     box-shadow: inset 0 -3px 0 var(--mdmark-color-link);
+  }
+
+  /* 列の移動のメニュー: 開いたつまみの行の中で、つまみと列名の下に折り返し、アイコンと文字の 2 つのボタンを縦に並べる */
+  .mdmark-table-move-menu {
+    display: flex;
+    flex: 1 0 calc(100% - 2rem);
+    flex-direction: column;
+    margin: 0 0 0.25rem 2rem;
+    padding: 0.25rem;
+    border: 1px solid var(--mdmark-color-border);
+    border-radius: var(--mdmark-radius);
+    background: var(--mdmark-color-bg);
+
+    &[hidden] {
+      display: none;
+    }
+
+    & button {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      min-block-size: 2rem;
+      padding: 0.25rem 0.5rem;
+      border: 0;
+      border-radius: var(--mdmark-radius);
+      background: transparent;
+      color: var(--mdmark-color-text);
+      font: inherit;
+      font-size: 0.875rem;
+      text-align: start;
+      cursor: pointer;
+
+      &:hover:not(:disabled) {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: -2px;
+      }
+
+      &:disabled {
+        color: var(--mdmark-color-muted);
+        cursor: not-allowed;
+      }
+    }
   }
 
   /* キーボードでの並べ替えの案内 */
@@ -10353,14 +10503,6 @@
           width: var(--mdmark-auto-width, auto);
         }
       }
-    }
-
-    /* アイコンだけの帯のボタン: 帯のほかのボタンと高さを合わせた正方形 */
-    .mdmark-table-tool.is-icon-only {
-      position: relative;
-      justify-content: center;
-      width: 1.875rem;
-      padding: 0;
     }
 
     /* 表示枠の高さを変えるリサイズハンドル: 表示する枠の後ろに高さ 24px（タップの対象の下限）の帯を配置し、帯のどこでも上下にドラッグできる。

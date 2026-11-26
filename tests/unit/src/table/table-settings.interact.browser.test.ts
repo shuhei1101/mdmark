@@ -43,7 +43,7 @@ const GROUPED_TABLE = [
   "",
 ].join("\n");
 
-/** 表を描いて操作を付け、テーブル設定のパネルを開いて返却する */
+/** 表を描いて操作を付け、表のメニューのテーブル設定でパネルを開いて返却する（`toggle` は表のメニューのボタン） */
 async function openSettings(
   markdown: string,
   onColumnsChange?: () => void,
@@ -59,12 +59,17 @@ async function openSettings(
     }),
   );
   const toggle = root.querySelector<HTMLButtonElement>(
-    "button.mdmark-table-settings-toggle",
+    "button.mdmark-table-menu",
   );
   if (!toggle) {
-    throw new Error("テーブル設定のボタンが無い");
+    throw new Error("表のメニューのボタンが無い");
   }
   toggle.click();
+  root
+    .querySelector<HTMLButtonElement>(
+      'button.mdmark-table-menu-item[data-action="settings"]',
+    )
+    ?.click();
   return { root, toggle };
 }
 
@@ -205,11 +210,94 @@ test("test_attach_table_settings_when_hidden", async () => {
     "1",
   );
   expect(toggle.getAttribute("aria-label")).toBe(
-    "テーブル設定（1 列を非表示）",
+    "表のメニュー（1 列を非表示）",
   );
   expect(onColumnsChange).toHaveBeenCalledTimes(1);
   expect(onColumnsChange).toHaveBeenCalledWith({
     tableIndex: 0,
     hidden: ["説明"],
   });
+});
+
+/** 列の移動のメニュー（無ければ例外） */
+function moveMenu(root: HTMLElement): HTMLElement {
+  const menu = root.querySelector<HTMLElement>(".mdmark-table-move-menu");
+  if (!menu) {
+    throw new Error("列の移動のメニューが無い");
+  }
+  return menu;
+}
+
+/** 列の移動のメニューの `before`・`after` のボタン（無ければ例外） */
+function moveButton(
+  root: HTMLElement,
+  move: "before" | "after",
+): HTMLButtonElement {
+  const button = moveMenu(root).querySelector<HTMLButtonElement>(
+    `button[data-move="${move}"]`,
+  );
+  if (!button) {
+    throw new Error(`列の移動のボタンが無い: ${move}`);
+  }
+  return button;
+}
+
+/** フォーカスしている要素で Esc を押す */
+function pressEscape(): void {
+  document.activeElement?.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
+  );
+}
+
+// つまみを押して開いたメニューで列を 1 つずつ動かし、端ではフォーカスをもう一方のボタンへ移す（正常系）
+test("test_attach_table_settings_when_move_menu", async () => {
+  // 準備
+  const { root } = await openSettings(REORDER_TABLE);
+  const grip = gripOf(root, "既定");
+  // 実行・検証: つまみを押すとメニューを開く
+  grip.click();
+  expect(grip.getAttribute("aria-expanded")).toBe("true");
+  expect(moveMenu(root).hasAttribute("hidden")).toBe(false);
+  expect(moveMenu(root).parentElement).toBe(
+    grip.closest(".mdmark-table-settings-item"),
+  );
+  expect(document.activeElement).toBe(moveButton(root, "before"));
+  // 実行・検証: 前へ移すで 1 つ動き、メニューは開いたまま
+  moveButton(root, "before").click();
+  expect(rowOrders(root)[0]).toEqual(["0", "2", "1", "3"]);
+  expect(moveMenu(root).hasAttribute("hidden")).toBe(false);
+  // 実行・検証: もう一度で先頭へ動き、前へ移すが押せずフォーカスが後ろへ移すへ移る
+  moveButton(root, "before").click();
+  expect(rowOrders(root)[0]).toEqual(["2", "0", "1", "3"]);
+  expect(moveButton(root, "before").disabled).toBe(true);
+  expect(document.activeElement).toBe(moveButton(root, "after"));
+  // 実行・検証: Esc でメニューだけを閉じ、つまみへフォーカスを戻す
+  pressEscape();
+  expect(moveMenu(root).hasAttribute("hidden")).toBe(true);
+  expect(
+    root.querySelector(".mdmark-table-settings")?.hasAttribute("hidden"),
+  ).toBe(false);
+  expect(grip.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(grip);
+});
+
+// つまみの Enter でメニューを開き、動かせないつまみでは開かない（正常系）
+test("test_attach_table_settings_when_move_menu_by_keyboard", async () => {
+  // 準備
+  const { root } = await openSettings(REORDER_TABLE);
+  const grip = gripOf(root, "名前");
+  // 実行・検証: 名前のつまみで Enter
+  grip.focus();
+  grip.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
+  expect(moveMenu(root).hasAttribute("hidden")).toBe(false);
+  expect(moveButton(root, "before").disabled).toBe(true);
+  expect(document.activeElement).toBe(moveButton(root, "after"));
+  pressEscape();
+  removeRoots();
+  // 実行・検証: 動かせない名前のつまみを押してもメニューを開かない
+  const grouped = await openSettings(GROUPED_TABLE, undefined, "through");
+  gripOf(grouped.root, "名前").click();
+  expect(moveMenu(grouped.root).hasAttribute("hidden")).toBe(true);
 });

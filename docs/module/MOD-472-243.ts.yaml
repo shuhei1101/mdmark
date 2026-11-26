@@ -7,7 +7,7 @@ functions:
   - name: attachCsvRaw
     title: CSV の表と元の CSV の切り替えを付ける
     container: src/table/csv.interact.ts
-    summary: '`data-source="csv"` の表の RAW のボタンを押すたびに、`aria-pressed` と囲みの `data-view="raw"` を入れ替え、表を包む横のスクロールの要素（`.mdmark-table-scroll`。無ければ表）と `pre.mdmark-raw` の `hidden` を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない'
+    summary: '`data-source="csv"` の表で、表のメニューの「元の CSV を表示」（`data-action="raw"`）を押すと表のメニューを閉じて囲みに `data-view="raw"` を付け、表を包む横のスクロールの要素（`.mdmark-table-scroll`。無ければ表）と表のメニューのボタンに `hidden` を付け、`pre.mdmark-raw` と「表で表示」のボタン（`button.mdmark-raw-toggle`。無ければ `renderRawToggle` で `pre` の後ろに配置する）の `hidden` を解除して「表で表示」へフォーカスを移す。「表で表示」を押すと元に戻し、表のメニューのボタンへフォーカスを移す。並べ替え・絞り込み・ピン止めの状態は触らない'
     kind: 関数
     scope: internal
     args:
@@ -22,10 +22,10 @@ functions:
     unit_tests:
       - name: test_attach_csv_raw
         case: 正常
-        condition: CSV の表を持つ要素で RAW のボタンを 2 回押す
-        expected: 1 回目の後は表を包む要素（`.mdmark-table-scroll`）が隠れ `pre.mdmark-raw` が出て `aria-pressed="true"`、2 回目の後は元に戻る
+        summary: 表のメニューの「元の CSV を表示」と「表で表示」で表と元の CSV を入れ替える
+        condition: CSV の表を持つ要素で表のメニューを開いて「元の CSV を表示」を押し、「表で表示」を押す
         mock: なし（ブラウザ）
-        summary: 押すたびに表と元の CSV を入れ替える
+        expected: 1 回目の後は表のメニューが `hidden`、表を包む要素（`.mdmark-table-scroll`）と `button.mdmark-table-menu` が `hidden`、`pre.mdmark-raw` と `button.mdmark-raw-toggle` が `hidden` を持たず、「表で表示」にフォーカス。2 回目の後は元に戻り、`button.mdmark-table-menu` にフォーカス
 lead: 'CSV の表と元の CSV の切り替えを受け持ち、CSV の表の操作を変えるときに参照する。'
 tags:
   - name: topic:表

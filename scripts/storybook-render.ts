@@ -254,10 +254,11 @@ const REPO_ROOT = resolve(import.meta.dirname, "..");
 // 描画のインターフェースの経路: 本文の CSS と、部品の HTML の前置き
 const CSS_PATH = "/render/index.css";
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
-// ストーリーが読み込む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、ファイルツリーの注釈の列を統一する処理、動画のリサイズハンドル）
+// ストーリーが読み込む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、表のメニューのボタンの位置を合わせる処理、ファイルツリーの注釈の列を統一する処理、動画のリサイズハンドル）
 const SCRIPT_SOURCES: Record<string, string> = {
   "/render/diagram.js": "src/diagram/diagram.interact.ts",
   "/render/sticky.js": "src/table/table-sticky.interact.ts",
+  "/render/tables.js": "src/table/table.interact.ts",
   "/render/trees.js": "src/tree/tree.interact.ts",
   "/render/media-resize.js": "src/media/media-resize.interact.ts",
 };

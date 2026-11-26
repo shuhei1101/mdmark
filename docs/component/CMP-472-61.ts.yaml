@@ -254,7 +254,7 @@ states:
       - name: autoWidths
         value: '[{"column":0,"width":630},{"column":1,"width":80}]'
   - name: Count
-    description: 件数を出した表（`3 / 3 件`）
+    description: 件数を出した表。表の上にバーが無く、見出し行の右上の表のメニューのボタンの `aria-label` が `表のメニュー（3 / 3 件）`
     args:
       - name: kind
         value: data
@@ -267,7 +267,7 @@ states:
       - name: filters
         value: '[{"column":1,"kind":"text"}]'
   - name: CountFiltered
-    description: 説明を `描画` で絞り込んだ。件数が `2 / 3 件`
+    description: 説明を `描画` で絞り込んだ。表のメニューのボタンの `aria-label` が `表のメニュー（2 / 3 件）`
     args:
       - name: kind
         value: data
@@ -282,7 +282,7 @@ states:
       - name: filterValues
         value: '[{"column":1,"text":"描画"}]'
   - name: ColumnsHidden
-    description: '`説明` の列の `hidden` が `true` で説明の列を隠した。帯にテーブル設定のアイコンだけのボタンと、隠した列の数 `1` のバッジ'
+    description: '`説明` の列の `hidden` が `true` で説明の列を隠した。表のメニューのボタンに隠した列の数 `1` のバッジ'
     args:
       - name: kind
         value: data
@@ -361,7 +361,7 @@ states:
       - name: totals
         value: '[{"column":0,"calc":"count"},{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
   - name: Copied
-    description: コピーした（アイコンを `check` に替え、ツールチップとスクリーンリーダー向けの名前を `コピーしました` にする）
+    description: コピーした（表のメニューのボタンのアイコンを `check` に替え、`role="status"` の要素でコピーした形式を伝える）
     args:
       - name: kind
         value: data
@@ -374,7 +374,7 @@ states:
       - name: copyState
         value: copied
   - name: CopyFailed
-    description: コピーできなかった（`コピーできませんでした`、`circle-alert` のアイコン）
+    description: コピーできなかった（表のメニューのボタンのアイコンを `circle-alert` に替える）
     args:
       - name: kind
         value: data
@@ -434,7 +434,7 @@ states:
       - name: totals
         value: '[{"column":1,"calc":"sum"},{"column":2,"calc":"avg"}]'
   - name: TotalsMenuOpen
-    description: 集計のメニュー（`表示する集計`）を開いた。`合計`・`平均`・`件数` のチェックボックスに全てチェックが入っている
+    description: 表のメニューの中の集計のメニュー（`表示する集計`）を開いた。`合計`・`平均`・`件数` のチェックボックスに全てチェックが入っている
     args:
       - name: kind
         value: data
@@ -449,7 +449,7 @@ states:
       - name: openTotals
         value: 'true'
   - name: TotalsHidden
-    description: 集計のメニューで `平均` と `件数` のチェックを解除した。`合計` の行だけを出し、`集計` のボタンが隠している外観
+    description: 集計のメニューで `平均` と `件数` のチェックを解除した。`合計` の行だけを出し、表のメニューの「集計」の項目が隠している外観
     args:
       - name: kind
         value: data
@@ -464,7 +464,7 @@ states:
       - name: shownTotals
         value: '["sum"]'
   - name: CopyMenuOpen
-    description: コピーの形式のメニューを開いた。`Markdown の表`（文書に貼るとそのまま表になる）と `TSV`（表計算ソフトに貼るとセルに分かれる）
+    description: 表のメニューの中のコピーの形式のメニューを開いた。`Markdown の表`（文書に貼るとそのまま表になる）と `TSV`（表計算ソフトに貼るとセルに分かれる）
     args:
       - name: kind
         value: data
@@ -477,7 +477,7 @@ states:
       - name: openCopy
         value: 'true'
   - name: CopyFallback
-    description: クリップボードに書き込めず、手動でコピーするパネルを出した。`表をコピー` のツールチップとスクリーンリーダー向けの名前は `コピーできませんでした`
+    description: クリップボードに書き込めず、手動でコピーするパネルを出した。表のメニューのボタンのアイコンは `circle-alert`
     args:
       - name: kind
         value: data
@@ -783,7 +783,7 @@ states:
       - name: dragging
         value: '{"column":3,"target":0,"side":"before"}'
   - name: Reordered
-    description: 説明・名前・既定・型の順に並べ替え、説明を隠した。ボタンにバッジ `1`
+    description: 説明・名前・既定・型の順に並べ替え、説明を隠した。表のメニューのボタンにバッジ `1`
     args:
       - name: kind
         value: data
@@ -924,7 +924,7 @@ states:
       - name: example
         value: '{"heading":"設定の見本","tabs":[{"name":"最小"},{"name":"エイリアス"}],"active":0,"hidden":true}'
   - name: CsvTable
-    description: 言語 `csv` のコードブロックから作った表。帯の右端に押していない RAW のボタン（控えめな色のコードのアイコン）
+    description: 言語 `csv` のコードブロックから作った表。表のメニューの最後に「元の CSV を表示」の項目を持つ
     args:
       - name: kind
         value: data
@@ -937,7 +937,7 @@ states:
       - name: rawCsv
         value: 名前,拠点,金額\n北山,"東京, 本社",1200\n南田,大阪,800
   - name: CsvRaw
-    description: RAW のボタンを押した。表を隠して記載したとおりの CSV を出し、ボタンは青いアイコンと薄い青の面
+    description: 「元の CSV を表示」を押した。表と表のメニューのボタンを隠して記載したとおりの CSV を出し、コードブロックの右上に「表で表示」のボタンを重ねる
     args:
       - name: kind
         value: data
@@ -952,7 +952,7 @@ states:
       - name: rawShown
         value: 'true'
   - name: ColumnsButtonA
-    description: 帯のボタン。テーブル設定とコピーのボタンがアイコンだけで、テーブル設定に隠した列の数のバッジ
+    description: 表のメニューのボタン。アイコンだけで、隠した列の数のバッジを持つ
     args:
       - name: features
         value: "'[\"count\",\"columns\",\"copy\"]'"
@@ -1123,7 +1123,7 @@ states:
       - name: pinMode
         value: through
   - name: Resizable
-    description: '`resize` の表。最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`role="separator"`）がある。つまみの線は、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に出し、ポインターが粗い画面では常に薄く出す'
+    description: '`resize` の表。最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`role="separator"`）がある。つまみの線は、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に出し、ポインターが粗い画面では常に薄く出す。どの画面でも、つまみの押せる範囲は幅 24px・高さが見出しのセルの高さ'
     args:
       - name: kind
         value: data
@@ -1253,6 +1253,79 @@ states:
         value: '["R1","R2"]'
       - name: addRow
         value: 'true'
+  - name: TableMenuOpen
+    description: 件数・テーブル設定・集計・コピーを持つ表で、見出し行の右上の表のメニューを開いた。先頭に `3 / 3 件を表示`、続けて「テーブル設定」「集計」「表をコピー」の項目。ボタンは最後の列の列の幅のつまみの左にあり、見出しのボタンとつまみに重ならない
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize","count","columns","total","copy"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]'
+      - name: filters
+        value: '[{"column":2,"kind":"date"}]'
+      - name: totals
+        value: '[{"column":2,"calc":"count"}]'
+      - name: openMenu
+        value: 'true'
+  - name: TableMenuCountOnly
+    description: '`count` だけの表で表のメニューを開いた。メニューは件数の文字だけを持ち、メニューそのものがフォーカスを受ける'
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","count"]'
+      - name: columns
+        value: '["名前","説明","更新日"]'
+      - name: rows
+        value: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]'
+      - name: openMenu
+        value: 'true'
+  - name: TableMenuOverflow
+    description: 幅からはみ出す件数の表。表のメニューのボタンは表のスクロールする要素の外にあり、ストーリーの表を横にスクロールしても表の右上に残り、見えている列の見出しの右端に重なる
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize","count"]'
+      - name: columns
+        value: '["列 1","列 2","列 3","列 4","列 5","列 6","列 7","列 8"]'
+      - name: rows
+        value: '[["りんごの産地","青森","長野","岩手","山形","福島","秋田","宮城"]]'
+      - name: overflow
+        value: 'true'
+  - name: ReorderMoveMenu
+    description: テーブル設定の一覧で既定のつまみを 1 回押し、つまみの近くに `前へ移す`・`後ろへ移す` の列の移動のメニューを開いた。どちらのボタンも押せる
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","columns","reorder"]'
+      - name: columns
+        value: '["名前","型","既定","説明"]'
+      - name: rows
+        value: '[["features.table","bool","true","表の機能のオン・オフ"]]'
+      - name: openColumns
+        value: 'true'
+      - name: moveMenu
+        value: '2'
+  - name: ReorderMoveMenuFirst
+    description: 先頭の名前のつまみの列の移動のメニューを開いた。`前へ移す` が `disabled` で、`後ろへ移す` にフォーカスがある
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","columns","reorder"]'
+      - name: columns
+        value: '["名前","型","既定","説明"]'
+      - name: rows
+        value: '[["features.table","bool","true","表の機能のオン・オフ"]]'
+      - name: openColumns
+        value: 'true'
+      - name: moveMenu
+        value: '0'
 lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決定した並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、どの種類の表も、表がスクロールする場所（ページか、表を囲む縦にスクロールする区画）に残っている間はスクロールしてもその上端に留め、集計の行をその下端に留める。列ごとに中身の量から折り返すかと列の幅を決め、全ての列の最小の幅が収まらない表は表の中で横にスクロールさせる。
 args:
   - name: kind
@@ -1361,7 +1434,7 @@ args:
     required: false
     default: '`hide` と同じ'
     enabled_when: '`features` に `columns` を含むとき'
-    description: 今隠している列の位置。この列の見出し・セル・集計のセルに `hidden` を付け、テーブル設定のその列の目のアイコンを `aria-pressed="true"`・`aria-label="「{列名}」を表示"` にし、ボタンに隠した列の数のバッジを出す
+    description: 今隠している列の位置。この列の見出し・セル・集計のセルに `hidden` を付け、テーブル設定のその列の目のアイコンを `aria-pressed="true"`・`aria-label="「{列名}」を表示"` にし、表のメニューのボタンに隠した列の数のバッジを出し、`aria-label` に `・{隠した列の数} 列を非表示` を加える
   - name: openColumns
     type: 真偽値
     required: false
@@ -1378,9 +1451,9 @@ args:
     type: 列挙
     required: false
     default: idle
-    choices: '`idle`（`表をコピー`）・`copied`（`コピーしました`）・`failed`（`コピーできませんでした`）'
+    choices: '`idle`（`ellipsis`）・`copied`（`check`）・`failed`（`circle-alert`）'
     enabled_when: '`features` に `copy` を含むとき'
-    description: '`表をコピー` のボタンの状態。ボタンの `data-state` と、ツールチップ（`title`）・スクリーンリーダー向けの名前・アイコン（`copy`・`check`・`circle-alert`）を切り替える。ボタンは文字を持たずアイコンだけで、形式のメニューを開くことは `aria-expanded` で示す'
+    description: '表のコピーの結果。表のメニューのボタンの `data-state` とアイコン（`ellipsis`・`check`・`circle-alert`）を切り替える'
   - name: rowIds
     type: 配列
     required: false
@@ -1397,22 +1470,22 @@ args:
     type: 配列
     default: '`totals` の全ての計算'
     enabled_when: '`features` に `total` を含むとき'
-    description: 出している集計の行の計算（`sum`・`avg`・`count` のうち）。含まない計算の行に `hidden` を付けて集計のメニューのチェックを解除し、`集計` のボタンを隠している外観（`is-active`）にして、スクリーンリーダー向けの名前に `（{隠している数} 件を非表示にしています）` を加える
+    description: 出している集計の行の計算（`sum`・`avg`・`count` のうち）。含まない計算の行に `hidden` を付けて集計のメニューのチェックを解除し、表のメニューの「集計」の項目を隠している外観（`is-active`）にして、スクリーンリーダー向けの名前に `（{隠している数} 件を非表示にしています）` を加える
   - name: openTotals
     type: 真偽値
     default: 'false'
     enabled_when: '`features` に `total` を含むとき'
-    description: 集計のメニュー（`表示する集計`）を開いているか
+    description: 表のメニューの中の集計のメニュー（`表示する集計`）を開いているか（`true` なら表のメニューも開く）
   - name: openCopy
     type: 真偽値
     default: 'false'
     enabled_when: '`features` に `copy` を含むとき'
-    description: コピーの形式のメニュー（`Markdown の表`・`TSV`）を開いているか
+    description: 表のメニューの中のコピーの形式のメニュー（`Markdown の表`・`TSV`）を開いているか（`true` なら表のメニューも開く）
   - name: copyFallback
     type: オブジェクト
     default: なし（パネルを出さない）
     enabled_when: '`features` に `copy` を含むとき'
-    description: クリップボードに書き込めなかったときに手動でコピーさせるパネルの中身（`{ format, text }`。`format` は `markdown`・`tsv`、`text` はコピーする文字）。指定すると帯の直後に、タイトル `クリップボードにコピーできませんでした`・案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`・`text` を入れた読み取り専用の `textarea`・閉じるボタンを持つパネルを出す
+    description: クリップボードに書き込めなかったときに手動でコピーさせるパネルの中身（`{ format, text }`。`format` は `markdown`・`tsv`、`text` はコピーする文字）。指定すると表を囲む要素の中の表の前に、タイトル `クリップボードにコピーできませんでした`・案内 `「{形式の名前}」の中身を選択しています。Ctrl+C（Mac は ⌘C）でコピーしてください。`・`text` を入れた読み取り専用の `textarea`・閉じるボタンを持つパネルを出す
   - name: rowLinkNotice
     type: 列挙
     default: なし（通知を出さない）
@@ -1516,13 +1589,13 @@ args:
     type: 文字列
     required: false
     default: なし（CSV の表ではない）
-    description: 言語 `csv` のコードブロックから作った表の、記載したとおりの CSV。指定すると `data-source="csv"` を付け、表の後ろに `<pre class="mdmark-raw" hidden><code class="language-csv">` を配置し、帯の右端に RAW のボタンを配置する
+    description: 言語 `csv` のコードブロックから作った表の、記載したとおりの CSV。指定すると `data-source="csv"` を付け、表の後ろに `<pre class="mdmark-raw" hidden><code class="language-csv">` を配置し、表のメニューの最後に「元の CSV を表示」の項目を配置する
   - name: rawShown
     type: 真偽値
     required: false
     default: 'false'
     enabled_when: '`rawCsv` を指定したとき'
-    description: 元の CSV を出しているか。`true` なら RAW のボタンを `aria-pressed="true"` にし、表を隠して `pre.mdmark-raw` を出す
+    description: 元の CSV を出しているか。`true` なら表と表のメニューのボタンを隠して `pre.mdmark-raw` を出し、その右上に「表で表示」のボタン（`button.mdmark-raw-toggle`）を重ねる
   - name: pinMode
     type: '`"each"` | `"through"`'
     required: false
@@ -1581,6 +1654,18 @@ args:
     default: 'false'
     description: 表の下の左端に、`plus` のアイコンと文字 `行追加` のボタン（高さ 32px 以上、`--mdmark-color-border` の枠線）を配置するか
     status: planned
+  - name: openMenu
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`features` に `count`・`columns`・`reorder`・`total`・`copy` のどれかを含むか、`rawCsv` を指定したとき'
+    description: 表のメニューを開いているか。`true` なら表のメニューのボタンを `aria-expanded="true"` にし、メニューの `hidden` を解除する
+  - name: moveMenu
+    type: 整数
+    required: false
+    default: なし（開いていない）
+    enabled_when: '`features` に `reorder` を含み、`openColumns` が `true` のとき'
+    description: テーブル設定の一覧で列の移動のメニューを開いているつまみの元の列の位置。そのつまみを `aria-expanded="true"` にし、つまみの近くに `前へ移す`・`後ろへ移す` のボタンを並べ、同じ範囲の中でその向きへ動かせないボタンを `disabled` にする
 events:
   - name: 並べ替える
     when: 列の見出しのボタンを押す
@@ -1599,9 +1684,9 @@ events:
     value: 一覧の行の `data-column`（列の位置）と目のアイコンの `aria-pressed`
     description: '`mount` がその列の見出し・セル・集計のセルの `hidden` を切り替える。残った列の幅は変えない'
   - name: 表をコピーする
-    when: '`表をコピー` のボタンでコピーの形式のメニューを開き、`Markdown の表`・`TSV` のどちらかを押す'
-    value: 形式のボタンの `data-format`（`markdown`・`tsv`）と、`表をコピー` のボタンの `data-state`
-    description: '`mount` がメニューを閉じてフォーカスを `表をコピー` に戻し、見出しの行と表示している行の表示している列を選んだ形式でクリップボードへコピーし、結果を `data-state` とスクリーンリーダーで通知する。写せないときはコピーできないときのパネルを出す'
+    when: '表のメニューの「表をコピー」でコピーの形式のメニューを開き、`Markdown の表`・`TSV` のどちらかを押す'
+    value: 形式のボタンの `data-format`（`markdown`・`tsv`）と、表のメニューのボタンの `data-state`
+    description: '`mount` が形式のメニューと表のメニューを閉じてフォーカスを表のメニューのボタンに戻し、見出しの行と表示している行の表示している列を選んだ形式でクリップボードへコピーし、結果を `data-state` とスクリーンリーダーで通知する。写せないときはコピーできないときのパネルを出す'
   - name: 行へ移る
     when: URL の `#ID` が行の `id` を指す（描いたときと `hashchange`）
     value: 行の `id`
@@ -1613,7 +1698,7 @@ events:
   - name: コピーのパネルを閉じる
     when: コピーできないときのパネルの閉じるボタンを押すか、パネルの中にフォーカスがある間に Esc を押す
     value: なし
-    description: '`mount` がパネルを取り除き、フォーカスを `表をコピー` に戻す'
+    description: '`mount` がパネルを取り除き、フォーカスを表のメニューのボタンに戻す'
   - name: 行の URL をコピーする
     when: 行へのリンクのマーカーを押す
     value: マーカーの解決済みの `href`
@@ -1670,6 +1755,18 @@ events:
     when: '`行追加` のボタンを押す'
     value: なし
     description: '`<mdmark-table>` が `mdmark-row-add` を送信する'
+  - name: 表のメニューを開閉する
+    when: 表のメニューのボタンを押す。開いている間に Esc を押すか、メニューの外を押す
+    value: ボタンの `aria-expanded`
+    description: '`mount` がメニューの `hidden` を切り替え、開いたら最初の項目（項目が無ければメニューそのもの）へフォーカスを移し、Esc で閉じたらボタンへ戻す。中に開いた集計・コピーの形式のメニューも一緒に閉じる'
+  - name: 列を前後へ移す
+    when: テーブル設定の一覧のつまみを動かさずに押すか Enter・Space で列の移動のメニューを開き、`前へ移す`・`後ろへ移す` を押す
+    value: つまみの行の `data-column` と、ボタンの `data-move`（`before`・`after`）
+    description: '`mount` が同じ範囲の中で列を 1 つ前・後ろへ動かして見出しと全ての行のセルと一覧をもう一度並べ、メニューを開いたまま動かせない向きのボタンを `disabled` にする。押したボタンが `disabled` になったらもう一方のボタンへフォーカスを移す'
+  - name: 元の CSV と表を切り替える
+    when: 表のメニューの「元の CSV を表示」か、元の CSV の右上の「表で表示」を押す
+    value: なし
+    description: '`mount` が表と表のメニューのボタンを隠して `pre.mdmark-raw` と「表で表示」を出し（「表で表示」へフォーカス）、「表で表示」では表に戻して表のメニューのボタンへフォーカスを移す。並べ替え・絞り込み・ピン止めの状態は変えない'
 css_properties:
   - name: --mdmark-color-bg-opaque
     syntax: <color>
@@ -1709,21 +1806,21 @@ accessibility:
   - 絞り込みのボタンは `「{列名}」で絞り込む` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は枠線と背景色を付けず、リンクの色（`--mdmark-color-link`）で塗った漏斗で示し、色と塗りの形状の両方で示す（色だけに頼らない）
   - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
   - 'ピン止めのボタンは、`pinMode` が `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め` をスクリーンリーダー向けの名前に持ち、`aria-pressed` で状態を示す（`each` は選んだ列のボタン、`through` は押した最も右の列のボタンを `true`）。表の見えている幅に収まらず留まっていない列のボタンは、名前と `title` に `（表の幅に収まらないため留まっていません）` を付け、破線のピンの形状でも示し、色だけに頼らない。押したボタンは枠線と背景色を付けず、リンクの色で塗ったピン（押す前は線のピン）で示す。ポインターを乗せられる端末（`(hover: hover)`）では、押していないボタンを見出しのセルにポインターかフォーカスがある間だけ `opacity` で見せ、それ以外の間もタブの順に残す。タッチの端末では常に見せる'
-  - 列の幅のつまみは `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` で、`「{列名}」の列の幅` をスクリーンリーダー向けの名前に持ち、`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で今の幅と範囲を示す（最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ）。←・→ キーで幅を変え、Enter で戻す。ポインターが粗い画面では押せる幅を 24px にする
+  - 列の幅のつまみは `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` で、`「{列名}」の列の幅` をスクリーンリーダー向けの名前に持ち、`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で今の幅と範囲を示す（最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ）。←・→ キーで幅を変え、Enter で戻す。どの画面でも押せる幅を 24px にする
   - 多段の見出しは、複数の列をまたぐセルを `scope="colgroup"`、1 列のセルを `scope="col"` にし、行見出しは `scope="row"` にする。結合で隠したセルも値を持ち、並べ替え・絞り込み・コピー・集計はその値で扱う
   - 真偽値の ✓ は `role="img"` と `aria-label="はい"`、空欄のセルはスクリーンリーダー向けの `いいえ` を持ち、外観の空欄とスクリーンリーダーを対応させる
   - 表は `tabindex="0"` で、キーボードで横にスクロールできる。留めた見出し行と集計の行は元のセルをずらしたもので複製を作らず、スクリーンリーダーとフォーカスの順は 1 組のまま
-  - 件数は `aria-live="polite"` で書き換えを通知し、スクリーンリーダーには `{全ての行の数} 件中 {表示している行の数} 件を表示` を指定する
-  - テーブル設定のパネルは絞り込みのドロワーと同じ開閉の作法（`aria-expanded`・`aria-controls`、開いたら最初の押せるつまみか目のアイコンへフォーカス、Esc で閉じてボタンへ戻す）。押せない先頭の列の目のアイコンは、理由をパネルの案内に出す
-  - 表をコピーのボタンは `copy` のアイコンだけで、`title` とスクリーンリーダー向けの名前を `表をコピー` にする
-  - 集計のメニュー（`role="dialog"`・`aria-label="表示する集計"`）とコピーの形式のメニュー（`aria-label="コピーの形式"`）もテーブル設定のパネルと同じ開閉の作法。集計の行を隠しているときは、`集計` のボタンの外観に加えてスクリーンリーダー向けの名前に `（{隠している数} 件を非表示にしています）` を含める
-  - 集計の行の出し入れ、表のコピーの結果（コピーした形式・書き込めなかったことと手動でコピーできること）は、帯の `role="status"` の要素でスクリーンリーダーに伝える
-  - コピーできないときのパネルは `role="group"` でタイトルを名前に持ち、出したら `textarea` へフォーカスを移して中身を全て選択する。閉じるボタンは `閉じる` をスクリーンリーダー向けの名前に持ち、閉じるとフォーカスを `表をコピー` に戻す
+  - 件数は表のメニューのボタンの `aria-label` とメニューの先頭に出し、表を囲む要素の中の `aria-live="polite"` の要素で書き換えを通知し、スクリーンリーダーには `{全ての行の数} 件中 {表示している行の数} 件を表示` を指定する
+  - テーブル設定のパネルは絞り込みのドロワーと同じ開閉の作法（`aria-expanded`・`aria-controls`、開いたら最初の押せるつまみか目のアイコンへフォーカス、Esc で閉じて表のメニューのボタンへ戻す）。押せない先頭の列の目のアイコンは、理由をパネルの案内に出す
+  - 表のメニューのボタンは `ellipsis` のアイコンだけで、`title` を `表のメニュー`、`aria-label` を件数と隠した列の数を含む名前にし、`aria-expanded`・`aria-controls` を持ち `aria-haspopup` を持たない。24px 四方以上。表のメニューは `role="group"`・`aria-label="表のメニュー"` で、開いたら最初の項目（項目が無ければ `tabindex="-1"` のメニューそのもの）へフォーカスを移し、Esc で閉じてボタンへ戻す
+  - 集計のメニュー（`role="dialog"`・`aria-label="表示する集計"`）とコピーの形式のメニュー（`aria-label="コピーの形式"`）もテーブル設定のパネルと同じ開閉の作法。集計の行を隠しているときは、表のメニューの「集計」の項目の外観に加えてスクリーンリーダー向けの名前に `（{隠している数} 件を非表示にしています）` を含める
+  - 集計の行の出し入れ、表のコピーの結果（コピーした形式・書き込めなかったことと手動でコピーできること）は、表を囲む要素の中の `role="status"` の要素でスクリーンリーダーに伝える
+  - コピーできないときのパネルは `role="group"` でタイトルを名前に持ち、出したら `textarea` へフォーカスを移して中身を全て選択する。閉じるボタンは `閉じる` をスクリーンリーダー向けの名前に持ち、閉じるとフォーカスを表のメニューのボタンに戻す
   - 行へのリンクは `「{先頭のセルの文字}」の行へのリンク` をスクリーンリーダー向けの名前に持ち、フォーカスしたときはマーカーを出す。指せない端末ではマーカーを常に薄く出す。URL をコピーした結果は、描くときにマーカーの横へ配置した `role="status"` の要素でスクリーンリーダーに伝える
-  - テーブル設定のボタンはアイコンだけで、`aria-label` とツールチップに `テーブル設定` を持つ。列を隠しているときは、バッジに加えて `aria-label` を `テーブル設定（{隠した列の数} 列を非表示）` にし、色と数だけに頼らない。パネルは絞り込みのドロワーと同じ開閉の作法。つまみはキーボードの ↑・↓ で動かせ、動かせないつまみは `disabled`。案内はつまみの `aria-describedby` でスクリーンリーダーに伝える
+  - 表のメニューの「テーブル設定」の項目はアイコンと文字を持つ。列を隠しているときは、表のメニューのボタンのバッジに加えて `aria-label` に `・{隠した列の数} 列を非表示` を含め、色と数だけに頼らない。パネルは絞り込みのドロワーと同じ開閉の作法。つまみはキーボードの ↑・↓ で動かせ、動かせないつまみは `disabled`。つまみは動かさずに押すか Enter・Space で列の移動のメニュー（`role="group"`・`aria-label="「{列名}」の列の移動"`）を開き、`aria-expanded`・`aria-controls` で開閉を示す。メニューのボタンが押して `disabled` になったらもう一方のボタンへフォーカスを移し、Esc で閉じてそのつまみへ戻す。案内はつまみの `aria-describedby` でスクリーンリーダーに伝える
   - 階層の開閉のボタンは `aria-expanded` と `{パス} を畳む`・`{パス} を開く` のスクリーンリーダー向けの名前を持つ。キーの名前は `tabindex="0"` で、フォーカスでも全体のパスのツールチップを出す。選んだ行は `aria-selected` で示し、縦線の濃さだけに頼らない
   - 見本の表示の切り替えのボタンは `aria-expanded`・`aria-controls` で見本の開閉を示す
-  - RAW のボタンは `aria-label="元の CSV を表示"` と `aria-pressed` を持ち、24px 四方以上。押した状態は青いアイコンと薄い青の面で示す。押すと表と元の CSV が入れ替わるため、状態は色のほかに出ている中身でも分かる
+  - 元の CSV の表示の「表で表示」のボタンは `aria-label="表で表示"` を持ち、24px 四方以上。表と元の CSV が入れ替わるため、どちらを出しているかは出ている中身で分かる
   - 行を押せる表の行は、タブの順に 1 行だけ入り（roving tabindex）、↑・↓ で行を移す。フォーカスした行は 2px の枠線で示し、面の色だけに頼らない
   - 編集できるセルは破線の下線とポインターの形状で示し、色だけに頼らない。入力欄は `{列名}（{表示している行の番号} 行目）を編集する` をスクリーンリーダー向けの名前に持ち、案内を `aria-describedby` で伝える
   - '`行追加` のボタンは文字を持ち、アイコンは `aria-hidden` にする。フォーカスは 2px の `--mdmark-color-accent` の外側の枠線で示す'
@@ -1744,9 +1841,13 @@ notes:
 
     モックは `docs/mock/components/table/`。
 
-    `count`・`columns`・`reorder`・`total`・`copy` の表は `<table>` の前に `<div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite">…</p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only" aria-expanded aria-controls aria-label="テーブル設定（列を隠しているときは「テーブル設定（{隠した列の数} 列を非表示）」）" title="テーブル設定">{アイコン}<span class="mdmark-table-tool-badge" aria-hidden="true">{隠した列の数}</span></button><button class="mdmark-table-tool mdmark-totals-toggle" aria-expanded aria-controls>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy" data-state="idle" aria-expanded aria-controls><span class="mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div>` を配置し、`<table>` の後ろに `<div class="mdmark-table-settings" role="dialog" aria-label="テーブル設定" hidden>`（`mdmark-table-settings-title`・`<ul class="mdmark-table-settings-list">` の列ごとの `<li class="mdmark-table-settings-item" data-column="{元の列の位置}" data-name="{列名}">`（`reorder` のとき `<button class="mdmark-table-settings-grip" aria-label="「{列名}」の列を並べ替える" aria-describedby>`、`mdmark-table-settings-name`、`columns` のとき `<button class="mdmark-table-settings-eye" aria-pressed aria-label>`）・ピン止めと結合した見出しの範囲ごとの `<li class="mdmark-table-settings-group">` の見出し・`mdmark-table-settings-note`）、`<div class="mdmark-totals-menu mdmark-table-menu" role="dialog" aria-label="表示する集計" hidden>`（タイトルと、`value` が計算のチェックボックス）、`<div class="mdmark-copy-menu mdmark-table-menu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を配置する。
+    `count`・`columns`・`reorder`・`total`・`copy` の表と `rawCsv` の表は、表の上にバーを配置せず、表を囲む要素の直下（横にスクロールする要素の外）に `<button class="mdmark-table-menu" type="button" data-state="idle" aria-expanded="false" aria-controls title="表のメニュー" aria-label="表のメニュー（{表示している行の数} / {全ての行の数} 件・{隠した列の数} 列を非表示）">{アイコン}<span class="mdmark-table-tool-badge" aria-hidden="true">{隠した列の数}</span></button>`（件数と隠した列が無い表の `aria-label` は `表のメニュー`）と、`<div class="mdmark-table-menu-panel" role="group" aria-label="表のメニュー" hidden>`（`count` のとき先頭に `<p class="mdmark-table-count">{表示している行の数} / {全ての行の数} 件を表示</p>`、続けて機能を持つ表だけに `<button class="mdmark-table-menu-item" type="button" data-action="{settings|totals|copy|raw}">{アイコン}<span>{テーブル設定|集計|表をコピー|元の CSV を表示}</span></button>` をこの順に並べ、`totals`・`copy` の項目は `aria-expanded`・`aria-controls` を持つ。項目が無いときはパネルに `tabindex="-1"` を付ける）を配置する。ボタンは見出し行の右上（最も右の見えている列の列の幅のつまみの左）に重ね、横にスクロールしても表の右端に残し、縦は見出し行と一緒に留める。最も右の見えている列の最下段の `th` は class `mdmark-th-menu-space` を持ち、ボタンの幅の分の右の余白を取る。表を囲む要素は、画面に出さない `<span class="mdmark-visually-hidden mdmark-table-count-live" aria-live="polite"></span>`（`count` のとき）と `<span class="mdmark-visually-hidden mdmark-table-status" role="status"></span>` を持ち、`<table>` の後ろに `<div class="mdmark-table-settings" role="dialog" aria-label="テーブル設定" hidden>`（`mdmark-table-settings-title`・`<ul class="mdmark-table-settings-list">` の列ごとの `<li class="mdmark-table-settings-item" data-column="{元の列の位置}" data-name="{列名}">`（`reorder` のとき `<button class="mdmark-table-settings-grip" aria-label="「{列名}」の列を並べ替える" aria-describedby aria-expanded aria-controls>`、`mdmark-table-settings-name`、`columns` のとき `<button class="mdmark-table-settings-eye" aria-pressed aria-label>`）・ピン止めと結合した見出しの範囲ごとの `<li class="mdmark-table-settings-group">` の見出し・`mdmark-table-settings-note`）、表のメニューの中の `<div class="mdmark-totals-menu mdmark-table-submenu" role="dialog" aria-label="表示する集計" hidden>`（タイトルと、`value` が計算のチェックボックス）、表のメニューの中の `<div class="mdmark-copy-menu mdmark-table-submenu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を配置する。
 
-    コピーできないときのパネルは帯の直後の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。
+    テーブル設定のパネルは、つまみの列の移動のメニュー `<div class="mdmark-table-move-menu" role="group" aria-label="「{列名}」の列の移動" hidden>`（`<button type="button" data-move="before">前へ移す</button>`・`<button type="button" data-move="after">後ろへ移す</button>`）を 1 つ持ち、開いたつまみの近くへ移す。
+
+    `rawCsv` の表は `<pre class="mdmark-raw" hidden>` の右上に `<button class="mdmark-raw-toggle" type="button" aria-label="表で表示" title="表で表示" hidden>` を重ね、元の CSV を出している間だけ出す。
+
+    コピーできないときのパネルは表を囲む要素の中の表の前の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。
 
     集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。
 
@@ -1754,9 +1855,9 @@ notes:
 
     真偽値のセルは `<td class="mdmark-align-center" data-value="true"><span class="mdmark-check" role="img" aria-label="はい"><svg class="mdmark-icon">…</svg></span></td>` と `<td class="mdmark-align-center" data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>`。
 
-    アイコンは全て lucide（テーブル設定の `settings-2`・つまみの `grip-vertical`・目の `eye`・`eye-off`・開閉の `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。
+    アイコンは全て lucide（表のメニューの `ellipsis`・元の CSV を表示の `code-xml`・表で表示の `table`・テーブル設定の `settings-2`・つまみの `grip-vertical`・目の `eye`・`eye-off`・開閉の `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。
 
-    印刷では帯のボタン・メニュー・パネル・行へのリンクのマーカーを出さず、`autoWidths` の幅を適用しない。
+    印刷では表のメニューのボタン・メニュー・パネル・行へのリンクのマーカーを出さず、件数（メニューの先頭の `{表示している行の数} / {全ての行の数} 件を表示`）を表の上に出し、`autoWidths` の幅を適用しない。
 
     画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす。
 

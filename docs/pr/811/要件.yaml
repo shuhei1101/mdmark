@@ -1,0 +1,47 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 読者が、表の列の幅を 24 CSS px 以上のつまみから変え、テーブル設定の列の順をつまみを押して開くメニューでも変え、件数・テーブル設定・集計・コピー・元の CSV の切り替えを見出し行の右上の表のメニューから操作する
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-793-2.yaml
+    impact: run_only
+    detail: アプリの画面の表も Markdown の表と同じ操作を持ち、シナリオは「同じ操作」として記載済みで変わらないが、つまみの変更が壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 列の並べ替えの機能の説明につまみを押して開くメニューを、列の幅の機能の説明につまみの押せる範囲を、表の操作のバーの説明に置き場所を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:59:47.234182+00:00'
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 用語『列の並べ替え』『テーブル設定』の説明につまみを押して開くメニューを追加し、表の操作のバーの置き場所を変えたら関係する用語の説明を合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:59:47.234182+00:00'
+  - page: docs/guide/記法.mark.md
+    change: 表の機能の表に表のメニューの行を追加し、件数・テーブル設定・列の並べ替え・集計・表のコピー・列の幅の変更と CSV の表の切り替えの説明を表のメニューとつまみのメニューに合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:59:47.234182+00:00'
+  - page: docs/guide/カスタマイズ-印刷する.mark.md
+    change: 表の件数・集計・隠した列の行を、表のメニューのボタンとメニューを出さず件数を表の上に出す印刷に合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T17:04:20.925301+00:00'
+scope_out:
+  - item: 表以外の部品のドラッグの操作（map の図の移動・差分のミニマップ・シーケンス図の参加者の並べ替え等）のドラッグの代わりの有無の点検
+    reason: 要望は表の部品に限る。表以外の部品は別の部品で、この作業 PR がマージされなくても同じ内容で成り立つが、代わりの操作の有無をこの作業で調べていない
+    plan: '#815'
+  - item: '列の幅を、ドラッグをせずにクリック・タップだけで変える操作（Issue #810 の「ドラッグをせずに列の幅を変え、元に戻せる手段」）'
+    reason: ユーザーが、列の幅は今の操作で足り、ボタンやメニューは要らないと決めた（確認ログ）
+    plan: none
+  - item: 列の幅のつまみ（`span.mdmark-col-resize`、`role="separator"`・`tabindex="0"`）が描いた直後に `aria-valuenow` を持たず、操作を付けない描画（ストーリー）で axe の `aria-required-attr`（critical）が出る（`src/table/table.part.ts` の `renderTableTools`）
+    reason: WAI-ARIA の「フォーカスできる `separator` は `aria-valuenow` を持つ」から外れている。つまみの HTML はこの作業 PR で変えておらず、要望（押せる範囲とドラッグの代わり、表のメニュー）に含まれない
+    plan: '#816'
+  - item: 'テーブル設定のパネル（`#mdmark-table-settings`、`position: fixed`）をスマホ幅（390x844）で開くと、固定の領域が画面の高さの 25% を超え、崩れの検出の `fixed-area-height`（serious）が出る（既存のストーリー `settings-open-reorder` でも出る）'
+    reason: スマホ幅で固定の領域が画面を大きく覆う。パネルの作りは base ブランチから変えておらず、要望（押せる範囲とドラッグの代わり、表のメニュー）に含まれない
+    plan: '#817'

@@ -1,4 +1,4 @@
-import { renderRawBar } from "./table.part.ts";
+import { renderRawToggle } from "./table.part.ts";
 
 // 表と、表を包む横のスクロールの要素
 const TABLE_SELECTOR =
@@ -12,7 +12,45 @@ const tableBlockOf = (table: Element): HTMLElement => {
     : (table as HTMLElement);
 };
 
-/** CSV の表の囲みの帯に RAW のボタンを配置し、押すたびに表と元の CSV を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない */
+/** 囲みの直下の、元の CSV の要素 */
+const rawOf = (wrapper: HTMLElement): HTMLElement | null =>
+  wrapper.querySelector<HTMLElement>(":scope > pre.mdmark-raw");
+
+/** 囲みの中の、その囲みの表のメニューのボタン */
+const menuButtonOf = (wrapper: HTMLElement): HTMLElement | undefined =>
+  [...wrapper.querySelectorAll<HTMLElement>("button.mdmark-table-menu")].find(
+    (button) => button.closest(".mdmark-table") === wrapper,
+  );
+
+/** 囲みの表と元の CSV を入れ替え、出した側のボタンへフォーカスを移す */
+const showRaw = (wrapper: HTMLElement, shown: boolean): void => {
+  const table = wrapper.querySelector(TABLE_SELECTOR);
+  const toggle = wrapper.querySelector<HTMLElement>(
+    ":scope > .mdmark-raw-toggle",
+  );
+  const menuButton = menuButtonOf(wrapper);
+  if (shown) {
+    wrapper.dataset.view = "raw";
+  } else {
+    delete wrapper.dataset.view;
+  }
+  if (table) {
+    tableBlockOf(table).hidden = shown;
+  }
+  const raw = rawOf(wrapper);
+  if (raw) {
+    raw.hidden = !shown;
+  }
+  if (menuButton) {
+    menuButton.hidden = shown;
+  }
+  if (toggle) {
+    toggle.hidden = !shown;
+  }
+  (shown ? toggle : menuButton)?.focus();
+};
+
+/** CSV の表の元の CSV の右上に「表で表示」のボタンを配置し、表のメニューの「元の CSV を表示」と「表で表示」で表と元の CSV を入れ替える。並べ替え・絞り込み・ピン止めの状態は触らない */
 export const attachCsvRaw = (root: HTMLElement): (() => void) => {
   const wrappers = [
     ...root.querySelectorAll<HTMLElement>(
@@ -21,32 +59,22 @@ export const attachCsvRaw = (root: HTMLElement): (() => void) => {
   ];
   const added: Element[] = [];
   for (const wrapper of wrappers) {
-    const table = wrapper.querySelector(TABLE_SELECTOR);
-    if (!table || wrapper.querySelector(".mdmark-raw-toggle")) {
+    const raw = rawOf(wrapper);
+    if (!raw || wrapper.querySelector(".mdmark-raw-toggle")) {
       continue;
     }
-    const pressed = wrapper.dataset.view === "raw";
-    // 表の操作の帯があれば、その道具の並びに追加し、無ければ RAW のボタンの帯を表の前に配置する
-    const bar = wrapper.querySelector(":scope > .mdmark-table-bar");
-    if (bar) {
-      const holder = document.createElement("div");
-      holder.innerHTML = renderRawBar(pressed);
-      const tools = holder.querySelector(".mdmark-table-tools");
-      if (tools) {
-        bar.append(tools);
-        added.push(tools);
-      }
-    } else {
-      const block = tableBlockOf(table);
-      block.insertAdjacentHTML("beforebegin", renderRawBar(pressed));
-      if (block.previousElementSibling) {
-        added.push(block.previousElementSibling);
-      }
+    raw.insertAdjacentHTML(
+      "afterend",
+      renderRawToggle(wrapper.dataset.view === "raw"),
+    );
+    if (raw.nextElementSibling) {
+      added.push(raw.nextElementSibling);
     }
   }
   const onClick = (event: Event): void => {
-    const button = (event.target as Element | null)?.closest<HTMLButtonElement>(
-      "button.mdmark-raw-toggle",
+    const target = event.target as Element | null;
+    const button = target?.closest<HTMLButtonElement>(
+      'button.mdmark-raw-toggle, button.mdmark-table-menu-item[data-action="raw"]',
     );
     const wrapper = button?.closest<HTMLElement>(
       'div.mdmark-table[data-source="csv"]',
@@ -54,21 +82,7 @@ export const attachCsvRaw = (root: HTMLElement): (() => void) => {
     if (!button || !wrapper) {
       return;
     }
-    const raw = wrapper.querySelector<HTMLElement>(":scope > pre.mdmark-raw");
-    const table = wrapper.querySelector(TABLE_SELECTOR);
-    const showRaw = wrapper.dataset.view !== "raw";
-    if (showRaw) {
-      wrapper.dataset.view = "raw";
-    } else {
-      delete wrapper.dataset.view;
-    }
-    button.setAttribute("aria-pressed", String(showRaw));
-    if (table) {
-      tableBlockOf(table).hidden = showRaw;
-    }
-    if (raw) {
-      raw.hidden = !showRaw;
-    }
+    showRaw(wrapper, !button.classList.contains("mdmark-raw-toggle"));
   };
   root.addEventListener("click", onClick);
   return () => {
