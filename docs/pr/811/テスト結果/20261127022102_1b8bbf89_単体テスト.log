@@ -1,0 +1,737 @@
+# コマンド: npm run test:unit
+# fail 38 件は全て表のメニュー・列の移動のメニュー・表で表示のボタンの実装が無いことによる
+# 実装の前から pass したテスト:
+#   test_render_table_when_feature_attributes: 囲みだけ（body: SLOT_MARKER）のときに表の上の道具を描かない振る舞いが src/table/table.part.ts の renderTable に既にある
+#   test_render_table_when_copy_fallback: コピーできないときのパネルを表を包む要素の直前に配置する振る舞いが src/table/table.part.ts:1124（commit 8659c279）に既にある
+
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-table-column-resize-target-and-drag-alternative
+
+ ❯ |unit| tests/unit/src/table/table.part.test.ts (46 tests | 12 failed) 393ms
+   × test_render_table_when_all_features 18ms
+   × test_render_table_menu 3ms
+   × test_render_table_menu_when_copy_failed 0ms
+   × test_render_table_menu_when_totals 0ms
+   × test_render_table_menu_when_copy_menu_open 0ms
+   × test_render_table_menu_when_count_only 0ms
+   × test_render_table_menu_when_raw 0ms
+   × test_render_table_when_totals_hidden 1ms
+   × test_render_table_settings_when_move_menu 4ms
+   × test_render_raw_toggle 3ms
+   × test_render_table_when_raw_shown 4ms
+   × test_render_table_when_tree_counted 9ms
+ ❯ |unit-browser (chromium)| tests/unit/src/table/csv.interact.browser.test.ts (1 test | 1 failed) 772ms
+   × test_attach_csv_raw 771ms
+ ❯ |unit-browser (chromium)| tests/unit/src/table/table-sticky.interact.browser.test.ts (9 tests | 2 failed) 1599ms
+   × test_attach_sticky_rows_when_table_menu (CSS.supports: false) 591ms
+   × test_attach_sticky_rows_when_table_menu (CSS.supports: true) 168ms
+ ❯ |unit-browser (chromium)| tests/unit/src/table/table-settings.interact.browser.test.ts (6 tests | 6 failed) 2020ms
+   × test_attach_table_settings_when_dragged 794ms
+   × test_attach_table_settings_when_arrow_key 482ms
+   × test_attach_table_settings_when_group_boundary 190ms
+   × test_attach_table_settings_when_hidden 172ms
+   × test_attach_table_settings_when_move_menu 175ms
+   × test_attach_table_settings_when_move_menu_by_keyboard 205ms
+ ❯ |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts (85 tests | 17 failed) 11340ms
+   × test_attach_tables_when_check_column 625ms
+   × test_attach_tables_when_counted 189ms
+   × test_attach_tables_when_columns_toggled 151ms
+   × test_attach_tables_when_copied 169ms
+   × test_attach_tables_when_copied_markdown 131ms
+   × test_attach_tables_when_copied_after_sorted 2491ms
+   × test_attach_tables_when_copy_denied 525ms
+   × test_attach_tables_when_totals_toggled 479ms
+   × test_attach_tables_when_merged_sorted 516ms
+   × test_attach_tables_when_tree_copied 450ms
+   × test_attach_tables_when_columns_notified 515ms
+   × test_attach_tables_when_columns_callback_throws 413ms
+   × test_attach_tables_when_columns_badge 492ms
+   × test_capture_table_state 233ms
+   × test_restore_table_state 494ms
+   × test_attach_tables_when_menu_opened 481ms
+   × test_attach_tables_when_menu_space_moved 587ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 38 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_when_all_features
+AssertionError: expected '<div class="mdmark-table" data-kind="…' not to contain 'mdmark-table-bar'
+
+Expected: "mdmark-table-bar"
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter count columns total copy rowlink" data-hide="1" data-total="2:sum"><div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">3 / 3 件</span><span class="mdmark-visually-hidden">3 件中 3 件を表示</span></p><div class="mdmark-table-tools"><button class="mdmark-table-tool mdmark-table-settings-toggle is-icon-only is-active" type="button" aria-expanded="false" aria-controls="mdmark-table-settings" aria-label="テーブル設定（1 列を非表示）" title="テーブル設定"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 17H5"></path><path d="M19 7h-9"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></svg><span class="mdmark-table-tool-badge" aria-hidden="true">1</span></button><button class="mdmark-table-tool mdmark-totals-toggle" type="button" aria-expanded="false" aria-controls="mdmark-table-totals"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 7V5a1 1 0 0 0-1-1H6.5a.5.5 0 0 0-.4.8l4.5 6a2 2 0 0 1 0 2.4l-4.5 6a.5.5 0 0 0 .4.8H17a1 1 0 0 0 1-1v-2"></path></svg>集計<span class="mdmark-visually-hidden"></span></button><button class="mdmark-table-tool mdmark-copy is-icon-only" type="button" title="表をコピー" data-state="idle" aria-expanded="false" aria-controls="mdmark-table-copy"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span class="mdmark-visually-hidden mdmark-copy-label">表をコピー</span></button></div><span class="mdmark-visually-hidden mdmark-table-status" role="status"></span></div><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「名前」の列をピン止め" aria-pressed="false" hidden></button></span></span></th><th hidden><span class="mdmark-th"><button class="mdmark-sort" type="button">説明</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「説明」の列をピン止め" aria-pressed="false" hidden></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">数量</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「数量」の列をピン止め" aria-pressed="false" hidden></button></span></span></th></tr></thead><tbody><tr id="なつめ"><td data-label="名前"><span class="mdmark-row-link-cell">なつめ<a class="mdmark-row-anchor" href="#なつめ" aria-label="「なつめ」の行へのリンク"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a><span class="mdmark-row-link-notice" role="status"></span></span></td><td data-label="説明" hidden>描画を速くする</td><td data-label="数量">12</td></tr><tr id="かりん" data-target><td data-label="名前"><span class="mdmark-row-link-cell">かりん<a class="mdmark-row-anchor" href="#かりん" aria-label="「かりん」の行へのリンク"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a><span class="mdmark-row-link-notice" role="status"></span></span></td><td data-label="説明" hidden>印刷を修正する</td><td data-label="数量">8</td></tr><tr id="ざくろ"><td data-label="名前"><span class="mdmark-row-link-cell">ざくろ<a class="mdmark-row-anchor" href="#ざくろ" aria-label="「ざくろ」の行へのリンク"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></svg></a><span class="mdmark-row-link-notice" role="status"></span></span></td><td data-label="説明" hidden>描画の崩れを修正する</td><td data-label="数量">5</td></tr><tr class="mdmark-table-empty" hidden><td colspan="2">一致する行がありません</td></tr></tbody><tfoot><tr class="mdmark-table-total" data-total-kind="sum"><td data-label="名前"><span class="mdmark-total-name">合計</span></td><td data-label="説明" hidden></td><td data-label="数量" data-total="sum"><span class="mdmark-total-value">25</span></td></tr></tfoot></table></div><div hidden class="mdmark-table-settings" id="mdmark-table-settings" role="dialog" aria-label="テーブル設定"><p class="mdmark-table-settings-title">表示と並び順</p><ul class="mdmark-table-settings-list"><li class="mdmark-table-settings-item" data-column="0" data-name="名前" data-place=""><span class="mdmark-table-settings-name">名前</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「名前」を隠す" disabled><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg></button></li><li class="mdmark-table-settings-item" data-column="1" data-name="説明" data-place=""><span class="mdmark-table-settings-name">説明</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="true" aria-label="「説明」を表示"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10.733 5.076a10.744 10.744 0 0 1 11.205 6.575 1 1 0 0 1 0 .696 10.747 10.747 0 0 1-1.444 2.49"></path><path d="M14.084 14.158a3 3 0 0 1-4.242-4.242"></path><path d="M17.479 17.499a10.75 10.75 0 0 1-15.417-5.151 1 1 0 0 1 0-.696 10.75 10.75 0 0 1 4.446-5.143"></path><path d="m2 2 20 20"></path></svg></button></li><li class="mdmark-table-settings-item" data-column="2" data-name="数量" data-place=""><span class="mdmark-table-settings-name">数量</span><button class="mdmark-table-settings-eye" type="button" aria-pressed="false" aria-label="「数量」を隠す"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg></button></li></ul><p class="mdmark-table-settings-note" id="mdmark-table-settings-note">先頭の列は隠せません</p></div><div class="mdmark-totals-menu mdmark-table-menu" id="mdmark-table-totals" role="dialog" aria-label="表示する集計" hidden><p class="mdmark-totals-title">表示する集計</p><ul class="mdmark-totals-options"><li><label><input type="checkbox" value="sum" checked>合計</label></li></ul></div><div class="mdmark-copy-menu mdmark-table-menu" id="mdmark-table-copy" role="dialog" aria-label="コピーの形式" hidden><button class="mdmark-copy-format" type="button" data-format="markdown"><span class="mdmark-copy-format-name">Markdown の表</span><span class="mdmark-copy-format-note">文書に貼るとそのまま表になる</span></button><button class="mdmark-copy-format" type="button" data-format="tsv"><span class="mdmark-copy-format-name">TSV</span><span class="mdmark-copy-format-note">表計算ソフトに貼るとセルに分かれる</span></button></div></div>"
+
+ ❯ tests/unit/src/table/table.part.test.ts:151:20
+    149|   });
+    150|   // 検証: 表の上のバーが無く、表のメニューのボタンを横のスクロールの外に配置する
+    151|   expect(html).not.toContain("mdmark-table-bar");
+       |                    ^
+    152|   const scroll = outerHtml(html, 'class="mdmark-table-scroll"');
+    153|   expect(scroll).not.toContain("mdmark-table-menu");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_menu
+TypeError: renderTableMenu is not a function
+ ❯ tests/unit/src/table/table.part.test.ts:200:29
+    198|   const { renderTableMenu } = await loadTable();
+    199|   // 実行
+    200|   const { button, menus } = renderTableMenu({
+       |                             ^
+    201|     id: "t1",
+    202|     features: ["count", "columns", "copy"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_menu_when_copy_failed
+TypeError: renderTableMenu is not a function
+ ❯ tests/unit/src/table/table.part.test.ts:250:29
+    248|   const { renderTableMenu } = await loadTable();
+    249|   // 実行
+    250|   const { button, menus } = renderTableMenu({
+       |                             ^
+    251|     id: "t1",
+    252|     features: ["copy"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_menu_when_totals
+TypeError: renderTableMenu is not a function
+ ❯ tests/unit/src/table/table.part.test.ts:274:29
+    272|   const { renderTableMenu } = await loadTable();
+    273|   // 実行
+    274|   const { button, menus } = renderTableMenu({
+       |                             ^
+    275|     id: "t1",
+    276|     features: ["total"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_menu_when_copy_menu_open
+TypeError: renderTableMenu is not a function
+ ❯ tests/unit/src/table/table.part.test.ts:320:21
+    318|   const { renderTableMenu } = await loadTable();
+    319|   // 実行
+    320|   const { menus } = renderTableMenu({
+       |                     ^
+    321|     id: "t1",
+    322|     features: ["copy"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_menu_when_count_only
+TypeError: renderTableMenu is not a function
+ ❯ tests/unit/src/table/table.part.test.ts:349:29
+    347|   const { renderTableMenu } = await loadTable();
+    348|   // 実行
+    349|   const { button, menus } = renderTableMenu({
+       |                             ^
+    350|     id: "t1",
+    351|     features: ["count"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_menu_when_raw
+TypeError: renderTableMenu is not a function
+ ❯ tests/unit/src/table/table.part.test.ts:375:20
+    373|   const { renderTableMenu } = await loadTable();
+    374|   // 実行
+    375|   const withCopy = renderTableMenu({
+       |                    ^
+    376|     id: "t1",
+    377|     features: ["count", "copy"],
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_when_totals_hidden
+Error: 開始タグが無い: data-action="totals"
+ ❯ findTag tests/unit/helpers/html.ts:10:11
+      8|   const tag = startTags(html).find((candidate) => candidate.includes(n…
+      9|   if (tag === undefined) {
+     10|     throw new Error(`開始タグが無い: ${needle}`);
+       |           ^
+     11|   }
+     12|   return tag;
+ ❯ tests/unit/src/table/table.part.test.ts:670:10
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_settings_when_move_menu
+AssertionError: expected [ undefined, undefined, …(2) ] to deeply equal [ 'true', 'false', 'false', 'false' ]
+
+- Expected
++ Received
+
+  [
+-   "true",
+-   "false",
+-   "false",
+-   "false",
++   undefined,
++   undefined,
++   undefined,
++   undefined,
+  ]
+
+ ❯ tests/unit/src/table/table.part.test.ts:1172:72
+    1170|   // 検証: 先頭の列のメニュー
+    1171|   const grips = findTags(first, "mdmark-table-settings-grip");
+    1172|   expect(grips.map((tag) => /aria-expanded="([^"]*)"/.exec(tag)?.[1]))…
+       |                                                                        ^
+    1173|     "true",
+    1174|     "false",
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_raw_toggle
+AssertionError: expected '<button class="mdmark-raw-toggle" typ…' to contain 'aria-label="表で表示"'
+
+Expected: "aria-label="表で表示""
+Received: "<button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false">"
+
+ ❯ tests/unit/src/table/table.part.test.ts:1274:17
+    1272|     expect(tag).toContain('class="mdmark-raw-toggle"');
+    1273|     expect(tag).toContain('type="button"');
+    1274|     expect(tag).toContain('aria-label="表で表示"');
+       |                 ^
+    1275|     expect(tag).toContain('title="表で表示"');
+    1276|     expect(tag).not.toContain("aria-pressed");
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_when_raw_shown
+AssertionError: expected '<div class="mdmark-table" data-kind="…' not to contain 'mdmark-table-bar'
+
+- Expected
++ Received
+
+- mdmark-table-bar
++ <div class="mdmark-table" data-kind="data" data-features="sort pin filter" data-source="csv"><div class="mdmark-table-bar mdmark-raw-bar"><div class="mdmark-table-tools"><button class="mdmark-raw-toggle" type="button" aria-label="元の CSV を表示" aria-pressed="false"><svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m18 16 4-4-4-4"></path><path d="m6 8-4 4 4 4"></path><path d="m14.5 4-5 16"></path></svg></button></div></div><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">名前</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「名前」の列をピン止め" aria-pressed="false" hidden></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">拠点</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「拠点」の列をピン止め" aria-pressed="false" hidden></button></span></span></th><th><span class="mdmark-th"><button class="mdmark-sort" type="button">金額</button><span class="mdmark-th-tools"><button class="mdmark-pin" type="button" aria-label="「金額」の列をピン止め" aria-pressed="false" hidden></button></span></span></th></tr></thead><tbody><tr><td data-label="名前">北山</td><td data-label="拠点">東京, 本社</td><td data-label="金額">1200</td></tr><tr><td data-label="名前">南田</td><td data-label="拠点">大阪</td><td data-label="金額">800</td></tr><tr class="mdmark-table-empty" hidden><td colspan="3">一致する行がありません</td></tr></tbody></table></div><pre class="mdmark-raw" hidden tabindex="0" aria-label="元の CSV"><code class="language-csv">名前,拠点,金額
++ 北山,&quot;東京, 本社&quot;,1200
++ 南田,大阪,800</code></pre></div>
+
+ ❯ tests/unit/src/table/table.part.test.ts:1302:21
+    1300|   const raw = renderTable({ ...options, rawShown: true });
+    1301|   // 検証: 表を出している
+    1302|   expect(table).not.toContain("mdmark-table-bar");
+       |                     ^
+    1303|   expect(table).toContain('data-action="raw"');
+    1304|   expect(findTag(table, 'class="mdmark-raw"')).toMatch(/\shidden\b/);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/38]⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_when_tree_counted
+AssertionError: expected '<div class="mdmark-table" data-kind="…' not to contain 'mdmark-table-bar'
+
+Expected: "mdmark-table-bar"
+Received: "<div class="mdmark-table" data-kind="data" data-features="sort pin filter count" data-tree="0"><div class="mdmark-table-bar"><p class="mdmark-table-count" aria-live="polite"><span aria-hidden="true">2 / 2 件</span><span class="mdmark-visually-hidden">2 件中 2 件を表示</span></p></div><div class="mdmark-table-scroll"><table tabindex="0" aria-label="表"><thead><tr><th>キー</th><th>型</th><th>既定</th><th>説明</th></tr></thead><tbody><tr class="mdmark-tree-row is-virtual has-children" data-path="features" data-parent="" data-depth="0" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><button class="mdmark-tree-toggle mdmark-table-tree-toggle" type="button" aria-expanded="true" aria-label="features を畳む"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><span class="mdmark-tree-name" tabindex="0">features</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span class="mdmark-tree-copy-status" role="status"></span></button></span></td><td></td><td></td><td></td></tr><tr class="mdmark-tree-row" data-path="features.table" data-parent="features" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0">table</span><span class="mdmark-tree-required" aria-label="必須">*</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span class="mdmark-tree-copy-status" role="status"></span></button></span></td><td><span class="mdmark-type-badge" data-type="bool">bool</span></td><td><span class="mdmark-tree-default">true</span></td><td>表の機能</td></tr><tr class="mdmark-tree-row is-virtual has-children" data-path="aliases[]" data-parent="" data-depth="0" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><button class="mdmark-tree-toggle mdmark-table-tree-toggle" type="button" aria-expanded="true" aria-label="aliases[] を畳む"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m6 9 6 6 6-6"></path></svg></button><span class="mdmark-tree-name" tabindex="0">aliases</span><span class="mdmark-tree-array">[]</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span class="mdmark-tree-copy-status" role="status"></span></button></span></td><td></td><td></td><td></td></tr><tr class="mdmark-tree-row" data-path="aliases[].id" data-parent="aliases[]" data-depth="1" aria-selected="false"><td class="mdmark-tree-key"><span class="mdmark-tree-cell"><span class="mdmark-tree-guide" aria-hidden="true"></span><span class="mdmark-tree-spacer" aria-hidden="true"></span><span class="mdmark-tree-name" tabindex="0">id</span><button class="mdmark-tree-copy" type="button" aria-label="全体のパスをコピー"><svg class="mdmark-diagram-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg><span class="mdmark-tree-copy-status" role="status"></span></button></span></td><td><span class="mdmark-type-badge" data-type="string">string</span></td><td></td><td>別名の ID</td></tr></tbody></table></div></div>"
+
+ ❯ tests/unit/src/table/table.part.test.ts:1332:20
+    1330|   });
+    1331|   // 検証
+    1332|   expect(html).not.toContain("mdmark-table-bar");
+       |                    ^
+    1333|   expect(findTag(html, 'class="mdmark-table-menu"')).toContain(
+    1334|     'aria-label="表のメニュー（2 / 2 件）"',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/csv.interact.browser.test.ts > test_attach_csv_raw
+AssertionError: expected undefined to be true // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/csv.interact.browser.test.ts/test_attach_csv_raw.png
+
+- Expected:
+true
+
++ Received:
+undefined
+
+ ❯ tests/unit/src/table/csv.interact.browser.test.ts:46:68
+     44|     ?.click();
+     45|   // 検証
+     46|   expect(hiddenOf(root.querySelector(".mdmark-table-menu-panel"))).toB…
+       |                                                                    ^
+     47|   expect(hiddenOf(scroll)).toBe(true);
+     48|   expect(hiddenOf(menuButton)).toBe(true);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-settings.interact.browser.test.ts > test_attach_table_settings_when_dragged
+Error: 表のメニューのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.interact.browser.test.ts/test_attach_table_settings_when_dragged.png
+
+ ❯ openSettings tests/unit/src/table/table-settings.interact.browser.test.ts:65:11
+     63|   );
+     64|   if (!toggle) {
+     65|     throw new Error("表のメニューのボタンが無い");
+       |           ^
+     66|   }
+     67|   toggle.click();
+ ❯ tests/unit/src/table/table-settings.interact.browser.test.ts:145:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-settings.interact.browser.test.ts > test_attach_table_settings_when_arrow_key
+Error: 表のメニューのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.interact.browser.test.ts/test_attach_table_settings_when_arrow_key.png
+
+ ❯ openSettings tests/unit/src/table/table-settings.interact.browser.test.ts:65:11
+     63|   );
+     64|   if (!toggle) {
+     65|     throw new Error("表のメニューのボタンが無い");
+       |           ^
+     66|   }
+     67|   toggle.click();
+ ❯ tests/unit/src/table/table-settings.interact.browser.test.ts:163:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-settings.interact.browser.test.ts > test_attach_table_settings_when_group_boundary
+Error: 表のメニューのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.interact.browser.test.ts/test_attach_table_settings_when_group_boundary.png
+
+ ❯ openSettings tests/unit/src/table/table-settings.interact.browser.test.ts:65:11
+     63|   );
+     64|   if (!toggle) {
+     65|     throw new Error("表のメニューのボタンが無い");
+       |           ^
+     66|   }
+     67|   toggle.click();
+ ❯ tests/unit/src/table/table-settings.interact.browser.test.ts:180:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-settings.interact.browser.test.ts > test_attach_table_settings_when_hidden
+Error: 表のメニューのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.interact.browser.test.ts/test_attach_table_settings_when_hidden.png
+
+ ❯ openSettings tests/unit/src/table/table-settings.interact.browser.test.ts:65:11
+     63|   );
+     64|   if (!toggle) {
+     65|     throw new Error("表のメニューのボタンが無い");
+       |           ^
+     66|   }
+     67|   toggle.click();
+ ❯ tests/unit/src/table/table-settings.interact.browser.test.ts:195:28
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-settings.interact.browser.test.ts > test_attach_table_settings_when_move_menu
+Error: 表のメニューのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.interact.browser.test.ts/test_attach_table_settings_when_move_menu.png
+
+ ❯ openSettings tests/unit/src/table/table-settings.interact.browser.test.ts:65:11
+     63|   );
+     64|   if (!toggle) {
+     65|     throw new Error("表のメニューのボタンが無い");
+       |           ^
+     66|   }
+     67|   toggle.click();
+ ❯ tests/unit/src/table/table-settings.interact.browser.test.ts:255:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-settings.interact.browser.test.ts > test_attach_table_settings_when_move_menu_by_keyboard
+Error: 表のメニューのボタンが無い
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-settings.interact.browser.test.ts/test_attach_table_settings_when_move_menu_by_keyboard.png
+
+ ❯ openSettings tests/unit/src/table/table-settings.interact.browser.test.ts:65:11
+     63|   );
+     64|   if (!toggle) {
+     65|     throw new Error("表のメニューのボタンが無い");
+       |           ^
+     66|   }
+     67|   toggle.click();
+ ❯ tests/unit/src/table/table-settings.interact.browser.test.ts:287:20
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-sticky.interact.browser.test.ts > test_attach_sticky_rows_when_table_menu (CSS.supports: false)
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-sticky.interact.browser.test.ts > test_attach_sticky_rows_when_table_menu (CSS.supports: true)
+Error: 表のメニューのボタンが無い
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/table-sticky.interact.browser.test.ts/test_attach_sticky_rows_when_table_menu--CSS-supports--false-.png
+  - .vitest/attachments/failure-screenshots/table-sticky.interact.browser.test.ts/test_attach_sticky_rows_when_table_menu--CSS-supports--true-.png
+
+ ❯ tests/unit/src/table/table-sticky.interact.browser.test.ts:343:13
+    341|     );
+    342|     if (!button) {
+    343|       throw new Error("表のメニューのボタンが無い");
+       |             ^
+    344|     }
+    345|     const offset =
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_check_column
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_check_column.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ chooseCopyFormat tests/unit/src/table/table.interact.browser.test.ts:1148:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:966:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[21/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_counted
+AssertionError: expected '' to be '表のメニュー（4 / 4 件）' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_counted.png
+
+- Expected
++ Received
+
+- 表のメニュー（4 / 4 件）
+
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:1066:27
+    1064|   // 実行・検証: 絞り込む前
+    1065|   detachers.push(attachTables(root));
+    1066|   expect(menuLabel(root)).toBe("表のメニュー（4 / 4 件）");
+       |                           ^
+    1067|   expect(countText(root)).toBe("4 / 4 件を表示");
+    1068|   expect(totalRowTexts(root)).toEqual(["合計45", "平均250", "件数4"]);
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[22/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_columns_toggled
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_columns_toggled.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:1117:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[23/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_copied
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_copied.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:1189:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[24/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_copied_markdown
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_copied_markdown.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ chooseCopyFormat tests/unit/src/table/table.interact.browser.test.ts:1148:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:1236:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[25/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_copied_after_sorted
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_copied_after_sorted.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ chooseCopyFormat tests/unit/src/table/table.interact.browser.test.ts:1148:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:1264:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[26/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_copy_denied
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_copy_denied.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:1301:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[27/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_totals_toggled
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_totals_toggled.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:1457:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[28/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_merged_sorted
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_merged_sorted.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ chooseCopyFormat tests/unit/src/table/table.interact.browser.test.ts:1148:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:1790:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[29/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_tree_copied
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_tree_copied.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ chooseCopyFormat tests/unit/src/table/table.interact.browser.test.ts:1148:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2495:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[30/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_columns_notified
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_columns_notified.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ columnEyes tests/unit/src/table/table.interact.browser.test.ts:2460:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2527:21
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[31/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_columns_callback_throws
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_columns_callback_throws.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ columnEyes tests/unit/src/table/table.interact.browser.test.ts:2460:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2554:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[32/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_columns_badge
+AssertionError: expected null to be '1' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_columns_badge.png
+
+- Expected:
+"1"
+
++ Received:
+null
+
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2607:27
+    2605|   // 実行・検証: 付けた直後
+    2606|   detachers.push(attachTables(root));
+    2607|   expect(badgeText(root)).toBe("1");
+       |                           ^
+    2608|   expect(toggleName(root)).toBe("表のメニュー（1 列を非表示）");
+    2609|   const toggle = findButton(root, "button.mdmark-table-menu");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[33/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_capture_table_state
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_capture_table_state.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ operateKeyedTable tests/unit/src/table/table.interact.browser.test.ts:2976:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:2988:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[34/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_restore_table_state
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_restore_table_state.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ chooseMenuItem tests/unit/src/table/table.interact.browser.test.ts:146:3
+ ❯ operateKeyedTable tests/unit/src/table/table.interact.browser.test.ts:2976:3
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:3003:3
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[35/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_menu_opened
+Error: ボタンが無い: button.mdmark-table-menu
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_menu_opened.png
+
+ ❯ findButton tests/unit/src/table/table.interact.browser.test.ts:167:11
+    165|   const button = root.querySelector<HTMLButtonElement>(selector);
+    166|   if (!button) {
+    167|     throw new Error(`ボタンが無い: ${selector}`);
+       |           ^
+    168|   }
+    169|   return button;
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:3083:18
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[36/38]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_attach_tables_when_menu_space_moved
+AssertionError: expected [] to deeply equal [ 2 ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_attach_tables_when_menu_space_moved.png
+
+- Expected
++ Received
+
+- [
+-   2,
+- ]
++ []
+
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:3127:20
+    3125|     );
+    3126|   // 実行・検証: 付けた直後は 3 列目
+    3127|   expect(spaced()).toEqual([2]);
+       |                    ^
+    3128|   // 実行・検証: 3 列目を隠すと 2 列目
+    3129|   chooseMenuItem(root, "settings");
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=50a97d9e:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[37/38]⎯
+
+
+ Test Files  5 failed | 343 passed (348)
+      Tests  38 failed | 2916 passed (2954)
+   Start at  02:20:23
+   Duration  29.13s (worker 85%, tests 11%, import 4%)
+
+EXIT=1
