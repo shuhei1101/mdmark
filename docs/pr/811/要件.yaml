@@ -2,7 +2,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-73.yaml
     impact: changed
-    detail: 読者が、表の列の幅を 24 CSS px 以上のつまみから変え、ドラッグをせずにクリック・タップだけでも列の幅を変えて元に戻し、テーブル設定の列の順をクリック・タップだけでも変える
+    detail: 読者が、表の列の幅を 24 CSS px 以上のつまみから変え、テーブル設定の列の順をつまみを押して開くメニューでも変え、件数・テーブル設定・集計・コピー・元の CSV の切り替えを見出し行の右上の表のメニューから操作する
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-793-2.yaml
