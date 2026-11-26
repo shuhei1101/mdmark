@@ -13,39 +13,48 @@ afterEach(() => {
   removeRoots();
 });
 
-/** 表と元の CSV の隠れ方と、ボタンの押された状態 */
-const toggleState = ({
-  table,
-  raw,
-  button,
-}: {
-  table: HTMLElement | null | undefined;
-  raw: HTMLElement | null;
-  button: HTMLButtonElement | null;
-}) => ({
-  table: table?.hidden,
-  raw: raw?.hidden,
-  pressed: button?.getAttribute("aria-pressed"),
-});
+/** 表の操作を読み込む（表のメニューの開閉を付ける） */
+const loadTables = () => import("../../../../src/table/table.interact.ts");
 
-// 押すたびに表（を包む要素）と元の CSV を入れ替える（正常系）
+/** 要素が `hidden` を持つか（要素が無ければ `undefined`） */
+const hiddenOf = (element: Element | null | undefined) =>
+  element ? element.hasAttribute("hidden") : undefined;
+
+// 表のメニューの「元の CSV を表示」と「表で表示」で表と元の CSV を入れ替える（正常系）
 test("test_attach_csv_raw", async () => {
   // 準備
+  const { attachTables } = await loadTables();
   const { attachCsvRaw } = await loadCsvRaw();
   const { root } = createRoot("```csv\n名前,値\na,1\n```\n");
-  detachers.push(attachCsvRaw(root));
-  const button = root.querySelector<HTMLButtonElement>(".mdmark-raw-toggle");
-  // 隠す・出すのは表を包む横のスクロールの要素（無ければ表）
-  const tableElement = root.querySelector<HTMLTableElement>("table");
-  const table =
-    tableElement?.closest<HTMLElement>(".mdmark-table-scroll") ?? tableElement;
+  detachers.push(attachTables(root), attachCsvRaw(root));
+  const menuButton = root.querySelector<HTMLButtonElement>(
+    "button.mdmark-table-menu",
+  );
+  const scroll = root.querySelector<HTMLElement>(".mdmark-table-scroll");
   const raw = root.querySelector<HTMLElement>("pre.mdmark-raw");
-  // 実行
-  button?.click();
-  const afterFirst = toggleState({ table, raw, button });
-  button?.click();
-  const afterSecond = toggleState({ table, raw, button });
+  const toggle = root.querySelector<HTMLButtonElement>(
+    "button.mdmark-raw-toggle",
+  );
+  // 実行: 表のメニューの「元の CSV を表示」
+  menuButton?.click();
+  root
+    .querySelector<HTMLButtonElement>(
+      'button.mdmark-table-menu-item[data-action="raw"]',
+    )
+    ?.click();
   // 検証
-  expect(afterFirst).toEqual({ table: true, raw: false, pressed: "true" });
-  expect(afterSecond).toEqual({ table: false, raw: true, pressed: "false" });
+  expect(hiddenOf(root.querySelector(".mdmark-table-menu-panel"))).toBe(true);
+  expect(hiddenOf(scroll)).toBe(true);
+  expect(hiddenOf(menuButton)).toBe(true);
+  expect(hiddenOf(raw)).toBe(false);
+  expect(hiddenOf(toggle)).toBe(false);
+  expect(document.activeElement).toBe(toggle);
+  // 実行: 「表で表示」
+  toggle?.click();
+  // 検証
+  expect(hiddenOf(scroll)).toBe(false);
+  expect(hiddenOf(menuButton)).toBe(false);
+  expect(hiddenOf(raw)).toBe(true);
+  expect(hiddenOf(toggle)).toBe(true);
+  expect(document.activeElement).toBe(menuButton);
 });
