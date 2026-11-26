@@ -22,12 +22,12 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-42.yaml
     impact: changed
-    detail: 拡大した図の移動と表示する枠の高さの変更を、ドラッグしないでも行えるかを点検し、無ければ加える
+    detail: 拡大した図は、ドラッグしないでも表示する枠のスクロールバーで動かせる
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-55.yaml
-    impact: changed
-    detail: 差分のミニマップで見る位置を変える操作を、ドラッグしないでも行えるかを点検し、無ければ加える
+    impact: run_only
+    detail: ミニマップは位置を押すだけで差分をスクロールでき、ドラッグしない操作があるためシナリオは変えない。代わりの操作の追加で壊れうるため E2E の対象にする
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-805-1.yaml

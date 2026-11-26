@@ -841,6 +841,44 @@ scenarios:
       - 再描画した後、6 行目は畳まれたまま
       - 再描画した後、追加したコードブロックは全ての行が出ている
     test: test_normal_when_folds_updated_after_toggle
+  - name: 正常シナリオ（読者が折り返しを切り替える）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 画面の幅は 390px
+      - name: 折り返すマーカーを持つ Markdown
+        description: 正常シナリオ（折り返す）と同じ文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: wrap を持つブロックだけを折り返し、どちらの帯にも折り返しのボタンを付けて描く
+        U->>P: マーカーの無いブロックの折り返しのボタンを押す
+        P-->>U: そのブロックだけを折り返す
+        U->>P: wrap のブロックの折り返しのボタンを押す
+        P-->>U: そのブロックだけを折り返さずに出す
+        U->>P: ページを再読み込みする
+        P-->>U: マーカーのとおりの折り返しで描く
+      ```
+
+      <!-- /map -->
+    expected:
+      - どちらのブロックの帯にも、コピーのボタンの隣に折り返しのボタンがあり、スクリーンリーダー向けの名前を持つ
+      - 描いた直後、`wrap` のブロックのボタンの `aria-pressed` が `true`、マーカーの無いブロックのボタンが `false`
+      - マーカーの無いブロックのボタンを押すと、そのブロックの 2 行目が枠の幅で折り返され、横スクロールが無くなり、`aria-pressed` が `true` になる。`wrap` のブロックは変わらない
+      - '`wrap` のブロックのボタンを押すと、そのブロックは折り返さずに枠の中で横にスクロールでき、`aria-pressed` が `false` になる'
+      - どちらの状態でも、行番号が各行の頭の高さにあり、コピーボタンでコピーした文字に折り返しの改行が入っていない
+      - ボタンは Tab でフォーカスでき、Enter と Space でも切り替わる
+      - 再読み込みした後は、マーカーの `wrap` のとおりの折り返しに戻る
+      - 切り替えで外への要求が増えない
+    test: test_normal_when_wrap_toggled
 lead: '文書の作成者が、コードブロックの直前の `<!-- code: {"title": "タイトル", "lines": {}, "highlight": [行]} -->` と、コードの行末の行コメントの `[!code ++]`・`[!code --]`・`[!code highlight]` を記載すると、mdmark がコードブロックにタイトル・行番号・行の強調と、追加した行・削除した行・強調のマーカーを付けて描く。言語の指定があれば言語のラベルを出し、読者はコピーボタンで変更後のコードをコピーする。'
 primary_actor: 文書の作成者
 stakeholders:
