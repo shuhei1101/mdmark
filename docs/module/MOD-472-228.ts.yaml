@@ -382,6 +382,29 @@ functions:
         expected: 例外を投げず、行が元の並び
     refs:
       - IF-793-1#constraints[描き直し]
+  - name: placeTableMenuButton
+    title: 表のメニューのボタンの位置を合わせる
+    container: src/table/table.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 表のメニューのボタンを持つ囲む要素に、ボタンを見出し行の縦の中央と表の見えている右端に合わせる位置を CSS 変数で入れる
+    description: |-
+      囲む要素の `--mdmark-table-menu-top` に、表の `offsetTop` と `thead` の `offsetTop` に見出し行とボタンの高さの差の半分を加えた値（0 未満は 0）を、`--mdmark-table-menu-end` に、囲む要素の `clientWidth` から表を包む要素の `offsetLeft` と表の `offsetWidth`・表を包む要素の `clientWidth` の小さい方の和を引いた値（0 未満は 0）を px で入れる。`offsetTop` を使用するため、見出し行を留めるずれ（`transform`）は数えない。
+
+      | 呼び出し元 | 呼ぶとき |
+      | --- | --- |
+      | `attachTables` | 付けたときと、表と囲む要素の `ResizeObserver` の通知のたび |
+      | Storybook | 表のストーリーを描いた直後（ストーリーは表の操作を付けないため） |
+
+      ボタン・表を包む要素・表のどれかが無ければ何もしない
+    args:
+      - name: wrapper
+        type: HTMLElement
+        required: true
+        description: 表を囲む要素（`div.mdmark-table`）
+    returns:
+      type: void
+      description: なし
 lead: '表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピーの操作を受け持ち、表の操作を変えるときに参照する。'
 tags:
   - name: topic:テーブル
