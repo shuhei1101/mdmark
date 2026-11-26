@@ -595,18 +595,12 @@ export function renderTableMenu(options: TableMenuOptions): {
   if (!(counting || settings || totaling || copying || raw)) {
     return { button: "", menus: "" };
   }
-  const { id, shown, total } = options;
-  const hidden = new Set(options.hiddenColumns).size;
-  const copyState = options.copyState ?? "idle";
-  const expanded =
-    options.openMenu === true ||
-    options.openTotals === true ||
-    options.openCopy === true;
-  const label = tableMenuLabel({
-    count: counting ? { shown, total } : undefined,
-    hidden,
-  });
-  const button = `<button class="mdmark-table-menu${hidden > 0 ? " is-active" : ""}" type="button" data-state="${copyState}" aria-expanded="${expanded}" aria-controls="${escapeHtml(tableMenuId(id))}" title="表のメニュー" aria-label="${label}">${renderTableMenuButtonContent(copyState, hidden)}</button>`;
+  const expanded = [
+    options.openMenu,
+    options.openTotals,
+    options.openCopy,
+  ].some((open) => open === true);
+  const button = renderMenuButton(options, { counting, expanded });
   const live = counting
     ? '<span class="mdmark-visually-hidden mdmark-table-count-live" aria-live="polite"></span>'
     : "";
@@ -616,6 +610,21 @@ export function renderTableMenu(options: TableMenuOptions): {
     button,
     menus: `${renderMenuPanel(options, state, expanded)}${settings ? renderSettingsPanel(options) : ""}${live}${status}`,
   };
+}
+
+/** 表のメニューのボタンの HTML を返却する */
+function renderMenuButton(
+  options: TableMenuOptions,
+  state: { counting: boolean; expanded: boolean },
+): string {
+  const { id, shown, total } = options;
+  const hidden = new Set(options.hiddenColumns).size;
+  const copyState = options.copyState ?? "idle";
+  const label = tableMenuLabel({
+    count: state.counting ? { shown, total } : undefined,
+    hidden,
+  });
+  return `<button class="mdmark-table-menu${hidden > 0 ? " is-active" : ""}" type="button" data-state="${copyState}" aria-expanded="${state.expanded}" aria-controls="${escapeHtml(tableMenuId(id))}" title="表のメニュー" aria-label="${label}">${renderTableMenuButtonContent(copyState, hidden)}</button>`;
 }
 
 /** 表のメニューの HTML を返却する */
@@ -869,21 +878,16 @@ function renderSettingsItems(context: SettingsListContext): string {
       items.push(renderOpenMoveMenu(context.options, column));
     }
   }
-  const { moveMenu } = context.options;
-  if (
-    context.reordering &&
-    (moveMenu === undefined || !order.includes(moveMenu))
-  ) {
-    items.push(
-      renderMoveMenu({
-        id: context.options.id,
-        name: undefined,
-        before: false,
-        after: false,
-      }),
-    );
-  }
-  return items.join("");
+  return items.join("") + renderClosedMoveMenu(context);
+}
+
+/** 列の移動のメニューを開いていないときに一覧の末尾に配置する、閉じた列の移動のメニューの HTML を返却する（開いていれば空） */
+function renderClosedMoveMenu(context: SettingsListContext): string {
+  const { moveMenu, order, id } = context.options;
+  const open = moveMenu !== undefined && order.includes(moveMenu);
+  return context.reordering && !open
+    ? renderMoveMenu({ id, name: undefined, before: false, after: false })
+    : "";
 }
 
 /** 列 `column` のつまみで開いた列の移動のメニューの HTML を返却する */
