@@ -1795,17 +1795,14 @@ test("test_csv_raw", async () => {
   await expect(pre.innerText()).resolves.toContain('北山,"東京, 本社",1200');
   const toggle = page.locator("button.mdmark-raw-toggle");
   await expect(toggle.getAttribute("aria-label")).resolves.toBe("表で表示");
-  const box = await toggle.boundingBox();
-  const preBox = await pre.boundingBox();
-  expect(box?.width).toBeGreaterThanOrEqual(24);
-  expect(box?.height).toBeGreaterThanOrEqual(24);
+  const box = await boxOf(toggle);
+  const preBox = await boxOf(pre);
+  expect(box.width).toBeGreaterThanOrEqual(24);
+  expect(box.height).toBeGreaterThanOrEqual(24);
   // 「表で表示」のボタンは元の CSV の右上の角に重なる
-  expect((box?.y ?? 0) - (preBox?.y ?? 0)).toBeGreaterThanOrEqual(0);
-  expect((box?.y ?? 0) - (preBox?.y ?? 0)).toBeLessThan(16);
-  const rightGap =
-    (preBox?.x ?? 0) +
-    (preBox?.width ?? 0) -
-    ((box?.x ?? 0) + (box?.width ?? 0));
+  expect(box.y - preBox.y).toBeGreaterThanOrEqual(0);
+  expect(box.y - preBox.y).toBeLessThan(16);
+  const rightGap = preBox.x + preBox.width - (box.x + box.width);
   expect(rightGap).toBeGreaterThanOrEqual(0);
   expect(rightGap).toBeLessThan(16);
 });
