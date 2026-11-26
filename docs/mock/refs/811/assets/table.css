@@ -83,6 +83,8 @@
     /* 案 A: 表の右上の角に重ねる */
     .mdmark-table.mdmark-811-corner {
       position: relative;
+      inline-size: fit-content;
+      max-inline-size: 100%;
     }
 
     .mdmark-811-corner-tools {
@@ -122,6 +124,21 @@
     /* 案 B: 見出し行の右端の表のメニュー */
     .mdmark-table.mdmark-811-headmenu {
       position: relative;
+      inline-size: fit-content;
+      max-inline-size: 100%;
+
+      /* 表を横にスクロールしても、ボタンは表の右上（見出し行の中）に残す。最後の列の見出しはボタンの分だけ右を空ける */
+      & .mdmark-811-tablemenu {
+        position: absolute;
+        inset-block-start: 0.5rem;
+        inset-inline-end: 0.25rem;
+        z-index: 3;
+        background: var(--mdmark-color-surface, var(--mdmark-color-bg));
+      }
+
+      & thead th:last-child {
+        padding-inline-end: calc(24px + 0.75rem);
+      }
     }
 
     .mdmark-811-tablemenu {
