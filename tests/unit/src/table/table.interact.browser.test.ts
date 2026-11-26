@@ -1082,6 +1082,11 @@ test("test_attach_tables_when_counted", async () => {
   expect(totalRowTexts(root)).toEqual(["合計0", "平均—", "件数0"]);
 });
 
+/** セレクタの要素が `hidden` を持つか（要素が無ければ `undefined`） */
+function hiddenAt(root: HTMLElement, selector: string): boolean | undefined {
+  return root.querySelector(selector)?.hasAttribute("hidden");
+}
+
 // テーブル設定のパネルの目のアイコンで列を出し入れし、Esc でパネルを閉じる（正常系）
 test("test_attach_tables_when_columns_toggled", async () => {
   // 準備
@@ -1111,16 +1116,13 @@ test("test_attach_tables_when_columns_toggled", async () => {
   // 実行・検証: 表のメニューのテーブル設定でパネルを開く
   const toggle = findButton(root, "button.mdmark-table-menu");
   chooseMenuItem(root, "settings");
-  expect(
-    root.querySelector(".mdmark-table-menu-panel")?.hasAttribute("hidden"),
-  ).toBe(true);
-  const panel = root.querySelector<HTMLElement>(".mdmark-table-settings");
+  expect(hiddenAt(root, ".mdmark-table-menu-panel")).toBe(true);
   const eyes = [
-    ...(panel?.querySelectorAll<HTMLButtonElement>(
-      "button.mdmark-table-settings-eye",
-    ) ?? []),
+    ...root.querySelectorAll<HTMLButtonElement>(
+      ".mdmark-table-settings button.mdmark-table-settings-eye",
+    ),
   ];
-  expect(panel?.hasAttribute("hidden")).toBe(false);
+  expect(hiddenAt(root, ".mdmark-table-settings")).toBe(false);
   expect(eyes).toHaveLength(3);
   expect(eyes[0].disabled).toBe(true);
   expect(document.activeElement).toBe(eyes[1]);
@@ -1137,7 +1139,7 @@ test("test_attach_tables_when_columns_toggled", async () => {
   document.activeElement?.dispatchEvent(
     new KeyboardEvent("keydown", { key: "Escape", bubbles: true }),
   );
-  expect(panel?.hasAttribute("hidden")).toBe(true);
+  expect(hiddenAt(root, ".mdmark-table-settings")).toBe(true);
   expect(document.activeElement).toBe(toggle);
 });
 

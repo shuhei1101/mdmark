@@ -297,6 +297,23 @@ function menuTable(rows: number): string {
   );
 }
 
+/** セレクタの要素の上端がボタンの下端の直下（±4px）にあり、矩形が画面の中に入っていることを確かめる */
+function expectBelowButton(
+  root: HTMLElement,
+  selector: string,
+  button: HTMLElement,
+): void {
+  const element = root.querySelector<HTMLElement>(selector);
+  if (!element) {
+    throw new Error(`要素が無い: ${selector}`);
+  }
+  const rect = element.getBoundingClientRect();
+  expect(
+    Math.abs(rect.top - button.getBoundingClientRect().bottom),
+  ).toBeLessThanOrEqual(4);
+  expect(inViewport(rect)).toBe(true);
+}
+
 /** 矩形が画面の中に入っているか */
 function inViewport(rect: DOMRect): boolean {
   return (
@@ -345,27 +362,13 @@ test.each([false, true])(
     });
     // 実行・検証: 開いた表のメニューがボタンの直下で画面の中にある
     button.click();
-    const menu = root.querySelector<HTMLElement>(".mdmark-table-menu-panel");
-    const menuRect = menu?.getBoundingClientRect();
-    const buttonBottom = button.getBoundingClientRect().bottom;
-    expect(menuRect).toBeDefined();
-    expect(Math.abs((menuRect?.top ?? 0) - buttonBottom)).toBeLessThanOrEqual(
-      4,
-    );
-    expect(menuRect && inViewport(menuRect)).toBe(true);
+    expectBelowButton(root, ".mdmark-table-menu-panel", button);
     // 実行・検証: テーブル設定のパネルもボタンの直下で画面の中にある
     root
       .querySelector<HTMLButtonElement>(
         'button.mdmark-table-menu-item[data-action="settings"]',
       )
       ?.click();
-    const panelRect = root
-      .querySelector<HTMLElement>(".mdmark-table-settings")
-      ?.getBoundingClientRect();
-    expect(panelRect).toBeDefined();
-    expect(
-      Math.abs((panelRect?.top ?? 0) - button.getBoundingClientRect().bottom),
-    ).toBeLessThanOrEqual(4);
-    expect(panelRect && inViewport(panelRect)).toBe(true);
+    expectBelowButton(root, ".mdmark-table-settings", button);
   },
 );
