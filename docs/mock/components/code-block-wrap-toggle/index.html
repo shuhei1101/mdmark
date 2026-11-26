@@ -10,7 +10,7 @@
   <!-- 利用側のページの外観（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/287/assets/scene.css">
   <!-- #820 で足すボタンとメニュー -->
-  <link rel="stylesheet" href="../../refs/820/assets/mock.css">
+  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=3">
 </head>
 <body class="mdmark-theme-light">
   <header class="host-bar">利用側のアプリ</header>
@@ -19,10 +19,10 @@
   </nav>
   <main class="mock820-catalog" id="catalog">
     <h1>code-block-wrap-toggle</h1>
-    <p class="state-note">配布物の mount で描いた実物のコードブロックとファイルツリーに、帯のコピーのボタンの前へ「折り返し」のトグルボタンを重ねている。押すたびにそのブロックだけを画面の端で折り返す・折り返さないに切り替え、押した状態は面の色と aria-pressed で示す。描いた直後の状態はマーカーの wrap の有り無しに従い、ページを開き直すと戻る</p>
+    <p class="state-note">配布物の mount で描いた実物のコードブロックとファイルツリーに、帯のコピーのボタンの前へ「折り返し」のトグルボタンを重ねている。押すたびにそのブロックだけを画面の端で折り返す・折り返さないに切り替え、押した状態はリンク色の枠線と面・チェックの印と aria-pressed で示し、ポインターを重ねたときは灰色の枠線だけにする。描いた直後の状態はマーカーの wrap の有り無しに従い、ページを開き直すと戻る</p>
   </main>
   <script type="module">
-    import { draw, attachWrapToggle } from "../../refs/820/assets/mock.js";
+    import { draw, attachWrapToggle } from "../../refs/820/assets/mock.js?v=3";
 
     const LONG = "const prompt = \"この依頼文はとても長く、画面の幅を越えて続くため、折り返さないコードブロックでは横にスクロールしながら読むことになる。https://example.com/a/very/long/path/that/does/not/break\";";
     const CODE = (marker) => `${marker}

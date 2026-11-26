@@ -24,6 +24,7 @@
 
 .mock820-move {
   position: absolute;
+  margin: 0;
   z-index: 5;
   display: inline-grid;
   place-items: center;
@@ -55,6 +56,7 @@
 /* 移動・大きさのメニュー: #811 の列の移動のメニューと同じ縦の並び */
 .mock820-menu {
   position: absolute;
+  margin: 0;
   z-index: 6;
   display: grid;
   min-width: 10rem;
@@ -97,7 +99,7 @@
   }
 }
 
-/* 折り返しのトグルボタン: コピーのボタンと同じ大きさの、アイコンと文言のボタン。押した状態は面の色で示す */
+/* 折り返しのトグルボタン: コピーのボタンと同じ大きさの、アイコンと文言のボタン */
 .mock820-wrap-toggle {
   display: inline-flex;
   gap: 0.25em;
@@ -116,9 +118,19 @@
     border-color: var(--mdmark-color-border);
   }
 
+  /* 押した状態: リンク色の枠線と淡いリンク色の面に、チェックの印を出す。ホバーは灰色の枠線だけ */
   &[aria-pressed="true"] {
-    border-color: var(--mdmark-color-border);
-    background: var(--mdmark-color-surface);
+    border-color: var(--mdmark-color-link);
+    background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent);
+    color: var(--mdmark-color-link);
+  }
+
+  .mock820-check {
+    display: none;
+  }
+
+  &[aria-pressed="true"] .mock820-check {
+    display: inline-block;
   }
 
   &:focus-visible {

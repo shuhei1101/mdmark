@@ -8,6 +8,7 @@ const ICON = {
   left: '<path d="m15 18-6-6 6-6"/>',
   right: '<path d="m9 18 6-6-6-6"/>',
   move: '<path d="M12 2v20"/><path d="m15 19-3 3-3-3"/><path d="m19 9 3 3-3 3"/><path d="M2 12h20"/><path d="m5 9-3 3 3 3"/><path d="m9 5 3-3 3 3"/>',
+  check: '<path d="M20 6 9 17l-5-5"/>',
   wrap: '<path d="m16 16-3 3 3 3"/><path d="M3 12h14.5a1 1 0 0 1 0 7H13"/><path d="M3 19h6"/><path d="M3 5h18"/>',
 };
 const svg = (name) =>
@@ -47,7 +48,7 @@ function closeMenu(menu, focusOpener) {
  * opener の下にメニューを開く。items は [{ label, icon, run }]。
  * opener は描き直しで入れ替わるため、取り出す関数で受け取る
  */
-function openMenu(layer, opener, title, items) {
+function openMenu(layer, opener, title, items, avoid) {
   layer.querySelector(".mock820-menu")?.remove();
   const menu = document.createElement("div");
   menu.className = "mock820-menu";
@@ -60,12 +61,16 @@ function openMenu(layer, opener, title, items) {
     button.innerHTML = `${svg(item.icon)}<span>${item.label}</span>`;
     button.addEventListener("click", () => {
       item.run();
-      requestAnimationFrame(() => place(menu, layer, opener()));
+      // 図の描き直しの後にも置き直す
+      const replace = () => (avoid ? placeBeside(menu, layer, avoid()) : place(menu, layer, opener()));
+      requestAnimationFrame(replace);
+      setTimeout(replace, 120);
     });
     menu.append(button);
   }
   layer.append(menu);
-  place(menu, layer, opener());
+  if (avoid) placeBeside(menu, layer, avoid());
+  else place(menu, layer, opener());
   opener()?.setAttribute("aria-expanded", "true");
   menu.addEventListener("keydown", (event) => {
     const buttons = [...menu.querySelectorAll("button:not(:disabled)")];
@@ -91,13 +96,57 @@ function openMenu(layer, opener, title, items) {
   return menu;
 }
 
+/** 絶対配置の要素の位置の基準（offsetParent の内側の左上）の画面の上の座標 */
+const originOf = (element, layer) => {
+  const parent = element.offsetParent ?? layer;
+  const rect = parent.getBoundingClientRect();
+  return { left: rect.left + parent.clientLeft, top: rect.top + parent.clientTop, width: rect.width, height: rect.height, right: rect.right, bottom: rect.bottom };
+};
+
 /** 要素の左下に合わせて置く（layer の中の位置） */
 function place(element, layer, anchor) {
   if (!anchor) return;
-  const base = layer.getBoundingClientRect();
+  const base = originOf(element, layer);
   const box = anchor.getBoundingClientRect();
   element.style.top = `${box.bottom - base.top + 4}px`;
   element.style.left = `${Math.max(0, Math.min(box.left - base.left, base.width - element.offsetWidth))}px`;
+}
+
+/** 矩形どうしが重なるか */
+const overlaps = (a, b) => a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+/** 矩形が枠の中に収まるか */
+const inside = (a, frame) => a.left >= frame.left && a.right <= frame.right && a.top >= frame.top && a.bottom <= frame.bottom;
+/** 要素を描く図の表示する枠（無ければ layer）の画面の上の矩形 */
+const frameOf = (layer, target) => (target?.closest(".mdmark-diagram-viewport") ?? layer).getBoundingClientRect();
+
+/**
+ * メニューを、動かす対象と重ならない側（下・上・右・左の順に、表示する枠に収まる側）に開く。
+ * どの側も収まらないときは対象の下に開く
+ */
+function placeBeside(menu, layer, target) {
+  if (!target) return;
+  const base = originOf(menu, layer);
+  const area = layer.getBoundingClientRect();
+  const box = target.getBoundingClientRect();
+  const frame = frameOf(layer, target);
+  const { width: w, height: h } = menu.getBoundingClientRect();
+  const gap = 6;
+  // 下と上に開くときは、表示する枠の左右に収まるよう横にずらす
+  const clampX = (left) => Math.min(Math.max(left, frame.left), frame.right - w);
+  const candidates = [
+    { left: clampX(box.left), top: box.bottom + gap },
+    { left: clampX(box.left), top: box.top - h - gap },
+    { left: box.right + gap, top: box.top },
+    { left: box.left - w - gap, top: box.top },
+  ].map((at) => ({ ...at, right: at.left + w, bottom: at.top + h }));
+  // 動かす対象・移動のボタン・図の右上のパネルと重ならない側のうち、表示する枠に収まる側を先に選ぶ
+  const panel = target.closest(".mdmark-diagram-box")?.querySelector(".mdmark-diagram-tools")?.getBoundingClientRect();
+  const opener = menu.opener?.()?.getBoundingClientRect();
+  const blockers = [box, panel, opener].filter(Boolean);
+  const free = candidates.filter((at) => blockers.every((block) => !overlaps(at, block)));
+  const chosen = free.find((at) => inside(at, frame)) ?? free.find((at) => inside(at, area)) ?? free[0] ?? candidates[0];
+  menu.style.left = `${chosen.left - base.left}px`;
+  menu.style.top = `${chosen.top - base.top}px`;
 }
 
 /** 1 回のクリック・タップ（ドラッグでないとき）だけを受け取る */
@@ -159,10 +208,26 @@ export function attachMoveMenu(host) {
     const element = locate();
     button.hidden = !element;
     if (!button.hidden) {
-      const base = host.getBoundingClientRect();
+      // 対象の内側の右上・左上・右下・左下の角の順に、表示する枠に収まり、図の右上のパネルと重ならない角に置く
+      const base = originOf(button, host);
       const box = element.getBoundingClientRect();
-      button.style.top = `${box.top - base.top - 30}px`;
-      button.style.left = `${box.right - base.left - 4}px`;
+      const frame = frameOf(host, element);
+      const panel = element.closest(".mdmark-diagram-box")?.querySelector(".mdmark-diagram-tools")?.getBoundingClientRect();
+      const size = 28;
+      const inset = 3;
+      const corners = [
+        { left: box.right - size - inset, top: box.top + inset },
+        { left: box.left + inset, top: box.top + inset },
+        { left: box.right - size - inset, top: box.bottom - size - inset },
+        { left: box.left + inset, top: box.bottom - size - inset },
+      ].map((at) => {
+        const left = Math.min(Math.max(at.left, frame.left + 2), frame.right - size - 2);
+        const top = Math.min(Math.max(at.top, frame.top + 2), frame.bottom - size - 2);
+        return { left, top, right: left + size, bottom: top + size };
+      });
+      const chosen = corners.find((at) => !panel || !overlaps(at, panel)) ?? corners[0];
+      button.style.left = `${chosen.left - base.left}px`;
+      button.style.top = `${chosen.top - base.top}px`;
     }
   };
   new MutationObserver(() => requestAnimationFrame(relocate)).observe(host, {
@@ -184,7 +249,8 @@ export function attachMoveMenu(host) {
         ["下へ広げる", "down", "ArrowDown"],
         ["左へ狭める", "left", "ArrowLeft"],
         ["上へ狭める", "up", "ArrowUp"],
-      ].map(([label, icon, key]) => ({ label, icon, run: () => sendKey(host.querySelector(selector), key, false) })));
+      ].map(([label, icon, key]) => ({ label, icon, run: () => sendKey(host.querySelector(selector), key, false) })),
+      () => host.querySelector(selector)?.closest("[data-group]"));
       return;
     }
     const message = target.closest(".map-wire-hit[data-message]");
@@ -241,7 +307,7 @@ export function attachMoveMenu(host) {
       label,
       icon,
       run: () => sendKey(locate(), key, true),
-    })));
+    })), () => locate()?.closest("[data-node], [data-group], .map-wire-hit") ?? locate());
   });
 }
 
@@ -261,8 +327,7 @@ export function attachWrapToggle(host, { tree = true } = {}) {
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "mock820-wrap-toggle";
-    toggle.innerHTML = `${svg("wrap")}<span>折り返し</span>`;
-    toggle.setAttribute("aria-label", isTree ? "ツリーを折り返す" : "コードを折り返す");
+    toggle.innerHTML = `${svg("wrap")}<span>折り返し</span>${svg("check").replace('class="mdmark-icon"', 'class="mdmark-icon mock820-check"')}`;
     toggle.title = "画面の端で折り返す";
     const sync = () => toggle.setAttribute("aria-pressed", String(isOn()));
     toggle.addEventListener("click", () => {
