@@ -355,7 +355,9 @@ test.each([false, true])(
         expect(stickyVar(root, "--mdmark-sticky-head-shift")).toBe("300px");
       });
     }
+    // スクロール連動のアニメーションは数フレーム後に進むため、見出し行が上端に留まるまで待つ
     await vi.waitFor(() => {
+      expect(Math.abs(head.getBoundingClientRect().top)).toBeLessThanOrEqual(1);
       const now =
         button.getBoundingClientRect().top - head.getBoundingClientRect().top;
       expect(Math.abs(now - offset)).toBeLessThanOrEqual(1);
