@@ -39,3 +39,6 @@ scope_out:
   - item: '列の幅を、ドラッグをせずにクリック・タップだけで変える操作（Issue #810 の「ドラッグをせずに列の幅を変え、元に戻せる手段」）'
     reason: ユーザーが、列の幅は今の操作で足り、ボタンやメニューは要らないと決めた（確認ログ）
     plan: none
+  - item: 列の幅のつまみ（`span.mdmark-col-resize`、`role="separator"`・`tabindex="0"`）が描いた直後に `aria-valuenow` を持たず、操作を付けない描画（ストーリー）で axe の `aria-required-attr`（critical）が出る（`src/table/table.part.ts` の `renderTableTools`）
+    reason: WAI-ARIA の「フォーカスできる `separator` は `aria-valuenow` を持つ」から外れている。つまみの HTML はこの作業 PR で変えておらず、要望（押せる範囲とドラッグの代わり、表のメニュー）に含まれない
+    plan: to_file

@@ -425,7 +425,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 部品設計『表』のテーブル設定のパネル（タイトル・列名の一覧・案内）の HTML を返却する
-    description: タイトルは `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、`pinned` の列（`through` の表の `pinned` で留めた列）・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを配置する。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。つまみは `aria-expanded`（`moveMenu` の列だけ `true`）と列の移動のメニューを指す `aria-controls` を持つ。パネルは列の移動のメニュー `div.mdmark-table-move-menu`（`aria-label` が `「{列名}」の列の移動`、`data-move` が `before`・`after` の `前へ移す`・`後ろへ移す` のボタン。その向きへ `canMoveColumn` で動かせないボタンは `disabled`）を 1 つ持ち、`moveMenu` があればその列の行の後ろに `hidden` を付けずに配置し、無ければ `hidden` で配置する。ストーリーと `mount` が同じ HTML を使用する
+    description: タイトルは `columns` があれば `表示と並び順`、`reorder` だけなら `並び順`。一覧は `order` の順に並べ、`pinned` の列（`through` の表の `pinned` で留めた列）・結合した見出しの範囲ごと・範囲の外の列に分け、分けたまとまりが 2 つ以上あるときだけまとまりの見出しを配置する。各行は `reorder` のときつまみ（どちらの向きにも動かせないとき `disabled`）、`columns` のとき目のアイコン（Markdown に記載した先頭の列は `disabled`）を持つ。つまみは `aria-expanded`（`moveMenu` の列だけ `true`）と列の移動のメニューを指す `aria-controls` を持つ。パネルは列の移動のメニュー `div.mdmark-table-move-menu`（`aria-label` が `「{列名}」の列の移動`、`data-move` が `before`・`after` の `前へ移す`・`後ろへ移す` のボタン。その向きへ `canMoveColumn` で動かせないボタンは `disabled`）を 1 つ持ち、`moveMenu` があればその列の行（`li`）の中の末尾に `hidden` を付けずに配置し、無ければ一覧（`ul`）の後ろに `hidden` で配置する（`ul` の直下には `li` だけを配置する）。ストーリーと `mount` が同じ HTML を使用する
     args:
       - name: options
         type: '{ id: string; columns: string[]; order: number[]; hidden: number[]; features: TableFeature[]; groups: Array<string | undefined>; pinned: number; dragging?: { column: number; target: number; side: "before" | "after" }; moveMenu?: number }'
@@ -458,7 +458,7 @@ functions:
         summary: 開いたつまみの後ろに列の移動のメニューを出し、動かせない向きを `disabled` にする
         condition: '`columns` が `["名前","型","既定","説明"]`、`order` が `[0,1,2,3]`、`features` に `reorder`、`moveMenu` が 0 と 2'
         mock: なし
-        expected: '`moveMenu: 0` では名前のつまみだけ `aria-expanded="true"`、その行の後ろの `aria-label="「名前」の列の移動"` のメニューが `hidden` を持たず、`前へ移す` が `disabled`。`moveMenu: 2` では `前へ移す`・`後ろへ移す` のどちらも `disabled` を持たない。`moveMenu` を省くとメニューが `hidden` で全てのつまみが `aria-expanded="false"`'
+        expected: '`moveMenu: 0` では名前のつまみだけ `aria-expanded="true"`、その行の `li` の中の `aria-label="「名前」の列の移動"` のメニューが `hidden` を持たず、`前へ移す` が `disabled`。`moveMenu: 2` では `前へ移す`・`後ろへ移す` のどちらも `disabled` を持たない。どの場合も `ul` の直下の要素は `li` だけ。`moveMenu` を省くとメニューが `ul` の後ろで `hidden` で全てのつまみが `aria-expanded="false"`'
     status: planned
   - name: renderTreeKeyCell
     title: 階層の表のキーのセルを返却する

@@ -405,6 +405,28 @@ functions:
     returns:
       type: void
       description: なし
+  - name: placeOpenTablePanels
+    title: 開いた表のメニューとパネルの位置を合わせる
+    container: src/table/table.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 囲む要素の中の `hidden` を持たない表のメニューとテーブル設定のパネルを、表のメニューのボタンの下に右端をそろえて配置する
+    description: |-
+      位置の決め方は、`attachTables` がドロワーを開いたときと同じ（ボタンの右端にそろえ、画面の端からはみ出さないように配置し、下に入らなければボタンの上に配置する）。
+
+      | 呼び出し元 | 呼ぶとき |
+      | --- | --- |
+      | Storybook | 表のストーリーを描いて `placeTableMenuButton` を呼んだ直後（開いた状態で描いたストーリーは、表の操作を付けないため） |
+
+      ボタンが無ければ何もしない
+    args:
+      - name: wrapper
+        type: HTMLElement
+        required: true
+        description: 表を囲む要素（`div.mdmark-table`）
+    returns:
+      type: void
+      description: なし
 lead: '表の並べ替え・ピン止め・絞り込み・件数・列の表示・集計・コピーの操作を受け持ち、表の操作を変えるときに参照する。'
 tags:
   - name: topic:テーブル
