@@ -35,10 +35,13 @@ docs:
 scope_out:
   - item: 表以外の部品のドラッグの操作（map の図の移動・差分のミニマップ・シーケンス図の参加者の並べ替え等）のドラッグの代わりの有無の点検
     reason: 要望は表の部品に限る。表以外の部品は別の部品で、この作業 PR がマージされなくても同じ内容で成り立つが、代わりの操作の有無をこの作業で調べていない
-    plan: to_file
+    plan: '#815'
   - item: '列の幅を、ドラッグをせずにクリック・タップだけで変える操作（Issue #810 の「ドラッグをせずに列の幅を変え、元に戻せる手段」）'
     reason: ユーザーが、列の幅は今の操作で足り、ボタンやメニューは要らないと決めた（確認ログ）
     plan: none
   - item: 列の幅のつまみ（`span.mdmark-col-resize`、`role="separator"`・`tabindex="0"`）が描いた直後に `aria-valuenow` を持たず、操作を付けない描画（ストーリー）で axe の `aria-required-attr`（critical）が出る（`src/table/table.part.ts` の `renderTableTools`）
     reason: WAI-ARIA の「フォーカスできる `separator` は `aria-valuenow` を持つ」から外れている。つまみの HTML はこの作業 PR で変えておらず、要望（押せる範囲とドラッグの代わり、表のメニュー）に含まれない
-    plan: to_file
+    plan: '#816'
+  - item: 'テーブル設定のパネル（`#mdmark-table-settings`、`position: fixed`）をスマホ幅（390x844）で開くと、固定の領域が画面の高さの 25% を超え、崩れの検出の `fixed-area-height`（serious）が出る（既存のストーリー `settings-open-reorder` でも出る）'
+    reason: スマホ幅で固定の領域が画面を大きく覆う。パネルの作りは base ブランチから変えておらず、要望（押せる範囲とドラッグの代わり、表のメニュー）に含まれない
+    plan: '#817'
