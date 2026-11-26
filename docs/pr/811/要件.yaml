@@ -13,11 +13,20 @@ docs:
   - page: docs/guide/記載する-表に機能を付ける.md
     new: false
     change: 列の並べ替えの機能の説明につまみを押して開くメニューを、列の幅の機能の説明につまみの押せる範囲を、表の操作のバーの説明に置き場所を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:59:47.234182+00:00'
   - page: docs/guide/用語集.yaml
     new: false
     change: 用語『列の並べ替え』『テーブル設定』の説明につまみを押して開くメニューを追加し、表の操作のバーの置き場所を変えたら関係する用語の説明を合わせる
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:59:47.234182+00:00'
+  - page: docs/guide/記法.mark.md
+    change: 表の機能の表に表のメニューの行を追加し、件数・テーブル設定・列の並べ替え・集計・表のコピー・列の幅の変更と CSV の表の切り替えの説明を表のメニューとつまみのメニューに合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-26T16:59:47.234182+00:00'
 scope_out:
   - item: 表以外の部品のドラッグの操作（map の図の移動・差分のミニマップ・シーケンス図の参加者の並べ替え等）のドラッグの代わりの有無の点検
     reason: 要望は表の部品に限る。表以外の部品は別の部品で、この作業 PR がマージされなくても同じ内容で成り立つが、代わりの操作の有無をこの作業で調べていない
