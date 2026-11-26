@@ -9,3 +9,9 @@ confirmations:
     decided_by: reply
     approver: shuhei1101
     thread: https://github.com/shuhei1101/mdmark/pull/811#discussion_r4709825588
+  - topic: 表の操作のバーの置き場所
+    decision: 見出し行の右上（最後の列のつまみの左）に「表のメニュー」のボタンを置き、件数・テーブル設定・集計・コピー・元の CSV の切り替えを入れる。元の CSV の表示ではコードブロックの右上に「表で表示」のボタンを重ねる（推奨案 B）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: 269a0b9f
+    thread: https://github.com/shuhei1101/mdmark/pull/811#discussion_r4710307740

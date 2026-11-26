@@ -35,11 +35,14 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-25T12:08:15.966290+00:00'
   - process: 単一ユースケース設計
+    status: todo
+    updated_by: planner
+    updated_at: '2026-11-26T15:50:25.493476+00:00'
+    note: モック作成で要望に加えた表の操作のバー（表のメニュー）を、SC-472-73 のシナリオに反映する
+  - process: モック作成
     status: done
     updated_by: planner
-    updated_at: '2026-11-25T12:13:34.940162+00:00'
-  - process: モック作成
-    status: todo
+    updated_at: '2026-11-26T15:50:25.493476+00:00'
   - process: データ設計
     status: skipped
     reason: データストアの構造が変わらないため対象外
