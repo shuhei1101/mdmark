@@ -151,7 +151,7 @@ test("test_render_table_when_all_features", async () => {
   expect(html).not.toContain("mdmark-table-bar");
   const scroll = outerHtml(html, 'class="mdmark-table-scroll"');
   expect(scroll).not.toContain("mdmark-table-menu");
-  const button = findTag(html, 'class="mdmark-table-menu"');
+  const button = findTag(html, 'class="mdmark-table-menu');
   expect(button).toContain(
     'aria-label="表のメニュー（3 / 3 件・1 列を非表示）"',
   );
