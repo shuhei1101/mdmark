@@ -599,6 +599,28 @@ function insertTableMenu(options: {
   };
 }
 
+/** 表のメニューのボタンを持つ囲む要素に、ボタンを見出し行の縦の中央と表の見えている右端に合わせる位置を CSS 変数（`--mdmark-table-menu-top`・`--mdmark-table-menu-end`）で入れる。ボタンや表が無ければ何もしない */
+export function placeTableMenuButton(wrapper: HTMLElement): void {
+  const button = ownElement<HTMLElement>(wrapper, "button.mdmark-table-menu");
+  const scroller = ownElement<HTMLElement>(wrapper, `.${SCROLL_CLASS}`);
+  const table = scroller?.querySelector<HTMLTableElement>(":scope > table");
+  if (!button || !scroller || !table) {
+    return;
+  }
+  const head = table.tHead;
+  const top =
+    table.offsetTop +
+    (head?.offsetTop ?? 0) +
+    ((head?.offsetHeight ?? 0) - button.offsetHeight) / 2;
+  const right =
+    scroller.offsetLeft + Math.min(table.offsetWidth, scroller.clientWidth);
+  wrapper.style.setProperty("--mdmark-table-menu-top", `${Math.max(0, top)}px`);
+  wrapper.style.setProperty(
+    "--mdmark-table-menu-end",
+    `${Math.max(0, wrapper.clientWidth - right)}px`,
+  );
+}
+
 /** 表 1 つに、並べ替え・ピン止め・絞り込みを付け、削除する関数を返却する */
 function attachTable(
   wrapper: HTMLElement,
@@ -792,26 +814,9 @@ function attachTable(
     }
   };
   placeMenuSpace();
-  /** 表のメニューのボタンを、見出し行の縦の中央と、表の見えている右端に合わせる位置を囲む要素の CSS 変数に入れる */
+  /** 表のメニューのボタンの位置を、見出し行と表の見えている右端に合わせ直す */
   const placeMenuButton = (): void => {
-    if (!menuButton) {
-      return;
-    }
-    const head = table.tHead;
-    const top =
-      table.offsetTop +
-      (head?.offsetTop ?? 0) +
-      ((head?.offsetHeight ?? 0) - menuButton.offsetHeight) / 2;
-    const right =
-      scroller.offsetLeft + Math.min(table.offsetWidth, scroller.clientWidth);
-    wrapper.style.setProperty(
-      "--mdmark-table-menu-top",
-      `${Math.max(0, top)}px`,
-    );
-    wrapper.style.setProperty(
-      "--mdmark-table-menu-end",
-      `${Math.max(0, wrapper.clientWidth - right)}px`,
-    );
+    placeTableMenuButton(wrapper);
   };
   placeMenuButton();
   cleanups.push(() => {
