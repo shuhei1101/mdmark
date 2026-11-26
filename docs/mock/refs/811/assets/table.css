@@ -127,17 +127,24 @@
       inline-size: fit-content;
       max-inline-size: 100%;
 
-      /* 表を横にスクロールしても、ボタンは表の右上（見出し行の中）に残す。最後の列の見出しはボタンの分だけ右を空ける */
+      /* 表を横にスクロールしても、ボタンは表の右上（見出し行の中）に残す。最後の列のつまみ（右端の 24px）に重ならないよう、つまみの左に置く */
       & .mdmark-811-tablemenu {
         position: absolute;
         inset-block-start: 0.5rem;
-        inset-inline-end: 0.25rem;
+        inset-inline-end: calc(24px + 0.125rem);
         z-index: 3;
         background: var(--mdmark-color-surface, var(--mdmark-color-bg));
       }
 
-      & thead th:last-child {
-        padding-inline-end: calc(24px + 0.75rem);
+      /* 最後の列の見出しは、つまみと表のメニューのボタンの分だけ右を空け、絞り込み・ピン止めのボタンと重ねない */
+      & thead th:last-child:has(> .mdmark-col-resize) {
+        padding-inline-end: calc(48px + 0.5rem);
+      }
+
+      /* RAW の表示: 見出し行が無いので、表で表示のボタンをコードブロックの右上に重ねる */
+      & .mdmark-811-raw-back {
+        inset-block-start: 0.375rem;
+        inset-inline-end: 0.375rem;
       }
     }
 
