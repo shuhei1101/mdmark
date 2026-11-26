@@ -1263,7 +1263,7 @@ function attachTable(
     }
   };
   let lastCount = "";
-  /** 表のメニューの件数とボタンの名前を、表示している行の数と全ての行の数に書き換え、変わったら読み上げる */
+  /** 表のメニューの件数とボタンの名前を、表示している行の数と全ての行の数に書き換え、変わったら `{全ての行の数} 件中 {表示している行の数} 件を表示` を読み上げる */
   const updateCount = (): void => {
     const count = countOf();
     refreshMenuButton();
@@ -1277,7 +1277,7 @@ function attachTable(
     }
     const live = ownElement(wrapper, ".mdmark-table-count-live");
     if (live && lastCount !== "" && lastCount !== text) {
-      live.textContent = text;
+      live.textContent = `${count.total} 件中 ${count.shown} 件を表示`;
     }
     lastCount = text;
   };
