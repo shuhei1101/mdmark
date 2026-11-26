@@ -61,10 +61,13 @@ docs/
     block(CODE('<!-- code: {"title": "ChatGPT に送った依頼文の全文（長いタイトル）", "lines": {}} -->'), {}, true);
 
     add("h2", "ファイルツリー 案 A（推奨）: 同じボタンを帯に付ける");
-    add("p", "コードブロックと同じく、押すと長い注釈を枠の幅で折り返す", "state-note");
+    add("p", "コードブロックと同じく、押すと長い注釈を枠の幅で折り返す。押した後の外観は下の参考と同じで、注釈を持つフォルダの名前が縦に折れる今の不具合（#822）が出る", "state-note");
     block(TREE(""), { tree: true });
     add("h2", "ファイルツリー 案 B: ボタンを付けない（今のまま。折り返しはマーカーの wrap だけで決める）");
     block(TREE(""), { tree: false });
+    add("h2", "参考: マーカーの wrap で描いたファイルツリー（今の実装の折り返し）");
+    add("p", "案 A のボタンを押した後は、この折り返しと同じ外観になる", "state-note");
+    block(TREE('<!-- tree: {"wrap": true} -->'), { tree: false });
   </script>
 </body>
 </html>
