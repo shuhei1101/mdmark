@@ -112,8 +112,13 @@ const attachStoryTables = async (): Promise<void> => {
       /* @vite-ignore */ `${window.location.origin}/render/tables.js`
     );
     for (const wrapper of root.querySelectorAll<HTMLElement>(".mdmark-table")) {
-      placeTableMenuButton(wrapper);
-      placeOpenTablePanels(wrapper);
+      const place = (): void => {
+        placeTableMenuButton(wrapper);
+        placeOpenTablePanels(wrapper);
+      };
+      place();
+      // 画面の幅が変わったら、ボタンと開いたメニュー・パネルの位置を合わせ直す
+      new ResizeObserver(place).observe(wrapper);
     }
   }
 };
