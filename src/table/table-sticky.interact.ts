@@ -4,9 +4,12 @@ import { stickyRange, stickyShift } from "./table.logic.ts";
 /** `attachStickyRows` が表ごとの留める要素（表を包む横のスクロールの要素。無ければ `table`）に付ける属性。値は `timeline`（`animation-timeline` でずらす）か `script`（JS でずらす量を入れる）で、CSS はこの属性で適用する規則を分ける */
 export const STICKY_MODE_ATTRIBUTE = "data-mdmark-sticky";
 
-/** スクロール連動のアニメーションと、その範囲の指定を持つブラウザか */
+/** 表のメニューのボタンを持つ囲む要素に付ける属性。値は留め方（`timeline`・`script`）で、CSS はこの属性でボタンを見出し行と同じだけずらす */
+export const STICKY_MENU_ATTRIBUTE = "data-mdmark-sticky-menu";
+
+/** スクロール連動のアニメーションと、その範囲の指定と、タイムラインの名前を祖先へ持ち上げる指定を持つブラウザか */
 const TIMELINE_SUPPORT =
-  "(animation-timeline: view()) and (animation-range: 0% 100%)";
+  "(animation-timeline: view()) and (animation-range: 0% 100%) and (timeline-scope: none)";
 
 /** 表に入れる CSS カスタムプロパティの名前 */
 const TIMELINE_VARIABLES = [
@@ -99,12 +102,40 @@ function measure(table: HTMLTableElement) {
 /** 表ごとの留め方 */
 type StickyMode = "timeline" | "script";
 
-/** 留め方の CSS 変数を表から取り除く */
+/** 表を囲む要素のうち、表のメニューのボタンを持つもの（無ければ `undefined`） */
+function menuWrapperOf(table: HTMLTableElement): HTMLElement | undefined {
+  const wrapper = table.closest<HTMLElement>(".mdmark-table");
+  const hasButton = [
+    ...(wrapper?.querySelectorAll("button.mdmark-table-menu") ?? []),
+  ].some((button) => button.closest(".mdmark-table") === wrapper);
+  return wrapper && hasButton ? wrapper : undefined;
+}
+
+/** 表と、表のメニューのボタンを持つ囲む要素（CSS 変数を入れる要素） */
+function variableTargets(table: HTMLTableElement): HTMLElement[] {
+  const wrapper = menuWrapperOf(table);
+  return wrapper ? [table, wrapper] : [table];
+}
+
+/** 表と囲む要素に CSS 変数を入れる */
+function setVariable(
+  table: HTMLTableElement,
+  name: string,
+  value: string,
+): void {
+  for (const target of variableTargets(table)) {
+    target.style.setProperty(name, value);
+  }
+}
+
+/** 留め方の CSS 変数を表と囲む要素から取り除く */
 function clearVariables(table: HTMLTableElement, mode: StickyMode): void {
-  for (const name of mode === "timeline"
-    ? TIMELINE_VARIABLES
-    : SCRIPT_VARIABLES) {
-    table.style.removeProperty(name);
+  for (const target of variableTargets(table)) {
+    for (const name of mode === "timeline"
+      ? TIMELINE_VARIABLES
+      : SCRIPT_VARIABLES) {
+      target.style.removeProperty(name);
+    }
   }
 }
 
@@ -128,11 +159,11 @@ function updateTimelineRange(table: HTMLTableElement): void {
     footTop: foot?.top,
     footBottom: foot?.bottom,
   });
-  table.style.setProperty("--mdmark-sticky-head-start", px(range.headStart));
-  table.style.setProperty("--mdmark-sticky-head-max", px(range.headMax));
+  setVariable(table, "--mdmark-sticky-head-start", px(range.headStart));
+  setVariable(table, "--mdmark-sticky-head-max", px(range.headMax));
   if (foot) {
-    table.style.setProperty("--mdmark-sticky-foot-max", px(range.footMax));
-    table.style.setProperty("--mdmark-sticky-foot-end", px(range.footEnd));
+    setVariable(table, "--mdmark-sticky-foot-max", px(range.footMax));
+    setVariable(table, "--mdmark-sticky-foot-end", px(range.footEnd));
   }
 }
 
@@ -154,11 +185,12 @@ function updateShift(table: HTMLTableElement, stickyTop: number): void {
     footTop: foot?.top,
     footBottom: foot?.bottom,
   });
-  table.style.setProperty("--mdmark-sticky-head-shift", px(shift.head));
+  setVariable(table, "--mdmark-sticky-head-shift", px(shift.head));
   if (foot) {
-    table.style.setProperty("--mdmark-sticky-foot-shift", px(shift.foot));
+    setVariable(table, "--mdmark-sticky-foot-shift", px(shift.foot));
     // 下端に留めている間だけ、最後の行の面を下へはみ出させる
-    table.style.setProperty(
+    setVariable(
+      table,
       "--mdmark-sticky-foot-reach",
       shift.foot < 0 ? "2px" : "0px",
     );
@@ -197,6 +229,7 @@ export function attachStickyRows(root: HTMLElement): () => void {
       }
       modes.set(table, mode);
       subject.setAttribute(STICKY_MODE_ATTRIBUTE, mode);
+      menuWrapperOf(table)?.setAttribute(STICKY_MENU_ATTRIBUTE, mode);
     }
     return mode;
   };
@@ -250,6 +283,7 @@ export function attachStickyRows(root: HTMLElement): () => void {
     }
     for (const [table, mode] of modes) {
       timelineSubject(table).removeAttribute(STICKY_MODE_ATTRIBUTE);
+      menuWrapperOf(table)?.removeAttribute(STICKY_MENU_ATTRIBUTE);
       clearVariables(table, mode);
     }
     modes.clear();

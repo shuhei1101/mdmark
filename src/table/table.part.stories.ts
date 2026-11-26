@@ -948,6 +948,71 @@ export const CsvRaw: Story = {
   },
 };
 
+export const TableMenuOpen: Story = {
+  name: "TableMenuOpen",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features:
+      '["sort","pin","filter","resize","count","columns","total","copy"]',
+    columns: '["名前","説明","更新日"]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
+    filters: '[{"column":2,"kind":"date"}]',
+    totals: '[{"column":2,"calc":"count"}]',
+    openMenu: true,
+  },
+};
+
+export const TableMenuCountOnly: Story = {
+  name: "TableMenuCountOnly",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter","count"]',
+    columns: '["名前","説明","更新日"]',
+    rows: '[["りんご","描画を速くする","2026-10-01"],["みかん","印刷を修正する","2026-10-10"],["りんご飴","描画の崩れを修正する","2026-10-20"]]',
+    openMenu: true,
+  },
+};
+
+export const TableMenuOverflow: Story = {
+  name: "TableMenuOverflow",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter","resize","count"]',
+    columns: '["列 1","列 2","列 3","列 4","列 5","列 6","列 7","列 8"]',
+    rows: '[["りんごの産地","青森","長野","岩手","山形","福島","秋田","宮城"]]',
+    overflow: true,
+  },
+};
+
+export const ReorderMoveMenu: Story = {
+  name: "ReorderMoveMenu",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter","columns","reorder"]',
+    columns: '["名前","型","既定","説明"]',
+    rows: '[["features.table","bool","true","表の機能のオン・オフ"]]',
+    openColumns: true,
+    moveMenu: 2,
+  },
+};
+
+export const ReorderMoveMenuFirst: Story = {
+  name: "ReorderMoveMenuFirst",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter","columns","reorder"]',
+    columns: '["名前","型","既定","説明"]',
+    rows: '[["features.table","bool","true","表の機能のオン・オフ"]]',
+    openColumns: true,
+    moveMenu: 0,
+  },
+};
+
 export const ColumnsButtonA: Story = {
   name: "ColumnsButtonA",
   parameters: { server: { id: "table" } },

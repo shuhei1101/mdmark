@@ -1490,7 +1490,7 @@ files:
       - to: CMP-472-61
         type: implements
   - path: table/table.part.ts
-    description: モジュール構成『ライブラリ本体 / 表』のうち「表の renderTable・renderTableTools・renderTableBar・renderTotalRows・renderCopyPanel・renderFoldedColumn」を受け持つ。部品が返却する HTML を変えるときに参照する。
+    description: モジュール構成『ライブラリ本体 / 表』のうち「表の renderTable・renderTableTools・renderTableMenu・renderTableSettings・renderRawToggle・renderTotalRows・renderCopyPanel・renderFoldedColumn」を受け持つ。部品が返却する HTML を変えるときに参照する。
     tags: [topic:部品, tool:html, topic:テーブル]
     related:
       - to: MOD-472-315

@@ -29,17 +29,16 @@ import {
 } from "./table.logic.ts";
 import {
   COPY_FORMATS,
-  COPY_STATES,
   type CopyFormat,
   type CopyState,
   PIN_UNPINNED_SUFFIX,
-  renderCopyButtonContent,
   renderCopyPanel,
-  renderTableBar,
+  renderTableMenu,
+  renderTableMenuButtonContent,
   renderTableTools,
   renderTotalRows,
   type TableTotal,
-  updateSettingsToggle,
+  updateTableMenuButton,
 } from "./table.part.ts";
 import { attachColumnResize } from "./table-resize.interact.ts";
 import {
@@ -583,26 +582,16 @@ function barPinnedCount(options: {
   return initialPinned(options).length;
 }
 
-/** 表の上の帯と、帯のメニューを配置する。取り除く関数を返却する */
-function insertTableBar(options: {
+/** 表のメニューのボタンを表を包む要素の後ろに、表のメニュー・テーブル設定のパネルをその後ろに配置し、取り除く関数を返却する */
+function insertTableMenu(options: {
   wrapper: HTMLElement;
   scroller: HTMLElement;
-  parts: { bar?: string; menus?: string };
+  parts: { button: string; menus: string };
 }): () => void {
   const { wrapper, scroller, parts } = options;
-  const added: Element[] = [];
-  if (parts.bar) {
-    scroller.insertAdjacentHTML("beforebegin", parts.bar);
-    const bar = scroller.previousElementSibling;
-    if (bar) {
-      added.push(bar);
-    }
-  }
-  if (parts.menus) {
-    const before = new Set(wrapper.children);
-    scroller.insertAdjacentHTML("afterend", parts.menus);
-    added.push(...[...wrapper.children].filter((child) => !before.has(child)));
-  }
+  const before = new Set(wrapper.children);
+  scroller.insertAdjacentHTML("afterend", `${parts.button}${parts.menus}`);
+  const added = [...wrapper.children].filter((child) => !before.has(child));
   return () => {
     for (const element of added) {
       element.remove();
@@ -750,16 +739,16 @@ function attachTable(
     tbody?.append(empty);
   }
 
-  // ─── 表の上の帯とテーブル設定のパネル ───
+  // ─── 表のメニューとテーブル設定のパネル ───
   // 今の列の順（元の列の位置の並び）。覚えず、再描画すると Markdown に記載した順に戻る
   let order = labels.map((_, column) => column);
   const groups = headCells.map((cell) => cell.dataset.group);
-  const barParts = renderTableBar({
+  const menuParts = renderTableMenu({
     id,
     features,
     labels,
-    shown: originalRows.length,
-    total: originalRows.length,
+    shown: countedRows.length,
+    total: countedRows.length,
     hiddenColumns: [...hiddenColumns],
     totals: totalSpecs.map((total) => total.calc),
     order,
@@ -772,11 +761,66 @@ function attachTable(
       mode: pinMode,
       pinDefault,
     }),
+    raw: wrapper.dataset.source === "csv",
   });
-  cleanups.push(insertTableBar({ wrapper, scroller, parts: barParts }));
+  cleanups.push(insertTableMenu({ wrapper, scroller, parts: menuParts }));
+  const menuButton = ownElement<HTMLElement>(
+    wrapper,
+    "button.mdmark-table-menu",
+  );
+  const menuPanel = ownElement<HTMLElement>(
+    wrapper,
+    ".mdmark-table-menu-panel",
+  );
   const menu = ownElement<HTMLElement>(wrapper, ".mdmark-table-settings");
   const totalsMenu = ownElement<HTMLElement>(wrapper, ".mdmark-totals-menu");
   const copyMenu = ownElement<HTMLElement>(wrapper, ".mdmark-copy-menu");
+  const submenus = [totalsMenu, copyMenu].filter(
+    (element): element is HTMLElement => element !== null,
+  );
+  /** 表のメニューのボタンの余白を、最も右の見えている列の最下段の見出しのセルに付け直す */
+  const placeMenuSpace = (): void => {
+    for (const cell of headCells) {
+      cell.classList.remove("mdmark-th-menu-space");
+    }
+    if (!menuButton) {
+      return;
+    }
+    const last = order.filter((column) => !hiddenColumns.has(column)).at(-1);
+    if (last !== undefined) {
+      headCells[last]?.classList.add("mdmark-th-menu-space");
+    }
+  };
+  placeMenuSpace();
+  /** 表のメニューのボタンを、見出し行の縦の中央と、表の見えている右端に合わせる位置を囲む要素の CSS 変数に入れる */
+  const placeMenuButton = (): void => {
+    if (!menuButton) {
+      return;
+    }
+    const head = table.tHead;
+    const top =
+      table.offsetTop +
+      (head?.offsetTop ?? 0) +
+      ((head?.offsetHeight ?? 0) - menuButton.offsetHeight) / 2;
+    const right =
+      scroller.offsetLeft + Math.min(table.offsetWidth, scroller.clientWidth);
+    wrapper.style.setProperty(
+      "--mdmark-table-menu-top",
+      `${Math.max(0, top)}px`,
+    );
+    wrapper.style.setProperty(
+      "--mdmark-table-menu-end",
+      `${Math.max(0, wrapper.clientWidth - right)}px`,
+    );
+  };
+  placeMenuButton();
+  cleanups.push(() => {
+    for (const cell of headCells) {
+      cell.classList.remove("mdmark-th-menu-space");
+    }
+    wrapper.style.removeProperty("--mdmark-table-menu-top");
+    wrapper.style.removeProperty("--mdmark-table-menu-end");
+  });
   /** 帯のスクリーンリーダー向けの要素に通知を入れる */
   const announce = (message: string): void => {
     const status = ownElement(wrapper, ".mdmark-table-status");
@@ -955,12 +999,8 @@ function attachTable(
   /** ドロワーを押したボタンの下に配置し、画面の端からはみ出さないようにする */
   const placeDrawer = (drawer: HTMLElement, button: HTMLElement): void => {
     const rect = button.getBoundingClientRect();
-    // 帯のメニューはボタンの左端に、絞り込みのドロワーはボタンの右端に合わせる
-    const start =
-      drawer.classList.contains("mdmark-table-settings") ||
-      drawer.classList.contains("mdmark-table-menu")
-        ? rect.left
-        : rect.right - drawer.offsetWidth;
+    // 表のメニュー・テーブル設定のパネル・絞り込みのドロワーは、ボタンの右端に合わせる
+    const start = rect.right - drawer.offsetWidth;
     const left = Math.min(
       Math.max(start, VIEWPORT_GUTTER),
       window.innerWidth - drawer.offsetWidth - VIEWPORT_GUTTER,
@@ -1017,6 +1057,9 @@ function attachTable(
     const { drawer, button } = openState;
     openState = undefined;
     drawer.hidden = true;
+    if (drawer === menuPanel) {
+      closeSubmenus();
+    }
     button.setAttribute("aria-expanded", "false");
     document.removeEventListener("pointerdown", onPointerDown);
     document.removeEventListener("keydown", onKeyDown);
@@ -1032,11 +1075,13 @@ function attachTable(
     drawer.hidden = false;
     button.setAttribute("aria-expanded", "true");
     placeDrawer(drawer, button);
-    drawer
-      .querySelector<HTMLElement>(
-        ".mdmark-table-settings-grip:not(:disabled), .mdmark-table-settings-eye:not(:disabled), input:not(:disabled), .mdmark-copy-format",
-      )
-      ?.focus({ preventScroll: true });
+    const first = drawer.querySelector<HTMLElement>(
+      ".mdmark-table-menu-item, .mdmark-table-settings-grip:not(:disabled), .mdmark-table-settings-eye:not(:disabled), input:not(:disabled), .mdmark-copy-format",
+    );
+    // 項目の無い表のメニューは、メニューそのものがフォーカスを受ける
+    (first ?? (drawer.hasAttribute("tabindex") ? drawer : null))?.focus({
+      preventScroll: true,
+    });
     openState = { drawer, button };
     document.addEventListener("pointerdown", onPointerDown);
     document.addEventListener("keydown", onKeyDown);
@@ -1175,14 +1220,42 @@ function attachTable(
     totals: totalSpecs,
   });
   /** 表の上の件数を、表示している行の数と全ての行の数に書き換える */
+  const counting = features.includes("count");
+  /** 表示している行の数と全ての行の数（`count` の機能が無ければ `undefined`） */
+  const countOf = (): { shown: number; total: number } | undefined =>
+    counting
+      ? {
+          shown: countedRows.filter((row) => !row.hidden).length,
+          total: countedRows.length,
+        }
+      : undefined;
+  /** 表のメニューのボタンの件数・隠した列の数を書き換える */
+  const refreshMenuButton = (): void => {
+    if (menuButton) {
+      updateTableMenuButton(menuButton, {
+        count: countOf(),
+        hidden: hiddenColumns.size,
+      });
+    }
+  };
+  let lastCount = "";
+  /** 表のメニューの件数とボタンの名前を、表示している行の数と全ての行の数に書き換え、変わったら読み上げる */
   const updateCount = (): void => {
-    const [visible, spoken] = ownElements(wrapper, ".mdmark-table-count span");
-    if (!visible || !spoken) {
+    const count = countOf();
+    refreshMenuButton();
+    if (!count) {
       return;
     }
-    const shown = countedRows.filter((row) => !row.hidden).length;
-    visible.textContent = `${shown} / ${countedRows.length} 件`;
-    spoken.textContent = `${countedRows.length} 件中 ${shown} 件を表示`;
+    const text = `${count.shown} / ${count.total} 件を表示`;
+    const element = ownElement(wrapper, ".mdmark-table-count");
+    if (element) {
+      element.textContent = text;
+    }
+    const live = ownElement(wrapper, ".mdmark-table-count-live");
+    if (live && lastCount !== "" && lastCount !== text) {
+      live.textContent = text;
+    }
+    lastCount = text;
   };
   /** 集計の行を、表示している行でもう一度計算して置き換える */
   const renderTotals = (): void => {
@@ -1251,7 +1324,10 @@ function attachTable(
       .map((total) => total.calc)
       .filter((value, index, all) => all.indexOf(value) === index)
       .filter((value) => !shownCalcs.has(value)).length;
-    const toggle = ownElement(wrapper, ".mdmark-totals-toggle");
+    const toggle = ownElement(
+      wrapper,
+      '.mdmark-table-menu-item[data-action="totals"]',
+    );
     toggle?.classList.toggle("is-active", hiding > 0);
     const spoken = toggle?.querySelector(".mdmark-visually-hidden");
     if (spoken) {
@@ -1276,13 +1352,8 @@ function attachTable(
     ) ?? []) {
       updateEyeButton(eye, hiddenColumns);
     }
-    const toggle = ownElement<HTMLElement>(
-      wrapper,
-      ".mdmark-table-settings-toggle",
-    );
-    if (toggle) {
-      updateSettingsToggle(toggle, hiddenColumns.size);
-    }
+    refreshMenuButton();
+    placeMenuSpace();
     renderTotals();
     if (pinned.length > 0) {
       pinColumns(pinned);
@@ -1308,20 +1379,21 @@ function attachTable(
 
   // ─── 表のコピー ───
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
-  const copyButton = ownElement<HTMLElement>(wrapper, ".mdmark-copy");
-  /** コピーのボタンに状態の文言とアイコンを適用する */
+  /** 表のメニューのボタンにコピーの結果のアイコンを適用する */
   const setCopyState = (state: CopyState): void => {
-    if (copyButton) {
-      copyButton.dataset.state = state;
-      copyButton.innerHTML = renderCopyButtonContent(state);
-      copyButton.title = COPY_STATES[state].label;
+    if (menuButton) {
+      menuButton.dataset.state = state;
+      menuButton.innerHTML = renderTableMenuButtonContent(
+        state,
+        hiddenColumns.size,
+      );
     }
   };
-  /** 手でコピーさせるパネルを取り除く。`returnFocus` が真なら `表をコピー` へフォーカスを戻す */
+  /** 手でコピーさせるパネルを取り除く。`returnFocus` が真なら表のメニューのボタンへフォーカスを戻す */
   const closeCopyPanel = (returnFocus: boolean): void => {
     ownElement(wrapper, ".mdmark-copy-panel")?.remove();
     if (returnFocus) {
-      copyButton?.focus();
+      menuButton?.focus();
     }
   };
   /** 見出しの行と、画面の並びで表示している行の、表示している列を選んだ形式でクリップボードへコピーし、結果をボタンとスクリーンリーダーで通知する。書き込めなければ手でコピーさせるパネルを出す */
@@ -1354,12 +1426,10 @@ function attachTable(
     }
     // 書き込めなかったことはボタンで通知し、中身を選択したパネルで手でコピーさせる
     setCopyState("failed");
-    wrapper
-      .querySelector(".mdmark-table-bar")
-      ?.insertAdjacentHTML(
-        "afterend",
-        renderCopyPanel({ id: `${id}-panel`, format, text }),
-      );
+    scroller.insertAdjacentHTML(
+      "beforebegin",
+      renderCopyPanel({ id: `${id}-panel`, format, text }),
+    );
     const textarea = ownElement<HTMLTextAreaElement>(
       wrapper,
       ".mdmark-copy-panel-text",
@@ -1524,8 +1594,15 @@ function attachTable(
       },
     },
     {
-      selector: ".mdmark-table-settings-toggle",
-      run: (toggle) => menuAction(menu, toggle),
+      selector: "button.mdmark-table-menu",
+      run: (button) => menuAction(menuPanel, button),
+    },
+    {
+      selector: ".mdmark-table-menu-item",
+      run: (item) => {
+        chooseMenuItem(item);
+        return true;
+      },
     },
     {
       selector: ".mdmark-table-settings-eye",
@@ -1537,14 +1614,7 @@ function attachTable(
         return !button.disabled;
       },
     },
-    {
-      selector: ".mdmark-totals-toggle",
-      run: (toggle) => menuAction(totalsMenu, toggle),
-    },
-    {
-      selector: ".mdmark-copy",
-      run: (copy) => menuAction(copyMenu, copy),
-    },
+
     {
       selector: ".mdmark-copy-format",
       run: (copyFormat) => {
@@ -1583,6 +1653,49 @@ function attachTable(
       }
     }
   };
+  /** 表のメニューの項目を押したときの動き。テーブル設定は表のメニューを閉じてパネルを開き、集計・コピーは中のメニューを開閉する。元の CSV を表示は表のメニューを閉じる（切り替えは `attachCsvRaw`） */
+  const chooseMenuItem = (item: HTMLElement): void => {
+    const action = item.dataset.action;
+    if (action === "settings" && menu && menuButton) {
+      closeDrawer(false);
+      openDrawer(menu, menuButton);
+    } else if (action === "totals" && totalsMenu) {
+      toggleSubmenu(totalsMenu, item);
+    } else if (action === "copy" && copyMenu) {
+      toggleSubmenu(copyMenu, item);
+    } else if (action === "raw") {
+      closeDrawer(false);
+    }
+  };
+  /** 表のメニューの中の集計・コピーの形式のメニューを開閉する（同時に開くのは 1 つ） */
+  const toggleSubmenu = (submenu: HTMLElement, item: HTMLElement): void => {
+    const opening = submenu.hidden;
+    closeSubmenus();
+    if (!opening) {
+      item.focus();
+      return;
+    }
+    submenu.hidden = false;
+    item.setAttribute("aria-expanded", "true");
+    submenu
+      .querySelector<HTMLElement>("input:not(:disabled), .mdmark-copy-format")
+      ?.focus({ preventScroll: true });
+    if (openState && menuButton) {
+      placeDrawer(openState.drawer, menuButton);
+    }
+  };
+  /** 表のメニューの中のメニューを全て閉じる */
+  function closeSubmenus(): void {
+    for (const submenu of submenus) {
+      submenu.hidden = true;
+    }
+    for (const item of ownElements<HTMLElement>(
+      wrapper,
+      ".mdmark-table-menu-item[aria-expanded]",
+    )) {
+      item.setAttribute("aria-expanded", "false");
+    }
+  }
   /** 帯のメニューがあれば開く・閉じ、メニューがあるかを返却する */
   const menuAction = (
     menuElement: HTMLElement | null,
@@ -1649,6 +1762,7 @@ function attachTable(
         table,
         onReorder: (next) => {
           order = next;
+          placeMenuSpace();
           applyMerges();
           if (pinned.length > 0) {
             pinColumns(pinned);
@@ -1664,6 +1778,7 @@ function attachTable(
   wrapper.addEventListener("input", onInput);
   wrapper.addEventListener("change", onChange);
   const observer = new ResizeObserver(() => {
+    placeMenuButton();
     updatePinVisibility();
     updateVisibleWidth();
     if (pinned.length > 0) {

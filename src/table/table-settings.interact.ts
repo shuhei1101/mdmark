@@ -40,7 +40,7 @@ export function reorderRowCells(
   });
 }
 
-/** 表の帯のテーブル設定のパネルのつまみに、ドラッグ＆ドロップと ↑・↓ キーで列を動かす操作を付ける。列を動かしたら見出し・本文の行・集計の行のセルと一覧をもう一度並べ、`onReorder` に新しい列の順を指定する。受け取りを解除する関数を返却する */
+/** テーブル設定のパネルのつまみに、ドラッグ＆ドロップ・↑・↓ キー・押して開く列の移動のメニューで列を動かす操作を付ける。列を動かしたら見出し・本文の行・集計の行のセルと一覧をもう一度並べ、`onReorder` に新しい列の順を指定する。受け取りを解除する関数を返却する */
 export function attachTableSettings(options: {
   /** `div.mdmark-table` */
   wrapper: HTMLElement;
@@ -153,29 +153,148 @@ export function attachTableSettings(options: {
     }
     dragging = undefined;
   };
-  /** つまみの ↑・↓ キーで、同じ範囲の隣の列と入れ替える。フォーカスはつまみに残す */
-  const onKeyDown = (event: KeyboardEvent): void => {
-    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
-      return;
-    }
-    const grip = (event.target as Element | null)?.closest<HTMLElement>(
+  /** 押したつまみの項目（一覧の外やつまみでなければ `undefined`） */
+  const gripItemOf = (
+    target: EventTarget | null,
+  ): { grip: HTMLButtonElement; item: HTMLElement } | undefined => {
+    const grip = (target as Element | null)?.closest<HTMLButtonElement>(
       ".mdmark-table-settings-grip",
     );
     const item = grip?.closest<HTMLElement>(".mdmark-table-settings-item");
-    if (!grip || !item || !list.contains(item)) {
+    return grip && item && list.contains(item) ? { grip, item } : undefined;
+  };
+  /** つまみの ↑・↓ キーで同じ範囲の隣の列と入れ替え、Enter で列の移動のメニューを開閉する。フォーカスはつまみに残す */
+  const onKeyDown = (event: KeyboardEvent): void => {
+    if (event.key === "Escape" && moveOpen()) {
+      event.preventDefault();
+      event.stopPropagation();
+      closeMoveMenu(true);
+      return;
+    }
+    const target = gripItemOf(event.target);
+    if (!target) {
+      return;
+    }
+    if (event.key === "Enter") {
+      event.preventDefault();
+      toggleMoveMenu(target);
+      return;
+    }
+    if (event.key !== "ArrowUp" && event.key !== "ArrowDown") {
       return;
     }
     event.preventDefault();
-    moveByKey(item, event.key === "ArrowUp" ? "before" : "after");
-    grip.focus();
+    moveByKey(target.item, event.key === "ArrowUp" ? "before" : "after");
+    target.grip.focus();
   };
-  /** 項目を、同じ範囲の上（`before`）か下（`after`）の隣の列と入れ替える */
-  const moveByKey = (item: HTMLElement, side: "before" | "after"): void => {
+  /** 項目の `side` の向きの隣の項目（同じ範囲でなければ `undefined`） */
+  const neighborOf = (
+    item: HTMLElement,
+    side: "before" | "after",
+  ): HTMLElement | undefined => {
     const all = items();
     const index = all.indexOf(item);
     const neighbor = all[side === "before" ? index - 1 : index + 1];
+    return neighbor &&
+      canMoveColumn({ from: placeOf(item), to: placeOf(neighbor) })
+      ? neighbor
+      : undefined;
+  };
+  /** 項目を、同じ範囲の上（`before`）か下（`after`）の隣の列と入れ替える */
+  const moveByKey = (item: HTMLElement, side: "before" | "after"): void => {
+    const neighbor = neighborOf(item, side);
     if (neighbor) {
       move(Number(item.dataset.column), Number(neighbor.dataset.column), side);
+    }
+  };
+
+  // ─── 列の移動のメニュー ───
+  const moveMenu = panel.querySelector<HTMLElement>(".mdmark-table-move-menu");
+  let moveTarget: { grip: HTMLButtonElement; item: HTMLElement } | undefined;
+  /** 列の移動のメニューを開いているか */
+  const moveOpen = (): boolean => moveTarget !== undefined;
+  /** 列の移動のメニューのボタン */
+  const moveButton = (
+    side: "before" | "after",
+  ): HTMLButtonElement | null | undefined =>
+    moveMenu?.querySelector<HTMLButtonElement>(`button[data-move="${side}"]`);
+  /** 列の移動のメニューを開いた項目の後ろに配置し、動かせない向きのボタンを `disabled` にする */
+  const placeMoveMenu = (item: HTMLElement): void => {
+    if (!moveMenu) {
+      return;
+    }
+    item.after(moveMenu);
+    moveMenu.setAttribute(
+      "aria-label",
+      `「${item.dataset.name ?? ""}」の列の移動`,
+    );
+    for (const side of ["before", "after"] as const) {
+      const button = moveButton(side);
+      if (button) {
+        button.disabled = neighborOf(item, side) === undefined;
+      }
+    }
+  };
+  /** 列の移動のメニューを閉じる。`returnFocus` が真なら開いたつまみへフォーカスを戻す */
+  const closeMoveMenu = (returnFocus: boolean): void => {
+    const target = moveTarget;
+    moveTarget = undefined;
+    if (moveMenu) {
+      moveMenu.hidden = true;
+    }
+    target?.grip.setAttribute("aria-expanded", "false");
+    if (returnFocus) {
+      target?.grip.focus();
+    }
+  };
+  /** つまみの列の移動のメニューを開く（同じつまみで開いていれば閉じる）。開いたら押せる最初のボタンへフォーカスを移す */
+  const toggleMoveMenu = (target: {
+    grip: HTMLButtonElement;
+    item: HTMLElement;
+  }): void => {
+    if (!moveMenu || target.grip.disabled) {
+      return;
+    }
+    const same = moveTarget?.grip === target.grip;
+    closeMoveMenu(same);
+    if (same) {
+      return;
+    }
+    moveTarget = target;
+    placeMoveMenu(target.item);
+    moveMenu.hidden = false;
+    target.grip.setAttribute("aria-expanded", "true");
+    const first = [moveButton("before"), moveButton("after")].find(
+      (button) => button && !button.disabled,
+    );
+    first?.focus();
+  };
+  /** 列の移動のメニューのボタンで列を 1 つ動かし、メニューを開いたまま項目に付けて動かす。押したボタンが押せなくなったら、もう一方へフォーカスを移す */
+  const moveByMenu = (side: "before" | "after"): void => {
+    if (!moveTarget) {
+      return;
+    }
+    moveByKey(moveTarget.item, side);
+    placeMoveMenu(moveTarget.item);
+    const pressed = moveButton(side);
+    const other = moveButton(side === "before" ? "after" : "before");
+    if (pressed?.disabled && other && !other.disabled) {
+      other.focus();
+    } else {
+      pressed?.focus();
+    }
+  };
+  const onClick = (event: MouseEvent): void => {
+    const move = (event.target as Element | null)?.closest<HTMLElement>(
+      ".mdmark-table-move-menu button[data-move]",
+    );
+    if (move && list.contains(move)) {
+      moveByMenu(move.dataset.move === "before" ? "before" : "after");
+      return;
+    }
+    const target = gripItemOf(event.target);
+    if (target) {
+      toggleMoveMenu(target);
     }
   };
   list.addEventListener("dragstart", onDragStart);
@@ -184,7 +303,10 @@ export function attachTableSettings(options: {
   list.addEventListener("drop", onDrop);
   list.addEventListener("dragend", onDragEnd);
   list.addEventListener("keydown", onKeyDown);
+  list.addEventListener("click", onClick);
   return () => {
+    list.removeEventListener("click", onClick);
+    closeMoveMenu(false);
     list.removeEventListener("dragstart", onDragStart);
     list.removeEventListener("dragenter", onDragOver);
     list.removeEventListener("dragover", onDragOver);
