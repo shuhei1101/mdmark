@@ -10,7 +10,7 @@
 
  Test Files  348 passed (348)
       Tests  2954 passed (2954)
-   Start at  02:38:16
-   Duration  35.71s (worker 83%, tests 11%, import 5%, transform 1%)
+   Start at  02:46:28
+   Duration  29.74s (worker 84%, tests 11%, import 5%, transform 1%)
 
 EXIT=0
