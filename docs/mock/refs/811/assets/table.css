@@ -132,7 +132,7 @@
         position: absolute;
         inset-block-start: 0.5rem;
         inset-inline-end: calc(24px + 0.125rem);
-        z-index: 3;
+        z-index: 10;
         background: var(--mdmark-color-surface, var(--mdmark-color-bg));
       }
 
