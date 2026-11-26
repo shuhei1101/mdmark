@@ -393,7 +393,7 @@ functions:
 
       | 呼び出し元 | 呼ぶとき |
       | --- | --- |
-      | `attachTables` | 付けたときと、表と囲む要素の `ResizeObserver` の通知のたび |
+      | `attachTables` | 付けたときと、列の幅を自動で決めた直後（`attachAutoColumnWidths` の幅を入れた後の処理）と、表と囲む要素の `ResizeObserver` の通知のたび |
       | Storybook | 表のストーリーを描いた直後（ストーリーは表の操作を付けないため） |
 
       ボタン・表を包む要素・表のどれかが無ければ何もしない
