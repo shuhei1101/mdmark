@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>code-block-wrap-toggle（コードブロックとファイルツリーの折り返しの切り替え） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #820 で足すボタンとメニュー -->
+  <link rel="stylesheet" href="../../refs/820/assets/mock.css">
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / code-block-wrap-toggle
+  </nav>
+  <main class="mock820-catalog" id="catalog">
+    <h1>code-block-wrap-toggle</h1>
+    <p class="state-note">配布物の mount で描いた実物のコードブロックとファイルツリーに、帯のコピーのボタンの前へ「折り返し」のトグルボタンを重ねている。押すたびにそのブロックだけを画面の端で折り返す・折り返さないに切り替え、押した状態は面の色と aria-pressed で示す。描いた直後の状態はマーカーの wrap の有り無しに従い、ページを開き直すと戻る</p>
+  </main>
+  <script type="module">
+    import { draw, attachWrapToggle } from "../../refs/820/assets/mock.js";
+
+    const LONG = "const prompt = \"この依頼文はとても長く、画面の幅を越えて続くため、折り返さないコードブロックでは横にスクロールしながら読むことになる。https://example.com/a/very/long/path/that/does/not/break\";";
+    const CODE = (marker) => `${marker}
+
+\`\`\`ts
+const title = "依頼文";
+${LONG}
+send(prompt);
+\`\`\`
+`;
+    const TREE = (marker) => `${marker}
+
+\`\`\`tree
+docs/
+├── 使い方/          # 導入と使い方の手順を、作業の順に並べたページのまとまり。ここに長い注釈を書くと画面の端を越える
+│   └── 文書を描く.md   # mount を呼んで要素の中に Markdown を描く手順
+└── リファレンス/    # 名前から引く一覧
+\`\`\`
+`;
+    const catalog = document.getElementById("catalog");
+    const add = (tag, text, className) => catalog.append(Object.assign(document.createElement(tag), { textContent: text, ...(className ? { className } : {}) }));
+    const block = (markdown, options, narrow) => {
+      const host = document.createElement("div");
+      if (narrow) host.classList.add("narrow");
+      catalog.append(host);
+      draw(host, markdown, (root) => attachWrapToggle(root, options));
+    };
+
+    add("h2", "コードブロック: マーカーの無いブロック（描いた直後は折り返さない）");
+    add("p", "ボタンを押すと 2 行目が枠の幅で折り返され、横スクロールが無くなる。もう一度押すと元に戻る", "state-note");
+    block(CODE(""));
+    add("h2", "コードブロック: wrap のマーカーを持つブロック（描いた直後は折り返す。ボタンは押した状態）");
+    add("p", "ボタンを押すと折り返さずに枠の中で横にスクロールする", "state-note");
+    block(CODE('<!-- code: {"lines": {}, "wrap": true} -->'));
+    add("h2", "狭い幅（390px）: 帯のタイトルが長いときも、ボタンはコピーの前で折り返さない");
+    block(CODE('<!-- code: {"title": "ChatGPT に送った依頼文の全文（長いタイトル）", "lines": {}} -->'), {}, true);
+
+    add("h2", "ファイルツリー 案 A（推奨）: 同じボタンを帯に付ける");
+    add("p", "コードブロックと同じく、押すと長い注釈を枠の幅で折り返す", "state-note");
+    block(TREE(""), { tree: true });
+    add("h2", "ファイルツリー 案 B: ボタンを付けない（今のまま。折り返しはマーカーの wrap だけで決める）");
+    block(TREE(""), { tree: false });
+  </script>
+</body>
+</html>

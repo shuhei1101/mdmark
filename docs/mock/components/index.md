@@ -48,6 +48,10 @@
 | [map-wire-ports](./map-wire-ports/index.html) | map の図で同じノードの同じ辺に出入りする線の端の並べ方（今の見た目・案 A の 16px 間隔・案 B の 8px 間隔、分岐から 3 本と上下の辺に 4 本と 2 本・狭い幅） |
 | [map-wire-hit](./map-wire-hit/index.html) | map の図の線の押せる範囲を区間ごとの帯に分けた確認用の図（フォーカスを持つ帯と帯の幅を URL で切り替えて axe の target-size にかける） |
 | [map-mindmap-item](./map-mindmap-item/index.html) | map のマインドマップの項目の枠線・文字・選び方（今の見た目・案 A の名前の上でも選ぶ・案 B の選べる場所を今のまま、短い名前と 30 文字の名前・ポインターを重ねたときと選んだときの面・狭い幅） |
+| [code-block-wrap-toggle](./code-block-wrap-toggle/index.html) | コードブロックとファイルツリーの帯の折り返しのトグルボタン（マーカーの無いブロック・wrap のブロック・狭い幅・ファイルツリーの案 A と案 B） |
+| [lightbox-move-menu](./lightbox-move-menu/index.html) | ライトボックスで拡大した画像の、上のバーの移動のボタンと上下左右へ移すメニュー |
+| [map-move-menu](./map-move-menu/index.html) | map の図で最後に押した要素に出す移動のボタンとメニュー・グループの角の大きさのメニュー（構成図・シーケンス図・狭い幅） |
+| [media-audio-bar](./media-audio-bar/index.html) | 埋め込んだ音声の再生バーの描いた高さと、図と祖先の overflow で切られた高さの測定 |
 | [map-group-resize](./map-group-resize/index.html) | map の図のグループの右下の角のハンドル（常に出す案・ポインターを重ねたときだけ出す案・構成図のグループと ER 図の分類の箱・狭い幅） |
 | [map-wire-drag-route](./map-wire-drag-route/index.html) | map の図の線を動かした後の経路（今の経路の決まりの表と、入れ子のグループをまたぐ線・回り込む線・状態遷移図・ER 図を実物で動かして確認する図） |
 | [map-wire-label](./map-wire-label/index.html) | map の図の線の上の文字（今の設定の一覧と、線より長い文字の今の見た目・案 A の線の横に置く・案 B の線の長さで折り返す・案 C のノードの間を広げる、構成図の横と縦とブロック図） |

@@ -1,0 +1,150 @@
+/* #820 のモックの規則: 配布物の CSS の上に、折り返しのトグルボタン・移動のボタンとメニュー・音声の測定の表を重ねる */
+
+/* カタログの並び: 見本ごとに見出しと補足を付けて縦に並べる */
+.mock820-catalog {
+  max-width: 56rem;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+.mock820-catalog .narrow {
+  max-width: 390px;
+}
+
+/* 移動のボタンとメニューを、描いた部品の上に重ねる場所 */
+.mock820-layer {
+  position: relative;
+}
+
+/* 移動のボタン: 押した要素の右上に重ねる 28px 四方のアイコンだけのボタン */
+.mock820-move {
+  position: absolute;
+  z-index: 5;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-surface);
+  color: var(--mdmark-color-text);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--mdmark-color-surface-muted, var(--mdmark-color-surface));
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 2px;
+  }
+
+  .mdmark-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* 移動・大きさのメニュー: #811 の列の移動のメニューと同じ縦の並び */
+.mock820-menu {
+  position: absolute;
+  z-index: 6;
+  display: grid;
+  min-width: 10rem;
+  padding: 4px;
+  border: 1px solid var(--mdmark-color-border);
+  border-radius: var(--mdmark-radius);
+  background: var(--mdmark-color-surface);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 0.18);
+
+  button {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    min-height: 32px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: calc(var(--mdmark-radius) - 2px);
+    background: transparent;
+    color: var(--mdmark-color-text);
+    font: inherit;
+    font-size: 0.875rem;
+    text-align: start;
+    cursor: pointer;
+
+    &:hover,
+    &:focus-visible {
+      background: var(--mdmark-color-surface-muted, rgb(0 0 0 / 0.06));
+      outline: none;
+    }
+
+    &:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+  }
+
+  .mdmark-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+
+/* 折り返しのトグルボタン: コピーのボタンと同じ大きさの、アイコンと文言のボタン。押した状態は面の色で示す */
+.mock820-wrap-toggle {
+  display: inline-flex;
+  gap: 0.25em;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 0.5em;
+  border: 1px solid transparent;
+  border-radius: var(--mdmark-radius);
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: 0.8125rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--mdmark-color-border);
+  }
+
+  &[aria-pressed="true"] {
+    border-color: var(--mdmark-color-border);
+    background: var(--mdmark-color-surface);
+  }
+
+  &:focus-visible {
+    outline: 2px solid var(--mdmark-color-link);
+    outline-offset: 1px;
+  }
+
+  .mdmark-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* 行に分けていないコードブロックを、トグルボタンで折り返したとき */
+.mdmark pre.mock820-wrap {
+  &,
+  & * {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+  }
+}
+
+/* 音声の測定の表 */
+.mock820-measure {
+  border-collapse: collapse;
+  font-size: 0.875rem;
+
+  th,
+  td {
+    padding: 4px 8px;
+    border: 1px solid var(--mdmark-color-border);
+    text-align: start;
+  }
+}
