@@ -51,6 +51,8 @@
       button.addEventListener("click", () => {
         item.run();
         refresh();
+        // 押した項目が押せなくなったら、フォーカスがメニューの外へ落ちないよう押せる項目（反対の向き）へ移す
+        if (button.disabled) menu.querySelector("button:not(:disabled)")?.focus();
       });
       button.item = item;
       return button;
@@ -172,6 +174,7 @@
           button.addEventListener("click", () => {
             item.run();
             refreshAll();
+            if (button.disabled) tools.querySelector("button:not(:disabled)")?.focus();
           });
           button.item = item;
           tools.append(button);
@@ -222,7 +225,8 @@
           button.addEventListener("click", () => {
             entry.run();
             refreshRows();
-            button.focus();
+            // 押したボタンが押せなくなったら、同じ行の反対の向きのボタンへフォーカスを移す
+            (button.disabled ? tools.querySelector("button:not(:disabled)") : button)?.focus();
           });
           button.entry = entry;
           tools.append(button);
