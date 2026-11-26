@@ -1683,6 +1683,8 @@ function attachTable(
     if (action === "settings" && menu && menuButton) {
       closeDrawer(false);
       openDrawer(menu, menuButton);
+      // ボタンの aria-expanded は、ボタンが指す表のメニューの開閉だけを表す
+      menuButton.setAttribute("aria-expanded", "false");
     } else if (action === "totals" && totalsMenu) {
       toggleSubmenu(totalsMenu, item);
     } else if (action === "copy" && copyMenu) {
