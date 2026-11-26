@@ -2114,7 +2114,7 @@
     }
 
     /* 表のメニューのボタン: 見出し行の縦の中央、最も右の見えている列の列の幅のつまみの左に重ねる（位置は描く処理が見出し行と表の右端から入れる）。
-       横にスクロールしても表の右端に残し、留めた見出し行より手前に描く */
+       横にスクロールしても表の右端に残し、留めた見出し行より手前（同じ z-index のピン止めした見出しのセルには DOM の順で勝つ）、右側の目次より奥に描く */
     button.mdmark-table-menu {
       position: absolute;
       inset-block-start: var(--mdmark-table-menu-top, 0.375rem);
@@ -2123,7 +2123,7 @@
         24px +
         0.125rem
       );
-      z-index: 6;
+      z-index: 4;
       display: inline-grid;
       place-items: center;
       box-sizing: border-box;
