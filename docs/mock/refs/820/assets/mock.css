@@ -17,6 +17,11 @@
 }
 
 /* 移動のボタン: 押した要素の右上に重ねる 28px 四方のアイコンだけのボタン */
+.mock820-move[hidden],
+.mdmark-lightbox-group[hidden] {
+  display: none;
+}
+
 .mock820-move {
   position: absolute;
   z-index: 5;

@@ -152,21 +152,18 @@ export function attachMoveMenu(host) {
   host.append(button);
   /** 移動のボタンが指す要素を、描き直しの後も取り出す */
   let pointed = null;
-  const locate = () => pointed && host.querySelector(pointed.selector);
+  /** 指す要素のうち、描いて見えているもの（一覧の表示などに同じ属性の要素があっても選ばない） */
+  const locate = () =>
+    pointed && [...host.querySelectorAll(pointed.selector)].find((element) => element.getClientRects().length > 0);
   const relocate = () => {
     const element = locate();
-    button.hidden = !element || !isStillSelectedOrGroup();
+    button.hidden = !element;
     if (!button.hidden) {
       const base = host.getBoundingClientRect();
       const box = element.getBoundingClientRect();
       button.style.top = `${box.top - base.top - 30}px`;
       button.style.left = `${box.right - base.left - 4}px`;
     }
-  };
-  /** ノードと参加者は選んでいる間だけ、グループと線の区間は押した後ずっと出す */
-  const isStillSelectedOrGroup = () => {
-    if (pointed.kind !== "node") return true;
-    return locate()?.closest("[data-node]")?.classList.contains("is-selected") ?? false;
   };
   new MutationObserver(() => requestAnimationFrame(relocate)).observe(host, {
     childList: true,
@@ -176,7 +173,8 @@ export function attachMoveMenu(host) {
   });
 
   const pointAt = (target) => {
-    if (target.closest(".mock820-move, .mock820-menu, button:not(.map-group-resize)")) return;
+    // 図の操作のボタン（開閉・中へ入る・パネル）を押したときは、移動のボタンを変えない
+    if (target.closest(".mock820-move, .mock820-menu, .map-disclosure, .map-group-title, [data-node-toggle], .mdmark-diagram-tools, .mdmark-diagram-panel")) return;
     const corner = target.closest(".map-group-resize");
     if (corner) {
       const id = corner.closest("[data-group]")?.dataset.group;
@@ -242,7 +240,7 @@ export function attachMoveMenu(host) {
     openMenu(host, () => button, `「${current.name}」の移動`, current.items.map(([label, icon, key]) => ({
       label,
       icon,
-      run: () => sendKey(host.querySelector(current.selector), key, true),
+      run: () => sendKey(locate(), key, true),
     })));
   });
 }
