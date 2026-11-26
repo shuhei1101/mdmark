@@ -1820,6 +1820,7 @@ function attachTable(
     headCells,
     longColumnMin,
     onApply: () => {
+      placeMenuButton();
       updatePinVisibility();
       if (pinned.length > 0) {
         pinColumns(pinned);
