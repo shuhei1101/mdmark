@@ -1,0 +1,52 @@
+# 型検査の違反（table.part.test.ts の width）は renderTableTools の引数 width の実装が無いことによる
+
+> lint
+> biome check .
+
+tests/unit/src/tree/tree.syntax.test.ts:250:3 lint/style/useTemplate  FIXABLE  ━━━━━━━━━━━━━━━━━━━━━
+
+  i Template literals are preferred over string concatenation.
+  
+    248 │ /** 言語と中身からコードブロックの行を作る */
+    249 │ const fence = (language: string, lines: string[]) => [
+  > 250 │   "```" + language,
+        │   ^^^^^^^^^^^^^^^^
+    251 │   ...lines,
+    252 │   "```",
+  
+  i Unsafe fix: Use a template literal.
+  
+    248 248 │   /** 言語と中身からコードブロックの行を作る */
+    249 249 │   const fence = (language: string, lines: string[]) => [
+    250     │ - ··"```"·+·language,
+        250 │ + ··`\`\`\`${language}`,
+    251 251 │     ...lines,
+    252 252 │     "```",
+  
+
+plugin/bin/setup.js check ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ! The size of the file is 1.5 MiB, which exceeds the configured maximum of 1.0 MiB for this project.
+    Use the `files.maxSize` configuration to change the maximum size of files processed, or `files.includes` to ignore the file.
+  
+
+Checked 1034 files in 1143ms. No fixes applied.
+Found 1 warning.
+Found 1 info.
+exit=0
+
+> lint:eslint
+> node scripts/eslint.ts
+
+exit=0
+
+> typecheck
+> tsc --noEmit
+
+tests/unit/src/table/table.part.test.ts(1375,48): error TS2353: Object literal may only specify known properties, and 'width' does not exist in type 'TableToolsOptions'.
+exit=1
+
+> typecheck:vscode
+> tsc --noEmit -p vscode
+
+exit=0
