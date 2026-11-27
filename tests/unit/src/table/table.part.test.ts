@@ -1365,6 +1365,33 @@ test("test_render_table_tools_when_resize", async () => {
   expect(withoutResize.header).not.toContain("mdmark-col-resize");
 });
 
+// つまみが描いた時点から値の属性を持つ（正常系）
+test("test_render_table_tools_when_resize_values", async () => {
+  // 準備
+  const { renderTableTools } = await loadTable();
+  const options = { id: "t1", column: 0, label: "名前", features: ["resize"] };
+  // 実行
+  const auto = renderTableTools(options).header;
+  const sized = renderTableTools({ ...options, width: 160 }).header;
+  // 検証
+  for (const [name, value] of [
+    ["aria-valuenow", "0"],
+    ["aria-valuemin", "0"],
+    ["aria-valuemax", "0"],
+    ["aria-valuetext", "自動"],
+  ]) {
+    expect(auto).toContain(`${name}="${value}"`);
+  }
+  for (const [name, value] of [
+    ["aria-valuenow", "160"],
+    ["aria-valuemin", "160"],
+    ["aria-valuemax", "160"],
+    ["aria-valuetext", "160px"],
+  ]) {
+    expect(sized).toContain(`${name}="${value}"`);
+  }
+});
+
 // 指定した列の幅を見出しのセルに入れ、ドラッグ中の列のつまみに印を付ける（正常系）
 test("test_render_table_when_resized", async () => {
   // 準備

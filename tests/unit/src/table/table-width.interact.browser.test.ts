@@ -209,6 +209,66 @@ test("test_measure_columns_when_hidden_text", async () => {
   expect(table.querySelectorAll(".mdmark-visually-hidden")).toHaveLength(1);
 });
 
+/** セルの中に要素を折り返さずに置いたときの幅に、余白と罫線と 2px を足して切り上げる */
+const expectedElementWidth = (cell: HTMLElement, html: string): number => {
+  const probe = document.createElement("span");
+  probe.style.cssText =
+    "position:absolute;visibility:hidden;white-space:nowrap";
+  probe.innerHTML = html;
+  cell.append(probe);
+  const width = probe.getBoundingClientRect().width;
+  probe.remove();
+  const style = getComputedStyle(cell);
+  const padding =
+    Number.parseFloat(style.paddingLeft) +
+    Number.parseFloat(style.paddingRight) +
+    Number.parseFloat(style.borderLeftWidth) +
+    Number.parseFloat(style.borderRightWidth);
+  return Math.ceil(width + padding + 2);
+};
+
+/** 行内のコードに書体と左右の余白を当てる規則を、描く先の要素に置く */
+const addCodeStyle = (root: HTMLElement): void => {
+  const style = document.createElement("style");
+  style.textContent =
+    ".mdmark-test-code code { font-family: monospace; padding: 0 0.4em; }";
+  root.append(style);
+  root.classList.add("mdmark-test-code");
+};
+
+// 行内のコードを、コードの書体と左右の余白を含めて測る（正常系）
+test("test_measure_columns_when_inline_code", async () => {
+  // 準備
+  addStyles();
+  const { measureColumns } = await loadTableWidth();
+  const code = "a".repeat(40);
+  const { root } = createRoot(
+    [
+      "| コード | 単語 |",
+      "| --- | --- |",
+      `| \`${code}\` | x \`long_word_in_code\` y |`,
+      "",
+    ].join("\n"),
+  );
+  root.style.font = "14px/1.5 sans-serif";
+  addCodeStyle(root);
+  const { table, headCells } = tableParts(root);
+  const [cell0, cell1] = requireCells([
+    ...(table.tBodies[0]?.rows[0]?.cells ?? []),
+  ]);
+  const longest = expectedElementWidth(cell0, `<code>${code}</code>`);
+  const longestWord = expectedElementWidth(
+    cell1,
+    "<code>long_word_in_code</code>",
+  );
+  // 実行
+  const columns = measureColumns(table, headCells);
+  // 検証
+  expect(columns[0]?.longest).toBeGreaterThanOrEqual(longest);
+  expect(columns[1]?.longestWord).toBeGreaterThanOrEqual(longestWord);
+  expect(table.querySelector("span[style*='visibility']")).toBeNull();
+});
+
 /** 計測の順の記録の 1 件（計測用の要素の配置・幅の取得・取り除き・見出しの最小幅の書き込み） */
 type MeasureCall = "append" | "rect" | "remove" | "head-width";
 
@@ -718,5 +778,51 @@ test("test_attach_auto_column_widths_when_batched", async () => {
         cell.style.getPropertyValue("--mdmark-column-head-width"),
       ),
     ).toBeGreaterThanOrEqual(Math.floor(headContentWidth(cell)));
+  }
+});
+
+// つまみの最小幅として、列ごとの最小の幅を見出しのセルに入れる（正常系）
+test("test_attach_auto_column_widths_when_content_width", async () => {
+  // 準備
+  addStyles();
+  const { attachAutoColumnWidths, measureColumns } = await loadTableWidth();
+  const code = "a".repeat(40);
+  const id = "B".repeat(40);
+  const { root } = createRoot(
+    [
+      '<!-- table: {"kind": "data", "columns": {"コード": {"width": {"mode": "nowrap"}}}} -->',
+      "",
+      "| コード | 説明 |",
+      "| --- | --- |",
+      `| \`${code}\` | ${wide(30)} ${id} ${wide(30)} |`,
+      "",
+      "<!-- /table -->",
+    ].join("\n"),
+  );
+  setRootWidth(root, 600);
+  addCodeStyle(root);
+  const { wrapper, table, scroller, headCells } = tableParts(root);
+  wrapper.setAttribute("data-long", "1");
+  const [measure0, measure1] = measureColumns(table, headCells);
+  // 実行
+  const handle = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin: 45,
+  });
+  detachers.push(handle.detach);
+  // 検証
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  const contentWidth = (cell: HTMLElement | undefined): string =>
+    cell?.style.getPropertyValue("--mdmark-column-content-width") ?? "";
+  expect(contentWidth(headCells[0])).toBe(`${measure0?.longest}px`);
+  expect(Number.parseFloat(contentWidth(headCells[1]))).toBeGreaterThanOrEqual(
+    measure1?.longestWord ?? Number.POSITIVE_INFINITY,
+  );
+  for (const cell of table.querySelectorAll("tbody td")) {
+    expect(cell.scrollWidth).toBeLessThanOrEqual(cell.clientWidth);
   }
 });

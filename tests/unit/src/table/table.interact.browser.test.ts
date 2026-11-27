@@ -535,6 +535,32 @@ test("test_column_bounds_when_range", async () => {
   ]);
 });
 
+// 折り返す列の最小の幅を最も長い半角の単語の幅より狭くせず、range.max より優先する（正常系）
+test("test_column_bounds_when_long_word", async () => {
+  // 準備
+  const { columnBounds } = await loadLogic();
+  const base = {
+    nowrap: false,
+    long: false,
+    longest: 2800,
+    longestWord: 300,
+    em: 14,
+    longColumnMin: 45,
+  };
+  // 実行
+  const result = [
+    { ...base, range: { max: 10 } },
+    { ...base, range: { min: 10 } },
+    { ...base, long: true, longColumnMin: 10 },
+  ].map((options) => boundsOf(columnBounds(options)));
+  // 検証
+  expect(result).toEqual([
+    [true, 300, 300],
+    [true, 300, 2800],
+    [true, 300, 2800],
+  ]);
+});
+
 /** `distributeColumnWidths` に渡す列の並びを `[wraps, min, wanted]` から作る */
 const columnsOf = (
   values: Array<[boolean, number, number]>,
