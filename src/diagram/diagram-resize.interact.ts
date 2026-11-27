@@ -90,6 +90,11 @@ export const attachDiagramResize = (options: {
       label: handle.getAttribute("aria-label") ?? "図の表示の高さ",
       sides: ["below", "above"],
       align: "center",
+      onClose: () => {
+        if (menu === opened) {
+          menu = undefined;
+        }
+      },
       items: [
         {
           label: "低くする",
@@ -113,13 +118,6 @@ export const attachDiagramResize = (options: {
       ],
     });
     menu = opened;
-    const wrappedClose = opened.close;
-    opened.close = (closeOptions) => {
-      wrappedClose(closeOptions);
-      if (menu === opened) {
-        menu = undefined;
-      }
-    };
   };
   signal.addEventListener("abort", closeMenu);
 

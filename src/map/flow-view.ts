@@ -1627,6 +1627,9 @@ export const attachMapFlow = (
       label: `「${nodeNameOf(group)}」の大きさ`,
       anchor: () => figure.querySelector<HTMLElement>(selector),
       ...(viewportElement ? { container: viewportElement } : {}),
+      onClose: () => {
+        if (resizeMenu === opened) resizeMenu = undefined;
+      },
       items: RESIZE_MENU_ITEMS.map((item) => ({
         label: item.label,
         icon: item.icon,

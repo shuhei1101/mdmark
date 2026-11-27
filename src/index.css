@@ -11967,8 +11967,11 @@
     bottom: 0;
     display: grid;
     place-items: center;
-    width: 24px;
-    height: 24px;
+    /* 後ろに描く線を押す・指す場所の層より上に重ね、上を通る線に押せる範囲を削られない */
+    z-index: 1;
+    /* 図を縮めても押せる大きさを 24 CSS px 以上に保つ（倍率の逆数で補う） */
+    width: max(24px, calc(24px / var(--mdmark-zoom, 1)));
+    height: max(24px, calc(24px / var(--mdmark-zoom, 1)));
     padding: 0;
     border: 0;
     border-radius: var(--mdmark-radius);

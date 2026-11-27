@@ -181,14 +181,12 @@ export const attachMoveButton = (options: {
             button.getBoundingClientRect(),
             panel()?.getBoundingClientRect(),
           ].filter((rect): rect is DOMRect => rect !== undefined),
+        onClose: () => {
+          if (menu === opened) {
+            menu = undefined;
+          }
+        },
       });
-      const close = opened.close;
-      opened.close = (closeOptions) => {
-        close(closeOptions);
-        if (menu === opened) {
-          menu = undefined;
-        }
-      };
       menu = opened;
     },
     { signal },

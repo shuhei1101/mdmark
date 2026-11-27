@@ -275,14 +275,12 @@ export function attachLightbox(root: HTMLElement): () => void {
           label: "拡大した画像の移動",
           items,
           avoid: () => [head.getBoundingClientRect()],
+          onClose: () => {
+            if (moveMenu === opened) {
+              moveMenu = undefined;
+            }
+          },
         });
-        const close = opened.close;
-        opened.close = (options) => {
-          close(options);
-          if (moveMenu === opened) {
-            moveMenu = undefined;
-          }
-        };
         moveMenu = opened;
       },
       { signal },

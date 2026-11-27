@@ -146,6 +146,8 @@ export const openStepMenu = (options: {
   anchor?: () => HTMLElement | null;
   /** メニューを入れる要素。既定は `opener` の直後 */
   container?: HTMLElement;
+  /** Esc・メニューの外の押下・`close` のどれで閉じたときも呼ぶ */
+  onClose?: () => void;
 }): StepMenuHandle => {
   const {
     opener,
@@ -244,6 +246,7 @@ export const openStepMenu = (options: {
     }
     menu.remove();
     opener.setAttribute("aria-expanded", "false");
+    options.onClose?.();
     if (closeOptions.restoreFocus) {
       (options.focusBack ?? anchor() ?? opener).focus({ preventScroll: true });
     }
