@@ -2243,6 +2243,17 @@ elements:
     refs:
       - IF-472-35#constraints[ライトボックスの拡大・縮小・移動]
     status: planned
+  - id: diagram-resize-menu
+    kind: group
+    name: 図の高さのメニュー
+    label: 「{図の題名}」の表示の高さ
+    position: 描く先の要素 > 図の部品 > リサイズハンドルの下（入らないときは上）
+    description: '`popover` の `role="group"`。「低くする」「高くする」「全体が収まる高さにする」の 3 つのボタンを並べ、下限・上限・全体が収まる高さのときはそのボタンを `disabled` にする（動画の大きさのメニューと同じ構造）'
+    action: ボタンを押すと `↑`・`↓`（32px）かダブルクリックと同じだけ表示する枠の高さを変え、メニューを開いたままにする。Esc・外を押して閉じたらハンドルへフォーカスを戻す
+    visible_when: 図のリサイズハンドルを 4px 以下の動きで押したときと、ハンドルにフォーカスして Enter・Space を押したとき。全画面のモーダルの中と印刷では出さない
+    refs:
+      - IF-472-35#constraints[図の高さのリサイズハンドル]
+    status: planned
 mock: docs/mock/pages/ui-canvas/80/side-by-side/
 lead: mdmark が描く先の要素の中に描く文書。Markdown の本文に加え、mdmark が追加する UI の項目（横スクロールする領域のキー操作・表の列名・タスクのチェックボックス・外部ライブラリと拡張のマーカーの場所・拡張記法の部品・記載の警告）を持つ。
 tags:
