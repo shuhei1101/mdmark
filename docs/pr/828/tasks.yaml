@@ -49,7 +49,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T17:49:56.406094+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T18:12:06.296855+00:00'
   - process: エージェント・MCP サーバー設計
     status: skipped
     reason: エージェント・MCP のツールを作る・変える変更ではない
