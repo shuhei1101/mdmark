@@ -1,8 +1,8 @@
 use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-59.yaml
-    impact: run_only
-    detail: 描いた文書の表・タブの前後の間が変わる。シナリオの操作と期待値は変わらないが、描いた文書の見た目を壊しうる
+    impact: none
+    detail: CSS とコードを変えず、描いた文書の見た目は変わらない。設計書の正常系と結合テストに、表の前後の間を測る組を追加するだけ
     depends_on: []
 scope_out:
   - item: MindStella の本文の見出しごとの区切り（`div.md-section-body`）の中のブロック同士の間
