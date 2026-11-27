@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { findTag, findTags, innerHtml } from "../../helpers/html.ts";
+import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
+import { iconSvg } from "../../../../src/shared/icons.part.ts";
 
 /** コードブロックの部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCodeBlock = () =>
@@ -569,4 +570,51 @@ test("test_render_code_bar", async () => {
   expect(text).toContain("mdmark-code-copy");
   expect(none).not.toContain("mdmark-code-lang");
   expect(none).toContain("mdmark-code-copy");
+});
+
+/** 開始タグの属性の値を返却する（無ければ undefined） */
+function attrOf(tag: string, name: string): string | undefined {
+  return new RegExp(`\\s${name}="([^"]*)"`).exec(tag)?.[1];
+}
+
+// 文言を画面に出さず、名前とツールチップに持たせる（正常系）
+test("test_render_code_copy_when_icon_only", async () => {
+  // 準備
+  const { renderCodeCopy } = await loadCodeBlock();
+  const cases = [
+    ["idle", "コピー", "copy"],
+    ["copied", "コピーしました", "check"],
+    ["failed", "コピーできませんでした", "circle-alert"],
+  ] as const;
+  for (const [state, label, icon] of cases) {
+    // 実行
+    const html = renderCodeCopy({ state });
+    // 検証
+    const button = findTag(html, "mdmark-code-copy");
+    const inner = innerHtml(html, "mdmark-code-copy");
+    expect(plainText(inner)).toBe("");
+    expect(attrOf(button, "aria-label")).toBe(label);
+    expect(attrOf(button, "title")).toBe(label);
+    expect(inner).toContain(iconSvg(icon));
+  }
+});
+
+// アイコンだけのトグルボタンを描く（正常系）
+test("test_render_code_wrap_toggle", async () => {
+  // 準備
+  const { renderCodeWrapToggle } = await loadCodeBlock();
+  for (const pressed of [true, false]) {
+    // 実行
+    const html = renderCodeWrapToggle({ pressed });
+    // 検証
+    const button = findTag(html, "mdmark-code-wrap-toggle");
+    expect(button.startsWith("<button")).toBe(true);
+    expect(attrOf(button, "type")).toBe("button");
+    expect(attrOf(button, "aria-pressed")).toBe(String(pressed));
+    expect(attrOf(button, "aria-label")).toBe("画面の端で折り返す");
+    expect(attrOf(button, "title")).toBe("画面の端で折り返す");
+    const inner = innerHtml(html, "mdmark-code-wrap-toggle");
+    expect(plainText(inner)).toBe("");
+    expect(inner).toContain(iconSvg("wrap-text" as never));
+  }
 });

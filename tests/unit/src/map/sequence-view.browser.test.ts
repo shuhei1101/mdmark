@@ -1,4 +1,4 @@
-import { afterEach, expect, test } from "vitest";
+import { afterEach, expect, test, vi } from "vitest";
 import {
   addStyles,
   createRootFromHtml,
@@ -430,4 +430,70 @@ test("test_attach_map_sequence_when_packet_style", async () => {
     expect(packet.getAttribute("data-fill")).toBe("glow");
   }
   expect(root.querySelector('[data-packet-palette="vivid"]')).not.toBeNull();
+});
+
+/** 要素の中央を押し、動かさずに離す（イベントは要素から window まで伝わる） */
+function pressStill(element: Element): void {
+  const box = element.getBoundingClientRect();
+  const point = {
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    clientX: box.x + box.width / 2,
+    clientY: box.y + box.height / 2,
+  };
+  element.dispatchEvent(new PointerEvent("pointerdown", point));
+  element.dispatchEvent(new PointerEvent("pointerup", point));
+}
+
+/** 開いている移動のメニューの、文言が `label` のボタンを返却する（無ければ例外） */
+function moveItem(label: string): HTMLButtonElement {
+  const found = [
+    ...document.querySelectorAll<HTMLButtonElement>(".mdmark-step-menu button"),
+  ].find((item) => item.textContent?.trim() === label);
+  if (!found) {
+    throw new Error(`メニューの項目が無い: ${label}`);
+  }
+  return found;
+}
+
+/** 参加者 `id` の箱 */
+const participantBox = (root: HTMLElement, id: string) =>
+  root.querySelector(`.map-participant[data-participant="${id}"]`) as Element;
+
+/** 図の移動のボタン（出るまで待つ） */
+async function shownMoveButton(root: HTMLElement): Promise<HTMLButtonElement> {
+  return vi.waitFor(() => {
+    const found = root.querySelector<HTMLButtonElement>("button.map-move");
+    expect(found?.hidden).toBe(false);
+    return found as HTMLButtonElement;
+  });
+}
+
+// 移動のメニューで参加者を 1 列ずつ並べ替える（正常系）
+test("test_attach_map_sequence_when_move_menu", async () => {
+  // 準備: 先頭の参加者は左へ移せない
+  const root = await setUp();
+  pressStill(participantBox(root, "user"));
+  (await shownMoveButton(root)).click();
+  const firstDisabled = moveItem("左へ移す").disabled;
+  // 実行: 2 人目の参加者を右へ移す
+  pressStill(participantBox(root, "mount"));
+  (await shownMoveButton(root)).click();
+  moveItem("右へ移す").click();
+  // 検証: Alt + → を 1 回押したときと同じ並びで、再描画した後もメニューが開いている
+  expect(firstDisabled).toBe(true);
+  expect(saved().order?.slice(0, 3)).toEqual(["user", "marker", "mount"]);
+  expect(document.activeElement).toBe(moveItem("右へ移す"));
+  // 実行: メッセージの線を押す
+  const wire = root.querySelector(
+    ".mdmark-diagram-wire[data-message]",
+  ) as Element;
+  pressStill(wire);
+  // 検証
+  await vi.waitFor(() => {
+    expect(
+      root.querySelector<HTMLButtonElement>("button.map-move")?.hidden ?? true,
+    ).toBe(true);
+  });
 });

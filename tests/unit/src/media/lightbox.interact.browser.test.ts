@@ -256,3 +256,96 @@ test("test_attach_lightbox_when_gif", async () => {
   expect(opener?.matches("button.mdmark-image-open")).toBe(true);
   expect(opener?.querySelector(".mdmark-image-open-icon")).toBeNull();
 });
+
+/** ライトボックスの移動のボタンを返却する（無ければ例外） */
+function moveButton(dialog: ParentNode): HTMLButtonElement {
+  const found = dialog.querySelector<HTMLButtonElement>(
+    "button.mdmark-lightbox-move",
+  );
+  if (!found) {
+    throw new Error("移動のボタンが無い");
+  }
+  return found;
+}
+
+/** 開いている向きのメニューの、文言が `label` のボタンを返却する（無ければ例外） */
+function menuItem(label: string): HTMLButtonElement {
+  const found = [
+    ...document.querySelectorAll<HTMLButtonElement>(".mdmark-step-menu button"),
+  ].find((item) => item.textContent?.trim() === label);
+  if (!found) {
+    throw new Error(`メニューの項目が無い: ${label}`);
+  }
+  return found;
+}
+
+/** 幅 1600 の画像のライトボックスを開いて拡大を 3 回押し、ダイアログと画像の場所を返却する */
+async function openZoomed(): Promise<{
+  dialog: HTMLDialogElement;
+  stage: HTMLElement;
+}> {
+  const { attachLightbox } = await loadLightbox();
+  const root = createRootFromHtml(
+    figureHtml("広い画像", { src: svgUrl(1600, 1000) }),
+  );
+  detachers.push(attachLightbox(root));
+  openers(root)[0]?.click();
+  const dialog = openDialog(root);
+  await vi.waitFor(() => {
+    expect(zoomText(dialog)).not.toBe("100%");
+  });
+  const hiddenWhenOpened = moveButton(dialog).hidden;
+  for (let count = 0; count < 3; count += 1) {
+    button(dialog, "拡大").click();
+  }
+  expect(hiddenWhenOpened).toBe(true);
+  const stage = dialog.querySelector<HTMLElement>(".mdmark-lightbox-stage");
+  if (!stage) {
+    throw new Error("画像の場所が無い");
+  }
+  return { dialog, stage };
+}
+
+// 拡大中だけ移動のボタンを出し、メニューで矢印キーと同じだけ動かす（正常系）
+test("test_attach_lightbox_when_move_menu", async () => {
+  // 準備
+  const { dialog, stage } = await openZoomed();
+  const move = moveButton(dialog);
+  expect(move.hidden).toBe(false);
+  stage.focus();
+  const beforeKey = stage.scrollLeft;
+  await userEvent.keyboard("{ArrowRight}");
+  const keyStep = stage.scrollLeft - beforeKey;
+  stage.scrollLeft = beforeKey;
+  // 実行
+  move.click();
+  menuItem("右へ移す").click();
+  // 検証: 矢印キーを 1 回押したときと同じだけ動く
+  expect(keyStep).toBeGreaterThan(0);
+  expect(stage.scrollLeft - beforeKey).toBe(keyStep);
+  // 実行・検証: 1 回目の Esc はメニューだけを閉じ、移動のボタンへ戻る
+  menuItem("右へ移す").focus();
+  await userEvent.keyboard("{Escape}");
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+  expect(dialog.open).toBe(true);
+  expect(document.activeElement).toBe(move);
+  // 実行・検証: 2 回目の Esc でライトボックスを閉じる
+  await userEvent.keyboard("{Escape}");
+  expect(dialog.open).toBe(false);
+});
+
+// 全体が収まる倍率に戻すとボタンを取り除き、フォーカスを倍率のボタンへ移す（正常系）
+test("test_attach_lightbox_when_move_menu_reset", async () => {
+  // 準備
+  const { dialog } = await openZoomed();
+  moveButton(dialog).click();
+  menuItem("右へ移す").focus();
+  // 実行
+  await userEvent.keyboard("0");
+  // 検証
+  expect(moveButton(dialog).hidden).toBe(true);
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+  expect(document.activeElement).toBe(
+    dialog.querySelector(".mdmark-lightbox-zoom"),
+  );
+});

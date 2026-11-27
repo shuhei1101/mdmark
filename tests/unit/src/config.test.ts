@@ -288,6 +288,21 @@ test("test_resolve_config_when_pin_default_given", async () => {
   expect(result).toEqual([true, false, false, false]);
 });
 
+// code.wrap は true のときだけ true にする（正常系）
+test("test_resolve_config_when_code_wrap_given", async () => {
+  // 準備
+  const { resolveConfig } = await loadConfig();
+  const configs = [
+    { code: { wrap: true } },
+    { code: { wrap: "yes" } },
+    {},
+  ] as unknown as MdmarkConfig[];
+  // 実行
+  const result = configs.map((config) => resolveConfig({ config }).code.wrap);
+  // 検証
+  expect(result).toEqual([true, false, false]);
+});
+
 // COLOR_THEMES の名前だけを受け、他の値と無いときは dev-swiss にする（正常系）
 test("test_resolve_config_when_color_theme_given", async () => {
   // 準備

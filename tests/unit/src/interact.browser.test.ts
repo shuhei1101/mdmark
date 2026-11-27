@@ -328,3 +328,47 @@ test("test_attach_interactions_when_media_off", async () => {
   // 検証
   expect(root.querySelector("dialog.mdmark-media-modal")).toBeNull();
 });
+
+// コードブロックとファイルツリーに折り返しのボタンを付ける（正常系）
+test("test_attach_interactions_when_code_wrap", async () => {
+  // 準備
+  const { attachInteractions } = await loadInteract();
+  const markdown = [
+    "```ts",
+    "const a = 1;",
+    "```",
+    "",
+    "```tree",
+    "app/",
+    "└── src/",
+    "```",
+    "",
+  ].join("\n");
+  const on = createRoot(markdown);
+  const off = createRoot(markdown);
+  // 実行
+  detachers.push(
+    attachInteractions({
+      root: on.root,
+      features: on.features,
+      placement: "top",
+      codeWrap: true,
+    } as Parameters<typeof attachInteractions>[0]),
+    attachInteractions({
+      root: off.root,
+      features: { ...off.features, code: false, tree: false },
+      placement: "top",
+      codeWrap: true,
+    } as Parameters<typeof attachInteractions>[0]),
+  );
+  // 検証: オンではどの帯にもボタンがあり押した状態
+  const bars = on.root.querySelectorAll(".mdmark-code-bar");
+  const toggles = on.root.querySelectorAll(".mdmark-code-wrap-toggle");
+  expect(bars.length).toBe(2);
+  expect(toggles).toHaveLength(2);
+  expect(
+    [...toggles].map((toggle) => toggle.getAttribute("aria-pressed")),
+  ).toEqual(["true", "true"]);
+  // 検証: オフではボタンが無い
+  expect(off.root.querySelector(".mdmark-code-wrap-toggle")).toBeNull();
+});

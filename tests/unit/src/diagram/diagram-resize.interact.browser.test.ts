@@ -141,3 +141,63 @@ test("test_diagram_height_key", async () => {
   // 検証
   expect(key).toBe("mdmark-diagram-height:/docs/a.html#1:問い合わせの流れ");
 });
+
+/** 開いている大きさのメニューを返却する（無ければ null） */
+function sizeMenu(): HTMLElement | null {
+  return document.querySelector<HTMLElement>(".mdmark-step-menu");
+}
+
+/** 開いている大きさのメニューの、文言が `label` のボタンを返却する（無ければ例外） */
+function sizeItem(label: string): HTMLButtonElement {
+  const found = [
+    ...(sizeMenu()?.querySelectorAll<HTMLButtonElement>("button") ?? []),
+  ].find((item) => item.textContent?.trim() === label);
+  if (!found) {
+    throw new Error(`メニューの項目が無い: ${label}`);
+  }
+  return found;
+}
+
+// 動かさずに押すと大きさのメニューを開き、ボタンで高さを変える（正常系）
+test("test_attach_diagram_resize_when_menu", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const { handle } = await setUp(memoryStorage(), 760);
+  // 実行
+  drag(handle, 2);
+  // 検証
+  expect(sizeMenu()?.getAttribute("role")).toBe("group");
+  const before = Number(handle.getAttribute("aria-valuenow"));
+  // 実行: 高くする
+  sizeItem("高くする").click();
+  // 検証
+  expect(Number(handle.getAttribute("aria-valuenow"))).toBe(before + 32);
+  // 実行: 全体が収まる高さにする
+  sizeItem("全体が収まる高さにする").click();
+  // 検証: ダブルクリックと同じ高さで、これ以上高くできない
+  expect(handle.getAttribute("aria-valuenow")).toBe("760");
+  expect(sizeItem("高くする").disabled).toBe(true);
+  expect(sizeItem("全体が収まる高さにする").disabled).toBe(true);
+});
+
+// Enter でも開き、Esc でハンドルへ戻る。ドラッグでは開かない（正常系）
+test("test_attach_diagram_resize_when_menu_by_key", async () => {
+  // 準備
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const { viewport, handle } = await setUp(memoryStorage());
+  handle.focus();
+  // 実行
+  await userEvent.keyboard("{Enter}");
+  // 検証
+  expect(sizeMenu()).not.toBeNull();
+  // 実行
+  await userEvent.keyboard("{Escape}");
+  // 検証
+  expect(sizeMenu()).toBeNull();
+  expect(document.activeElement).toBe(handle);
+  // 実行: 5px のドラッグ
+  drag(handle, 5);
+  // 検証
+  expect(sizeMenu()).toBeNull();
+  expect(viewport.style.height).toBe("305px");
+});

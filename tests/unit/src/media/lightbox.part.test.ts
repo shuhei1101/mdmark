@@ -1,5 +1,11 @@
 import { expect, test } from "vitest";
-import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
+import {
+  findTag,
+  findTags,
+  innerHtml,
+  outerHtml,
+  plainText,
+} from "../../helpers/html.ts";
 
 /** ライトボックスの処理を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadLightbox = () => import("../../../../src/media/lightbox.part.ts");
@@ -96,4 +102,30 @@ test("test_render_lightbox_when_max", async () => {
     "500%",
   );
   expect(html).not.toContain('data-group="pan"');
+});
+
+// 上のバーの先頭に隠した移動のボタンを描く（正常系）
+test("test_render_lightbox_when_move_button", async () => {
+  // 準備
+  const { renderLightbox } = await loadLightbox();
+  const { iconSvg } = await import("../../../../src/shared/icons.part.ts");
+  // 実行
+  const html = renderLightbox({
+    src: "step-1.svg",
+    alt: "手順 1 の画面",
+    index: 1,
+    total: 1,
+  });
+  // 検証: 操作のボタンの並びの最初のボタンが移動のボタン
+  const tools = outerHtml(html, 'class="mdmark-lightbox-tools"');
+  const first = findTags(tools, "<button")[0] ?? "";
+  expect(first).toMatch(/class="[^"]*\bmdmark-lightbox-move\b/);
+  expect(first).toMatch(/\shidden\b/);
+  expect(first).toContain('aria-haspopup="true"');
+  expect(first).toContain('aria-expanded="false"');
+  expect(first).toContain('aria-label="拡大した画像を移動"');
+  expect(first).toContain('title="移動"');
+  expect(innerHtml(html, "mdmark-lightbox-move")).toContain(
+    iconSvg("move" as never),
+  );
 });
