@@ -80,7 +80,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T06:14:08.095137+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    note: MOD-472-218・347・226・315・170 を修正。table-settings.interact.ts（MOD-472-240）はフォーカスの既定のスクロールで足りるため変更なし
+    updated_by: planner
+    updated_at: '2026-11-27T06:24:33.962626+00:00'
   - process: ドキュメント修正
     status: todo
   - process: 単体テスト作成
