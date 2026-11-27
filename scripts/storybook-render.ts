@@ -17,6 +17,7 @@ import {
 import {
   type CodeLine,
   renderCodeBlock,
+  renderCodeWrapToggle,
 } from "../src/code-block/code-block.part.ts";
 import { syntaxLanguageOf } from "../src/code-block/code-block.syntax.ts";
 import {
@@ -160,7 +161,7 @@ import {
   type PacketFill,
   type PacketPalette,
 } from "../src/map/packet.ts";
-import { parseSequence } from "../src/map/sequence.ts";
+import { parseSequence, type Sequence } from "../src/map/sequence.ts";
 import { sequenceRows } from "../src/map/sequence-rows.ts";
 import {
   parseStateDiagram,
@@ -188,6 +189,7 @@ import type { ColorName } from "../src/shared/colors.logic.ts";
 import { renderEmbed } from "../src/shared/embed.part.ts";
 import { escapeHtml } from "../src/shared/escape.logic.ts";
 import type { MdmarkIconNode } from "../src/shared/icon-node.logic.ts";
+import { type IconName, iconSvg } from "../src/shared/icons.part.ts";
 import { renderNotice } from "../src/shared/notice.part.ts";
 import { renderSyntaxWarning } from "../src/shared/syntax-warning.part.ts";
 import { renderSteps } from "../src/steps/steps.part.ts";
@@ -731,6 +733,23 @@ function storyLightbox(args: PartArgs): string {
     .replace(
       /(<div class="mdmark-lightbox-sizer"[^>]*><img )/,
       `$1style="width: ${size.width}px; height: ${size.height}px; transform: scale(${scale})" `,
+    )
+    .replace(
+      /(<button class="mdmark-lightbox-tool mdmark-lightbox-move"[^>]*?) hidden>([\s\S]*?<\/button>)/,
+      // 拡大中は移動のボタンを出し、`moveMenu` のときはボタンの下に開いた移動のメニューを配置する
+      (match, start: string, rest: string) =>
+        scale > 1
+          ? `${start.replace('aria-expanded="false"', `aria-expanded="${args.moveMenu === true}"`)}>${rest}${
+              args.moveMenu === true
+                ? storyStepMenu({
+                    label: "拡大した画像の移動",
+                    items: STORY_MOVE_ITEMS,
+                    style:
+                      "position:absolute;inset:auto;z-index:6;margin-top:36px",
+                  })
+                : ""
+            }`
+          : match,
     );
 }
 
@@ -1365,6 +1384,90 @@ const narrowed = (html: string, args: PartArgs): string =>
   args.narrow === true ? `<div style="inline-size:390px">${html}</div>` : html;
 
 /** map の部品を図の枠に入れる（`frame` は部品の大きさと、パネルのツール・開いているか） */
+/** ストーリーの向き・大きさのメニューの項目（`disabled` は押せない項目） */
+type StoryStepItem = { label: string; icon: IconName; disabled?: boolean };
+
+/** 開いた向き・大きさのメニューを、popover の代わりに `left`・`top` の位置へ静的に配置した HTML */
+const storyStepMenu = (options: {
+  label: string;
+  items: StoryStepItem[];
+  style: string;
+}): string =>
+  `<div class="mdmark-step-menu" role="group" aria-label="${escapeHtml(options.label)}" style="display:flex;flex-direction:column;gap:2px;${options.style}">${options.items
+    .map(
+      (item) =>
+        `<button type="button"${item.disabled === true ? " disabled" : ""}>${iconSvg(item.icon)}${escapeHtml(item.label)}</button>`,
+    )
+    .join("")}</div>`;
+
+/** 移動のメニューの 4 つの向き */
+const STORY_MOVE_ITEMS: StoryStepItem[] = [
+  { label: "上へ移す", icon: "chevron-up" },
+  { label: "下へ移す", icon: "chevron-down" },
+  { label: "左へ移す", icon: "chevron-left" },
+  { label: "右へ移す", icon: "chevron-right" },
+];
+
+/** 移動のボタンの大きさと、要素の角との間（px） */
+const STORY_MOVE_BUTTON = { size: 24, inset: 4 };
+
+/** 図の右上のパネルの、表示する枠の右上からの大きさの目安（px） */
+const STORY_PANEL = { width: 160, height: 48 };
+
+/** 描いた図の HTML の表示する枠の中に、`box`（舞台の座標）の内側の角へ移動のボタンを重ね、`menu` があればボタンの下に開いたメニューを配置する */
+const withMoveOverlay = (
+  html: string,
+  options: {
+    box: { x: number; y: number; w: number; h: number };
+    name: string;
+    frameWidth: number;
+    menu?: { label: string; items: StoryStepItem[] } | undefined;
+    /** 右上の角が図のパネルと重なる場面か（省くと図の幅とパネルの大きさの目安で決める） */
+    nearPanel?: boolean;
+  },
+): string => {
+  const { box, name, frameWidth, menu } = options;
+  const { size, inset } = STORY_MOVE_BUTTON;
+  const right = box.x + box.w - inset - size;
+  // 右上の角が図のパネルの目安に入るときは左上に配置する
+  const nearPanel =
+    options.nearPanel ??
+    (box.x + box.w > frameWidth - STORY_PANEL.width &&
+      box.y < STORY_PANEL.height);
+  const left = nearPanel ? box.x + inset : right;
+  const top = box.y + inset;
+  const button = `<button type="button" class="map-move" aria-haspopup="true" aria-expanded="${menu ? "true" : "false"}" aria-label="「${escapeHtml(name)}」を移動" title="移動" style="left:${left}px;top:${top}px">${iconSvg("move")}</button>`;
+  const opened = menu
+    ? storyStepMenu({
+        ...menu,
+        // 動かす要素とボタンに重ねず、要素の下に配置する
+        style: `position:absolute;inset:auto;z-index:6;left:${left}px;top:${box.y + box.h + inset}px`,
+      })
+    : "";
+  return html.replace(
+    /(<div class="mdmark-diagram-viewport"[^>]*>)/,
+    `$1${button}${opened}`,
+  );
+};
+
+/** 描いた要素の `style` の `left`・`top`・`width`・`height`（px）。`height` が無ければ `fallbackHeight` */
+const styleBoxOf = (
+  html: string,
+  attribute: string,
+  fallbackHeight: number,
+): { x: number; y: number; w: number; h: number } => {
+  const tag = new RegExp(`<[^>]*${attribute}[^>]*>`).exec(html)?.[0] ?? "";
+  const value = (name: string) =>
+    Number(new RegExp(`${name}:\\s*([\\d.-]+)px`).exec(tag)?.[1] ?? Number.NaN);
+  const h = value("height");
+  return {
+    x: value("left"),
+    y: value("top"),
+    w: value("width"),
+    h: Number.isNaN(h) ? fallbackHeight : h,
+  };
+};
+
 const mapFrame = (
   title: string,
   part: { html: string; tips: string },
@@ -1504,12 +1607,54 @@ function mapSequenceStory(args: PartArgs): string {
   const height = Number(
     /<svg[^>]*\sheight="([\d.]+)"/.exec(part.html)?.[1] ?? 0,
   );
-  return mapFrame(
+  const framed = mapFrame(
     typeof args.title === "string" ? args.title : "文書を描くまで",
     part,
     { width, height, ...mapStoryPanel(args, entered !== undefined) },
   );
+  return mapSequenceMoveOverlay(framed, sequence, args, width);
 }
+
+/** シーケンス図の参加者の箱の高さの目安（px。描いた要素の `style` に高さが無いため） */
+const STORY_PARTICIPANT_HEIGHT = 48;
+
+/** ストーリーの引数 `moveTarget`（参加者の ID）の参加者の箱に移動のボタンを重ね、`moveMenu` が `true` なら左右の移動のメニューを開く */
+const mapSequenceMoveOverlay = (
+  html: string,
+  sequence: Sequence,
+  args: PartArgs,
+  frameWidth: number,
+): string => {
+  if (typeof args.moveTarget !== "string") return html;
+  const id = args.moveTarget;
+  const at = sequence.participants.findIndex((item) => item.id === id);
+  if (at < 0) throw new Error(`ストーリーの参加者が無い: ${id}`);
+  const name = sequence.participants[at]?.label ?? id;
+  const box = styleBoxOf(
+    html,
+    `data-participant="${escapeHtml(id)}"`,
+    STORY_PARTICIPANT_HEIGHT,
+  );
+  return withMoveOverlay(html, {
+    box,
+    name,
+    frameWidth,
+    menu:
+      args.moveMenu === true
+        ? {
+            label: `「${name}」の移動`,
+            items: [
+              { label: "左へ移す", icon: "chevron-left", disabled: at === 0 },
+              {
+                label: "右へ移す",
+                icon: "chevron-right",
+                disabled: at === sequence.participants.length - 1,
+              },
+            ],
+          }
+        : undefined,
+  });
+};
 
 /** ストーリーの引数 `mapTools`・`panelOpen` から、map の図のパネルのツールと開いているかを決める */
 const mapStoryPanel = (
@@ -1630,7 +1775,7 @@ const mapFlowStory = (args: PartArgs): string => {
       : separated;
   const focus = jsonObject<{ nodes: string[]; wires: string[] }>(args.focus);
   const selected = jsonList(args.selected);
-  return mapFrame(
+  const html = mapFrame(
     typeof args.title === "string" ? args.title : "全体の構成",
     renderMapFlow({
       layout,
@@ -1679,6 +1824,89 @@ const mapFlowStory = (args: PartArgs): string => {
       ...mapStoryPanel(args, entered !== undefined),
     },
   );
+  return mapFlowMoveOverlay(html, layout, args);
+};
+
+/** ストーリーの引数 `moveTarget`（`{ kind: node | group | segment, id }`。区間は `{線の ID}:{区間の番号}`）の要素に移動のボタンを重ね、`moveMenu` が `move` なら移動のメニュー、`resize` ならグループの右下の角の下に大きさのメニューを開く */
+const mapFlowMoveOverlay = (
+  html: string,
+  layout: MapLayout,
+  args: PartArgs,
+): string => {
+  const target = jsonObject<{ kind: string; id: string }>(args.moveTarget);
+  if (target === undefined) return html;
+  if (target.kind === "group") {
+    const group = layout.groups.find((item) => item.id === target.id);
+    if (!group) throw new Error(`ストーリーのグループが無い: ${target.id}`);
+    const menu = storyStepMenu({
+      label: `「${group.title}」の大きさ`,
+      items: [
+        { label: "右へ広げる", icon: "chevron-right" },
+        { label: "下へ広げる", icon: "chevron-down" },
+        { label: "左へ狭める", icon: "chevron-left", disabled: true },
+        { label: "上へ狭める", icon: "chevron-up", disabled: true },
+      ],
+      style: `position:absolute;inset:auto;z-index:6;left:${group.x + group.w - 12}px;top:${group.y + group.h}px`,
+    });
+    return html.replace(
+      /(<div class="mdmark-diagram-viewport"[^>]*>)/,
+      `$1${menu}`,
+    );
+  }
+  if (target.kind === "segment") {
+    const [wireId, at] = target.id.split(":");
+    const wire = layout.wires.find((item) => item.id === wireId);
+    const a = wire?.points[Number(at)];
+    const b = wire?.points[Number(at) + 1];
+    if (!wire || !a || !b)
+      throw new Error(`ストーリーの線の区間が無い: ${target.id}`);
+    const vertical = a[0] === b[0];
+    const band = STORY_MOVE_BUTTON.size + STORY_MOVE_BUTTON.inset * 2;
+    const box = vertical
+      ? {
+          x: a[0] - band / 2,
+          y: Math.min(a[1], b[1]),
+          w: band,
+          h: Math.abs(b[1] - a[1]),
+        }
+      : {
+          x: Math.min(a[0], b[0]),
+          y: a[1] - band / 2,
+          w: Math.abs(b[0] - a[0]),
+          h: band,
+        };
+    const name = wire.label ?? `${wire.from}→${wire.to}`;
+    return withMoveOverlay(html, {
+      box,
+      name,
+      frameWidth: layout.width,
+      menu:
+        args.moveMenu === "move"
+          ? {
+              label: `「${name}」の移動`,
+              items: STORY_MOVE_ITEMS.filter((item) =>
+                vertical
+                  ? item.icon === "chevron-left" ||
+                    item.icon === "chevron-right"
+                  : item.icon === "chevron-up" || item.icon === "chevron-down",
+              ),
+            }
+          : undefined,
+    });
+  }
+  const node = layout.nodes.find((item) => item.id === target.id);
+  if (!node) throw new Error(`ストーリーのノードが無い: ${target.id}`);
+  const name = node.lines.join(" ");
+  return withMoveOverlay(html, {
+    box: { x: node.x, y: node.y, w: node.w, h: node.h },
+    name,
+    frameWidth: layout.width,
+    ...(args.nearPanel === true ? { nearPanel: true } : {}),
+    menu:
+      args.moveMenu === "move"
+        ? { label: `「${name}」の移動`, items: STORY_MOVE_ITEMS }
+        : undefined,
+  });
 };
 
 /** ストーリーの引数 `packet_fills`・`packet_palettes` が `all` なら塗り方・色合いごとの図を並べ、それ以外は 1 つの図 */
@@ -2530,7 +2758,9 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       ...(typeof args.syntax === "string" ? { syntax: args.syntax } : {}),
       ...(typeof args.copyState === "string"
         ? { copyState: args.copyState as "idle" | "copied" | "failed" }
-        : {}),
+        : args.wrapToggle === true || args.wrapHovered === true
+          ? { copyState: "idle" as const }
+          : {}),
       // 畳める行を持つストーリーは、`mount` が付ける開閉のボタンと `⋯` を配置した状態で出す
       foldButtons: lines.some((line) => line.foldLines !== undefined),
       foldColumnHovered: args.foldColumnHovered === true,
@@ -2543,9 +2773,22 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           }
         : {}),
     });
+    // 折り返しのボタンのストーリーは、`mount` が付けるボタンをコピーのボタンの前に配置した状態で出す（`wrapHovered` はポインターが乗った外観）
+    const withToggle =
+      args.wrapToggle === true || args.wrapHovered === true
+        ? html.replace(
+            '<span class="mdmark-code-meta">',
+            `<span class="mdmark-code-meta">${renderCodeWrapToggle({
+              pressed: args.wrap === true,
+            }).replace(
+              'class="mdmark-code-wrap-toggle"',
+              `class="mdmark-code-wrap-toggle"${args.wrapHovered === true ? ' style="border-color:var(--mdmark-color-border)"' : ""}`,
+            )}`,
+          )
+        : html;
     return args.highlight === true
-      ? highlightCodeBlock(html, language, lines)
-      : html;
+      ? highlightCodeBlock(withToggle, language, lines)
+      : withToggle;
   },
   toc: (args) => renderToc({ headings: args.headings as TocHeading[] }),
   "back-to-top": (args) =>
@@ -2605,14 +2848,32 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       id: "story-frame",
       ...diagramArgs(args),
     });
+    const resized =
+      args.resizeMenu === true
+        ? html.replace(
+            '<span class="mdmark-diagram-resize-bar"></span></div>',
+            `<span class="mdmark-diagram-resize-bar"></span></div>${storyStepMenu(
+              {
+                label: "図の表示の高さ",
+                items: [
+                  { label: "低くする", icon: "minus" },
+                  { label: "高くする", icon: "plus" },
+                  { label: "全体が収まる高さにする", icon: "chevrons-up-down" },
+                ],
+                style:
+                  "position:static;inset:auto;width:max-content;margin:4px auto 0",
+              },
+            )}`,
+          )
+        : html;
     const frame =
       typeof args.height === "number" || args.focusResize === true
-        ? html +
+        ? resized +
           storyMarker(
             args,
             args.focusResize === true ? ".mdmark-diagram-resize" : undefined,
           )
-        : fitted(html, args);
+        : fitted(resized, args);
     if (args.surface !== true) {
       return frame;
     }

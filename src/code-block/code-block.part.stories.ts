@@ -303,3 +303,25 @@ export const MarkdownRaw: Story = {
       '[{"text":"# 在庫の点検"},{"text":""},{"text":"> [!NOTE]"},{"text":"> 点検は毎朝 9 時までに済ませる。"}]',
   },
 };
+
+export const WrapButton: Story = {
+  name: "WrapButton",
+  parameters: { server: { id: "code-block" } },
+  args: {
+    language: "ts",
+    lineNumbers: true,
+    wrapToggle: true,
+    lines:
+      '[{"text":"import { mount } from \\"mdmark\\";"},{"text":"const url = \\"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\\"; // バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く"}]',
+  },
+};
+
+export const WrapButtonHovered: Story = {
+  name: "WrapButtonHovered",
+  parameters: { server: { id: "code-block" } },
+  args: {
+    language: "ts",
+    wrapHovered: true,
+    lines: '[{"text":"import { mount } from \\"mdmark\\";"}]',
+  },
+};

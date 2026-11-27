@@ -184,3 +184,17 @@ export const PlainNoLanguage: Story = {
     language: '""',
   },
 };
+
+export const WrapNotes: Story = {
+  name: "WrapNotes",
+  parameters: { server: { id: "tree" } },
+  args: {
+    nodes:
+      '[{"name":"docs/","note":"導入と使い方の手順を、作業の順に並べたページのまとまり。ここに長い注釈を書くと画面の端を越える","children":[{"name":"使い方/","note":"導入と使い方の手順","children":[{"name":"文書を描く.md","note":"mount を呼んで要素の中に Markdown を描く手順"}]}]}]',
+    source:
+      "docs/                # 導入と使い方の手順を、作業の順に並べたページのまとまり。ここに長い注釈を書くと画面の端を越える\n└── 使い方/          # 導入と使い方の手順\n    └── 文書を描く.md   # mount を呼んで要素の中に Markdown を描く手順",
+    open: "all",
+    interactive: true,
+    wrap: true,
+  },
+};

@@ -94,3 +94,15 @@ export const Plain: Story = {
   parameters: { server: { id: "map-sequence" } },
   args: { title: "シーケンス図" },
 };
+
+export const MoveButton: Story = {
+  name: "MoveButton",
+  parameters: { server: { id: "map-sequence" } },
+  args: { selected: '["user"]', moveTarget: "user" },
+};
+
+export const MoveMenu: Story = {
+  name: "MoveMenu",
+  parameters: { server: { id: "map-sequence" } },
+  args: { selected: '["user"]', moveTarget: "user", moveMenu: true },
+};

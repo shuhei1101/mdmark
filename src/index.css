@@ -10085,10 +10085,10 @@
     margin-block-start: 0.3em;
   }
 
-  /* 注釈の列を統一せず、注釈までの点線は描かない。注釈を持つ名前は 1 文字ずつに折らず、行の幅までは名前の幅を保つ（#822） */
+  /* 注釈の列を統一せず、注釈までの点線は描かない */
   .mdmark-tree-row:has(.mdmark-tree-note)
     > :is(.mdmark-tree-toggle, .mdmark-tree-name) {
-    min-width: min(100%, max-content);
+    min-width: 0;
 
     &::after {
       display: none;
@@ -10317,7 +10317,7 @@
   }
 
   /* 開閉のボタン: 縦線の後ろ・キーのすぐ左に配置する。子を持たない行は同じ幅を空ける */
-  .mdmark-tree-toggle,
+  .mdmark-table[data-tree] .mdmark-tree-toggle,
   .mdmark-table[data-tree] .mdmark-tree-spacer {
     flex: none;
     align-self: center;

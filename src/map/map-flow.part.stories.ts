@@ -171,3 +171,45 @@ export const WireRouteAfterDrag: Story = {
   parameters: { server: { id: "map-flow" } },
   args: { source: "route", moved: "true" },
 };
+
+export const MoveButton: Story = {
+  name: "MoveButton",
+  parameters: { server: { id: "map-flow" } },
+  args: { selected: '["mount"]', moveTarget: '{"kind":"node","id":"mount"}' },
+};
+
+export const MoveButtonNearPanel: Story = {
+  name: "MoveButtonNearPanel",
+  parameters: { server: { id: "map-flow" } },
+  args: {
+    selected: '["mount"]',
+    moveTarget: '{"kind":"node","id":"mount"}',
+    nearPanel: true,
+  },
+};
+
+export const MoveMenu: Story = {
+  name: "MoveMenu",
+  parameters: { server: { id: "map-flow" } },
+  args: {
+    selected: '["mount"]',
+    moveTarget: '{"kind":"node","id":"mount"}',
+    moveMenu: "move",
+  },
+};
+
+export const MoveMenuSegment: Story = {
+  name: "MoveMenuSegment",
+  parameters: { server: { id: "map-flow" } },
+  args: {
+    source: "route",
+    moveTarget: '{"kind":"segment","id":"a->c:1"}',
+    moveMenu: "move",
+  },
+};
+
+export const ResizeMenu: Story = {
+  name: "ResizeMenu",
+  parameters: { server: { id: "map-flow" } },
+  args: { moveTarget: '{"kind":"group","id":"read"}', moveMenu: "resize" },
+};
