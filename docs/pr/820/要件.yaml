@@ -84,7 +84,9 @@ docs:
   - page: docs/interface/IF-472-35.ts.yaml
     new: false
     change: mount が付ける折り返しの切り替えとドラッグの代わりの操作を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:20:54.282163+00:00'
   - page: docs/module/MOD-472-170.css.yaml
     new: false
     change: 音声の再生バー・折り返しのボタン・代わりの操作の規則を追加する
@@ -143,7 +145,9 @@ docs:
     status: todo
   - page: docs/config/CFG-472-3.yaml
     change: コードブロックとファイルツリーの既定の折り返しのキーを追加する（既定は折り返さない）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:20:54.282163+00:00'
   - page: docs/module/MOD-472-304.ts.yaml
     change: 既定の折り返しのキーの型と既定を追加する
     status: todo
