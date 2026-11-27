@@ -140,8 +140,12 @@ export const openStepMenu = (options: {
   sides?: ReadonlyArray<StepMenuSide>;
   /** 上下の候補の合わせ方 */
   align?: "start" | "center";
-  /** Esc で閉じたときにフォーカスを戻す要素。既定は `opener` */
+  /** Esc で閉じたときにフォーカスを戻す要素。既定は `anchor` の要素 */
   focusBack?: HTMLElement;
+  /** 配置の基準にする今の要素（再描画で `opener` が置き換わるとき）。既定は `opener` */
+  anchor?: () => HTMLElement | null;
+  /** メニューを入れる要素。既定は `opener` の直後 */
+  container?: HTMLElement;
 }): StepMenuHandle => {
   const {
     opener,
@@ -150,7 +154,8 @@ export const openStepMenu = (options: {
     avoid = () => [],
     sides = DEFAULT_SIDES,
     align = "start",
-    focusBack = opener,
+    anchor = () => opener,
+    container,
   } = options;
   const menu = document.createElement("div");
   menu.className = "mdmark-step-menu";
@@ -164,7 +169,11 @@ export const openStepMenu = (options: {
     menu.append(button);
     return button;
   });
-  opener.after(menu);
+  if (container) {
+    container.append(menu);
+  } else {
+    opener.after(menu);
+  }
   const controller = new AbortController();
   const { signal } = controller;
   let closed = false;
@@ -178,12 +187,12 @@ export const openStepMenu = (options: {
     });
   };
   const place = (): void => {
-    const anchor = opener.getBoundingClientRect();
+    const anchorRect = (anchor() ?? opener).getBoundingClientRect();
     const rect = menu.getBoundingClientRect();
     const placed = placeStepMenu({
-      anchor,
+      anchor: anchorRect,
       size: { width: rect.width, height: rect.height },
-      avoid: [anchor, ...avoid()],
+      avoid: [anchorRect, ...avoid()],
       viewport: {
         width: document.documentElement.clientWidth,
         height: document.documentElement.clientHeight,
@@ -236,7 +245,7 @@ export const openStepMenu = (options: {
     menu.remove();
     opener.setAttribute("aria-expanded", "false");
     if (closeOptions.restoreFocus) {
-      focusBack.focus({ preventScroll: true });
+      (options.focusBack ?? anchor() ?? opener).focus({ preventScroll: true });
     }
   };
 

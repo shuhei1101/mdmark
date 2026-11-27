@@ -13,6 +13,7 @@ import {
 } from "./flow-view.ts";
 import { attachMapList, sequenceListItems } from "./list.ts";
 import { renderMapSequence } from "./map.part.ts";
+import { attachMoveButton, type MoveTarget } from "./move-button.ts";
 import {
   type PacketStyle,
   renderPackets,
@@ -403,7 +404,13 @@ export const attachMapSequence = (
       history,
       location,
     });
+  /** 移動のボタン（描き直した後に置き直す） */
+  let moveControl: ReturnType<typeof attachMoveButton> | undefined;
   const refresh = () => {
+    redraw();
+    moveControl?.refresh();
+  };
+  const redraw = () => {
     const { html, tips, rows } = view();
     // 開閉・中だけを描くで再生するメッセージが変わったら、帯の手順を差し替えて再生を止める
     const next = shownMessages(rows);
@@ -702,6 +709,59 @@ export const attachMapSequence = (
   figure.addEventListener("pointerover", onPointerOver);
   figure.addEventListener("pointerout", onPointerOut);
 
+  // ドラッグしない並べ替え: 動かさずに押した参加者に移動のボタンを重ね、Alt + 左右の矢印と同じだけ 1 列ずつ移す
+  const canMove = (id: string, step: number): boolean => {
+    if (state.entered !== undefined) return false;
+    const list = order();
+    const to = list.indexOf(id) + step;
+    return list.includes(id) && to >= 0 && to < list.length;
+  };
+  const shiftParticipant = (id: string, step: number) => {
+    if (!canMove(id, step)) return;
+    const list = order();
+    const at = list.indexOf(id);
+    [list[at], list[at + step]] = [
+      list[at + step] as string,
+      list[at] as string,
+    ];
+    change({ ...state, order: list });
+  };
+  const pointedParticipant = (element: Element): MoveTarget | undefined => {
+    const box = element.closest<HTMLElement>(".map-participant");
+    const id = box?.dataset.participant;
+    if (!box || id === undefined || state.entered !== undefined)
+      return undefined;
+    return {
+      element: box,
+      name: sequence.participants.find((item) => item.id === id)?.label ?? id,
+      selector: `.map-participant[data-participant="${CSS.escape(id)}"]`,
+      items: [
+        {
+          label: "左へ移す",
+          icon: "chevron-left",
+          enabled: () => canMove(id, -1),
+          run: () => shiftParticipant(id, -1),
+        },
+        {
+          label: "右へ移す",
+          icon: "chevron-right",
+          enabled: () => canMove(id, 1),
+          run: () => shiftParticipant(id, 1),
+        },
+      ],
+    };
+  };
+  const viewportElement = figure.querySelector<HTMLElement>(
+    ".mdmark-diagram-viewport",
+  );
+  if (viewportElement) {
+    moveControl = attachMoveButton({
+      viewport: viewportElement,
+      panel: () => figure.querySelector(".mdmark-diagram-tools"),
+      pointedOf: pointedParticipant,
+    });
+  }
+
   let band: BandHandle | undefined;
   /** 再生で進めるメッセージ（閉じたブロックと、中だけを描くブロックの外のメッセージを除く） */
   const shownMessages = (rows: ReturnType<typeof sequenceRows>): number[] =>
@@ -759,6 +819,7 @@ export const attachMapSequence = (
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("pointerdown", onPointerDown);
       figure.removeEventListener("keydown", onKeyDown);
+      moveControl?.detach();
       figure.removeEventListener("pointerover", onPointerOver);
       figure.removeEventListener("pointerout", onPointerOut);
     },
