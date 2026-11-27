@@ -157,6 +157,12 @@ functions:
         condition: '`config.map.packets` に `{ fill: "glow", palette: "vivid" }` を指定して描き、`mount` の参加者の箱にポインターを乗せる'
         mock: なし
         expected: '`.map-packets-hover` の中の `.map-packet` の `data-fill` が `glow` で、図の要素の `data-packet-palette` が `vivid`'
+      - name: test_attach_map_sequence_when_move_menu
+        case: 正常
+        summary: 移動のメニューで参加者を 1 列ずつ並べ替える
+        condition: 2 人目の参加者の箱を動かさずに押し、移動のメニューの `右へ移す` を押す。別にメッセージの線を押す
+        expected: 並び順が Alt + → を 1 回押したときと同じで、再描画した後もメニューが開いて `右へ移す` にフォーカスがある。先頭では `左へ移す` が `disabled`。メッセージの線を押した後は移動のボタンが `hidden`
+        mock: なし
     notes:
       書き出し・一覧の表示: '`renderDiagramFrame` に `exportable: true`・`listable: true` を指定し、`attachMapList` を `sequenceListItems`（今のシーケンス図）で付け、片付ける関数を片付けのときに呼ぶ'
 lead: 'map のシーケンス図の描画と操作を受け持ち、シーケンス図の描画と操作を変えるときに参照する。'

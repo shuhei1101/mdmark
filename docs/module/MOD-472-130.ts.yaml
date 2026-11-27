@@ -344,6 +344,18 @@ functions:
         condition: '描いた文書の CSS を当て、`.mdmark` に `--mdmark-map-packet-gray: rgb(1, 2, 3)` を書いて描き、色を持たない `mount` を押して選ぶ'
         mock: なし（Chromium）
         expected: '`mount` から出る線の印の縁の色が `rgb(1, 2, 3)`'
+      - name: test_attach_map_flow_when_move_menu
+        case: 正常
+        summary: 移動のメニューで Alt + 矢印キーと同じだけ動かす
+        condition: ノードを動かさずに押し、移動のボタンで開いたメニューの `下へ移す` を押す。別の描画で同じノードを選んで Alt + ↓ を押す
+        expected: 両方のノードの位置が同じで、メニューは開いたまま `下へ移す` にフォーカスがある。ボタンの `aria-label` がノードの名前を使用する
+        mock: なし
+      - name: test_attach_map_flow_when_resize_menu
+        case: 正常
+        summary: グループの角を動かさずに押すと大きさのメニューを開く
+        condition: グループの右下の角を 2px 動かして離し、`右へ広げる` を押す。別に角を 4px 動かして離す
+        expected: 押した後の幅が角で → を 1 回押したときと同じ。ドラッグではメニューが開かない
+        mock: なし
     notes:
       計画した変更・書き出し・一覧の表示: '補足の `changes`（`parseMapData` と `collectMapProblems` で使用できない値・種類・キーを除いたもの）を `renderMapFlow` の `changes` に指定する。ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図は `extension` を通して同じ経路を通る。`renderDiagramFrame` に `exportable: true`・`listable: true` を指定し、`attachMapList` を `flowListItems`（今の図・`notes`・`changes`・種類の名前）で付け、片付ける関数を `destroy` で呼ぶ。描き直しても一覧の表示の状態は保たない'
 lead: 'map の構成図の描画と、選んだノードの線と経路の強調を受け持ち、構成図の描画と操作を変えるときに参照する。'

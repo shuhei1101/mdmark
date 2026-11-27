@@ -64,6 +64,64 @@ functions:
       - 'MOD-472-232#functions[copyText]'
       - MOD-472-306#functions[renderCodeCopy]
     status: planned
+  - name: attachCodeWraps
+    title: コードブロックとファイルツリーに折り返しの切り替えを付ける
+    kind: 関数
+    container: src/code-block/code-block.interact.ts
+    scope: internal
+    summary: 帯のコピーのボタンの前に折り返しのボタンを配置し、押すたびにそのブロックだけの折り返しを切り替える
+    description: |-
+      帯を持つ `.mdmark-code`（対象はその `pre`、class は `mdmark-code-wrap`）と `.mdmark-tree`（対象はツリー、class は `mdmark-tree-wrap`）ごとに、帯の `.mdmark-code-meta` の先頭（コピーのボタンがまだ無ければ帯の末尾）に `renderCodeWrapToggle` のボタンを配置する。
+
+      描いた直後の状態は、`render` が class を付けた（マーカーの `wrap` を持つ）ブロックと、`defaultWrap` が `true` のときのマーカーの無いブロックを折り返す。`partStates` に同じ位置のブロックの切り替えた状態があればそちらを優先する（`update` で保つ）。
+
+      押すとそのブロックの class と `aria-pressed` を切り替え、`partStates` に記録する。ツリーを切り替えたときは注釈の列をそろえ直す（`alignFileTreeNotes`）
+    args:
+      - name: root
+        type: HTMLElement
+        required: true
+        description: 描いた要素
+      - name: options.defaultWrap
+        type: boolean
+        required: true
+        description: 設定の `code.wrap`
+      - name: options.partStates
+        type: PartStates | undefined
+        required: false
+        description: 再描画で保つ部品の状態
+    returns:
+      type: () => void
+      description: ボタンと受け取りを取り除く関数
+    callees:
+      - MOD-472-306#functions[renderCodeWrapToggle]
+      - MOD-472-235#functions[alignFileTreeNotes]
+    side_effects: 帯にボタンを配置し、ブロックの class と `partStates` を書き換える
+    status: planned
+    unit_tests:
+      - name: test_attach_code_wraps
+        case: 正常
+        summary: 押したブロックだけを切り替える
+        condition: '`wrap` のコードブロック・マーカーの無いコードブロック・ファイルツリーを持つ要素で `defaultWrap: false` で呼び、2 つ目のボタンを押す'
+        expected: 押す前の `aria-pressed` が `true`・`false`・`false`、押した後は 2 つ目の `pre` が `mdmark-code-wrap` を持ち `aria-pressed` が `true`。ほかの 2 つは変わらない
+        mock: なし
+      - name: test_attach_code_wraps_when_default_wrap
+        case: 正常
+        summary: 既定を折り返すにしたときはマーカーの無いブロックも折り返す
+        condition: 'マーカーの無いコードブロックとファイルツリーで `defaultWrap: true` で呼ぶ'
+        expected: '`pre` が `mdmark-code-wrap`、ツリーが `mdmark-tree-wrap` を持ち、どちらのボタンも `aria-pressed` が `true`'
+        mock: なし
+      - name: test_attach_code_wraps_when_updated
+        case: 正常
+        summary: 再描画しても切り替えた状態を保つ
+        condition: 同じ `partStates` で呼び、1 つ目のボタンを押してから取り除き、同じ HTML を描き直してもう一度呼ぶ
+        expected: 1 つ目のブロックは押した後の状態、ほかは描いた直後の状態
+        mock: なし
+      - name: test_attach_code_wraps_when_order
+        case: 正常
+        summary: コピーのボタンの前に配置する
+        condition: '`attachCodeCopy` の後に呼ぶ'
+        expected: 帯の `.mdmark-code-meta` の中で、折り返しのボタンがコピーのボタンの前にある
+        mock: なし
 lead: 'コードブロックのコピーの操作を受け持ち、コードブロックのコピーを変えるときに参照する。'
 tags:
   - name: action:操作

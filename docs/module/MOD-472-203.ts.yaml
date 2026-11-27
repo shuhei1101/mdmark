@@ -521,6 +521,12 @@ functions:
         condition: 2 つの誤った引数
         mock: Chromium の `document`
         expected: どちらも `TypeError`、要素が空
+      - name: test_mount_when_code_wrap_given
+        case: 正常
+        summary: 設定の code.wrap を折り返しの切り替えの既定に渡し、update でも同じ値を使用する
+        condition: '`opts.config` が `{ code: { wrap: true } }` でマーカーの無いコードブロックを描き、`update` で同じ Markdown を描き直す'
+        expected: どちらの描画でも `pre` が `mdmark-code-wrap` を持ち、折り返しのボタンの `aria-pressed` が `true`
+        mock: なし
   - name: checkBaseMarkdown
     title: 比較元を検める
     container: src/mount.ts

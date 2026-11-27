@@ -195,7 +195,7 @@ functions:
   - name: renderCodeCopy
     title: コードのコピーのボタンを描く
     container: src/code-block/code-block.part.ts
-    summary: 'コードブロックの帯の右端に配置するコピーのボタンと状態の表示の HTML を返却する'
+    summary: 'コードブロックの帯の右端に配置する、文言を画面に出さないアイコンだけのコピーのボタン（状態の文言を `aria-label` と `title` に持つ）とスクリーンリーダー向けの要素を返却する'
     description: |-
       コードブロックの帯の右端に配置する `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="{状態}">{アイコン}{文言}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status"></span></span>` を返却する。
       文言とアイコンは `idle` が `コピー`（`copy`）、`copied` が `コピーしました`（`check`）、`failed` が `コピーできませんでした`（`circle-alert`）。
@@ -218,6 +218,12 @@ functions:
         condition: '`idle`・`copied`・`failed`'
         mock: なし
         expected: '`idle` は `コピー` で `role="status"` が空、`copied` は `コピーしました` と `コードをコピーしました`、`failed` は `コピーできませんでした` と `コードをコピーできませんでした`。どれも `type="button"` と `data-state` を持つ'
+      - name: test_render_code_copy_when_icon_only
+        case: 正常
+        summary: 文言を画面に出さず、名前とツールチップに持たせる
+        condition: '`state` が `idle`・`copied`・`failed`'
+        expected: ボタンの文字の中身が空で、`aria-label` と `title` が `コピー`・`コピーしました`・`コピーできませんでした`、アイコンが `copy`・`check`・`circle-alert`
+        mock: なし
     status: planned
   - name: renderCodeFoldToggle
     title: 行の開閉のボタンを描く
@@ -315,6 +321,32 @@ functions:
     refs:
       - IF-472-35#constraints[ファイルツリーの開閉とコピー]
     status: planned
+  - name: renderCodeWrapToggle
+    title: 折り返しのボタンを描く
+    kind: 関数
+    container: src/code-block/code-block.part.ts
+    scope: internal
+    summary: コードブロックとファイルツリーの帯のコピーのボタンの前に配置する、`wrap-text` のアイコンだけの折り返しのトグルボタンを返却する
+    description: '`<button class="mdmark-code-wrap-toggle" type="button" aria-pressed="{pressed}" aria-label="画面の端で折り返す" title="画面の端で折り返す">{wrap-text のアイコン}</button>`。名前は押した状態でも変えない'
+    args:
+      - name: options.pressed
+        type: boolean
+        required: true
+        description: 折り返しているか
+    returns:
+      type: string
+      description: ボタンの HTML
+    callees:
+      - MOD-472-180#functions[iconSvg]
+    side_effects: なし
+    status: planned
+    unit_tests:
+      - name: test_render_code_wrap_toggle
+        case: 正常
+        summary: アイコンだけのトグルボタンを描く
+        condition: '`pressed` が `true` と `false`'
+        expected: '`type="button"`・`aria-pressed` が引数どおり、`aria-label` と `title` が `画面の端で折り返す` で、文字の中身が空、`wrap-text` のアイコンを持つ'
+        mock: なし
 lead: 'コードブロックとコードのコピーのボタンの HTML を受け持ち、コードブロックの外観を変えるときに参照する。'
 tags:
   - name: topic:部品

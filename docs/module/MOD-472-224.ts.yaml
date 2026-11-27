@@ -100,6 +100,18 @@ functions:
         condition: GIF の画像を描いた要素
         mock: なし
         expected: '`img[data-gif]` を包む `button.mdmark-image-open` があり、その中に `mdmark-image-open-icon` が無い'
+      - name: test_attach_lightbox_when_move_menu
+        case: 正常
+        summary: 拡大中だけ移動のボタンを出し、メニューで矢印キーと同じだけ動かす
+        condition: 幅 1600 の画像を開き、拡大を 3 回押してから移動のボタンで `右へ移す` を押し、Esc を 2 回押す
+        expected: 開いた直後は移動のボタンが `hidden`、拡大後は出ている。`scrollLeft` が → を 1 回押したときと同じだけ増える。1 回目の Esc でメニューだけが閉じ、移動のボタンにフォーカスがある。2 回目でライトボックスが閉じる
+        mock: なし
+      - name: test_attach_lightbox_when_move_menu_reset
+        case: 正常
+        summary: 全体が収まる倍率に戻すとボタンを取り除き、フォーカスを倍率のボタンへ移す
+        condition: 拡大して移動のメニューを開き、項目にフォーカスがある状態で `0` を押す
+        expected: 移動のボタンが `hidden` でメニューが無く、倍率のボタンにフォーカスがある
+        mock: なし
     status: planned
 lead: '画像の拡大のボタンとライトボックスの切り替え・拡大・縮小・移動を受け持ち、画像の拡大の操作を変えるときに参照する。'
 tags:

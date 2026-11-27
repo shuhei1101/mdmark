@@ -103,6 +103,12 @@ functions:
         condition: '`button.mdmark-media-open` を描いた要素と、`features` の `media` が `false` でボタンを押す'
         mock: なし
         expected: '`dialog.mdmark-media-modal` が無い'
+      - name: test_attach_interactions_when_code_wrap
+        case: 正常
+        summary: コードブロックとファイルツリーに折り返しのボタンを付ける
+        condition: '`code`・`tree` がオンで `codeWrap: true` を渡す。別に `code`・`tree` がオフの場合'
+        expected: オンのときはどの帯にも `mdmark-code-wrap-toggle` があり `aria-pressed` が `true`。オフのときはボタンが無い
+        mock: なし
 lead: '描いた文書への記法の操作の付与を受け持ち、描いた文書での読者の操作を追加・変更するときに参照する。'
 tags:
   - name: action:操作
