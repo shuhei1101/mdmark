@@ -25668,23 +25668,101 @@ test("test_normal_when_map_items_moved_without_drag", async () => {
   expect(move.getAttribute("aria-expanded")).toBe("false");
   expect(document.activeElement).toBe(move);
   expect(await axeViolations(figure())).toEqual([]);
-  // 実行・検証: 線の区間を押すと、区間と直角の向き（左右か上下の 2 つ）だけのメニュー
-  const segment = find<Element>(
-    figure(),
-    ".map-wire-hit rect.map-wire-hit-segment[data-axis]",
-  );
-  pressStill(segment);
+  // 実行・検証: 横の区間と縦の区間を押すと、押した区間と直角の向きだけのメニューを開き、押した区間を動かす
+  for (const [axis, labels, first] of [
+    ["x", ["上へ移す", "下へ移す"], "下へ移す"],
+    ["y", ["左へ移す", "右へ移す"], "右へ移す"],
+  ] as const) {
+    const segment = find<SVGRectElement>(
+      figure(),
+      `.map-wire-hit rect.map-wire-hit-segment[data-axis="${axis}"]:not([aria-hidden])`,
+    );
+    const wire =
+      segment.closest(".map-wire-hit")?.getAttribute("data-wire") ?? "";
+    const index = segment.getAttribute("data-segment") ?? "";
+    const selector = `.map-wire-hit[data-wire="${CSS.escape(wire)}"] rect.map-wire-hit-segment[data-segment="${index}"]`;
+    const attribute = axis === "x" ? "y" : "x";
+    const before = Number(segment.getAttribute(attribute));
+    pressStill(segment);
+    const segmentButton = await vi.waitFor(() => {
+      const found =
+        figure().querySelector<HTMLButtonElement>("button.map-move");
+      expect(found?.hidden).toBe(false);
+      return found as HTMLButtonElement;
+    });
+    // 検証: ボタンは押した区間に重なる
+    expect(
+      rectsOverlap(
+        segmentButton.getBoundingClientRect(),
+        find(figure(), selector).getBoundingClientRect(),
+      ),
+    ).toBe(true);
+    segmentButton.click();
+    expect(stepLabels()).toEqual(labels);
+    stepItem(first).click();
+    // 検証: 押した区間が直角の向きへキーの刻み（8px）だけ動く
+    await vi.waitFor(() =>
+      expect(Number(find(figure(), selector).getAttribute(attribute))).toBe(
+        before + 8,
+      ),
+    );
+    await userEvent.keyboard("{Escape}");
+  }
+  // 実行・検証: グループのタイトルの行を押して右へ移すと、グループと中のノードが同じだけ動く
+  const groupLeft = () =>
+    find(figure(), '[data-group="read"]').getBoundingClientRect().left;
+  const childLeft = () =>
+    mapNode(figure(), "marker").getBoundingClientRect().left;
+  const [groupBefore, childBefore] = [groupLeft(), childLeft()];
+  pressStill(find(figure(), '[data-group="read"] .map-group-bar'));
   await vi.waitFor(() =>
     expect(
       figure().querySelector<HTMLButtonElement>("button.map-move")?.hidden,
     ).toBe(false),
   );
   find<HTMLButtonElement>(figure(), "button.map-move").click();
-  expect([
-    ["上へ移す", "下へ移す"],
-    ["左へ移す", "右へ移す"],
-  ]).toContainEqual(stepLabels());
+  stepItem("右へ移す").click();
+  await vi.waitFor(() => expect(groupLeft()).toBeGreaterThan(groupBefore));
+  expect(groupLeft() - groupBefore).toBeCloseTo(childLeft() - childBefore, 0);
   await userEvent.keyboard("{Escape}");
+  // 実行・検証: どの向きも、メニューの項目を押せないのは Alt + 矢印キーで位置が変わらないときだけ
+  pressStill(mapNode(figure(), "marker"));
+  await vi.waitFor(() =>
+    expect(
+      figure().querySelector<HTMLButtonElement>("button.map-move")?.hidden,
+    ).toBe(false),
+  );
+  find<HTMLButtonElement>(figure(), "button.map-move").click();
+  const disabledOf = Object.fromEntries(
+    stepLabels().map((label) => [label, stepItem(label).disabled]),
+  );
+  await userEvent.keyboard("{Escape}");
+  const keyOf: Record<string, [string, string]> = {
+    上へ移す: ["ArrowUp", "ArrowDown"],
+    下へ移す: ["ArrowDown", "ArrowUp"],
+    左へ移す: ["ArrowLeft", "ArrowRight"],
+    右へ移す: ["ArrowRight", "ArrowLeft"],
+  };
+  const markerHit = () =>
+    mapNode(figure(), "marker").querySelector<HTMLElement>(
+      ":scope > .mdmark-diagram-node-hit",
+    ) as HTMLElement;
+  for (const [label, [key, back]] of Object.entries(keyOf)) {
+    const before = mapNode(figure(), "marker").style.cssText;
+    markerHit().dispatchEvent(
+      new KeyboardEvent("keydown", { key, altKey: true, bubbles: true }),
+    );
+    const moved = mapNode(figure(), "marker").style.cssText !== before;
+    expect(disabledOf[label]).toBe(!moved);
+    if (moved)
+      markerHit().dispatchEvent(
+        new KeyboardEvent("keydown", {
+          key: back,
+          altKey: true,
+          bubbles: true,
+        }),
+      );
+  }
   // 実行・検証: 空いた場所を押すとボタンが無い
   pressStill(find(figure(), ".mdmark-diagram-viewport"));
   await vi.waitFor(() =>

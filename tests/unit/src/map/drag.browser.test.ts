@@ -637,3 +637,28 @@ test("test_movable_directions_when_segment", async () => {
   // 検証
   expect([...directions].sort()).toEqual(["left", "right"]);
 });
+
+// 区間を指定すると、真ん中の区間ではなくその区間を動かす（正常系）
+test("test_move_by_key_when_segment_given", async () => {
+  // 準備
+  const { moveByKey, movableDirections } = await loadDrag();
+  // 実行: LAYOUT の A->C の区間 2 は y=140 の横の区間
+  const next = moveByKey({
+    layout: LAYOUT,
+    state: STATE,
+    target: { wire: "A->C", segment: 2 },
+    dx: 0,
+    dy: 8,
+  });
+  const directions = movableDirections({
+    layout: LAYOUT,
+    state: STATE,
+    target: { wire: "A->C", segment: 2 },
+  });
+  // 検証
+  expect(next?.wireShifts["A->C"]?.[0]).toMatchObject({
+    segment: 2,
+    offset: 8,
+  });
+  expect([...directions].sort()).toEqual(["down", "up"]);
+});
