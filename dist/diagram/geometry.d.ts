@@ -14,6 +14,7 @@ export declare const ZOOM: {
 export declare const RESIZE: {
     step: number;
     min: number;
+    dragThreshold: number;
 };
 /** 折れ線の点 */
 type Point = [number, number];

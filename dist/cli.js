@@ -18290,7 +18290,7 @@ var require_lucide = __commonJS({
       ["path", { d: "M8 6L12 2L16 6" }],
       ["path", { d: "M12 2V22" }]
     ];
-    var Move = [
+    var Move2 = [
       ["path", { d: "M12 2v20" }],
       ["path", { d: "m15 19-3 3-3-3" }],
       ["path", { d: "m19 9 3 3-3 3" }],
@@ -22642,7 +22642,7 @@ var require_lucide = __commonJS({
       ["circle", { cx: "17", cy: "15", r: "3" }],
       ["path", { d: "m21 19-1.9-1.9" }]
     ];
-    var TextWrap = [
+    var TextWrap2 = [
       ["path", { d: "m16 16-3 3 3 3" }],
       ["path", { d: "M3 12h14.5a1 1 0 0 1 0 7H13" }],
       ["path", { d: "M3 19h6" }],
@@ -25619,7 +25619,7 @@ var require_lucide = __commonJS({
       MouseRight,
       Mouth,
       MouthOff,
-      Move,
+      Move: Move2,
       Move3D: Move3d,
       Move3d,
       MoveDiagonal,
@@ -26225,7 +26225,7 @@ var require_lucide = __commonJS({
       TextSearch,
       TextSelect: SquareDashedText,
       TextSelection: SquareDashedText,
-      TextWrap,
+      TextWrap: TextWrap2,
       Theater,
       Thermometer,
       ThermometerSnowflake,
@@ -26430,7 +26430,7 @@ var require_lucide = __commonJS({
       WineOff,
       Workflow,
       Worm,
-      WrapText: TextWrap,
+      WrapText: TextWrap2,
       Wrench: Wrench2,
       WrenchOff,
       X: X2,
@@ -27816,7 +27816,7 @@ var require_lucide = __commonJS({
     exports.MouseRight = MouseRight;
     exports.Mouth = Mouth;
     exports.MouthOff = MouthOff;
-    exports.Move = Move;
+    exports.Move = Move2;
     exports.Move3D = Move3d;
     exports.Move3d = Move3d;
     exports.MoveDiagonal = MoveDiagonal;
@@ -28422,7 +28422,7 @@ var require_lucide = __commonJS({
     exports.TextSearch = TextSearch;
     exports.TextSelect = SquareDashedText;
     exports.TextSelection = SquareDashedText;
-    exports.TextWrap = TextWrap;
+    exports.TextWrap = TextWrap2;
     exports.Theater = Theater;
     exports.Thermometer = Thermometer;
     exports.ThermometerSnowflake = ThermometerSnowflake;
@@ -28627,7 +28627,7 @@ var require_lucide = __commonJS({
     exports.WineOff = WineOff;
     exports.Workflow = Workflow;
     exports.Worm = Worm;
-    exports.WrapText = TextWrap;
+    exports.WrapText = TextWrap2;
     exports.Wrench = Wrench2;
     exports.WrenchOff = WrenchOff;
     exports.X = X2;
@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.15.0+develop.c9af6d2";
+  return "v0.15.0+develop.6550706";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -67117,6 +67117,7 @@ function resolveConfig(options) {
     // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
     sideToc: { mode: config3["side-toc"]?.mode === "fixed" ? "fixed" : "hover" },
     media: { width: resolveMediaWidth(config3.media?.width) },
+    code: resolveCode(config3.code),
     table: resolveTable(config3.table),
     // テーマ・明暗は、COLOR_THEMES・COLOR_SCHEMES にある値だけを受け、他の値は既定にする
     colorTheme: oneOf(COLOR_THEMES, config3.colorTheme) ?? DEFAULT_COLOR_THEME,
@@ -67125,6 +67126,9 @@ function resolveConfig(options) {
     map: resolveMapConfig(config3.map)
   };
 }
+var resolveCode = (code2) => ({
+  wrap: code2?.wrap === true
+});
 var MAP_SHAPES = ["rounded", "rect", "pill", "double"];
 var MAP_DASHES = [
   "solid",
@@ -73625,6 +73629,8 @@ var ICONS = {
   "grip-vertical": import_lucide.GripVertical,
   eye: import_lucide.Eye,
   "eye-off": import_lucide.EyeOff,
+  "wrap-text": import_lucide.TextWrap,
+  move: import_lucide.Move,
   "wide-expand": WideExpand,
   "wide-shrink": WideShrink
 };
@@ -83794,7 +83800,7 @@ function renderCodeCopy(options) {
   const { state } = options;
   const { text: text2, icon } = COPY_LABELS[state];
   const status = state === "idle" ? "" : `\u30B3\u30FC\u30C9\u3092${text2}`;
-  return `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="${state}">${iconSvg(icon)}${text2}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status">${status}</span></span>`;
+  return `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="${state}" aria-label="${text2}" title="${text2}">${iconSvg(icon)}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status">${status}</span></span>`;
 }
 function renderCodeRaw(options) {
   return `<button class="mdmark-code-raw" type="button" aria-pressed="${options.pressed}">${iconSvg("code-xml")}Raw<span class="mdmark-visually-hidden">\uFF08\u5143\u306E Markdown \u3092\u8868\u793A\uFF09</span></button>`;
@@ -84293,7 +84299,7 @@ function buildCodeBlocks(state) {
 
 // src/diagram/geometry.ts
 var ZOOM = { step: 1.25, minRatio: 0.25, maxRatio: 5, pan: 80 };
-var RESIZE = { step: 32, min: 120 };
+var RESIZE = { step: 32, min: 120, dragThreshold: 4 };
 var STEP_BASES = [1, 2, 5, 10];
 var TICK_TARGET = 5;
 function tidy(value) {
@@ -90113,6 +90119,9 @@ var DATE_FORMAT = new Intl.DateTimeFormat("ja-JP", {
   minute: "2-digit"
 });
 
+// src/tree/tree.interact.ts
+var measureContext = typeof document === "undefined" ? void 0 : document.createElement("canvas").getContext("2d");
+
 // src/diagram/diagram-resize.interact.ts
 var KEY_STEPS = {
   ArrowUp: -RESIZE.step,
@@ -90130,9 +90139,6 @@ var MENU_HTML = [
   `<button type="button" data-size="larger">${iconSvg("plus")}\u5927\u304D\u304F\u3059\u308B</button>`,
   `<button type="button" data-size="reset">${iconSvg("rotate-ccw")}\u5143\u306E\u5927\u304D\u3055\u306B\u623B\u3059</button>`
 ].join("");
-
-// src/tree/tree.interact.ts
-var measureContext = typeof document === "undefined" ? void 0 : document.createElement("canvas").getContext("2d");
 
 // src/markdown/pure-blocks.logic.ts
 var FIGURE_MARKS = {

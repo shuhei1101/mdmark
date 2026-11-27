@@ -19,6 +19,8 @@ export declare function attachInteractions(options: {
     pinMode?: TablePinMode;
     /** 既定を適用した設定の、描いた直後に既定の列を留めるか（既定 `false`） */
     pinDefault?: boolean;
+    /** 既定を適用した設定の、マーカーの無いコードブロックとファイルツリーを描いた直後に折り返すか（既定 `false`） */
+    codeWrap?: boolean;
     /** 既定を適用した設定の、長文の列の最小の幅（em） */
     longColumnMin?: number;
     /** 列の表示を切り替えたときに通知する */

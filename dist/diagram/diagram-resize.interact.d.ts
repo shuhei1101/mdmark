@@ -6,7 +6,7 @@ export declare const diagramHeightKey: (options: {
     index: number;
     title: string;
 }) => string;
-/** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで今の倍率の図の全体が収まる高さにし、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を削除する関数を返却する */
+/** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで今の倍率の図の全体が収まる高さにし、動かさずに押すか Enter・Space で大きさのメニューを開き、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を削除する関数を返却する */
 export declare const attachDiagramResize: (options: {
     /** 表示する枠 */
     viewport: HTMLElement;

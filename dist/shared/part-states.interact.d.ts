@@ -11,6 +11,7 @@ export declare const PART_SELECTORS: {
     readonly frontmatter: "details.mdmark-frontmatter";
     readonly tree: "div.mdmark-tree";
     readonly code: "pre:has([data-fold-lines])";
+    readonly "code-wrap": ".mdmark-code";
     readonly "table-tree": "div.mdmark-table[data-tree]";
 };
 /** 部品の種類 */

@@ -17,8 +17,11 @@ export declare const TREE_MORE_NAME = "...";
 export declare function fileIconOf(name: string): FileIcon;
 /** ルートを 0 としたフォルダの深さと `data-open` の値から、既定で開くかを返却する。`all` と値が無いときは常に開き、数は深さがその数より浅いときに開く */
 export declare function folderOpenByDefault(depth: number, open: string | undefined): boolean;
-/** コピーのボタンの中身（アイコンと文言）の HTML を返却する */
-export declare function renderTreeCopyContent(state: TreeCopyState): string;
+/** コピーのボタンの中身（文言を画面に出さないアイコン）の HTML と、名前とツールチップに入れる文言を返却する */
+export declare function renderTreeCopyContent(state: TreeCopyState): {
+    html: string;
+    label: string;
+};
 /** ツリーの上に配置する帯（記載した言語のラベル・コピーのボタン・スクリーンリーダーの通知）の HTML を返却する。中身は部品『コードブロック』の帯と共通 */
 export declare function renderTreeBar(options: {
     language: string;

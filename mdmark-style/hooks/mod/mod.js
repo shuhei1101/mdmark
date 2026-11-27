@@ -17588,6 +17588,7 @@ function resolveConfig(options) {
     // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
     sideToc: { mode: config2["side-toc"]?.mode === "fixed" ? "fixed" : "hover" },
     media: { width: resolveMediaWidth(config2.media?.width) },
+    code: resolveCode(config2.code),
     table: resolveTable(config2.table),
     // テーマ・明暗は、COLOR_THEMES・COLOR_SCHEMES にある値だけを受け、他の値は既定にする
     colorTheme: oneOf(COLOR_THEMES, config2.colorTheme) ?? DEFAULT_COLOR_THEME,
@@ -17596,6 +17597,9 @@ function resolveConfig(options) {
     map: resolveMapConfig(config2.map)
   };
 }
+var resolveCode = (code2) => ({
+  wrap: code2?.wrap === true
+});
 var MAP_SHAPES = ["rounded", "rect", "pill", "double"];
 var MAP_DASHES = [
   "solid",

@@ -41,9 +41,13 @@ export declare function renderCodeFoldMore(options: {
 export declare function codeLineId(base: string, index: number): string;
 /** コピーのボタンの状態 */
 export type CodeCopyState = "idle" | "copied" | "failed";
-/** コードブロックの帯の右端に配置する、コピーのボタンとスクリーンリーダー向けの要素を返却する。`copied`・`failed` のときはスクリーンリーダー向けの要素に `コードを{文言}` を入れる */
+/** コードブロックの帯の右端に配置する、文言を画面に出さないアイコンだけのコピーのボタン（状態の文言を `aria-label` と `title` に持つ）とスクリーンリーダー向けの要素を返却する。`copied`・`failed` のときはスクリーンリーダー向けの要素に `コードを{文言}` を入れる */
 export declare function renderCodeCopy(options: {
     state: CodeCopyState;
+}): string;
+/** コードブロックとファイルツリーの帯のコピーのボタンの前に配置する、アイコンだけの折り返しのトグルボタン。名前は押した状態でも変えない */
+export declare function renderCodeWrapToggle(options: {
+    pressed: boolean;
 }): string;
 /** 言語 markdown のコードブロックの帯のコピーのボタンの左に配置する、描いた結果と元の Markdown を切り替える Raw のボタン。押した状態は元の Markdown を出している状態 */
 export declare function renderCodeRaw(options: {

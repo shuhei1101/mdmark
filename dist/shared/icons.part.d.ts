@@ -69,6 +69,8 @@ declare const ICONS: {
     "grip-vertical": IconNode;
     eye: IconNode;
     "eye-off": IconNode;
+    "wrap-text": IconNode;
+    move: IconNode;
     "wide-expand": IconNode;
     "wide-shrink": IconNode;
 };
