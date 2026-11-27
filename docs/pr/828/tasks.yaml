@@ -76,7 +76,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T18:17:04.705773+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T18:21:50.043189+00:00'
   - process: ドキュメント修正
     status: skipped
     reason: 公開ドキュメント（使い方・リファレンス）に、つまみの値を入れる時点の記述が無い
