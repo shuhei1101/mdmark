@@ -327,7 +327,8 @@ export function attachWrapToggle(host, { tree = true } = {}) {
     const toggle = document.createElement("button");
     toggle.type = "button";
     toggle.className = "mock820-wrap-toggle";
-    toggle.innerHTML = `${svg("wrap")}<span>折り返し</span>${svg("check").replace('class="mdmark-icon"', 'class="mdmark-icon mock820-check"')}`;
+    toggle.innerHTML = svg("wrap");
+    toggle.setAttribute("aria-label", "画面の端で折り返す");
     toggle.title = "画面の端で折り返す";
     const sync = () => toggle.setAttribute("aria-pressed", String(isOn()));
     toggle.addEventListener("click", () => {

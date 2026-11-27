@@ -10,7 +10,7 @@
   <!-- 利用側のページの外観（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/287/assets/scene.css">
   <!-- #820 で足すボタンとメニュー -->
-  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=5">
+  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=7">
 </head>
 <body class="mdmark-theme-light">
   <header class="host-bar">利用側のアプリ</header>
@@ -22,7 +22,7 @@
     <p class="state-note">配布物の mount で描いた実物の map の図に、最後に動かさずに押した要素（ノード・グループのタイトルの行と縁・線の区間・参加者の箱）の内側の角へ「移動」のボタンを重ねている（右上が図の右上のパネルと重なるときは左上）。メニューは、動かす要素・移動のボタン・パネルと重ならない側（下・上・右・左の順）に開く。ボタンで開くメニューの項目は、Alt + 矢印キーと同じ刻みで動かす。グループの右下の角は、動かさずに押すと大きさのメニューを開く。メニューの項目は、モックではどの向きも押せる（実装では動ける余地の無い向きを押せなくする）</p>
   </main>
   <script type="module">
-    import { draw, attachMoveMenu } from "../../refs/820/assets/mock.js?v=5";
+    import { draw, attachMoveMenu } from "../../refs/820/assets/mock.js?v=7";
 
     const FLOW = `<!-- map: {"title": "注文の流れ"} -->
 

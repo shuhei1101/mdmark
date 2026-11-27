@@ -99,42 +99,29 @@
   }
 }
 
-/* 折り返しのトグルボタン: コピーのボタンと同じ大きさの、アイコンと文言のボタン */
+/* 折り返しのトグルボタン: コピーのボタンと同じ大きさの、アイコンだけのボタン */
 .mock820-wrap-toggle {
   display: inline-flex;
-  gap: 0.25em;
   align-items: center;
-  min-height: 24px;
-  padding: 0 0.5em;
+  justify-content: center;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
+  padding: 0;
   border: 1px solid transparent;
   border-radius: var(--mdmark-radius);
   background: transparent;
   color: inherit;
-  font: inherit;
-  font-size: 0.8125rem;
   cursor: pointer;
 
   &:hover {
     border-color: var(--mdmark-color-border);
   }
 
-  /* 押した状態: リンク色の枠線と淡いリンク色の面に、チェックの印を出す。ホバーは灰色の枠線だけ */
+  /* 押した状態: リンク色の枠線と淡いリンク色の面、リンク色のアイコン。ホバーは灰色の枠線だけ */
   &[aria-pressed="true"] {
     border-color: var(--mdmark-color-link);
     background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent);
-  }
-
-  &[aria-pressed="true"] .mock820-check {
     color: var(--mdmark-color-link);
-  }
-
-  /* チェックの印: 押す前も場所を空けておき、押してもボタンの幅を変えない */
-  .mock820-check {
-    visibility: hidden;
-  }
-
-  &[aria-pressed="true"] .mock820-check {
-    visibility: visible;
   }
 
   &:focus-visible {
@@ -143,6 +130,20 @@
   }
 
   .mdmark-icon {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+/* コピーのボタン: 文言を画面に出さずアイコンだけにする（文言はボタンの名前として残す） */
+.mdmark-code-meta .mdmark-code-copy {
+  min-width: 1.75rem;
+  justify-content: center;
+  padding: 0;
+  font-size: 0;
+  gap: 0;
+
+  svg {
     width: 14px;
     height: 14px;
   }

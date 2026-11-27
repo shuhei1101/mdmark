@@ -10,7 +10,7 @@
   <!-- 利用側のページの外観（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/287/assets/scene.css">
   <!-- #820 の測定の表 -->
-  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=5">
+  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=7">
 </head>
 <body class="mdmark-theme-light">
   <header class="host-bar">利用側のアプリ</header>
@@ -22,7 +22,7 @@
     <p class="state-note">配布物の mount で描いた実物の音声の再生バーと、その下に、描いた高さと、図とその祖先の overflow で切られた高さを測った表を並べる。mdmark の CSS だけで描いたときに切られた高さが 0px なら、見切れの原因は利用側（MindStella）の CSS にある</p>
   </main>
   <script type="module">
-    import { draw, measureAudio } from "../../refs/820/assets/mock.js?v=5";
+    import { draw, measureAudio } from "../../refs/820/assets/mock.js?v=7";
 
     const AUDIO = "../../refs/263/assets/media/voice.mp3";
     const MARKDOWN = `![読み上げ](${AUDIO} "セリフの音声")

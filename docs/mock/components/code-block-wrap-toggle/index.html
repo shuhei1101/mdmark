@@ -10,7 +10,7 @@
   <!-- 利用側のページの外観（#287 で共有するアセット） -->
   <link rel="stylesheet" href="../../refs/287/assets/scene.css">
   <!-- #820 で足すボタンとメニュー -->
-  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=5">
+  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=7">
 </head>
 <body class="mdmark-theme-light">
   <header class="host-bar">利用側のアプリ</header>
@@ -19,10 +19,10 @@
   </nav>
   <main class="mock820-catalog" id="catalog">
     <h1>code-block-wrap-toggle</h1>
-    <p class="state-note">配布物の mount で描いた実物のコードブロックとファイルツリーに、帯のコピーのボタンの前へ「折り返し」のトグルボタンを重ねている。押すたびにそのブロックだけを画面の端で折り返す・折り返さないに切り替え、押した状態はリンク色の枠線と面・チェックの印と aria-pressed で示し、ポインターを重ねたときは灰色の枠線だけにする。描いた直後の状態はマーカーの wrap の有り無しに従い、ページを開き直すと戻る</p>
+    <p class="state-note">配布物の mount で描いた実物のコードブロックとファイルツリーに、帯のコピーのボタンの前へ、アイコンだけの「折り返し」のトグルボタンを重ねている（コピーのボタンも文言を出さずアイコンだけにする）。押すたびにそのブロックだけを画面の端で折り返す・折り返さないに切り替え、押した状態はリンク色の枠線と面・リンク色のアイコンと aria-pressed で示し、ポインターを重ねたときは灰色の枠線だけにする。描いた直後の状態はマーカーの wrap、無ければ設定の既定（既定は折り返さない）に従い、ページを開き直すと戻る</p>
   </main>
   <script type="module">
-    import { draw, attachWrapToggle } from "../../refs/820/assets/mock.js?v=5";
+    import { draw, attachWrapToggle } from "../../refs/820/assets/mock.js?v=7";
 
     const LONG = "const prompt = \"この依頼文はとても長く、画面の幅を越えて続くため、折り返さないコードブロックでは横にスクロールしながら読むことになる。https://example.com/a/very/long/path/that/does/not/break\";";
     const CODE = (marker) => `${marker}
@@ -60,13 +60,11 @@ docs/
     add("h2", "狭い幅（390px）: 帯のタイトルが長いときも、ボタンはコピーの前で折り返さない");
     block(CODE('<!-- code: {"title": "ChatGPT に送った依頼文の全文（長いタイトル）", "lines": {}} -->'), {}, true);
 
-    add("h2", "ファイルツリー 案 A（推奨）: 同じボタンを帯に付ける");
-    add("p", "コードブロックと同じく、押すと長い注釈を枠の幅で折り返す。押した後の外観は下の参考と同じで、注釈を持つフォルダの名前が縦に折れる今の不具合（#822）が出る", "state-note");
+    add("h2", "ファイルツリー: 同じボタンを帯に付ける");
+    add("p", "コードブロックと同じく、押すと長い注釈を枠の幅で折り返す。モックの押した後の外観は下の参考と同じで、注釈を持つフォルダの名前が縦に折れる今の不具合（#822）が出る。#822 はこの作業で修正する", "state-note");
     block(TREE(""), { tree: true });
-    add("h2", "ファイルツリー 案 B: ボタンを付けない（今のまま。折り返しはマーカーの wrap だけで決める）");
-    block(TREE(""), { tree: false });
     add("h2", "参考: マーカーの wrap で描いたファイルツリー（今の実装の折り返し）");
-    add("p", "案 A のボタンを押した後は、この折り返しと同じ外観になる", "state-note");
+    add("p", "ファイルツリーのボタンを押した後は、#822 を直すまでこの折り返しと同じ外観になる", "state-note");
     block(TREE('<!-- tree: {"wrap": true} -->'), { tree: false });
   </script>
 </body>

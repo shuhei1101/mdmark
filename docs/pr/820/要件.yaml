@@ -51,11 +51,11 @@ docs:
     status: todo
   - page: docs/component/CMP-472-18.ts.yaml
     new: false
-    change: 帯に折り返しを切り替えるボタンの外観・状態・キー操作を追加する
+    change: 帯に折り返しを切り替えるアイコンだけのボタンの外観・状態・キー操作を追加し、コピーのボタンをアイコンだけにする
     status: todo
   - page: docs/component/CMP-472-26.ts.yaml
     new: false
-    change: ファイルツリーにも同じボタンを付けると決めた場合、帯のボタンを追加する
+    change: 帯に折り返しを切り替えるボタンを追加し、折り返したときに注釈を持つフォルダの名前が縦に折れない決まりを記載する（#822）
     status: todo
   - page: docs/component/CMP-472-5.ts.yaml
     new: false
@@ -137,6 +137,15 @@ docs:
     new: false
     change: 上のバーに移動のボタンの HTML を追加する
     status: todo
+  - page: docs/config/CFG-472-3.yaml
+    change: コードブロックとファイルツリーの既定の折り返しのキーを追加する（既定は折り返さない）
+    status: todo
+  - page: docs/module/MOD-472-304.ts.yaml
+    change: 既定の折り返しのキーの型と既定を追加する
+    status: todo
+  - page: docs/guide/設定.mark.md
+    change: 既定の折り返しのキーの節を追加する
+    status: todo
 scope_out:
   - item: 音声の見切れの原因が MindStella 側の CSS だった場合の MindStella の修正
     reason: mdmark のリポジトリの外の変更。原因を切り分けて MindStella 側と分かったら MindStella に起票する
@@ -147,6 +156,3 @@ scope_out:
   - item: 表の部品と、図の枠のリサイズハンドル・動画のリサイズハンドルのドラッグの代わりの操作
     reason: '#810・#806・#808・#803 で扱い済み。この作業では実装の差を点検するだけにする'
     plan: none
-  - item: wrap のファイルツリーで、注釈を持つフォルダの名前が 1 文字ずつ縦に折れて注釈と重なる（`src/index.css` の `.mdmark-tree-wrap` の規則）
-    reason: 記法のガイドの wrap の説明（名前を名前の列の中で折り返し、注釈を下の行に出す）と食い違う今の不具合で、今回の要望（読者の折り返しの切り替え）に含まれない
-    plan: '#822'

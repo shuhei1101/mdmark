@@ -39,10 +39,12 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-26T19:14:22.848554+00:00'
   - process: モック作成
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:07:44.536675+00:00'
   - process: データ設計
     status: skipped
-    reason: マーカー・設定のキーは変えず、切り替えた状態も保存しない
+    reason: データ（docs/data）とマーカーは変えず、切り替えた状態も保存しない。追加する既定の折り返しの設定のキーはインターフェース定義設計で設定の設計書とあわせて記載する
     updated_by: planner
     updated_at: '2026-11-26T19:01:45.858329+00:00'
   - process: インターフェース定義設計
