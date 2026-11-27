@@ -1,0 +1,7 @@
+confirmations:
+  - topic: スマホの幅のテーブル設定のパネルの出し方
+    decision: 今の開くパネルのまま、スマホの幅（48rem 未満）で高さを画面の高さの 25% までにし、列の一覧をパネルの中でスクロールさせる（推奨案 A）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit: d80263bb
+    thread: https://github.com/shuhei1101/mdmark/pull/824#discussion_r4716105350

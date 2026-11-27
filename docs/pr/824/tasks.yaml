@@ -40,7 +40,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T05:24:31.024612+00:00'
   - process: モック作成
-    status: todo
+    status: done
+    note: 表のモックに列の中身のはみ出しとスマホの幅のテーブル設定のパネルを追加。パネルはユーザーが案 A を選んだ
+    updated_by: planner
+    updated_at: '2026-11-27T05:57:55.799879+00:00'
   - process: データ設計
     status: skipped
     reason: 表のマーカーの設定のキーと値は変わらない
