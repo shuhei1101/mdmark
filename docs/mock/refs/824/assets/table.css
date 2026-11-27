@@ -79,3 +79,10 @@
     }
   }
 }
+
+/* 修正後の見本: 長文でない説明の列も、今の決め方どおり一番長い行の幅で 1 行に収める */
+@layer mdmark {
+  .mdmark-824-overflow-fixed:not(.mdmark-824-narrowed) td:last-child {
+    white-space: nowrap;
+  }
+}
