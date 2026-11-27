@@ -50,7 +50,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T05:15:54.911043+00:00'
   - process: インターフェース定義設計
-    status: todo
+    status: done
+    note: IF-472-35 を修正。IF-472-34 はつまみを mount が付けるため変更なし、IF-793-1 は記述が食い違わず変更なし
+    updated_by: planner
+    updated_at: '2026-11-27T06:03:22.051410+00:00'
   - process: エージェント・MCP サーバー設計
     status: skipped
     reason: エージェント・MCP のツールを作る・変える変更ではない
