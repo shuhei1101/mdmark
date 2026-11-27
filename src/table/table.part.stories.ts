@@ -710,7 +710,7 @@ export const LongCodeCells: Story = {
     kind: "data",
     features: '["sort","pin","filter","resize"]',
     columns: '["名前","コード","ID","説明"]',
-    rows: '[["列の幅","`table.long_column_min_width_em_value`","MDMARKCOLUMNWIDTHLONGIDENTIFIER20261127A","長文の列の最小の幅。指定が無ければ 45em"],["リサイズ","`features.diagram-resize`","MDMARKFEATUREDIAGRAMRESIZEID20261127BBB","図の高さを変えるリサイズハンドルのオン・オフ"]]',
+    rows: '[["列の幅","<code>table.long_column_min_width_em_value</code>","MDMARKCOLUMNWIDTHLONGIDENTIFIER20261127A","長文の列の最小の幅。指定が無ければ 45em"],["リサイズ","<code>features.diagram-resize</code>","MDMARKFEATUREDIAGRAMRESIZEID20261127BBB","図の高さを変えるリサイズハンドルのオン・オフ"]]',
     wide: "[1,2]",
   },
 };
