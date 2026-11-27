@@ -53,3 +53,29 @@
     }
   }
 }
+
+/* モック専用: 今の列の幅は、mdmark の列の最小の幅を当てずに見本の幅のまま出す */
+@layer mdmark {
+  .mdmark-824-overflow-now th,
+  .mdmark-824-overflow-now td {
+    min-inline-size: 0 !important;
+    overflow-wrap: normal;
+  }
+  /* つまみで狭めた折り返す列の見本: 列の幅は区切れない一番長い中身の幅 */
+  .mdmark-824-narrowed th[data-mock824-wrap] {
+    inline-size: 1px;
+  }
+  .mdmark-824-narrowed td[data-mock824-wrap] code {
+    white-space: nowrap;
+  }
+  /* モック専用: 開いたまま見せるパネルが下の節に重ならない余白 */
+  .mdmark-824-settings[data-mock824-option="now"],
+  .mdmark-824-settings[data-mock824-option="a"] {
+    min-block-size: 38rem;
+  }
+  @media (max-width: 47.99rem) {
+    .mdmark-824-settings[data-mock824-option="a"] {
+      min-block-size: 18rem;
+    }
+  }
+}
