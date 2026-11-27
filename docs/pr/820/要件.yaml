@@ -243,9 +243,14 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-27T03:15:40.394924+00:00'
+  - page: docs/module/MOD-472-173.ts.yaml
+    change: 図の高さのリサイズハンドルを押した扱いにする動きの上限（RESIZE.dragThreshold）を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T04:01:23.198765+00:00'
 scope_out:
   - item: 音声の見切れの原因が MindStella 側の CSS だった場合の MindStella の修正
-    reason: mdmark のリポジトリの外の変更。原因を切り分けて MindStella 側と分かったら MindStella に起票する
+    reason: mdmark のリポジトリの外の変更。mdmark だけで描いた音声は再生バーの全体を出すことを確認し、shuhei1101/mindstella#720 に起票した
     plan: to_file
   - item: コードブロックの折り返しを切り替えた状態をページを開き直した後も保つこと
     reason: 要望は 1 回の操作での切り替えで、保存は要望に含まない（同じタブの中で保つかは部品設計で決める）
