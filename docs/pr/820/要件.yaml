@@ -106,31 +106,45 @@ docs:
   - page: docs/module/MOD-472-170.css.yaml
     new: false
     change: 音声の再生バー・折り返しのボタン・代わりの操作の規則を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/module/MOD-472-233.ts.yaml
     new: false
     change: 折り返しの切り替えの操作を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/module/MOD-472-306.ts.yaml
     new: false
-    change: 帯に折り返しの切り替えのボタンの HTML を追加する
-    status: todo
+    change: 折り返しのボタンの HTML を追加し、コピーのボタンをアイコンだけにする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/module/MOD-472-134.ts.yaml
     new: false
-    change: ノード・グループ・線の区間の移動の代わりの操作を追加する
-    status: todo
+    change: 移動のメニューの項目の押せる向きを求める関数を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/module/MOD-472-131.ts.yaml
     new: false
     change: 参加者の並べ替えの代わりの操作を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/module/MOD-472-193.ts.yaml
     new: false
-    change: ミニマップの代わりの操作を点検し、無ければ追加する
-    status: todo
+    change: 点検の結果、帯の位置を押す代わりの操作があるため変更しない
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/module/MOD-472-177.ts.yaml
     new: false
-    change: 拡大した図の移動の代わりの操作を点検し、無ければ追加する
-    status: todo
+    change: 点検の結果、表示する枠のスクロールバーが代わりの操作になるため変更しない
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/guide/記載する-本文を部品で組む.mark.md
     new: false
     change: コードブロックの折り返しを読者が切り替えられることを記載する
@@ -156,11 +170,15 @@ docs:
   - page: docs/module/MOD-472-224.ts.yaml
     new: false
     change: 拡大した画像の移動のメニューの操作を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/module/MOD-472-329.ts.yaml
     new: false
     change: 上のバーに移動のボタンの HTML を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/config/CFG-472-3.yaml
     change: コードブロックとファイルツリーの既定の折り返しのキーを追加する（既定は折り返さない）
     status: done
@@ -168,10 +186,49 @@ docs:
     updated_at: '2026-11-27T02:20:54.282163+00:00'
   - page: docs/module/MOD-472-304.ts.yaml
     change: 既定の折り返しのキーの型と既定を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/guide/設定.mark.md
     change: 既定の折り返しのキーの節を追加する
     status: todo
+  - page: docs/module/MOD-472-373.ts.yaml
+    change: 向き・大きさのメニューの開閉と配置のモジュールを新規作成する
+    status: done
+    new: true
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-374.ts.yaml
+    change: map の移動のボタンのモジュールを新規作成する
+    status: done
+    new: true
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-130.ts.yaml
+    change: 構成図に移動のボタンと大きさのメニューを付ける単体テストを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-179.ts.yaml
+    change: 図の高さのリサイズハンドルに大きさのメニューを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-227.ts.yaml
+    change: 折り返しの切り替えを付ける単体テストを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-203.ts.yaml
+    change: 設定の code.wrap を折り返しの既定にする単体テストを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/library/LIB-472-15.yaml
+    change: アイコン wrap-text・move を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
 scope_out:
   - item: 音声の見切れの原因が MindStella 側の CSS だった場合の MindStella の修正
     reason: mdmark のリポジトリの外の変更。原因を切り分けて MindStella 側と分かったら MindStella に起票する
