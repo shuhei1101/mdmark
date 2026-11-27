@@ -30,6 +30,7 @@ function resolvedConfig(
     },
     sideToc: { mode: "hover" },
     media: { width: undefined },
+    code: { wrap: false },
     colorTheme: "dev-swiss",
     colorScheme: "auto",
     labels: { paramCopy: "今の値をコピーする" },
