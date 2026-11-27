@@ -56,6 +56,22 @@ states:
     description: map の範囲の外の純粋な Mermaid のシーケンス図（`data-map-plain`）。補足が無く、メッセージの説明のツールチップを持たない
   - name: SelfMessage
     description: 自分へのメッセージ（送り手と受け手が同じ参加者）が補足の `notes` の説明を持つ。線はライフラインから右へ折り返し、メッセージのラベルの札は折り返しの左右の中央の上に、札の下端と折り返しの上の辺のあいだを 6px 空けて描かれる。ほかの参加者へのメッセージのラベルの位置は変わらず、折り返しの線の押せる帯は説明のツールチップを持つ
+  - name: MoveButton
+    args:
+      - name: selected
+        value: '["A"]'
+      - name: moveTarget
+        value: A
+    description: 参加者の箱を動かさずに押した。箱の内側の右上の角に移動のボタン（名前 `「{参加者の名前}」を移動`）を重ねる
+  - name: MoveMenu
+    args:
+      - name: selected
+        value: '["A"]'
+      - name: moveTarget
+        value: A
+      - name: moveMenu
+        value: 'true'
+    description: 移動のメニューを開いた。`左へ移す`・`右へ移す` を並べ、先頭の参加者では `左へ移す`、末尾の参加者では `右へ移す` を `disabled` にする（合意したモック `docs/mock/components/map-move-menu/`）
 lead: map の `sequenceDiagram` の全ての記法（参加者・ライフライン・メッセージ・複合フラグメント・ノート・活性化）を描き、ブロックの開閉と中だけを描く操作、参加者の選択と並べ替え、強調しない要素を薄くする表示を加える。
 args:
   - name: sequence
@@ -102,6 +118,16 @@ args:
     required: false
     default: 'true'
     description: '`false` のとき、`notes` の説明と注記のツールチップを作らず、メッセージの線の押せる帯に `aria-describedby` を付けない。注記の持ち主の `id` はメッセージの線の押せる帯に付ける'
+  - name: moveTarget
+    type: 文字列
+    required: false
+    default: なし（移動のボタンを出さない）
+    description: 最後に動かさずに押した参加者の ID。その箱の内側の右上の角に移動のボタンを出す。メッセージの線で選んだ参加者には出さない
+  - name: moveMenu
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: 移動のボタンで開いた `左へ移す`・`右へ移す` のメニューを出すか
 events:
   - name: ブロックを開閉する
     when: ブロックのタブの山形のボタンを押す（Shift を押しながら押すと中のブロックも）
@@ -119,6 +145,10 @@ events:
     when: 参加者の箱を名前の文字の外からドラッグする。箱にフォーカスして Alt + 左右の矢印キーを押す（1 列ずつ）
     value: 参加者の ID と移す先の位置
     description: '`mount` が `order` を変えて再描画し、sessionStorage に保つ'
+  - name: 移動のメニューで並べ替える
+    when: 移動のボタンで開いたメニューの `左へ移す`・`右へ移す` を押す
+    value: 参加者の ID と移す先の位置
+    description: '`mount` が、箱にフォーカスして Alt + 左右の矢印キーを 1 回押したときと同じく 1 列ずつ移して再描画し、sessionStorage に保つ。メニューは開いたまま、再描画した後も押した項目にフォーカスを残す'
 uses:
   - component: CMP-472-8#
     how: ブロックのタブの開閉の山形
@@ -131,6 +161,7 @@ accessibility:
   - 留めた参加者の行は、動かす前と同じ要素のまま、同じ順でスクリーンリーダーに出る
   - ブロックのタブの開閉のボタンは、押せる大きさを 24px 四方以上にし、タブの名前のボタンと重ねない。名前のボタンの高さも 24px 以上にする
   - メッセージの線の押せる範囲は、線ごとの `g.map-wire-hit[data-message]` に区間ごとの幅 14px の帯を並べる（自分へのメッセージの折り返しも区間ごと）。帯は今と同じくフォーカスとスクリーンリーダー向けの名前を持たず、説明を持つメッセージのツールチップの持ち主の属性だけを最も長い区間の帯が持つ
+  - 移動のボタンとメニューのスクリーンリーダー向けの名前・`aria-expanded`・フォーカスの移し方・Esc は、部品設計『mapの構成図』の移動のボタンと同じ
 refs:
   - IF-472-35#
   - IF-472-35#constraints[シーケンス図の参加者の行を留める]

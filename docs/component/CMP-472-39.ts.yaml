@@ -374,6 +374,7 @@ accessibility:
   - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に配置する枠線と面を持たない高さ 24 CSS px 以上の帯で、中央に 40×4 CSS px の角の丸い横棒（`span.mdmark-diagram-resize-bar`。色は平常時 `--mdmark-color-muted`、ポインターを乗せたとき・フォーカスの間・操作している間は `--mdmark-color-text`）を持ち、帯のどこでもドラッグできる `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は 120px・今の倍率の図の全体が収まる高さ・今の高さの最大）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
   - 書き出すボタンはアイコンだけで、スクリーンリーダー向けの名前を `図を書き出す` にし、`aria-expanded` と、開く要素を指す `aria-controls` を持つ（`aria-haspopup` は付けない）。開く要素の 2 つのボタンは文字「SVG」「PNG」を持ち、Tab で移る
   - 一覧の表示のボタンはアイコンだけで、スクリーンリーダー向けの名前を `一覧で表示` にし、`aria-pressed` で切り替えた状態を伝える
+  - '拡大した図の移動のドラッグの代わりは、表示する枠のスクロールバー（`overflow: auto`）で、ポインターで 1 回押して動かせる（WCAG 2.2 の 2.5.7）。リサイズハンドルのドラッグの代わりは `↑`・`↓` と、ダブルクリックで全体が収まる高さにする操作'
 status: planned
 test_file: tests/integration/lib/diagram-frame.story.test.ts
 tags:

@@ -149,7 +149,7 @@ states:
       - name: lines
         value: '[{"text":"npm install mdmark"}]'
   - name: Copied
-    description: コードをコピーした。ボタンが `コピーしました`（`check` のアイコン）
+    description: コードをコピーした。ボタンのアイコンが `check` で、スクリーンリーダー向けの名前とツールチップが `コピーしました`。文言は画面に出さない
     args:
       - name: language
         value: ts
@@ -158,7 +158,7 @@ states:
       - name: lines
         value: '[{"text":"import { mount } from \"mdmark\";"}]'
   - name: CopyFailed
-    description: コードをコピーできなかった。ボタンが `コピーできませんでした`（`circle-alert` のアイコン）
+    description: コードをコピーできなかった。ボタンのアイコンが `circle-alert` で、スクリーンリーダー向けの名前とツールチップが `コピーできませんでした`
     args:
       - name: language
         value: ts
@@ -230,7 +230,7 @@ states:
       - name: lines
         value: '[{"text":"version: \"0.9\""},{"text":"features:","foldLines":2},{"text":"  table: true","indent":1},{"text":"  diagram: true","indent":1},{"text":"libraries:","foldLines":3},{"text":"  highlight:","indent":1,"foldLines":2,"folded":true},{"text":"    url: https://cdn.jsdelivr.net/npm/highlight.js","indent":2},{"text":"    version: 11.11.1","indent":2},{"text":"build:","foldLines":1},{"text":"  - docs/使用方法/導入/README.md","indent":1}]'
   - name: Wrap
-    description: '`wrap` と行番号を持ち、2 行目が枠の幅より長い。長い行は枠の幅で折り返し、行番号は折り返した行の 1 行目にだけ出す。ブロックに横スクロールが出ない（合意したモック `docs/mock/refs/328/assets/wrap.css`）'
+    description: '`wrap` と行番号を持ち、2 行目が枠の幅より長い。長い行は枠の幅で折り返し、行番号は折り返した行の 1 行目にだけ出す。ブロックに横スクロールが出ない（合意したモック `docs/mock/refs/328/assets/wrap.css`）。帯の折り返しのボタンは押した状態（`aria-pressed="true"`。リンク色の枠線と淡いリンク色の面、リンク色のアイコン）'
     args:
       - name: language
         value: ts
@@ -264,7 +264,25 @@ states:
         value: raw
       - name: lines
         value: '[{"text":"# 在庫の点検"},{"text":""},{"text":"> [!NOTE]"},{"text":"> 点検は毎朝 9 時までに済ませる。"}]'
-lead: 左端に言語のラベルとタイトル、右端にコピーのボタンを配置した帯と、行番号・行の強調・追加した行と削除した行・注目する行・エラーと警告の行と、インデントの縦線・行の開閉と、言語に応じた色分けを付けたコードブロック。
+  - name: WrapButton
+    args:
+      - name: language
+        value: ts
+      - name: lineNumbers
+        value: 'true'
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"},{"text":"const url = \"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\"; // バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く"}]'
+    description: マーカーの `wrap` を持たないブロック。帯の右端のコピーのボタンの前に、`wrap-text` のアイコンだけの折り返しのボタン（`aria-pressed="false"`、枠線も面も無い）がある。2 行目は折り返さず、ブロックの中で横にスクロールする（合意したモック `docs/mock/components/code-block-wrap-toggle/`）
+  - name: WrapButtonHovered
+    args:
+      - name: language
+        value: ts
+      - name: lines
+        value: '[{"text":"import { mount } from \"mdmark\";"}]'
+      - name: wrapHovered
+        value: 'true'
+    description: 押していない折り返しのボタンにポインターが乗っている。ボタンに灰色の枠線だけを出し、押した状態と見分けられる
+lead: 左端に言語のラベルとタイトル、右端に折り返しとコピーのボタンを配置した帯と、行番号・行の強調・追加した行と削除した行・注目する行・エラーと警告の行と、インデントの縦線・行の開閉と、言語に応じた色分けを付けたコードブロック。
 args:
   - name: language
     type: 文字列
@@ -328,6 +346,11 @@ args:
     enabled_when: '`language` が `markdown` か `md` のとき'
     choices: '`rendered`（描いた結果を出す）・`raw`（元の Markdown を出す）'
     description: 言語 `markdown`・`md` のコードブロックの表示（`mount` が付けた状態）。指定すると帯の右の塊のコピーのボタンの左に `Raw` のボタンを、`pre` の後ろに `div.mdmark-code-preview` を配置し、`rendered` では `pre` を、`raw` では `div.mdmark-code-preview` を `hidden` にする。ボタンの `aria-pressed` は `raw` のとき `true`
+  - name: wrapHovered
+    type: 真偽値
+    required: false
+    default: 'false'
+    description: ポインターが帯の折り返しのボタンに乗っているか。乗っているときはボタンに灰色の枠線だけを出す（押した状態の面とリンク色は出さない）
 css_properties:
   - name: --mdmark-color-code-highlight-bg
     syntax: <color>
@@ -392,18 +415,19 @@ css_properties:
 accessibility:
   - '`pre` は `tabindex="0"` とスクリーンリーダー向けの名前（タイトルがあれば `コード: {タイトル}`、ファイル名があれば `コード: {ファイル名}`、言語があれば `コード: {言語}`、どれも無ければ `コード`）を持ち、キーボードで横にスクロールできる'
   - 言語のラベルの言語は `aria-hidden="true"` でスクリーンリーダーに伝えず（`pre` の名前が持つ）、ファイル名だけを読み込ませる。ラベルは選んで写す中身に入れない
-  - コピーのボタンは文言をスクリーンリーダー向けの名前に持ち、結果を `role="status"` の要素で `コードをコピーしました`・`コードをコピーできませんでした` とスクリーンリーダーに伝える。状態は文言とアイコンで示し、色だけに頼らない
+  - コピーのボタンは文言を画面に出さないアイコンだけのボタンで、文言をスクリーンリーダー向けの名前と `title` のツールチップに持ち、結果を `role="status"` の要素で `コードをコピーしました`・`コードをコピーできませんでした` とスクリーンリーダーに伝える。状態はアイコンの形状（`copy`・`check`・`circle-alert`）と名前で示し、色だけに頼らない。押せる範囲は 1.75rem 四方
   - 追加した行・削除した行・強調した行は、色に加えて左端の 2px の線（追加した行・削除した行は行頭の `+`・`-` も）で分ける。強調の線は隣り合う背景色と 3:1 以上
   - '行頭のマーカーは擬似要素の代わりの文字でスクリーンリーダーに伝える（追加した行は `追加した行`、削除した行は `削除した行`、強調した行は表示される文字を持たず `強調した行`）。代わりの文字を読み込めないブラウザ（Firefox 128・Safari 17.4 より前）でも行番号と `+`・`-` が出るよう、代わりの文字の無い `content` を先に記載し、代わりの文字付きの `content` を後ろに重ねる（例: `content: "+"; content: "+" / "追加した行";`）'
   - '行番号と行頭の `+`・`-` は擬似要素で出し、文字を選んで写す中身に入れない。行は `inline-block` で並べ、コピーした行の間に空行を入れない。空の行は `min-height: 1.55em` で高さを取る（`lh` 単位は対応ブラウザの一部で有効にならない）'
   - '注目する行を持つコードブロックは、ほかの行を不透明度 0.45 にし、ポインターを乗せるかフォーカスがあるときは全ての行を戻す（`prefers-reduced-motion: reduce` では移り変わりを付けない）。エラーと警告の行は、色に加えて左端の線と行頭の `×`・`!` で分け、行頭の文字は代わりの文字で `エラーの行`・`警告の行` とスクリーンリーダーに伝える'
   - '開閉のボタンは `aria-expanded`・`aria-controls` と `{n} 行目から {m} 行目` のスクリーンリーダー向けの名前を持ち、Enter・Space で開閉する。`⋯` のボタンは `{n} 行目から {m} 行目を展開` をスクリーンリーダー向けの名前に持つ。ポインターで乗せられない端末（`hover: none`）では開閉のボタンを常に出す'
   - インデントの縦線は CSS で引き、スクリーンリーダーと選んで写す中身に入れない
-  - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。タイトル・言語のラベル・行番号・強調・行の色と `+`・`-` はそのまま出し、コピーのボタンと `Raw` のボタンは出さない。畳んだ行は開いて出し、開閉のボタンと `⋯` は出さず、注目する行のほかの行も薄くしない
+  - 印刷では行を折り返し、行番号は折り返した最初の 1 行にだけ出す。タイトル・言語のラベル・行番号・強調・行の色と `+`・`-` はそのまま出し、コピーのボタン・折り返しのボタン・`Raw` のボタンは出さない。畳んだ行は開いて出し、開閉のボタンと `⋯` は出さず、注目する行のほかの行も薄くしない
   - 色分けは外観だけで、スクリーンリーダー向けの名前とコードの文字は変わらない。コメントは色に加えて斜体でも示す。色分けの 6 色は、背景（`--mdmark-color-surface` と、追加した行・削除した行・強調した行の半透明の背景を混ぜた色）に対して明るい配色で 5.21〜7.03、ダークで 6.56〜10.64（WCAG の相対輝度で計算）
   - '印刷ではダークを解除した明るい配色の色分けの色を、`print-color-adjust: exact` で色を省くブラウザの設定でも紙に出す'
   - '`Raw` のボタンは、アイコン（`aria-hidden="true"`）・見える文字 `Raw`・`mdmark-visually-hidden` の `（元の Markdown を表示）` を持ち、スクリーンリーダー向けの名前を `Raw（元の Markdown を表示）` にする（見える文字で始まる名前）。名前は押した状態で変えず、元の Markdown を出しているかを `aria-pressed` で伝える。押した状態は文字・背景・枠線の色で示す'
   - 描いた結果の `div.mdmark-code-preview` は見出し・表・図をそのまま読み込ませ、中の見出しは右側の目次と被参照に入れない。`Raw` のボタンで隠した側は `hidden` でスクリーンリーダーにも伝えない
+  - 折り返しのボタンは `type="button"`・`aria-pressed` を持ち、文言を画面に出さない lucide の `wrap-text` のアイコン（`aria-hidden="true"`）だけのボタンで、スクリーンリーダー向けの名前と `title` のツールチップを `画面の端で折り返す` にする（押した状態でも名前を変えない）。Tab で移り Enter・Space で切り替える。押せる範囲はコピーのボタンと同じ 1.75rem 四方。押した状態はリンク色の枠線・淡いリンク色の面・リンク色のアイコンで示し、ポインターを乗せたときは灰色の枠線だけにして、押した状態を色だけで伝えない
 refs:
   - IF-472-34#constraints[コードブロック]
   - IF-472-35#constraints[色分けの当て方]
@@ -452,7 +476,7 @@ notes:
 test_file: tests/integration/lib/code-block.story.test.ts
 events:
   - name: コードをコピーする
-    when: 帯の右端の `コピー` のボタンを押す
+    when: 帯の右端のコピーのボタン（アイコンだけ）を押す
     value: ボタンの `data-state`
     description: '`mount` が削除した行を除いたコードの文字をクリップボードへコピーし、書き込めたら `copied` にして 2 秒で `idle` に戻し、書き込めなければ次に押すまで `failed` にする'
   - name: 行を畳む・開く
@@ -463,6 +487,10 @@ events:
     when: '`Raw` のボタンを押す（Enter・Space を含む）'
     value: ボタンの `aria-pressed`
     description: '`mount` が `pre` と `div.mdmark-code-preview` の `hidden` を入れ替え、`aria-pressed` を元の Markdown を出しているかに合わせる。`data-mdmark-raw` のコードブロックは、初めて描いた結果へ切り替えたときに描く。ほかのコードブロックの表示と文書のスクロールの位置は変えない'
+  - name: 折り返しを切り替える
+    when: 帯の折り返しのボタンを押すか、ボタンにフォーカスして Enter・Space を押す
+    value: '`pre` の class `mdmark-code-wrap` とボタンの `aria-pressed`'
+    description: '`mount` がそのブロックの `pre` の `mdmark-code-wrap` を付与・除外し、`aria-pressed` を合わせる。ほかのブロック・行の畳み・コピーの文字は変えない。`update` で再描画しても同じ位置のブロックの状態を保ち、再読み込みで描いた直後の状態（マーカーの `wrap`、無ければ設定の `code.wrap`）に戻す'
 tags:
   - name: topic:コードブロック
     main: true
