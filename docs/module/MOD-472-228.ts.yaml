@@ -45,7 +45,7 @@ functions:
 
       ピン止めは、`pinColumns` が選んだ列（`through` は押した列までの列）を今の列の並びで `fitPinnedColumns` に指定し、表を包む要素の `clientWidth` に収まる列だけを `pinOffsets` で留め、収まらない列のセルは `left`・`right` と `is-pinned-col` を解除する。押した列のボタン（`each` はその列、`through` は最も右の列）が収まらない列なら、`aria-pressed` を `true` のまま `is-unpinned` を付け、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける（収まれば解除する）。`pinColumns` は、ピン止めのボタン・描く先の要素の幅の変化・列の幅の変更・列の表示の切り替え・列の並べ替えのたびに呼ぶ。
 
-      列の幅は、`attachColumnResize` に、列の幅の上限を返却する関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・`fitPinnedColumns` の `fitted`（実際に留まっている列）を指定する）と、幅を変えた後の処理と、幅を入れた後・測る前に `attachAutoColumnWidths` の `refresh` を呼ぶ関数を指定する。幅を変えた後と戻した後は、`refresh` で表の幅を列の幅の合計にし、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。`attachAutoColumnWidths` が幅を入れた後（`onApply`。描く先の要素を document に取り付けて表を包む要素の見える幅が 0 から変わったときと、見える幅が変わったとき）は、留める位置を決めた後に `attachColumnResize` の戻り値の `refreshValues` を呼び、全ての列のつまみの値を更新する。片付けでは戻り値の `detach` を呼ぶ。
+      列の幅は、`attachColumnResize` に、列の幅の上限を返却する関数（`columnWidthLimit` に、表を包む要素の `clientWidth`・はみ出しているか・列ごとの幅・`fitPinnedColumns` の `fitted`（実際に留まっている列）を指定する）と、幅を変えた後の処理と、幅を入れた後・測る前に `attachAutoColumnWidths` の `refresh` を呼ぶ関数を指定する。幅を変えた後と戻した後は、`refresh` で表の幅を列の幅の合計にし、留める列があれば `pinColumns` で留める位置と境の線をもう一度決める。`attachAutoColumnWidths` が幅を入れた後（`onApply`。描く先の要素を document に取り付けて表を包む要素の見える幅が 0 から変わったときと、見える幅が変わったとき）は、留める位置を決めた後、表を包む要素の `clientWidth` が前回つまみの値を更新したとき（最初は `attachColumnResize` を付けたとき）から変わっていれば、`attachColumnResize` の戻り値の `refreshValues` を呼び、全ての列のつまみの値を更新する。つまみで幅を変えたときの `onApply`（`refresh` の後）は見える幅が変わらないため呼ばず、幅を変えた列の値は `attachColumnResize` が入れる。片付けでは戻り値の `detach` を呼ぶ。
 
       列の幅を自動で決める処理は、囲みごとに `attachAutoColumnWidths` に、囲み・表を包む要素・最下段の見出しのセル・`longColumnMin` と、幅を入れた後に留める列があれば `pinColumns` を呼ぶ関数を指定して付ける。列の表示を切り替えた後は、戻り値の `columnsChanged` を呼ぶ。ピン止めのボタンを出すかのはみ出しは、幅を入れた後に測る。
     args:
@@ -325,6 +325,12 @@ functions:
         condition: '`document.createElement("div")` の中の `data` の 2 列の表に付け、要素を幅 800px の親へ取り付けて `ResizeObserver` の通知を待ち、続けて親の幅を 500px にして通知を待つ'
         mock: なし
         expected: 取り付けた後、どの列のつまみもフォーカスせずに `aria-valuenow` がその列の `th` の `offsetWidth`、`aria-valuemax` が `div.mdmark-table-scroll` の `clientWidth`。500px にした後、どの列も `aria-valuemax` が狭めた後の `clientWidth` で、取り付けた直後より小さく、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax`
+      - name: test_attach_tables_when_resized_without_width_change
+        case: 正常
+        summary: つまみで幅を変えても見える幅が変わらなければ、ほかの列のつまみの値を書き換えない
+        condition: 幅 1280px の要素に描いた `data` の 3 列の表に付けて列の幅を決めた後、2 列目のつまみの `setAttribute` を監視し、1 列目のつまみを右へ 60px ドラッグする（`pointermove` を 30 回）
+        mock: 2 列目のつまみの `setAttribute` を spy する
+        expected: 1 列目のつまみの `aria-valuenow` が広げた後の幅で、表を包む要素の `clientWidth` は変わらず、2 列目のつまみの `setAttribute` が `aria-value*` で呼ばれない
     refs:
       - IF-472-35#constraints[列の表示の通知]
       - 'MOD-472-218#functions[computeTotal]'
