@@ -212,12 +212,12 @@ functions:
     container: src/table/table.part.ts
     kind: 関数
     scope: internal
-    summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタンと、`features` に `resize` を含むときは `.mdmark-th` の後ろに列の幅のつまみ `span.mdmark-col-resize`）と、その列の絞り込みのドロワーの HTML を返却する。`mount` が描いた表に追加するのにも使用する
+    summary: 列 1 つの見出しの中身（並べ替え・絞り込み・ピン止めのボタンと、`features` に `resize` を含むときは `.mdmark-th` の後ろに列の幅のつまみ `span.mdmark-col-resize`。描いた時点から `aria-valuenow`・`aria-valuetext`・`aria-valuemin`・`aria-valuemax` を持ち、`width` があれば 3 つの値をその幅、`aria-valuetext` を `{幅}px`、無ければ 3 つとも `0`、`aria-valuetext` を `自動` にする）と、その列の絞り込みのドロワーの HTML を返却する。`mount` が描いた表に追加するのにも使用する
     args:
       - name: options
-        type: '{ id: string; column: number; label: string; features: string[]; sortable?: boolean; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean; pinUnpinned?: boolean; pinMode?: TablePinMode }'
+        type: '{ id: string; column: number; label: string; features: string[]; sortable?: boolean; filter?: { kind: "select" | "text" | "date"; values: string[] }; active?: boolean; open?: boolean; value?: FilterValue; pinVisible?: boolean; pinPressed?: boolean; pinUnpinned?: boolean; pinMode?: TablePinMode; width?: number }'
         required: true
-        description: ドロワーの id の頭、列の位置、列名、機能、並べ替えのボタンにするか（既定 `true`。`false` なら `features` に `sort` があっても列名を `span.mdmark-th-label` にする）、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、適用している絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、ピン止めのボタンを押した状態にするか、ピン止めのボタンを見えている幅に収まらず留まっていない状態にするか（既定 `false`。`true` なら `is-unpinned` を付け、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける。`mount` が入れ、Storybook は `unpinned` で入れる）、ピン止めの動き（既定 `each`。ボタンの `aria-label` は `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め`）
+        description: ドロワーの id の頭、列の位置、列名、機能、並べ替えのボタンにするか（既定 `true`。`false` なら `features` に `sort` があっても列名を `span.mdmark-th-label` にする）、絞り込み（`select` は候補の値）、絞り込み中か、ドロワーを開いているか、適用している絞り込み、ピン止めのボタンを出すか（既定 `false`。`mount` が幅を測って決め、Storybook は `overflow` で出す）、ピン止めのボタンを押した状態にするか、ピン止めのボタンを見えている幅に収まらず留まっていない状態にするか（既定 `false`。`true` なら `is-unpinned` を付け、`aria-label` と `title` に `（表の幅に収まらないため留まっていません）` を付ける。`mount` が入れ、Storybook は `unpinned` で入れる）、つまみを描く時点の列の幅（px。`renderTable` が `widths`・`autoWidths` のその列の幅を指定する。`mount` は指定せず、操作を付けた後に `attachColumnResize` が更新する）、ピン止めの動き（既定 `each`。ボタンの `aria-label` は `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め`）
     returns:
       type: '{ header: string; drawer: string }'
       description: 見出しの中身とドロワー（絞り込みが無ければ空）
@@ -260,6 +260,12 @@ functions:
         condition: '`features: [pin]`、列名 `名前`、`pinVisible: true`、`pinPressed: true`、`pinUnpinned: true` と、`pinUnpinned` を省いたもの'
         mock: なし
         expected: 1 つ目の `mdmark-pin` が `is-unpinned` を持ち、`aria-label` と `title` が `「名前」の列をピン止め（表の幅に収まらないため留まっていません）`、`aria-pressed="true"`。2 つ目は `is-unpinned` を持たず、`aria-label` が `「名前」の列をピン止め`
+      - name: test_render_table_tools_when_resize_values
+        case: 正常
+        summary: つまみが描いた時点から値の属性を持つ
+        condition: '`features: ["resize"]` で、(a) `width` を渡さない、(b) `width: 160` を渡す'
+        mock: なし
+        expected: (a) つまみが `aria-valuenow="0"`・`aria-valuemin="0"`・`aria-valuemax="0"`・`aria-valuetext="自動"`、(b) `aria-valuenow="160"`・`aria-valuemin="160"`・`aria-valuemax="160"`・`aria-valuetext="160px"`
   - name: renderTableMenu
     title: 表のメニューのボタンとメニューを描く
     container: src/table/table.part.ts

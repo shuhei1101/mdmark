@@ -683,7 +683,7 @@ functions:
     kind: 関数
     scope: internal
     summary: 部品設計『表』の注記「列の幅」の 1 つ目の図（読者が幅を変えた列を除く）で、列が折り返すかと最小の幅・望む幅（px）を返却する
-    description: '`nowrap` か、`range` も `long` も持たない列は、折り返さず最小の幅も望む幅も `longest`。`range` を持つか `long` の列は折り返し、最小の幅は `range.min` の em（無ければ `longColumnMin` の em と `longestWord` の広い方を `longest` で抑えた幅）、最大の幅は `range.max` の em（無ければ上限なし）にし、最小の幅を最大の幅で抑える。望む幅は `longest` を最大の幅で抑え、最小の幅を下回らない幅'
+    description: '`nowrap` か、`range` も `long` も持たない列は、折り返さず最小の幅も望む幅も `longest`。`range` を持つか `long` の列は折り返し、最小の幅は `range.min` の em（無ければ `longColumnMin` の em と `longestWord` の広い方を `longest` で抑えた幅）、最大の幅は `range.max` の em（無ければ上限なし）にし、最小の幅を最大の幅で抑える。ただし折り返す列の最小の幅は `longestWord` より狭くしない（`range.max` より優先する）。望む幅は `longest` を最大の幅で抑え、最小の幅を下回らない幅'
     args:
       - name: options
         type: '{ nowrap: boolean; long: boolean; range?: { min?: number; max?: number }; longest: number; longestWord: number; em: number; longColumnMin: number }'
@@ -705,6 +705,12 @@ functions:
         condition: '`em: 14` で、(a) `range: {min: 20, max: 30}`・`longest: 2800`、(b) `range: {max: 12}`・`long: true`・`longest: 1120`、(c) `range: {min: 30, max: 20}`・`longest: 2800`、(d) `range: {min: 10}`・`long: false`・`longest: 60`'
         mock: なし
         expected: (a) `{true, 280, 420}`、(b) `{true, 168, 168}`、(c) `{true, 280, 280}`、(d) `{true, 140, 140}`
+      - name: test_column_bounds_when_long_word
+        case: 正常
+        summary: 折り返す列の最小の幅を最も長い半角の単語の幅より狭くせず、`range.max` より優先する
+        condition: '`em: 14` で、(a) `range: {max: 10}`・`longest: 2800`・`longestWord: 300`、(b) `range: {min: 10}`・`longest: 2800`・`longestWord: 300`、(c) `long: true`・`longColumnMin: 10`・`longest: 2800`・`longestWord: 300`'
+        mock: なし
+        expected: (a) `{true, 300, 300}`、(b) `{true, 300, 2800}`、(c) `{true, 300, 2800}`
     status: planned
   - name: distributeColumnWidths
     title: 表の列の幅を決める
