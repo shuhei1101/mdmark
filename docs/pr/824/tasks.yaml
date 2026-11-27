@@ -95,6 +95,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T06:38:42.125903+00:00'
   - process: 実装
-    status: todo
+    status: done
+    note: table-width・table-resize・table.logic・table.part・index.css を修正し、ストーリー LongCodeCells・SettingsOpenPhone を追加。単体テスト 2995 件 pass
+    updated_by: planner
+    updated_at: '2026-11-27T06:54:20.198137+00:00'
   - process: 結合テスト作成
     status: todo
