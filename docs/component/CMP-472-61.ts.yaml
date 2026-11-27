@@ -1123,7 +1123,7 @@ states:
       - name: pinMode
         value: through
   - name: Resizable
-    description: '`resize` の表。最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`role="separator"`）がある。つまみの線は、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に出し、ポインターが粗い画面では常に薄く出す。どの画面でも、つまみの押せる範囲は幅 24px・高さが見出しのセルの高さ'
+    description: '`resize` の表。最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`role="separator"`）がある。つまみの線は、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に出し、ポインターが粗い画面では常に薄く出す。どの画面でも、つまみの押せる範囲は幅 24px・高さが見出しのセルの高さ。操作を付けていないこのストーリーでも、つまみが `aria-valuenow`・`aria-valuetext`・`aria-valuemin`・`aria-valuemax` を持ち、axe-core の `aria-required-attr` が出ない'
     args:
       - name: kind
         value: data
@@ -1160,7 +1160,7 @@ states:
       - name: widths
         value: '[{"column":0,"width":200}]'
   - name: WideResized
-    description: '`width.mode` が `nowrap` の説明の列を列の最小幅まで狭めた。幅を指定した `nowrap` の列は折り返す'
+    description: '`width.mode` が `nowrap` の説明の列に、一番長い行の幅より狭い幅（110px）を指定した。説明の列は一番長い行の幅より狭くならず、折り返さず 1 行で出て、隣の更新日の列に重ならない'
     args:
       - name: kind
         value: data
@@ -1326,6 +1326,32 @@ states:
         value: 'true'
       - name: moveMenu
         value: '0'
+  - name: LongCodeCells
+    description: 空白を持たない 40 文字の行内のコードの列と、区切りの無い 40 文字の英数字の列を持つ表。どちらの列も一番長い行の幅以上で、セルの中身が隣の列に重ならず、表の中で横にスクロールする
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","resize"]'
+      - name: columns
+        value: '["名前","コード","ID","説明"]'
+      - name: rows
+        value: '[["列の幅","`table.long_column_min_width_em_value`","MDMARKCOLUMNWIDTHLONGIDENTIFIER20261127A","長文の列の最小の幅。指定が無ければ 45em"],["リサイズ","`features.diagram-resize`","MDMARKFEATUREDIAGRAMRESIZEID20261127BBB","図の高さを変えるリサイズハンドルのオン・オフ"]]'
+      - name: wide
+        value: '[1,2]'
+  - name: SettingsOpenPhone
+    description: 12 列の `reorder`・`columns` の表でテーブル設定のパネルを開いた。画面の幅が 48rem 未満（390x844）では、パネルの高さが画面の高さの 25% 以下で、列の一覧がパネルの中で縦にスクロールする
+    args:
+      - name: kind
+        value: data
+      - name: features
+        value: '["sort","pin","filter","columns","reorder"]'
+      - name: columns
+        value: '["名前","型","既定","必須","説明","例","初出の版","廃止の版","設定の場所","上書き","関連","備考"]'
+      - name: rows
+        value: '[["table.pin","string","each","","押した列を留める方法","through","0.9.0","","端末","✓","",""]]'
+      - name: openColumns
+        value: 'true'
 lead: Markdown の表を囲み、多段の見出し・行見出し・縦に結合したセルを描き、種類と `+機能`・`-機能` で決定した並べ替え・ピン止め・絞り込みのボタンと、絞り込みのドロワーを付ける。見出し行は面の色で分け、どの種類の表も、表がスクロールする場所（ページか、表を囲む縦にスクロールする区画）に残っている間はスクロールしてもその上端に留め、集計の行をその下端に留める。列ごとに中身の量から折り返すかと列の幅を決め、全ての列の最小の幅が収まらない表は表の中で横にスクロールさせる。
 args:
   - name: kind
@@ -1806,7 +1832,7 @@ accessibility:
   - 絞り込みのボタンは `「{列名}」で絞り込む` をスクリーンリーダー向けの名前に持ち、`aria-expanded`・`aria-controls` でドロワーの開閉を示す。絞り込み中は枠線と背景色を付けず、リンクの色（`--mdmark-color-link`）で塗った漏斗で示し、色と塗りの形状の両方で示す（色だけに頼らない）
   - ドロワーは開いたら最初の入力欄へフォーカスを移し、Esc で閉じてボタンへフォーカスを戻す
   - 'ピン止めのボタンは、`pinMode` が `each` なら `「{列名}」の列をピン止め`、`through` なら `「{列名}」の列までピン止め` をスクリーンリーダー向けの名前に持ち、`aria-pressed` で状態を示す（`each` は選んだ列のボタン、`through` は押した最も右の列のボタンを `true`）。表の見えている幅に収まらず留まっていない列のボタンは、名前と `title` に `（表の幅に収まらないため留まっていません）` を付け、破線のピンの形状でも示し、色だけに頼らない。押したボタンは枠線と背景色を付けず、リンクの色で塗ったピン（押す前は線のピン）で示す。ポインターを乗せられる端末（`(hover: hover)`）では、押していないボタンを見出しのセルにポインターかフォーカスがある間だけ `opacity` で見せ、それ以外の間もタブの順に残す。タッチの端末では常に見せる'
-  - 列の幅のつまみは `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` で、`「{列名}」の列の幅` をスクリーンリーダー向けの名前に持ち、`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で今の幅と範囲を示す（最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ）。←・→ キーで幅を変え、Enter で戻す。どの画面でも押せる幅を 24px にする
+  - 列の幅のつまみは `role="separator"`・`aria-orientation="vertical"`・`tabindex="0"` で、`「{列名}」の列の幅` をスクリーンリーダー向けの名前に持ち、`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で今の幅と範囲を示す（最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ）。つまみは描いた時点（操作を付ける前）から 4 つの属性を持ち、必須の属性を欠かさない。←・→ キーで幅を変え、Enter で戻す。どの画面でも押せる幅を 24px にする
   - 多段の見出しは、複数の列をまたぐセルを `scope="colgroup"`、1 列のセルを `scope="col"` にし、行見出しは `scope="row"` にする。結合で隠したセルも値を持ち、並べ替え・絞り込み・コピー・集計はその値で扱う
   - 真偽値の ✓ は `role="img"` と `aria-label="はい"`、空欄のセルはスクリーンリーダー向けの `いいえ` を持ち、外観の空欄とスクリーンリーダーを対応させる
   - 表は `tabindex="0"` で、キーボードで横にスクロールできる。留めた見出し行と集計の行は元のセルをずらしたもので複製を作らず、スクリーンリーダーとフォーカスの順は 1 組のまま
@@ -1831,39 +1857,11 @@ refs:
   - IF-472-34#constraints[表の列と行の色]
 status: planned
 notes:
-  HTML: '`<div class="mdmark-table" data-kind="{kind}" data-features="{features}"><table tabindex="0" aria-label="…"><thead><tr><th><span class="mdmark-th"><button class="mdmark-sort" type="button">{列名}</button><span class="mdmark-th-tools"><button class="mdmark-filter" type="button" aria-expanded="false" aria-controls="…"></button><button class="mdmark-pin" type="button" aria-pressed="false"></button></span></span></th></tr></thead><tbody>…<tr class="mdmark-table-empty" hidden><td colspan="…">一致する行がありません</td></tr></tbody></table><div class="mdmark-filter-drawer" role="dialog" hidden>…</div></div>`。
-
-    `collapse` が `closed`・`open` のときは表を `<details class="mdmark-table-details"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。
-
-    ドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「キーワード」の欄、`date` が「開始日」「終了日」の欄で、どれもタイトル `「{列名}」で絞り込む` と「絞り込みを解除」を持つ。
-
-    表の外観は確認ログの決定（拡張記法のモック・修正した表のモック）。
-
-    モックは `docs/mock/components/table/`。
-
-    `count`・`columns`・`reorder`・`total`・`copy` の表と `rawCsv` の表は、表の上にバーを配置せず、表を囲む要素の直下（横にスクロールする要素の外）に `<button class="mdmark-table-menu" type="button" data-state="idle" aria-expanded="false" aria-controls title="表のメニュー" aria-label="表のメニュー（{表示している行の数} / {全ての行の数} 件・{隠した列の数} 列を非表示）">{アイコン}<span class="mdmark-table-tool-badge" aria-hidden="true">{隠した列の数}</span></button>`（件数と隠した列が無い表の `aria-label` は `表のメニュー`）と、`<div class="mdmark-table-menu-panel" role="group" aria-label="表のメニュー" hidden>`（`count` のとき先頭に `<p class="mdmark-table-count">{表示している行の数} / {全ての行の数} 件を表示</p>`、続けて機能を持つ表だけに `<button class="mdmark-table-menu-item" type="button" data-action="{settings|totals|copy|raw}">{アイコン}<span>{テーブル設定|集計|表をコピー|元の CSV を表示}</span></button>` をこの順に並べ、`totals`・`copy` の項目は `aria-expanded`・`aria-controls` を持つ。項目が無いときはパネルに `tabindex="-1"` を付ける）を配置する。ボタンは見出し行の右上（最も右の見えている列の列の幅のつまみの左）に重ね、横にスクロールしても表の右端に残し、縦は見出し行と一緒に留める。最も右の見えている列の最下段の `th` は class `mdmark-th-menu-space` を持ち、ボタンの幅の分の右の余白を取る。表を囲む要素は、画面に出さない `<span class="mdmark-visually-hidden mdmark-table-count-live" aria-live="polite"></span>`（`count` のとき）と `<span class="mdmark-visually-hidden mdmark-table-status" role="status"></span>` を持ち、`<table>` の後ろに `<div class="mdmark-table-settings" role="dialog" aria-label="テーブル設定" hidden>`（`mdmark-table-settings-title`・`<ul class="mdmark-table-settings-list">` の列ごとの `<li class="mdmark-table-settings-item" data-column="{元の列の位置}" data-name="{列名}">`（`reorder` のとき `<button class="mdmark-table-settings-grip" aria-label="「{列名}」の列を並べ替える" aria-describedby aria-expanded aria-controls>`、`mdmark-table-settings-name`、`columns` のとき `<button class="mdmark-table-settings-eye" aria-pressed aria-label>`）・ピン止めと結合した見出しの範囲ごとの `<li class="mdmark-table-settings-group">` の見出し・`mdmark-table-settings-note`）、表のメニューの中の `<div class="mdmark-totals-menu mdmark-table-submenu" role="dialog" aria-label="表示する集計" hidden>`（タイトルと、`value` が計算のチェックボックス）、表のメニューの中の `<div class="mdmark-copy-menu mdmark-table-submenu" role="dialog" aria-label="コピーの形式" hidden>`（`<button class="mdmark-copy-format" data-format="{markdown|tsv}">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を配置する。
-
-    テーブル設定のパネルは、つまみの列の移動のメニュー `<div class="mdmark-table-move-menu" role="group" aria-label="「{列名}」の列の移動" hidden>`（`<button type="button" data-move="before">前へ移す</button>`・`<button type="button" data-move="after">後ろへ移す</button>`）を 1 つ持ち、開いたつまみの近くへ移す。
-
-    `rawCsv` の表は `<pre class="mdmark-raw" hidden>` の右上に `<button class="mdmark-raw-toggle" type="button" aria-label="表で表示" title="表で表示" hidden>` を重ね、元の CSV を出している間だけ出す。
-
-    コピーできないときのパネルは表を囲む要素の中の表の前の `<div class="mdmark-copy-panel" role="group" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class="mdmark-copy-panel-text" readonly rows="6">`）。
-
-    集計の行は計算ごとの `<tfoot><tr class="mdmark-table-total" data-total-kind="{計算}">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total="{計算}"` と `mdmark-total-value` を持つ。
-
-    行へのリンクは `<tr id>` の先頭のセルの `<span class="mdmark-row-link-cell">{中身}<a class="mdmark-row-anchor" href="#{ID}"><span class="mdmark-row-link-notice" role="status"></span>` で、強調する行は `data-target` を持ち、通知の要素はコピーの結果で `data-state` を持つ。
-
-    真偽値のセルは `<td class="mdmark-align-center" data-value="true"><span class="mdmark-check" role="img" aria-label="はい"><svg class="mdmark-icon">…</svg></span></td>` と `<td class="mdmark-align-center" data-value="false"><span class="mdmark-visually-hidden">いいえ</span></td>`。
-
-    アイコンは全て lucide（表のメニューの `ellipsis`・元の CSV を表示の `code-xml`・表で表示の `table`・テーブル設定の `settings-2`・つまみの `grip-vertical`・目の `eye`・`eye-off`・開閉の `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。
-
-    印刷では表のメニューのボタン・メニュー・パネル・行へのリンクのマーカーを出さず、件数（メニューの先頭の `{表示している行の数} / {全ての行の数} 件を表示`）を表の上に出し、`autoWidths` の幅を適用しない。
-
-    画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす。
-
-    `resize` の表の最下段の各 `th` は、末尾に `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「{列名}」の列の幅" aria-valuenow aria-valuetext aria-valuemin aria-valuemax>` を持つ'
+  HTML: "`<div class=\"mdmark-table\" data-kind=\"{kind}\" data-features=\"{features}\"><table tabindex=\"0\" aria-label=\"…\"><thead><tr><th><span class=\"mdmark-th\"><button class=\"mdmark-sort\" type=\"button\">{列名}</button><span class=\"mdmark-th-tools\"><button class=\"mdmark-filter\" type=\"button\" aria-expanded=\"false\" aria-controls=\"…\"></button><button class=\"mdmark-pin\" type=\"button\" aria-pressed=\"false\"></button></span></span></th></tr></thead><tbody>…<tr class=\"mdmark-table-empty\" hidden><td colspan=\"…\">一致する行がありません</td></tr></tbody></table><div class=\"mdmark-filter-drawer\" role=\"dialog\" hidden>…</div></div>`。\n`collapse` が `closed`・`open` のときは表を `<details class=\"mdmark-table-details\"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。\nドロワーは `select` が「候補を検索」の欄・チェックボックス・`一致する候補がありません`、`text` が「キーワード」の欄、`date` が「開始日」「終了日」の欄で、どれもタイトル `「{列名}」で絞り込む` と「絞り込みを解除」を持つ。\n表の外観は確認ログの決定（拡張記法のモック・修正した表のモック）。\nモックは `docs/mock/components/table/`。\n`count`・`columns`・`reorder`・`total`・`copy` の表と `rawCsv` の表は、表の上にバーを配置せず、表を囲む要素の直下（横にスクロールする要素の外）に `<button class=\"mdmark-table-menu\" type=\"button\" data-state=\"idle\" aria-expanded=\"false\" aria-controls title=\"表のメニュー\" aria-label=\"表のメニュー（{表示している行の数} / {全ての行の数} 件・{隠した列の数} 列を非表示）\">{アイコン}<span class=\"mdmark-table-tool-badge\" aria-hidden=\"true\">{隠した列の数}</span></button>`（件数と隠した列が無い表の `aria-label` は `表のメニュー`）と、`<div class=\"mdmark-table-menu-panel\" role=\"group\" aria-label=\"表のメニュー\" hidden>`（`count` のとき先頭に `<p class=\"mdmark-table-count\">{表示している行の数} / {全ての行の数} 件を表示</p>`、続けて機能を持つ表だけに `<button class=\"mdmark-table-menu-item\" type=\"button\" data-action=\"{settings|totals|copy|raw}\">{アイコン}<span>{テーブル設定|集計|表をコピー|元の CSV を表示}</span></button>` をこの順に並べ、`totals`・`copy` の項目は `aria-expanded`・`aria-controls` を持つ。項目が無いときはパネルに `tabindex=\"-1\"` を付ける）を配置する。ボタンは見出し行の右上（最も右の見えている列の列の幅のつまみの左）に重ね、横にスクロールしても表の右端に残し、縦は見出し行と一緒に留める。最も右の見えている列の最下段の `th` は class `mdmark-th-menu-space` を持ち、ボタンの幅の分の右の余白を取る。表を囲む要素は、画面に出さない `<span class=\"mdmark-visually-hidden mdmark-table-count-live\" aria-live=\"polite\"></span>`（`count` のとき）と `<span class=\"mdmark-visually-hidden mdmark-table-status\" role=\"status\"></span>` を持ち、`<table>` の後ろに `<div class=\"mdmark-table-settings\" role=\"dialog\" aria-label=\"テーブル設定\" hidden>`（`mdmark-table-settings-title`・`<ul class=\"mdmark-table-settings-list\">` の列ごとの `<li class=\"mdmark-table-settings-item\" data-column=\"{元の列の位置}\" data-name=\"{列名}\">`（`reorder` のとき `<button class=\"mdmark-table-settings-grip\" aria-label=\"「{列名}」の列を並べ替える\" aria-describedby aria-expanded aria-controls>`、`mdmark-table-settings-name`、`columns` のとき `<button class=\"mdmark-table-settings-eye\" aria-pressed aria-label>`）・ピン止めと結合した見出しの範囲ごとの `<li class=\"mdmark-table-settings-group\">` の見出し・`mdmark-table-settings-note`）、表のメニューの中の `<div class=\"mdmark-totals-menu mdmark-table-submenu\" role=\"dialog\" aria-label=\"表示する集計\" hidden>`（タイトルと、`value` が計算のチェックボックス）、表のメニューの中の `<div class=\"mdmark-copy-menu mdmark-table-submenu\" role=\"dialog\" aria-label=\"コピーの形式\" hidden>`（`<button class=\"mdmark-copy-format\" data-format=\"{markdown|tsv}\">` が `mdmark-copy-format-name` と `mdmark-copy-format-note` を持つ）を配置する。\nテーブル設定のパネルは、つまみの列の移動のメニュー `<div class=\"mdmark-table-move-menu\" role=\"group\" aria-label=\"「{列名}」の列の移動\" hidden>`（`<button type=\"button\" data-move=\"before\">前へ移す</button>`・`<button type=\"button\" data-move=\"after\">後ろへ移す</button>`）を 1 つ持ち、開いたつまみの近くへ移す。\n`rawCsv` の表は `<pre class=\"mdmark-raw\" hidden>` の右上に `<button class=\"mdmark-raw-toggle\" type=\"button\" aria-label=\"表で表示\" title=\"表で表示\" hidden>` を重ね、元の CSV を出している間だけ出す。\nコピーできないときのパネルは表を囲む要素の中の表の前の `<div class=\"mdmark-copy-panel\" role=\"group\" aria-labelledby>`（`mdmark-copy-panel-title`・`mdmark-copy-panel-close`・`mdmark-copy-panel-note`・`<textarea class=\"mdmark-copy-panel-text\" readonly rows=\"6\">`）。\n集計の行は計算ごとの `<tfoot><tr class=\"mdmark-table-total\" data-total-kind=\"{計算}\">` で、先頭のセルに `mdmark-total-name`、集計する列のセルが `data-total=\"{計算}\"` と `mdmark-total-value` を持つ。\n行へのリンクは `<tr id>` の先頭のセルの
+    `<span class=\"mdmark-row-link-cell\">{中身}<a class=\"mdmark-row-anchor\" href=\"#{ID}\"><span class=\"mdmark-row-link-notice\" role=\"status\"></span>` で、強調する行は `data-target` を持ち、通知の要素はコピーの結果で `data-state` を持つ。\n真偽値のセルは `<td class=\"mdmark-align-center\" data-value=\"true\"><span class=\"mdmark-check\" role=\"img\" aria-label=\"はい\"><svg class=\"mdmark-icon\">…</svg></span></td>` と `<td class=\"mdmark-align-center\" data-value=\"false\"><span class=\"mdmark-visually-hidden\">いいえ</span></td>`。\nアイコンは全て lucide（表のメニューの `ellipsis`・元の CSV を表示の `code-xml`・表で表示の `table`・テーブル設定の `settings-2`・つまみの `grip-vertical`・目の `eye`・`eye-off`・開閉の `chevron-down`・`columns-3`・`sigma`・`copy`・`check`・`circle-alert`・`chevron-down`・`x`・`link`）。\n印刷では表のメニューのボタン・メニュー・パネル・行へのリンクのマーカーを出さず、件数（メニューの先頭の `{表示している行の数} / {全ての行の数} 件を表示`）を表の上に出し、`autoWidths` の幅を適用しない。\n画面の幅が 768px 以下のときは、集計の行のセルの上下の余白を 0.2em に詰め、下端に留めた集計の行が本文の行を覆う高さを減らす。\n`resize` の表の最下段の各 `th` は、末尾に `<span class=\"mdmark-col-resize\" role=\"separator\" aria-orientation=\"vertical\" tabindex=\"0\" aria-label=\"「{列名}」の列の幅\" aria-valuenow aria-valuetext aria-valuemin aria-valuemax>` を持つ。部品が描く時点の値は、`widths`・`autoWidths` にその列の幅があればその幅（px の整数）を `aria-valuenow`・`aria-valuemin`・`aria-valuemax` に、`{幅}px` を `aria-valuetext` に入れ、無ければ 3 つとも `0`、`aria-valuetext` を `自動` にする。操作を付けた後は、今の幅・列の最小幅・上限で更新する。\n`width.mode` が `nowrap` の列（`mdmark-wide`）の `th`・`td` は `min-inline-size: max-content` を持ち、`widths` に一番長い行の幅より狭い幅を指定しても、一番長い行の幅より狭く描かない。\n画面の幅が 48rem 未満のときは、`.mdmark-table-settings` を `max-block-size: 25dvh` の縦の flex にし、`.mdmark-table-settings-list` を `overflow-y: auto`・`overscroll-behavior: contain` でパネルの中でスクロールさせる（タイトルと案内はスクロールしない）。フォーカスを移した項目は `scrollIntoView({ block: \"nearest\" })` で一覧の見えている範囲に入れる"
   列の幅: |-
     どの列も、見出しのセルの中身（列名・並べ替えのアイコン・ピン止めと絞り込みのボタン）を折り返さずに並べた幅を、最小の幅の下限にする（自動で決める幅も、読者がつまみで狭める幅も、この幅より狭くしない）。
+    読者がつまみで狭める幅は、さらに 1 つ目の図の最小の幅（折り返さない列は最も長い行の幅、折り返す列は最も長い半角の単語の幅を含む幅）より狭くしない。
     列ごとに、折り返すか・最小の幅・望む幅を決め（1 つ目の図）、全ての列の値から表の列の幅を決める（2 つ目の図）。表を描いた直後と、表の見える幅が変わったとき（`ResizeObserver`）だけ再計算し、並べ替え・絞り込み・列の表示の切り替えでは再計算しない。隠した列は数えない。列の表示を切り替えたときは、表示している列の幅を変えず、表の幅を表示している列の幅の合計にする。後から表示した列は、前に決めた幅があればその幅、無ければ測って 1 つ目の図の最小の幅にする。行の詳細の行のように列と 1 対 1 でない行は測らない。
 
     <!-- flow -->
@@ -1882,7 +1880,7 @@ notes:
         {"id": "q2", "kind": "question", "x": 334, "y": 420, "w": 320, "h": 164, "name": "`width.mode` が `nowrap` か"},
         {"id": "r2", "kind": "result", "x": 724, "y": 456, "w": 300, "h": 92, "name": "折り返さない列。最小の幅も望む幅も最も長い行の幅"},
         {"id": "q3", "kind": "question", "x": 334, "y": 640, "w": 320, "h": 164, "name": "`width.min`・`width.max` を記載した列か"},
-        {"id": "r3", "kind": "result", "x": 724, "y": 676, "w": 300, "h": 92, "name": "折り返す列。最小の幅は `width.min`（無ければ長文の列と同じ値）、最大の幅は `width.max`。最小の幅は最大の幅を超えない ※5"},
+        {"id": "r3", "kind": "result", "x": 724, "y": 676, "w": 300, "h": 92, "name": "折り返す列。最小の幅は `width.min`（無ければ長文の列と同じ値）と最も長い半角の単語の幅の広い方、最大の幅は `width.max` ※5"},
         {"id": "q4", "kind": "question", "x": 334, "y": 860, "w": 320, "h": 120, "name": "長文の列か ※1"},
         {"id": "r4", "kind": "result", "x": 724, "y": 874, "w": 300, "h": 92, "name": "折り返さない列。最小の幅も望む幅も最も長い行の幅"},
         {"id": "rf", "kind": "result", "x": 344, "y": 1036, "w": 300, "h": 112, "name": "折り返す列。最小の幅は `long_column_min` の em（既定 45）と最も長い半角の単語の幅の広い方で、最も長い行の幅を超えない ※2"}
@@ -1936,8 +1934,8 @@ notes:
     - ※2 最も長い半角の単語: 空白で区切った半角の英数字・記号の連なりで、途中で折り返せない幅。全角の文字はどこでも折り返せるので数えない。望む幅は最も長い行の幅を `width.max` で抑えた幅
     - ※3 望む幅: 折り返さない列は最も長い行の幅、折り返す列は最も長い行の幅（`width.max` で抑え、最小の幅を下回らない）。最小の幅は `width.max` を超えない
     - ※4 分け方: 表の見える幅から折り返さない列の幅を引いた残りを、折り返す列へ望む幅の比で分ける。最小の幅を下回る列は最小の幅で止め、止めた列を除いた残りの幅をほかの列へ再配分し、止める列が出なくなるまで繰り返す
-    - ※5 `width.max` との関係: 最小の幅（`width.min`、無ければ長文の列と同じ値）が `width.max` より広いときは、最小の幅を `width.max` にする。`width.min` と `width.max` の両方を記載して `min` が `max` より大きいときも同じく `width.max` を優先し、記載の警告にしない
-    - 幅の測り方: 最も長い行の幅は、セルの中に `white-space: nowrap` の見えない要素を配置して行の文字を入れ、`getBoundingClientRect().width` に、セルの左右の余白と枠線の幅と端数の 2px を加算して切り上げる。列ごとに切り上げる分（1 列 1px）を表の見える幅から引いてから分ける
+    - ※5 `width.max` との関係: 最小の幅（`width.min`、無ければ長文の列と同じ値）が `width.max` より広いときは、最小の幅を `width.max` にする。ただし最も長い半角の単語の幅は `width.max` より優先し、最小の幅も最大の幅もその幅より狭くしない。`width.min` と `width.max` の両方を記載して `min` が `max` より大きいときも同じく `width.max` を優先し、記載の警告にしない
+    - 幅の測り方: 最も長い行の幅は、セルの中に `white-space: nowrap` の見えない要素を配置して行の中身（行内のコード・バッジ・リンクなどの要素を複製し、セルと同じ書体・余白で描く。文字だけにしない）を入れ、`getBoundingClientRect().width` に、セルの左右の余白と枠線の幅と端数の 2px を加算して切り上げる。列ごとに切り上げる分（1 列 1px）を表の見える幅から引いてから分ける
     - 測る文字: 行はセルに見えている文字だけで作る。用語・脚注・注記のツールチップ（開いているかに関わらない）と画面に出さないスクリーンリーダー用の文字は、セルの中で幅を取らないため含めない
     - 行の数が多い表は、先頭から 200 行（`MEASURE_ROWS`）までを測る
     - モックは `docs/mock/pages/document/505/a-auto-width/` と `docs/mock/refs/505/assets/table-width.js`
