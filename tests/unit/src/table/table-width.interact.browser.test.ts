@@ -193,7 +193,10 @@ test("test_measure_columns_when_hidden_text", async () => {
   const longest0 = Math.max(head, expectedWidth(cell0, "ab"));
   const longest1 = Math.max(
     expectedWidth(head1, "列"),
-    expectedWidth(cell1, "cd1"),
+    expectedElementWidth(
+      cell1,
+      'cd<sup class="mdmark-fn-ref"><a class="mdmark-fn-link">1</a></sup>',
+    ),
   );
   const meaningWidth = expectedWidth(cell0, meaning);
   // 実行

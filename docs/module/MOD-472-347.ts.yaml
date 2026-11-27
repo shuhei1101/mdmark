@@ -57,7 +57,7 @@ functions:
         summary: ツールチップとスクリーンリーダー用の文字を測らない
         condition: '`font: 14px/1.5 monospace` の表で、列 0 の本文のセルが用語 `ab`（`.mdmark-term-tip` に `is-open` と 40 文字の意味）、列 1 の本文のセルが `cd` と脚注の参照（`.mdmark-visually-hidden` の `脚注 `・番号 `1`・40 文字の `.mdmark-fn-tip`）、列 0 の見出しの `.mdmark-th` が用語 `名前`（40 文字の `.mdmark-term-tip`）'
         mock: なし
-        expected: 列 0 の `longest` と `head` が、40 文字の意味の幅より狭く、`ab` と列名 `名前` の幅の広い方を元にした値。列 1 の `longest` が `cd1` の幅に余白と罫線と 2px を追加して切り上げた値。表の中のツールチップとスクリーンリーダー用の文字の要素が残っている
+        expected: 列 0 の `longest` と `head` が、40 文字の意味の幅より狭く、`ab` と列名 `名前` の幅の広い方を元にした値。列 1 の `longest` が、`cd` と脚注の参照の `sup`（スクリーンリーダー用の文字とツールチップを除いた複製）を折り返さずに配置した幅に余白と罫線と 2px を追加して切り上げた値。表の中のツールチップとスクリーンリーダー用の文字の要素が残っている
       - name: test_measure_columns_when_inline_code
         case: 正常
         summary: 行内のコードを、コードの書体と左右の余白を含めて測る
@@ -76,7 +76,7 @@ functions:
     description: |-
       `measureColumns` で測った幅を `columnBounds`・`distributeColumnWidths` に指定して列の幅を決め、見出しのセルの `--mdmark-auto-width`（外側の幅）と表の `--mdmark-auto-table-width` に入れ、表に `data-auto-width` を付ける。
       入れた幅より広く描かれた列（見出しのボタンの幅など）は、描かれた幅を最小の幅にして 1 回だけ再配分する。
-      どの列も、`measureColumns` が返却した `head`（見出しのセルの中身（`.mdmark-th`。列名・並べ替えのアイコン・ピン止めと絞り込みのボタン）が収まる外側の幅）を、初めて測るときも後から表示した列を測るときもそのまま使用し、見出しを列ごとに再計測しない。この幅を `columnBounds` の `min` の下限にし、つまみの最小幅として見出しのセルのインラインの `--mdmark-column-head-width`（`head` の値。`{幅}px`）にも入れる（`--mdmark-column-min-width` は、描いたときの幅とつまみで入れた幅を持つため使用しない）。列ごとの `columnBounds` の `min`（折り返さない列は最も長い行の幅、折り返す列は最も長い半角の単語の幅を含む幅）を、つまみの最小幅として見出しのセルのインラインの `--mdmark-column-content-width`（`{幅}px`）に入れる（`fixed` の列は前に入れた値を残す）。
+      どの列も、`measureColumns` が返却した `head`（見出しのセルの中身（`.mdmark-th`。列名・並べ替えのアイコン・ピン止めと絞り込みのボタン）が収まる外側の幅）を、初めて測るときも後から表示した列を測るときもそのまま使用し、見出しを列ごとに再計測しない。この幅を `columnBounds` の `min` の下限にし、つまみの最小幅として見出しのセルのインラインの `--mdmark-column-head-width`（`head` の値。`{幅}px`）にも入れる（`--mdmark-column-min-width` は、描いたときの幅とつまみで入れた幅を持つため使用しない）。列の中身が収まる幅（`columnBounds` が折り返さない列は `longest`、折り返す列は `longestWord`。`range.min`・長文の列の最小の幅は含めない）を、つまみの最小幅として見出しのセルのインラインの `--mdmark-column-content-width`（`{幅}px`）に入れる（`fixed` の列は前に入れた値を残す）。
       囲みの `data-long`（長文の列）と `data-width`（`{位置}:{min}-{max}`。空の側は持たない）を読み取り、列ごとに `columnBounds` を呼ぶ。
       最下段の見出しのセルが `mdmark-wide` の列は `nowrap`。
       見出しのセルが `is-resized` の列（読者がつまみで幅を変えた列）は、その `offsetWidth` を `min`・`wanted` に入れて `fixed` にする。

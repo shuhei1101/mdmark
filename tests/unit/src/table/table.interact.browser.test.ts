@@ -2087,7 +2087,7 @@ test("test_attach_tables_when_resized_with_unpinned", async () => {
   );
   const { root } = createRoot(
     [
-      '<!-- table: {"kind": "data", "columns": {"列3": {"width": {"mode": "nowrap"}}}} -->',
+      '<!-- table: {"kind": "data", "columns": {"列3": {"width": {"min": 20}}}} -->',
       "",
       `| ${names.join(" | ")} |`,
       `| ${names.map(() => "---").join(" | ")} |`,
