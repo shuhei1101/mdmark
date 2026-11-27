@@ -219,7 +219,7 @@ test("test_render_tree_bar", async () => {
     '<span class="mdmark-code-lang-name" aria-hidden="true">tree</span>',
   );
   expect(idle).toContain(
-    '<button class="mdmark-code-copy" type="button" data-state="idle">',
+    '<button class="mdmark-code-copy" type="button" data-state="idle"',
   );
   expect(idle).toContain("コピー");
   expect(idle).not.toContain("コピーしました");

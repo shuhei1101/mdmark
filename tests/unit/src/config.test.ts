@@ -85,6 +85,7 @@ test("test_resolve_config", async () => {
     mermaid: { url: DEFAULT_MERMAID_URL, theme: "mdmark", themeVariables: {} },
     sideToc: { mode: "hover" },
     media: { width: undefined },
+    code: { wrap: false },
     table: { pin: "each", pinDefault: false, longColumnMin: 45 },
     colorTheme: "dev-swiss",
     colorScheme: "auto",

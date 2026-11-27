@@ -225,12 +225,14 @@ test("test_render_code_copy", async () => {
   const idle = renderCodeCopy({ state: "idle" });
   const copied = renderCodeCopy({ state: "copied" });
   const failed = renderCodeCopy({ state: "failed" });
-  // 検証: 文言
+  // 検証: 文言（アイコンだけのボタンの名前）
   expect(idle.startsWith('<span class="mdmark-code-meta">')).toBe(true);
-  expect(innerHtml(idle, "mdmark-code-copy")).toContain("コピー");
-  expect(innerHtml(copied, "mdmark-code-copy")).toContain("コピーしました");
-  expect(innerHtml(failed, "mdmark-code-copy")).toContain(
-    "コピーできませんでした",
+  expect(findTag(idle, "mdmark-code-copy")).toContain('aria-label="コピー"');
+  expect(findTag(copied, "mdmark-code-copy")).toContain(
+    'aria-label="コピーしました"',
+  );
+  expect(findTag(failed, "mdmark-code-copy")).toContain(
+    'aria-label="コピーできませんでした"',
   );
   // 検証: スクリーンリーダー向けの要素
   expect(innerHtml(idle, "mdmark-code-status")).toBe("");

@@ -216,7 +216,7 @@ test("test_attach_file_trees_when_copied", async () => {
   expect(writeText).toHaveBeenCalledTimes(1);
   expect(writeText).toHaveBeenCalledWith(COPY_SOURCE);
   expect(button.dataset.state).toBe("copied");
-  expect(button.textContent).toContain("コピーしました");
+  expect(button.getAttribute("aria-label")).toBe("コピーしました");
   expect(tree.querySelector(".mdmark-code-status")?.textContent).toContain(
     "コピーしました",
   );
