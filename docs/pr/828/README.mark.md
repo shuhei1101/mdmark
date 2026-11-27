@@ -1,0 +1,1 @@
+# DOM に取り付ける前に描いた表の列の幅のつまみの aria-valuemin・aria-valuenow・aria-valuemax を、取り付けた後と窓の幅が変わった後に有限の値で入れ直す
