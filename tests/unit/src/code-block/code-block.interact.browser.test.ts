@@ -266,11 +266,23 @@ function wrapStates(root: HTMLElement): boolean[] {
   );
 }
 
+/** ファイルツリーに帯と操作を付ける（折り返しのボタンを配置する帯は attachFileTrees が付ける） */
+async function attachTrees(root: HTMLElement): Promise<void> {
+  const { attachFileTrees } = await import(
+    /* @vite-ignore */ new URL(
+      "../../../../src/tree/tree.interact.ts",
+      import.meta.url,
+    ).href
+  );
+  detachers.push(attachFileTrees(root));
+}
+
 // 押したブロックだけを切り替える（正常系）
 test("test_attach_code_wraps", async () => {
   // 準備
   const { attachCodeWraps } = await loadCodeBlocks();
   const { root } = createRoot(WRAP_DOC);
+  await attachTrees(root);
   detachers.push(attachCodeWraps(root, { defaultWrap: false }));
   const toggles = wrapToggles(root);
   const before = toggles.map((toggle) => toggle.getAttribute("aria-pressed"));
@@ -303,6 +315,7 @@ test("test_attach_code_wraps_when_default_wrap", async () => {
       "",
     ].join("\n"),
   );
+  await attachTrees(root);
   // 実行
   detachers.push(attachCodeWraps(root, { defaultWrap: true }));
   // 検証
@@ -318,6 +331,7 @@ test("test_attach_code_wraps_when_updated", async () => {
   const { attachCodeWraps } = await loadCodeBlocks();
   const partStates: PartStates = new Map();
   const first = createRoot(WRAP_DOC);
+  await attachTrees(first.root);
   const detach = attachCodeWraps(first.root, {
     defaultWrap: false,
     partStates,
@@ -327,6 +341,7 @@ test("test_attach_code_wraps_when_updated", async () => {
   first.root.remove();
   // 実行
   const second = createRoot(WRAP_DOC);
+  await attachTrees(second.root);
   detachers.push(
     attachCodeWraps(second.root, { defaultWrap: false, partStates }),
   );
