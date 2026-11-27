@@ -2604,9 +2604,10 @@ scenarios:
     setup:
       - name: mdmark を読み込むページ
         description: 正常シナリオと同じ
-        notes: 画面の幅は 1280px。利用側のページは、document に取り付けていない要素を描く先にして描かせ、描いた後にその要素を document に取り付ける
+        notes: 画面の幅は 1280px で取り付け、その後に窓の幅を 600px へ狭める。利用側のページは、document に取り付けていない要素を描く先にして描かせ、描いた後にその要素を document に取り付ける
       - name: 幅を変える表を持つ Markdown
         description: '`<!-- table: {"kind": "data"} -->` で、名前・説明の 2 列 3 行の表を囲んだ文書'
+        notes: どのセルも 20 文字以下で、表は 600px の幅でもはみ出さず、列の幅は狭める前と変わらない。列を留めないため、狭めた後に変わるのはつまみの上限（表を包む要素の見える幅）だけ
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -2619,17 +2620,19 @@ scenarios:
         participant M as mdmark
         P->>M: document に取り付けていない要素と設定と Markdown を指定して描かせる
         M-->>P: 列の見出しの右端につまみを持つ表を描く
-        P->>P: 描いた要素を document に取り付ける
+        P->>P: 描いた要素を 1280px の幅の document に取り付ける
         P-->>U: 今の幅と幅の範囲を示すつまみを持つ表
-        U->>P: 窓の幅を狭める
-        P-->>U: 狭めた後の幅と幅の範囲を示すつまみを持つ表
+        U->>P: 窓の幅を 600px へ狭める
+        M->>M: 表の見える幅が変わったので、つまみの値を更新する
+        P-->>U: 600px の幅の上限を示すつまみを持つ表
       ```
 
       <!-- /map -->
     expected:
-      - 取り付けた後、どのつまみにもフォーカス・ポインターを乗せる前から、どの列のつまみも `aria-valuenow`・`aria-valuemin`・`aria-valuemax` が有限の数（px の整数）で、`aria-valuenow` がその列の今の幅、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax`
-      - 窓の幅を狭めた後も、どの列のつまみも `aria-valuenow` が狭めた後の今の幅で、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax`
-      - 取り付けた後と窓の幅を狭めた後のどちらでも、axe の `aria-valid-attr-value` が出ない
+      - 取り付けた後、どのつまみにもフォーカス・ポインターを乗せる前から、どの列のつまみも `aria-valuenow`・`aria-valuemin`・`aria-valuemax` が有限の数（px の整数）で、`aria-valuenow` がその列の今の幅、`aria-valuemax` が表を包む要素の見える幅、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax`
+      - 600px へ狭めた後、どのつまみにもフォーカス・ポインターを乗せる前から、どの列のつまみも `aria-valuemax` が狭めた後の表を包む要素の見える幅になり、取り付けた直後の `aria-valuemax` より小さい
+      - 600px へ狭めた後も、どの列のつまみも `aria-valuenow` がその列の今の幅で、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax`
+      - 取り付けた後と 600px へ狭めた後のどちらでも、axe の `aria-valid-attr-value` が出ない
     test: test_normal_when_rendered_before_attached
 lead: '文書の作成者が `<!-- table: {JSON のオブジェクト} -->` 〜 `<!-- /table -->` で表を囲み、読者が描かれた表を見出し行を見ながらページのスクロールで読み込み、列で並べ替え・絞り込み・ピン止めし、閉じた表を開き、表と行の URL をコピーする。'
 primary_actor: 読者
