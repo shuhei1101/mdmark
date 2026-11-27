@@ -182,3 +182,9 @@ export const MapExportFailed: Story = {
     listable: true,
   },
 };
+
+export const ResizeMenu: Story = {
+  name: "ResizeMenu",
+  parameters: { server: { id: "diagram-frame" } },
+  args: { resizeMenu: true },
+};

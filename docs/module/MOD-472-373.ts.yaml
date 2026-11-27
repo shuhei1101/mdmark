@@ -1,0 +1,194 @@
+id: MOD-472-373
+visibility: internal
+title: ライブラリ本体 / 記法の共通 / step-menu.interact.ts
+lead: 動かす向き・大きさの項目を並べる popover のメニューの開閉と配置を受け持ち、ドラッグの代わりのメニューを変えるときに参照する。
+test_files:
+  - tests/unit/src/shared/step-menu.interact.browser.test.ts
+data_models:
+  - name: StepMenuItem
+    title: メニューの項目
+    container: src/shared/step-menu.interact.ts
+    summary: メニューの 1 つのボタンの文言・アイコン・押せるか・押したときの処理
+    properties:
+      - name: label
+        type: string
+        description: ボタンの文言（`上へ移す`・`高くする` など）
+      - name: icon
+        type: IconName
+        description: 文言の前に出すアイコン（`aria-hidden`）
+      - name: enabled
+        type: () => boolean
+        description: 押せるか。開いたときと項目を押した後に呼び、`false` の項目を `disabled` にする
+      - name: run
+        type: () => void
+        description: 押したときの処理（動かす・大きさを変える）
+    status: planned
+  - name: StepMenuHandle
+    title: 開いたメニューの操作
+    container: src/shared/step-menu.interact.ts
+    summary: 開いたメニューを置き直す・閉じる関数
+    properties:
+      - name: refresh
+        type: () => void
+        description: 項目の `disabled` をもう一度求め、開いた元の要素の今の位置に置き直す。フォーカスは同じ項目に残し、その項目が `disabled` になったら次の押せる項目へ移す
+      - name: close
+        type: '(options: { restoreFocus: boolean }) => void'
+        description: メニューを閉じて削除し、`restoreFocus` が `true` なら開いた元の要素へフォーカスを戻す
+    status: planned
+functions:
+  - name: openStepMenu
+    title: 向きのメニューを開く
+    kind: 関数
+    container: src/shared/step-menu.interact.ts
+    scope: internal
+    summary: 開いた元の要素のそばに popover の `role="group"` のメニューを開き、項目を押しても開いたままにする
+    description: |-
+      `opener` の後ろに `<div popover="auto" role="group" aria-label="{label}" class="mdmark-step-menu">` を配置し、`items` を `type="button"` のボタンで縦に並べて `showPopover` で開く。`opener` は `aria-expanded="true"` にする。
+
+      開いたら最初の押せる項目へフォーカスを移し、上下の矢印キーで押せる項目の間を移る。項目を押すと `run` を呼び、`refresh` と同じく置き直す。
+
+      Esc で閉じて `focusBack`（既定は `opener`）へフォーカスを戻し、Esc の `keydown` を止めて外側（ライトボックス・図の選択）へ伝えない。メニューの外を押して閉じたときはフォーカスを動かさない。閉じたら `opener` を `aria-expanded="false"` にしてメニューを削除する。
+
+      配置は `placeStepMenu` で決め、`position: fixed` の座標にする。`window` の `scroll`・`resize` で置き直す
+    args:
+      - name: options.opener
+        type: HTMLElement
+        required: true
+        description: 開いた元のボタン・ハンドル
+      - name: options.label
+        type: string
+        required: true
+        description: メニューの `aria-label`
+      - name: options.items
+        type: StepMenuItem[]
+        required: true
+        description: 並べる項目
+      - name: options.avoid
+        type: () => DOMRect[]
+        required: false
+        description: メニューを重ねない矩形（動かす要素・図のパネル）。`opener` の矩形は常に含める
+      - name: options.sides
+        type: ReadonlyArray<"below" | "above" | "right" | "left">
+        required: false
+        description: 試す側の順。既定は `below`・`above`・`right`・`left`
+      - name: options.align
+        type: '"start" | "center"'
+        required: false
+        description: 上下の候補の合わせ方。既定は `start`（図の高さのメニューは `center`）
+      - name: options.focusBack
+        type: HTMLElement
+        required: false
+        description: Esc で閉じたときにフォーカスを戻す要素。既定は `anchor` が返す要素
+      - name: options.anchor
+        type: () => HTMLElement | null
+        required: false
+        description: 配置の基準とフォーカスを戻す今の要素。再描画で `opener` が置き換わるとき（グループの角）に渡す。既定は `opener`
+      - name: options.container
+        type: HTMLElement
+        required: false
+        description: メニューを入れる要素（再描画で消えない図の表示する枠）。既定は `opener` の直後
+      - name: options.onClose
+        type: () => void
+        required: false
+        description: Esc・メニューの外の押下・`close` のどれで閉じたときも呼ぶ。呼び出し側が開いたメニューの参照を外す
+    returns:
+      type: StepMenuHandle
+      description: 開いたメニューの操作
+    side_effects: '`opener` の後ろに popover の要素を配置し、`window` の `scroll`・`resize` を受け取る（閉じたら解除する）'
+    status: planned
+    unit_tests:
+      - name: test_open_step_menu
+        case: 正常
+        summary: 開いたら最初の押せる項目へフォーカスし、押せない項目を disabled にする
+        condition: 1 つ目の `enabled` が `false`、2 つ目と 3 つ目が `true` の 3 項目で開く
+        expected: '`role="group"` のメニューが `:popover-open` で、1 つ目のボタンが `disabled`、2 つ目にフォーカスがあり、`opener` の `aria-expanded` が `true`'
+        mock: なし
+      - name: test_open_step_menu_when_item_pressed
+        case: 正常
+        summary: 項目を押しても開いたままで、押せなくなった項目からフォーカスを移す
+        condition: 2 つ目の項目の `run` が呼ばれると 2 つ目の `enabled` が `false` になるメニューで、2 つ目を押す
+        expected: '`run` が 1 回呼ばれ、メニューは開いたまま、2 つ目が `disabled` で 3 つ目にフォーカスがある'
+        mock: なし
+      - name: test_open_step_menu_when_escape
+        case: 正常
+        summary: Esc で閉じて元の要素へフォーカスを戻し、外へ Esc を伝えない
+        condition: 親の要素に Esc の `keydown` を記録する受け取りを付けて開き、メニューの中で Esc を押す
+        expected: メニューが削除され、`opener` にフォーカスがあり `aria-expanded` が `false`。親の受け取りが呼ばれない
+        mock: なし
+      - name: test_open_step_menu_when_arrow_keys
+        case: 正常
+        summary: 上下の矢印キーで押せる項目の間を移る
+        condition: 2 つ目が押せない 3 項目で開き、↓ を押す
+        expected: フォーカスが 1 つ目から 3 つ目へ移る
+        mock: なし
+      - name: test_open_step_menu_when_closed_by_escape_or_outside
+        case: 正常
+        summary: Esc でもメニューの外を押しても onClose を呼ぶ
+        condition: '`onClose` を渡して開き Esc を押す。もう一度開いて、メニューの外のボタンを押す'
+        expected: '`onClose` が 1 回目の後に 1 回、2 回目の後に 2 回呼ばれ、メニューが無い'
+        mock: なし
+  - name: placeStepMenu
+    title: メニューの位置を決める
+    kind: 関数
+    container: src/shared/step-menu.interact.ts
+    scope: internal
+    summary: 開いた元の要素の周りの候補の側のうち、画面に収まり避ける矩形と重ならない最初の側の座標を返す
+    description: '`sides` の順に、`anchor` の下（`align` が `start` なら左端、`center` なら中央を合わせる）・上・右（上端を合わせる）・左の候補を試し、`viewport` に収まり `avoid` のどの矩形とも重ならない最初の候補を返す。どの候補も当てはまらないときは、`viewport` に収まる最初の候補、それも無ければ `viewport` の中に座標を寄せた最初の候補を返す'
+    args:
+      - name: options.anchor
+        type: DOMRect
+        required: true
+        description: 開いた元の要素の矩形
+      - name: options.size
+        type: '{ width: number; height: number }'
+        required: true
+        description: メニューの大きさ
+      - name: options.avoid
+        type: DOMRect[]
+        required: true
+        description: 重ねない矩形
+      - name: options.viewport
+        type: '{ width: number; height: number }'
+        required: true
+        description: 画面の大きさ
+      - name: options.sides
+        type: ReadonlyArray<"below" | "above" | "right" | "left">
+        required: true
+        description: 試す側の順
+      - name: options.align
+        type: '"start" | "center"'
+        required: false
+        description: 上下の候補の合わせ方。既定は `start`
+    returns:
+      type: '{ x: number; y: number; side: "below" | "above" | "right" | "left" }'
+      description: メニューの左上の座標と選んだ側
+    side_effects: なし
+    status: planned
+    unit_tests:
+      - name: test_place_step_menu
+        case: 正常
+        summary: 下に入れば下に置く
+        condition: 画面 1280×800、anchor `(100, 100, 24, 24)`、大きさ `120×140`、avoid なし
+        expected: '`{ x: 100, y: 124, side: "below" }`'
+        mock: なし
+      - name: test_place_step_menu_when_below_overlaps
+        case: 正常
+        summary: 下が避ける矩形と重なり、上と左が画面に入らないときは右に配置する
+        condition: 画面 1280×800、anchor `(100, 100, 24, 24)`、大きさ `120×140`、avoid `(100, 130, 20, 100)`（below の 100〜220 × 124〜264 と重なり、right の 124〜244 × 100〜240 とは重ならない。above は y が -40 から、left は x が -20 からで画面に入らない）
+        expected: '`side` が `right`、`x` が 124、`y` が 100'
+        mock: なし
+      - name: test_place_step_menu_when_center
+        case: 正常
+        summary: center は中央を合わせ、下に入らないときは上に置く
+        condition: 'anchor `(400, 700, 200, 24)`、大きさ `160×120`、`align: center`、画面 1280×800'
+        expected: '`side` が `above`、`x` が 420、`y` が 580'
+        mock: なし
+      - name: test_place_step_menu_when_nothing_fits
+        case: 正常
+        summary: どの候補も当てはまらないときは画面に収まる最初の候補を返却する
+        condition: 画面 1280×800、anchor `(100, 100, 24, 24)`、大きさ `120×140`、avoid `(80, 130, 200, 100)`（below と right は avoid と重なり、above と left は画面に入らない）
+        expected: '`{ x: 100, y: 124, side: "below" }`'
+        mock: なし
+tags:
+  - name: topic:メニュー
+  - name: topic:ドラッグ

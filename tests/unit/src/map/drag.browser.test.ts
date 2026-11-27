@@ -609,3 +609,56 @@ test("test_apply_wire_shifts_when_points_changed", async () => {
   expect(wires[0]?.points).toEqual(layout.wires[0]?.points);
   expect(wireShifts["A->C"]).toBeUndefined();
 });
+
+// グループの上端に接したノードは上へ動かせない（正常系）
+test("test_movable_directions", async () => {
+  // 準備
+  const { movableDirections } = await loadDrag();
+  // 実行: グループの上端と左端に接したノード（groupLayout の A は中身の左上）
+  const directions = movableDirections({
+    layout: groupLayout(undefined),
+    state: STATE,
+    target: { node: "A" },
+  });
+  // 検証
+  expect([...directions].sort()).toEqual(["down", "right"]);
+});
+
+// 縦の区間は左右だけ（正常系）
+test("test_movable_directions_when_segment", async () => {
+  // 準備
+  const { movableDirections } = await loadDrag();
+  // 実行: L 字の線の縦の区間（LAYOUT の A->C の区間 1 は x=200 の縦の区間）
+  const directions = movableDirections({
+    layout: LAYOUT,
+    state: STATE,
+    target: { wire: "A->C" },
+  });
+  // 検証
+  expect([...directions].sort()).toEqual(["left", "right"]);
+});
+
+// 区間を指定すると、真ん中の区間ではなくその区間を動かす（正常系）
+test("test_move_by_key_when_segment_given", async () => {
+  // 準備
+  const { moveByKey, movableDirections } = await loadDrag();
+  // 実行: LAYOUT の A->C の区間 2 は y=140 の横の区間
+  const next = moveByKey({
+    layout: LAYOUT,
+    state: STATE,
+    target: { wire: "A->C", segment: 2 },
+    dx: 0,
+    dy: 8,
+  });
+  const directions = movableDirections({
+    layout: LAYOUT,
+    state: STATE,
+    target: { wire: "A->C", segment: 2 },
+  });
+  // 検証
+  expect(next?.wireShifts["A->C"]?.[0]).toMatchObject({
+    segment: 2,
+    offset: 8,
+  });
+  expect([...directions].sort()).toEqual(["down", "up"]);
+});

@@ -53,6 +53,12 @@ functions:
         condition: 部品設計の `Max`
         mock: なし
         expected: 拡大が `disabled`、倍率の文字が `500%`、移動のまとまり（`data-group="pan"`）が無い
+      - name: test_render_lightbox_when_move_button
+        case: 正常
+        summary: 上のバーの先頭に隠した移動のボタンを描く
+        condition: 画像 1 枚で描く
+        expected: 操作のボタンの並びの先頭に `hidden` を持つ `button.mdmark-lightbox-move`（`aria-haspopup="true"`・`aria-expanded="false"`・`aria-label="拡大した画像を移動"`・`title="移動"`、`move` のアイコン）がある
+        mock: なし
     status: planned
 lead: 'ライトボックスの HTML を受け持ち、ライトボックスの外観を変えるときに参照する。'
 tags:

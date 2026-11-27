@@ -1881,3 +1881,28 @@ test("test_render_for_mount_when_not_string", async () => {
     renderForMount(null as unknown as string),
   ).rejects.toBeInstanceOf(TypeError);
 });
+
+// 設定の code.wrap を折り返しの切り替えの既定に渡し、update でも同じ値を使用する（正常系）
+test("test_mount_when_code_wrap_given", async () => {
+  // 準備
+  const el = createElement();
+  const markdown = ["```ts", "const a = 1;", "```", ""].join("\n");
+  const handle = await mountTracked(el, {
+    markdown,
+    config: { code: { wrap: true } } as MountOptions["config"],
+  });
+  const states = (): [boolean, string | null] => {
+    const pre = el.querySelector(".mdmark-code pre");
+    const toggle = el.querySelector(".mdmark-code-wrap-toggle");
+    return [
+      pre?.classList.contains("mdmark-code-wrap") ?? false,
+      toggle?.getAttribute("aria-pressed") ?? null,
+    ];
+  };
+  const first = states();
+  // 実行
+  handle.update(markdown);
+  // 検証
+  expect(first).toEqual([true, "true"]);
+  expect(states()).toEqual([true, "true"]);
+});

@@ -1032,3 +1032,118 @@ test("test_attach_map_flow_when_wire_moved_beyond_edge", async () => {
   expect(Number(last[1])).toBe(c.offsetLeft + c.offsetWidth);
   expect(viewport.scrollLeft).toBe(before);
 });
+
+/** 要素の左上の近くを押し、`dx` px だけ右へ動かして離す（イベントは要素から window まで伝わる） */
+function pressAndRelease(element: Element, dx: number): void {
+  const box = element.getBoundingClientRect();
+  const point = (offset: number) => ({
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    clientX: box.right - 6 + offset,
+    clientY: box.bottom - 6,
+  });
+  element.dispatchEvent(new PointerEvent("pointerdown", point(0)));
+  element.dispatchEvent(new PointerEvent("pointermove", point(dx)));
+  element.dispatchEvent(new PointerEvent("pointerup", point(dx)));
+}
+
+/** 開いている向き・大きさのメニューの、文言が `label` のボタンを返却する（無ければ例外） */
+function stepItem(label: string): HTMLButtonElement {
+  const found = [
+    ...document.querySelectorAll<HTMLButtonElement>(".mdmark-step-menu button"),
+  ].find((item) => item.textContent?.trim() === label);
+  if (!found) {
+    throw new Error(`メニューの項目が無い: ${label}`);
+  }
+  return found;
+}
+
+/** 描いた図のノード `id` の位置 */
+function nodePosition(root: HTMLElement, id: string): [number, number] {
+  const node = root.querySelector<HTMLElement>(`[data-node="${id}"]`);
+  return [
+    Number.parseFloat(node?.style.left ?? "NaN"),
+    Number.parseFloat(node?.style.top ?? "NaN"),
+  ];
+}
+
+// 移動のメニューで Alt + 矢印キーと同じだけ動かす（正常系）
+test("test_attach_map_flow_when_move_menu", async () => {
+  // 準備: 1 つ目の図は Alt + ↓ で動かす
+  const byKey = await setUp();
+  const hit = byKey.querySelector<HTMLElement>(
+    '[data-node="data"] > .mdmark-diagram-node-hit',
+  ) as HTMLElement;
+  hit.focus();
+  hit.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
+  hit.dispatchEvent(
+    new KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      altKey: true,
+      bubbles: true,
+    }),
+  );
+  const expected = nodePosition(byKey, "data");
+  removeRoots();
+  sessionStorage.clear();
+  const root = await setUp();
+  // 実行: 動かさずに押して、移動のボタンのメニューの `下へ移す` を押す
+  pressAndRelease(root.querySelector('[data-node="data"]') as HTMLElement, 0);
+  const move = await vi.waitFor(() => {
+    const found = root.querySelector<HTMLButtonElement>("button.map-move");
+    expect(found?.hidden).toBe(false);
+    return found as HTMLButtonElement;
+  });
+  const label = move.getAttribute("aria-label");
+  move.click();
+  stepItem("下へ移す").click();
+  // 検証
+  await vi.waitFor(() => {
+    expect(nodePosition(root, "data")).toEqual(expected);
+  });
+  expect(label).toBe("「補足の検査」を移動");
+  expect(document.activeElement).toBe(stepItem("下へ移す"));
+});
+
+// グループの角を動かさずに押すと大きさのメニューを開く（正常系）
+test("test_attach_map_flow_when_resize_menu", async () => {
+  // 準備: 1 つ目の図は角で → を 1 回押す
+  const byKey = await setUp();
+  const corner = (root: HTMLElement) =>
+    root.querySelector<HTMLElement>(
+      '[data-group="read"] .map-group-resize',
+    ) as HTMLElement;
+  const width = (root: HTMLElement) =>
+    root
+      .querySelector<HTMLElement>('[data-group="read"]')
+      ?.getBoundingClientRect().width ?? Number.NaN;
+  corner(byKey).focus();
+  corner(byKey).dispatchEvent(
+    new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+  );
+  const expected = await vi.waitFor(() => {
+    const value = width(byKey);
+    expect(saved().groupSizes?.read).toBeDefined();
+    return value;
+  });
+  removeRoots();
+  sessionStorage.clear();
+  const root = await setUp();
+  // 実行: 角を 4px 動かして離す（ドラッグ）
+  pressAndRelease(corner(root), 4);
+  // 検証: ドラッグではメニューが開かない
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+  removeRoots();
+  sessionStorage.clear();
+  const still = await setUp();
+  // 実行: 角を 2px 動かして離し、`右へ広げる` を押す
+  pressAndRelease(corner(still), 2);
+  stepItem("右へ広げる").click();
+  // 検証
+  await vi.waitFor(() => {
+    expect(width(still)).toBe(expected);
+  });
+});

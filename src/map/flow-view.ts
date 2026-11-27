@@ -6,6 +6,11 @@ import {
 } from "../diagram/diagram.interact.ts";
 import { renderDiagramFrame } from "../diagram/diagram.part.ts";
 import type { ResolveIdLink } from "../render/sanitize.ts";
+import {
+  openStepMenu,
+  type StepMenuHandle,
+  type StepMenuItem,
+} from "../shared/step-menu.interact.ts";
 import { DRAG_THRESHOLD, zoomControlOf } from "../shared/zoom.interact.ts";
 import { linkAnnotationOwners, readMapAnnotations } from "./annotations.ts";
 import {
@@ -23,8 +28,11 @@ import {
 } from "./data.ts";
 import {
   applyWireShifts,
+  DRAG_THRESHOLD_PX,
   KEY_MOVE_PX,
   KEY_MOVE_PX_LARGE,
+  type MoveDirection,
+  movableDirections,
   moveByKey,
   nearestSegment,
   resizeByKey,
@@ -55,6 +63,7 @@ import {
   renderMapPackets,
   selectableName,
 } from "./map.part.ts";
+import { attachMoveButton, type MoveTarget } from "./move-button.ts";
 import type { MapArgs, MapKind, MapLine } from "./spec.ts";
 import {
   emptyMapState,
@@ -656,6 +665,95 @@ const wireKeyTarget = (element: Element | undefined): KeyTarget | undefined => {
   };
 };
 
+/** 移動のメニューで動かす要素（線は `segment` の区間。省くと真ん中の区間） */
+type MoveMenuTarget = Pick<KeyTarget, "node" | "group" | "wire"> & {
+  segment?: number;
+};
+
+/** 移動のメニューの項目: 文言・アイコン・向き・キーの刻みの移動量 */
+const MOVE_MENU_ITEMS: ReadonlyArray<{
+  label: string;
+  icon: "chevron-up" | "chevron-down" | "chevron-left" | "chevron-right";
+  direction: MoveDirection;
+  arrow: [number, number];
+}> = [
+  { label: "上へ移す", icon: "chevron-up", direction: "up", arrow: [0, -1] },
+  { label: "下へ移す", icon: "chevron-down", direction: "down", arrow: [0, 1] },
+  {
+    label: "左へ移す",
+    icon: "chevron-left",
+    direction: "left",
+    arrow: [-1, 0],
+  },
+  {
+    label: "右へ移す",
+    icon: "chevron-right",
+    direction: "right",
+    arrow: [1, 0],
+  },
+];
+
+/** グループの大きさのメニューの項目: 文言・アイコン・幅と高さの増減の向き */
+const RESIZE_MENU_ITEMS: ReadonlyArray<{
+  label: string;
+  icon: "chevron-up" | "chevron-down" | "chevron-left" | "chevron-right";
+  size: [number, number];
+}> = [
+  { label: "右へ広げる", icon: "chevron-right", size: [1, 0] },
+  { label: "下へ広げる", icon: "chevron-down", size: [0, 1] },
+  { label: "左へ狭める", icon: "chevron-left", size: [-1, 0] },
+  { label: "上へ狭める", icon: "chevron-up", size: [0, -1] },
+];
+
+/** 移動のボタンを重ねる要素と、描き直した後に探し直すセレクタ（ノード・グループのタイトルの行の帯・線の押せる帯） */
+const movedElementOf = (
+  element: Element,
+  keyTarget: KeyTarget,
+): { element: Element; selector: string } | undefined => {
+  const [own, selector] = keyTarget.node
+    ? [
+        element.closest(".mdmark-diagram-node[data-node]"),
+        `.mdmark-diagram-stage [data-node="${CSS.escape(keyTarget.node)}"]`,
+      ]
+    : keyTarget.group
+      ? [
+          element.closest(".map-group-bar"),
+          `[data-group="${CSS.escape(keyTarget.group)}"] .map-group-bar`,
+        ]
+      : wireSegmentOf(element, keyTarget.wire ?? "");
+  return own ? { element: own, selector } : undefined;
+};
+
+/** 押した線の区間の押せる帯と、描き直した後に探し直すセレクタ（区間の番号を含める） */
+const wireSegmentOf = (
+  element: Element,
+  wire: string,
+): [Element | null, string] => {
+  const segment = element.closest("rect.map-wire-hit-segment[data-segment]");
+  const base = `.map-wire-hit[data-wire="${CSS.escape(wire)}"]`;
+  return segment
+    ? [
+        segment,
+        `${base} rect.map-wire-hit-segment[data-segment="${segment.getAttribute("data-segment")}"]`,
+      ]
+    : [element.closest(".map-wire-hit"), base];
+};
+
+/** 図の表示する枠に移動のボタンを付ける（表示する枠が無ければ付けない） */
+const attachFlowMoveButton = (options: {
+  figure: HTMLElement;
+  viewportElement: HTMLElement | null;
+  pointedOf: (element: Element) => MoveTarget | undefined;
+}): ReturnType<typeof attachMoveButton> | undefined => {
+  const { figure, viewportElement, pointedOf } = options;
+  if (!viewportElement) return undefined;
+  return attachMoveButton({
+    viewport: viewportElement,
+    panel: () => figure.querySelector(".mdmark-diagram-tools"),
+    pointedOf,
+  });
+};
+
 /** キーで操作する要素 */
 const keyTargetOf = (element: Element | undefined): KeyTarget | undefined =>
   nodeKeyTarget(element) ?? groupKeyTarget(element) ?? wireKeyTarget(element);
@@ -1052,10 +1150,13 @@ export const attachMapFlow = (
     replaceTips(figure, part.tips);
     mounted.linkOwners();
   };
+  /** 移動のボタン（描き直した後に置き直す） */
+  let moveControl: ReturnType<typeof attachMoveButton> | undefined;
   /** 状態から配置し直して、図の中身とツールを描き直す */
   const refresh = (relayout = true) => {
     if (relayout) layout = place();
     drawStage();
+    moveControl?.refresh();
     for (const item of tools()) {
       const button = figure.querySelector<HTMLButtonElement>(
         `[data-tool="${item.name}"]`,
@@ -1467,6 +1568,141 @@ export const attachMapFlow = (
   figure.addEventListener("click", onClick);
   figure.addEventListener("pointerdown", onPointerDown);
   figure.addEventListener("keydown", onKeyDown);
+
+  // ドラッグしない移動: 動かさずに押した要素に移動のボタンを重ね、向きのメニューで Alt + 矢印キーと同じだけ動かす
+  const shiftedLayout = () => ({
+    ...layout,
+    wires: applyWireShifts(layout, state).wires,
+  });
+  const nodeNameOf = (id: string): string =>
+    layout.nodes.find((node) => node.id === id)?.lines.join(" ") ??
+    layout.groups.find((group) => group.id === id)?.title ??
+    id;
+  /** 動かす線の区間（省くと真ん中の区間）と直角の向き（ノード・グループは 4 つの向き全て） */
+  const directionsOf = (target: MoveMenuTarget): ReadonlySet<MoveDirection> => {
+    const wire = shiftedLayout().wires.find((item) => item.id === target.wire);
+    if (!wire) return new Set(["up", "down", "left", "right"]);
+    const at = target.segment ?? Math.floor((wire.points.length - 2) / 2);
+    const [a, b] = [wire.points[at], wire.points[at + 1]];
+    return a && b && a[1] === b[1]
+      ? new Set(["up", "down"])
+      : new Set(["left", "right"]);
+  };
+  const moveItemsOf = (target: MoveMenuTarget): StepMenuItem[] =>
+    MOVE_MENU_ITEMS.filter((item) =>
+      directionsOf(target).has(item.direction),
+    ).map((item) => ({
+      label: item.label,
+      icon: item.icon,
+      enabled: () =>
+        movableDirections({ layout: shiftedLayout(), state, target }).has(
+          item.direction,
+        ),
+      run: () => {
+        const next = moveByKey({
+          layout: shiftedLayout(),
+          state,
+          target,
+          dx: item.arrow[0] * KEY_MOVE_PX,
+          dy: item.arrow[1] * KEY_MOVE_PX,
+        });
+        if (next) change(next);
+      },
+    }));
+  /** 押した要素の名前（線は線のラベルか両端のノードの名前） */
+  const targetNameOf = (keyTarget: KeyTarget): string | undefined => {
+    if (keyTarget.node) return nodeNameOf(keyTarget.node);
+    if (keyTarget.group) return nodeNameOf(keyTarget.group);
+    const wire = layout.wires.find((item) => item.id === keyTarget.wire);
+    if (!wire) return undefined;
+    return wire.label ?? `${nodeNameOf(wire.from)}→${nodeNameOf(wire.to)}`;
+  };
+  const pointedOf = (element: Element): MoveTarget | undefined => {
+    if (element.closest(".map-group-resize")) return undefined;
+    const keyTarget = keyTargetOf(element);
+    const own = keyTarget ? movedElementOf(element, keyTarget) : undefined;
+    const name = keyTarget ? targetNameOf(keyTarget) : undefined;
+    if (!keyTarget || !own || name === undefined) return undefined;
+    // 線は押した区間を動かす
+    const segment = own.element.getAttribute("data-segment");
+    return {
+      element: own.element,
+      name,
+      items: moveItemsOf(
+        segment === null
+          ? keyTarget
+          : { ...keyTarget, segment: Number(segment) },
+      ),
+      selector: own.selector,
+    };
+  };
+  const viewportElement = figure.querySelector<HTMLElement>(
+    ".mdmark-diagram-viewport",
+  );
+  moveControl = attachFlowMoveButton({ figure, viewportElement, pointedOf });
+
+  // グループの角を動かさずに押す: 角の矢印キーと同じだけ大きさを変えるメニューを開く
+  let resizeMenu: StepMenuHandle | undefined;
+  let cornerDown: { x: number; y: number; group: string } | undefined;
+  const openResizeMenu = (group: string, opener: HTMLElement) => {
+    resizeMenu?.close({ restoreFocus: false });
+    const selector = `[data-group="${CSS.escape(group)}"] .map-group-resize`;
+    const resizeOf = (size: [number, number]) =>
+      resizeByKey({
+        layout,
+        state,
+        group,
+        dw: size[0] * KEY_MOVE_PX,
+        dh: size[1] * KEY_MOVE_PX,
+      });
+    const opened = openStepMenu({
+      opener,
+      label: `「${nodeNameOf(group)}」の大きさ`,
+      anchor: () => figure.querySelector<HTMLElement>(selector),
+      ...(viewportElement ? { container: viewportElement } : {}),
+      onClose: () => {
+        if (resizeMenu === opened) resizeMenu = undefined;
+      },
+      items: RESIZE_MENU_ITEMS.map((item) => ({
+        label: item.label,
+        icon: item.icon,
+        enabled: () => resizeOf(item.size) !== undefined,
+        run: () => {
+          const next = resizeOf(item.size);
+          if (next) change(next);
+          opened.refresh();
+        },
+      })),
+    });
+    resizeMenu = opened;
+  };
+  const onCornerDown = (event: PointerEvent) => {
+    const target = event.target instanceof Element ? event.target : undefined;
+    const group = target
+      ?.closest(".map-group-resize")
+      ?.closest("[data-group]")
+      ?.getAttribute("data-group");
+    cornerDown =
+      group && event.button === 0
+        ? { x: event.clientX, y: event.clientY, group }
+        : undefined;
+  };
+  const onCornerUp = (event: PointerEvent) => {
+    const pressed = cornerDown;
+    cornerDown = undefined;
+    if (
+      !pressed ||
+      Math.hypot(event.clientX - pressed.x, event.clientY - pressed.y) >=
+        DRAG_THRESHOLD_PX
+    )
+      return;
+    const opener = figure.querySelector<HTMLElement>(
+      `[data-group="${CSS.escape(pressed.group)}"] .map-group-resize`,
+    );
+    if (opener) openResizeMenu(pressed.group, opener);
+  };
+  figure.addEventListener("pointerdown", onCornerDown, true);
+  figure.addEventListener("pointerup", onCornerUp, true);
   const onFocusIn = (event: FocusEvent) => {
     const target = event.target instanceof Element ? event.target : undefined;
     const id = target?.closest(".map-wire-hit")?.getAttribute("data-wire");
@@ -1556,6 +1792,10 @@ export const attachMapFlow = (
       figure.removeEventListener("click", onClick);
       figure.removeEventListener("pointerdown", onPointerDown);
       figure.removeEventListener("keydown", onKeyDown);
+      figure.removeEventListener("pointerdown", onCornerDown, true);
+      figure.removeEventListener("pointerup", onCornerUp, true);
+      resizeMenu?.close({ restoreFocus: false });
+      moveControl?.detach();
       figure.removeEventListener("focusin", onFocusIn);
       figure.removeEventListener("focusout", onFocusOut);
       figure.removeEventListener("pointermove", onPointerMove);

@@ -106,13 +106,21 @@ const COPY_LABELS = {
   failed: { text: "コピーできませんでした", icon: "circle-alert" },
 } as const;
 
-/** コードブロックの帯の右端に配置する、コピーのボタンとスクリーンリーダー向けの要素を返却する。`copied`・`failed` のときはスクリーンリーダー向けの要素に `コードを{文言}` を入れる */
+/** コードブロックの帯の右端に配置する、文言を画面に出さないアイコンだけのコピーのボタン（状態の文言を `aria-label` と `title` に持つ）とスクリーンリーダー向けの要素を返却する。`copied`・`failed` のときはスクリーンリーダー向けの要素に `コードを{文言}` を入れる */
 export function renderCodeCopy(options: { state: CodeCopyState }): string {
   const { state } = options;
   const { text, icon } = COPY_LABELS[state];
   const status = state === "idle" ? "" : `コードを${text}`;
-  return `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="${state}">${iconSvg(icon)}${text}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status">${status}</span></span>`;
+  return `<span class="mdmark-code-meta"><button class="mdmark-code-copy" type="button" data-state="${state}" aria-label="${text}" title="${text}">${iconSvg(icon)}</button><span class="mdmark-visually-hidden mdmark-code-status" role="status">${status}</span></span>`;
 }
+
+/** コードブロックとファイルツリーの帯のコピーのボタンの前に配置する、アイコンだけの折り返しのトグルボタン。名前は押した状態でも変えない */
+export function renderCodeWrapToggle(options: { pressed: boolean }): string {
+  return `<button class="mdmark-code-wrap-toggle" type="button" aria-pressed="${options.pressed}" aria-label="${WRAP_TOGGLE_LABEL}" title="${WRAP_TOGGLE_LABEL}">${iconSvg("wrap-text")}</button>`;
+}
+
+/** 折り返しのボタンの名前とツールチップ */
+const WRAP_TOGGLE_LABEL = "画面の端で折り返す";
 
 /** 言語 markdown のコードブロックの帯のコピーのボタンの左に配置する、描いた結果と元の Markdown を切り替える Raw のボタン。押した状態は元の Markdown を出している状態 */
 export function renderCodeRaw(options: { pressed: boolean }): string {

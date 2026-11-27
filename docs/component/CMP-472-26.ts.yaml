@@ -149,7 +149,7 @@ states:
       - name: interactive
         value: 'true'
   - name: Copied
-    description: コピーした。ボタンが `check` のアイコンと `コピーしました`
+    description: コピーした。ボタンのアイコンが `check` で、スクリーンリーダー向けの名前とツールチップが `コピーしました`。文言は画面に出さない
     args:
       - name: nodes
         value: '[{"name":"src/","children":[{"name":"index.ts"}]}]'
@@ -175,7 +175,7 @@ states:
       - name: copyFallback
         value: 'true'
   - name: Wrap
-    description: '`wrap` を持ち、名前と注釈が長く幅を超える。名前は名前の列の中で折り返し、注釈は名前の下の行に名前の頭から出す。ツリーに横スクロールが出ない（合意したモック `docs/mock/refs/328/assets/wrap.css`）'
+    description: '`wrap` を持ち、名前と注釈が長く幅を超える。名前は名前の列の中で折り返し、注釈は名前の下の行に名前の頭から出す。ツリーに横スクロールが出ない（合意したモック `docs/mock/refs/328/assets/wrap.css`）。帯の折り返しのボタンは押した状態'
     args:
       - name: nodes
         value: '[{"name":"very-long-folder-name-for-the-generated-design-documents/","children":[{"name":"a-file-name-that-is-much-longer-than-the-box-width-on-phones.config.ts","note":"狭い幅では注釈も項目の中で折り返す"}]}]'
@@ -222,7 +222,23 @@ states:
         value: '""'
     notes:
       定義: モック `docs/mock/components/file-tree-plain-lines/` の「言語なしの ASCII の罫線」
-lead: 言語 `tree` のコードブロックと、罫線の行を 2 行以上持つ言語が `tree` でないコードブロックに罫線で記載したフォルダ構成を、フォルダとファイルの入れ子のツリーにする。`render` は全ての項目を開いて出し、`mount` がコードブロックと同じ部品の帯（記載した言語のラベルとコピーボタン）とフォルダの開閉を付ける。
+  - name: WrapNotes
+    args:
+      - name: nodes
+        value: '[{"name":"docs/","note":"導入と使い方の手順を、作業の順に並べたページのまとまり。ここに長い注釈を書くと画面の端を越える","children":[{"name":"使い方/","note":"導入と使い方の手順","children":[{"name":"文書を描く.md","note":"mount を呼んで要素の中に Markdown を描く手順"}]}]}]'
+      - name: source
+        value: |-
+          docs/                # 導入と使い方の手順を、作業の順に並べたページのまとまり。ここに長い注釈を書くと画面の端を越える
+          └── 使い方/          # 導入と使い方の手順
+              └── 文書を描く.md   # mount を呼んで要素の中に Markdown を描く手順
+      - name: open
+        value: all
+      - name: interactive
+        value: 'true'
+      - name: wrap
+        value: 'true'
+    description: '`wrap` を持ち、注釈を持つフォルダが続く。狭い幅（390px）でも、フォルダの名前（`docs/`・`使い方/`）は 1 文字ずつに折れず、名前の要素の幅は名前の最も長い 1 単語の幅以上。長い注釈は名前の下の行に名前の頭から出し、名前と重ならない（今の不具合 #822 の修正の確認）'
+lead: 言語 `tree` のコードブロックと、罫線の行を 2 行以上持つ言語が `tree` でないコードブロックに罫線で記載したフォルダ構成を、フォルダとファイルの入れ子のツリーにする。`render` は全ての項目を開いて出し、`mount` がコードブロックと同じ部品の帯（記載した言語のラベルと、折り返しのボタンとコピーボタン）とフォルダの開閉を付ける。
 args:
   - name: nodes
     type: オブジェクトの配列
@@ -313,7 +329,7 @@ accessibility:
   - フォルダとファイルは名前（フォルダは末尾の `/`）でも見分けられ、アイコンとその色だけに頼らない
   - 開閉のボタンは `type="button"` で、`aria-expanded` と入れ子の `ul` を指す `aria-controls` を持ち、Tab で移って Enter・Space で開閉する
   - 「ほかにもある」の項目はアイコンにスクリーンリーダーの文 `ほかにもあります` を添える
-  - コピーの結果はボタンの文言と `role="status"` の要素で通知する
+  - コピーのボタンと折り返しのボタンは、部品設計『コードブロック』と同じ文言を画面に出さないアイコンだけのボタンで、コピーの結果はアイコンとスクリーンリーダー向けの名前と `role="status"` の要素で通知する。折り返しのボタンの名前・`aria-pressed`・押した状態の外観・キー操作はコードブロックと同じ
 refs:
   - IF-472-34#constraints[ステップ・ファイルツリー・バッジ]
 status: planned

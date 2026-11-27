@@ -255,6 +255,8 @@ export function attachZoom(options: {
   const apply = (scale: number): void => {
     state.scale = scale;
     content.style.transform = `scale(${scale})`;
+    // 倍率で縮む押せる部品が、倍率の逆数で大きさを補えるようにする
+    content.style.setProperty("--mdmark-zoom", String(scale));
     sizer.style.width = `${size.width * scale}px`;
     sizer.style.height = `${size.height * scale}px`;
     onChange?.(scale, state.fit);

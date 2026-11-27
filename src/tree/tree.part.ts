@@ -122,10 +122,13 @@ export function folderOpenByDefault(
   return depth < Number(open);
 }
 
-/** コピーのボタンの中身（アイコンと文言）の HTML を返却する */
-export function renderTreeCopyContent(state: TreeCopyState): string {
+/** コピーのボタンの中身（文言を画面に出さないアイコン）の HTML と、名前とツールチップに入れる文言を返却する */
+export function renderTreeCopyContent(state: TreeCopyState): {
+  html: string;
+  label: string;
+} {
   const label = COPY_LABELS[state];
-  return `${iconSvg(label.icon)}${label.text}`;
+  return { html: iconSvg(label.icon), label: label.text };
 }
 
 /** ツリーの上に配置する帯（記載した言語のラベル・コピーのボタン・スクリーンリーダーの通知）の HTML を返却する。中身は部品『コードブロック』の帯と共通 */

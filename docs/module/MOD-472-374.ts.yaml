@@ -1,0 +1,92 @@
+id: MOD-472-374
+visibility: internal
+title: ライブラリ本体 / map / 描画と操作 / move-button.ts
+lead: map の図で最後に動かさずに押した要素に重ねる移動のボタンを受け持ち、map のドラッグしない移動を変えるときに参照する。
+test_files:
+  - tests/unit/src/map/move-button.browser.test.ts
+data_models:
+  - name: MoveTarget
+    title: 動かす要素
+    container: src/map/move-button.ts
+    summary: 移動のボタンを重ねる要素と、ボタンで開くメニューの項目
+    properties:
+      - name: element
+        type: Element
+        description: ボタンを内側の角に重ねる要素（ノード・グループのタイトルの行・線の区間の押せる帯・参加者の箱）
+      - name: name
+        type: string
+        description: 表示名。ボタンの名前 `「{name}」を移動` とメニューの名前 `「{name}」の移動` に使用する
+      - name: items
+        type: StepMenuItem[]
+        description: メニューの項目（向きごとに `moveByKey` を呼ぶ）
+      - name: selector
+        type: string | undefined
+        description: 再描画で要素が置き換わったときに、表示する枠の中から同じ要素を探し直すセレクタ
+    status: planned
+functions:
+  - name: attachMoveButton
+    title: map の図に移動のボタンを付ける
+    kind: 関数
+    container: src/map/move-button.ts
+    scope: internal
+    summary: 動かさずに押した要素の内側の右上（図のパネルと重なるときは左上）に移動のボタンを重ね、押すと向きのメニューを開く
+    description: |-
+      `viewport` の `pointerdown`・`pointerup`（キャプチャーフェーズ）で押した位置の動きを測り、`DRAG_THRESHOLD_PX` 未満のときだけ、前に押した要素のボタンとメニューを隠してから、次の描画の後に `pointedOf` で押した要素を求める。要素があれば lucide の `move` のアイコンだけの `<button type="button" class="map-move" aria-haspopup="true" aria-expanded="false" aria-label="「{name}」を移動" title="移動">` をその要素の内側の右上に置き、`panel` の矩形と重なるときは左上に置く。要素が無いときと `hide` を呼んだときはボタンを `hidden` にして開いたメニューを閉じる。
+
+      ボタンを押すと `openStepMenu` で `「{name}」の移動` のメニューを開き、動かす要素・ボタン・`panel` を避ける。再描画で要素が置き換わったときは `refresh` で同じ要素を探し直し、ボタンと開いたメニューを置き直す（メニューのフォーカスは同じ項目に残す）
+    args:
+      - name: options.viewport
+        type: HTMLElement
+        required: true
+        description: 図の表示する枠。ボタンをこの中に置き、スクロールに付いて動かす
+      - name: options.panel
+        type: () => Element | null
+        required: true
+        description: 図の右上のパネル
+      - name: options.pointedOf
+        type: '(target: Element) => MoveTarget | undefined'
+        required: true
+        description: 動かさずに押した要素から動かす要素を求める関数。ボタンを出さない要素（メッセージの線・図の空いた場所）は `undefined`
+    returns:
+      type: '{ refresh: () => void; hide: () => void; detach: () => void }'
+      description: 置き直す・隠す・取り除く関数
+    callees:
+      - MOD-472-373#functions[openStepMenu]
+      - MOD-472-180#functions[iconSvg]
+    side_effects: 表示する枠に移動のボタンを配置し、`pointerdown`・`pointerup` を受け取る
+    status: planned
+    unit_tests:
+      - name: test_attach_move_button
+        case: 正常
+        summary: 動かさずに押した要素の右上にボタンを出す
+        condition: '`(40, 40, 120, 48)` の要素を 2px 動かして離し、`pointedOf` がその要素と名前 `注文を受ける` を返す'
+        expected: ボタンが `hidden` を持たず、右端と上端が要素の右端と上端の内側にあり、`aria-label` が `「注文を受ける」を移動`
+        mock: なし
+      - name: test_attach_move_button_when_dragged
+        case: 正常
+        summary: ドラッグしたときは出さない
+        condition: 要素を 4px 動かして離す
+        expected: ボタンが `hidden` で、`pointedOf` が呼ばれない
+        mock: なし
+      - name: test_attach_move_button_when_near_panel
+        case: 正常
+        summary: パネルと重なるときは左上に置く
+        condition: 要素の右上の角が `panel` の矩形に入る
+        expected: ボタンの左端と上端が要素の左端と上端の内側にあり、`panel` と重ならない
+        mock: なし
+      - name: test_attach_move_button_when_hidden
+        case: 正常
+        summary: 空いた場所を押すとボタンを隠しメニューを閉じる
+        condition: ボタンでメニューを開いた後、`pointedOf` が `undefined` を返す場所を押す
+        expected: ボタンが `hidden` で、メニューが無い
+        mock: なし
+      - name: test_attach_move_button_when_reopened
+        case: 正常
+        summary: Esc やメニューの外の押下で閉じた後も、ボタンを押すとメニューを開く
+        condition: ボタンでメニューを開いて Esc で閉じ、ボタンを押す。図の外の要素を押して閉じ、ボタンを押す
+        expected: どちらの後も 1 回の押下でメニューが開く
+        mock: なし
+tags:
+  - name: topic:map
+  - name: topic:ドラッグ
+  - name: topic:メニュー

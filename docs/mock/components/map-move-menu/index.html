@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>map-move-menu（map の図のドラッグしない移動のボタンとメニュー） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #820 で足すボタンとメニュー -->
+  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=7">
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / map-move-menu
+  </nav>
+  <main class="mock820-catalog" id="catalog">
+    <h1>map-move-menu</h1>
+    <p class="state-note">配布物の mount で描いた実物の map の図に、最後に動かさずに押した要素（ノード・グループのタイトルの行と縁・線の区間・参加者の箱）の内側の角へ「移動」のボタンを重ねている（右上が図の右上のパネルと重なるときは左上）。メニューは、動かす要素・移動のボタン・パネルと重ならない側（下・上・右・左の順）に開く。ボタンで開くメニューの項目は、Alt + 矢印キーと同じ刻みで動かす。グループの右下の角は、動かさずに押すと大きさのメニューを開く。メニューの項目は、モックではどの向きも押せる（実装では動ける余地の無い向きを押せなくする）</p>
+  </main>
+  <script type="module">
+    import { draw, attachMoveMenu } from "../../refs/820/assets/mock.js?v=7";
+
+    const FLOW = `<!-- map: {"title": "注文の流れ"} -->
+
+\`\`\`mermaid
+flowchart LR
+  subgraph shop[店舗]
+    subgraph front[受付]
+      order[注文を受ける]
+      pay[支払う]
+    end
+    stock[在庫]
+  end
+  ship[配送]
+  order --> pay
+  pay --> stock
+  stock --> ship
+  order --> ship
+\`\`\`
+
+<!-- /map -->
+`;
+    const SEQUENCE = `<!-- map: {"title": "注文のやり取り"} -->
+
+\`\`\`mermaid
+sequenceDiagram
+  actor U as 利用者
+  participant A as 画面
+  participant B as API
+  participant C as 在庫
+  participant D as 配送
+  U->>A: 注文する
+  A->>B: 注文を登録する
+  B->>C: 在庫を引き当てる
+  B->>D: 配送を依頼する
+  D-->>U: 届ける
+\`\`\`
+
+<!-- /map -->
+`;
+    const catalog = document.getElementById("catalog");
+    const add = (tag, text, className) => catalog.append(Object.assign(document.createElement(tag), { textContent: text, ...(className ? { className } : {}) }));
+    const diagram = (markdown, narrow) => {
+      const host = document.createElement("div");
+      if (narrow) host.classList.add("narrow");
+      catalog.append(host);
+      draw(host, markdown);
+      attachMoveMenu(host);
+    };
+
+    add("h2", "構成図: ノード・グループ・線の区間・グループの角");
+    add("p", "ノードを押すと選ばれ、そのノードの右上に移動のボタンが出る。線の区間を押すと両端のノードが選ばれ、ボタンは押した区間にだけ出る（メニューは区間と直角の 2 つの向き）。グループのタイトルの行を押すとグループは選ばれずボタンだけが出る。受付のグループの右下の角を押すと「右へ広げる」「下へ広げる」「左へ狭める」「上へ狭める」のメニューが開く。図の空いた場所か Esc で選択が解けるとボタンは消える", "state-note");
+    diagram(FLOW);
+    add("h2", "シーケンス図: 参加者の箱");
+    add("p", "参加者の箱を押すと、その箱の右上に移動のボタンが出る。メニューは「左へ移す」「右へ移す」。メッセージの線を押して送り手と受け手が選ばれたときはボタンを出さない", "state-note");
+    diagram(SEQUENCE);
+    add("h2", "狭い幅（390px）");
+    add("p", "図の枠の中で横にスクロールしても、ボタンとメニューは押した要素の右上と左下に出る", "state-note");
+    diagram(FLOW.replace("注文の流れ", "注文の流れ（狭い幅）"), true);
+  </script>
+</body>
+</html>

@@ -1,0 +1,260 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-67.yaml
+    impact: changed
+    detail: 埋め込んだ音声の再生バーを、見切れずに全体を出す
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-17.yaml
+    impact: changed
+    detail: 読者がコードブロックごとに、画面の端で折り返すか折り返さないかを 1 回の操作で切り替える。既定は記載した wrap の有り無し、無ければ設定の既定に従う。コピーと折り返しのボタンはアイコンだけにする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-8.yaml
+    impact: changed
+    detail: 構成図のノード・グループ・線の区間の移動と、グループの大きさの変更を、ドラッグしないでも行える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-19.yaml
+    impact: changed
+    detail: シーケンス図の参加者の並べ替えを、ドラッグしないでも行える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-42.yaml
+    impact: changed
+    detail: 拡大した図は、ドラッグしないでも表示する枠のスクロールバーで動かせる。表示する枠の高さも、リサイズハンドルを動かさずに押して開く大きさのメニューで変えられる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-55.yaml
+    impact: run_only
+    detail: ミニマップは位置を押すだけで差分をスクロールでき、ドラッグしない操作があるためシナリオは変えない。代わりの操作の追加で壊れうるため E2E の対象にする
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-805-1.yaml
+    impact: run_only
+    detail: 音声の外観の修正で、動画の大きさを変える操作を落とさない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-801-1.yaml
+    impact: run_only
+    detail: 音声の外観の修正で、動画・音声のモーダルの再生を落とさない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-66.yaml
+    impact: changed
+    detail: ライトボックスで拡大した画像を、ドラッグしないでも移動のメニューで動かせる。スマホの指ではスクロールで動かせないため
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: changed
+    detail: 読者がファイルツリーごとに折り返しを切り替える。折り返したときに注釈を持つフォルダの名前が縦に折れない（#822）
+docs:
+  - page: docs/component/CMP-472-36.ts.yaml
+    new: false
+    change: 音声の再生バーを見切れずに出す高さ・入れ物の決まりを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/component/CMP-472-18.ts.yaml
+    new: false
+    change: 帯に折り返しを切り替えるアイコンだけのボタンの外観・状態・キー操作を追加し、コピーのボタンをアイコンだけにする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/component/CMP-472-26.ts.yaml
+    new: false
+    change: 帯に折り返しを切り替えるボタンを追加し、折り返したときに注釈を持つフォルダの名前が縦に折れない決まりを記載する（#822）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/component/CMP-472-5.ts.yaml
+    new: false
+    change: ノード・グループ・線の区間の移動とグループの大きさの変更に、ドラッグしない代わりの操作を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/component/CMP-472-4.ts.yaml
+    new: false
+    change: 参加者の並べ替えに、ドラッグしない代わりの操作を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/component/CMP-472-39.ts.yaml
+    new: false
+    change: 拡大した図の移動の代わりの操作を記載し、リサイズハンドルに動画と同じ構造の大きさのメニューを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/component/CMP-472-30.ts.yaml
+    new: false
+    change: ミニマップのドラッグの代わりの操作を点検し、無ければ追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/screen/SCR-472-4.ts.yaml
+    new: false
+    change: 折り返しの切り替えのボタンと、ドラッグの代わりの操作の UI 項目を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/interface/IF-472-35.ts.yaml
+    new: false
+    change: mount が付ける折り返しの切り替えとドラッグの代わりの操作を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:20:54.282163+00:00'
+  - page: docs/module/MOD-472-170.css.yaml
+    new: false
+    change: 音声の再生バー・折り返しのボタン・代わりの操作の規則を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/module/MOD-472-233.ts.yaml
+    new: false
+    change: 折り返しの切り替えの操作を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/module/MOD-472-306.ts.yaml
+    new: false
+    change: 折り返しのボタンの HTML を追加し、コピーのボタンをアイコンだけにする
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/module/MOD-472-134.ts.yaml
+    new: false
+    change: 移動のメニューの項目の押せる向きを求める関数を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/module/MOD-472-131.ts.yaml
+    new: false
+    change: 参加者の並べ替えの代わりの操作を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/module/MOD-472-193.ts.yaml
+    new: false
+    change: 点検の結果、帯の位置を押す代わりの操作があるため変更しない
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/module/MOD-472-177.ts.yaml
+    new: false
+    change: 倍率を中身の CSS 変数 --mdmark-zoom に書き込み、map のグループの角が倍率の逆数で大きさを補えるようにする（拡大した図の移動は既存のスクロールバーが代わりの操作になる）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/guide/記載する-本文を部品で組む.mark.md
+    new: false
+    change: コードブロックとファイルツリーの折り返しのボタン、アイコンだけのコピーのボタン、設定の code.wrap を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:31.856942+00:00'
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: wrap の既定と設定の code.wrap・読者の切り替え、#822 のフォルダの名前、ライトボックスの移動のボタンを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:31.856942+00:00'
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 折り返しの用語に設定の code.wrap と読者の切り替えを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:31.856942+00:00'
+  - page: docs/component/CMP-472-31.ts.yaml
+    new: false
+    change: 拡大した画像の移動のボタンとメニューを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
+  - page: docs/module/MOD-472-224.ts.yaml
+    new: false
+    change: 拡大した画像の移動のメニューの操作を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/module/MOD-472-329.ts.yaml
+    new: false
+    change: 上のバーに移動のボタンの HTML を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/config/CFG-472-3.yaml
+    change: コードブロックとファイルツリーの既定の折り返しのキーを追加する（既定は折り返さない）
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:20:54.282163+00:00'
+  - page: docs/module/MOD-472-304.ts.yaml
+    change: 既定の折り返しのキーの型と既定を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:06:51.053349+00:00'
+  - page: docs/guide/設定.mark.md
+    change: 既定の折り返しのキーの節を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:31.856942+00:00'
+  - page: docs/module/MOD-472-373.ts.yaml
+    change: 向き・大きさのメニューの開閉と配置のモジュールを新規作成する
+    status: done
+    new: true
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-374.ts.yaml
+    change: map の移動のボタンのモジュールを新規作成する
+    status: done
+    new: true
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-130.ts.yaml
+    change: 構成図に移動のボタンと大きさのメニューを付ける単体テストを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-179.ts.yaml
+    change: 図の高さのリサイズハンドルに大きさのメニューを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-227.ts.yaml
+    change: 折り返しの切り替えを付ける単体テストを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/module/MOD-472-203.ts.yaml
+    change: 設定の code.wrap を折り返しの既定にする単体テストを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/library/LIB-472-15.yaml
+    change: アイコン wrap-text・move を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    change: map の移動のボタンとメニュー、グループの大きさのメニューの操作を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:40.394924+00:00'
+  - page: docs/guide/図を描く-図を描く.md
+    change: 図のリサイズハンドルの大きさのメニューを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:40.394924+00:00'
+  - page: docs/module/MOD-472-173.ts.yaml
+    change: 図の高さのリサイズハンドルを押した扱いにする動きの上限（RESIZE.dragThreshold）を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T04:01:23.198765+00:00'
+scope_out:
+  - item: 音声の見切れの原因が MindStella 側の CSS だった場合の MindStella の修正
+    reason: mdmark のリポジトリの外の変更。mdmark だけで描いた音声は再生バーの全体を出すことを確認し、shuhei1101/mindstella#720 に起票した
+    plan: shuhei1101/mindstella#720
+  - item: コードブロックの折り返しを切り替えた状態をページを開き直した後も保つこと
+    reason: 要望は 1 回の操作での切り替えで、保存は要望に含まない（同じタブの中で保つかは部品設計で決める）
+    plan: none
+  - item: 表の部品と、動画のリサイズハンドルのドラッグの代わりの操作
+    reason: '#810・#803 で扱い済み（表の列の移動のメニュー、動画の大きさのメニュー）。この作業では実装の差を点検するだけにする。図の枠のリサイズハンドルは点検で代わりの操作が無いと分かったため、この作業で大きさのメニューを追加する'
+    plan: none

@@ -345,6 +345,35 @@ scenarios:
       - 設定に既定の幅を記載しなければ、属性の無い動画は今までどおり本文の幅いっぱいで描かれる
       - 記載の警告が出ていない
     test: test_normal_when_default_video_width
+  - name: 正常シナリオ（音声の再生バーの全体を出す）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: Chromium・Firefox・WebKit で開く。画面の幅は 1280px と 390px
+      - name: 音声の Markdown
+        description: 音声だけの段落 `![読み上げ](voice.mp3 "セリフの音声")` と、キャプションの無い `![読み上げ](voice.mp3)`、動画 `![操作](demo.mp4)` と画像 `![グラフ](chart.png)` を持つ文書
+      - name: Mock
+        description: 正常シナリオと同じ。動画・音声は手元の応答で返却する
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 利用者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 再生バーの高さの全体を入れた図で audio を描く
+        P-->>U: 文書を表示
+      ```
+
+      <!-- /map -->
+    expected:
+      - どのブラウザ・画面の幅でも、`audio` の再生バーの上端から下端までが図の中に入り、図とその祖先の要素の `overflow` で切られていない
+      - '`audio` の描いた高さが、ブラウザが再生バーに取る高さより小さくない'
+      - キャプションのある音声は、キャプションが再生バーの下にあり、再生バーと重ならない
+      - 同じ文書の動画の図・動画のリサイズハンドル・画像の図の位置と大きさが、修正する前と同じ
+    test: test_normal_when_audio_controls_fully_visible
 lead: 文書の作成者が、画像の後ろの属性でサイズと配置を指定し、title をキャプションにし、ギャラリーのマーカーで画像を格子に並べ、テーマごとに出す画像を分け、動画・音声・GIF を画像と同じ記載方法で配置すると、mdmark がそれぞれ図・格子・再生バー・止める・再生するボタンで描く。
 primary_actor: 文書の作成者
 stakeholders:

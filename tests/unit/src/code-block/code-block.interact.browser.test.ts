@@ -1,4 +1,5 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { PartStates } from "../../../../src/shared/part-states.interact.ts";
 import { restoreClipboard, stubClipboard } from "../../helpers/clipboard.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
 
@@ -224,4 +225,147 @@ test("test_attach_code_copy_when_file_tree", async () => {
   expect(
     root.querySelectorAll(".mdmark-code > .mdmark-code-bar .mdmark-code-copy"),
   ).toHaveLength(1);
+});
+
+/** 折り返しのマーカーを持つコードブロック・マーカーの無いコードブロック・ファイルツリーの文書 */
+const WRAP_DOC = [
+  '<!-- code: {"wrap": true} -->',
+  "",
+  "```ts",
+  "const wrapped = 1;",
+  "```",
+  "",
+  "```ts",
+  "const plain = 2;",
+  "```",
+  "",
+  "```tree",
+  "app/",
+  "└── src/",
+  "```",
+  "",
+].join("\n");
+
+/** 帯の折り返しのボタンを文書の順に返却する */
+function wrapToggles(root: HTMLElement): HTMLButtonElement[] {
+  return [
+    ...root.querySelectorAll<HTMLButtonElement>(
+      ".mdmark-code-bar button.mdmark-code-wrap-toggle",
+    ),
+  ];
+}
+
+/** コードブロックの pre とファイルツリーが折り返しているかを文書の順に返却する */
+function wrapStates(root: HTMLElement): boolean[] {
+  return [
+    ...root.querySelectorAll<HTMLElement>(".mdmark-code pre, div.mdmark-tree"),
+  ].map((element) =>
+    element.classList.contains(
+      element.matches("pre") ? "mdmark-code-wrap" : "mdmark-tree-wrap",
+    ),
+  );
+}
+
+/** ファイルツリーに帯と操作を付ける（折り返しのボタンを配置する帯は attachFileTrees が付ける） */
+async function attachTrees(root: HTMLElement): Promise<void> {
+  const { attachFileTrees } = await import(
+    /* @vite-ignore */ new URL(
+      "../../../../src/tree/tree.interact.ts",
+      import.meta.url,
+    ).href
+  );
+  detachers.push(attachFileTrees(root));
+}
+
+// 押したブロックだけを切り替える（正常系）
+test("test_attach_code_wraps", async () => {
+  // 準備
+  const { attachCodeWraps } = await loadCodeBlocks();
+  const { root } = createRoot(WRAP_DOC);
+  await attachTrees(root);
+  detachers.push(attachCodeWraps(root, { defaultWrap: false }));
+  const toggles = wrapToggles(root);
+  const before = toggles.map((toggle) => toggle.getAttribute("aria-pressed"));
+  // 実行
+  toggles[1]?.click();
+  // 検証
+  expect(before).toEqual(["true", "false", "false"]);
+  expect(toggles.map((toggle) => toggle.getAttribute("aria-pressed"))).toEqual([
+    "true",
+    "true",
+    "false",
+  ]);
+  expect(wrapStates(root)).toEqual([true, true, false]);
+});
+
+// 既定を折り返すにしたときはマーカーの無いブロックも折り返す（正常系）
+test("test_attach_code_wraps_when_default_wrap", async () => {
+  // 準備
+  const { attachCodeWraps } = await loadCodeBlocks();
+  const { root } = createRoot(
+    [
+      "```ts",
+      "const plain = 2;",
+      "```",
+      "",
+      "```tree",
+      "app/",
+      "└── src/",
+      "```",
+      "",
+    ].join("\n"),
+  );
+  await attachTrees(root);
+  // 実行
+  detachers.push(attachCodeWraps(root, { defaultWrap: true }));
+  // 検証
+  expect(wrapStates(root)).toEqual([true, true]);
+  expect(
+    wrapToggles(root).map((toggle) => toggle.getAttribute("aria-pressed")),
+  ).toEqual(["true", "true"]);
+});
+
+// 再描画しても切り替えた状態を保つ（正常系）
+test("test_attach_code_wraps_when_updated", async () => {
+  // 準備
+  const { attachCodeWraps } = await loadCodeBlocks();
+  const partStates: PartStates = new Map();
+  const first = createRoot(WRAP_DOC);
+  await attachTrees(first.root);
+  const detach = attachCodeWraps(first.root, {
+    defaultWrap: false,
+    partStates,
+  });
+  wrapToggles(first.root)[0]?.click();
+  detach();
+  first.root.remove();
+  // 実行
+  const second = createRoot(WRAP_DOC);
+  await attachTrees(second.root);
+  detachers.push(
+    attachCodeWraps(second.root, { defaultWrap: false, partStates }),
+  );
+  // 検証: 1 つ目は押した後の状態、ほかは描いた直後の状態
+  expect(wrapStates(second.root)).toEqual([false, false, false]);
+  expect(
+    wrapToggles(second.root).map((toggle) =>
+      toggle.getAttribute("aria-pressed"),
+    ),
+  ).toEqual(["false", "false", "false"]);
+});
+
+// コピーのボタンの前に配置する（正常系）
+test("test_attach_code_wraps_when_order", async () => {
+  // 準備
+  const { attachCodeCopy, attachCodeWraps } = await loadCodeBlocks();
+  const { root } = createRoot(tsBlock(["const a = 1;"]));
+  detachers.push(attachCodeCopy(root));
+  // 実行
+  detachers.push(attachCodeWraps(root, { defaultWrap: false }));
+  // 検証
+  const meta = root.querySelector(".mdmark-code-bar .mdmark-code-meta");
+  const buttons = [...(meta?.querySelectorAll("button") ?? [])].map(
+    (button) => button.className,
+  );
+  expect(buttons).toEqual(["mdmark-code-wrap-toggle", "mdmark-code-copy"]);
 });

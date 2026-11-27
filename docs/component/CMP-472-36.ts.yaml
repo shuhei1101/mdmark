@@ -47,7 +47,7 @@ states:
       - name: poster
         value: demo-poster.png
   - name: Audio
-    description: title を持つ音声。再生バーとキャプションを出す
+    description: title を持つ音声。再生バーとキャプションを出す。再生バーの高さの全体が図の中に出て、上端と下端が図と祖先の領域で見切れない
     args:
       - name: kind
         value: audio

@@ -545,7 +545,8 @@ export const startDrag = (options: {
 export const moveByKey = (options: {
   layout: MapLayout;
   state: MapState;
-  target: { node?: string; group?: string; wire?: string };
+  /** 動かすノード・グループ・線。線の `segment` は動かす区間の番号（省くと真ん中の区間） */
+  target: { node?: string; group?: string; wire?: string; segment?: number };
   dx: number;
   dy: number;
 }): MapState | undefined => {
@@ -563,16 +564,52 @@ export const moveByKey = (options: {
   }
   const wire = layout.wires.find((one) => one.id === target.wire);
   if (!wire || wire.points.length < 2) return undefined;
-  return moveWireByKey(options.state, { layout, wire, dx, dy });
+  return moveWireByKey(options.state, {
+    layout,
+    wire,
+    segment: target.segment,
+    dx,
+    dy,
+  });
 };
 
-/** 線の真ん中の区間を、区間と直角の向きへ動かした状態（動かせなければ `undefined`） */
+/** 動かす向き */
+export type MoveDirection = "up" | "down" | "left" | "right";
+
+/** 向きごとの、キーの刻み（`KEY_MOVE_PX`）の移動量 */
+const DIRECTION_STEPS: Record<MoveDirection, { dx: number; dy: number }> = {
+  up: { dx: 0, dy: -KEY_MOVE_PX },
+  down: { dx: 0, dy: KEY_MOVE_PX },
+  left: { dx: -KEY_MOVE_PX, dy: 0 },
+  right: { dx: KEY_MOVE_PX, dy: 0 },
+};
+
+/** ノード・グループ・線の区間をキーの刻みで動かしたときに位置が変わる向き。線の区間は区間と直角の向きだけになる */
+export const movableDirections = (options: {
+  layout: MapLayout;
+  state: MapState;
+  target: { node?: string; group?: string; wire?: string; segment?: number };
+}): Set<MoveDirection> =>
+  new Set(
+    (Object.keys(DIRECTION_STEPS) as MoveDirection[]).filter(
+      (direction) =>
+        moveByKey({ ...options, ...DIRECTION_STEPS[direction] }) !== undefined,
+    ),
+  );
+
+/** 線の区間（省くと真ん中の区間）を、区間と直角の向きへ動かした状態（動かせなければ `undefined`） */
 const moveWireByKey = (
   state: MapState,
-  move: { layout: MapLayout; wire: PlacedWire; dx: number; dy: number },
+  move: {
+    layout: MapLayout;
+    wire: PlacedWire;
+    segment: number | undefined;
+    dx: number;
+    dy: number;
+  },
 ): MapState | undefined => {
   const { layout, wire, dx, dy } = move;
-  const segment = Math.floor((wire.points.length - 2) / 2);
+  const segment = move.segment ?? Math.floor((wire.points.length - 2) / 2);
   const a = wire.points[segment];
   const b = wire.points[segment + 1];
   if (!a || !b) return undefined;

@@ -98,6 +98,10 @@ functions:
         type: '{ layout: MapLayout; state: MapState; target: { node?: string; group?: string; wire?: string }; dx: number; dy: number }'
         required: true
         description: 配置・状態・動かす要素の ID・動かす量（px。`KEY_MOVE_PX` か `KEY_MOVE_PX_LARGE` に矢印の向きを掛けた値）
+      - name: options.target.segment
+        type: number | undefined
+        required: false
+        description: 動かす線の区間の番号。移動のメニューは押した区間を指定し、Alt + 矢印キーは省いて真ん中の区間を動かす
     returns:
       type: MapState | undefined
       description: 動かした後の状態
@@ -123,6 +127,12 @@ functions:
         condition: '図の余白の内側の左上にある `A` を `dy: -8`。縦の区間の線を `dy: 8`'
         mock: なし
         expected: どちらも `undefined`
+      - name: test_move_by_key_when_segment_given
+        case: 正常
+        summary: 区間を指定すると、真ん中の区間ではなくその区間を動かす
+        condition: L 字の線の横の区間 2 を指定して下へ 8px 動かし、同じ区間で movableDirections を求める
+        expected: 区間 2 のずらしが 8 で、動かせる向きが `up`・`down`
+        mock: なし
   - name: resizeByKey
     title: キーでグループの大きさを変える
     kind: 関数
@@ -214,6 +224,40 @@ functions:
         condition: ずらしの `count` と線の点の数が違う
         mock: なし
         expected: 線がそのままで、戻り値の `wireShifts` にその線が無い
+  - name: movableDirections
+    title: 動かせる向き
+    kind: 関数
+    container: src/map/drag.ts
+    scope: internal
+    summary: ノード・グループをキーの刻み（`KEY_MOVE_PX`）で動かしたときに位置が変わる向きを返却する
+    description: 上・下・左・右のそれぞれで `moveItem` を配置を書き換えずに試し、位置が変わる向きだけを返却する。線の区間は区間と直角の 2 つの向きを返却する。移動のメニューの項目の `enabled` に使用する
+    args:
+      - name: options.layout
+        type: MapLayout
+        required: true
+        description: 今の配置
+      - name: options.target
+        type: KeyTarget
+        required: true
+        description: 動かすノード・グループ・線。線は `segment` で動かす区間の番号を指定でき、省くと真ん中の区間にする
+    returns:
+      type: Set<"up" | "down" | "left" | "right">
+      description: 位置が変わる向き
+    side_effects: なし
+    status: planned
+    unit_tests:
+      - name: test_movable_directions
+        case: 正常
+        summary: グループの上端に接したノードは上へ動かせない
+        condition: グループの上端と左端に接したノード
+        expected: '`down`・`right` だけを持つ'
+        mock: なし
+      - name: test_movable_directions_when_segment
+        case: 正常
+        summary: 縦の区間は左右だけ
+        condition: L 字の線の縦の区間
+        expected: '`left`・`right` だけを持つ'
+        mock: なし
 lead: 'ノード・グループ・線の区間のドラッグとキーでの移動を受け持ち、構成図の移動の操作を変えるときに参照する。'
 tags:
   - name: topic:map

@@ -572,3 +572,43 @@ test("test_plain", async () => {
   );
   await expect(page.locator("[aria-describedby]").count()).resolves.toBe(0);
 });
+
+// 参加者の箱を動かさずに押すと、箱の内側の右上の角に移動のボタンを重ねる（MoveButton）
+test("test_move_button", async () => {
+  // 準備・実行
+  const page = await openSequence("move-button");
+  // 検証
+  const box = await page
+    .locator('.map-participant[data-participant="user"]')
+    .boundingBox();
+  const button = await page.locator("button.map-move").boundingBox();
+  if (!box || !button) throw new Error("参加者の箱か移動のボタンが無い");
+  expect(button.x + button.width).toBeLessThanOrEqual(box.x + box.width + 0.5);
+  expect(button.y).toBeGreaterThanOrEqual(box.y - 0.5);
+  await expect(
+    page.locator("button.map-move").getAttribute("aria-label"),
+  ).resolves.toBe("「利用側のページ」を移動");
+  await expectTargetSize(page, "button.map-move");
+});
+
+// 移動のメニューは左右だけを並べ、先頭の参加者では左へ移すを押せなくする（MoveMenu）
+test("test_move_menu", async () => {
+  // 準備・実行
+  const page = await openSequence("move-menu");
+  // 検証
+  const items = await page
+    .locator(".mdmark-step-menu button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => ({
+        label: button.textContent?.trim() ?? "",
+        disabled: (button as HTMLButtonElement).disabled,
+      })),
+    );
+  expect(items).toEqual([
+    { label: "左へ移す", disabled: true },
+    { label: "右へ移す", disabled: false },
+  ]);
+  await expect(
+    page.locator(".mdmark-step-menu").getAttribute("aria-label"),
+  ).resolves.toBe("「利用側のページ」の移動");
+});

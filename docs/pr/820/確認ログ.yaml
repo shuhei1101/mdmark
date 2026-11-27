@@ -1,0 +1,7 @@
+confirmations:
+  - topic: コードブロックの折り返しのボタンをファイルツリーの帯にも付けるか
+    decision: コードブロックとファイルツリーの両方に付け、#822 もこの PR で修正する（推奨案 A）。あわせて、折り返しとコピーのボタンを文言なしのアイコンだけにし、既定の折り返しを設定で決められるようにして既定は折り返さない
+    decided_by: reply
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/820#discussion_r4712940645

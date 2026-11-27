@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <!-- viewport: スマホ幅で等倍に表示する -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>lightbox-move-menu（ライトボックスで拡大した画像の移動のボタンとメニュー） | mdmark のモック</title>
+  <!-- 配布物の CSS（ライブラリ本体） -->
+  <link rel="stylesheet" href="../../../../dist/index.css">
+  <!-- 利用側のページの外観（#287 で共有するアセット） -->
+  <link rel="stylesheet" href="../../refs/287/assets/scene.css">
+  <!-- #820 で足すボタンとメニュー -->
+  <link rel="stylesheet" href="../../refs/820/assets/mock.css?v=7">
+</head>
+<body class="mdmark-theme-light">
+  <header class="host-bar">利用側のアプリ</header>
+  <nav class="crumbs" aria-label="パンくずリスト">
+    <a href="../index.md">components</a> / lightbox-move-menu
+  </nav>
+  <main class="mock820-catalog" id="catalog">
+    <h1>lightbox-move-menu</h1>
+    <p class="state-note">配布物の mount で描いた実物の画像を押すとライトボックスが開く。上のバーの拡大のボタンで画像の場所より大きくすると、バーの先頭に「移動」のボタンが出る。ボタンで開くメニューの「上へ移す」「下へ移す」「左へ移す」「右へ移す」は、矢印キーと同じ量だけ押した向きの先を見せる。メニューを開いている間の Esc はメニューだけを閉じ、もう一度 Esc でライトボックスを閉じる。全体が収まる倍率に戻すとボタンは消える</p>
+    <div id="doc"></div>
+  </main>
+  <script type="module">
+    import { draw, attachLightboxMove } from "../../refs/820/assets/mock.js?v=7";
+
+    draw(document.getElementById("doc"), `![構成の全体](sample.svg "押すとライトボックスで拡大する")
+
+![構成の細部](sample.svg "2 枚目")
+`);
+    attachLightboxMove();
+  </script>
+</body>
+</html>

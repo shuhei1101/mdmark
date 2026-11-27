@@ -118,6 +118,47 @@ states:
     description: 左下のノードの右の辺から出て右上のノードの下の辺に入る L 字の線の縦の区間を、右上のノードの右端より右へ動かした。線は右上のノードの右の辺へ回り込んでつながり、端はどちらもノードの辺に付き、つながらないノードの下を通る
     notes:
       定義: モック `docs/mock/components/map-wire-drag-route/` の 2 回目の図（直した後）
+  - name: MoveButton
+    args:
+      - name: selected
+        value: '["mount"]'
+      - name: moveTarget
+        value: '{"kind":"node","id":"mount"}'
+    description: ノードを動かさずに押した。ノードの内側の右上の角に `move` のアイコンだけの移動のボタン（`aria-expanded="false"`、名前 `「{ノードの名前}」を移動`）を重ねる
+  - name: MoveButtonNearPanel
+    args:
+      - name: selected
+        value: '["mount"]'
+      - name: moveTarget
+        value: '{"kind":"node","id":"mount"}'
+      - name: nearPanel
+        value: 'true'
+    description: 図の右上のパネルと右上の角が重なるノードを押した。移動のボタンをノードの内側の左上の角に出す
+  - name: MoveMenu
+    args:
+      - name: selected
+        value: '["mount"]'
+      - name: moveTarget
+        value: '{"kind":"node","id":"mount"}'
+      - name: moveMenu
+        value: move
+    description: 移動のボタンで移動のメニューを開いた。`上へ移す`・`下へ移す`・`左へ移す`・`右へ移す` を並べ、ノード・移動のボタン・図のパネルと重ならない側（下・上・右・左の順）に開く。動かしても位置が変わらない向きは `disabled`（合意したモック `docs/mock/components/map-move-menu/`）
+  - name: MoveMenuSegment
+    args:
+      - name: source
+        value: route
+      - name: moveTarget
+        value: '{"kind":"segment","id":"a->c:1"}'
+      - name: moveMenu
+        value: move
+    description: 縦の線の区間を押して移動のメニューを開いた。区間と直角の `左へ移す`・`右へ移す` だけを並べ、ボタンは押した区間にだけ出す
+  - name: ResizeMenu
+    args:
+      - name: moveTarget
+        value: '{"kind":"group","id":"read"}'
+      - name: moveMenu
+        value: resize
+    description: グループの右下の角を動かさずに押して大きさのメニューを開いた。`右へ広げる`・`下へ広げる`・`左へ狭める`・`上へ狭める` を並べ、中身より狭められない向きは `disabled`
 lead: map の `flowchart` を自動配置した結果のノードと線（線の交差の飛び越えを含む）を描き、その上に入れ子のグループの面を重ねる。グループの開閉と中へ入るボタン、ノードと線の選択・移動、強調しない要素を薄くする表示、線の上を流れるデータの印を持つ。
 args:
   - name: layout
@@ -243,6 +284,17 @@ args:
     required: false
     default: '`{ fill: "tinted", palette: "accent" }`'
     description: 設定の `map.packets`（`{ fill, palette }`）。`fill` は `solid`・`ring`・`tinted`・`glow`・`shine`・`random`、`palette` は `accent`・`vivid`・`pastel`・`muted`・`cool`。図の要素に `data-packet-palette` を付け、色合いの CSS 変数を切り替える
+  - name: moveTarget
+    type: オブジェクト
+    required: false
+    default: なし（移動のボタンを出さない）
+    description: 最後に動かさずに押した要素。`kind`（`node`・`group`・`segment`）と `id`（線の区間は線の ID と区間の番号）を持ち、その要素の内側の右上の角（図のパネルと重なるときは左上）に移動のボタンを出す
+  - name: moveMenu
+    type: 列挙
+    required: false
+    default: '`closed`'
+    choices: closed・move・resize
+    description: '`closed`・`move`（移動のボタンで開いた移動のメニュー）・`resize`（グループの右下の角で開いた大きさのメニュー。`moveTarget` の `kind` が `group` のとき）'
 events:
   - name: 開閉する
     when: グループの左上の山形のボタンか、閉じたグループの開くボタンを押す（Shift を押しながら押すと中のグループも）
@@ -272,6 +324,14 @@ events:
     when: map の図のカスタム要素から描いた構成図で、ノードを押すか、フォーカスして Enter を押す
     value: 押したノードの Mermaid の ID
     description: 今の選択と強調に加えて、map の図のカスタム要素が `mdmark-node-click` を送信する。文書の map の範囲で描いた図では送信しない
+  - name: 移動のメニューで動かす
+    when: 移動のボタンで開いたメニューの向きの項目を押す
+    value: 動かした要素の ID と動いた量（px）
+    description: '`mount` が、要素にフォーカスして Alt + その向きの矢印キーを 1 回押したときと同じだけ動かし、sessionStorage に保つ。メニューは開いたまま、再描画した後も押した項目にフォーカスを残す。Esc でメニューを閉じて移動のボタンへフォーカスを戻す'
+  - name: 大きさのメニューで変える
+    when: グループの右下の角を 4px 未満の動きで押して開いたメニューの項目を押す
+    value: グループの ID と大きさ（px）
+    description: '`mount` が、角にフォーカスしてその向きの矢印キーを 1 回押したときと同じだけ大きさを変え、sessionStorage に保つ。メニューは開いたまま。Esc でメニューを閉じて角へフォーカスを戻す'
 css_properties:
   - name: --mdmark-map-dim-opacity
     syntax: <number>
@@ -309,6 +369,7 @@ accessibility:
   - 計画した変更は色だけで伝えず、変更の名前のバッジ（`removed` は破線の枠線のバッジと名前の取り消し線）で示す。ノードの押せる要素のスクリーンリーダー向けの名前の末尾に「、{変更の名前}」を追加し、バッジは `aria-hidden`
   - ノードの名前は 13px・種類の行と線のラベルは 11px で、どれも標準の太さ（400）にする（確認ログ『map の図のノードの名前・種類の行・線のラベルの文字の大きさと太さ』）。ノードの幅と名前の行の数は、この大きさで測る。ER 図・状態遷移図・クラス図・アーキテクチャ図・C4 図・軸と格子の配置の図のノードの名前と種類の行も同じ値にする
   - データの印の色は、どの色合いも明るい配色・暗い配色の背景とのコントラスト比 3:1 以上。色だけで線を見分けさせず、形状も線ごとに変える
+  - 移動のボタンは `type="button"`・`aria-haspopup="true"`・`aria-expanded` を持つ lucide の `move` のアイコンだけのボタンで、スクリーンリーダー向けの名前を `「{表示名}」を移動`（表示名はノード・グループの名前、線は両端の名前を `→` でつないだもの。Mermaid の ID は使用しない）、`title` のツールチップを `移動` にする。押せる範囲は 24px 四方以上。メニューは `role="group"` と `aria-label="「{表示名}」の移動"`（大きさのメニューは `「{タイトル}」の大きさ`）を持ち、開いたら最初の押せる項目へフォーカスを移し、項目の間を Tab と上下の矢印キーで移る。押せない向きは `disabled`。メニューを開いた状態と閉じた状態で axe-core の違反を出さない
 refs:
   - IF-472-35#
   - IF-472-35#constraints[範囲の外の map の図に付く操作]

@@ -9,6 +9,7 @@ export const PART_SELECTORS = {
   frontmatter: "details.mdmark-frontmatter",
   tree: "div.mdmark-tree",
   code: "pre:has([data-fold-lines])",
+  "code-wrap": ".mdmark-code",
   "table-tree": "div.mdmark-table[data-tree]",
 } as const satisfies Record<string, string>;
 

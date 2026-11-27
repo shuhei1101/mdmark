@@ -178,6 +178,7 @@ function createDiffHtmlRenderer(options: {
           diagramPlacement: config.tooltips.diagramPlacement,
           pinMode: config.table.pin,
           pinDefault: config.table.pinDefault,
+          codeWrap: config.code.wrap,
           longColumnMin: config.table.longColumnMin,
         }),
     };
@@ -632,6 +633,7 @@ export function mount(el: HTMLElement, opts: MountOptions): MountHandle {
       diagramPlacement: config.tooltips.diagramPlacement,
       pinMode: config.table.pin,
       pinDefault: config.table.pinDefault,
+      codeWrap: config.code.wrap,
       longColumnMin: config.table.longColumnMin,
       onColumnsChange,
       sectionStates,

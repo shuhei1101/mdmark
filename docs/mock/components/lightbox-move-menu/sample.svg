@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+  <rect width="1600" height="1000" fill="#f4f1ea"/>
+  <g font-family="sans-serif" font-size="40" fill="#2d2a3d">
+    <rect x="80" y="80" width="420" height="220" rx="16" fill="#ffffff" stroke="#8a84a3" stroke-width="4"/>
+    <text x="120" y="200">左上の箱</text>
+    <rect x="1100" y="80" width="420" height="220" rx="16" fill="#ffffff" stroke="#8a84a3" stroke-width="4"/>
+    <text x="1140" y="200">右上の箱</text>
+    <rect x="80" y="700" width="420" height="220" rx="16" fill="#ffffff" stroke="#8a84a3" stroke-width="4"/>
+    <text x="120" y="820">左下の箱</text>
+    <rect x="1100" y="700" width="420" height="220" rx="16" fill="#ffffff" stroke="#8a84a3" stroke-width="4"/>
+    <text x="1140" y="820">右下の箱</text>
+    <text x="640" y="520">中央</text>
+  </g>
+</svg>

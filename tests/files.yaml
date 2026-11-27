@@ -1118,6 +1118,12 @@ files:
     related:
       - to: src/shared/clipboard.interact.ts
         type: tests
+  - path: unit/src/shared/step-menu.interact.browser.test.ts
+    description: src/shared/step-menu.interact.ts を確認するブラウザで実行する単体テスト。step-menu.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:dom, topic:メニュー]
+    related:
+      - to: src/shared/step-menu.interact.ts
+        type: tests
   - path: unit/src/code-block/code-block.interact.browser.test.ts
     description: src/code-block/code-block.interact.ts（「コードブロックのコピー」）を確認するブラウザで実行する単体テスト。code-block.interact.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
     tags: [topic:単体テスト, tool:vitest, topic:dom, topic:イベント]
@@ -2335,6 +2341,12 @@ files:
     tags: [topic:単体テスト, tool:vitest, topic:図]
     related:
       - to: src/map/drag.ts
+        type: tests
+  - path: unit/src/map/move-button.browser.test.ts
+    description: src/map/move-button.ts を確認するブラウザで実行する単体テスト。move-button.ts を変えたときに、合わせて再確認するケースを探すときに参照する。
+    tags: [topic:単体テスト, tool:vitest, topic:図, topic:メニュー]
+    related:
+      - to: src/map/move-button.ts
         type: tests
   - path: unit/src/map/packet.test.ts
     description: src/map/packet.ts を確認する単体テスト。packet.ts を変えたときに、合わせて再確認するケースを探すときに参照する。

@@ -1,3 +1,8 @@
+import {
+  openStepMenu,
+  type StepMenuHandle,
+  type StepMenuItem,
+} from "../shared/step-menu.interact.ts";
 import { attachZoom, type ZoomControl } from "../shared/zoom.interact.ts";
 import { renderImageOpener } from "./image.part.ts";
 import { renderLightbox } from "./lightbox.part.ts";
@@ -14,6 +19,36 @@ const CLICK_SLOP = 4;
 
 // 倍率を比べるときの誤差
 const ZOOM_EPSILON = 0.001;
+
+/** 移動のメニューの項目: 文言・アイコン・押したキー・動かせるか */
+const MOVE_ITEMS = [
+  {
+    label: "上へ移す",
+    icon: "chevron-up",
+    key: "ArrowUp",
+    can: (stage: HTMLElement) => stage.scrollTop > 0,
+  },
+  {
+    label: "下へ移す",
+    icon: "chevron-down",
+    key: "ArrowDown",
+    can: (stage: HTMLElement) =>
+      stage.scrollTop < stage.scrollHeight - stage.clientHeight - 1,
+  },
+  {
+    label: "左へ移す",
+    icon: "chevron-left",
+    key: "ArrowLeft",
+    can: (stage: HTMLElement) => stage.scrollLeft > 0,
+  },
+  {
+    label: "右へ移す",
+    icon: "chevron-right",
+    key: "ArrowRight",
+    can: (stage: HTMLElement) =>
+      stage.scrollLeft < stage.scrollWidth - stage.clientWidth - 1,
+  },
+] as const;
 
 /** HTML 文字列の最初の要素を作る */
 function elementFrom<T extends Element>(html: string): T {
@@ -96,6 +131,12 @@ export function attachLightbox(root: HTMLElement): () => void {
       ".mdmark-lightbox-caption",
     );
     const count = dialog.querySelector<HTMLElement>(".mdmark-lightbox-count");
+    const moveButton = dialog.querySelector<HTMLButtonElement>(
+      ".mdmark-lightbox-move",
+    );
+    const zoomButton = dialog.querySelector<HTMLButtonElement>(
+      ".mdmark-lightbox-zoom",
+    );
     const prev = dialog.querySelector<HTMLButtonElement>('[data-tool="prev"]');
     const next = dialog.querySelector<HTMLButtonElement>('[data-tool="next"]');
     if (!head || !stage || !sizer || !img || !caption) {
@@ -105,6 +146,23 @@ export function attachLightbox(root: HTMLElement): () => void {
     const { signal } = dialogController;
     const view = { scale: 1, fit: 1, loading: 0 };
     let zoom: ZoomControl | undefined;
+    let moveMenu: StepMenuHandle | undefined;
+
+    /** 移動のメニューを閉じる。メニューかボタンにフォーカスがあったときは倍率のボタンへ移す */
+    const hideMove = (): void => {
+      const focused =
+        document.activeElement instanceof Element &&
+        (document.activeElement === moveButton ||
+          document.activeElement.closest(".mdmark-step-menu") !== null);
+      moveMenu?.close({ restoreFocus: false });
+      moveMenu = undefined;
+      if (moveButton) {
+        moveButton.hidden = true;
+      }
+      if (focused) {
+        zoomButton?.focus({ preventScroll: true });
+      }
+    };
 
     /** 全体が収まる倍率で確認しているか */
     const atFit = (): boolean =>
@@ -112,6 +170,7 @@ export function attachLightbox(root: HTMLElement): () => void {
 
     /** 今の位置の画像・キャプション・枚数・切り替えのボタンを当て、読み込めたら全体が収まる倍率で拡大・縮小をもう一度付ける */
     const show = (): void => {
+      hideMove();
       zoom?.detach();
       zoom = undefined;
       sizer.removeAttribute("style");
@@ -146,7 +205,16 @@ export function attachLightbox(root: HTMLElement): () => void {
             onChange: (scale, fit) => {
               view.scale = scale;
               view.fit = fit;
-              stage.classList.toggle("is-zoomed", scale > fit + ZOOM_EPSILON);
+              const zoomed = scale > fit + ZOOM_EPSILON;
+              stage.classList.toggle("is-zoomed", zoomed);
+              if (zoomed) {
+                if (moveButton) {
+                  moveButton.hidden = false;
+                }
+                moveMenu?.refresh();
+              } else {
+                hideMove();
+              }
             },
           });
         })
@@ -169,6 +237,7 @@ export function attachLightbox(root: HTMLElement): () => void {
         return;
       }
       dialogController.abort();
+      moveMenu?.close({ restoreFocus: false });
       zoom?.detach();
       dialog.remove();
       closeOpen = undefined;
@@ -178,6 +247,44 @@ export function attachLightbox(root: HTMLElement): () => void {
       }
     };
 
+    // 移動のボタン: 拡大中だけ出し、矢印キーと同じだけ動かすメニューを開く
+    moveButton?.addEventListener(
+      "click",
+      () => {
+        if (moveMenu) {
+          moveMenu.close({ restoreFocus: false });
+          moveMenu = undefined;
+          return;
+        }
+        const items: StepMenuItem[] = MOVE_ITEMS.map((item) => ({
+          label: item.label,
+          icon: item.icon,
+          enabled: () => item.can(stage),
+          run: () => {
+            stage.dispatchEvent(
+              new KeyboardEvent("keydown", {
+                key: item.key,
+                bubbles: true,
+                cancelable: true,
+              }),
+            );
+          },
+        }));
+        const opened = openStepMenu({
+          opener: moveButton,
+          label: "拡大した画像の移動",
+          items,
+          avoid: () => [head.getBoundingClientRect()],
+          onClose: () => {
+            if (moveMenu === opened) {
+              moveMenu = undefined;
+            }
+          },
+        });
+        moveMenu = opened;
+      },
+      { signal },
+    );
     prev?.addEventListener("click", () => go(-1), { signal });
     next?.addEventListener("click", () => go(1), { signal });
     dialog

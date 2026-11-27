@@ -50,6 +50,9 @@ data_models:
       - name: media
         type: '{ width?: string } | undefined'
         description: 動画の設定。`width` は `{width=…}` を記載していない動画の幅の既定（`1%` 〜 `100%`）。知らない値も受けて `resolveConfig` が落とすため、型は `string`
+      - name: code
+        type: '{ wrap?: unknown } | undefined'
+        description: コードブロックとファイルツリーの設定。`wrap` はマーカーの無いブロックを描いた直後に折り返すか。読み込めない値も受けて `resolveConfig` が `false` にするため、型は `unknown`
   - name: LibraryEntry
     title: 対応表の行
     container: src/config.ts
@@ -107,6 +110,9 @@ data_models:
       - name: media
         type: '{ width: string | undefined }'
         description: 設定の `media.width` が `MEDIA_WIDTH_PATTERN` に合い `100%` でなければその値、それ以外は `undefined`
+      - name: code
+        type: '{ wrap: boolean }'
+        description: '`wrap` は設定の `code.wrap` が `true` のときだけ `true`、それ以外は `false`'
   - name: MermaidTheme
     title: mermaid のテーマ
     container: src/config.ts
@@ -429,6 +435,12 @@ functions:
         condition: '`{ table: { pin_default: true } }`、`{ table: { pin_default: "yes" } }`、`{ table: { pin_default: false } }`、`{}`'
         mock: なし
         expected: '`table.pinDefault` が順に `true`・`false`・`false`・`false`'
+      - name: test_resolve_config_when_code_wrap_given
+        case: 正常
+        summary: code.wrap は true のときだけ true にする
+        condition: '`code.wrap` が `true`・`"yes"`・省略'
+        expected: '`code.wrap` が `true`・`false`・`false`'
+        mock: なし
   - name: applyPageSettings
     title: ページの設定を重ねる
     container: src/config.ts

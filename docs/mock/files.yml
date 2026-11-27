@@ -256,6 +256,26 @@ files:
     visibility: internal
     description: '部品『mapの構成図』のモック: 同じノードの同じ辺に出入りする線の端を、今の見た目・案 A（16px 間隔）・案 B（8px 間隔）で、分岐から 3 本と上下の辺に 4 本と 2 本の図・狭い幅に並べる。線の端の並べ方を決めるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: components/code-block-wrap-toggle/index.html
+    visibility: internal
+    description: '部品『コードブロック』『ファイルツリー』のモック: 帯のコピーのボタンの前に置く折り返しのトグルボタンを、マーカーの無いブロック・wrap のブロック・狭い幅と、ファイルツリーに付ける案 A・付けない案 B で並べる。折り返しの切り替えの外観と状態を決めるときに参照する。'
+    tags: [topic:モック, topic:コードブロック]
+  - path: components/lightbox-move-menu/index.html
+    visibility: internal
+    description: '部品『ライトボックス』のモック: 拡大した画像の上のバーに出す移動のボタンと、上下左右へ移すメニュー。拡大した画像をドラッグしないで動かす操作を決めるときに参照する。'
+    tags: [topic:モック, topic:ライトボックス, topic:アクセシビリティ]
+  - path: components/lightbox-move-menu/sample.svg
+    visibility: internal
+    description: 'モック『lightbox-move-menu』の見本の画像: 四隅と中央に印を持つ横長の画像。拡大した画像の移動を見せる見本を変えるときに参照する。'
+    tags: [topic:モック]
+  - path: components/map-move-menu/index.html
+    visibility: internal
+    description: '部品『mapの構成図』『mapのシーケンス図』のモック: 最後に動かさずに押した要素（ノード・グループ・線の区間・参加者）に出す移動のボタンとメニュー、グループの角の大きさのメニューを、構成図・シーケンス図・狭い幅で並べる。map の図をドラッグしないで動かす操作を決めるときに参照する。'
+    tags: [topic:モック, topic:図, topic:アクセシビリティ]
+  - path: components/media-audio-bar/index.html
+    visibility: internal
+    description: '部品『動画と音声』の確認用のモック: 埋め込んだ音声の再生バーを描き、描いた高さと、図とその祖先の overflow で切られた高さを測って並べる。音声の再生バーの見切れの原因を切り分けるときに参照する。'
+    tags: [topic:モック, topic:音声]
   - path: components/map-mindmap-item/index.html
     visibility: internal
     description: '部品『mapのマインドマップ』のモック: 項目の枠線・文字・ポインターを重ねたときと選んだときの面と、名前の文字の上でも選ぶ案 A・選べる場所を今のままにする案 B を、短い名前と 30 文字の名前・狭い幅で並べる。マインドマップの項目の外観と選び方を決めるときに参照する。'
@@ -1517,6 +1537,18 @@ files:
     visibility: internal
     description: '#782 のモック: 配布物の mount で map の図を描き、線の上の文字を線の横に置く案と線の長さで折り返す案だけを重ねる。このモックの振る舞いを変えるときに参照する。'
     tags: [topic:モック, topic:図]
+  - path: refs/820/index.md
+    visibility: internal
+    description: '#820（音声の再生バーの見切れ・コードブロックの折り返しの切り替え・map の図とライトボックスのドラッグしない操作）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
+    tags: [topic:モック]
+  - path: refs/820/assets/mock.css
+    visibility: internal
+    description: '#820 のモックの規則: 配布物の CSS の上に、折り返しのトグルボタン・移動のボタンとメニュー・音声の測定の表を重ねる。このモックの外観を変えるときに参照する。'
+    tags: [topic:モック]
+  - path: refs/820/assets/mock.js
+    visibility: internal
+    description: '#820 のモック: 配布物の mount で部品を描き、折り返しのトグルボタン・map の図とライトボックスの移動のボタンとメニュー（既存のキーの操作を送信する）・音声の再生バーの測定だけを重ねる。このモックの振る舞いを変えるときに参照する。'
+    tags: [topic:モック]
   - path: refs/772/index.md
     visibility: internal
     description: '#772（map の図の文字・同じ辺の線の端・マインドマップの項目の見た目と選び方）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'

@@ -111,3 +111,7 @@ entries:
     schema: mdmark.config.schema.json
     sha256: 760489a2e5ba9667efa2bdb082d60a21ff2e9156e9f30220bef34343faa04bbb
     reason: features に省いてよい media-resize と、省いてよい media（width）を足しただけで、古い設定もそのまま新しい Schema に合う
+  - version: next
+    schema: mdmark.config.schema.json
+    sha256: 561901a155bd6fd4c30cc60ae595e436278cfb03a250e16e855d63e269fb9851
+    reason: 省いてよい code（wrap）を足しただけで、古い設定もそのまま新しい Schema に合う

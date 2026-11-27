@@ -7447,13 +7447,14 @@
       overflow-wrap: anywhere;
     }
 
-    /* コピーボタン: 枠を持たない小さなボタン。押せる大きさは 24px 以上を取る */
+    /* コピーボタン: 枠を持たない、文言を画面に出さない 1.75rem 四方のアイコンだけのボタン（文言は名前とツールチップに持つ。`docs/mock/refs/820/assets/mock.css`） */
     .mdmark-code-copy {
       display: inline-flex;
-      gap: 0.3em;
       align-items: center;
+      justify-content: center;
+      min-width: 1.75rem;
       min-height: 1.75rem;
-      padding: 0 0.5em;
+      padding: 0;
       border: 1px solid transparent;
       border-radius: calc(var(--mdmark-radius) - 2px);
       background: none;
@@ -7464,8 +7465,8 @@
       cursor: pointer;
 
       .mdmark-diagram-icon {
-        width: 1.1em;
-        height: 1.1em;
+        width: 14px;
+        height: 14px;
         fill: none;
         stroke: currentcolor;
         stroke-width: 2;
@@ -7493,6 +7494,50 @@
       &[data-state="failed"] {
         color: var(--mdmark-color-error);
       }
+    }
+
+    /* 折り返しのボタン: コピーのボタンと同じ大きさのアイコンだけのトグルボタン。ホバーは灰色の枠線だけ、押した状態はリンク色の枠線と淡いリンク色の面とリンク色のアイコン（`docs/mock/refs/820/assets/mock.css` の `.mock820-wrap-toggle`） */
+    .mdmark-code-wrap-toggle {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 1.75rem;
+      min-height: 1.75rem;
+      padding: 0;
+      border: 1px solid transparent;
+      border-radius: calc(var(--mdmark-radius) - 2px);
+      background: none;
+      color: var(--mdmark-color-muted);
+      cursor: pointer;
+
+      .mdmark-diagram-icon {
+        width: 14px;
+        height: 14px;
+      }
+
+      &:hover {
+        border-color: var(--mdmark-color-border);
+      }
+
+      &[aria-pressed="true"] {
+        border-color: var(--mdmark-color-link);
+        background: color-mix(
+          in srgb,
+          var(--mdmark-color-link) 12%,
+          transparent
+        );
+        color: var(--mdmark-color-link);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 1px;
+      }
+    }
+
+    /* 帯にコピーのボタンが無いときも、折り返しのボタンは右端に寄せる */
+    .mdmark-code-bar > .mdmark-code-wrap-toggle {
+      margin-inline-start: auto;
     }
 
     /* Raw のボタン: コピーボタンと同じ寸法の枠を持たない小さなボタン。押した後（元の Markdown を出している）はリンクの色の文字と今の場所の面にする（`docs/mock/refs/709/assets/markdown-preview.css`） */
@@ -8119,6 +8164,7 @@
 
       /* コピーボタンと Raw のボタン: 紙では押せないので出さない。言語のラベルは残す（`docs/mock/refs/151/assets/code-block-print.css`） */
       .mdmark-code-copy,
+      .mdmark-code-wrap-toggle,
       .mdmark-code-raw {
         display: none;
       }
@@ -9221,8 +9267,8 @@
       opacity: 1;
     }
 
-    /* 大きさのメニュー: ハンドルを押す（動かさずに離す）か Enter で開く、ドラッグの代わりの 3 つのボタン。popover で最前面に出し、ハンドルのそばに配置する */
-    .mdmark-media-size-menu {
+    /* 大きさのメニューと、向き・大きさのメニュー: ハンドル・移動のボタンを押す（動かさずに離す）か Enter で開く、ドラッグの代わりのボタン。popover で最前面に出し、開いた元の要素のそばに配置する */
+    :is(.mdmark-media-size-menu, .mdmark-step-menu) {
       position: fixed;
       inset: auto;
       margin: 0;
@@ -9273,6 +9319,42 @@
           width: 16px;
           height: 16px;
         }
+      }
+    }
+
+    /* map の移動のボタン: 動かさずに押した要素の内側の角に重ねる、図のパネルのボタンと同じ面と枠線と影の 24px 四方のボタン（`docs/mock/refs/820/assets/mock.css` の `.mock820-move`） */
+    .map-move {
+      position: absolute;
+      z-index: 5;
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      margin: 0;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg-opaque);
+      color: var(--mdmark-color-text);
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+      cursor: pointer;
+
+      &[hidden] {
+        display: none;
+      }
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
       }
     }
 
@@ -9749,6 +9831,11 @@
     }
 
     /* ライトボックスのボタン: 図の操作のボタンと同じ四角 */
+    /* 移動のボタン: 全体が収まる倍率では隠す（ボタンの display より優先する） */
+    .mdmark-lightbox-move[hidden] {
+      display: none;
+    }
+
     :is(.mdmark-lightbox-tool, .mdmark-lightbox-zoom) {
       display: inline-grid;
       place-items: center;
@@ -9863,7 +9950,10 @@
 
       /* 動画のリサイズハンドルとメニュー: 出さず、入れ物の下の余白も外す */
       .mdmark-media-resize,
-      .mdmark-media-size-menu {
+      .mdmark-media-size-menu,
+      .mdmark-step-menu,
+      .map-move,
+      .mdmark-lightbox-move {
         display: none;
       }
 
@@ -9962,8 +10052,8 @@
   }
 }
 
-/* code のマーカーの wrap: 行を枠の幅で折り返す。行番号と行頭のマーカーは折り返した行の 1 行目にだけ出る */
-.mdmark pre.mdmark-code-lines.mdmark-code-wrap {
+/* code のマーカーの wrap・設定の code.wrap・読者の折り返しのボタン: 行を枠の幅で折り返す。行番号と行頭のマーカーは折り返した行の 1 行目にだけ出る */
+.mdmark .mdmark-code pre.mdmark-code-wrap {
   &,
   & * {
     white-space: pre-wrap;
@@ -10232,7 +10322,7 @@
   }
 
   /* 開閉のボタン: 縦線の後ろ・キーのすぐ左に配置する。子を持たない行は同じ幅を空ける */
-  .mdmark-tree-toggle,
+  .mdmark-table[data-tree] .mdmark-tree-toggle,
   .mdmark-table[data-tree] .mdmark-tree-spacer {
     flex: none;
     align-self: center;
@@ -11882,8 +11972,11 @@
     bottom: 0;
     display: grid;
     place-items: center;
-    width: 24px;
-    height: 24px;
+    /* 後ろに描く線を押す・指す場所の層より上に重ね、上を通る線に押せる範囲を削られない */
+    z-index: 1;
+    /* 図を縮めても押せる大きさを 24 CSS px 以上に保つ（倍率の逆数で補う） */
+    width: max(24px, calc(24px / var(--mdmark-zoom, 1)));
+    height: max(24px, calc(24px / var(--mdmark-zoom, 1)));
     padding: 0;
     border: 0;
     border-radius: var(--mdmark-radius);

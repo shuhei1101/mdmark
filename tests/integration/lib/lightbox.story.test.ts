@@ -139,6 +139,7 @@ test("test_zoomed", async () => {
         buttons.map((button) => button.getAttribute("aria-label")),
       ),
   ).resolves.toEqual([
+    "拡大した画像を移動",
     "縮小",
     "倍率 250%。全体が収まる倍率に戻す",
     "拡大",
@@ -209,4 +210,26 @@ test("test_narrow", async () => {
   expect(layout.closeGap).toBeLessThan(32);
   expect(layout.closeRight).toBeLessThanOrEqual(layout.headRight);
   await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 拡大中は上のバーに移動のボタンを出し、移動のメニューに 4 つの向きを並べる（ZoomedMoveMenu）
+test("test_zoomed_move_menu", async () => {
+  // 準備・実行
+  const page = await open("zoomed-move-menu");
+  // 検証
+  const move = page.locator("button.mdmark-lightbox-move");
+  await expect(move.isVisible()).resolves.toBe(true);
+  await expect(move.getAttribute("aria-label")).resolves.toBe(
+    "拡大した画像を移動",
+  );
+  await expect(move.getAttribute("aria-expanded")).resolves.toBe("true");
+  const items = await page
+    .locator(".mdmark-step-menu button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => button.textContent?.trim() ?? ""),
+    );
+  expect(items).toEqual(["上へ移す", "下へ移す", "左へ移す", "右へ移す"]);
+  await expect(
+    page.locator(".mdmark-step-menu").getAttribute("aria-label"),
+  ).resolves.toBe("拡大した画像の移動");
 });

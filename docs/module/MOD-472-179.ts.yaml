@@ -67,6 +67,24 @@ functions:
         condition: '`getItem`・`setItem` が例外を投げる `storage`。`ArrowDown` を押す'
         mock: 例外を投げる `Storage` の構造のオブジェクト
         expected: 例外を外へ出さず、高さが 32px 増える
+      - name: test_attach_diagram_resize_when_menu
+        case: 正常
+        summary: 動かさずに押すと大きさのメニューを開き、ボタンで高さを変える
+        condition: ハンドルを 2px 動かして離し、`高くする` を押し、`全体が収まる高さにする` を押す
+        expected: '`role="group"` のメニューが開き、`高くする` の後の `aria-valuenow` が 32 大きく、`全体が収まる高さにする` の後はダブルクリックと同じ高さで、`高くする`・`全体が収まる高さにする` が `disabled`'
+        mock: なし
+      - name: test_attach_diagram_resize_when_menu_by_key
+        case: 正常
+        summary: Enter でも開き、Esc でハンドルへ戻る。ドラッグでは開かない
+        condition: ハンドルにフォーカスして Enter を押し、Esc を押す。別にハンドルを 5px 動かして離す
+        expected: Enter でメニューが開き、Esc の後はメニューが無くハンドルにフォーカスがある。5px のドラッグではメニューが開かず高さが変わる
+        mock: なし
+      - name: test_attach_diagram_resize_when_menu_reopened
+        case: 正常
+        summary: Esc で閉じた後も、Enter でもう一度メニューを開く
+        condition: ハンドルにフォーカスして Enter・Esc・Enter の順に押す
+        expected: 大きさのメニューが開いている
+        mock: なし
   - name: diagramHeightKey
     title: 図の高さのキー
     container: src/diagram/diagram-resize.interact.ts

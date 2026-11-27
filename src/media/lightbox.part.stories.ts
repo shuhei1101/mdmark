@@ -93,3 +93,16 @@ export const Narrow: Story = {
     frameWidth: "390px",
   },
 };
+
+export const ZoomedMoveMenu: Story = {
+  name: "ZoomedMoveMenu",
+  parameters: { server: { id: "lightbox" } },
+  args: {
+    src: "step-2.svg",
+    alt: "手順 2 の画面",
+    index: 3,
+    total: 15,
+    zoom: 2.5,
+    moveMenu: true,
+  },
+};

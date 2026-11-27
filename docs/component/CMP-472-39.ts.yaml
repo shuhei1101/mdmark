@@ -224,6 +224,13 @@ states:
     description: 縦に長い図を `--mdmark-diagram-max-height` で切られた表示する枠で開いたとき。全体が収まる倍率でも図が枠に縦に収まらず、表示する枠は `data-at-fit` を持たずに縦にもスクロールする（指の縦の移動で図の中を動かせる）
   - name: ResizeHandleHover
     description: リサイズハンドルにポインターを乗せた。中央の横棒の色が `--mdmark-color-text` になる
+  - name: ResizeMenu
+    args:
+      - name: resizable
+        value: 'true'
+      - name: resizeMenu
+        value: 'true'
+    description: リサイズハンドルを動かさずに押して大きさのメニューを開いた。ハンドルの下に中央を合わせて「低くする」「高くする」「全体が収まる高さにする」を出し、下限・上限・全体が収まる高さのときはそのボタンを押せない（部品設計『動画と音声』の `VideoResizeMenu` と同じ外観）
 lead: |-
   図の部品（グラフ・mermaid の図・map の図）を囲む枠。タイトル（題名・範囲・更新日）・図を出す表示する枠・凡例をこの順に配置し、表示する枠の右上に重ねたボタンのパネルと、拡大・縮小・移動・ピンチ・全画面のモーダルと、表示する枠の高さを変える下端のリサイズハンドルを持つ。
   パネルと表示する枠は、表示するノード（`.mdmark-diagram-box`）にまとめる。ボタンは 1.75rem 四方（図の枠の幅が 30rem 未満のとき 1.5rem）、パネルの余白は 0.125rem。
@@ -308,6 +315,12 @@ args:
     status: planned
     enabled_when: '`listable` が `true` のとき'
     description: 表示する枠の中を図から一覧（部品『mapの一覧』）に替えているか。一覧の表示のボタンの `aria-pressed` に入れ、`true` のときは図を `hidden` にする。倍率・位置・開閉は保ち、一覧の上の余白をパネルの高さ分とる。一覧は先頭から出し（図の位置は図に戻すときに戻す）、畳んだパネルでも押した一覧の表示のボタンは隠さない
+  - name: resizeMenu
+    type: 真偽値
+    required: false
+    default: 'false'
+    enabled_when: '`resizable` が `true` のとき'
+    description: リサイズハンドルで開いた大きさのメニュー（「低くする」「高くする」「全体が収まる高さにする」）を出すか
 slots:
   - name: default
     description: 表示する枠の中に配置する図の本体
@@ -338,9 +351,9 @@ events:
     value: '`dialog` の `open`'
     description: '`mount` が `modal` を `true` にした枠を `dialog` に描いて開き、閉じたら削除して全画面のボタンへフォーカスを戻す。種類 `map` の図は、複製した図にも通常の表示と同じ map の操作（選択・線の強調とデータの印・開閉・中へ入る・移動・グループの大きさ・案内と再生・書き出す・一覧の表示）を付け直し、開閉・位置・グループの大きさは元の図と同じ状態を使う。Esc は、ツールチップを閉じる・選択を解く・中へ入ったグループから外へ戻る、の順に 1 回に 1 つ行い、どれも無いときに閉じる'
   - name: 高さを変える・戻す
-    when: リサイズハンドルをドラッグする、フォーカスして `↑`・`↓` を押す。ダブルクリックする
+    when: リサイズハンドルをドラッグする、フォーカスして `↑`・`↓` を押す。ダブルクリックする。動かさずに押すか Enter・Space で開く大きさのメニューのボタンを押す
     value: 表示する枠の高さとリサイズハンドルの `aria-valuenow`
-    description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px 以上。`kind` が `map` の図を除き、今の倍率の図の全体が収まる高さを超えない）、全体が収まる倍率をもう一度求める。ダブルクリックで倍率を変えずに、今の倍率の図の全体が収まる高さにする'
+    description: '`mount` が表示する枠の高さを変え（`↑`・`↓` は 32px ずつ。120px 以上。`kind` が `map` の図を除き、今の倍率の図の全体が収まる高さを超えない）、全体が収まる倍率をもう一度求める。ダブルクリックで倍率を変えずに、今の倍率の図の全体が収まる高さにする。大きさのメニューの「低くする」「高くする」は `↑`・`↓`、「全体が収まる高さにする」はダブルクリックと同じだけ変え、メニューは開いたままにする'
   - name: パネルを開く・畳む
     when: 開閉のボタンを押す
     value: '`panelOpen`（開閉のボタンの `aria-expanded`）'
@@ -374,6 +387,7 @@ accessibility:
   - リサイズハンドルは、表示する枠の下端（横のスクロールバーの下）に配置する枠線と面を持たない高さ 24 CSS px 以上の帯で、中央に 40×4 CSS px の角の丸い横棒（`span.mdmark-diagram-resize-bar`。色は平常時 `--mdmark-color-muted`、ポインターを乗せたとき・フォーカスの間・操作している間は `--mdmark-color-text`）を持ち、帯のどこでもドラッグできる `role="separator"`・`aria-orientation="horizontal"`・`tabindex="0"` の要素。`aria-label="「{題名}」の表示の高さ"`・`aria-keyshortcuts="ArrowUp ArrowDown"`・`aria-valuenow`・`aria-valuemin`・`aria-valuemax`（px。`aria-valuemax` は 120px・今の倍率の図の全体が収まる高さ・今の高さの最大）・`aria-valuetext="{高さ}px"` と、操作を記載した `title` を持ち、フォーカスの枠を見せる。ポインターの形状は `ns-resize`
   - 書き出すボタンはアイコンだけで、スクリーンリーダー向けの名前を `図を書き出す` にし、`aria-expanded` と、開く要素を指す `aria-controls` を持つ（`aria-haspopup` は付けない）。開く要素の 2 つのボタンは文字「SVG」「PNG」を持ち、Tab で移る
   - 一覧の表示のボタンはアイコンだけで、スクリーンリーダー向けの名前を `一覧で表示` にし、`aria-pressed` で切り替えた状態を伝える
+  - '拡大した図の移動のドラッグの代わりは、表示する枠のスクロールバー（`overflow: auto`）で、ポインターで 1 回押して動かせる（WCAG 2.2 の 2.5.7）。リサイズハンドルのドラッグの代わりは、動かさずに押すか Enter・Space で開く大きさのメニュー（`role="group"`・`aria-label="「{題名}」の表示の高さ"`。「低くする」「高くする」「全体が収まる高さにする」）で、開いたら最初の押せるボタンへフォーカスを移し、Esc・外を押して閉じたらハンドルへフォーカスを戻す。押せないボタンは `disabled`（部品設計『動画と音声』の大きさのメニューと同じ構造）'
 status: planned
 test_file: tests/integration/lib/diagram-frame.story.test.ts
 tags:

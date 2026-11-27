@@ -256,6 +256,10 @@ items:
   summary: ライブラリ本体 / 差分 / diff-side-by-side.part.ts
 - page: MOD-472-370.ts.yaml
   summary: ライブラリ本体 / map / 描画と操作 / packet.ts
+- page: MOD-472-373.ts.yaml
+  summary: ライブラリ本体 / 記法の共通 / step-menu.interact.ts
+- page: MOD-472-374.ts.yaml
+  summary: ライブラリ本体 / map / 描画と操作 / move-button.ts
 - page: MOD-562-2.ts.yaml
   summary: ライブラリ本体 / map / 描画と操作 / annotations.ts
 - page: MOD-472-130.ts.yaml
