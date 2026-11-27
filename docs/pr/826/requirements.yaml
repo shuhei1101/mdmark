@@ -1,0 +1,10 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: run_only
+    detail: 描いた文書の表・タブの前後の間が変わる。シナリオの操作と期待値は変わらないが、描いた文書の見た目を壊しうる
+    depends_on: []
+scope_out:
+  - item: MindStella の画面の CSS が mdmark の表・タブの余白を上書きしている場合の MindStella 側の修正
+    reason: MindStella のリポジトリの変更で、この作業 PR では修正できない。上書きの有無はインターフェース定義設計で切り分ける
+    plan: to_file
