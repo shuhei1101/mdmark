@@ -15730,6 +15730,7 @@ const SPACING_BLOCKS: { name: string; before: string; after?: string }[] = [
 ];
 const SPACING_CODE = "```ts\nconst a = 1;\n```";
 const SPACING_TREE = "```tree\napp/\n└── a.ts\n```";
+const SPACING_TABLE = "| 列 |\n| --- |\n| 値 |";
 // 本文の直下・セクションの中身・タブの中身のブロックの間（`--mdmark-space` の既定）と、リストの項目・引用・details・行の詳細の中の間
 const BLOCK_SPACE = 14;
 const NESTED_SPACE = 7;
@@ -15784,6 +15785,50 @@ const expectContainerGaps = ({
     Math.abs(gapBetween(code, tree) - expected),
     `${label}の中のファイルツリー`,
   ).toBeLessThanOrEqual(1);
+};
+
+const TABLE_RUN = `段落の文。\n\n${SPACING_TABLE}\n\n${SPACING_TABLE}\n\n後の段落の文。`;
+const TABLE_RUN_CONTAINERS = [
+  {
+    label: "見出しのセクション",
+    markdown: `## 見出し\n\n${TABLE_RUN}\n`,
+    container: ".mdmark-section-body",
+  },
+  {
+    label: "タブ",
+    markdown: `<!-- tabs -->\n\n### タブ A\n\n${TABLE_RUN}\n\n### タブ B\n\nB の本文\n\n<!-- /tabs -->\n`,
+    container: ".mdmark-tab-panel",
+  },
+];
+
+// 段落・表・表・段落を並べた入れ物で、段落 → 表・表 → 表・表 → 段落の間が本文の間隔か（タブの中身のタイトルは除く）
+const expectTableRunGaps = ({
+  container,
+  label,
+}: {
+  container: Element;
+  label: string;
+}): void => {
+  const children = [...container.children].filter(
+    (child) => !child.classList.contains("mdmark-tab-title"),
+  );
+  expect(
+    children.map((child) =>
+      child.classList.contains("mdmark-table") ? "表" : child.tagName,
+    ),
+    `${label}の中のブロック`,
+  ).toEqual(["P", "表", "表", "P"]);
+  const pairs = ["段落 → 表", "表 → 表", "表 → 段落"];
+  pairs.forEach((pair, index) => {
+    const gap = gapBetween(
+      children[index] as HTMLElement,
+      children[index + 1] as HTMLElement,
+    );
+    expect(
+      Math.abs(gap - BLOCK_SPACE),
+      `${label}の中の${pair}: ${gap}px`,
+    ).toBeLessThanOrEqual(1);
+  });
 };
 
 test("test_normal_when_block_spacing", async () => {
@@ -15843,6 +15888,15 @@ test("test_normal_when_block_spacing", async () => {
     expected: BLOCK_SPACE,
     label: "タブ",
   });
+
+  // 見出しのセクションの中とタブの中の、表の前後（段落 → 表・表 → 表・表 → 段落）
+  await Promise.all(
+    TABLE_RUN_CONTAINERS.map(async ({ label, markdown, container }) => {
+      const tableEl = createElement();
+      await mountTracked(tableEl, { markdown, config });
+      expectTableRunGaps({ container: find(tableEl, container), label });
+    }),
+  );
 
   // 箇条書きの項目・引用・details・行の詳細の中
   const indent = (text: string, prefix: string) =>
