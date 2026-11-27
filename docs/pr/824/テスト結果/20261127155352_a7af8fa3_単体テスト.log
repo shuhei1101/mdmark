@@ -1,0 +1,14 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-table-column-width-resize-and-settings-panel
+
+
+ Test Files  350 passed (350)
+      Tests  2995 passed (2995)
+   Start at  15:53:20
+   Duration  25.99s (worker 85%, tests 11%, import 4%)
+
