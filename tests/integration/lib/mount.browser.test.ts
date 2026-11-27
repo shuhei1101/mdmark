@@ -15787,6 +15787,50 @@ const expectContainerGaps = ({
   ).toBeLessThanOrEqual(1);
 };
 
+const TABLE_RUN = `段落の文。\n\n${SPACING_TABLE}\n\n${SPACING_TABLE}\n\n後の段落の文。`;
+const TABLE_RUN_CONTAINERS = [
+  {
+    label: "見出しのセクション",
+    markdown: `## 見出し\n\n${TABLE_RUN}\n`,
+    container: ".mdmark-section-body",
+  },
+  {
+    label: "タブ",
+    markdown: `<!-- tabs -->\n\n### タブ A\n\n${TABLE_RUN}\n\n### タブ B\n\nB の本文\n\n<!-- /tabs -->\n`,
+    container: ".mdmark-tab-panel",
+  },
+];
+
+// 段落・表・表・段落を並べた入れ物で、段落 → 表・表 → 表・表 → 段落の間が本文の間隔か（タブの中身のタイトルは除く）
+const expectTableRunGaps = ({
+  container,
+  label,
+}: {
+  container: Element;
+  label: string;
+}): void => {
+  const children = [...container.children].filter(
+    (child) => !child.classList.contains("mdmark-tab-title"),
+  );
+  expect(
+    children.map((child) =>
+      child.classList.contains("mdmark-table") ? "表" : child.tagName,
+    ),
+    `${label}の中のブロック`,
+  ).toEqual(["P", "表", "表", "P"]);
+  const pairs = ["段落 → 表", "表 → 表", "表 → 段落"];
+  pairs.forEach((pair, index) => {
+    const gap = gapBetween(
+      children[index] as HTMLElement,
+      children[index + 1] as HTMLElement,
+    );
+    expect(
+      Math.abs(gap - BLOCK_SPACE),
+      `${label}の中の${pair}: ${gap}px`,
+    ).toBeLessThanOrEqual(1);
+  });
+};
+
 test("test_normal_when_block_spacing", async () => {
   const config = { features: { "side-toc": false } };
   // 本文の直下: 2 つずつの全ての組み合わせ
@@ -15846,43 +15890,13 @@ test("test_normal_when_block_spacing", async () => {
   });
 
   // 見出しのセクションの中とタブの中の、表の前後（段落 → 表・表 → 表・表 → 段落）
-  const tableRun = `段落の文。\n\n${SPACING_TABLE}\n\n${SPACING_TABLE}\n\n後の段落の文。`;
-  const tableContainers = [
-    {
-      label: "見出しのセクション",
-      markdown: `## 見出し\n\n${tableRun}\n`,
-      container: ".mdmark-section-body",
-    },
-    {
-      label: "タブ",
-      markdown: `<!-- tabs -->\n\n### タブ A\n\n${tableRun}\n\n### タブ B\n\nB の本文\n\n<!-- /tabs -->\n`,
-      container: ".mdmark-tab-panel",
-    },
-  ];
-  for (const { label, markdown, container } of tableContainers) {
-    const tableEl = createElement();
-    await mountTracked(tableEl, { markdown, config });
-    const children = [...find(tableEl, container).children].filter(
-      (child) => !child.classList.contains("mdmark-tab-title"),
-    );
-    expect(
-      children.map((child) =>
-        child.classList.contains("mdmark-table") ? "表" : child.tagName,
-      ),
-      `${label}の中のブロック`,
-    ).toEqual(["P", "表", "表", "P"]);
-    const pairs = ["段落 → 表", "表 → 表", "表 → 段落"];
-    pairs.forEach((pair, index) => {
-      const gap = gapBetween(
-        children[index] as HTMLElement,
-        children[index + 1] as HTMLElement,
-      );
-      expect(
-        Math.abs(gap - BLOCK_SPACE),
-        `${label}の中の${pair}: ${gap}px`,
-      ).toBeLessThanOrEqual(1);
-    });
-  }
+  await Promise.all(
+    TABLE_RUN_CONTAINERS.map(async ({ label, markdown, container }) => {
+      const tableEl = createElement();
+      await mountTracked(tableEl, { markdown, config });
+      expectTableRunGaps({ container: find(tableEl, container), label });
+    }),
+  );
 
   // 箇条書きの項目・引用・details・行の詳細の中
   const indent = (text: string, prefix: string) =>
