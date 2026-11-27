@@ -1,5 +1,9 @@
 import { afterEach, expect, test, vi } from "vitest";
-import { addStyles, createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 
 /** 移動のボタンを読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadMoveButton = (): Promise<
@@ -64,7 +68,9 @@ function moveButton(viewport: HTMLElement): HTMLButtonElement {
 
 /** 2 つの矩形が重なるか */
 function overlaps(a: DOMRect, b: DOMRect): boolean {
-  return a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom;
+  return (
+    a.left < b.right && b.left < a.right && a.top < b.bottom && b.top < a.bottom
+  );
 }
 
 /** 要素 `item` を名前 `注文を受ける` で返す pointedOf */
@@ -91,7 +97,12 @@ function pointedOfItem(item: HTMLElement) {
 test("test_attach_move_button", async () => {
   // 準備
   const { attachMoveButton } = await loadMoveButton();
-  const { viewport, item, panel } = setUpViewport({ x: 520, y: 8, w: 72, h: 32 });
+  const { viewport, item, panel } = setUpViewport({
+    x: 520,
+    y: 8,
+    w: 72,
+    h: 32,
+  });
   const result = attachMoveButton({
     viewport,
     panel: () => panel,
@@ -118,7 +129,12 @@ test("test_attach_move_button", async () => {
 test("test_attach_move_button_when_dragged", async () => {
   // 準備
   const { attachMoveButton } = await loadMoveButton();
-  const { viewport, item, panel } = setUpViewport({ x: 520, y: 8, w: 72, h: 32 });
+  const { viewport, item, panel } = setUpViewport({
+    x: 520,
+    y: 8,
+    w: 72,
+    h: 32,
+  });
   const pointedOf = pointedOfItem(item);
   const result = attachMoveButton({ viewport, panel: () => panel, pointedOf });
   detachers.push(result.detach);
@@ -135,7 +151,12 @@ test("test_attach_move_button_when_dragged", async () => {
 test("test_attach_move_button_when_near_panel", async () => {
   // 準備: 要素の右上の角 (160, 40) がパネルに入る
   const { attachMoveButton } = await loadMoveButton();
-  const { viewport, item, panel } = setUpViewport({ x: 130, y: 20, w: 80, h: 40 });
+  const { viewport, item, panel } = setUpViewport({
+    x: 130,
+    y: 20,
+    w: 80,
+    h: 40,
+  });
   const result = attachMoveButton({
     viewport,
     panel: () => panel,

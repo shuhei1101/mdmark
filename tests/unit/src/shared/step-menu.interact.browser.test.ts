@@ -1,6 +1,10 @@
 import { afterEach, expect, test, vi } from "vitest";
 import { userEvent } from "vitest/browser";
-import { addStyles, createRootFromHtml, removeRoots } from "../../helpers/dom.ts";
+import {
+  addStyles,
+  createRootFromHtml,
+  removeRoots,
+} from "../../helpers/dom.ts";
 
 /** 向きのメニューを読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadStepMenu = (): Promise<
@@ -89,9 +93,24 @@ test("test_open_step_menu_when_item_pressed", async () => {
     opener,
     label: "移動",
     items: [
-      { label: "上へ移す", icon: "arrow-up" as never, enabled: () => true, run: () => {} },
-      { label: "下へ移す", icon: "arrow-down" as never, enabled: () => secondEnabled, run },
-      { label: "右へ移す", icon: "arrow-right" as never, enabled: () => true, run: () => {} },
+      {
+        label: "上へ移す",
+        icon: "arrow-up" as never,
+        enabled: () => true,
+        run: () => {},
+      },
+      {
+        label: "下へ移す",
+        icon: "arrow-down" as never,
+        enabled: () => secondEnabled,
+        run,
+      },
+      {
+        label: "右へ移す",
+        icon: "arrow-right" as never,
+        enabled: () => true,
+        run: () => {},
+      },
     ],
   });
   closers.push(() => handle.close({ restoreFocus: false }));

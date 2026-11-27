@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
-import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
 import { iconSvg } from "../../../../src/shared/icons.part.ts";
+import { findTag, findTags, innerHtml, plainText } from "../../helpers/html.ts";
 
 /** コードブロックの部品を読み込む（実装が無い間は各テストが個別に失敗する） */
 const loadCodeBlock = () =>

@@ -1891,7 +1891,7 @@ test("test_mount_when_code_wrap_given", async () => {
     markdown,
     config: { code: { wrap: true } } as MountOptions["config"],
   });
-  const states = (): Array<[boolean, string | null]> => {
+  const states = (): [boolean, string | null] => {
     const pre = el.querySelector(".mdmark-code pre");
     const toggle = el.querySelector(".mdmark-code-wrap-toggle");
     return [

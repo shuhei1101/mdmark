@@ -1,7 +1,7 @@
 import { afterEach, expect, test, vi } from "vitest";
+import type { PartStates } from "../../../../src/shared/part-states.interact.ts";
 import { restoreClipboard, stubClipboard } from "../../helpers/clipboard.ts";
 import { createRoot, removeRoots } from "../../helpers/dom.ts";
-import type { PartStates } from "../../../../src/shared/part-states.interact.ts";
 
 /** コードブロックの操作を読み込む（実装が無い間は各テストが個別に失敗する。ファイルが無いと Vite の解決が失敗してテストファイルごと落ちるため、URL を組んで読み込む） */
 const loadCodeBlocks = (): Promise<
@@ -278,9 +278,11 @@ test("test_attach_code_wraps", async () => {
   toggles[1]?.click();
   // 検証
   expect(before).toEqual(["true", "false", "false"]);
-  expect(toggles.map((toggle) => toggle.getAttribute("aria-pressed"))).toEqual(
-    ["true", "true", "false"],
-  );
+  expect(toggles.map((toggle) => toggle.getAttribute("aria-pressed"))).toEqual([
+    "true",
+    "true",
+    "false",
+  ]);
   expect(wrapStates(root)).toEqual([true, true, false]);
 });
 
@@ -289,9 +291,17 @@ test("test_attach_code_wraps_when_default_wrap", async () => {
   // 準備
   const { attachCodeWraps } = await loadCodeBlocks();
   const { root } = createRoot(
-    ["```ts", "const plain = 2;", "```", "", "```tree", "app/", "└── src/", "```", ""].join(
-      "\n",
-    ),
+    [
+      "```ts",
+      "const plain = 2;",
+      "```",
+      "",
+      "```tree",
+      "app/",
+      "└── src/",
+      "```",
+      "",
+    ].join("\n"),
   );
   // 実行
   detachers.push(attachCodeWraps(root, { defaultWrap: true }));

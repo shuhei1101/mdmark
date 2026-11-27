@@ -1091,10 +1091,7 @@ test("test_attach_map_flow_when_move_menu", async () => {
   sessionStorage.clear();
   const root = await setUp();
   // 実行: 動かさずに押して、移動のボタンのメニューの `下へ移す` を押す
-  pressAndRelease(
-    root.querySelector('[data-node="data"]') as HTMLElement,
-    0,
-  );
+  pressAndRelease(root.querySelector('[data-node="data"]') as HTMLElement, 0);
   const move = await vi.waitFor(() => {
     const found = root.querySelector<HTMLButtonElement>("button.map-move");
     expect(found?.hidden).toBe(false);
@@ -1120,7 +1117,8 @@ test("test_attach_map_flow_when_resize_menu", async () => {
       '[data-group="read"] .map-group-resize',
     ) as HTMLElement;
   const width = (root: HTMLElement) =>
-    root.querySelector<HTMLElement>('[data-group="read"]')
+    root
+      .querySelector<HTMLElement>('[data-group="read"]')
       ?.getBoundingClientRect().width ?? Number.NaN;
   corner(byKey).focus();
   corner(byKey).dispatchEvent(
