@@ -35,7 +35,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T05:15:54.911043+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    note: SC-472-73 を修正。SC-793-2 は列の幅のつまみ・折り返し・テーブル設定の記述が変更後と食い違わず、修正なし
+    updated_by: planner
+    updated_at: '2026-11-27T05:24:31.024612+00:00'
   - process: モック作成
     status: todo
   - process: データ設計
