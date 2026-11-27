@@ -102,13 +102,13 @@ files:
     related:
       - to: MOD-472-166
         type: implements
-  - path: next/steps.yaml
+  - path: v0.15.0/steps.yaml
     description: モジュール構成『ライブラリ本体 / バージョンを上げる』のうち「出していないバージョンの移行の手順」を受け持つ。mdmark upgrade で適用する手順を追加する・変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:cli, topic:ステップ]
     related:
       - to: MOD-472-30
         type: implements
-  - path: next/retired-map-options.mjs
+  - path: v0.15.0/retired-map-options.mjs
     description: モジュール構成『ライブラリ本体 / バージョンを上げる / retired-map-options.mjs』のうち「文書の map のマーカーから廃止した play・interval を削除する移行のスクリプト」を受け持つ。map のマーカーの引数の移行を変えるときに参照する。
     tags: [topic:バージョン, topic:移行, topic:map]
     related:
