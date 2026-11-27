@@ -17,8 +17,11 @@ beforeAll(holder.launch);
 afterAll(holder.close);
 
 /** 表のストーリーを開く */
-function open(id: string): Promise<Page> {
-  return holder.openStory(`parts-table--${id}`);
+function open(
+  id: string,
+  viewport?: { width: number; height: number },
+): Promise<Page> {
+  return holder.openStory(`parts-table--${id}`, viewport);
 }
 
 /** 表の本文の行の指定した列の文字を、上から並べて返却する（隠れた行も含む） */
@@ -1846,6 +1849,27 @@ test("test_settings_open_reorder", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
+// 12 列の表でテーブル設定を開くと、48rem 未満の画面ではパネルが画面の高さの 25% 以下で、列の一覧がパネルの中で縦にスクロールする（SettingsOpenPhone）
+test("test_settings_open_phone", async () => {
+  // 準備・実行
+  const page = await open("settings-open-phone", { width: 390, height: 844 });
+  // 検証
+  const panel = page.locator(".mdmark-table-settings:not([hidden])");
+  await expect(settingsNames(page)).resolves.toHaveLength(12);
+  const box = await panel.boundingBox();
+  expect(box?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(
+    Math.floor(844 * 0.25),
+  );
+  const list = panel.locator(".mdmark-table-settings-list");
+  await expect(
+    list.evaluate((element) => ({
+      scrolls: element.scrollHeight > element.clientHeight,
+      overflowY: getComputedStyle(element).overflowY,
+    })),
+  ).resolves.toEqual({ scrolls: true, overflowY: "auto" });
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
 // `+reorder` だけの表のパネルはタイトルが `並び順` で、目のアイコンを出さない（SettingsReorderOnly）
 test("test_settings_reorder_only", async () => {
   // 準備・実行
@@ -2420,4 +2444,55 @@ test("test_reorder_move_menu_first", async () => {
   await expect(
     menu.locator('button[data-move="after"]').isDisabled(),
   ).resolves.toBe(false);
+});
+
+// 空白を持たない行内のコードの列と区切りの無い英数字の列は、一番長い行の幅以上で描き、セルの中身が隣の列に重ならず、表の中で横にスクロールする（LongCodeCells）
+test("test_long_code_cells", async () => {
+  // 準備・実行
+  const page = await open("long-code-cells");
+  // 検証: どのセルも中身がはみ出さず、コード・ID の列は一番長い行の幅以上
+  const result = await page.evaluate(() => {
+    const cells = [
+      ...document.querySelectorAll<HTMLElement>(
+        "#storybook-root th, #storybook-root td",
+      ),
+    ];
+    const heads = [
+      ...document.querySelectorAll<HTMLElement>("#storybook-root thead th"),
+    ];
+    const contentWidth = (cell: HTMLElement): number => {
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const style = getComputedStyle(cell);
+      return (
+        range.getBoundingClientRect().width +
+        Number.parseFloat(style.paddingLeft) +
+        Number.parseFloat(style.paddingRight)
+      );
+    };
+    const narrower = [1, 2].flatMap((column) =>
+      [
+        ...document.querySelectorAll<HTMLElement>(
+          `#storybook-root tbody td:nth-child(${column + 1})`,
+        ),
+      ]
+        .filter(
+          (cell) =>
+            (heads[column]?.offsetWidth ?? 0) < Math.floor(contentWidth(cell)),
+        )
+        .map((cell) => cell.textContent ?? ""),
+    );
+    const scroller = document.querySelector<HTMLElement>(
+      "#storybook-root .mdmark-table-scroll",
+    );
+    return {
+      overflowing: cells
+        .filter((cell) => cell.scrollWidth > cell.clientWidth)
+        .map((cell) => cell.textContent ?? ""),
+      narrower,
+      scrolls: (scroller?.scrollWidth ?? 0) > (scroller?.clientWidth ?? 0),
+    };
+  });
+  expect(result).toEqual({ overflowing: [], narrower: [], scrolls: true });
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });

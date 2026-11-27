@@ -16820,14 +16820,18 @@ test("test_normal_when_column_resized", async () => {
   expect(dragged.slice(1)).toEqual(opened.slice(1));
   expect(heads[0]?.getAttribute("aria-sort")).toBe(sort);
   expect(names()).toEqual(order);
-  // 実行: 説明の列のつまみを、列の最小幅より狭くなるまで左へドラッグする
+  // 実行: 説明の列のつまみを、一番長い説明の幅より狭くなるまで左へドラッグする
   dragResizeHandle(noteHandle, -2000);
-  // 検証: 列の最小幅で止まり、wide= の列も折り返す
+  // 検証: 一番長い説明の幅（列の最小幅）で止まり、wide= の列は折り返さず、セルの中身がはみ出さない
   expect(String(heads[1]?.offsetWidth)).toBe(
     noteHandle.getAttribute("aria-valuemin"),
   );
-  const noteCell = first.querySelector<HTMLElement>("tbody td:nth-child(2)");
-  expect(noteCell && getComputedStyle(noteCell).whiteSpace).not.toBe("nowrap");
+  for (const noteCell of first.querySelectorAll<HTMLElement>(
+    "tbody td:nth-child(2)",
+  )) {
+    expect(noteCell.scrollWidth).toBeLessThanOrEqual(noteCell.clientWidth);
+    expect(getComputedStyle(noteCell).whiteSpace).toBe("nowrap");
+  }
   // 実行: 名前の列と説明の列のつまみをダブルクリックする
   for (const handle of [nameHandle, noteHandle]) {
     handle.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
@@ -16926,6 +16930,151 @@ test("test_normal_when_column_wider_than_visible_width", async () => {
     });
     expect(result.violations).toEqual([]);
   });
+});
+
+/** 列ごとの中身の幅が違う 4 列 3 行の表（コードは空白を持たない 40 文字の行内のコード、ID は区切りの無い 40 文字の英数字） */
+const CONTENT_WIDTH_ROWS = [1, 2, 3].map((no) => [
+  `名前${no}`,
+  `\`${"a".repeat(39)}${no}\``,
+  `${"B".repeat(39)}${no}`,
+  `${fullWidth(20)}の説明。${fullWidth(20)}`,
+]);
+
+/** 表のセルのうち、中身がセルの幅からはみ出すセルの文字 */
+function overflowingCells(wrapper: Element): string[] {
+  return [...wrapper.querySelectorAll<HTMLElement>("th, td")]
+    .filter((cell) => !cell.hidden && cell.scrollWidth > cell.clientWidth)
+    .map((cell) => cell.textContent ?? "");
+}
+
+// 折り返さない列を一番長い行の幅以上で描き、折り返す列も一番長い半角の単語の幅より狭くせず、つまみで狭めてもセルの中身を隣の列にはみ出させない（正常系（列の中身が隣の列に重ならない））
+test("test_normal_when_cell_content_stays_in_column", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(
+      () => {},
+    );
+    const el = createElement();
+    el.style.width = "600px";
+    const columns = ["名前", "コード", "ID", "説明"];
+    const plain = [
+      `| ${columns.join(" | ")} |`,
+      `| ${columns.map(() => "---").join(" | ")} |`,
+      ...CONTENT_WIDTH_ROWS.map((row) => `| ${row.join(" | ")} |`),
+      "",
+    ].join("\n");
+    const wrappers = await mountAutoTables(
+      el,
+      [
+        plain,
+        markedTableMarkdown('{"kind": "data"}', columns, CONTENT_WIDTH_ROWS),
+        markedTableMarkdown(
+          '{"kind": "data", "columns": {"コード": {"width": {"mode": "nowrap"}}, "ID": {"width": {"mode": "nowrap"}}}}',
+          columns,
+          CONTENT_WIDTH_ROWS,
+        ),
+      ].join("\n"),
+    );
+    const [, data, wide] = wrappers as [HTMLElement, HTMLElement, HTMLElement];
+    // 検証: 描いた直後、どの表のセルの中身もはみ出さない
+    for (const wrapper of wrappers) {
+      expect(overflowingCells(wrapper)).toEqual([]);
+    }
+    // 検証: 折り返さない列は一番長い行の幅以上で、折り返さない
+    const wideParts = resizeParts(wide);
+    for (const column of [1, 2]) {
+      const cells = [
+        ...wide.querySelectorAll<HTMLElement>(
+          `tbody td:nth-child(${column + 1})`,
+        ),
+      ];
+      for (const cell of cells) {
+        expect(getComputedStyle(cell).whiteSpace).toBe("nowrap");
+        const style = getComputedStyle(cell);
+        const inset =
+          Number.parseFloat(style.paddingLeft) +
+          Number.parseFloat(style.paddingRight);
+        const range = document.createRange();
+        range.selectNodeContents(cell);
+        expect(
+          itemAt(wideParts.heads, column).offsetWidth,
+        ).toBeGreaterThanOrEqual(
+          Math.floor(range.getBoundingClientRect().width + inset),
+        );
+      }
+    }
+    // 実行・検証: 3 つ目と 2 つ目の表のコード・ID の列を左端までドラッグしても、列の最小幅で止まり、はみ出さない
+    for (const wrapper of [wide, data]) {
+      const { heads, handles } = resizeParts(wrapper);
+      for (const column of [1, 2]) {
+        dragResizeHandle(itemAt(handles, column), -2000);
+        expect(String(itemAt(heads, column).offsetWidth)).toBe(
+          itemAt(handles, column).getAttribute("aria-valuemin"),
+        );
+      }
+      expect(overflowingCells(wrapper)).toEqual([]);
+    }
+    // 検証: 列の幅の合計が描く先の要素の幅を超える表は、表の中で横にスクロールし、ページははみ出さない
+    for (const wrapper of wrappers) {
+      const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+      expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+    }
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      document.documentElement.clientWidth,
+    );
+  });
+});
+
+// 画面の幅が 48rem 未満のとき、テーブル設定のパネルの高さを画面の高さの 25% までにし、列の一覧をパネルの中でスクロールさせる（正常系（スマホの幅でテーブル設定を開く））
+test("test_normal_when_settings_opened_in_phone_width", async () => {
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(390, 844);
+  try {
+    // 準備: 12 列 3 行の並べ替えの表
+    const el = createElement();
+    const columns = Array.from({ length: 12 }, (_, i) => `列${i + 1}`);
+    await mountTracked(el, {
+      markdown: markedTableMarkdown(
+        '{"kind": "data", "features": {"reorder": {}, "columns": {}}}',
+        columns,
+        [1, 2, 3].map((no) => columns.map((_, i) => `値${no}-${i + 1}`)),
+      ),
+    });
+    const table = find<HTMLElement>(el, ".mdmark-table");
+    // 実行: 表のメニューの「テーブル設定」を押す
+    const { panel } = openTableSettings(table);
+    const list = find<HTMLElement>(panel, ".mdmark-table-settings-list");
+    // 検証: 最初のつまみにフォーカスし、パネルの高さは画面の高さの 25% 以下で、一覧がスクロールする
+    await vi.waitFor(() => {
+      expect(document.activeElement).toBe(
+        find(list, ".mdmark-table-settings-grip"),
+      );
+    });
+    expect(panel.getBoundingClientRect().height).toBeLessThanOrEqual(
+      Math.floor(window.innerHeight * 0.25),
+    );
+    expect(list.scrollHeight).toBeGreaterThan(list.clientHeight);
+    expect(getComputedStyle(list).overflowY).toBe("auto");
+    // 実行: Tab で一覧の末尾の目のアイコンまでフォーカスを移す
+    const eyes = [
+      ...list.querySelectorAll<HTMLButtonElement>(".mdmark-table-settings-eye"),
+    ];
+    const last = itemAt(eyes, eyes.length - 1);
+    for (let i = 0; i < 40 && document.activeElement !== last; i += 1) {
+      await userEvent.keyboard("{Tab}");
+    }
+    // 検証: 末尾の目のアイコンがパネルの中に見え、ページははみ出さない
+    expect(document.activeElement).toBe(last);
+    const panelRect = panel.getBoundingClientRect();
+    const lastRect = last.getBoundingClientRect();
+    expect(lastRect.top).toBeGreaterThanOrEqual(panelRect.top);
+    expect(lastRect.bottom).toBeLessThanOrEqual(panelRect.bottom);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      document.documentElement.clientWidth,
+    );
+  } finally {
+    await page.viewport(original.width, original.height);
+  }
 });
 
 // ポインターが細かい画面でも、列の幅のつまみの押せる範囲を幅・高さとも 24px にする（正常系（細かいポインターの列の幅のつまみ））
