@@ -1014,6 +1014,63 @@ test("test_attach_tables_when_detached", async () => {
   expect(types).toContain("keydown");
 });
 
+// document に取り付ける前に付けた resize の表でも、取り付けた後と見える幅が変わった後に全ての列のつまみの値を更新する（正常系）
+test("test_attach_tables_when_attached_after_render", async () => {
+  // 準備: 描いた要素を document から外して付ける
+  addStyles();
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(dataTable({ values: ["1", "2", "3"] }));
+  root.remove();
+  detachers.push(attachTables(root));
+  const parent = document.createElement("div");
+  parent.style.width = "800px";
+  document.body.append(parent);
+  detachers.push(() => parent.remove());
+  const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  const headCells = [
+    ...root.querySelectorAll<HTMLTableCellElement>("thead th"),
+  ];
+  const handles = [...root.querySelectorAll<HTMLElement>(".mdmark-col-resize")];
+  if (!scroller || handles.length !== 2) {
+    throw new Error("表を包む要素か、列の幅のつまみが無い");
+  }
+  // 実行: 幅 800px の親へ取り付ける
+  parent.append(root);
+  // 検証
+  await vi.waitFor(() => {
+    expect(handles[0]?.getAttribute("aria-valuemax")).toBe(
+      String(scroller.clientWidth),
+    );
+  });
+  const attachedMax = scroller.clientWidth;
+  handles.forEach((handle, column) => {
+    expect(handle.getAttribute("aria-valuenow")).toBe(
+      String(headCells[column]?.offsetWidth),
+    );
+    expect(handle.getAttribute("aria-valuemax")).toBe(String(attachedMax));
+  });
+  // 実行: 親の幅を 500px にする
+  parent.style.width = "500px";
+  // 検証
+  await vi.waitFor(() => {
+    for (const handle of handles) {
+      expect(handle.getAttribute("aria-valuemax")).toBe(
+        String(scroller.clientWidth),
+      );
+    }
+  });
+  expect(scroller.clientWidth).toBeLessThan(attachedMax);
+  for (const handle of handles) {
+    const now = Number(handle.getAttribute("aria-valuenow"));
+    expect(Number(handle.getAttribute("aria-valuemin"))).toBeLessThanOrEqual(
+      now,
+    );
+    expect(Number(handle.getAttribute("aria-valuemax"))).toBeGreaterThanOrEqual(
+      now,
+    );
+  }
+});
+
 // セルに用語の下線があっても、絞り込みの値の候補と見出しのボタンの名前にツールチップの文字を含めない（正常系）
 test("test_attach_tables_when_cell_has_term", async () => {
   // 準備
