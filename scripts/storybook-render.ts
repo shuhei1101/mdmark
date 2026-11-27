@@ -1468,6 +1468,34 @@ const styleBoxOf = (
   };
 };
 
+/** コードブロックのストーリーのコピーのボタンの状態（折り返しのボタンのストーリーは、ボタンを入れる帯の右の塊を出すため `idle`） */
+const storyCopyState = (
+  args: PartArgs,
+): { copyState?: "idle" | "copied" | "failed" } => {
+  if (typeof args.copyState === "string")
+    return { copyState: args.copyState as "idle" | "copied" | "failed" };
+  return args.wrapToggle === true || args.wrapHovered === true
+    ? { copyState: "idle" }
+    : {};
+};
+
+/** 折り返しのボタンのストーリーは、`mount` が付けるボタンをコピーのボタンの前に配置した状態で出す（`wrapHovered` はポインターが乗った外観） */
+const withStoryWrapToggle = (html: string, args: PartArgs): string => {
+  if (args.wrapToggle !== true && args.wrapHovered !== true) return html;
+  const toggle = renderCodeWrapToggle({ pressed: args.wrap === true });
+  const styled =
+    args.wrapHovered === true
+      ? toggle.replace(
+          'class="mdmark-code-wrap-toggle"',
+          'class="mdmark-code-wrap-toggle" style="border-color:var(--mdmark-color-border)"',
+        )
+      : toggle;
+  return html.replace(
+    '<span class="mdmark-code-meta">',
+    `<span class="mdmark-code-meta">${styled}`,
+  );
+};
+
 const mapFrame = (
   title: string,
   part: { html: string; tips: string },
@@ -1612,19 +1640,25 @@ function mapSequenceStory(args: PartArgs): string {
     part,
     { width, height, ...mapStoryPanel(args, entered !== undefined) },
   );
-  return mapSequenceMoveOverlay(framed, sequence, args, width);
+  return mapSequenceMoveOverlay({
+    html: framed,
+    sequence,
+    args,
+    frameWidth: width,
+  });
 }
 
 /** シーケンス図の参加者の箱の高さの目安（px。描いた要素の `style` に高さが無いため） */
 const STORY_PARTICIPANT_HEIGHT = 48;
 
 /** ストーリーの引数 `moveTarget`（参加者の ID）の参加者の箱に移動のボタンを重ね、`moveMenu` が `true` なら左右の移動のメニューを開く */
-const mapSequenceMoveOverlay = (
-  html: string,
-  sequence: Sequence,
-  args: PartArgs,
-  frameWidth: number,
-): string => {
+const mapSequenceMoveOverlay = (options: {
+  html: string;
+  sequence: Sequence;
+  args: PartArgs;
+  frameWidth: number;
+}): string => {
+  const { html, sequence, args, frameWidth } = options;
   if (typeof args.moveTarget !== "string") return html;
   const id = args.moveTarget;
   const at = sequence.participants.findIndex((item) => item.id === id);
@@ -1835,65 +1869,10 @@ const mapFlowMoveOverlay = (
 ): string => {
   const target = jsonObject<{ kind: string; id: string }>(args.moveTarget);
   if (target === undefined) return html;
-  if (target.kind === "group") {
-    const group = layout.groups.find((item) => item.id === target.id);
-    if (!group) throw new Error(`ストーリーのグループが無い: ${target.id}`);
-    const menu = storyStepMenu({
-      label: `「${group.title}」の大きさ`,
-      items: [
-        { label: "右へ広げる", icon: "chevron-right" },
-        { label: "下へ広げる", icon: "chevron-down" },
-        { label: "左へ狭める", icon: "chevron-left", disabled: true },
-        { label: "上へ狭める", icon: "chevron-up", disabled: true },
-      ],
-      style: `position:absolute;inset:auto;z-index:6;left:${group.x + group.w - 12}px;top:${group.y + group.h}px`,
-    });
-    return html.replace(
-      /(<div class="mdmark-diagram-viewport"[^>]*>)/,
-      `$1${menu}`,
-    );
-  }
-  if (target.kind === "segment") {
-    const [wireId, at] = target.id.split(":");
-    const wire = layout.wires.find((item) => item.id === wireId);
-    const a = wire?.points[Number(at)];
-    const b = wire?.points[Number(at) + 1];
-    if (!wire || !a || !b)
-      throw new Error(`ストーリーの線の区間が無い: ${target.id}`);
-    const vertical = a[0] === b[0];
-    const band = STORY_MOVE_BUTTON.size + STORY_MOVE_BUTTON.inset * 2;
-    const box = vertical
-      ? {
-          x: a[0] - band / 2,
-          y: Math.min(a[1], b[1]),
-          w: band,
-          h: Math.abs(b[1] - a[1]),
-        }
-      : {
-          x: Math.min(a[0], b[0]),
-          y: a[1] - band / 2,
-          w: Math.abs(b[0] - a[0]),
-          h: band,
-        };
-    const name = wire.label ?? `${wire.from}→${wire.to}`;
-    return withMoveOverlay(html, {
-      box,
-      name,
-      frameWidth: layout.width,
-      menu:
-        args.moveMenu === "move"
-          ? {
-              label: `「${name}」の移動`,
-              items: STORY_MOVE_ITEMS.filter((item) =>
-                vertical
-                  ? item.icon === "chevron-left" ||
-                    item.icon === "chevron-right"
-                  : item.icon === "chevron-up" || item.icon === "chevron-down",
-              ),
-            }
-          : undefined,
-    });
-  }
+  if (target.kind === "group")
+    return mapFlowResizeOverlay(html, layout, target.id);
+  if (target.kind === "segment")
+    return mapFlowSegmentOverlay({ html, layout, id: target.id, args });
   const node = layout.nodes.find((item) => item.id === target.id);
   if (!node) throw new Error(`ストーリーのノードが無い: ${target.id}`);
   const name = node.lines.join(" ");
@@ -1905,6 +1884,78 @@ const mapFlowMoveOverlay = (
     menu:
       args.moveMenu === "move"
         ? { label: `「${name}」の移動`, items: STORY_MOVE_ITEMS }
+        : undefined,
+  });
+};
+
+/** グループの右下の角の下に、開いた大きさのメニューを配置する（中身より狭められない向きは押せない） */
+const mapFlowResizeOverlay = (
+  html: string,
+  layout: MapLayout,
+  id: string,
+): string => {
+  const group = layout.groups.find((item) => item.id === id);
+  if (!group) throw new Error(`ストーリーのグループが無い: ${id}`);
+  const menu = storyStepMenu({
+    label: `「${group.title}」の大きさ`,
+    items: [
+      { label: "右へ広げる", icon: "chevron-right" },
+      { label: "下へ広げる", icon: "chevron-down" },
+      { label: "左へ狭める", icon: "chevron-left", disabled: true },
+      { label: "上へ狭める", icon: "chevron-up", disabled: true },
+    ],
+    style: `position:absolute;inset:auto;z-index:6;left:${group.x + group.w - 12}px;top:${group.y + group.h}px`,
+  });
+  return html.replace(
+    /(<div class="mdmark-diagram-viewport"[^>]*>)/,
+    `$1${menu}`,
+  );
+};
+
+/** 線の区間（`{線の ID}:{区間の番号}`）の押せる帯に移動のボタンを重ね、区間と直角の向きだけのメニューを開く */
+const mapFlowSegmentOverlay = (options: {
+  html: string;
+  layout: MapLayout;
+  id: string;
+  args: PartArgs;
+}): string => {
+  const { html, layout, id, args } = options;
+  const [wireId, at] = id.split(":");
+  const wire = layout.wires.find((item) => item.id === wireId);
+  const a = wire?.points[Number(at)];
+  const b = wire?.points[Number(at) + 1];
+  if (!wire || !a || !b) throw new Error(`ストーリーの線の区間が無い: ${id}`);
+  const vertical = a[0] === b[0];
+  const band = STORY_MOVE_BUTTON.size + STORY_MOVE_BUTTON.inset * 2;
+  const box = vertical
+    ? {
+        x: a[0] - band / 2,
+        y: Math.min(a[1], b[1]),
+        w: band,
+        h: Math.abs(b[1] - a[1]),
+      }
+    : {
+        x: Math.min(a[0], b[0]),
+        y: a[1] - band / 2,
+        w: Math.abs(b[0] - a[0]),
+        h: band,
+      };
+  const name = wire.label ?? `${wire.from}→${wire.to}`;
+  const sideways = new Set(
+    vertical
+      ? ["chevron-left", "chevron-right"]
+      : ["chevron-up", "chevron-down"],
+  );
+  return withMoveOverlay(html, {
+    box,
+    name,
+    frameWidth: layout.width,
+    menu:
+      args.moveMenu === "move"
+        ? {
+            label: `「${name}」の移動`,
+            items: STORY_MOVE_ITEMS.filter((item) => sideways.has(item.icon)),
+          }
         : undefined,
   });
 };
@@ -2756,11 +2807,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       lines,
       ...(typeof args.fileName === "string" ? { fileName: args.fileName } : {}),
       ...(typeof args.syntax === "string" ? { syntax: args.syntax } : {}),
-      ...(typeof args.copyState === "string"
-        ? { copyState: args.copyState as "idle" | "copied" | "failed" }
-        : args.wrapToggle === true || args.wrapHovered === true
-          ? { copyState: "idle" as const }
-          : {}),
+      ...storyCopyState(args),
       // 畳める行を持つストーリーは、`mount` が付ける開閉のボタンと `⋯` を配置した状態で出す
       foldButtons: lines.some((line) => line.foldLines !== undefined),
       foldColumnHovered: args.foldColumnHovered === true,
@@ -2773,19 +2820,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
           }
         : {}),
     });
-    // 折り返しのボタンのストーリーは、`mount` が付けるボタンをコピーのボタンの前に配置した状態で出す（`wrapHovered` はポインターが乗った外観）
-    const withToggle =
-      args.wrapToggle === true || args.wrapHovered === true
-        ? html.replace(
-            '<span class="mdmark-code-meta">',
-            `<span class="mdmark-code-meta">${renderCodeWrapToggle({
-              pressed: args.wrap === true,
-            }).replace(
-              'class="mdmark-code-wrap-toggle"',
-              `class="mdmark-code-wrap-toggle"${args.wrapHovered === true ? ' style="border-color:var(--mdmark-color-border)"' : ""}`,
-            )}`,
-          )
-        : html;
+    const withToggle = withStoryWrapToggle(html, args);
     return args.highlight === true
       ? highlightCodeBlock(withToggle, language, lines)
       : withToggle;

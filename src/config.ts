@@ -372,7 +372,7 @@ export function resolveConfig(options: {
     // 右側の目次の出し方は、fixed だけを受け、他の値は hover にする
     sideToc: { mode: config["side-toc"]?.mode === "fixed" ? "fixed" : "hover" },
     media: { width: resolveMediaWidth(config.media?.width) },
-    code: { wrap: config.code?.wrap === true },
+    code: resolveCode(config.code),
     table: resolveTable(config.table),
     // テーマ・明暗は、COLOR_THEMES・COLOR_SCHEMES にある値だけを受け、他の値は既定にする
     colorTheme: oneOf(COLOR_THEMES, config.colorTheme) ?? DEFAULT_COLOR_THEME,
@@ -382,6 +382,11 @@ export function resolveConfig(options: {
     map: resolveMapConfig(config.map),
   };
 }
+
+/** コードブロックとファイルツリーの設定: `wrap` は `true` のときだけ `true` */
+const resolveCode = (code: MdmarkConfig["code"]): ResolvedConfig["code"] => ({
+  wrap: code?.wrap === true,
+});
 
 /** map の図の、ノードの形状に記載できる値 */
 export const MAP_SHAPES = ["rounded", "rect", "pill", "double"] as const;

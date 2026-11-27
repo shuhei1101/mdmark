@@ -700,6 +700,43 @@ const RESIZE_MENU_ITEMS: ReadonlyArray<{
   { label: "上へ狭める", icon: "chevron-up", size: [0, -1] },
 ];
 
+/** 移動のボタンを重ねる要素と、描き直した後に探し直すセレクタ（ノード・グループのタイトルの行の帯・線の押せる帯） */
+const movedElementOf = (
+  element: Element,
+  keyTarget: KeyTarget,
+): { element: Element; selector: string } | undefined => {
+  const [own, selector] = keyTarget.node
+    ? [
+        element.closest(".mdmark-diagram-node[data-node]"),
+        `.mdmark-diagram-stage [data-node="${CSS.escape(keyTarget.node)}"]`,
+      ]
+    : keyTarget.group
+      ? [
+          element.closest(".map-group-bar"),
+          `[data-group="${CSS.escape(keyTarget.group)}"] .map-group-bar`,
+        ]
+      : [
+          element.closest(".map-wire-hit"),
+          `.map-wire-hit[data-wire="${CSS.escape(keyTarget.wire ?? "")}"]`,
+        ];
+  return own ? { element: own, selector } : undefined;
+};
+
+/** 図の表示する枠に移動のボタンを付ける（表示する枠が無ければ付けない） */
+const attachFlowMoveButton = (options: {
+  figure: HTMLElement;
+  viewportElement: HTMLElement | null;
+  pointedOf: (element: Element) => MoveTarget | undefined;
+}): ReturnType<typeof attachMoveButton> | undefined => {
+  const { figure, viewportElement, pointedOf } = options;
+  if (!viewportElement) return undefined;
+  return attachMoveButton({
+    viewport: viewportElement,
+    panel: () => figure.querySelector(".mdmark-diagram-tools"),
+    pointedOf,
+  });
+};
+
 /** キーで操作する要素 */
 const keyTargetOf = (element: Element | undefined): KeyTarget | undefined =>
   nodeKeyTarget(element) ?? groupKeyTarget(element) ?? wireKeyTarget(element);
@@ -1545,57 +1582,31 @@ export const attachMapFlow = (
         if (next) change(next);
       },
     }));
+  /** 押した要素の名前（線は線のラベルか両端のノードの名前） */
+  const targetNameOf = (keyTarget: KeyTarget): string | undefined => {
+    if (keyTarget.node) return nodeNameOf(keyTarget.node);
+    if (keyTarget.group) return nodeNameOf(keyTarget.group);
+    const wire = layout.wires.find((item) => item.id === keyTarget.wire);
+    if (!wire) return undefined;
+    return wire.label ?? `${nodeNameOf(wire.from)}→${nodeNameOf(wire.to)}`;
+  };
   const pointedOf = (element: Element): MoveTarget | undefined => {
     if (element.closest(".map-group-resize")) return undefined;
     const keyTarget = keyTargetOf(element);
-    if (keyTarget?.node) {
-      const selector = `.mdmark-diagram-stage [data-node="${CSS.escape(keyTarget.node)}"]`;
-      const own = element.closest(".mdmark-diagram-node[data-node]");
-      return own
-        ? {
-            element: own,
-            name: nodeNameOf(keyTarget.node),
-            items: moveItemsOf(keyTarget),
-            selector,
-          }
-        : undefined;
-    }
-    if (keyTarget?.group) {
-      const own = element.closest(".map-group-bar");
-      return own
-        ? {
-            element: own,
-            name: nodeNameOf(keyTarget.group),
-            items: moveItemsOf(keyTarget),
-            selector: `[data-group="${CSS.escape(keyTarget.group)}"] .map-group-bar`,
-          }
-        : undefined;
-    }
-    if (keyTarget?.wire) {
-      const wire = layout.wires.find((item) => item.id === keyTarget.wire);
-      const own = element.closest(".map-wire-hit");
-      return own && wire
-        ? {
-            element: own,
-            name:
-              wire.label ?? `${nodeNameOf(wire.from)}→${nodeNameOf(wire.to)}`,
-            items: moveItemsOf(keyTarget),
-            selector: `.map-wire-hit[data-wire="${CSS.escape(keyTarget.wire)}"]`,
-          }
-        : undefined;
-    }
-    return undefined;
+    const own = keyTarget ? movedElementOf(element, keyTarget) : undefined;
+    const name = keyTarget ? targetNameOf(keyTarget) : undefined;
+    if (!keyTarget || !own || name === undefined) return undefined;
+    return {
+      element: own.element,
+      name,
+      items: moveItemsOf(keyTarget),
+      selector: own.selector,
+    };
   };
   const viewportElement = figure.querySelector<HTMLElement>(
     ".mdmark-diagram-viewport",
   );
-  if (viewportElement) {
-    moveControl = attachMoveButton({
-      viewport: viewportElement,
-      panel: () => figure.querySelector(".mdmark-diagram-tools"),
-      pointedOf,
-    });
-  }
+  moveControl = attachFlowMoveButton({ figure, viewportElement, pointedOf });
 
   // グループの角を動かさずに押す: 角の矢印キーと同じだけ大きさを変えるメニューを開く
   let resizeMenu: StepMenuHandle | undefined;
