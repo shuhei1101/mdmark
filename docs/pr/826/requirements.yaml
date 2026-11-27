@@ -5,6 +5,6 @@ use_cases:
     detail: 描いた文書の表・タブの前後の間が変わる。シナリオの操作と期待値は変わらないが、描いた文書の見た目を壊しうる
     depends_on: []
 scope_out:
-  - item: MindStella の画面の CSS が mdmark の表・タブの余白を上書きしている場合の MindStella 側の修正
-    reason: MindStella のリポジトリの変更で、この作業 PR では修正できない。上書きの有無はインターフェース定義設計で切り分ける
-    plan: to_file
+  - item: MindStella の本文の見出しごとの区切り（`div.md-section-body`）の中のブロック同士の間
+    reason: MindStella のリポジトリの変更で、この作業 PR では修正できない。切り分けで、症状は MindStella が包む `div.md-section-body` の中でだけ起きると分かった
+    plan: shuhei1101/mindstella#729

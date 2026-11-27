@@ -40,8 +40,11 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T14:37:58.644434+00:00'
   - process: モック作成
-    status: todo
-    note: 表・タブの前後の余白の量は依頼が決めておらず、作る人が決める余地がある。切り分けで原因が MindStella の CSS だけと分かり、mdmark の見た目を変えない場合は skipped にする
+    status: skipped
+    note: ''
+    reason: 切り分けで原因が MindStella の `div.md-section-body` だけと分かり、mdmark の表・タブの前後の間は既に `--mdmark-space`（14px）で見た目を変えない
+    updated_by: planner
+    updated_at: '2026-11-27T14:44:50.240695+00:00'
   - process: データ設計
     status: skipped
     reason: '影響なし: データの構造を変えない'
