@@ -1,4 +1,7 @@
-import { attachCodeCopy } from "./code-block/code-block.interact.ts";
+import {
+  attachCodeCopy,
+  attachCodeWraps,
+} from "./code-block/code-block.interact.ts";
 import { attachCodeFolds } from "./code-block/code-fold.interact.ts";
 import type { TablePinMode, TooltipPlacement } from "./config.ts";
 import type { MdmarkParamDefinition } from "./diagram/definition.ts";
@@ -37,6 +40,7 @@ type InteractionContext = {
   paramDefinitions: MdmarkParamDefinition[];
   pinMode: TablePinMode;
   pinDefault: boolean;
+  codeWrap: boolean;
   longColumnMin: number | undefined;
   onColumnsChange: ((event: MdmarkColumnsChange) => void) | undefined;
   sectionStates: SectionStates | undefined;
@@ -102,6 +106,15 @@ function attachBlocks(context: InteractionContext): Array<() => void> {
   }
   if (features.tree === true) {
     detachers.push(attachFileTrees(root, partStates));
+  }
+  if (features.code === true || features.tree === true) {
+    detachers.push(
+      attachCodeWraps(root, {
+        defaultWrap: context.codeWrap,
+        partStates,
+        blocks: { code: features.code === true, tree: features.tree === true },
+      }),
+    );
   }
   if (features.diagrams === true) {
     detachers.push(
@@ -187,6 +200,8 @@ export function attachInteractions(options: {
   pinMode?: TablePinMode;
   /** 既定を適用した設定の、描いた直後に既定の列を留めるか（既定 `false`） */
   pinDefault?: boolean;
+  /** 既定を適用した設定の、マーカーの無いコードブロックとファイルツリーを描いた直後に折り返すか（既定 `false`） */
+  codeWrap?: boolean;
   /** 既定を適用した設定の、長文の列の最小の幅（em） */
   longColumnMin?: number;
   /** 列の表示を切り替えたときに通知する */
@@ -208,6 +223,7 @@ export function attachInteractions(options: {
     paramDefinitions: options.paramDefinitions ?? [],
     pinMode: options.pinMode ?? "each",
     pinDefault: options.pinDefault ?? false,
+    codeWrap: options.codeWrap ?? false,
     longColumnMin: options.longColumnMin,
     onColumnsChange: options.onColumnsChange,
     sectionStates: options.sectionStates,

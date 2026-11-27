@@ -332,8 +332,11 @@ function attachTree(
   let copyTimer: ReturnType<typeof setTimeout> | undefined;
   const setCopyState = (state: TreeCopyState): void => {
     if (copyButton) {
+      const content = renderTreeCopyContent(state);
       copyButton.dataset.state = state;
-      copyButton.innerHTML = renderTreeCopyContent(state);
+      copyButton.innerHTML = content.html;
+      copyButton.setAttribute("aria-label", content.label);
+      copyButton.setAttribute("title", content.label);
     }
   };
   const announce = (message: string): void => {
