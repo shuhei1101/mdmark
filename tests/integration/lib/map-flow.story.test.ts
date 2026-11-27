@@ -1120,3 +1120,99 @@ test("test_wire_route_after_drag", async () => {
   expect(points.end.y).toBeLessThan(target.bottom);
   expect(Math.abs(points.start.x - source.right)).toBeLessThanOrEqual(1);
 });
+
+/** 開いた向き・大きさのメニューの名前と、項目の文言と押せないか */
+function stepMenuOf(page: Page) {
+  return page.locator(".mdmark-step-menu").evaluate((menu) => ({
+    role: menu.getAttribute("role"),
+    label: menu.getAttribute("aria-label"),
+    items: [...menu.querySelectorAll("button")].map((button) => ({
+      label: button.textContent?.trim() ?? "",
+      disabled: button.disabled,
+    })),
+  }));
+}
+
+// ノードを動かさずに押すと、ノードの内側の右上の角に移動のボタンを重ねる（MoveButton）
+test("test_move_button", async () => {
+  // 準備・実行
+  const page = await openMap("move-button");
+  // 検証
+  const button = await rectOf(page, "button.map-move");
+  const node = await rectOf(page, '.mdmark-diagram-node[data-node="mount"]');
+  expect(button.right).toBeLessThanOrEqual(node.right + 0.5);
+  expect(button.top).toBeGreaterThanOrEqual(node.top - 0.5);
+  expect(button.left).toBeGreaterThan((node.left + node.right) / 2);
+  await expect(
+    page.locator("button.map-move").getAttribute("aria-label"),
+  ).resolves.toBe("「mount」を移動");
+  await expect(
+    page.locator("button.map-move").getAttribute("aria-expanded"),
+  ).resolves.toBe("false");
+  await expectTargetSize(page, "button.map-move");
+});
+
+// 右上の角が図のパネルと重なるノードでは、移動のボタンをノードの内側の左上の角に重ねる（MoveButtonNearPanel）
+test("test_move_button_near_panel", async () => {
+  // 準備・実行
+  const page = await openMap("move-button-near-panel");
+  // 検証
+  const button = await rectOf(page, "button.map-move");
+  const node = await rectOf(page, '.mdmark-diagram-node[data-node="mount"]');
+  expect(button.left).toBeGreaterThanOrEqual(node.left - 0.5);
+  expect(button.right).toBeLessThan((node.left + node.right) / 2);
+});
+
+// 移動のメニューを、ノードと移動のボタンに重ねずに開き、4 つの向きを並べる（MoveMenu）
+test("test_move_menu", async () => {
+  // 準備・実行
+  const page = await openMap("move-menu");
+  // 検証
+  await expect(stepMenuOf(page)).resolves.toEqual({
+    role: "group",
+    label: "「mount」の移動",
+    items: [
+      { label: "上へ移す", disabled: false },
+      { label: "下へ移す", disabled: false },
+      { label: "左へ移す", disabled: false },
+      { label: "右へ移す", disabled: false },
+    ],
+  });
+  const menu = await rectOf(page, ".mdmark-step-menu");
+  expect(
+    overlaps(
+      menu,
+      await rectOf(page, '.mdmark-diagram-node[data-node="mount"]'),
+    ),
+  ).toBe(false);
+  expect(overlaps(menu, await rectOf(page, "button.map-move"))).toBe(false);
+  await expect(targetSizeViolations(page)).resolves.toEqual([]);
+});
+
+// 縦の区間の移動のメニューは、区間と直角の左右の向きだけを並べる（MoveMenuSegment）
+test("test_move_menu_segment", async () => {
+  // 準備・実行
+  const page = await openMap("move-menu-segment");
+  // 検証
+  const menu = await stepMenuOf(page);
+  expect(menu.items.map((item) => item.label)).toEqual([
+    "左へ移す",
+    "右へ移す",
+  ]);
+  await expect(page.locator("button.map-move").count()).resolves.toBe(1);
+});
+
+// グループの右下の角の大きさのメニューは 4 つの項目を並べ、中身より狭められない向きを押せなくする（ResizeMenu）
+test("test_resize_menu", async () => {
+  // 準備・実行
+  const page = await openMap("resize-menu");
+  // 検証
+  const menu = await stepMenuOf(page);
+  expect(menu.items).toEqual([
+    { label: "右へ広げる", disabled: false },
+    { label: "下へ広げる", disabled: false },
+    { label: "左へ狭める", disabled: true },
+    { label: "上へ狭める", disabled: true },
+  ]);
+  await expect(targetSizeViolations(page)).resolves.toEqual([]);
+});

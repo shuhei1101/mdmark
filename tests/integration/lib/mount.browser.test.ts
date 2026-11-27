@@ -2175,7 +2175,9 @@ test("test_normal_when_code_copied", async () => {
   expect(
     el.querySelectorAll(".mdmark-tree button.mdmark-code-copy"),
   ).toHaveLength(1);
-  // 実行: Tab でフォーカスして Enter で押す
+  // 実行: Tab でフォーカスして Enter で押す（帯ではコピーのボタンの前に折り返しのボタンがある）
+  await userEvent.tab();
+  expect(document.activeElement?.className).toBe("mdmark-code-wrap-toggle");
   await userEvent.tab();
   expect(document.activeElement).toBe(tsButton);
   expect(tsButton.type).toBe("button");
@@ -2188,7 +2190,7 @@ test("test_normal_when_code_copied", async () => {
     1,
     "const a = 2;\ncount += 1; // 数える\nreturn a;",
   );
-  expect(tsButton.textContent).toContain("コピーしました");
+  expect(tsButton.getAttribute("aria-label")).toContain("コピーしました");
   expect(
     find(tsButton.closest(".mdmark-code") as Element, '[role="status"]')
       .textContent,
@@ -2202,7 +2204,7 @@ test("test_normal_when_code_copied", async () => {
   // 実行・検証: 2 秒後にボタンの文字が戻る
   await vi.waitFor(
     () => {
-      expect(tsButton.textContent?.trim()).toBe("コピー");
+      expect(tsButton.getAttribute("aria-label")).toBe("コピー");
     },
     { timeout: 4000 },
   );
@@ -2242,10 +2244,14 @@ test("test_normal_when_code_copy_denied", async () => {
     // 実行・検証: 押すと失敗を通知し、2 秒たっても戻らない
     button.click();
     await vi.advanceTimersByTimeAsync(0);
-    expect(button.textContent).toContain("コピーできませんでした");
+    expect(button.getAttribute("aria-label")).toContain(
+      "コピーできませんでした",
+    );
     expect(status()).toContain("コードをコピーできませんでした");
     await vi.advanceTimersByTimeAsync(2000);
-    expect(button.textContent).toContain("コピーできませんでした");
+    expect(button.getAttribute("aria-label")).toContain(
+      "コピーできませんでした",
+    );
     expect(rejections).toHaveLength(0);
     // 実行・検証: クリップボードが無いページでも、押すと同じ通知になる
     Object.defineProperty(navigator, "clipboard", {
@@ -2254,7 +2260,9 @@ test("test_normal_when_code_copy_denied", async () => {
     });
     button.click();
     await vi.advanceTimersByTimeAsync(0);
-    expect(button.textContent).toContain("コピーできませんでした");
+    expect(button.getAttribute("aria-label")).toContain(
+      "コピーできませんでした",
+    );
     expect(status()).toContain("コードをコピーできませんでした");
     expect(rejections).toHaveLength(0);
   } finally {
@@ -9088,7 +9096,7 @@ test("test_normal_when_tree_copied", async () => {
   const button = find<HTMLButtonElement>(bar, "button.mdmark-code-copy");
   expect(find(bar, ".mdmark-code-lang-name").textContent).toBe("tree");
   expect(button.type).toBe("button");
-  expect(button.textContent).toBe("コピー");
+  expect(button.getAttribute("aria-label")).toBe("コピー");
   // 実行: src/ を閉じてから押す
   folderToggle(tree, "src/").click();
   expect(folderToggle(tree, "src/").getAttribute("aria-expanded")).toBe(
@@ -9100,12 +9108,12 @@ test("test_normal_when_tree_copied", async () => {
   expect(writeText).toHaveBeenCalledTimes(1);
   expect(writeText).toHaveBeenCalledWith(COPY_TREE_LINES.join("\n"));
   expect(button.dataset.state).toBe("copied");
-  expect(button.textContent).toBe("コピーしました");
+  expect(button.getAttribute("aria-label")).toBe("コピーしました");
   expect(find(tree, '[role="status"]').textContent).toContain("コピーしました");
   // 実行・検証: 2 秒たつとボタンが戻る
   await vi.advanceTimersByTimeAsync(2000);
   expect(button.dataset.state).toBe("idle");
-  expect(button.textContent).toBe("コピー");
+  expect(button.getAttribute("aria-label")).toBe("コピー");
 });
 
 // クリップボードに書き込めなければ、元の罫線のテキストを選択したパネルをツリーの下に出し、Esc と閉じるボタンで閉じてコピーボタンへフォーカスを戻す（正常系）
@@ -25356,4 +25364,638 @@ test("test_normal_when_map_fullscreen", async () => {
   for (const motion of packets)
     expect(motion.getAttribute("keyPoints")).toBe("1;0");
   await userEvent.keyboard("{Escape}");
+});
+
+/** 動かさずに押す（pointerdown・pointerup・click を要素の中央で送信する） */
+function pressStill(element: Element): void {
+  const [x, y] = mapCenter(element);
+  const point = {
+    bubbles: true,
+    pointerId: 1,
+    button: 0,
+    clientX: x,
+    clientY: y,
+  };
+  element.dispatchEvent(new PointerEvent("pointerdown", point));
+  element.dispatchEvent(new PointerEvent("pointerup", point));
+  element.dispatchEvent(new MouseEvent("click", point));
+}
+
+/** 開いている向き・大きさのメニューの、文言が `label` のボタン（無ければ失敗する） */
+function stepItem(label: string): HTMLButtonElement {
+  const found = [
+    ...document.querySelectorAll<HTMLButtonElement>(".mdmark-step-menu button"),
+  ].find((item) => item.textContent?.trim() === label);
+  if (!found) throw new Error(`メニューの項目が無い: ${label}`);
+  return found;
+}
+
+/** 開いている向き・大きさのメニューの項目の文言 */
+function stepLabels(): string[] {
+  return [
+    ...document.querySelectorAll<HTMLButtonElement>(".mdmark-step-menu button"),
+  ].map((item) => item.textContent?.trim() ?? "");
+}
+
+/** 折り返しの見本: wrap のコードブロック・マーカーの無いコードブロック・注釈を持つフォルダのツリー */
+const WRAP_MARKDOWN = [
+  '<!-- code: {"wrap": true} -->',
+  "",
+  "```ts",
+  `const wrapped = "${"a".repeat(240)}";`,
+  "```",
+  "",
+  "```ts",
+  `const plain = "${"b".repeat(240)}";`,
+  "```",
+  "",
+  "```tree",
+  `docs/                # ${"注釈".repeat(60)}`,
+  "└── 使い方/          # 導入と使い方の手順",
+  "```",
+  "",
+].join("\n");
+
+/** 文書の順のコードブロックの pre とツリーの、折り返しの class と横にはみ出すか・ボタンの押した状態 */
+function wrapStatesOf(el: Element) {
+  return [
+    ...el.querySelectorAll<HTMLElement>(".mdmark-code pre, div.mdmark-tree"),
+  ].map((block) => {
+    const tree = block.matches("div.mdmark-tree");
+    const scroller = tree
+      ? (block.querySelector<HTMLElement>(".mdmark-tree-list") as HTMLElement)
+      : block;
+    const owner = tree ? block : (block.closest(".mdmark-code") as HTMLElement);
+    return {
+      wrapped: block.classList.contains(
+        tree ? "mdmark-tree-wrap" : "mdmark-code-wrap",
+      ),
+      overflows: scroller.scrollWidth > scroller.clientWidth + 1,
+      pressed: owner
+        .querySelector(".mdmark-code-wrap-toggle")
+        ?.getAttribute("aria-pressed"),
+    };
+  });
+}
+
+// 読者が帯の折り返しのボタンでブロックごとに折り返しを切り替え、update では保ち、もう一度 mount すると戻る（正常系）
+test("test_normal_when_wrap_toggled", async () => {
+  // 準備
+  const writeText = vi.fn<(text: string) => Promise<void>>(() =>
+    Promise.resolve(),
+  );
+  stubClipboard(writeText);
+  const el = createElement();
+  el.style.width = "480px";
+  const handle = await mountTracked(el, {
+    markdown: WRAP_MARKDOWN,
+    config: { features: { syntax: false } },
+  });
+  const toggles = () => [
+    ...el.querySelectorAll<HTMLButtonElement>(".mdmark-code-wrap-toggle"),
+  ];
+  // 検証: どの帯にもコピーのボタンの前にアイコンだけのボタンがある
+  expect(toggles()).toHaveLength(3);
+  for (const toggle of toggles()) {
+    expect(toggle.type).toBe("button");
+    expect(toggle.textContent?.trim()).toBe("");
+    expect(toggle.getAttribute("aria-label")).toBe("画面の端で折り返す");
+    expect(toggle.getAttribute("title")).toBe("画面の端で折り返す");
+    expect(
+      toggle.nextElementSibling?.classList.contains("mdmark-code-copy"),
+    ).toBe(true);
+  }
+  expect(wrapStatesOf(el).map((state) => state.pressed)).toEqual([
+    "true",
+    "false",
+    "false",
+  ]);
+  // 実行: マーカーの無いコードブロックのボタンを押す
+  toggles()[1]?.click();
+  // 検証
+  expect(wrapStatesOf(el)).toMatchObject([
+    { wrapped: true, pressed: "true" },
+    { wrapped: true, overflows: false, pressed: "true" },
+    { wrapped: false, pressed: "false" },
+  ]);
+  // 実行: wrap のコードブロックのボタンを Space で押す
+  toggles()[0]?.focus();
+  await userEvent.keyboard(" ");
+  expect(wrapStatesOf(el)[0]).toMatchObject({
+    wrapped: false,
+    overflows: true,
+    pressed: "false",
+  });
+  // 実行: ツリーのボタンを Enter で押す
+  const folder = el.querySelector(".mdmark-tree-toggle");
+  const expanded = folder?.getAttribute("aria-expanded");
+  toggles()[2]?.focus();
+  await userEvent.keyboard("{Enter}");
+  // 検証: ツリーが折り返し、注釈を持つフォルダの名前が縦に折れず、注釈が名前と重ならない
+  expect(wrapStatesOf(el)[2]).toMatchObject({
+    wrapped: true,
+    overflows: false,
+    pressed: "true",
+  });
+  expect(folder?.getAttribute("aria-expanded")).toBe(expanded);
+  const name = find(el, ".mdmark-tree-row .mdmark-tree-name");
+  const range = document.createRange();
+  range.selectNodeContents(name);
+  expect(range.getClientRects().length).toBe(1);
+  const note = find(el, ".mdmark-tree-row .mdmark-tree-note");
+  expect(
+    rectsOverlap(name.getBoundingClientRect(), note.getBoundingClientRect()),
+  ).toBe(false);
+  // 検証: コピーで記載した文字に折り返しの改行が入らない
+  find<HTMLButtonElement>(el, ".mdmark-code .mdmark-code-copy").click();
+  await vi.waitFor(() => expect(writeText).toHaveBeenCalledTimes(1));
+  expect(writeText.mock.calls[0]?.[0]).toBe(
+    `const wrapped = "${"a".repeat(240)}";`,
+  );
+  // 実行・検証: update の後も切り替えた状態を保つ
+  const before = wrapStatesOf(el).map(({ wrapped, pressed }) => ({
+    wrapped,
+    pressed,
+  }));
+  handle.update(WRAP_MARKDOWN);
+  await vi.waitFor(() => expect(toggles()).toHaveLength(3));
+  expect(
+    wrapStatesOf(el).map(({ wrapped, pressed }) => ({ wrapped, pressed })),
+  ).toEqual(before);
+  // 実行・検証: もう一度 mount すると描いた直後の状態に戻る
+  handle.destroy();
+  await mountTracked(el, {
+    markdown: WRAP_MARKDOWN,
+    config: { features: { syntax: false } },
+  });
+  await vi.waitFor(() => expect(toggles()).toHaveLength(3));
+  expect(wrapStatesOf(el).map((state) => state.pressed)).toEqual([
+    "true",
+    "false",
+    "false",
+  ]);
+  // 実行・検証: 印刷の媒体では折り返しのボタンを表示しない
+  try {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "print" });
+    await vi.waitFor(() => expect(isShown(toggles()[0])).toBe(false));
+  } finally {
+    await cdp().send("Emulation.setEmulatedMedia", { media: "", features: [] });
+  }
+});
+
+// 設定の code.wrap が true なら、マーカーの無いブロックも描いた直後に折り返す（正常系）
+test("test_normal_when_wrap_default_from_config", async () => {
+  // 準備
+  const markdown = WRAP_MARKDOWN.replace(
+    '<!-- code: {"wrap": true} -->\n\n',
+    "",
+  );
+  const el = createElement();
+  el.style.width = "480px";
+  // 実行
+  await mountTracked(el, {
+    markdown,
+    config: { features: { syntax: false }, code: { wrap: true } } as Parameters<
+      Built["mount"]
+    >[1]["config"],
+  });
+  // 検証
+  expect(wrapStatesOf(el)).toMatchObject([
+    { wrapped: true, overflows: false, pressed: "true" },
+    { wrapped: true, overflows: false, pressed: "true" },
+    { wrapped: true, overflows: false, pressed: "true" },
+  ]);
+  // 実行・検証: コードブロックのボタンを押すと、そのブロックだけ折り返さない
+  find<HTMLButtonElement>(el, ".mdmark-code .mdmark-code-wrap-toggle").click();
+  expect(wrapStatesOf(el)).toMatchObject([
+    { wrapped: false, pressed: "false" },
+    { wrapped: true },
+    { wrapped: true },
+  ]);
+  // 実行・検証: 設定を省くと折り返さず、読み込めない値は無視する
+  for (const config of [
+    { features: { syntax: false } },
+    { features: { syntax: false }, code: { wrap: "yes" } },
+  ]) {
+    const other = createElement();
+    other.style.width = "480px";
+    await mountTracked(other, {
+      markdown,
+      config: config as Parameters<Built["mount"]>[1]["config"],
+    });
+    expect(wrapStatesOf(other).map((state) => state.pressed)).toEqual([
+      "false",
+      "false",
+      "false",
+    ]);
+  }
+});
+
+// map の構成図のノード・区間・グループのタイトルを、移動のボタンと向きのメニューで Alt + 矢印キーと同じだけ動かす（正常系）
+test("test_normal_when_map_items_moved_without_drag", async () => {
+  // 準備: 1 つ目の図は Alt + ↓ で動かした位置を記録する
+  const markdown = mapRange({ mermaid: MAP_FLOW, data: MAP_DATA });
+  const byKey = await mountMap(markdown);
+  const keyFigure = byKey.figures()[0] as HTMLElement;
+  const hit = find<HTMLElement>(
+    mapNode(keyFigure, "data"),
+    ":scope > .mdmark-diagram-node-hit",
+  );
+  hit.focus();
+  hit.dispatchEvent(
+    new KeyboardEvent("keydown", { key: "Enter", bubbles: true }),
+  );
+  hit.dispatchEvent(
+    new KeyboardEvent("keydown", {
+      key: "ArrowDown",
+      altKey: true,
+      bubbles: true,
+    }),
+  );
+  const expected = mapNode(keyFigure, "data").style.cssText;
+  byKey.el.remove();
+  const { el, figures } = await mountMap(markdown);
+  const figure = () => figures()[0] as HTMLElement;
+  // 実行: ノードを動かさずに押す
+  pressStill(mapNode(figure(), "data"));
+  const move = await vi.waitFor(() => {
+    const found = figure().querySelector<HTMLButtonElement>("button.map-move");
+    expect(found?.hidden).toBe(false);
+    return found as HTMLButtonElement;
+  });
+  // 検証: ノードの内側の右上の角に、ノードの名前を使ったボタン
+  const node = mapNode(figure(), "data").getBoundingClientRect();
+  const button = move.getBoundingClientRect();
+  expect(move.type).toBe("button");
+  expect(move.getAttribute("aria-label")).toBe("「補足の検査」を移動");
+  expect(move.getAttribute("aria-expanded")).toBe("false");
+  expect(button.right).toBeLessThanOrEqual(node.right + 0.5);
+  expect(button.top).toBeGreaterThanOrEqual(node.top - 0.5);
+  // 実行: 移動のボタンを押す
+  move.click();
+  // 検証: 4 つの向きのメニューを、ノード・ボタン・パネルと重ねずに開く
+  const menu = find<HTMLElement>(document.body, ".mdmark-step-menu");
+  expect(move.getAttribute("aria-expanded")).toBe("true");
+  expect(menu.getAttribute("role")).toBe("group");
+  expect(menu.getAttribute("aria-label")).toBe("「補足の検査」の移動");
+  expect(stepLabels()).toEqual([
+    "上へ移す",
+    "下へ移す",
+    "左へ移す",
+    "右へ移す",
+  ]);
+  const menuBox = menu.getBoundingClientRect();
+  expect(rectsOverlap(menuBox, node)).toBe(false);
+  expect(rectsOverlap(menuBox, button)).toBe(false);
+  expect(
+    rectsOverlap(
+      menuBox,
+      find(figure(), ".mdmark-diagram-tools").getBoundingClientRect(),
+    ),
+  ).toBe(false);
+  expect(await axeViolations(figure())).toEqual([]);
+  // 実行: 下へ移すを押す
+  stepItem("下へ移す").click();
+  // 検証: Alt + ↓ と同じ位置で、メニューは開いたまま下へ移すにフォーカスがある
+  await vi.waitFor(() =>
+    expect(mapNode(figure(), "data").style.cssText).toBe(expected),
+  );
+  expect(document.activeElement).toBe(stepItem("下へ移す"));
+  // 実行: Esc で閉じる
+  await userEvent.keyboard("{Escape}");
+  // 検証
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+  expect(move.getAttribute("aria-expanded")).toBe("false");
+  expect(document.activeElement).toBe(move);
+  expect(await axeViolations(figure())).toEqual([]);
+  // 実行・検証: 線の区間を押すと、区間と直角の向き（左右か上下の 2 つ）だけのメニュー
+  const segment = find<Element>(
+    figure(),
+    ".map-wire-hit rect.map-wire-hit-segment[data-axis]",
+  );
+  pressStill(segment);
+  await vi.waitFor(() =>
+    expect(
+      figure().querySelector<HTMLButtonElement>("button.map-move")?.hidden,
+    ).toBe(false),
+  );
+  find<HTMLButtonElement>(figure(), "button.map-move").click();
+  expect([
+    ["上へ移す", "下へ移す"],
+    ["左へ移す", "右へ移す"],
+  ]).toContainEqual(stepLabels());
+  await userEvent.keyboard("{Escape}");
+  // 実行・検証: 空いた場所を押すとボタンが無い
+  pressStill(find(figure(), ".mdmark-diagram-viewport"));
+  await vi.waitFor(() =>
+    expect(find<HTMLButtonElement>(figure(), "button.map-move").hidden).toBe(
+      true,
+    ),
+  );
+  // 実行・検証: もう一度 mount しても、動かした位置のまま描く
+  const moved = mapNode(figure(), "data").style.cssText;
+  await remountMap(el, markdown);
+  await vi.waitFor(() =>
+    expect(mapNode(figures()[0] as HTMLElement, "data").style.cssText).toBe(
+      moved,
+    ),
+  );
+});
+
+// map のグループの右下の角を動かさずに押すと大きさのメニューを開き、角の矢印キーと同じだけ大きさを変える（正常系）
+test("test_normal_when_map_group_resized_without_drag", async () => {
+  // 準備: 1 つ目の図は角で → を 1 回押した幅を記録する
+  const markdown = mapRange({ mermaid: MAP_FLOW, data: MAP_DATA });
+  const byKey = await mountMap(markdown);
+  const keyFigure = byKey.figures()[0] as HTMLElement;
+  const corner = (figure: Element) =>
+    find<HTMLElement>(figure, '[data-group="read"] .map-group-resize');
+  const width = (figure: Element) =>
+    find(figure, '[data-group="read"]').getBoundingClientRect().width;
+  corner(keyFigure).focus();
+  corner(keyFigure).dispatchEvent(
+    new KeyboardEvent("keydown", { key: "ArrowRight", bubbles: true }),
+  );
+  const expected = await vi.waitFor(() => {
+    const value = width(keyFigure);
+    expect(value).toBeGreaterThan(0);
+    return value;
+  });
+  byKey.el.remove();
+  const { figures } = await mountMap(markdown);
+  const figure = () => figures()[0] as HTMLElement;
+  // 実行: 角を動かさずに押す
+  pressStill(corner(figure()));
+  // 検証
+  expect(stepLabels()).toEqual([
+    "右へ広げる",
+    "下へ広げる",
+    "左へ狭める",
+    "上へ狭める",
+  ]);
+  const menu = find(document.body, ".mdmark-step-menu").getBoundingClientRect();
+  expect(rectsOverlap(menu, corner(figure()).getBoundingClientRect())).toBe(
+    false,
+  );
+  expect(stepItem("左へ狭める").disabled).toBe(true);
+  // 実行: 右へ広げるを押す
+  stepItem("右へ広げる").click();
+  // 検証: 角の → と同じ幅で、メニューは開いたまま
+  await vi.waitFor(() => expect(width(figure())).toBeCloseTo(expected, 0));
+  expect(document.querySelector(".mdmark-step-menu")).not.toBeNull();
+  // 実行・検証: Esc で閉じ、角にフォーカスがある
+  stepItem("右へ広げる").focus();
+  await userEvent.keyboard("{Escape}");
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+  expect(document.activeElement).toBe(corner(figure()));
+  // 実行・検証: 4px 以上のドラッグではメニューを開かず、大きさを変える
+  const before = width(figure());
+  const [x, y] = mapCenter(corner(figure()));
+  const base = { bubbles: true, pointerId: 1, button: 0 };
+  corner(figure()).dispatchEvent(
+    new PointerEvent("pointerdown", { ...base, clientX: x, clientY: y }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointermove", { ...base, clientX: x + 40, clientY: y }),
+  );
+  window.dispatchEvent(
+    new PointerEvent("pointerup", { ...base, clientX: x + 40, clientY: y }),
+  );
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+  await vi.waitFor(() => expect(width(figure())).toBeGreaterThan(before));
+});
+
+// シーケンス図の参加者を、移動のボタンと左右のメニューで Alt + 左右の矢印と同じだけ並べ替える（正常系）
+test("test_normal_when_participants_reordered_without_drag", async () => {
+  // 準備
+  const markdown = mapRange({ mermaid: MAP_SEQUENCE });
+  const { el, figures } = await mountMap(markdown);
+  const seq = () => figures()[0] as HTMLElement;
+  const order = () =>
+    [...seq().querySelectorAll<HTMLElement>(".map-participant")].map(
+      (head) => head.dataset.participant,
+    );
+  const openMoveMenu = async (id: string) => {
+    pressStill(mapNode(seq(), id));
+    const move = await vi.waitFor(() => {
+      const found = seq().querySelector<HTMLButtonElement>("button.map-move");
+      expect(found?.hidden).toBe(false);
+      return found as HTMLButtonElement;
+    });
+    return move;
+  };
+  // 実行・検証: 先頭の参加者では左へ移すを押せない
+  const first = await openMoveMenu("user");
+  expect(first.getAttribute("aria-label")).toBe("「利用側のページ」を移動");
+  first.click();
+  expect(stepLabels()).toEqual(["左へ移す", "右へ移す"]);
+  expect(stepItem("左へ移す").disabled).toBe(true);
+  await userEvent.keyboard("{Escape}");
+  // 実行: 2 人目を右へ移す
+  (await openMoveMenu("mount")).click();
+  stepItem("右へ移す").click();
+  // 検証: Alt + → と同じ並びで、再描画した後もメニューが開いて右へ移すにフォーカスがある
+  expect(order().slice(0, 3)).toEqual(["user", "marker", "mount"]);
+  expect(document.activeElement).toBe(stepItem("右へ移す"));
+  await userEvent.keyboard("{Escape}");
+  // 実行・検証: メッセージの線を押すと移動のボタンが無い
+  pressStill(find(seq(), ".mdmark-diagram-wire[data-message]"));
+  await vi.waitFor(() =>
+    expect(find<HTMLButtonElement>(seq(), "button.map-move").hidden).toBe(true),
+  );
+  // 実行・検証: もう一度 mount しても並べ替えた順のまま
+  await remountMap(el, markdown);
+  await vi.waitFor(() => {
+    const heads = [
+      ...(figures()[0] as HTMLElement).querySelectorAll<HTMLElement>(
+        ".map-participant",
+      ),
+    ];
+    expect(heads.map((head) => head.dataset.participant).slice(0, 3)).toEqual([
+      "user",
+      "marker",
+      "mount",
+    ]);
+  });
+});
+
+// ライトボックスで拡大した画像を、移動のボタンと向きのメニューで矢印キーと同じだけ動かす（正常系）
+test("test_normal_when_lightbox_moved_without_drag", async () => {
+  // 準備
+  const a = pngUrl({ width: 1600, height: 1000, color: "#0f766e" });
+  const b = pngUrl({ width: 1600, height: 1000, color: "#b45309" });
+  const el = createElement();
+  await mountTracked(el, { markdown: `![画像 a](${a})\n\n![画像 b](${b})\n` });
+  await userEvent.click(find(el, "button.mdmark-image-open"));
+  const dialog = openLightbox(el) as HTMLDialogElement;
+  const stage = find<HTMLElement>(dialog, ".mdmark-lightbox-stage");
+  const move = find<HTMLButtonElement>(dialog, "button.mdmark-lightbox-move");
+  await vi.waitFor(() =>
+    expect(find(dialog, '[data-tool="fit"]').textContent).not.toBe(""),
+  );
+  // 検証: 全体が収まる倍率では移動のボタンが無い
+  expect(isShown(move)).toBe(false);
+  // 実行: 拡大する
+  for (let count = 0; count < 3; count += 1) await userEvent.keyboard("+");
+  // 検証: 上のバーの先頭に移動のボタン
+  await vi.waitFor(() => expect(isShown(move)).toBe(true));
+  expect(move.type).toBe("button");
+  expect(move.getAttribute("aria-label")).toBe("拡大した画像を移動");
+  expect(find(dialog, '[role="toolbar"] button')).toBe(move);
+  // 実行: 移動のボタンを押す
+  move.click();
+  const menu = find(dialog, ".mdmark-step-menu");
+  expect(menu.getAttribute("role")).toBe("group");
+  expect(menu.getAttribute("aria-label")).toBe("拡大した画像の移動");
+  expect(stepLabels()).toEqual([
+    "上へ移す",
+    "下へ移す",
+    "左へ移す",
+    "右へ移す",
+  ]);
+  // 実行・検証: 右へ移すは → と同じだけ動かし、メニューは開いたまま
+  const keyStart = stage.scrollLeft;
+  stage.focus();
+  await userEvent.keyboard("{ArrowRight}");
+  const step = stage.scrollLeft - keyStart;
+  const beforeMenu = stage.scrollLeft;
+  stepItem("右へ移す").click();
+  expect(step).toBeGreaterThan(0);
+  expect(stage.scrollLeft - beforeMenu).toBe(step);
+  expect(document.querySelector(".mdmark-step-menu")).not.toBeNull();
+  // 実行・検証: 右端まで動かすと右へ移すを押せない
+  stage.scrollLeft = stage.scrollWidth;
+  stepItem("右へ移す").click();
+  expect(stepItem("右へ移す").disabled).toBe(true);
+  // 実行・検証: 1 回目の Esc はメニューだけを閉じ、2 回目でライトボックスを閉じる
+  stepItem("上へ移す").focus();
+  await userEvent.keyboard("{Escape}");
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+  expect(dialog.open).toBe(true);
+  expect(document.activeElement).toBe(move);
+  // 実行・検証: 全体が収まる倍率に戻すと移動のボタンが無い
+  await userEvent.keyboard("0");
+  expect(isShown(move)).toBe(false);
+  // 実行・検証: 次の画像へ切り替えた後も移動のボタンが無い
+  for (let count = 0; count < 3; count += 1) await userEvent.keyboard("+");
+  find<HTMLButtonElement>(dialog, '[data-tool="next"]').click();
+  await vi.waitFor(() => expect(isShown(move)).toBe(false));
+  await userEvent.keyboard("{Escape}");
+  expect(dialog.open).toBe(false);
+});
+
+// 音声の再生バーを、図と祖先の入れ物に見切れずに全体を描く（正常系）
+test("test_normal_when_audio_bar_fully_shown", async () => {
+  // 準備・実行
+  const el = createElement();
+  await mountTracked(el, {
+    markdown: "![読み上げの見本](voice.mp3)\n\n![操作の録画](demo.mp4)\n",
+  });
+  const audio = await vi.waitFor(() =>
+    find<HTMLAudioElement>(el, "figure.mdmark-media audio"),
+  );
+  // 検証
+  const box = audio.getBoundingClientRect();
+  expect(box.height).toBeGreaterThan(0);
+  expect(Math.abs(audio.clientHeight - box.height)).toBeLessThanOrEqual(1);
+  for (
+    let node: HTMLElement | null = audio.parentElement;
+    node;
+    node = node.parentElement
+  ) {
+    if (
+      !node.matches("figure.mdmark-media") &&
+      getComputedStyle(node).overflow === "visible"
+    )
+      continue;
+    const outer = node.getBoundingClientRect();
+    expect(box.top).toBeGreaterThanOrEqual(outer.top - 0.5);
+    expect(box.bottom).toBeLessThanOrEqual(outer.bottom + 0.5);
+  }
+  // 検証: 動画の図とリサイズハンドルは今までどおり
+  expect(
+    el.querySelector("figure.mdmark-media .mdmark-media-resize"),
+  ).not.toBeNull();
+});
+
+// 図の高さのリサイズハンドルを動かさずに押すか Enter で大きさのメニューを開き、ボタンで高さを変える（正常系）
+test("test_normal_when_diagram_resized_without_drag", async () => {
+  // 準備
+  sessionStorage.clear();
+  const el = createElement();
+  el.style.width = "600px";
+  await mountTracked(el, {
+    markdown: TALL_MERMAID,
+    config: { mermaid: { url: mermaidUrl("resized-menu") } },
+  });
+  const figure = await waitMermaidFigure(el);
+  const handle = find<HTMLElement>(figure, ".mdmark-diagram-resize");
+  const viewport = find<HTMLElement>(el, ".mdmark-diagram-viewport");
+  // 図の倍率（中身の scale）
+  const scale = () =>
+    find<HTMLElement>(el, ".mdmark-diagram-stage").style.transform;
+  const height = () => Number(handle.getAttribute("aria-valuenow"));
+  // 実行: 動かさずに押す
+  const [x, y] = mapCenter(handle);
+  const base = { bubbles: true, pointerId: 1, button: 0 };
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...base, clientX: x, clientY: y }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...base, clientX: x, clientY: y }),
+  );
+  // 検証
+  const menu = find<HTMLElement>(el, ".mdmark-step-menu");
+  expect(menu.getAttribute("role")).toBe("group");
+  expect(menu.getAttribute("aria-label")).toBe(
+    "「縦に長いデータ」の表示の高さ",
+  );
+  expect(stepLabels()).toEqual([
+    "低くする",
+    "高くする",
+    "全体が収まる高さにする",
+  ]);
+  expect(menu.getBoundingClientRect().top).toBeGreaterThanOrEqual(
+    handle.getBoundingClientRect().bottom - 0.5,
+  );
+  expect(await axeViolations(find(el, "figure.mdmark-diagram"))).toEqual([]);
+  // 実行・検証: 高くするは 32 高くし、倍率の文字は変えない
+  const before = height();
+  const zoom = scale();
+  stepItem("高くする").click();
+  expect(height()).toBe(before + 32);
+  expect(Math.round(viewport.getBoundingClientRect().height)).toBe(before + 32);
+  expect(scale()).toBe(zoom);
+  // 実行・検証: 全体が収まる高さにすると、高くする・全体が収まる高さにするを押せない
+  stepItem("全体が収まる高さにする").click();
+  expect(stepItem("高くする").disabled).toBe(true);
+  expect(stepItem("全体が収まる高さにする").disabled).toBe(true);
+  // 実行・検証: Esc で閉じ、ハンドルにフォーカスがある
+  stepItem("低くする").focus();
+  await userEvent.keyboard("{Escape}");
+  expect(el.querySelector(".mdmark-step-menu")).toBeNull();
+  expect(document.activeElement).toBe(handle);
+  expect(await axeViolations(find(el, "figure.mdmark-diagram"))).toEqual([]);
+  // 実行・検証: Enter でも同じメニューが開く
+  await userEvent.keyboard("{Enter}");
+  expect(stepLabels()).toEqual([
+    "低くする",
+    "高くする",
+    "全体が収まる高さにする",
+  ]);
+  await userEvent.keyboard("{Escape}");
+  // 実行・検証: 4px より動かしたドラッグではメニューを開かず、ドラッグした分だけ高さを変える
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
+  const dragged = height();
+  handle.dispatchEvent(
+    new PointerEvent("pointerdown", { ...base, clientX: x, clientY: y }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointermove", { ...base, clientX: x, clientY: y - 40 }),
+  );
+  handle.dispatchEvent(
+    new PointerEvent("pointerup", { ...base, clientX: x, clientY: y - 40 }),
+  );
+  expect(el.querySelector(".mdmark-step-menu")).toBeNull();
+  expect(height()).toBe(dragged - 40);
 });

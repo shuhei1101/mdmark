@@ -610,3 +610,24 @@ test("test_map_export_failed", async () => {
   const text = await boxOf(page, '.mdmark-diagram-export [role="status"]');
   expect(text.top).toBeGreaterThanOrEqual(png.bottom - 1);
 });
+
+// リサイズハンドルの大きさのメニューを、ハンドルの下に中央を合わせて 3 つの項目で開く（ResizeMenu）
+test("test_resize_menu", async () => {
+  // 準備・実行
+  const page = await openFrame("resize-menu", false);
+  // 検証
+  const items = await page
+    .locator(".mdmark-step-menu button")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => button.textContent?.trim() ?? ""),
+    );
+  expect(items).toEqual(["低くする", "高くする", "全体が収まる高さにする"]);
+  const handle = await page.locator(".mdmark-diagram-resize").boundingBox();
+  const menu = await page.locator(".mdmark-step-menu").boundingBox();
+  if (!handle || !menu) throw new Error("ハンドルかメニューが無い");
+  expect(menu.y).toBeGreaterThanOrEqual(handle.y + handle.height - 0.5);
+  expect(
+    Math.abs(menu.x + menu.width / 2 - (handle.x + handle.width / 2)),
+  ).toBeLessThanOrEqual(1);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});

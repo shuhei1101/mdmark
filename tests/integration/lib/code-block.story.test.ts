@@ -1,4 +1,4 @@
-import type { Locator } from "playwright";
+import type { Locator, Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { iconSvg } from "../../../src/shared/icons.part.ts";
 import { createBrowserHolder, pageOverflows } from "../story.ts";
@@ -224,9 +224,11 @@ test("test_language_label", async () => {
   ).resolves.toBe("true");
   await expect(page.locator(".mdmark-code-file").count()).resolves.toBe(0);
   await expect(page.locator(".mdmark-code-title").count()).resolves.toBe(0);
-  await expect(page.locator(".mdmark-code-copy").innerText()).resolves.toBe(
-    "コピー",
-  );
+  // コピーのボタンは文言を画面に出さず、名前に持つ
+  await expect(page.locator(".mdmark-code-copy").innerText()).resolves.toBe("");
+  await expect(
+    page.locator(".mdmark-code-copy").getAttribute("aria-label"),
+  ).resolves.toBe("コピー");
   const layout = await barLayout(page);
   expect(layout.langLeft).toBeLessThan(16);
   expect(layout.copyRight).toBeLessThan(16);
@@ -340,7 +342,10 @@ test("test_copied", async () => {
   // 検証
   const button = page.locator(".mdmark-code-copy");
   await expect(button.getAttribute("data-state")).resolves.toBe("copied");
-  await expect(button.innerText()).resolves.toBe("コピーしました");
+  await expect(button.innerText()).resolves.toBe("");
+  await expect(button.getAttribute("aria-label")).resolves.toBe(
+    "コピーしました",
+  );
   await expect(hasIcon(button, "check")).resolves.toBe(true);
   await expect(page.locator(".mdmark-code-status").innerText()).resolves.toBe(
     "コードをコピーしました",
@@ -354,7 +359,10 @@ test("test_copy_failed", async () => {
   // 検証
   const button = page.locator(".mdmark-code-copy");
   await expect(button.getAttribute("data-state")).resolves.toBe("failed");
-  await expect(button.innerText()).resolves.toBe("コピーできませんでした");
+  await expect(button.innerText()).resolves.toBe("");
+  await expect(button.getAttribute("aria-label")).resolves.toBe(
+    "コピーできませんでした",
+  );
   await expect(hasIcon(button, "circle-alert")).resolves.toBe(true);
   await expect(page.locator(".mdmark-code-status").innerText()).resolves.toBe(
     "コードをコピーできませんでした",
@@ -652,4 +660,83 @@ test("test_markdown_raw", async () => {
   expect(state.color).not.toBe(preview.color);
   expect(state.background).not.toBe(preview.background);
   await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+/** 帯の右の塊の中のボタンの class・名前・ツールチップ・押した状態・文字と大きさを、並び順に返却する */
+function metaButtons(page: Page) {
+  return page.locator(".mdmark-code-meta button").evaluateAll((buttons) =>
+    buttons.map((button) => {
+      const box = button.getBoundingClientRect();
+      return {
+        className: button.className,
+        label: button.getAttribute("aria-label"),
+        title: button.getAttribute("title"),
+        pressed: button.getAttribute("aria-pressed"),
+        type: button.getAttribute("type"),
+        text: button.textContent?.trim() ?? "",
+        width: box.width,
+        height: box.height,
+      };
+    }),
+  );
+}
+
+// マーカーの wrap を持たないブロックは、コピーのボタンの前にアイコンだけの押していない折り返しのボタンを持ち、長い行を折り返さない（WrapButton）
+test("test_wrap_button", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--wrap-button");
+  // 検証: 折り返しのボタンがコピーのボタンの前にあり、どちらも文言を画面に出さない 24px 以上の押せる大きさ
+  const buttons = await metaButtons(page);
+  expect(buttons.map((button) => button.className)).toEqual([
+    "mdmark-code-wrap-toggle",
+    "mdmark-code-copy",
+  ]);
+  const [toggle, copy] = buttons;
+  expect(toggle).toMatchObject({
+    label: "画面の端で折り返す",
+    title: "画面の端で折り返す",
+    pressed: "false",
+    type: "button",
+    text: "",
+  });
+  expect(copy).toMatchObject({ label: "コピー", title: "コピー", text: "" });
+  for (const button of buttons) {
+    expect(button.width).toBeGreaterThanOrEqual(24);
+    expect(button.height).toBeGreaterThanOrEqual(24);
+  }
+  await expect(
+    page
+      .locator(".mdmark-code-wrap-toggle")
+      .evaluate((button) => button.innerHTML),
+  ).resolves.toBe(iconSvg("wrap-text"));
+  // 検証: 押していない外観（枠線も面も無い）で、2 行目はブロックの中で横にスクロールする
+  const look = await page
+    .locator(".mdmark-code-wrap-toggle")
+    .evaluate((button) => getComputedStyle(button).borderTopColor);
+  expect(look).toBe("rgba(0, 0, 0, 0)");
+  await expect(
+    page
+      .locator("#storybook-root pre")
+      .evaluate((pre) => pre.scrollWidth > pre.clientWidth),
+  ).resolves.toBe(true);
+});
+
+// ポインターの乗った押していない折り返しのボタンは、灰色の枠線だけを出し、押した状態の面と色を持たない（WrapButtonHovered）
+test("test_wrap_button_hovered", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-codeblock--wrap-button-hovered");
+  // 検証
+  const look = await page
+    .locator(".mdmark-code-wrap-toggle")
+    .evaluate((button) => {
+      const style = getComputedStyle(button);
+      return {
+        border: style.borderTopColor,
+        background: style.backgroundColor,
+        pressed: button.getAttribute("aria-pressed"),
+      };
+    });
+  expect(look.pressed).toBe("false");
+  expect(look.border).not.toBe("rgba(0, 0, 0, 0)");
+  expect(look.background).toBe("rgba(0, 0, 0, 0)");
 });

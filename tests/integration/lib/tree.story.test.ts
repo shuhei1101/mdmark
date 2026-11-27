@@ -77,7 +77,7 @@ test("test_interactive", async () => {
   await expect(
     page
       .locator(".mdmark-tree > .mdmark-code-bar button.mdmark-code-copy")
-      .innerText(),
+      .getAttribute("aria-label"),
   ).resolves.toBe("コピー");
   await expect(expandedStates(page)).resolves.toEqual(["true", "true"]);
   await expect(nameVisible(page, "index.ts")).resolves.toBe(true);
@@ -257,7 +257,10 @@ test("test_copied", async () => {
   // 検証
   const button = page.locator("button.mdmark-code-copy");
   await expect(button.getAttribute("data-state")).resolves.toBe("copied");
-  await expect(button.innerText()).resolves.toBe("コピーしました");
+  await expect(button.innerText()).resolves.toBe("");
+  await expect(button.getAttribute("aria-label")).resolves.toBe(
+    "コピーしました",
+  );
   await expect(button.locator("svg").count()).resolves.toBe(1);
 });
 
@@ -370,7 +373,7 @@ test("test_plain_language", async () => {
   await expect(
     page
       .locator(".mdmark-tree > .mdmark-code-bar button.mdmark-code-copy")
-      .innerText(),
+      .getAttribute("aria-label"),
   ).resolves.toBe("コピー");
   const tree = await treeBarLayout(page);
   expect(tree.height).toBeCloseTo(code.height, 0);
@@ -394,7 +397,7 @@ test("test_plain_no_language", async () => {
   await expect(
     page
       .locator(".mdmark-tree > .mdmark-code-bar button.mdmark-code-copy")
-      .innerText(),
+      .getAttribute("aria-label"),
   ).resolves.toBe("コピー");
   const names = await page.locator(".mdmark-tree-name").allInnerTexts();
   expect(names.map((name) => name.trim())).toEqual([
@@ -404,4 +407,38 @@ test("test_plain_no_language", async () => {
   ]);
   const layout = await treeBarLayout(page);
   expect(layout.copyRight).toBeLessThan(16);
+});
+
+// wrap を持ち注釈を持つフォルダが続くツリーは、狭い幅でもフォルダの名前を 1 文字ずつに折らず、注釈を名前と重ねない（WrapNotes）
+test("test_wrap_notes", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-filetree--wrap-notes", {
+    width: 390,
+    height: 844,
+  });
+  // 検証
+  const rows = await page
+    .locator(".mdmark-tree-row:has(.mdmark-tree-note)")
+    .evaluateAll((items) =>
+      items.map((row) => {
+        const name = row.querySelector(".mdmark-tree-name") as Element;
+        const note = row.querySelector(".mdmark-tree-note") as Element;
+        const range = document.createRange();
+        range.selectNodeContents(name);
+        return {
+          text: (name.textContent ?? "").trim(),
+          // 名前の文字が並ぶ行の数（1 文字ずつに折れると文字数ぶんの行になる）
+          lines: range.getClientRects().length,
+          nameBottom: name.getBoundingClientRect().bottom,
+          noteTop: note.getBoundingClientRect().top,
+        };
+      }),
+    );
+  const folders = rows.filter((row) => row.text.endsWith("/"));
+  expect(folders.map((row) => row.text)).toEqual(["docs/", "使い方/"]);
+  for (const row of folders) {
+    expect(row.lines).toBe(1);
+    expect(row.noteTop).toBeGreaterThanOrEqual(row.nameBottom - 0.5);
+  }
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });
