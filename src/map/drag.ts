@@ -545,7 +545,8 @@ export const startDrag = (options: {
 export const moveByKey = (options: {
   layout: MapLayout;
   state: MapState;
-  target: { node?: string; group?: string; wire?: string };
+  /** 動かすノード・グループ・線。線の `segment` は動かす区間の番号（省くと真ん中の区間） */
+  target: { node?: string; group?: string; wire?: string; segment?: number };
   dx: number;
   dy: number;
 }): MapState | undefined => {
@@ -563,7 +564,13 @@ export const moveByKey = (options: {
   }
   const wire = layout.wires.find((one) => one.id === target.wire);
   if (!wire || wire.points.length < 2) return undefined;
-  return moveWireByKey(options.state, { layout, wire, dx, dy });
+  return moveWireByKey(options.state, {
+    layout,
+    wire,
+    segment: target.segment,
+    dx,
+    dy,
+  });
 };
 
 /** 動かす向き */
@@ -581,7 +588,7 @@ const DIRECTION_STEPS: Record<MoveDirection, { dx: number; dy: number }> = {
 export const movableDirections = (options: {
   layout: MapLayout;
   state: MapState;
-  target: { node?: string; group?: string; wire?: string };
+  target: { node?: string; group?: string; wire?: string; segment?: number };
 }): Set<MoveDirection> =>
   new Set(
     (Object.keys(DIRECTION_STEPS) as MoveDirection[]).filter(
@@ -590,13 +597,19 @@ export const movableDirections = (options: {
     ),
   );
 
-/** 線の真ん中の区間を、区間と直角の向きへ動かした状態（動かせなければ `undefined`） */
+/** 線の区間（省くと真ん中の区間）を、区間と直角の向きへ動かした状態（動かせなければ `undefined`） */
 const moveWireByKey = (
   state: MapState,
-  move: { layout: MapLayout; wire: PlacedWire; dx: number; dy: number },
+  move: {
+    layout: MapLayout;
+    wire: PlacedWire;
+    segment: number | undefined;
+    dx: number;
+    dy: number;
+  },
 ): MapState | undefined => {
   const { layout, wire, dx, dy } = move;
-  const segment = Math.floor((wire.points.length - 2) / 2);
+  const segment = move.segment ?? Math.floor((wire.points.length - 2) / 2);
   const a = wire.points[segment];
   const b = wire.points[segment + 1];
   if (!a || !b) return undefined;

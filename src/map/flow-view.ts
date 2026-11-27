@@ -665,6 +665,11 @@ const wireKeyTarget = (element: Element | undefined): KeyTarget | undefined => {
   };
 };
 
+/** 移動のメニューで動かす要素（線は `segment` の区間。省くと真ん中の区間） */
+type MoveMenuTarget = Pick<KeyTarget, "node" | "group" | "wire"> & {
+  segment?: number;
+};
+
 /** 移動のメニューの項目: 文言・アイコン・向き・キーの刻みの移動量 */
 const MOVE_MENU_ITEMS: ReadonlyArray<{
   label: string;
@@ -715,11 +720,23 @@ const movedElementOf = (
           element.closest(".map-group-bar"),
           `[data-group="${CSS.escape(keyTarget.group)}"] .map-group-bar`,
         ]
-      : [
-          element.closest(".map-wire-hit"),
-          `.map-wire-hit[data-wire="${CSS.escape(keyTarget.wire ?? "")}"]`,
-        ];
+      : wireSegmentOf(element, keyTarget.wire ?? "");
   return own ? { element: own, selector } : undefined;
+};
+
+/** 押した線の区間の押せる帯と、描き直した後に探し直すセレクタ（区間の番号を含める） */
+const wireSegmentOf = (
+  element: Element,
+  wire: string,
+): [Element | null, string] => {
+  const segment = element.closest("rect.map-wire-hit-segment[data-segment]");
+  const base = `.map-wire-hit[data-wire="${CSS.escape(wire)}"]`;
+  return segment
+    ? [
+        segment,
+        `${base} rect.map-wire-hit-segment[data-segment="${segment.getAttribute("data-segment")}"]`,
+      ]
+    : [element.closest(".map-wire-hit"), base];
 };
 
 /** 図の表示する枠に移動のボタンを付ける（表示する枠が無ければ付けない） */
@@ -1561,21 +1578,17 @@ export const attachMapFlow = (
     layout.nodes.find((node) => node.id === id)?.lines.join(" ") ??
     layout.groups.find((group) => group.id === id)?.title ??
     id;
-  /** 線のキーの移動が動かす真ん中の区間と直角の向き（ノード・グループは 4 つの向き全て） */
-  const directionsOf = (
-    target: Pick<KeyTarget, "node" | "group" | "wire">,
-  ): ReadonlySet<MoveDirection> => {
+  /** 動かす線の区間（省くと真ん中の区間）と直角の向き（ノード・グループは 4 つの向き全て） */
+  const directionsOf = (target: MoveMenuTarget): ReadonlySet<MoveDirection> => {
     const wire = shiftedLayout().wires.find((item) => item.id === target.wire);
     if (!wire) return new Set(["up", "down", "left", "right"]);
-    const at = Math.floor((wire.points.length - 2) / 2);
+    const at = target.segment ?? Math.floor((wire.points.length - 2) / 2);
     const [a, b] = [wire.points[at], wire.points[at + 1]];
     return a && b && a[1] === b[1]
       ? new Set(["up", "down"])
       : new Set(["left", "right"]);
   };
-  const moveItemsOf = (
-    target: Pick<KeyTarget, "node" | "group" | "wire">,
-  ): StepMenuItem[] =>
+  const moveItemsOf = (target: MoveMenuTarget): StepMenuItem[] =>
     MOVE_MENU_ITEMS.filter((item) =>
       directionsOf(target).has(item.direction),
     ).map((item) => ({
@@ -1610,10 +1623,16 @@ export const attachMapFlow = (
     const own = keyTarget ? movedElementOf(element, keyTarget) : undefined;
     const name = keyTarget ? targetNameOf(keyTarget) : undefined;
     if (!keyTarget || !own || name === undefined) return undefined;
+    // 線は押した区間を動かす
+    const segment = own.element.getAttribute("data-segment");
     return {
       element: own.element,
       name,
-      items: moveItemsOf(keyTarget),
+      items: moveItemsOf(
+        segment === null
+          ? keyTarget
+          : { ...keyTarget, segment: Number(segment) },
+      ),
       selector: own.selector,
     };
   };
