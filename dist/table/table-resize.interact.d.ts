@@ -15,5 +15,10 @@ export type ColumnResizeOptions = {
     /** 見出しのセルに幅を入れた後、外側の幅を測る前に呼ぶ（表の幅を列の幅の合計に合わせる） */
     onWidthWritten?: () => void;
 };
-/** 表の最下段の見出しのつまみに、ドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す操作を付ける。受け取りを削除し、幅の指定を全て戻す関数を返却する */
-export declare const attachColumnResize: (table: HTMLTableElement, options: ColumnResizeOptions) => (() => void);
+/** 付けた列の幅のつまみの操作。`detach` は受け取りを削除して幅の指定を全て戻し、`refreshValues` は全ての列のつまみの値を書き換える */
+export type ColumnResize = {
+    detach: () => void;
+    refreshValues: () => void;
+};
+/** 表の最下段の見出しのつまみに、ドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す操作を付ける */
+export declare const attachColumnResize: (table: HTMLTableElement, options: ColumnResizeOptions) => ColumnResize;

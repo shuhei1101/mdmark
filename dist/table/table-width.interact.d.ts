@@ -27,6 +27,8 @@ export type AutoColumnWidthsOptions = {
     longColumnMin: number;
     /** 幅を入れた後に呼ぶ */
     onApply?: () => void;
+    /** 列の幅を決めた（決め直した）後だけ、`onApply` の後に呼ぶ */
+    onDecided?: () => void;
 };
 /** 列の中身の幅を測って列の幅を決め、見出しのセルと表の CSS 変数に入れる */
 export declare const attachAutoColumnWidths: (table: HTMLTableElement, options: AutoColumnWidthsOptions) => {
