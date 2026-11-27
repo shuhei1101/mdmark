@@ -147,20 +147,22 @@ docs:
     updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/guide/記載する-本文を部品で組む.mark.md
     new: false
-    change: コードブロックの折り返しを読者が切り替えられることを記載する
-    status: todo
+    change: コードブロックとファイルツリーの折り返しのボタン、アイコンだけのコピーのボタン、設定の code.wrap を記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:31.856942+00:00'
   - page: docs/guide/記法.mark.md
     new: false
-    change: wrap が既定を決め、読者が切り替えられることを記載する
-    status: todo
+    change: wrap の既定と設定の code.wrap・読者の切り替え、#822 のフォルダの名前、ライトボックスの移動のボタンを記載する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:31.856942+00:00'
   - page: docs/guide/用語集.yaml
     new: false
-    change: 折り返しの用語に読者の切り替えを追加し、代わりの操作で新しい用語が増えたら追加する
-    status: todo
-  - page: docs/guide/変更履歴.mark.md
-    new: false
-    change: 3 件の変更を追加する
-    status: todo
+    change: 折り返しの用語に設定の code.wrap と読者の切り替えを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:31.856942+00:00'
   - page: docs/component/CMP-472-31.ts.yaml
     new: false
     change: 拡大した画像の移動のボタンとメニューを追加する
@@ -191,7 +193,9 @@ docs:
     updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/guide/設定.mark.md
     change: 既定の折り返しのキーの節を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:31.856942+00:00'
   - page: docs/module/MOD-472-373.ts.yaml
     change: 向き・大きさのメニューの開閉と配置のモジュールを新規作成する
     status: done
@@ -229,6 +233,16 @@ docs:
     status: done
     updated_by: planner
     updated_at: '2026-11-27T03:07:00.135603+00:00'
+  - page: docs/guide/図を描く-Mermaidと補足で図を描く.md
+    change: map の移動のボタンとメニュー、グループの大きさのメニューの操作を追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:40.394924+00:00'
+  - page: docs/guide/図を描く-図を描く.md
+    change: 図のリサイズハンドルの大きさのメニューを追加する
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T03:15:40.394924+00:00'
 scope_out:
   - item: 音声の見切れの原因が MindStella 側の CSS だった場合の MindStella の修正
     reason: mdmark のリポジトリの外の変更。原因を切り分けて MindStella 側と分かったら MindStella に起票する
