@@ -1476,10 +1476,7 @@ function headToolsOptions(
 }
 
 /** つまみを描く時点の列の幅。指定した幅、無ければ自動で決めた幅 */
-function widthOption(
-  context: BodyContext,
-  index: number,
-): { width?: number } {
+function widthOption(context: BodyContext, index: number): { width?: number } {
   const width = context.widthOf.get(index) ?? context.autoWidthOf.get(index);
   return width === undefined ? {} : { width };
 }
