@@ -579,6 +579,41 @@ scenarios:
       - 再描画した後、3 つ目のツリーの `src/` が開き、`parts/` が表示されている
       - 再描画した後、追加したツリーは全てのフォルダが開き、`tree-view.ts` が表示されている
     test: test_normal_when_tree_folders_updated_after_toggle
+  - name: 正常シナリオ（読者がファイルツリーの折り返しを切り替える）
+    setup:
+      - name: mdmark を読み込むページ
+        description: 正常シナリオと同じ
+        notes: 画面の幅は 390px
+      - name: 注釈を持つファイルツリーの Markdown
+        description: 表示の幅より長い注釈を持つフォルダとファイルを入れ子の中に持つ、マーカーの無い言語 `tree` のコードブロックの文書
+      - name: Mock
+        description: 正常シナリオと同じ
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        actor U as 読者
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: 設定と Markdown を指定して描かせる
+        M-->>P: 折り返さずに、帯に折り返しのボタンを付けて描く
+        U->>P: 折り返しのボタンを押す
+        P-->>U: 長い注釈を枠の幅で折り返す
+        U->>P: もう一度ボタンを押す
+        P-->>U: 折り返さずに出す
+      ```
+
+      <!-- /map -->
+    expected:
+      - ツリーの帯に、コピーのボタンの隣に折り返しのボタンがある。どちらのボタンも文言を画面に出さずアイコンだけで、スクリーンリーダー向けの名前とツールチップを持つ
+      - 描いた直後、ボタンの `aria-pressed` が `false` で、ツリーは折り返さずに横にスクロールできる
+      - ボタンを押すと、長い注釈が枠の幅で折り返され、ツリーに横スクロールが無くなり、`aria-pressed` が `true` になる
+      - 折り返した状態で、注釈を持つフォルダの名前が 1 文字ずつ縦に折れず、注釈が名前と重ならない
+      - もう一度押すと折り返さずに横にスクロールできる状態に戻り、`aria-pressed` が `false` になる
+      - ボタンは Tab でフォーカスでき、Enter と Space でも切り替わる
+      - 切り替えてもフォルダの開閉の状態が変わらず、コピーのボタンでコピーした文字に折り返しの改行が入っていない
+    test: test_normal_when_tree_wrap_toggled
 lead: 文書の作成者が、`<!-- steps -->` 〜 `<!-- /steps -->` で囲んだ番号付きリスト・罫線でフォルダ構成を記載したコードブロック・頭に `badge:` を付けた行内のコードを記載すると、mdmark がそれぞれ手順・ファイルツリー・バッジに描く。手順は `closed`・`open` で見出し付きの折りたたみに入れられ、ファイルツリーは `#` の後ろの注釈を列に統一し、読者がフォルダを開閉して元の罫線のテキストをコピーできる。
 primary_actor: 文書の作成者
 stakeholders:

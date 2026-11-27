@@ -7,7 +7,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-17.yaml
     impact: changed
-    detail: 読者がコードブロックごとに、画面の端で折り返すか折り返さないかを 1 回の操作で切り替える。既定は記載した wrap の有り無しに従う
+    detail: 読者がコードブロックごとに、画面の端で折り返すか折り返さないかを 1 回の操作で切り替える。既定は記載した wrap の有り無し、無ければ設定の既定に従う。コピーと折り返しのボタンはアイコンだけにする
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-8.yaml
@@ -44,6 +44,10 @@ use_cases:
     impact: changed
     detail: ライトボックスで拡大した画像を、ドラッグしないでも移動のメニューで動かせる。スマホの指ではスクロールで動かせないため
     depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-20.yaml
+    impact: changed
+    detail: 読者がファイルツリーごとに折り返しを切り替える。折り返したときに注釈を持つフォルダの名前が縦に折れない（#822）
 docs:
   - page: docs/component/CMP-472-36.ts.yaml
     new: false
