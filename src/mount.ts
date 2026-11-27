@@ -179,7 +179,7 @@ function createDiffHtmlRenderer(options: {
           pinMode: config.table.pin,
           pinDefault: config.table.pinDefault,
           codeWrap: config.code.wrap,
-      codeWrap: config.code.wrap,
+          codeWrap: config.code.wrap,
           longColumnMin: config.table.longColumnMin,
         }),
     };

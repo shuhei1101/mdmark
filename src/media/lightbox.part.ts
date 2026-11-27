@@ -42,7 +42,8 @@ export function renderLightbox(options: {
   const percent = `${Math.round(zoom * 100)}%`;
   const zoomGroup = `<span class="mdmark-lightbox-group" data-group="zoom">${tool({ name: "out", label: "縮小", icon: "minus", disabled: zoom <= fit * ZOOM.minRatio + ZOOM_EPSILON })}<button class="mdmark-lightbox-zoom" type="button" data-tool="fit" aria-label="倍率 ${percent}。全体が収まる倍率に戻す" title="全体が収まる倍率に戻す">${percent}</button>${tool({ name: "in", label: "拡大", icon: "plus", disabled: zoom >= fit * ZOOM.maxRatio - ZOOM_EPSILON })}</span>`;
   const screen = `<span class="mdmark-lightbox-group" data-group="screen">${tool({ name: "close", label: "拡大を閉じる", icon: "x" })}</span>`;
-  const head = `<div class="mdmark-lightbox-head">${nav}<span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作">${zoomGroup}${screen}</span></div>`;
+  const move = `<button class="mdmark-lightbox-tool mdmark-lightbox-move" type="button" aria-haspopup="true" aria-expanded="false" aria-label="拡大した画像を移動" title="移動" hidden>${iconSvg("move")}</button>`;
+  const head = `<div class="mdmark-lightbox-head">${nav}<span class="mdmark-lightbox-tools" role="toolbar" aria-label="画像の拡大の操作">${move}${zoomGroup}${screen}</span></div>`;
   const stage = `<div class="mdmark-lightbox-stage" tabindex="0" aria-label="拡大した画像。ドラッグか矢印キーで動かす"><div class="mdmark-lightbox-sizer"><img src="${escapeHtml(src)}" alt="${escapeHtml(alt)}"></div></div>`;
   const captionHtml = `<p class="mdmark-lightbox-caption"${caption === "" ? " hidden" : ""}>${escapeHtml(caption)}</p>`;
   return `<dialog class="mdmark-lightbox" aria-label="画像の拡大">${head}${stage}${captionHtml}</dialog>`;

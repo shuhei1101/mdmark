@@ -171,8 +171,11 @@ export function attachCodeWraps(
     blocks?: { code: boolean; tree: boolean };
   },
 ): () => void {
-  const { defaultWrap, partStates, blocks = { code: true, tree: true } } =
-    options;
+  const {
+    defaultWrap,
+    partStates,
+    blocks = { code: true, tree: true },
+  } = options;
   const added: Array<{ button: HTMLButtonElement; onClick: () => void }> = [];
   for (const target of wrapTargets(root, blocks)) {
     // マーカーの wrap を持つか既定が折り返すなら、描いた直後に折り返す

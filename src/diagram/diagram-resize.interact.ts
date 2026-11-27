@@ -1,4 +1,8 @@
 import {
+  openStepMenu,
+  type StepMenuHandle,
+} from "../shared/step-menu.interact.ts";
+import {
   readStoredSize,
   storedSizeKey,
   writeStoredSize,
@@ -30,7 +34,7 @@ export const diagramHeightKey = (options: {
     name: options.title,
   });
 
-/** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで今の倍率の図の全体が収まる高さにし、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を削除する関数を返却する */
+/** リサイズハンドルのドラッグと上下キーで表示する枠の高さを変え、ダブルクリックで今の倍率の図の全体が収まる高さにし、動かさずに押すか Enter・Space で大きさのメニューを開き、変えた高さを保つ。付けたときに保った高さを当て、その高さと操作を削除する関数を返却する */
 export const attachDiagramResize = (options: {
   /** 表示する枠 */
   viewport: HTMLElement;
@@ -69,8 +73,60 @@ export const attachDiagramResize = (options: {
     onResize(next);
   };
 
-  // ドラッグ: 縦の移動の分だけ高さを変える
-  let drag: { y: number; height: number; id: number } | undefined;
+  const currentHeight = (): number => viewport.getBoundingClientRect().height;
+
+  // 大きさのメニュー: ドラッグの代わりに高さを 1 段ずつ変える・全体が収まる高さにする
+  let menu: StepMenuHandle | undefined;
+  const closeMenu = (): void => {
+    menu?.close({ restoreFocus: false });
+    menu = undefined;
+  };
+  const openMenu = (): void => {
+    if (menu) {
+      return;
+    }
+    const opened = openStepMenu({
+      opener: handle,
+      label: handle.getAttribute("aria-label") ?? "図の表示の高さ",
+      sides: ["below", "above"],
+      align: "center",
+      items: [
+        {
+          label: "低くする",
+          icon: "minus",
+          enabled: () => Math.round(currentHeight()) > RESIZE.min,
+          run: () => setHeight(currentHeight() - RESIZE.step),
+        },
+        {
+          label: "高くする",
+          icon: "plus",
+          enabled: () => Math.round(currentHeight()) < Math.round(fitHeight()),
+          run: () => setHeight(currentHeight() + RESIZE.step),
+        },
+        {
+          label: "全体が収まる高さにする",
+          icon: "chevrons-up-down",
+          enabled: () =>
+            Math.round(currentHeight()) !== Math.round(fitHeight()),
+          run: () => setHeight(fitHeight()),
+        },
+      ],
+    });
+    menu = opened;
+    const wrappedClose = opened.close;
+    opened.close = (closeOptions) => {
+      wrappedClose(closeOptions);
+      if (menu === opened) {
+        menu = undefined;
+      }
+    };
+  };
+  signal.addEventListener("abort", closeMenu);
+
+  // ドラッグ: 縦の移動の分だけ高さを変える。`RESIZE.dragThreshold` 未満の動きで離したときは大きさのメニューを開く
+  let drag:
+    | { y: number; height: number; id: number; moved: boolean }
+    | undefined;
   handle.addEventListener(
     "pointerdown",
     (event) => {
@@ -80,8 +136,9 @@ export const attachDiagramResize = (options: {
       event.preventDefault();
       drag = {
         y: event.clientY,
-        height: viewport.getBoundingClientRect().height,
+        height: currentHeight(),
         id: event.pointerId,
+        moved: false,
       };
       handle.setPointerCapture(event.pointerId);
       handle.classList.add(RESIZING_CLASS);
@@ -94,7 +151,15 @@ export const attachDiagramResize = (options: {
       if (!drag || event.pointerId !== drag.id) {
         return;
       }
-      setHeight(drag.height + event.clientY - drag.y);
+      const dy = event.clientY - drag.y;
+      if (!drag.moved && Math.abs(dy) < RESIZE.dragThreshold) {
+        return;
+      }
+      if (!drag.moved) {
+        drag.moved = true;
+        closeMenu();
+      }
+      setHeight(drag.height + dy);
     },
     { signal },
   );
@@ -102,19 +167,34 @@ export const attachDiagramResize = (options: {
     drag = undefined;
     handle.classList.remove(RESIZING_CLASS);
   };
-  handle.addEventListener("pointerup", endDrag, { signal });
+  handle.addEventListener(
+    "pointerup",
+    (event) => {
+      const pressed = drag !== undefined && !drag.moved && event.button === 0;
+      endDrag();
+      if (pressed) {
+        openMenu();
+      }
+    },
+    { signal },
+  );
   handle.addEventListener("pointercancel", endDrag, { signal });
 
-  // 上下キー: 1 回で `RESIZE.step` ずつ変える
+  // 上下キー: 1 回で `RESIZE.step` ずつ変える。Enter・Space: 大きさのメニューを開く
   handle.addEventListener(
     "keydown",
     (event) => {
+      if (event.key === "Enter" || event.key === " ") {
+        event.preventDefault();
+        openMenu();
+        return;
+      }
       const step = KEY_STEPS[event.key];
       if (step === undefined) {
         return;
       }
       event.preventDefault();
-      setHeight(viewport.getBoundingClientRect().height + step);
+      setHeight(currentHeight() + step);
     },
     { signal },
   );
@@ -123,6 +203,7 @@ export const attachDiagramResize = (options: {
   handle.addEventListener(
     "dblclick",
     () => {
+      closeMenu();
       setHeight(fitHeight());
     },
     { signal },

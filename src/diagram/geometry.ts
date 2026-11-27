@@ -10,7 +10,7 @@ export const OVERLAP_OFFSET = 4;
 export const ZOOM = { step: 1.25, minRatio: 0.25, maxRatio: 5, pan: 80 };
 
 /** リサイズハンドルの量: キー 1 回で変える高さと、表示する枠の高さの下限（px） */
-export const RESIZE = { step: 32, min: 120 };
+export const RESIZE = { step: 32, min: 120, dragThreshold: 4 };
 
 /** 折れ線の点 */
 type Point = [number, number];

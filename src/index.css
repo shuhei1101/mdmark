@@ -7521,7 +7521,11 @@
 
       &[aria-pressed="true"] {
         border-color: var(--mdmark-color-link);
-        background: color-mix(in srgb, var(--mdmark-color-link) 12%, transparent);
+        background: color-mix(
+          in srgb,
+          var(--mdmark-color-link) 12%,
+          transparent
+        );
         color: var(--mdmark-color-link);
       }
 
@@ -9263,8 +9267,8 @@
       opacity: 1;
     }
 
-    /* 大きさのメニュー: ハンドルを押す（動かさずに離す）か Enter で開く、ドラッグの代わりの 3 つのボタン。popover で最前面に出し、ハンドルのそばに配置する */
-    .mdmark-media-size-menu {
+    /* 大きさのメニューと、向き・大きさのメニュー: ハンドル・移動のボタンを押す（動かさずに離す）か Enter で開く、ドラッグの代わりのボタン。popover で最前面に出し、開いた元の要素のそばに配置する */
+    :is(.mdmark-media-size-menu, .mdmark-step-menu) {
       position: fixed;
       inset: auto;
       margin: 0;
@@ -9315,6 +9319,42 @@
           width: 16px;
           height: 16px;
         }
+      }
+    }
+
+    /* map の移動のボタン: 動かさずに押した要素の内側の角に重ねる、図のパネルのボタンと同じ面と枠線と影の 24px 四方のボタン（`docs/mock/refs/820/assets/mock.css` の `.mock820-move`） */
+    .map-move {
+      position: absolute;
+      z-index: 5;
+      display: inline-grid;
+      place-items: center;
+      width: 24px;
+      height: 24px;
+      margin: 0;
+      padding: 0;
+      border: 1px solid var(--mdmark-color-border);
+      border-radius: var(--mdmark-radius);
+      background: var(--mdmark-color-bg-opaque);
+      color: var(--mdmark-color-text);
+      box-shadow: 0 1px 3px rgb(0 0 0 / 0.15);
+      cursor: pointer;
+
+      &[hidden] {
+        display: none;
+      }
+
+      &:hover {
+        background: var(--mdmark-color-surface);
+      }
+
+      &:focus-visible {
+        outline: 2px solid var(--mdmark-color-link);
+        outline-offset: 2px;
+      }
+
+      svg {
+        width: 16px;
+        height: 16px;
       }
     }
 
@@ -9905,7 +9945,10 @@
 
       /* 動画のリサイズハンドルとメニュー: 出さず、入れ物の下の余白も外す */
       .mdmark-media-resize,
-      .mdmark-media-size-menu {
+      .mdmark-media-size-menu,
+      .mdmark-step-menu,
+      .map-move,
+      .mdmark-lightbox-move {
         display: none;
       }
 
