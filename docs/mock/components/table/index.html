@@ -54,6 +54,8 @@
   <link rel="stylesheet" href="../../refs/735/assets/table.css">
   <!-- #811 つまみの押せる範囲を 24px にする規則と、ドラッグしない操作の規則 -->
   <link rel="stylesheet" href="../../refs/811/assets/table.css">
+  <!-- #824 列の中身のはみ出しの見本と、スマホの幅のテーブル設定のパネルの案 A・B の規則 -->
+  <link rel="stylesheet" href="../../refs/824/assets/table.css">
   <script src="../../refs/16/assets/sample.js" defer></script>
   <!-- 表の見本の定義と組み立て（モックだけの仕組み。syntax.js より先に組み立てる） -->
   <script src="../../refs/151/assets/samples.js" defer></script>
@@ -88,6 +90,8 @@
   <script src="../../refs/303/assets/table.js" defer></script>
   <!-- #811 列の幅と列の並べ替えのドラッグしない操作（#449・#184 のスクリプトの後に読む） -->
   <script src="../../refs/811/assets/drag-alt.js" defer></script>
+  <!-- #824 スマホの幅のテーブル設定のパネルの列の一覧を組む -->
+  <script src="../../refs/824/assets/table-samples.js" defer></script>
   <!-- モックの「印刷の見え方」の切り替え -->
   <script src="../../refs/151/assets/preview.js" defer></script>
   <!-- モック専用の操作列のテーマの切り替え（#263 で共有するアセット） -->
@@ -2448,6 +2452,142 @@
   <table tabindex="0" aria-label="表: 見える幅を変える表">
     <thead><tr><th>No</th><th>状態</th><th>更新日</th><th>名前</th><th>手順</th><th>説明</th></tr></thead>
     <tbody><tr><td>1</td><td><span class="mdmark-badge">完了</span></td><td>2026-11-01</td><td>列の幅</td><td>列を測る<br>幅を配る<br>折り返す</td><td>表の列の幅は、指定が無くても列ごとにセルの文字の量と改行の有無から決める。短い値の列は折り返さず、長い文の列だけを残りの幅で折り返すので、列どうしが大きく離れたり、短い値が細く折り返されたりしない。</td></tr><tr><td>2</td><td><span class="mdmark-badge">作業中</span></td><td>2026-11-05</td><td>見える幅</td><td>幅を見張る<br>判定し直す<br>描き直す</td><td>列の幅のつまみで読者が変えた幅は、表の見える幅が変わっても読者の幅のまま残す。並べ替え・絞り込み・列の表示の切り替えでは列の幅を変えず、見える幅が変わったときだけ判定し直す。</td></tr><tr><td>10</td><td><span class="mdmark-badge">未着手</span></td><td>2026-11-12</td><td>表の幅</td><td>合計を取る<br>枠を描く</td><td>余白の多い表は本文の幅まで広げず、列の幅の合計で描く。本文の幅に収まらない表だけを本文の幅の枠で描き、枠の中で横にスクロールさせて、続きがある側の端に影を出す。</td></tr></tbody>
+  </table>
+  </div>
+</div>
+</div>
+        </article>
+      </section>
+
+      <!-- #824 比べる元: 列の幅が中身より狭く、隣の列に重なる -->
+      <section aria-labelledby="state-824-overflow-now">
+        <h2 class="catalog-label" id="state-824-overflow-now">列の中身のはみ出し（今: 折り返さないコード・ID の列の幅が中身より狭く、隣の列に重なる）</h2>
+        <article class="mdmark">
+<div class="mdmark-table mdmark-824-overflow-now" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 今の列の中身のはみ出し" style="table-layout: fixed; inline-size: max-content">
+    <thead><tr><th scope="col" style="inline-size: 3em"><span class="mdmark-th"><button class="mdmark-sort" type="button">No<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col" style="inline-size: 9em"><span class="mdmark-th"><button class="mdmark-sort" type="button">コード<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col" style="inline-size: 9em"><span class="mdmark-th"><button class="mdmark-sort" type="button">ID<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col" style="inline-size: 16em"><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td data-mock824-nowrap><code>table.long_column_min_width_em</code></td><td data-mock824-nowrap>MDMARKCOLUMNWIDTHLONGIDENTIFIER20261127A</td><td>長文の列の最小の幅。指定が無ければ 45em</td></tr>
+      <tr><td>2</td><td data-mock824-nowrap><code>features.diagram-resize</code></td><td data-mock824-nowrap>MDMARKFEATUREDIAGRAMRESIZEID20261127BBB</td><td>図の高さを変えるリサイズハンドルのオン・オフ</td></tr>
+      <tr><td>3</td><td data-mock824-nowrap><code>build.include</code></td><td data-mock824-nowrap>MDMARKBUILDINCLUDEGLOB20261127CCCCCCCCC</td><td>まとめる Markdown の glob</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #824 修正後: 折り返さない列は一番長い中身の幅以上 -->
+      <section aria-labelledby="state-824-overflow-fixed">
+        <h2 class="catalog-label" id="state-824-overflow-fixed">列の中身のはみ出し（修正後: nowrap のコード・ID の列は一番長い中身の幅に余白を加えた幅以上になり、表の中で横にスクロールする）</h2>
+        <article class="mdmark">
+<div class="mdmark-table mdmark-824-overflow-fixed" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 修正後の nowrap の列">
+    <thead><tr><th scope="col" style="inline-size: 3em"><span class="mdmark-th"><button class="mdmark-sort" type="button">No<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">コード<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">ID<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col" style="inline-size: 16em"><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td data-mock824-nowrap><code>table.long_column_min_width_em</code></td><td data-mock824-nowrap>MDMARKCOLUMNWIDTHLONGIDENTIFIER20261127A</td><td>長文の列の最小の幅。指定が無ければ 45em</td></tr>
+      <tr><td>2</td><td data-mock824-nowrap><code>features.diagram-resize</code></td><td data-mock824-nowrap>MDMARKFEATUREDIAGRAMRESIZEID20261127BBB</td><td>図の高さを変えるリサイズハンドルのオン・オフ</td></tr>
+      <tr><td>3</td><td data-mock824-nowrap><code>build.include</code></td><td data-mock824-nowrap>MDMARKBUILDINCLUDEGLOB20261127CCCCCCCCC</td><td>まとめる Markdown の glob</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #824 修正後: 折り返す列は区切れない一番長い中身の幅で止まる -->
+      <section aria-labelledby="state-824-overflow-narrowed">
+        <h2 class="catalog-label" id="state-824-overflow-narrowed">列の中身のはみ出し（修正後: 折り返す列をつまみで左端まで狭めた。空白で区切れない一番長い中身が収まる幅で止まり、文は空白で折り返す）</h2>
+        <article class="mdmark">
+<div class="mdmark-table mdmark-824-overflow-fixed" data-kind="data">
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 修正後のつまみで狭めた折り返す列">
+    <thead><tr><th scope="col" style="inline-size: 3em"><span class="mdmark-th"><button class="mdmark-sort" type="button">No<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">コード<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">ID<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col" style="inline-size: 8em"><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td data-mock824-nowrap><code>table.long_column_min_width_em</code></td><td data-mock824-nowrap>MDMARKCOLUMNWIDTHLONGIDENTIFIER20261127A</td><td data-mock824-wrap>長文の列の最小の幅。指定が無ければ 45em</td></tr>
+      <tr><td>2</td><td data-mock824-nowrap><code>features.diagram-resize</code></td><td data-mock824-nowrap>MDMARKFEATUREDIAGRAMRESIZEID20261127BBB</td><td data-mock824-wrap>図の高さを変えるリサイズハンドルのオン・オフ</td></tr>
+      <tr><td>3</td><td data-mock824-nowrap><code>build.include</code></td><td data-mock824-nowrap>MDMARKBUILDINCLUDEGLOB20261127CCCCCCCCC</td><td data-mock824-wrap>まとめる Markdown の glob</td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+        </article>
+      </section>
+
+      <!-- #824 比べる元: スマホの幅でパネルが画面を広く覆う -->
+      <section aria-labelledby="state-824-settings-now">
+        <h2 class="catalog-label" id="state-824-settings-now">スマホの幅のテーブル設定のパネル（今: 12 列の一覧を全て並べ、パネルが画面の高さの 25% を超える。390x844 の幅で見る）</h2>
+        <article class="mdmark">
+<div class="mdmark-824-settings" data-mock824-option="now">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-settings" id="ts-824-now" role="dialog" aria-label="テーブル設定" data-mock824-columns>
+    <p class="mdmark-table-settings-title">表示と並び順</p>
+    <ul class="mdmark-table-settings-list"></ul>
+    <p class="mdmark-table-settings-note" id="ts-824-now-note">つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。先頭の列は隠せません</p>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 12 列のテーブル設定（now）">
+    <thead><tr><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">型<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">既定<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">必須<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">例<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">初出の版<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">廃止の版<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">設定の場所<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">上書き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">関連<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">備考<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td><code>table.pin</code></td><td>string</td><td><code>each</code></td><td></td><td>押した列を留める方法</td><td><code>through</code></td><td>0.9.0</td><td></td><td>端末</td><td>✓</td><td></td><td></td></tr>
+      <tr><td><code>table.long_column_min</code></td><td>number</td><td><code>45</code></td><td></td><td>長文の列の最小の幅（em）</td><td><code>30</code></td><td>0.7.0</td><td></td><td>文書</td><td>✓</td><td></td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</div>
+        </article>
+        <!-- 開いたまま見せるパネルの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- #824 案 A: 高さの上限とパネルの中のスクロール -->
+      <section aria-labelledby="state-824-settings-a">
+        <h2 class="catalog-label" id="state-824-settings-a">スマホの幅のテーブル設定のパネルの案 A（推奨）: 開くパネルのまま、高さを画面の高さの 25% 以下にし、列の一覧をパネルの中でスクロールさせる（390x844 の幅で見る）</h2>
+        <article class="mdmark">
+<div class="mdmark-824-settings" data-mock824-option="a">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-settings" id="ts-824-a" role="dialog" aria-label="テーブル設定" data-mock824-columns>
+    <p class="mdmark-table-settings-title">表示と並び順</p>
+    <ul class="mdmark-table-settings-list"></ul>
+    <p class="mdmark-table-settings-note" id="ts-824-a-note">つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。先頭の列は隠せません</p>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 12 列のテーブル設定（a）">
+    <thead><tr><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">型<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">既定<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">必須<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">例<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">初出の版<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">廃止の版<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">設定の場所<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">上書き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">関連<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">備考<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td><code>table.pin</code></td><td>string</td><td><code>each</code></td><td></td><td>押した列を留める方法</td><td><code>through</code></td><td>0.9.0</td><td></td><td>端末</td><td>✓</td><td></td><td></td></tr>
+      <tr><td><code>table.long_column_min</code></td><td>number</td><td><code>45</code></td><td></td><td>長文の列の最小の幅（em）</td><td><code>30</code></td><td>0.7.0</td><td></td><td>文書</td><td>✓</td><td></td><td></td></tr>
+    </tbody>
+  </table>
+  </div>
+</div>
+</div>
+        </article>
+        <!-- 開いたまま見せるパネルの分の余白（モック専用） -->
+        <div class="catalog-spacer" aria-hidden="true"></div>
+      </section>
+
+      <!-- #824 案 B: 文書の流れの中で開く -->
+      <section aria-labelledby="state-824-settings-b">
+        <h2 class="catalog-label" id="state-824-settings-b">スマホの幅のテーブル設定のパネルの案 B: 固定の領域にせず、表の上に文書の流れの中で開き、表を下へずらす（390x844 の幅で見る）</h2>
+        <article class="mdmark">
+<div class="mdmark-824-settings" data-mock824-option="b">
+<div class="mdmark-table" data-kind="data">
+  <div class="mdmark-table-settings" id="ts-824-b" role="dialog" aria-label="テーブル設定" data-mock824-columns>
+    <p class="mdmark-table-settings-title">表示と並び順</p>
+    <ul class="mdmark-table-settings-list"></ul>
+    <p class="mdmark-table-settings-note" id="ts-824-b-note">つまみをドラッグするか、つまみにフォーカスして ↑・↓ キーで並べ替えます。先頭の列は隠せません</p>
+  </div>
+  <div class="mdmark-table-scroll">
+  <table tabindex="0" aria-label="表: 12 列のテーブル設定（b）">
+    <thead><tr><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">名前<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">型<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">既定<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">必須<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">説明<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">例<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">初出の版<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">廃止の版<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">設定の場所<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">上書き<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">関連<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th><th scope="col"><span class="mdmark-th"><button class="mdmark-sort" type="button">備考<svg class="mdmark-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg></button></span></th></tr></thead>
+    <tbody>
+      <tr><td><code>table.pin</code></td><td>string</td><td><code>each</code></td><td></td><td>押した列を留める方法</td><td><code>through</code></td><td>0.9.0</td><td></td><td>端末</td><td>✓</td><td></td><td></td></tr>
+      <tr><td><code>table.long_column_min</code></td><td>number</td><td><code>45</code></td><td></td><td>長文の列の最小の幅（em）</td><td><code>30</code></td><td>0.7.0</td><td></td><td>文書</td><td>✓</td><td></td><td></td></tr>
+    </tbody>
   </table>
   </div>
 </div>
