@@ -53,7 +53,7 @@ type DragState = {
   distance: number;
 };
 
-/** セルの左右の余白と罫線の幅の合計（px） */
+/** セルの左右の余白と罫線の幅の合計（px。配置の無い要素で数にならない値は 0 として数える） */
 const insetOf = (cell: HTMLElement): number => {
   const style = getComputedStyle(cell);
   return [
@@ -61,7 +61,7 @@ const insetOf = (cell: HTMLElement): number => {
     style.paddingRight,
     style.borderLeftWidth,
     style.borderRightWidth,
-  ].reduce((sum, value) => sum + Number.parseFloat(value), 0);
+  ].reduce((sum, value) => sum + (Number.parseFloat(value) || 0), 0);
 };
 
 /** 見出しのセルのインラインの幅の指定を除いて測った幅（数にならない `max-content` などは 0）と、見出しの中身が収まる幅と、列の中身が収まる幅のうち最も大きい、列の最小幅（外側の幅。px） */
@@ -107,11 +107,17 @@ const writeOuterWidth = (
   }
 };
 
-/** 表の最下段の見出しのつまみに、ドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す操作を付ける。受け取りを削除し、幅の指定を全て戻す関数を返却する */
+/** 付けた列の幅のつまみの操作。`detach` は受け取りを削除して幅の指定を全て戻し、`refreshValues` は全ての列のつまみの値を書き換える */
+export type ColumnResize = {
+  detach: () => void;
+  refreshValues: () => void;
+};
+
+/** 表の最下段の見出しのつまみに、ドラッグ・←→ キーで列の幅を変え、ダブルクリック・ダブルタップ・Enter で戻す操作を付ける */
 export const attachColumnResize = (
   table: HTMLTableElement,
   options: ColumnResizeOptions,
-): (() => void) => {
+): ColumnResize => {
   const { headCells, maxWidth, onResize, onWidthWritten } = options;
   const initialVariables = headCells.map((cell) =>
     cell.style.getPropertyValue(MIN_WIDTH_VARIABLE),
@@ -355,7 +361,7 @@ export const attachColumnResize = (
     ];
   });
 
-  return () => {
+  const detach = (): void => {
     for (const remove of removers) {
       remove();
     }
@@ -368,4 +374,10 @@ export const attachColumnResize = (
     resized.clear();
     unfreeze();
   };
+  const refreshValues = (): void => {
+    headCells.forEach((_, column) => {
+      updateValues(column);
+    });
+  };
+  return { detach, refreshValues };
 };

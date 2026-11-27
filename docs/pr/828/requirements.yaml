@@ -1,0 +1,13 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 利用側が document に取り付ける前の要素へ描いた表でも、取り付けた後と表の見える幅が変わった後に、列の幅のつまみが今の幅・最小幅・上限を有限の値で支援技術へ伝える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-793-2.yaml
+    impact: run_only
+    detail: 表のカスタム要素も同じつまみの処理を使うため、取り付けた後のつまみの値が変わりうる
+    depends_on: []
+docs: []
+scope_out: []

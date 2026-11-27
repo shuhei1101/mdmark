@@ -1813,7 +1813,9 @@ function attachTable(
   });
   observer.observe(table);
   observer.observe(wrapper);
-  // 列の幅を中身から決め、幅を入れた後に留める位置を決め直す
+  // 列の幅のつまみの値を書き換える関数（つまみの操作を付ける前は無い）
+  let refreshResizeValues: (() => void) | undefined;
+  // 列の幅を中身から決め、幅を入れた後に留める位置を、列の幅を決め直した後につまみの値を決め直す
   const autoWidths = attachAutoColumnWidths(table, {
     wrapper,
     scroller,
@@ -1826,6 +1828,7 @@ function attachTable(
         pinColumns(pinned);
       }
     },
+    onDecided: () => refreshResizeValues?.(),
   });
   cleanups.push(autoWidths.detach);
   updatePinVisibility();
@@ -1834,29 +1837,27 @@ function attachTable(
   }
   updateVisibleWidth();
   if (features.includes("resize")) {
-    cleanups.push(
-      attachColumnResize(table, {
-        headCells,
-        maxWidth: (column) =>
-          columnWidthLimit({
-            visibleWidth: scroller.clientWidth,
-            overflowing: isOverflowing(),
-            widths: headCells.map((cell) =>
-              cell.hidden ? 0 : cell.offsetWidth,
-            ),
-            pinned: stuckColumns,
-            column,
-          }),
-        onWidthWritten: () => autoWidths.refresh(),
-        // 幅を変えた後と戻した後は、列の幅と留める位置と境の線を今の列の幅で決め直す
-        onResize: () => {
-          autoWidths.refresh();
-          if (pinned.length > 0) {
-            pinColumns(pinned);
-          }
-        },
-      }),
-    );
+    const columnResize = attachColumnResize(table, {
+      headCells,
+      maxWidth: (column) =>
+        columnWidthLimit({
+          visibleWidth: scroller.clientWidth,
+          overflowing: isOverflowing(),
+          widths: headCells.map((cell) => (cell.hidden ? 0 : cell.offsetWidth)),
+          pinned: stuckColumns,
+          column,
+        }),
+      onWidthWritten: () => autoWidths.refresh(),
+      // 幅を変えた後と戻した後は、列の幅と留める位置と境の線を今の列の幅で決め直す
+      onResize: () => {
+        autoWidths.refresh();
+        if (pinned.length > 0) {
+          pinColumns(pinned);
+        }
+      },
+    });
+    cleanups.push(columnResize.detach);
+    refreshResizeValues = columnResize.refreshValues;
   }
   if (followRows) {
     revealRow();

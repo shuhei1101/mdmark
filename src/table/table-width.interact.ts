@@ -299,6 +299,8 @@ export type AutoColumnWidthsOptions = {
   longColumnMin: number;
   /** 幅を入れた後に呼ぶ */
   onApply?: () => void;
+  /** 列の幅を決めた（決め直した）後だけ、`onApply` の後に呼ぶ */
+  onDecided?: () => void;
 };
 
 /** 列の中身の幅を測って列の幅を決め、見出しのセルと表の CSS 変数に入れる */
@@ -310,7 +312,8 @@ export const attachAutoColumnWidths = (
   columnsChanged: () => void;
   detach: () => void;
 } => {
-  const { wrapper, scroller, headCells, longColumnMin, onApply } = options;
+  const { wrapper, scroller, headCells, longColumnMin, onApply, onDecided } =
+    options;
   const long = readLongColumns(wrapper.dataset.long);
   const ranges = readWidthRanges(wrapper.dataset.width);
   // 元の列の位置ごとの測った値。隠していて測れなかった列は、表示したときに測る
@@ -473,6 +476,7 @@ export const attachAutoColumnWidths = (
     }
     lastWidth = visible;
     onApply?.();
+    onDecided?.();
   };
 
   /** 測り直さず、表示している列の幅を変えずに、表の幅を表示している列の幅の合計にする。つまみで変えた列はその幅、戻した列は前に自動で決めた幅、前に幅を決めていない列は測って最小の幅にする */

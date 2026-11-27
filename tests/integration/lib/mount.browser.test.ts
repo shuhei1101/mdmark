@@ -16992,6 +16992,97 @@ test("test_normal_when_column_wider_than_visible_width", async () => {
   });
 });
 
+// document に取り付ける前の要素へ描いた表でも、取り付けた後と見える幅が変わった後に、全ての列のつまみの値を有限の数で更新する（正常系（document に取り付ける前に描いた表のつまみの値））
+test("test_normal_when_rendered_before_attached", async () => {
+  await withViewport(1280, async () => {
+    // 準備: document に取り付けていない要素へ、名前 4 文字以下・説明 8 文字以下の 2 列 3 行の表を描く
+    const el = document.createElement("div");
+    elements.push(el);
+    await mountTracked(el, {
+      markdown: `本文の段落。\n\n${markedTableMarkdown(
+        '{"kind": "data"}',
+        ["名前", "説明"],
+        [1, 2, 3].map((no) => [`名前${no}`, `${fullWidth(7)}${no}`]),
+      )}`,
+      config: { features: { "side-toc": false } },
+    });
+    const wrapper = find<HTMLElement>(el, ".mdmark-table");
+    const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+    const { heads, handles } = resizeParts(wrapper);
+    // 検証: 取り付ける前も、どのつまみも NaN でない整数で min ≤ now ≤ max
+    for (const handle of handles) {
+      const values = ["aria-valuemin", "aria-valuenow", "aria-valuemax"].map(
+        (name) => Number(handle.getAttribute(name)),
+      );
+      for (const value of values) {
+        expect(Number.isInteger(value)).toBe(true);
+      }
+      const [min, now, max] = values as [number, number, number];
+      expect(min).toBeLessThanOrEqual(now);
+      expect(now).toBeLessThanOrEqual(max);
+    }
+    // 実行: 描いた要素を document に取り付ける
+    document.body.append(el);
+    // 検証: フォーカス・ポインターを乗せる前に、どの列も今の幅と見える幅の上限を持つ
+    await vi.waitFor(() => {
+      for (const [column, handle] of handles.entries()) {
+        const width = itemAt(heads, column).offsetWidth;
+        expect(width).toBeGreaterThan(0);
+        expect(handle.getAttribute("aria-valuenow")).toBe(String(width));
+        expect(handle.getAttribute("aria-valuetext")).toBe(`${width}px`);
+        expect(handle.getAttribute("aria-valuemax")).toBe(
+          String(scroller.clientWidth),
+        );
+      }
+    });
+    const attachedMax = scroller.clientWidth;
+    const attachedWidths = headWidths(heads);
+    expect(attachedWidths.reduce((sum, width) => sum + width, 0)).toBeLessThan(
+      600,
+    );
+    for (const handle of handles) {
+      expect(Number(handle.getAttribute("aria-valuemin"))).toBeLessThanOrEqual(
+        Number(handle.getAttribute("aria-valuenow")),
+      );
+    }
+    const { default: axe } = await import("axe-core");
+    const attachedResult = await axe.run(wrapper, {
+      runOnly: { type: "rule", values: ["aria-valid-attr-value"] },
+    });
+    expect(attachedResult.violations).toEqual([]);
+    // 実行: 画面の幅を 600px へ狭める
+    await page.viewport(600, 800);
+    // 検証: 列の幅は変わらず、上限が狭めた後の見える幅になる
+    await vi.waitFor(() => {
+      expect(scroller.clientWidth).toBeLessThan(attachedMax);
+      for (const handle of handles) {
+        expect(handle.getAttribute("aria-valuemax")).toBe(
+          String(scroller.clientWidth),
+        );
+      }
+    });
+    headWidths(heads).forEach((width, column) => {
+      expect(
+        Math.abs(width - (attachedWidths[column] ?? 0)),
+      ).toBeLessThanOrEqual(1);
+    });
+    for (const [column, handle] of handles.entries()) {
+      const now = Number(handle.getAttribute("aria-valuenow"));
+      expect(now).toBe(itemAt(heads, column).offsetWidth);
+      expect(Number(handle.getAttribute("aria-valuemin"))).toBeLessThanOrEqual(
+        now,
+      );
+      expect(now).toBeLessThanOrEqual(
+        Number(handle.getAttribute("aria-valuemax")),
+      );
+    }
+    const narrowedResult = await axe.run(wrapper, {
+      runOnly: { type: "rule", values: ["aria-valid-attr-value"] },
+    });
+    expect(narrowedResult.violations).toEqual([]);
+  });
+});
+
 /** 列ごとの中身の幅が違う 4 列 3 行の表（コードは空白を持たない 40 文字の行内のコード、ID は区切りの無い 40 文字の英数字） */
 const CONTENT_WIDTH_ROWS = [1, 2, 3].map((no) => [
   `名前${no}`,

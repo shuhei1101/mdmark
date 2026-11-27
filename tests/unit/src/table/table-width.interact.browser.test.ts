@@ -829,3 +829,46 @@ test("test_attach_auto_column_widths_when_content_width", async () => {
     expect(cell.scrollWidth).toBeLessThanOrEqual(cell.clientWidth);
   }
 });
+
+// onDecided は列の幅を決めた後だけ呼び、refresh・columnsChanged で表の幅だけを合わせた後には呼ばない（正常系）
+test("test_attach_auto_column_widths_when_decided", async () => {
+  // 準備
+  addStyles();
+  const { attachAutoColumnWidths } = await loadTableWidth();
+  const { root } = createRoot(CONTENT_TABLE);
+  setRootWidth(root, 1280);
+  const { wrapper, table, scroller, headCells } = tableParts(root);
+  insertHeadTools(headCells);
+  const calls: string[] = [];
+  const handle = attachAutoColumnWidths(table, {
+    wrapper,
+    scroller,
+    headCells,
+    longColumnMin: 45,
+    onApply: () => calls.push("apply"),
+    onDecided: () => calls.push("decided"),
+  });
+  detachers.push(handle.detach);
+  // 検証: 付けた直後に、onApply の後で 1 回呼ぶ
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  expect(calls).toEqual(["apply", "decided"]);
+  // 実行・検証: 表の幅だけを合わせた後は onApply だけを呼ぶ
+  calls.length = 0;
+  handle.refresh();
+  handle.columnsChanged();
+  expect(calls).toEqual(["apply", "apply"]);
+  // 実行・検証: 包む要素の幅を変えた後に 1 回呼ぶ
+  calls.length = 0;
+  setRootWidth(root, 900);
+  await vi.waitFor(() => {
+    expect(calls.filter((call) => call === "decided")).toHaveLength(1);
+  });
+  // 実行・検証: ピン止めのボタンの hidden を変えた後に 1 回呼ぶ
+  calls.length = 0;
+  showPins(root);
+  await vi.waitFor(() => {
+    expect(calls.filter((call) => call === "decided")).toHaveLength(1);
+  });
+});

@@ -11766,6 +11766,42 @@ flows:
     test: test_normal_when_settings_opened_in_phone_width
     refs:
       - SC-472-73#scenarios[正常シナリオ（スマホの幅でテーブル設定を開く）]
+  - name: 正常系（document に取り付ける前に描いた表のつまみの値）
+    summary: document に取り付ける前の要素へ描いた表でも、取り付けた後と見える幅が変わった後に、全ての列のつまみの値を有限の数で更新する
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+        notes: 画面の幅は 1280px。`el` は `document.createElement("div")` で作り、document に取り付けずに `mount` を呼ぶ。描いた後に `el` を document に取り付け、その後に画面の幅を 600px へ狭める
+      - name: 幅を変える表を持つ Markdown
+        description: '`<!-- table: {"kind": "data"} -->` で、名前・説明の 2 列 3 行の表を囲んだ文書'
+        notes: 名前のセルは全角 4 文字以下、説明のセルは全角 8 文字以下で、長文の列にならず、600px でもはみ出さない
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })（el は document の外）
+        M->>P: つまみを持つ表を描く
+        P->>P: el を document に取り付ける
+        M->>P: 見える幅が 0 から変わったので、全ての列のつまみの値を更新する
+        P->>P: 画面の幅を 600px へ狭める
+        M->>P: 見える幅が変わったので、全ての列のつまみの値を更新する
+      ```
+
+      <!-- /map -->
+    expected:
+      - 取り付ける前、どの列のつまみも `aria-valuenow`・`aria-valuemin`・`aria-valuemax` が `NaN` でない整数で、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax`
+      - 取り付けた後、どのつまみにもフォーカス・ポインターを乗せる前に、どの列のつまみも `aria-valuenow` がその列の `th` の `offsetWidth`、`aria-valuetext` が `{その幅}px`、`aria-valuemax` が表を包む要素の `clientWidth`、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax`
+      - 取り付けた後、名前・説明の列の `th` の `offsetWidth` の合計が 600 より小さい
+      - 600px へ狭めた後、名前・説明の列の `th` の `offsetWidth` が狭める前と同じ（差が 1 以内）で、どの列のつまみも `aria-valuemax` が狭めた後の表を包む要素の `clientWidth` になり、取り付けた直後の `aria-valuemax` より小さく、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax`
+      - 取り付けた後と 600px へ狭めた後のどちらでも、axe-core の `aria-valid-attr-value` の違反が 0 件
+    test: test_normal_when_rendered_before_attached
+    refs:
+      - SC-472-73#scenarios[正常シナリオ（document に取り付ける前に描いた表のつまみ）]
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -13039,7 +13075,7 @@ constraints:
 
       印刷では決めた幅を適用しない。
 
-      `resize` の表は、最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`span.mdmark-col-resize`。`role="separator"`・`aria-orientation="vertical"`・`tabindex="0"`、`aria-label` が `「{列名}」の列の幅`）を配置する。つまみは配置した時点から `aria-valuenow`・`aria-valuetext`・`aria-valuemin`・`aria-valuemax` を持ち、列の幅を決めた後に下の値で更新する。
+      `resize` の表は、最下段の各列の見出しのセルの右端に、列の幅を変えるつまみ（`span.mdmark-col-resize`。`role="separator"`・`aria-orientation="vertical"`・`tabindex="0"`、`aria-label` が `「{列名}」の列の幅`）を配置する。つまみは配置した時点から `aria-valuenow`・`aria-valuetext`・`aria-valuemin`・`aria-valuemax` を持ち、列の幅を決めた後と、表の見える幅が変わったとき（描く先の要素を document に取り付けて 0 から変わったときを含む）に、全ての列のつまみを下の値で更新する。
 
       つまみは、どの画面でも押せる幅を 24px、高さを見出しのセルの高さ（24px 以上）にし、見出しのセルの右の余白を 24px 広げて見出しのボタンと重ねない。線は、ポインターを乗せたとき・フォーカスしたとき・ドラッグ中に見出しのセルの右端に出し、ポインターが粗い画面（`(pointer: coarse)`）では常に薄く出す。
 
@@ -13053,7 +13089,7 @@ constraints:
 
       幅は、列の最小幅から、表の見えている幅からほかに実際に留まっている列（見えている幅に収まらず留まっていない列を除く）の幅の合計を引いた幅（表がはみ出さない間は表の見えている幅）までに収める。
 
-      つまみの `aria-valuenow` と `aria-valuetext`（`{幅}px`）を今の幅、`aria-valuemin` を列の最小幅、`aria-valuemax` を上限にする（px の整数。最小は切り上げ、上限は切り捨て）。最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を常に保つ。
+      つまみの `aria-valuenow` と `aria-valuetext`（`{幅}px`）を今の幅、`aria-valuemin` を列の最小幅、`aria-valuemax` を上限にする（px の整数。最小は切り上げ、上限は切り捨て）。最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を常に保つ。配置の無い時点（document に取り付ける前・`display: none` の中）で余白・罫線・最小幅の計算値が数にならないときは 0 として数え、4 つの属性に `NaN` を入れない。
 
       つまみのダブルクリック・ダブルタップ（`pointerType` が `touch` の 2 回のタップが 300ms 以内）・Enter で列の幅の指定を解除し、描いた直後の幅（`mdmark-wide` の列は `wide=` の幅）に戻す。
 

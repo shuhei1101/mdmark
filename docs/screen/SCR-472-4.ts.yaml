@@ -1722,7 +1722,7 @@ elements:
     visible_when: '`resize` の表（既定の種類と `data` の種類。`features.resize.enabled` を `false` にした表と `plain` の表には無い）'
     initial_value: 描いた直後の列の幅（`width.mode` が `nowrap` の列は値の長さの幅）。幅は覚えず、再描画すると戻る
     action: ドラッグ（マウス・タッチ）か、フォーカスして ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変える。ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す
-    constraints: 列の最小幅（セルの `min-width` の 6em、見出しのセルの中身の幅、折り返さない列は最も長い行の幅、折り返す列は最も長い半角の単語の幅のうち最も大きい幅）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示し、描いた時点から 4 つを持つ。最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ
+    constraints: 列の最小幅（セルの `min-width` の 6em、見出しのセルの中身の幅、折り返さない列は最も長い行の幅、折り返す列は最も長い半角の単語の幅のうち最も大きい幅）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示し、描いた時点から 4 つを持つ。最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ。描く先の要素を document に取り付ける前に描いたときも 4 つに `NaN` を入れず、取り付けた後と表の見える幅が変わった後に全ての列の値を更新する
     refs:
       - IF-472-35#constraints[列の幅]
     status: planned

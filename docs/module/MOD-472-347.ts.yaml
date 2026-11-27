@@ -92,6 +92,7 @@ functions:
       後から表示した列は、前に決めた幅があればその幅、無ければその時点で測って `columnBounds` の `min`（`is-resized` の列は `offsetWidth`）を入れる。
       戻り値の `refresh` は、列の幅のつまみで幅を入れた後と戻した後に呼び、再計測せず、ほかの列の `--mdmark-auto-width` を変えずに `--mdmark-auto-table-width` を表示している列の幅（`is-resized` の列はインラインの `width` に余白と罫線を追加した外側の幅）の合計にする（つまみで戻した列は、前に自動で決めた幅に戻る）。
       まだ幅を決めていない表では、`refresh` は決め、`columnsChanged` は何もしない。
+            `onApply` は列の幅を決めた後と、`refresh`・`columnsChanged` で表の幅を合わせた後に呼ぶ。`onDecided` は、描いた直後・`ResizeObserver`・`MutationObserver`・まだ幅を決めていない表の `refresh` で列の幅を決めた（決め直した）後だけ、`onApply` の後に呼ぶ（測り直さずに表の幅だけを合わせた後には呼ばない）。
       描いたときに表が `display: none` の祖先（選ばれていないタブなど）の中にあり `clientWidth` が 0 のときは決めず、見えて幅が 0 でなくなったときに `ResizeObserver` で決める（閉じた `details`・`hidden="until-found"` の中は幅を測れるので、そのまま決める）
     args:
       - name: table
@@ -99,9 +100,9 @@ functions:
         required: true
         description: '`div.mdmark-table` の中の表'
       - name: options
-        type: '{ wrapper: HTMLElement; scroller: HTMLElement; headCells: HTMLTableCellElement[]; longColumnMin: number; onApply?: () => void }'
+        type: '{ wrapper: HTMLElement; scroller: HTMLElement; headCells: HTMLTableCellElement[]; longColumnMin: number; onApply?: () => void; onDecided?: () => void }'
         required: true
-        description: '表の囲み（`div.mdmark-table`）、表を包む要素（`div.mdmark-table-scroll`）、列ごとの最下段の見出しのセル、長文の列の最小の幅（em）、幅を入れた後に呼ぶ関数（ピン止めの位置を再計算する）'
+        description: '表の囲み（`div.mdmark-table`）、表を包む要素（`div.mdmark-table-scroll`）、列ごとの最下段の見出しのセル、長文の列の最小の幅（em）、幅を入れた後に呼ぶ関数（ピン止めの位置を再計算する）、列の幅を決めた（決め直した）後だけに呼ぶ関数（列の幅のつまみの値を更新する）'
     returns:
       type: '{ refresh: () => void; columnsChanged: () => void; detach: () => void }'
       description: 再計測せずに再計算する関数と、列の表示を切り替えた後に表の幅を表示している列の幅の合計にする関数と、`ResizeObserver` と `MutationObserver` を止めて入れた変数と `data-auto-width` を取り除く関数
@@ -165,6 +166,12 @@ functions:
         condition: 幅 600px の要素に、列 0 が `mdmark-wide` で 40 文字の行内のコード、列 1 が長文の列（`data-long="1"`）で区切りの無い 40 文字の英数字を含む文の表を付ける
         mock: なし
         expected: 列 0 の見出しのセルの `--mdmark-column-content-width` が列 0 の `longest`、列 1 が列 1 の `longestWord` 以上の値（どちらも `{幅}px`）。どの本文のセルも `scrollWidth` が `clientWidth` 以下
+      - name: test_attach_auto_column_widths_when_decided
+        case: 正常
+        summary: onDecided は列の幅を決めた後だけ呼び、refresh・columnsChanged で表の幅だけを合わせた後には呼ばない
+        condition: 幅 1280px の要素に `test_attach_auto_column_widths` の表を `onApply`・`onDecided` を指定して付け、`refresh` と `columnsChanged` を呼び、続けて包む要素の幅を 900px にし、ピン止めのボタンの `hidden` を変える
+        mock: なし
+        expected: 付けた直後に `onDecided` が 1 回呼ばれ `onApply` の後。`refresh`・`columnsChanged` の後は `onApply` だけが呼ばれ `onDecided` は増えない。900px にした後とボタンの `hidden` を変えた後に、それぞれ `onDecided` が 1 回ずつ呼ばれる
     status: planned
 refs:
   - IF-472-35#constraints[列の幅]

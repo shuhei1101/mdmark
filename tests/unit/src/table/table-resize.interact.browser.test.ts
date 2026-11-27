@@ -11,6 +11,12 @@ const loadResize = () =>
 
 const detachers: Array<() => void> = [];
 
+/** 付けた操作の `detach` をテストの終わりに呼ぶ一覧へ登録し、付けた操作をそのまま返却する */
+function track<T extends { detach: () => void }>(attached: T): T {
+  detachers.push(attached.detach);
+  return attached;
+}
+
 afterEach(() => {
   for (const detach of detachers.splice(0)) {
     detach();
@@ -18,6 +24,9 @@ afterEach(() => {
   removeRoots();
   vi.restoreAllMocks();
 });
+
+/** つまみが今の幅と範囲を示す属性 */
+const ARIA_VALUES = ["aria-valuenow", "aria-valuemin", "aria-valuemax"];
 
 /** 描いたときの見出しのセルの `--mdmark-column-min-width`（描く処理が入れる値の代わり） */
 const INITIAL_MIN_WIDTH = "90px";
@@ -95,7 +104,7 @@ test("test_attach_column_resize_when_dragged", async () => {
   const { attachColumnResize } = await loadResize();
   const { table, headCells, handles } = resizableTable();
   const onResize = vi.fn();
-  detachers.push(
+  track(
     attachColumnResize(table, {
       headCells,
       maxWidth: () => 2000,
@@ -129,7 +138,7 @@ test("test_attach_column_resize_when_auto_width", async () => {
   const { table, headCells, handles } = resizableTable();
   table.setAttribute("data-auto-width", "");
   const calls: string[] = [];
-  detachers.push(
+  track(
     attachColumnResize(table, {
       headCells,
       maxWidth: () => 2000,
@@ -153,7 +162,7 @@ test("test_attach_column_resize_when_key", async () => {
   addStyles();
   const { attachColumnResize } = await loadResize();
   const { table, headCells, handles } = resizableTable();
-  detachers.push(
+  track(
     attachColumnResize(table, {
       headCells,
       maxWidth: () => 2000,
@@ -213,7 +222,7 @@ test("test_attach_column_resize_when_clamped", async () => {
     6 * Number.parseFloat(style.fontSize) + inset,
   );
   first.style.setProperty("--mdmark-column-head-width", `${headWidth}px`);
-  detachers.push(
+  track(
     attachColumnResize(table, {
       headCells,
       maxWidth: () => 200,
@@ -243,7 +252,7 @@ test("test_attach_column_resize_when_double_tap", async () => {
   vi.spyOn(performance, "now").mockImplementation(() => now);
   const { attachColumnResize } = await loadResize();
   const { table, headCells, handles } = resizableTable();
-  detachers.push(
+  track(
     attachColumnResize(table, {
       headCells,
       maxWidth: () => 2000,
@@ -280,7 +289,7 @@ test("test_attach_column_resize_when_detached", async () => {
   addStyles();
   const { attachColumnResize } = await loadResize();
   const { table, headCells, handles } = resizableTable();
-  const detach = attachColumnResize(table, {
+  const { detach } = attachColumnResize(table, {
     headCells,
     maxWidth: () => 2000,
     onResize: () => undefined,
@@ -304,7 +313,7 @@ test("test_attach_column_resize_when_max_below_width", async () => {
   const { table, headCells, handles } = resizableTable();
   const width = headCells[0].offsetWidth;
   // 実行
-  detachers.push(
+  track(
     attachColumnResize(table, {
       headCells,
       maxWidth: () => width - 40,
@@ -332,7 +341,7 @@ test("test_attach_column_resize_when_not_laid_out", async () => {
   }
   root.style.display = "none";
   // 実行
-  detachers.push(
+  track(
     attachColumnResize(table, {
       headCells,
       maxWidth: () => table.parentElement?.clientWidth ?? 0,
@@ -346,6 +355,9 @@ test("test_attach_column_resize_when_not_laid_out", async () => {
     expect(Number(handle.getAttribute("aria-valuemax"))).toBeGreaterThanOrEqual(
       0,
     );
+    for (const name of ARIA_VALUES) {
+      expect(Number.isNaN(Number(handle.getAttribute(name)))).toBe(false);
+    }
   }
 });
 
@@ -357,7 +369,7 @@ test("test_attach_column_resize_when_content_width", async () => {
   const { attachColumnResize } = await loadResize();
   const { table, headCells, handles } = resizableTable();
   headCells[0]?.style.setProperty("--mdmark-column-content-width", "320px");
-  detachers.push(
+  track(
     attachColumnResize(table, {
       headCells,
       maxWidth: () => 2000,
@@ -370,4 +382,74 @@ test("test_attach_column_resize_when_content_width", async () => {
   // 検証
   expect(headCells[0]?.offsetWidth).toBe(320);
   expect(handles[0]?.getAttribute("aria-valuemin")).toBe("320");
+});
+
+// document に取り付ける前に付けた表でも NaN を入れず、取り付けた後の refreshValues で全ての列の値を書き換える（正常系）
+test("test_attach_column_resize_when_attached_after", async () => {
+  // 準備: 表を描いた要素を document から外す
+  addStyles();
+  const { attachColumnResize } = await loadResize();
+  const { table, headCells, handles } = resizableTable();
+  const root = table.closest<HTMLElement>(".mdmark");
+  if (!root) {
+    throw new Error("描く先の要素が無い");
+  }
+  root.remove();
+  const { refreshValues } = track(
+    attachColumnResize(table, {
+      headCells,
+      maxWidth: () => 400,
+      onResize: () => undefined,
+    }),
+  );
+  // 検証: 取り付ける前も NaN でない整数
+  for (const handle of handles) {
+    for (const name of ARIA_VALUES) {
+      expect(Number.isInteger(Number(handle.getAttribute(name)))).toBe(true);
+    }
+  }
+  // 実行
+  document.body.append(root);
+  refreshValues();
+  // 検証
+  handles.forEach((handle, column) => {
+    const width = headCells[column]?.offsetWidth ?? 0;
+    expect(width).toBeGreaterThan(0);
+    expect(handle.getAttribute("aria-valuenow")).toBe(String(width));
+    expect(handle.getAttribute("aria-valuetext")).toBe(`${width}px`);
+    expect(handle.getAttribute("aria-valuemax")).toBe("400");
+    expect(Number(handle.getAttribute("aria-valuemin"))).toBeLessThanOrEqual(
+      width,
+    );
+  });
+});
+
+// 上限が変わった後の refreshValues で、操作していない列の aria-valuemax も書き換える（正常系）
+test("test_attach_column_resize_when_refreshed_after_max_changed", async () => {
+  // 準備
+  addStyles();
+  const { attachColumnResize } = await loadResize();
+  const { table, headCells, handles } = resizableTable();
+  let limit = 800;
+  const { refreshValues } = track(
+    attachColumnResize(table, {
+      headCells,
+      maxWidth: () => limit,
+      onResize: () => undefined,
+    }),
+  );
+  for (const handle of handles) {
+    expect(handle.getAttribute("aria-valuemax")).toBe("800");
+  }
+  // 実行
+  limit = 500;
+  refreshValues();
+  // 検証
+  handles.forEach((handle, column) => {
+    const width = headCells[column]?.offsetWidth ?? 0;
+    expect(handle.getAttribute("aria-valuemax")).toBe(
+      String(Math.max(500, width)),
+    );
+  });
+  expect(handles).not.toContain(document.activeElement);
 });
