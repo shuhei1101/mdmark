@@ -87,6 +87,10 @@ functions:
         type: HTMLElement
         required: false
         description: メニューを入れる要素（再描画で消えない図の表示する枠）。既定は `opener` の直後
+      - name: options.onClose
+        type: () => void
+        required: false
+        description: Esc・メニューの外の押下・`close` のどれで閉じたときも呼ぶ。呼び出し側が開いたメニューの参照を外す
     returns:
       type: StepMenuHandle
       description: 開いたメニューの操作
@@ -116,6 +120,12 @@ functions:
         summary: 上下の矢印キーで押せる項目の間を移る
         condition: 2 つ目が押せない 3 項目で開き、↓ を押す
         expected: フォーカスが 1 つ目から 3 つ目へ移る
+        mock: なし
+      - name: test_open_step_menu_when_closed_by_escape_or_outside
+        case: 正常
+        summary: Esc でもメニューの外を押しても onClose を呼ぶ
+        condition: '`onClose` を渡して開き Esc を押す。もう一度開いて、メニューの外のボタンを押す'
+        expected: '`onClose` が 1 回目の後に 1 回、2 回目の後に 2 回呼ばれ、メニューが無い'
         mock: なし
   - name: placeStepMenu
     title: メニューの位置を決める

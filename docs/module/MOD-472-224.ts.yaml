@@ -112,6 +112,12 @@ functions:
         condition: 拡大して移動のメニューを開き、項目にフォーカスがある状態で `0` を押す
         expected: 移動のボタンが `hidden` でメニューが無く、倍率のボタンにフォーカスがある
         mock: なし
+      - name: test_attach_lightbox_when_move_menu_reopened
+        case: 正常
+        summary: Esc でメニューだけを閉じた後も、移動のボタンを押すとメニューを開く
+        condition: 拡大して移動のメニューを開き、Esc を押してから移動のボタンを押す
+        expected: メニューが開き、ライトボックスは開いたまま
+        mock: なし
     status: planned
 lead: '画像の拡大のボタンとライトボックスの切り替え・拡大・縮小・移動を受け持ち、画像の拡大の操作を変えるときに参照する。'
 tags:

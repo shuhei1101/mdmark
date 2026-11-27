@@ -80,6 +80,12 @@ functions:
         condition: ボタンでメニューを開いた後、`pointedOf` が `undefined` を返す場所を押す
         expected: ボタンが `hidden` で、メニューが無い
         mock: なし
+      - name: test_attach_move_button_when_reopened
+        case: 正常
+        summary: Esc やメニューの外の押下で閉じた後も、ボタンを押すとメニューを開く
+        condition: ボタンでメニューを開いて Esc で閉じ、ボタンを押す。図の外の要素を押して閉じ、ボタンを押す
+        expected: どちらの後も 1 回の押下でメニューが開く
+        mock: なし
 tags:
   - name: topic:map
   - name: topic:ドラッグ

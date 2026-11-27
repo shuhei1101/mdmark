@@ -434,6 +434,9 @@ styles:
       - class_name: .mdmark .mdmark-media audio
         target: 音声の再生バーの全体
         value: '`audio` に `height`・`max-height` を指定せず、図と入れ物に `overflow: hidden` を当てない。mdmark だけで描いた音声（ストーリー `parts-media--audio`）は 1280px・390px のどちらの幅でも再生バーの全体（高さ 54px）を出し、見切れは MindStella の資料の画面の側にある'
+      - class_name: .mdmark-diagram[data-diagram="map"] .map-group-resize
+        target: map のグループの右下の角（大きさのメニューの開き口）
+        value: '`z-index: 1` で後ろに描く線を押す・指す場所の層（`.map-wire-hits`）より上に重ね、大きさを `max(24px, calc(24px / var(--mdmark-zoom, 1)))` 四方にして、上を通る線や図の倍率によらず 24 CSS px 以上で押せるようにする（axe の `target-size`）'
     refs:
       - SCR-472-4#
       - CMP-472-65#

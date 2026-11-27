@@ -141,7 +141,7 @@ docs:
     updated_at: '2026-11-27T03:06:51.053349+00:00'
   - page: docs/module/MOD-472-177.ts.yaml
     new: false
-    change: 点検の結果、表示する枠のスクロールバーが代わりの操作になるため変更しない
+    change: 倍率を中身の CSS 変数 --mdmark-zoom に書き込み、map のグループの角が倍率の逆数で大きさを補えるようにする（拡大した図の移動は既存のスクロールバーが代わりの操作になる）
     status: done
     updated_by: planner
     updated_at: '2026-11-27T03:06:51.053349+00:00'

@@ -79,6 +79,12 @@ functions:
         condition: ハンドルにフォーカスして Enter を押し、Esc を押す。別にハンドルを 5px 動かして離す
         expected: Enter でメニューが開き、Esc の後はメニューが無くハンドルにフォーカスがある。5px のドラッグではメニューが開かず高さが変わる
         mock: なし
+      - name: test_attach_diagram_resize_when_menu_reopened
+        case: 正常
+        summary: Esc で閉じた後も、Enter でもう一度メニューを開く
+        condition: ハンドルにフォーカスして Enter・Esc・Enter の順に押す
+        expected: 大きさのメニューが開いている
+        mock: なし
   - name: diagramHeightKey
     title: 図の高さのキー
     container: src/diagram/diagram-resize.interact.ts
