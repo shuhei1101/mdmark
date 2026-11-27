@@ -52,35 +52,51 @@ docs:
   - page: docs/component/CMP-472-36.ts.yaml
     new: false
     change: 音声の再生バーを見切れずに出す高さ・入れ物の決まりを記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/component/CMP-472-18.ts.yaml
     new: false
     change: 帯に折り返しを切り替えるアイコンだけのボタンの外観・状態・キー操作を追加し、コピーのボタンをアイコンだけにする
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/component/CMP-472-26.ts.yaml
     new: false
     change: 帯に折り返しを切り替えるボタンを追加し、折り返したときに注釈を持つフォルダの名前が縦に折れない決まりを記載する（#822）
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/component/CMP-472-5.ts.yaml
     new: false
     change: ノード・グループ・線の区間の移動とグループの大きさの変更に、ドラッグしない代わりの操作を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/component/CMP-472-4.ts.yaml
     new: false
     change: 参加者の並べ替えに、ドラッグしない代わりの操作を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/component/CMP-472-39.ts.yaml
     new: false
     change: 拡大した図の移動とリサイズハンドルの代わりの操作を点検し、無ければ追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/component/CMP-472-30.ts.yaml
     new: false
     change: ミニマップのドラッグの代わりの操作を点検し、無ければ追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/screen/SCR-472-4.ts.yaml
     new: false
     change: 折り返しの切り替えのボタンと、ドラッグの代わりの操作の UI 項目を追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/interface/IF-472-35.ts.yaml
     new: false
     change: mount が付ける折り返しの切り替えとドラッグの代わりの操作を追加する
@@ -134,7 +150,9 @@ docs:
   - page: docs/component/CMP-472-31.ts.yaml
     new: false
     change: 拡大した画像の移動のボタンとメニューを追加する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T02:41:19.431039+00:00'
   - page: docs/module/MOD-472-224.ts.yaml
     new: false
     change: 拡大した画像の移動のメニューの操作を追加する
