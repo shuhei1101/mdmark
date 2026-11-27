@@ -1071,6 +1071,137 @@ test("test_attach_tables_when_attached_after_render", async () => {
   }
 });
 
+// はみ出す幅まで狭めてピン止めのボタンが出た後も、どの列のつまみも今の幅を示す（正常系）
+test("test_attach_tables_when_overflow_after_narrowed", async () => {
+  // 準備
+  addStyles();
+  const { attachTables } = await loadTables();
+  const names = Array.from({ length: 10 }, (_, i) => `列${i + 1}`);
+  const { root } = createRoot(
+    [
+      '<!-- table: {"kind": "data"} -->',
+      "",
+      `| ${names.join(" | ")} |`,
+      `| ${names.map(() => "---").join(" | ")} |`,
+      `| ${names.map((_, i) => `値${i + 1}`).join(" | ")} |`,
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  root.style.width = "1280px";
+  detachers.push(attachTables(root));
+  const table = root.querySelector("table");
+  if (!table) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  const heads = [...table.querySelectorAll<HTMLTableCellElement>("thead th")];
+  const handles = heads.map((head) =>
+    head.querySelector<HTMLElement>(":scope > .mdmark-col-resize"),
+  );
+  // 実行: 表がはみ出す幅まで狭める
+  root.style.width = "500px";
+  // 検証: ピン止めのボタンが出て、どの列のつまみも今の幅を示す
+  await vi.waitFor(() => {
+    expect(root.querySelector<HTMLElement>("button.mdmark-pin")?.hidden).toBe(
+      false,
+    );
+    heads.forEach((head, column) => {
+      expect(handles[column]?.getAttribute("aria-valuenow")).toBe(
+        String(head.offsetWidth),
+      );
+    });
+  });
+  for (const handle of handles) {
+    const now = Number(handle?.getAttribute("aria-valuenow"));
+    expect(Number(handle?.getAttribute("aria-valuemin"))).toBeLessThanOrEqual(
+      now,
+    );
+    expect(
+      Number(handle?.getAttribute("aria-valuemax")),
+    ).toBeGreaterThanOrEqual(now);
+  }
+  expect(handles).not.toContain(document.activeElement);
+});
+
+// つまみで幅を変えても見える幅が変わらなければ、ほかの列のつまみの値を書き換えない（正常系）
+test("test_attach_tables_when_resized_without_width_change", async () => {
+  // 準備
+  addStyles();
+  vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(
+    () => undefined,
+  );
+  const { attachTables } = await loadTables();
+  const { root } = createRoot(
+    [
+      '<!-- table: {"kind": "data"} -->',
+      "",
+      "| 名前 | 値 | 備考 |",
+      "| --- | --- | --- |",
+      "| a | 1 | x |",
+      "",
+      "<!-- /table -->",
+      "",
+    ].join("\n"),
+  );
+  root.style.width = "1280px";
+  detachers.push(attachTables(root));
+  const table = root.querySelector("table");
+  const scroller = root.querySelector<HTMLElement>(".mdmark-table-scroll");
+  if (!table || !scroller) {
+    throw new Error("表が無い");
+  }
+  await vi.waitFor(() => {
+    expect(table.hasAttribute("data-auto-width")).toBe(true);
+  });
+  const heads = [...table.querySelectorAll<HTMLTableCellElement>("thead th")];
+  const [first, second] = heads.map((head) =>
+    head.querySelector<HTMLElement>(":scope > .mdmark-col-resize"),
+  );
+  if (!first || !second) {
+    throw new Error("つまみが無い");
+  }
+  const visible = scroller.clientWidth;
+  const setAttribute = vi.spyOn(second, "setAttribute");
+  // 実行: 1 列目のつまみを右へ 60px ドラッグする
+  const rect = first.getBoundingClientRect();
+  const x = rect.left + rect.width / 2;
+  const y = rect.top + rect.height / 2;
+  const init = {
+    bubbles: true,
+    cancelable: true,
+    pointerId: 1,
+    pointerType: "mouse",
+  };
+  first.dispatchEvent(
+    new PointerEvent("pointerdown", { ...init, clientX: x, clientY: y }),
+  );
+  for (let step = 1; step <= 30; step++) {
+    first.dispatchEvent(
+      new PointerEvent("pointermove", {
+        ...init,
+        clientX: x + step * 2,
+        clientY: y,
+      }),
+    );
+  }
+  first.dispatchEvent(
+    new PointerEvent("pointerup", { ...init, clientX: x + 60, clientY: y }),
+  );
+  // 検証
+  expect(first.getAttribute("aria-valuenow")).toBe(
+    String(heads[0]?.offsetWidth),
+  );
+  expect(scroller.clientWidth).toBe(visible);
+  const valueCalls = setAttribute.mock.calls.filter(([name]) =>
+    String(name).startsWith("aria-value"),
+  );
+  expect(valueCalls).toEqual([]);
+});
+
 // セルに用語の下線があっても、絞り込みの値の候補と見出しのボタンの名前にツールチップの文字を含めない（正常系）
 test("test_attach_tables_when_cell_has_term", async () => {
   // 準備
