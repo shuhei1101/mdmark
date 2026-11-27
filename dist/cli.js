@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.15.0+develop.6550706";
+  return "v0.15.0+develop.957c0cb";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -74417,6 +74417,11 @@ function yamlLinePaths(lines) {
 
 // src/table/table.part.ts
 var renderRawToggle = (shown) => `<button class="mdmark-raw-toggle" type="button" aria-label="\u8868\u3067\u8868\u793A" title="\u8868\u3067\u8868\u793A"${shown ? "" : " hidden"}>${iconSvg("table")}</button>`;
+function resizeValueAttributes(width) {
+  const value = width === void 0 ? 0 : Math.round(width);
+  const text2 = width === void 0 ? "\u81EA\u52D5" : `${value}px`;
+  return ` aria-valuenow="${value}" aria-valuetext="${text2}" aria-valuemin="${value}" aria-valuemax="${value}"`;
+}
 function plainText2(html) {
   return html.replace(/<[^>]*>/g, "").replaceAll("&lt;", "<").replaceAll("&gt;", ">").replaceAll("&quot;", '"').replaceAll("&#39;", "'").replaceAll("&amp;", "&");
 }
@@ -74465,7 +74470,7 @@ function renderTableTools(options) {
     escapedLabel,
     controls
   }) : "";
-  const resizeHandle2 = features.includes("resize") ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="\u300C${escapedLabel}\u300D\u306E\u5217\u306E\u5E45"></span>` : "";
+  const resizeHandle2 = features.includes("resize") ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="\u300C${escapedLabel}\u300D\u306E\u5217\u306E\u5E45"${resizeValueAttributes(options.width)}></span>` : "";
   return {
     header: `<span class="mdmark-th">${title}${tools}</span>${resizeHandle2}`,
     drawer
@@ -75037,8 +75042,13 @@ function headToolsOptions(context, cell) {
     open: options.openFilter === index,
     value,
     pinVisible: options.overflow === true,
-    ...pinToolState(context, index)
+    ...pinToolState(context, index),
+    ...widthOption(context, index)
   };
+}
+function widthOption(context, index) {
+  const width = context.widthOf.get(index) ?? context.autoWidthOf.get(index);
+  return width === void 0 ? {} : { width };
 }
 function pinToolState(context, index) {
   const { pinMode, pinned, unpinned, pinnedLast } = context;

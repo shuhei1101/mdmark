@@ -238,6 +238,8 @@ export type TableToolsOptions = {
     pinUnpinned?: boolean;
     /** ピン止めの動き（既定 `each`）。ボタンの名前が変わる */
     pinMode?: TablePinMode;
+    /** 列の幅のつまみを描く時点の列の幅（px）。無ければ `自動` */
+    width?: number;
 };
 /** 表の見えている幅に収まらず留まっていない列のピン止めのボタンの名前に付ける文言 */
 export declare const PIN_UNPINNED_SUFFIX = "\uFF08\u8868\u306E\u5E45\u306B\u53CE\u307E\u3089\u306A\u3044\u305F\u3081\u7559\u307E\u3063\u3066\u3044\u307E\u305B\u3093\uFF09";
