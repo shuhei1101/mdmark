@@ -201,3 +201,16 @@ test("test_attach_diagram_resize_when_menu_by_key", async () => {
   expect(sizeMenu()).toBeNull();
   expect(viewport.style.height).toBe("305px");
 });
+
+// Esc で閉じた後も、Enter でもう一度メニューを開く（正常系）
+test("test_attach_diagram_resize_when_menu_reopened", async () => {
+  // 準備
+  const { handle } = await setUp(memoryStorage());
+  handle.focus();
+  await userEvent.keyboard("{Enter}");
+  await userEvent.keyboard("{Escape}");
+  // 実行
+  await userEvent.keyboard("{Enter}");
+  // 検証
+  expect(sizeMenu()).not.toBeNull();
+});

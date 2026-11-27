@@ -207,3 +207,41 @@ test("test_attach_move_button_when_hidden", async () => {
   });
   expect(document.querySelector(".mdmark-step-menu")).toBeNull();
 });
+
+// Esc やメニューの外の押下で閉じた後も、ボタンを押すとメニューを開く（正常系）
+test("test_attach_move_button_when_reopened", async () => {
+  // 準備
+  const { userEvent } = await import("vitest/browser");
+  const { attachMoveButton } = await loadMoveButton();
+  const { viewport, item, panel } = setUpViewport({
+    x: 520,
+    y: 8,
+    w: 72,
+    h: 32,
+  });
+  const result = attachMoveButton({
+    viewport,
+    panel: () => panel,
+    pointedOf: pointedOfItem(item),
+  });
+  detachers.push(result.detach);
+  pressAndRelease(item, 0);
+  await vi.waitFor(() => {
+    expect(moveButton(viewport).hidden).toBe(false);
+  });
+  moveButton(viewport).click();
+  // 実行: Esc で閉じてから押す
+  await userEvent.keyboard("{Escape}");
+  moveButton(viewport).click();
+  // 検証
+  expect(document.querySelector(".mdmark-step-menu")).not.toBeNull();
+  // 実行: 図の外の要素を押して閉じてから押す
+  const outside = createRootFromHtml(
+    '<button type="button" style="position: fixed; left: 0; bottom: 0; width: 40px; height: 40px">外</button>',
+  ).querySelector("button") as HTMLButtonElement;
+  await userEvent.click(outside);
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+  moveButton(viewport).click();
+  // 検証
+  expect(document.querySelector(".mdmark-step-menu")).not.toBeNull();
+});

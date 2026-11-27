@@ -349,3 +349,17 @@ test("test_attach_lightbox_when_move_menu_reset", async () => {
     dialog.querySelector(".mdmark-lightbox-zoom"),
   );
 });
+
+// Esc でメニューだけを閉じた後も、移動のボタンを押すとメニューを開く（正常系）
+test("test_attach_lightbox_when_move_menu_reopened", async () => {
+  // 準備
+  const { dialog } = await openZoomed();
+  moveButton(dialog).click();
+  menuItem("右へ移す").focus();
+  // 実行
+  await userEvent.keyboard("{Escape}");
+  moveButton(dialog).click();
+  // 検証
+  expect(document.querySelector(".mdmark-step-menu")).not.toBeNull();
+  expect(dialog.open).toBe(true);
+});

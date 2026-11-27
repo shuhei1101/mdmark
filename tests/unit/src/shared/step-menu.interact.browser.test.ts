@@ -244,3 +244,35 @@ test("test_place_step_menu_when_nothing_fits", async () => {
   // 検証
   expect(placed).toEqual({ x: 100, y: 124, side: "below" });
 });
+
+// Esc でもメニューの外を押しても onClose を呼ぶ（正常系）
+test("test_open_step_menu_when_closed_by_escape_or_outside", async () => {
+  // 準備
+  const { openStepMenu } = await loadStepMenu();
+  const { opener } = setUpOpener();
+  const onClose = vi.fn();
+  openStepMenu({
+    opener,
+    label: "移動",
+    items: itemsOf([true, true, true]),
+    onClose,
+  });
+  // 実行: Esc で閉じる
+  await userEvent.keyboard("{Escape}");
+  // 検証
+  expect(onClose).toHaveBeenCalledTimes(1);
+  // 実行: もう一度開き、メニューの外を押して閉じる
+  openStepMenu({
+    opener,
+    label: "移動",
+    items: itemsOf([true, true, true]),
+    onClose,
+  });
+  const outside = createRootFromHtml(
+    '<button type="button" style="position: fixed; left: 0; bottom: 0; width: 40px; height: 40px">外</button>',
+  ).querySelector("button") as HTMLButtonElement;
+  await userEvent.click(outside);
+  // 検証
+  expect(onClose).toHaveBeenCalledTimes(2);
+  expect(document.querySelector(".mdmark-step-menu")).toBeNull();
+});
