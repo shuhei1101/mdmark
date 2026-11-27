@@ -35,7 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-27T17:49:56.406094+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T17:55:21.396197+00:00'
   - process: モック作成
     status: skipped
     reason: 見た目と操作が変わらない ARIA の値の修正（判定フローチャート『モック要否』）
