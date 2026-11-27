@@ -8127,7 +8127,7 @@ flows:
       - name: 配布物を読み込んだページ
         description: 正常系と同じ。描く先の `div` の幅は 600px
       - name: 幅を変える表を持つ Markdown
-        description: '`<!-- table: {"kind": "data"} -->` で、名前・状態・説明の 3 列 3 行の表を囲み、説明はどの行も 600px の幅で 1 行に収まる文書'
+        description: '`<!-- table: {"kind": "data", "columns": {"説明": {"width": {"max": 30}}}} -->` で、名前・状態・説明の 3 列 3 行の表を囲み、説明はどの行も 600px の幅で 1 行に収まる文書（説明はつまみで狭めると折り返す列。長文でない列は最も長い行の幅より狭められない）'
       - name: Mock
         description: 差し替える依存は無い
     flow: |-

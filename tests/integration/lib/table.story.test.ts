@@ -2244,7 +2244,7 @@ test("test_column_resized", async () => {
   expect(handles[0]?.width).toBeGreaterThanOrEqual(200);
 });
 
-// 幅を指定した wide= の列は折り返す（WideResized）
+// 一番長い行の幅より狭い幅を指定した wide= の列は、一番長い行の幅より狭くならず、折り返さず、隣の列に重ならない（WideResized）
 test("test_wide_resized", async () => {
   // 準備・実行
   const page = await open("wide-resized");
@@ -2258,16 +2258,22 @@ test("test_wide_resized", async () => {
       classes: [...cell.classList],
       whiteSpace: getComputedStyle(cell).whiteSpace,
       lines: Math.round(
-        cell.getBoundingClientRect().height /
+        (cell.getBoundingClientRect().height -
+          Number.parseFloat(getComputedStyle(cell).paddingTop) -
+          Number.parseFloat(getComputedStyle(cell).paddingBottom)) /
           Number.parseFloat(getComputedStyle(cell).lineHeight),
       ),
+      overflows: cell.scrollWidth > cell.clientWidth,
+      width: cell.offsetWidth,
     })),
   );
   expect(cells[0]?.classes).toEqual(
     expect.arrayContaining(["mdmark-wide", "is-resized"]),
   );
-  expect(cells[0]?.whiteSpace).not.toBe("nowrap");
-  expect(cells[0]?.lines).toBeGreaterThan(1);
+  expect(cells[0]?.whiteSpace).toBe("nowrap");
+  expect(cells[0]?.lines).toBe(1);
+  expect(cells.some((cell) => cell.overflows)).toBe(false);
+  expect(cells[0]?.width).toBeGreaterThan(110);
 });
 
 /** preview が表のメニューのボタンの位置（囲む要素の `--mdmark-table-menu-end`）を入れるまで待つ */
