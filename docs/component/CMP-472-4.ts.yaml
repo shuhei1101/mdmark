@@ -59,16 +59,16 @@ states:
   - name: MoveButton
     args:
       - name: selected
-        value: '["A"]'
+        value: '["user"]'
       - name: moveTarget
-        value: A
+        value: user
     description: 参加者の箱を動かさずに押した。箱の内側の右上の角に移動のボタン（名前 `「{参加者の名前}」を移動`）を重ねる
   - name: MoveMenu
     args:
       - name: selected
-        value: '["A"]'
+        value: '["user"]'
       - name: moveTarget
-        value: A
+        value: user
       - name: moveMenu
         value: 'true'
     description: 移動のメニューを開いた。`左へ移す`・`右へ移す` を並べ、先頭の参加者では `左へ移す`、末尾の参加者では `右へ移す` を `disabled` にする（合意したモック `docs/mock/components/map-move-menu/`）

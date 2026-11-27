@@ -647,6 +647,12 @@ files:
     related:
       - to: MOD-472-134
         type: implements
+  - path: map/move-button.ts
+    description: モジュール構成『ライブラリ本体 / map / 描画と操作 / move-button.ts』を受け持つ。map の図で動かさずに押した要素に重ねる移動のボタンと、ドラッグしない移動を変えるときに参照する。
+    tags: [topic:図, topic:map, topic:ドラッグ, topic:メニュー]
+    related:
+      - to: MOD-472-374
+        type: implements
   - path: map/packet.ts
     description: モジュール構成『ライブラリ本体 / map / データの印』を受け持つ。線の上のデータの印の形状・色・塗り方・速さを決めて SVG にする処理を変えるときに参照する。
     tags: [topic:図, topic:map]
@@ -2266,6 +2272,12 @@ files:
     tags: [topic:リンク, action:読み取り]
     related:
       - to: MOD-583-17
+        type: implements
+  - path: shared/step-menu.interact.ts
+    description: モジュール構成『ライブラリ本体 / 記法の共通 / step-menu.interact.ts』を受け持つ。動かす向き・大きさの項目を並べる popover のメニューの開閉と配置を変えるときに参照する。
+    tags: [topic:dom, topic:イベント, topic:メニュー, topic:ドラッグ]
+    related:
+      - to: MOD-472-373
         type: implements
   - path: shared/part-states.interact.ts
     description: '部品の開閉の記録と、読者が変えた開閉の復元を受け持ち、再描画したときの部品の開閉の保ち方を変えるときに参照する。'

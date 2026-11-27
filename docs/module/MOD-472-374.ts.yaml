@@ -19,6 +19,9 @@ data_models:
       - name: items
         type: StepMenuItem[]
         description: メニューの項目（向きごとに `moveByKey` を呼ぶ）
+      - name: selector
+        type: string | undefined
+        description: 再描画で要素が置き換わったときに、表示する枠の中から同じ要素を探し直すセレクタ
     status: planned
 functions:
   - name: attachMoveButton
@@ -28,7 +31,7 @@ functions:
     scope: internal
     summary: 動かさずに押した要素の内側の右上（図のパネルと重なるときは左上）に移動のボタンを重ね、押すと向きのメニューを開く
     description: |-
-      `viewport` の `pointerdown`・`pointerup`（キャプチャーフェーズ）で押した位置の動きを測り、`DRAG_THRESHOLD_PX` 未満のときだけ、次の描画の後に `pointedOf` で押した要素を求める。要素があれば lucide の `move` のアイコンだけの `<button type="button" class="map-move" aria-haspopup="true" aria-expanded="false" aria-label="「{name}」を移動" title="移動">` をその要素の内側の右上に置き、`panel` の矩形と重なるときは左上に置く。要素が無いときと `hide` を呼んだときはボタンを `hidden` にして開いたメニューを閉じる。
+      `viewport` の `pointerdown`・`pointerup`（キャプチャーフェーズ）で押した位置の動きを測り、`DRAG_THRESHOLD_PX` 未満のときだけ、前に押した要素のボタンとメニューを隠してから、次の描画の後に `pointedOf` で押した要素を求める。要素があれば lucide の `move` のアイコンだけの `<button type="button" class="map-move" aria-haspopup="true" aria-expanded="false" aria-label="「{name}」を移動" title="移動">` をその要素の内側の右上に置き、`panel` の矩形と重なるときは左上に置く。要素が無いときと `hide` を呼んだときはボタンを `hidden` にして開いたメニューを閉じる。
 
       ボタンを押すと `openStepMenu` で `「{name}」の移動` のメニューを開き、動かす要素・ボタン・`panel` を避ける。再描画で要素が置き換わったときは `refresh` で同じ要素を探し直し、ボタンと開いたメニューを置き直す（メニューのフォーカスは同じ項目に残す）
     args:

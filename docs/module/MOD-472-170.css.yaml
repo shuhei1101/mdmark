@@ -425,15 +425,15 @@ styles:
       - class_name: .mdmark .mdmark-code-wrap-toggle・.mdmark-code-copy
         target: 折り返しとコピーのアイコンだけのボタン
         value: 'どちらも `1.75rem` 四方のアイコンだけのボタン（`padding: 0`・中央ぞろえ、アイコンは 14px）。折り返しのボタンは平常時に枠線も面も持たず、ポインターを乗せたときは `--mdmark-color-border` の枠線だけを出し、`aria-pressed="true"` のときは `--mdmark-color-link` の枠線と `color-mix(in srgb, var(--mdmark-color-link) 12%, transparent)` の面とリンク色のアイコンにする（押した状態にポインターを乗せても押した状態の外観を保つ）。フォーカスの枠はコピーのボタンと同じ。印刷ではどちらも隠す。値はモック `docs/mock/refs/820/assets/mock.css` の `.mock820-wrap-toggle` とコピーのボタンの規則'
-      - class_name: .mdmark .mdmark-tree-wrap の注釈を持つ項目
-        target: 折り返したファイルツリーのフォルダの名前（#822）
-        value: '名前の列の最小の幅を名前の最も長い 1 単語の幅（`min-width: min-content` と `overflow-wrap: anywhere` を名前の文字にだけ当て、注釈の列には当てない）にし、注釈を持つフォルダの名前を 1 文字ずつに折らない。注釈は名前の下の行に名前の頭から出し、名前と重ねない'
+      - class_name: .mdmark .mdmark-table[data-tree] .mdmark-tree-toggle・.mdmark-tree-spacer
+        target: 表のキーの階層の開閉のボタンと、子を持たない行の空き（#822）
+        value: '`flex: none`・`inline-size: 1.25rem`・`block-size: 1.25rem` を `.mdmark-table[data-tree]` の中の開閉のボタンと空きにだけ当てる。ファイルツリーの開閉のボタン（`.mdmark-tree-toggle`）には当てず、`wrap` のツリーで注釈を持つフォルダの名前を 1.25rem の幅に押し込めて 1 文字ずつに折らない'
       - class_name: .mdmark .map-move・.mdmark-step-menu・.mdmark-lightbox-move
         target: 移動のボタンと向き・大きさのメニュー
         value: '移動のボタン（`.map-move`）は図の表示する枠の中に `position: absolute` で配置し、24px 四方で、図のパネルのボタンと同じ面と枠線と影を持ち、`[hidden]` のときは `display: none`。メニュー（`.mdmark-step-menu`）は popover で `position: fixed`・`inset: auto`・`margin: 0`、開いたときはボタンを縦に並べ、ボタンはアイコンと文言で高さ 32px 以上、`disabled` のときは弱めの文字の色（動画の大きさのメニューと同じ）。ライトボックスの移動のボタンはほかの操作のボタンと同じ外観。印刷では隠す。値はモック `docs/mock/refs/820/assets/mock.css` の `.mock820-move`・`.mock820-menu`'
       - class_name: .mdmark .mdmark-media audio
         target: 音声の再生バーの全体
-        value: '`audio` に `height`・`max-height` を指定せず、図と入れ物に `overflow: hidden` を当てない。実装の工程で MindStella の資料の画面と比べ、mdmark の CSS が見切れの原因だったときは、その規則をこの行に記載して修正する'
+        value: '`audio` に `height`・`max-height` を指定せず、図と入れ物に `overflow: hidden` を当てない。mdmark だけで描いた音声（ストーリー `parts-media--audio`）は 1280px・390px のどちらの幅でも再生バーの全体（高さ 54px）を出し、見切れは MindStella の資料の画面の側にある'
     refs:
       - SCR-472-4#
       - CMP-472-65#

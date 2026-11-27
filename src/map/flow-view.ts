@@ -666,7 +666,7 @@ const wireKeyTarget = (element: Element | undefined): KeyTarget | undefined => {
 };
 
 /** 移動のメニューの項目: 文言・アイコン・向き・キーの刻みの移動量 */
-export const MOVE_MENU_ITEMS: ReadonlyArray<{
+const MOVE_MENU_ITEMS: ReadonlyArray<{
   label: string;
   icon: "chevron-up" | "chevron-down" | "chevron-left" | "chevron-right";
   direction: MoveDirection;

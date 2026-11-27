@@ -89,6 +89,10 @@ functions:
         type: PartStates | undefined
         required: false
         description: 再描画で保つ部品の状態
+      - name: options.blocks
+        type: '{ code: boolean; tree: boolean } | undefined'
+        required: false
+        description: ボタンを付ける種類（機能 `code`・`tree` のオン・オフ）。既定は両方
     returns:
       type: () => void
       description: ボタンと受け取りを取り除く関数

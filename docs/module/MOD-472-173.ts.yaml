@@ -30,12 +30,14 @@ constants:
   - name: RESIZE
     title: リサイズハンドルの量
     container: src/diagram/geometry.ts
-    summary: キー 1 回で変える高さと、表示する枠の高さの下限（px）
+    summary: キー 1 回で変える高さ・表示する枠の高さの下限・押した扱いにする動きの上限（px）
     entries:
       - key: step
         value: '32'
       - key: min
         value: '120'
+      - key: dragThreshold
+        value: '4'
     status: planned
 functions:
   - name: fitScale

@@ -128,9 +128,11 @@ states:
   - name: MoveButtonNearPanel
     args:
       - name: selected
-        value: '["render"]'
+        value: '["mount"]'
       - name: moveTarget
-        value: '{"kind":"node","id":"render"}'
+        value: '{"kind":"node","id":"mount"}'
+      - name: nearPanel
+        value: 'true'
     description: 図の右上のパネルと右上の角が重なるノードを押した。移動のボタンをノードの内側の左上の角に出す
   - name: MoveMenu
     args:
@@ -143,15 +145,17 @@ states:
     description: 移動のボタンで移動のメニューを開いた。`上へ移す`・`下へ移す`・`左へ移す`・`右へ移す` を並べ、ノード・移動のボタン・図のパネルと重ならない側（下・上・右・左の順）に開く。動かしても位置が変わらない向きは `disabled`（合意したモック `docs/mock/components/map-move-menu/`）
   - name: MoveMenuSegment
     args:
+      - name: source
+        value: route
       - name: moveTarget
-        value: '{"kind":"segment","id":"mount-render:1"}'
+        value: '{"kind":"segment","id":"a->c:1"}'
       - name: moveMenu
         value: move
     description: 縦の線の区間を押して移動のメニューを開いた。区間と直角の `左へ移す`・`右へ移す` だけを並べ、ボタンは押した区間にだけ出す
   - name: ResizeMenu
     args:
       - name: moveTarget
-        value: '{"kind":"group","id":"core"}'
+        value: '{"kind":"group","id":"read"}'
       - name: moveMenu
         value: resize
     description: グループの右下の角を動かさずに押して大きさのメニューを開いた。`右へ広げる`・`下へ広げる`・`左へ狭める`・`上へ狭める` を並べ、中身より狭められない向きは `disabled`

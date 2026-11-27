@@ -272,6 +272,8 @@ states:
         value: 'true'
       - name: lines
         value: '[{"text":"import { mount } from \"mdmark\";"},{"text":"const url = \"https://cdn.jsdelivr.net/gh/shuhei1101/mdmark@v0.10.0/dist/index.js\"; // バージョンを固定した URL から配布物を読み込み、描く先の要素に文書を描く"}]'
+      - name: wrapToggle
+        value: 'true'
     description: マーカーの `wrap` を持たないブロック。帯の右端のコピーのボタンの前に、`wrap-text` のアイコンだけの折り返しのボタン（`aria-pressed="false"`、枠線も面も無い）がある。2 行目は折り返さず、ブロックの中で横にスクロールする（合意したモック `docs/mock/components/code-block-wrap-toggle/`）
   - name: WrapButtonHovered
     args:

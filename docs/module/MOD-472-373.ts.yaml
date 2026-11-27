@@ -78,7 +78,15 @@ functions:
       - name: options.focusBack
         type: HTMLElement
         required: false
-        description: Esc で閉じたときにフォーカスを戻す要素。既定は `opener`
+        description: Esc で閉じたときにフォーカスを戻す要素。既定は `anchor` が返す要素
+      - name: options.anchor
+        type: () => HTMLElement | null
+        required: false
+        description: 配置の基準とフォーカスを戻す今の要素。再描画で `opener` が置き換わるとき（グループの角）に渡す。既定は `opener`
+      - name: options.container
+        type: HTMLElement
+        required: false
+        description: メニューを入れる要素（再描画で消えない図の表示する枠）。既定は `opener` の直後
     returns:
       type: StepMenuHandle
       description: 開いたメニューの操作
