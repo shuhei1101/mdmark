@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import type { Locator, Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { iconSvg } from "../../../src/shared/icons.part.ts";
@@ -2166,11 +2167,40 @@ test("test_columns_button_a", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
+/** ページに axe-core を読み込み、表（`.mdmark-table`）の中の、指定したルールの違反の要素（`target` のセレクタ）を返却する */
+async function tableAxeViolations(page: Page, rule: string): Promise<string[]> {
+  const path = createRequire(import.meta.url).resolve("axe-core/axe.min.js");
+  await page.addScriptTag({ path });
+  return page.evaluate(async (ruleId) => {
+    const axe = (
+      window as unknown as {
+        axe: {
+          run: (
+            context: Element,
+            options: object,
+          ) => Promise<{
+            violations: Array<{ nodes: Array<{ target: string[] }> }>;
+          }>;
+        };
+      }
+    ).axe;
+    const table = document.querySelector("#storybook-root .mdmark-table");
+    if (!table) throw new Error("表が無い");
+    const result = await axe.run(table, {
+      runOnly: { type: "rule", values: [ruleId] },
+    });
+    return result.violations.flatMap((violation) =>
+      violation.nodes.map((node) => node.target.join(" ")),
+    );
+  }, rule);
+}
+
 /** 表の列ごとの見出しのセルとつまみの状態を返却する */
 function resizeHandles(page: Page): Promise<
   Array<{
     label: string | null;
     role: string | null;
+    values: Record<string, string | null>;
     cursor: string;
     lineOpacity: number;
     dragging: boolean;
@@ -2187,6 +2217,14 @@ function resizeHandles(page: Page): Promise<
         return {
           label: handle?.getAttribute("aria-label") ?? null,
           role: handle?.getAttribute("role") ?? null,
+          values: Object.fromEntries(
+            [
+              "aria-valuenow",
+              "aria-valuetext",
+              "aria-valuemin",
+              "aria-valuemax",
+            ].map((name) => [name, handle?.getAttribute(name) ?? null]),
+          ),
           cursor: handle ? getComputedStyle(handle).cursor : "",
           lineOpacity: handle
             ? Number(getComputedStyle(handle, "::after").opacity)
@@ -2200,7 +2238,7 @@ function resizeHandles(page: Page): Promise<
   );
 }
 
-// resize の表の最下段の各列の見出しの右端に、線を出していないつまみがある（Resizable）
+// resize の表の最下段の各列の見出しの右端に、線を出していないつまみがあり、操作を付けない描画でも値の属性を持ち、axe-core の aria-required-attr が出ない（Resizable）
 test("test_resizable", async () => {
   // 準備・実行
   const page = await open("resizable");
@@ -2215,7 +2253,17 @@ test("test_resizable", async () => {
     expect(handle.role).toBe("separator");
     expect(handle.cursor).toBe("col-resize");
     expect(handle.lineOpacity).toBe(0);
+    // widths の無い列は、幅が決まる前の値（0 と「自動」）を持つ
+    expect(handle.values).toEqual({
+      "aria-valuenow": "0",
+      "aria-valuetext": "自動",
+      "aria-valuemin": "0",
+      "aria-valuemax": "0",
+    });
   }
+  await expect(tableAxeViolations(page, "aria-required-attr")).resolves.toEqual(
+    [],
+  );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
