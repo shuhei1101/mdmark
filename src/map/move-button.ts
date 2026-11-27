@@ -135,15 +135,21 @@ export const attachMoveButton = (options: {
       ) {
         return;
       }
-      // 前に押した要素のボタンとメニューは、押した要素を求めるまで隠す
+      // 押した要素は離した時点で求め、前に押した要素のボタンとメニューは次の描画まで隠す
+      const pointed = pressed.target.isConnected
+        ? pointedOf(pressed.target)
+        : undefined;
       hide();
       requestAnimationFrame(() => {
-        if (signal.aborted) {
+        if (signal.aborted || !pointed) {
           return;
         }
-        const target = pressed.target.isConnected
-          ? pointedOf(pressed.target)
-          : undefined;
+        // 押した後の描き直しで要素が置き換わったときは、セレクタで今の要素を探し直す
+        const element =
+          pointed.element.isConnected || pointed.selector === undefined
+            ? pointed.element
+            : viewport.querySelector(pointed.selector);
+        const target = element?.isConnected ? pointedOf(element) : undefined;
         if (target) {
           show(target);
         }
@@ -166,6 +172,10 @@ export const attachMoveButton = (options: {
       const opened = openStepMenu({
         opener: button,
         label: `「${target.name}」の移動`,
+        // ボタンは要素の内側の角にあるため、要素そのものを基準に外側へ開き、要素に重ねない
+        anchor: () => (current?.element as HTMLElement | undefined) ?? button,
+        // Esc で閉じたときは移動のボタンへフォーカスを戻す
+        focusBack: button,
         items: target.items.map((item) => ({
           ...item,
           // 再描画で項目の処理が置き換わっても、今の要素の項目を呼ぶ

@@ -1561,10 +1561,24 @@ export const attachMapFlow = (
     layout.nodes.find((node) => node.id === id)?.lines.join(" ") ??
     layout.groups.find((group) => group.id === id)?.title ??
     id;
+  /** 線のキーの移動が動かす真ん中の区間と直角の向き（ノード・グループは 4 つの向き全て） */
+  const directionsOf = (
+    target: Pick<KeyTarget, "node" | "group" | "wire">,
+  ): ReadonlySet<MoveDirection> => {
+    const wire = shiftedLayout().wires.find((item) => item.id === target.wire);
+    if (!wire) return new Set(["up", "down", "left", "right"]);
+    const at = Math.floor((wire.points.length - 2) / 2);
+    const [a, b] = [wire.points[at], wire.points[at + 1]];
+    return a && b && a[1] === b[1]
+      ? new Set(["up", "down"])
+      : new Set(["left", "right"]);
+  };
   const moveItemsOf = (
     target: Pick<KeyTarget, "node" | "group" | "wire">,
   ): StepMenuItem[] =>
-    MOVE_MENU_ITEMS.map((item) => ({
+    MOVE_MENU_ITEMS.filter((item) =>
+      directionsOf(target).has(item.direction),
+    ).map((item) => ({
       label: item.label,
       icon: item.icon,
       enabled: () =>

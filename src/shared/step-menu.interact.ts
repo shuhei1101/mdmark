@@ -245,7 +245,9 @@ export const openStepMenu = (options: {
       menu.hidePopover();
     }
     menu.remove();
-    opener.setAttribute("aria-expanded", "false");
+    if (opener.matches("button")) {
+      opener.setAttribute("aria-expanded", "false");
+    }
     options.onClose?.();
     if (closeOptions.restoreFocus) {
       (options.focusBack ?? anchor() ?? opener).focus({ preventScroll: true });
@@ -305,7 +307,10 @@ export const openStepMenu = (options: {
 
   updateDisabled();
   menu.showPopover();
-  opener.setAttribute("aria-expanded", "true");
+  // aria-expanded はボタンにだけ付ける（role="separator" のハンドルには付けられない）
+  if (opener.matches("button")) {
+    opener.setAttribute("aria-expanded", "true");
+  }
   place();
   enabledButtons()[0]?.focus({ preventScroll: true });
   return { refresh, close };
