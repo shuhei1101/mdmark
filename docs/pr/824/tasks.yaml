@@ -1,0 +1,106 @@
+tasks:
+  - process: 初期構築
+    status: skipped
+    reason: 既存リポジトリのため対象外
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: リバースエンジニアリング
+    status: skipped
+    reason: 表の設計書が揃っており、棚卸しする対象が無い
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: 方針決め
+    status: skipped
+    reason: 方針決めを依頼する Issue ではない
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: PoC 検証
+    status: skipped
+    reason: 既存の列の幅の計測・つまみ・CSS の修正で、未検証の技術機構に依存しない
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: 複合ユースケース設計
+    status: skipped
+    reason: 変更は単一 UC『表を操作する』の中で閉じ、複数の UC をまたぐ流れは変わらない
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: デザインスタイル選定
+    status: skipped
+    reason: デザイン方針があり、表の見た目の方向を変える変更ではない（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: 画面一覧・画面遷移
+    status: skipped
+    reason: 画面の追加・削除と画面遷移の変更が無い（判定フローチャート『モック要否』）
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: 単一ユースケース設計
+    status: done
+    note: SC-472-73 を修正。SC-793-2 は列の幅のつまみ・折り返し・テーブル設定の記述が変更後と食い違わず、修正なし
+    updated_by: planner
+    updated_at: '2026-11-27T05:24:31.024612+00:00'
+  - process: モック作成
+    status: done
+    note: 表のモックに列の中身のはみ出しとスマホの幅のテーブル設定のパネルを追加。パネルはユーザーが案 A を選んだ
+    updated_by: planner
+    updated_at: '2026-11-27T05:57:55.799879+00:00'
+  - process: データ設計
+    status: skipped
+    reason: 表のマーカーの設定のキーと値は変わらない
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: インターフェース定義設計
+    status: done
+    note: IF-472-35 を修正。IF-472-34 はつまみを mount が付けるため変更なし、IF-793-1 は記述が食い違わず変更なし
+    updated_by: planner
+    updated_at: '2026-11-27T06:03:22.051410+00:00'
+  - process: エージェント・MCP サーバー設計
+    status: skipped
+    reason: エージェント・MCP のツールを作る・変える変更ではない
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: エージェントフロー・LLM 呼び出し設計
+    status: skipped
+    reason: エージェント・LLM を使用する処理が無い
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: 精度評価設計
+    status: skipped
+    reason: LLM・意思決定モデルを使用するノードが無い（判定フローチャート『精度評価をするか』）
+    updated_by: planner
+    updated_at: '2026-11-27T05:15:54.911043+00:00'
+  - process: 部品設計
+    status: done
+    note: CMP-472-61 を修正し、ストーリー LongCodeCells・SettingsOpenPhone を追加
+    updated_by: planner
+    updated_at: '2026-11-27T06:14:08.095137+00:00'
+  - process: 画面設計
+    status: done
+    note: SCR-472-4 の表の列の幅のつまみ・表のテーブル設定のパネルを修正
+    updated_by: planner
+    updated_at: '2026-11-27T06:14:08.095137+00:00'
+  - process: モジュール構成設計
+    status: done
+    note: MOD-472-218・347・226・315・170 を修正。table-settings.interact.ts（MOD-472-240）はフォーカスの既定のスクロールで足りるため変更なし
+    updated_by: planner
+    updated_at: '2026-11-27T06:24:33.962626+00:00'
+  - process: ドキュメント修正
+    status: done
+    note: docs/guide/記法.mark.md・docs/guide/記載する-表に機能を付ける.md
+    updated_by: planner
+    updated_at: '2026-11-27T06:29:18.452016+00:00'
+  - process: 単体テスト作成
+    status: done
+    note: MOD-472-218・347・226・315 の unit_tests の 5 件を追加し、実装が無いことによる fail だけの Red を確認
+    updated_by: planner
+    updated_at: '2026-11-27T06:38:42.125903+00:00'
+  - process: 実装
+    status: done
+    note: table-width・table-resize・table.logic・table.part・index.css を修正し、ストーリー LongCodeCells・SettingsOpenPhone を追加。単体テスト 2995 件 pass
+    updated_by: planner
+    updated_at: '2026-11-27T06:54:20.198137+00:00'
+  - process: 結合テスト作成
+    status: done
+    note: mount.browser.test.ts・table.story.test.ts に 4 件を追加し、既存の 5 件を設計に合わせて修正。実行範囲の 4 ファイルがランナーで pass
+    updated_by: planner
+    updated_at: '2026-11-27T07:16:16.976495+00:00'

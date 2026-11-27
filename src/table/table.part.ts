@@ -248,7 +248,16 @@ export type TableToolsOptions = {
   pinUnpinned?: boolean;
   /** ピン止めの動き（既定 `each`）。ボタンの名前が変わる */
   pinMode?: TablePinMode;
+  /** 列の幅のつまみを描く時点の列の幅（px）。無ければ `自動` */
+  width?: number;
 };
+
+/** 列の幅のつまみの、描いた時点の値の属性 */
+function resizeValueAttributes(width: number | undefined): string {
+  const value = width === undefined ? 0 : Math.round(width);
+  const text = width === undefined ? "自動" : `${value}px`;
+  return ` aria-valuenow="${value}" aria-valuetext="${text}" aria-valuemin="${value}" aria-valuemax="${value}"`;
+}
 
 /** タグを除き、文字参照を文字に戻して、画面に出る文字を取り出す */
 function plainText(html: string): string {
@@ -345,7 +354,7 @@ export function renderTableTools(options: TableToolsOptions): {
       })
     : "";
   const resizeHandle = features.includes("resize")
-    ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「${escapedLabel}」の列の幅"></span>`
+    ? `<span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「${escapedLabel}」の列の幅"${resizeValueAttributes(options.width)}></span>`
     : "";
   return {
     header: `<span class="mdmark-th">${title}${tools}</span>${resizeHandle}`,
@@ -1462,7 +1471,14 @@ function headToolsOptions(
     value,
     pinVisible: options.overflow === true,
     ...pinToolState(context, index),
+    ...widthOption(context, index),
   };
+}
+
+/** つまみを描く時点の列の幅。指定した幅、無ければ自動で決めた幅 */
+function widthOption(context: BodyContext, index: number): { width?: number } {
+  const width = context.widthOf.get(index) ?? context.autoWidthOf.get(index);
+  return width === undefined ? {} : { width };
 }
 
 /** 列の見出しのピン止めのボタンの状態を返却する。`through` は選んだ列の最も右の列のボタンだけを押した状態にする */

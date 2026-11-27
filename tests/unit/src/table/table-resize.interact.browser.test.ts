@@ -348,3 +348,26 @@ test("test_attach_column_resize_when_not_laid_out", async () => {
     );
   }
 });
+
+// 列の最小幅に、列の中身が収まる幅を含める（正常系）
+test("test_attach_column_resize_when_content_width", async () => {
+  // 準備
+  addStyles();
+  stubPointerCapture();
+  const { attachColumnResize } = await loadResize();
+  const { table, headCells, handles } = resizableTable();
+  headCells[0]?.style.setProperty("--mdmark-column-content-width", "320px");
+  detachers.push(
+    attachColumnResize(table, {
+      headCells,
+      maxWidth: () => 2000,
+      onResize: () => undefined,
+    }),
+  );
+  // 実行
+  drag(handles[0], 400);
+  drag(handles[0], -400);
+  // 検証
+  expect(headCells[0]?.offsetWidth).toBe(320);
+  expect(handles[0]?.getAttribute("aria-valuemin")).toBe("320");
+});

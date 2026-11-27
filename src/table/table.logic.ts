@@ -535,7 +535,8 @@ export const columnBounds = (options: {
     range?.min === undefined
       ? Math.min(longest, Math.max(longColumnMin * em, longestWord))
       : range.min * em;
-  const min = Math.min(base, max);
+  // 最も長い半角の単語は折り返せないため、`range.max` より優先する
+  const min = Math.max(Math.min(base, max), longestWord);
   return { wraps: true, min, wanted: Math.max(min, Math.min(longest, max)) };
 };
 

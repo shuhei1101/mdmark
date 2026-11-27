@@ -31,7 +31,7 @@ styles:
         value: 枠線と背景色を付けず（`border-color`・`background` を `transparent`）、色を `--mdmark-color-muted` にする。ピンのアイコンは塗らない破線（押していない状態のピンを `stroke-dasharray` の破線にした `mask-image`）にする。値は `docs/mock/refs/533/assets/table.css` の案 A
       - class_name: .mdmark .mdmark-table :is(th, td).mdmark-wide と .mdmark-check
         target: 広く取る列と真偽値の ✓
-        value: '`mdmark-wide` は `white-space: nowrap`。`mdmark-check` は `inline-flex` で、中の `.mdmark-icon` を `1.1em` 角・塗り無し・`currentcolor` の太さ 3 の線にする。値は `docs/mock/refs/283/assets/table.css`'
+        value: '`mdmark-wide` は `white-space: nowrap` と `min-inline-size: max-content`（狭い幅を指定しても中身より狭く描かない）。`mdmark-check` は `inline-flex` で、中の `.mdmark-icon` を `1.1em` 角・塗り無し・`currentcolor` の太さ 3 の線にする。値は `docs/mock/refs/283/assets/table.css`'
       - class_name: .mdmark .mdmark-diagram-viewport
         target: 図の表示する枠
         value: '`overflow-x: auto`・`overflow-y: auto`（`[data-at-fit]` の間は `overflow-y: hidden`）・`touch-action: pan-x pan-y`、角丸を上下とも `--mdmark-radius` にする。値は `docs/mock/refs/659/assets/panel.css` の `[data-mock-touch="native"]`'
@@ -420,6 +420,8 @@ styles:
           表のメニューはボタンの下に右端をそろえて開き、テーブル設定のパネルより手前に描く（`z-index: 50`）。ボタンをずらす規則は、`attachStickyRows` が囲む要素に付けた `data-mdmark-sticky-menu` の値で分ける。表のメニュー（中の `.mdmark-table-submenu` を含む）とテーブル設定のパネル（`.mdmark-table-settings`）は `position: fixed` で、描く処理がずらした後のボタンの位置から配置するため、`translate` でずらさずに見出し行を留めている間もボタンの直下に開く。件数と項目の間に線を引き、項目はアイコンと文字の高さ 32px 以上の行にする。`.mdmark-table-submenu` は表のメニューの中の項目の下に字下げして並べる。`.mdmark-table-move-menu` は開いたつまみの行の下に、アイコンと文字の 2 つのボタンを縦に並べる。
 
           `.mdmark-raw-toggle` は `pre.mdmark-raw` の右上に `position: absolute` で重ね、表のメニューのボタンと同じ外観にする。
+
+          画面の幅が 48rem 未満のときは、テーブル設定のパネル（`.mdmark-table-settings`）を `display: flex`・`flex-direction: column`・`max-block-size: 25dvh` にし、列の一覧（`.mdmark-table-settings-list`）を `flex: 1 1 auto`・`min-block-size: 0`・`overflow-y: auto`・`overscroll-behavior: contain` でパネルの中でスクロールさせる（タイトルと案内は縮めない。フォーカスした項目はブラウザの既定のフォーカスのスクロールで一覧の見えている範囲に入る）。
 
           列の幅のつまみ（`.mdmark-col-resize`）は `(pointer: coarse)` に限らず押せる幅を 24px、見出しのセルの右の余白を 24px 広げる（線を常に薄く出すのは `(pointer: coarse)` だけ）
       - class_name: .mdmark .mdmark-code-wrap-toggle・.mdmark-code-copy

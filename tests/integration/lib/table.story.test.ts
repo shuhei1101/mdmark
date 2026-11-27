@@ -1,3 +1,4 @@
+import { createRequire } from "node:module";
 import type { Locator, Page } from "playwright";
 import { afterAll, beforeAll, expect, test } from "vitest";
 import { iconSvg } from "../../../src/shared/icons.part.ts";
@@ -17,8 +18,11 @@ beforeAll(holder.launch);
 afterAll(holder.close);
 
 /** 表のストーリーを開く */
-function open(id: string): Promise<Page> {
-  return holder.openStory(`parts-table--${id}`);
+function open(
+  id: string,
+  viewport?: { width: number; height: number },
+): Promise<Page> {
+  return holder.openStory(`parts-table--${id}`, viewport);
 }
 
 /** 表の本文の行の指定した列の文字を、上から並べて返却する（隠れた行も含む） */
@@ -1846,6 +1850,27 @@ test("test_settings_open_reorder", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
+// 12 列の表でテーブル設定を開くと、48rem 未満の画面ではパネルが画面の高さの 25% 以下で、列の一覧がパネルの中で縦にスクロールする（SettingsOpenPhone）
+test("test_settings_open_phone", async () => {
+  // 準備・実行
+  const page = await open("settings-open-phone", { width: 390, height: 844 });
+  // 検証
+  const panel = page.locator(".mdmark-table-settings:not([hidden])");
+  await expect(settingsNames(page)).resolves.toHaveLength(12);
+  const box = await panel.boundingBox();
+  expect(box?.height ?? Number.POSITIVE_INFINITY).toBeLessThanOrEqual(
+    Math.floor(844 * 0.25),
+  );
+  const list = panel.locator(".mdmark-table-settings-list");
+  await expect(
+    list.evaluate((element) => ({
+      scrolls: element.scrollHeight > element.clientHeight,
+      overflowY: getComputedStyle(element).overflowY,
+    })),
+  ).resolves.toEqual({ scrolls: true, overflowY: "auto" });
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
 // `+reorder` だけの表のパネルはタイトルが `並び順` で、目のアイコンを出さない（SettingsReorderOnly）
 test("test_settings_reorder_only", async () => {
   // 準備・実行
@@ -2142,11 +2167,40 @@ test("test_columns_button_a", async () => {
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
+/** ページに axe-core を読み込み、表（`.mdmark-table`）の中の、指定したルールの違反の要素（`target` のセレクタ）を返却する */
+async function tableAxeViolations(page: Page, rule: string): Promise<string[]> {
+  const path = createRequire(import.meta.url).resolve("axe-core/axe.min.js");
+  await page.addScriptTag({ path });
+  return page.evaluate(async (ruleId) => {
+    const axe = (
+      window as unknown as {
+        axe: {
+          run: (
+            context: Element,
+            options: object,
+          ) => Promise<{
+            violations: Array<{ nodes: Array<{ target: string[] }> }>;
+          }>;
+        };
+      }
+    ).axe;
+    const table = document.querySelector("#storybook-root .mdmark-table");
+    if (!table) throw new Error("表が無い");
+    const result = await axe.run(table, {
+      runOnly: { type: "rule", values: [ruleId] },
+    });
+    return result.violations.flatMap((violation) =>
+      violation.nodes.map((node) => node.target.join(" ")),
+    );
+  }, rule);
+}
+
 /** 表の列ごとの見出しのセルとつまみの状態を返却する */
 function resizeHandles(page: Page): Promise<
   Array<{
     label: string | null;
     role: string | null;
+    values: Record<string, string | null>;
     cursor: string;
     lineOpacity: number;
     dragging: boolean;
@@ -2163,6 +2217,14 @@ function resizeHandles(page: Page): Promise<
         return {
           label: handle?.getAttribute("aria-label") ?? null,
           role: handle?.getAttribute("role") ?? null,
+          values: Object.fromEntries(
+            [
+              "aria-valuenow",
+              "aria-valuetext",
+              "aria-valuemin",
+              "aria-valuemax",
+            ].map((name) => [name, handle?.getAttribute(name) ?? null]),
+          ),
           cursor: handle ? getComputedStyle(handle).cursor : "",
           lineOpacity: handle
             ? Number(getComputedStyle(handle, "::after").opacity)
@@ -2176,7 +2238,7 @@ function resizeHandles(page: Page): Promise<
   );
 }
 
-// resize の表の最下段の各列の見出しの右端に、線を出していないつまみがある（Resizable）
+// resize の表の最下段の各列の見出しの右端に、線を出していないつまみがあり、操作を付けない描画でも値の属性を持ち、axe-core の aria-required-attr が出ない（Resizable）
 test("test_resizable", async () => {
   // 準備・実行
   const page = await open("resizable");
@@ -2191,7 +2253,17 @@ test("test_resizable", async () => {
     expect(handle.role).toBe("separator");
     expect(handle.cursor).toBe("col-resize");
     expect(handle.lineOpacity).toBe(0);
+    // widths の無い列は、幅が決まる前の値（0 と「自動」）を持つ
+    expect(handle.values).toEqual({
+      "aria-valuenow": "0",
+      "aria-valuetext": "自動",
+      "aria-valuemin": "0",
+      "aria-valuemax": "0",
+    });
   }
+  await expect(tableAxeViolations(page, "aria-required-attr")).resolves.toEqual(
+    [],
+  );
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -2220,7 +2292,7 @@ test("test_column_resized", async () => {
   expect(handles[0]?.width).toBeGreaterThanOrEqual(200);
 });
 
-// 幅を指定した wide= の列は折り返す（WideResized）
+// 一番長い行の幅より狭い幅を指定した wide= の列は、一番長い行の幅より狭くならず、折り返さず、隣の列に重ならない（WideResized）
 test("test_wide_resized", async () => {
   // 準備・実行
   const page = await open("wide-resized");
@@ -2234,16 +2306,22 @@ test("test_wide_resized", async () => {
       classes: [...cell.classList],
       whiteSpace: getComputedStyle(cell).whiteSpace,
       lines: Math.round(
-        cell.getBoundingClientRect().height /
+        (cell.getBoundingClientRect().height -
+          Number.parseFloat(getComputedStyle(cell).paddingTop) -
+          Number.parseFloat(getComputedStyle(cell).paddingBottom)) /
           Number.parseFloat(getComputedStyle(cell).lineHeight),
       ),
+      overflows: cell.scrollWidth > cell.clientWidth,
+      width: cell.offsetWidth,
     })),
   );
   expect(cells[0]?.classes).toEqual(
     expect.arrayContaining(["mdmark-wide", "is-resized"]),
   );
-  expect(cells[0]?.whiteSpace).not.toBe("nowrap");
-  expect(cells[0]?.lines).toBeGreaterThan(1);
+  expect(cells[0]?.whiteSpace).toBe("nowrap");
+  expect(cells[0]?.lines).toBe(1);
+  expect(cells.some((cell) => cell.overflows)).toBe(false);
+  expect(cells[0]?.width).toBeGreaterThan(110);
 });
 
 /** preview が表のメニューのボタンの位置（囲む要素の `--mdmark-table-menu-end`）を入れるまで待つ */
@@ -2420,4 +2498,55 @@ test("test_reorder_move_menu_first", async () => {
   await expect(
     menu.locator('button[data-move="after"]').isDisabled(),
   ).resolves.toBe(false);
+});
+
+// 空白を持たない行内のコードの列と区切りの無い英数字の列は、一番長い行の幅以上で描き、セルの中身が隣の列に重ならず、表の中で横にスクロールする（LongCodeCells）
+test("test_long_code_cells", async () => {
+  // 準備・実行
+  const page = await open("long-code-cells");
+  // 検証: どのセルも中身がはみ出さず、コード・ID の列は一番長い行の幅以上
+  const result = await page.evaluate(() => {
+    const cells = [
+      ...document.querySelectorAll<HTMLElement>(
+        "#storybook-root th, #storybook-root td",
+      ),
+    ];
+    const heads = [
+      ...document.querySelectorAll<HTMLElement>("#storybook-root thead th"),
+    ];
+    const contentWidth = (cell: HTMLElement): number => {
+      const range = document.createRange();
+      range.selectNodeContents(cell);
+      const style = getComputedStyle(cell);
+      return (
+        range.getBoundingClientRect().width +
+        Number.parseFloat(style.paddingLeft) +
+        Number.parseFloat(style.paddingRight)
+      );
+    };
+    const narrower = [1, 2].flatMap((column) =>
+      [
+        ...document.querySelectorAll<HTMLElement>(
+          `#storybook-root tbody td:nth-child(${column + 1})`,
+        ),
+      ]
+        .filter(
+          (cell) =>
+            (heads[column]?.offsetWidth ?? 0) < Math.floor(contentWidth(cell)),
+        )
+        .map((cell) => cell.textContent ?? ""),
+    );
+    const scroller = document.querySelector<HTMLElement>(
+      "#storybook-root .mdmark-table-scroll",
+    );
+    return {
+      overflowing: cells
+        .filter((cell) => cell.scrollWidth > cell.clientWidth)
+        .map((cell) => cell.textContent ?? ""),
+      narrower,
+      scrolls: (scroller?.scrollWidth ?? 0) > (scroller?.clientWidth ?? 0),
+    };
+  });
+  expect(result).toEqual({ overflowing: [], narrower: [], scrolls: true });
+  await expect(pageOverflows(page)).resolves.toBe(false);
 });

@@ -1,0 +1,88 @@
+/* #824 のモックの規則: 列の中身のはみ出しの見本と、スマホの幅で開いたテーブル設定のパネルの案 A・B */
+@layer mdmark {
+  /* 今の列の幅: 列の幅を中身より狭く決め、折り返さない中身が隣の列へはみ出す */
+  .mdmark-824-overflow-now th,
+  .mdmark-824-overflow-now td {
+    overflow: visible;
+  }
+  .mdmark-824-overflow-now [data-mock824-nowrap] {
+    white-space: nowrap;
+  }
+
+  /* 修正後: 折り返さない列は一番長い中身の幅に余白を加えた幅以上にする */
+  .mdmark-824-overflow-fixed [data-mock824-nowrap] {
+    white-space: nowrap;
+    min-inline-size: max-content;
+  }
+
+  /* つまみで狭めた折り返す列: 空白で区切れない一番長い中身の幅より狭くならない */
+  .mdmark-824-overflow-fixed [data-mock824-wrap] {
+    overflow-wrap: normal;
+    word-break: normal;
+  }
+
+  /* スマホの幅で開いたテーブル設定のパネル（今・案 A・案 B） */
+  .mdmark-824-settings {
+    position: relative;
+  }
+  .mdmark-824-settings .mdmark-table-settings {
+    position: absolute;
+    inset-block-start: 2.5rem;
+    inset-inline-end: 0;
+    z-index: 20;
+  }
+  @media (max-width: 47.99rem) {
+    /* 案 A: 開くパネルのまま、高さを画面の高さの 25% 以下にし、列の一覧をパネルの中でスクロールさせる */
+    .mdmark-824-settings[data-mock824-option="a"] .mdmark-table-settings {
+      display: flex;
+      flex-direction: column;
+      max-block-size: 25dvh;
+    }
+    .mdmark-824-settings[data-mock824-option="a"] .mdmark-table-settings-list {
+      flex: 1 1 auto;
+      min-block-size: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+    }
+    /* 案 B: 固定の領域にせず、表のメニューのボタンの下に文書の流れの中で開く */
+    .mdmark-824-settings[data-mock824-option="b"] .mdmark-table-settings {
+      position: static;
+      inline-size: 100%;
+      margin-block-end: 0.5rem;
+      box-shadow: none;
+    }
+  }
+}
+
+/* モック専用: 今の列の幅は、mdmark の列の最小の幅を当てずに見本の幅のまま出す */
+@layer mdmark {
+  .mdmark-824-overflow-now th,
+  .mdmark-824-overflow-now td {
+    min-inline-size: 0 !important;
+    overflow-wrap: normal;
+  }
+  /* つまみで狭めた折り返す列の見本: 列の幅は区切れない一番長い中身の幅 */
+  .mdmark-824-narrowed th[data-mock824-wrap] {
+    inline-size: 1px;
+  }
+  .mdmark-824-narrowed td[data-mock824-wrap] code {
+    white-space: nowrap;
+  }
+  /* モック専用: 開いたまま見せるパネルが下の節に重ならない余白 */
+  .mdmark-824-settings[data-mock824-option="now"],
+  .mdmark-824-settings[data-mock824-option="a"] {
+    min-block-size: 38rem;
+  }
+  @media (max-width: 47.99rem) {
+    .mdmark-824-settings[data-mock824-option="a"] {
+      min-block-size: 18rem;
+    }
+  }
+}
+
+/* 修正後の見本: 長文でない説明の列も、今の決め方どおり一番長い行の幅で 1 行に収める */
+@layer mdmark {
+  .mdmark-824-overflow-fixed:not(.mdmark-824-narrowed) td:last-child {
+    white-space: nowrap;
+  }
+}

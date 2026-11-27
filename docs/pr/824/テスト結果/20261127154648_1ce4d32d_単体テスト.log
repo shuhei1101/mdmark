@@ -1,0 +1,90 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-table-column-width-resize-and-settings-panel
+
+ ❯ |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts (14 tests | 14 failed) 8017ms
+   × test_attach_map 1658ms
+   × test_attach_map_when_collapse 576ms
+   × test_attach_map_when_problems 363ms
+   × test_attach_map_when_annotation_undefined 337ms
+   × test_attach_map_when_missing_participant 481ms
+   × test_attach_map_when_played_follow 589ms
+   × test_attach_map_when_plain 474ms
+   × test_attach_map_when_plain_styled 350ms
+   × test_attach_map_when_mindmap 725ms
+   × test_attach_map_when_axis_grid 822ms
+   × test_attach_map_when_id_link 391ms
+   × test_attach_map_when_class_id_link 283ms
+   × test_attach_map_when_export 430ms
+   × test_attach_map_when_node_clicked 537ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 14 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_collapse
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_problems
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_annotation_undefined
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_missing_participant
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_played_follow
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_plain
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_plain_styled
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_mindmap
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_axis_grid
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_id_link
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_class_id_link
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_export
+ FAIL  |unit-browser (chromium)| tests/unit/src/map/index.browser.test.ts > test_attach_map_when_node_clicked
+Error: Mock /src/map/layout.ts wasn't registered. This is probably a Vitest error. Please, open a new issue with reproduction.
+
+Failure screenshots:
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_collapse.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_problems.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_annotation_undefined.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_missing_participant.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_played_follow.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_plain.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_plain_styled.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_mindmap.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_axis_grid.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_id_link.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_class_id_link.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_export.png
+  - .vitest/attachments/failure-screenshots/index.browser.test.ts/test_attach_map_when_node_clicked.png
+
+ ❯ src/map/layout.ts:11:30
+      9|
+     10| /** 描いた文書の CSS の `.mdmark-diagram-node` と同じ文字の大きさ（px）・行の高さの倍率・余白（px）。`…
+     11| export const LABEL_METRICS = {
+       |                              ^
+     12|   kindSize: 11,
+     13|   nameSize: 13,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/14]⎯
+
+
+ Test Files  1 failed | 349 passed (350)
+      Tests  14 failed | 2981 passed (2995)
+   Start at  15:46:31
+   Duration  28.35s (worker 85%, tests 11%, import 4%)
+
+
+# 1 回目は map の 14 件が Vitest の mock の登録の不具合（Mock /src/map/layout.ts was not registered）で fail し、単独では pass したため、変更をせずに流し直した
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-table-column-width-resize-and-settings-panel
+
+
+ Test Files  350 passed (350)
+      Tests  2995 passed (2995)
+   Start at  15:47:17
+   Duration  26.17s (worker 84%, tests 11%, import 4%, transform 1%)
+

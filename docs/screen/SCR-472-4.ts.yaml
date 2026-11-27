@@ -1722,7 +1722,7 @@ elements:
     visible_when: '`resize` の表（既定の種類と `data` の種類。`features.resize.enabled` を `false` にした表と `plain` の表には無い）'
     initial_value: 描いた直後の列の幅（`width.mode` が `nowrap` の列は値の長さの幅）。幅は覚えず、再描画すると戻る
     action: ドラッグ（マウス・タッチ）か、フォーカスして ←・→ キー（1 回 16px）で、つまみの左の列の幅だけを変える。ダブルクリック・ダブルタップ・Enter で描いた直後の幅に戻す
-    constraints: 列の最小幅（セルの `min-width` の 6em）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示す。最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ
+    constraints: 列の最小幅（セルの `min-width` の 6em、見出しのセルの中身の幅、折り返さない列は最も長い行の幅、折り返す列は最も長い半角の単語の幅のうち最も大きい幅）から、表の見えている幅からほかに留めた列の幅の合計を引いた幅までに収める。`aria-valuenow`・`aria-valuetext`（`{幅}px`）・`aria-valuemin`・`aria-valuemax` で示し、描いた時点から 4 つを持つ。最小幅が今の幅より大きいときは `aria-valuemin` を、上限が今の幅より小さいときは `aria-valuemax` を今の幅にし、`aria-valuemin` ≤ `aria-valuenow` ≤ `aria-valuemax` を保つ
     refs:
       - IF-472-35#constraints[列の幅]
     status: planned
@@ -1742,6 +1742,8 @@ elements:
       `role="dialog"`・`aria-label="テーブル設定"`。
 
       表のメニューのボタンの下に開き、右側の目次より奥に描く（右側の目次が重なるときは目次を手前にする）。
+
+      画面の幅が 48rem 未満のときは、パネルの高さを画面の高さの 25% までにし、列名の一覧をパネルの中で縦にスクロールさせる（タイトルと案内はスクロールしない）。フォーカスを移した項目は一覧の見えている範囲に入るようにスクロールする。
 
       開いたら最初のつまみか目のアイコンへフォーカスを移し、外を押すか Esc で閉じる（Esc は表のメニューのボタンへフォーカスを戻す）
     label: 表示と並び順・並び順

@@ -1,0 +1,143 @@
+$ npm run test:unit
+
+> test:unit
+> vitest run --project 'unit*'
+
+
+ RUN  v5.0.4 /home/shuhei2441/repo/mdmark/.claude/worktrees/fix-table-column-width-resize-and-settings-panel
+
+ ❯ |unit| tests/unit/src/table/table.part.test.ts (47 tests | 1 failed) 737ms
+   × test_render_table_tools_when_resize_values 43ms
+ ❯ |unit-browser (chromium)| tests/unit/src/table/table-resize.interact.browser.test.ts (9 tests | 1 failed) 883ms
+   × test_attach_column_resize_when_content_width 741ms
+ ❯ |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts (86 tests | 1 failed) 2891ms
+   × test_column_bounds_when_long_word 765ms
+ ❯ |unit-browser (chromium)| tests/unit/src/table/table-width.interact.browser.test.ts (14 tests | 2 failed) 3768ms
+   × test_measure_columns_when_inline_code 796ms
+   × test_attach_auto_column_widths_when_content_width 2263ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 5 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  |unit| tests/unit/src/table/table.part.test.ts > test_render_table_tools_when_resize_values
+AssertionError: expected '<span class="mdmark-th"><span class="…' to contain 'aria-valuenow="0"'
+
+Expected: "aria-valuenow="0""
+Received: "<span class="mdmark-th"><span class="mdmark-th-label">名前</span></span><span class="mdmark-col-resize" role="separator" aria-orientation="vertical" tabindex="0" aria-label="「名前」の列の幅"></span>"
+
+ ❯ tests/unit/src/table/table.part.test.ts:1383:18
+    1381|     ["aria-valuetext", "自動"],
+    1382|   ]) {
+    1383|     expect(auto).toContain(`${name}="${value}"`);
+       |                  ^
+    1384|   }
+    1385|   for (const [name, value] of [
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-resize.interact.browser.test.ts > test_attach_column_resize_when_content_width
+AssertionError: expected 130 to be 320 // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-resize.interact.browser.test.ts/test_attach_column_resize_when_content_width.png
+
+- Expected
++ Received
+
+- 320
++ 130
+
+ ❯ tests/unit/src/table/table-resize.interact.browser.test.ts:371:37
+    369|   drag(handles[0], -400);
+    370|   // 検証
+    371|   expect(headCells[0]?.offsetWidth).toBe(320);
+       |                                     ^
+    372|   expect(handles[0]?.getAttribute("aria-valuemin")).toBe("320");
+    373| });
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=5bbf3725:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-width.interact.browser.test.ts > test_measure_columns_when_inline_code
+AssertionError: expected 339 to be greater than or equal to 341
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-width.interact.browser.test.ts/test_measure_columns_when_inline_code.png
+
+ ❯ tests/unit/src/table/table-width.interact.browser.test.ts:267:31
+    265|   const columns = measureColumns(table, headCells);
+    266|   // 検証
+    267|   expect(columns[0]?.longest).toBeGreaterThanOrEqual(longest);
+       |                               ^
+    268|   expect(columns[1]?.longestWord).toBeGreaterThanOrEqual(longestWord);
+    269|   expect(table.querySelector("span[style*='visibility']")).toBeNull();
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=5bbf3725:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table-width.interact.browser.test.ts > test_attach_auto_column_widths_when_content_width
+AssertionError: expected '' to be '371px' // Object.is equality
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table-width.interact.browser.test.ts/test_attach_auto_column_widths_when_content_width.png
+
+- Expected
++ Received
+
+- 371px
+
+ ❯ tests/unit/src/table/table-width.interact.browser.test.ts:821:38
+    819|   const contentWidth = (cell: HTMLElement | undefined): string =>
+    820|     cell?.style.getPropertyValue("--mdmark-column-content-width") ?? "…
+    821|   expect(contentWidth(headCells[0])).toBe(`${measure0?.longest}px`);
+       |                                      ^
+    822|   expect(Number.parseFloat(contentWidth(headCells[1]))).toBeGreaterTha…
+    823|     measure1?.longestWord ?? Number.POSITIVE_INFINITY,
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=5bbf3725:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/5]⎯
+
+ FAIL  |unit-browser (chromium)| tests/unit/src/table/table.interact.browser.test.ts > test_column_bounds_when_long_word
+AssertionError: expected [ [ true, 140, 140 ], …(2) ] to deeply equal [ [ true, 300, 300 ], …(2) ]
+
+Failure screenshot:
+  - .vitest/attachments/failure-screenshots/table.interact.browser.test.ts/test_column_bounds_when_long_word.png
+
+- Expected
++ Received
+
+@@ -1,14 +1,14 @@
+  [
+    [
+      true,
+-     300,
+-     300,
++     140,
++     140,
+    ],
+    [
+      true,
+-     300,
++     140,
+      2800,
+    ],
+    [
+      true,
+      300,
+
+ ❯ tests/unit/src/table/table.interact.browser.test.ts:557:18
+    555|   ].map((options) => boundsOf(columnBounds(options)));
+    556|   // 検証
+    557|   expect(result).toEqual([
+       |                  ^
+    558|     [true, 300, 300],
+    559|     [true, 300, 2800],
+ ❯ node_modules/.vite/vitest/72d889179a05531fdf8a120ba4a59c85ced67e0f/deps/plugins.DPQHVT0p-DBatioj1.js?v=5bbf3725:5230:20
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/5]⎯
+
+
+ Test Files  4 failed | 346 passed (350)
+      Tests  5 failed | 2990 passed (2995)
+   Start at  15:35:20
+   Duration  31.96s (worker 84%, tests 11%, import 5%, transform 1%)
+

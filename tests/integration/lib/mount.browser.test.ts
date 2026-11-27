@@ -13530,155 +13530,161 @@ function settingsNames(panel: Element): string[] {
 
 // テーブル設定の一覧のつまみで列を動かし、目のアイコンで列を隠す（正常系）
 test("test_normal_when_columns_reordered", async () => {
-  // 準備
-  const el = createElement();
-  const handle = await mountTracked(el, { markdown: REORDER_MARKDOWN });
-  const [table, onlyReorder, plain] = [
-    ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
-  ] as HTMLElement[];
-  if (!table || !onlyReorder || !plain) {
-    throw new Error("表が足りない");
-  }
-  const columnOrder = () =>
-    [...table.querySelectorAll<HTMLElement>("tbody tr:first-child td")].map(
-      (cell) => Number(cell.dataset.col),
+  // 狭い画面ではパネルの高さを抑えて一覧をスクロールさせるため、一覧の全ての項目が見える幅で開く
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    const handle = await mountTracked(el, { markdown: REORDER_MARKDOWN });
+    const [table, onlyReorder, plain] = [
+      ...el.querySelectorAll<HTMLElement>(".mdmark-table"),
+    ] as HTMLElement[];
+    if (!table || !onlyReorder || !plain) {
+      throw new Error("表が足りない");
+    }
+    const columnOrder = () =>
+      [...table.querySelectorAll<HTMLElement>("tbody tr:first-child td")].map(
+        (cell) => Number(cell.dataset.col),
+      );
+    // 実行・検証: 表のメニューのテーブル設定を押す
+    const toggle = tableMenuButton(table);
+    expect(toggle.getAttribute("aria-label")).toBe("表のメニュー");
+    const { panel, eye, grip } = openTableSettings(table);
+    expect(find(table, ".mdmark-table-menu-panel").hasAttribute("hidden")).toBe(
+      true,
     );
-  // 実行・検証: 表のメニューのテーブル設定を押す
-  const toggle = tableMenuButton(table);
-  expect(toggle.getAttribute("aria-label")).toBe("表のメニュー");
-  const { panel, eye, grip } = openTableSettings(table);
-  expect(find(table, ".mdmark-table-menu-panel").hasAttribute("hidden")).toBe(
-    true,
-  );
-  expect(find(panel, ".mdmark-table-settings-title").textContent).toBe(
-    "表示と並び順",
-  );
-  expect(document.activeElement).toBe(grip(0));
-  expect(table.querySelector("thead .mdmark-table-settings-grip")).toBeNull();
-  // 実行・検証: 説明のつまみを名前の上へドラッグする
-  await userEvent.dragAndDrop(grip(3), grip(0), {
-    targetPosition: { x: 4, y: 1 },
+    expect(find(panel, ".mdmark-table-settings-title").textContent).toBe(
+      "表示と並び順",
+    );
+    expect(document.activeElement).toBe(grip(0));
+    expect(table.querySelector("thead .mdmark-table-settings-grip")).toBeNull();
+    // 実行・検証: 説明のつまみを名前の上へドラッグする
+    await userEvent.dragAndDrop(grip(3), grip(0), {
+      targetPosition: { x: 4, y: 1 },
+    });
+    expect(columnOrder()).toEqual([3, 0, 1, 2]);
+    expect(
+      [...table.querySelectorAll<HTMLElement>("thead th")].map((th) =>
+        Number(th.dataset.col),
+      ),
+    ).toEqual([3, 0, 1, 2]);
+    expect(settingsNames(panel)).toEqual(["説明", "名前", "型", "既定"]);
+    // 実行・検証: 型のつまみで ↓ キーを押す
+    grip(1).focus();
+    await userEvent.keyboard("{ArrowDown}");
+    expect(columnOrder()).toEqual([3, 0, 2, 1]);
+    expect(settingsNames(panel)).toEqual(["説明", "名前", "既定", "型"]);
+    expect(document.activeElement).toBe(grip(1));
+    // 実行・検証: 説明の目のアイコンを押す
+    eye(3).click();
+    expect(
+      columnCells(table, 0).every((cell) => cell.hasAttribute("hidden")),
+    ).toBe(true);
+    expect(eye(3).getAttribute("aria-pressed")).toBe("true");
+    expect(eye(3).getAttribute("aria-label")).toBe("「説明」を表示");
+    expect(settingsBadge(table)).toBe("1");
+    expect(eye(0).disabled).toBe(true);
+    // 実行・検証: 名前の見出しの並べ替えを押す
+    const nameHead = find<HTMLElement>(table, 'thead th[data-col="0"]');
+    find<HTMLButtonElement>(nameHead, "button.mdmark-sort").click();
+    expect(columnOrder()).toEqual([3, 0, 2, 1]);
+    // 検証: ほかの表
+    const second = openTableSettings(onlyReorder);
+    expect(find(second.panel, ".mdmark-table-settings-title").textContent).toBe(
+      "並び順",
+    );
+    expect(second.panel.querySelector(".mdmark-table-settings-eye")).toBeNull();
+    expect(plain.querySelector("button.mdmark-table-menu")).toBeNull();
+    // 実行・検証: 再描画すると Markdown の順に戻る
+    handle.update(REORDER_MARKDOWN);
+    const redrawn = find<HTMLElement>(el, ".mdmark-table");
+    expect(
+      [...redrawn.querySelectorAll<HTMLElement>("tbody tr:first-child td")].map(
+        (cell) => Number(cell.dataset.col),
+      ),
+    ).toEqual([0, 1, 2, 3]);
+    expect(headAndRowTexts(redrawn)[1]).toEqual([
+      "features.table",
+      "bool",
+      "true",
+      "表の機能",
+    ]);
   });
-  expect(columnOrder()).toEqual([3, 0, 1, 2]);
-  expect(
-    [...table.querySelectorAll<HTMLElement>("thead th")].map((th) =>
-      Number(th.dataset.col),
-    ),
-  ).toEqual([3, 0, 1, 2]);
-  expect(settingsNames(panel)).toEqual(["説明", "名前", "型", "既定"]);
-  // 実行・検証: 型のつまみで ↓ キーを押す
-  grip(1).focus();
-  await userEvent.keyboard("{ArrowDown}");
-  expect(columnOrder()).toEqual([3, 0, 2, 1]);
-  expect(settingsNames(panel)).toEqual(["説明", "名前", "既定", "型"]);
-  expect(document.activeElement).toBe(grip(1));
-  // 実行・検証: 説明の目のアイコンを押す
-  eye(3).click();
-  expect(
-    columnCells(table, 0).every((cell) => cell.hasAttribute("hidden")),
-  ).toBe(true);
-  expect(eye(3).getAttribute("aria-pressed")).toBe("true");
-  expect(eye(3).getAttribute("aria-label")).toBe("「説明」を表示");
-  expect(settingsBadge(table)).toBe("1");
-  expect(eye(0).disabled).toBe(true);
-  // 実行・検証: 名前の見出しの並べ替えを押す
-  const nameHead = find<HTMLElement>(table, 'thead th[data-col="0"]');
-  find<HTMLButtonElement>(nameHead, "button.mdmark-sort").click();
-  expect(columnOrder()).toEqual([3, 0, 2, 1]);
-  // 検証: ほかの表
-  const second = openTableSettings(onlyReorder);
-  expect(find(second.panel, ".mdmark-table-settings-title").textContent).toBe(
-    "並び順",
-  );
-  expect(second.panel.querySelector(".mdmark-table-settings-eye")).toBeNull();
-  expect(plain.querySelector("button.mdmark-table-menu")).toBeNull();
-  // 実行・検証: 再描画すると Markdown の順に戻る
-  handle.update(REORDER_MARKDOWN);
-  const redrawn = find<HTMLElement>(el, ".mdmark-table");
-  expect(
-    [...redrawn.querySelectorAll<HTMLElement>("tbody tr:first-child td")].map(
-      (cell) => Number(cell.dataset.col),
-    ),
-  ).toEqual([0, 1, 2, 3]);
-  expect(headAndRowTexts(redrawn)[1]).toEqual([
-    "features.table",
-    "bool",
-    "true",
-    "表の機能",
-  ]);
 });
 
 // テーブル設定の一覧のつまみを 1 回押して開くメニューの「前へ移す」「後ろへ移す」で列を動かす（正常系（列をドラッグせずに並べ替える））
 test("test_normal_when_columns_reordered_without_drag", async () => {
-  // 準備
-  const el = createElement();
-  await mountTracked(el, { markdown: REORDER_MARKDOWN });
-  const table = find<HTMLElement>(el, ".mdmark-table");
-  const { panel, grip } = openTableSettings(table);
-  const moveMenu = (): HTMLElement =>
-    find<HTMLElement>(panel, ".mdmark-table-move-menu");
-  const moveButton = (move: "before" | "after"): HTMLButtonElement =>
-    find<HTMLButtonElement>(moveMenu(), `button[data-move="${move}"]`);
-  const order = (): string[] => settingsNames(panel);
-  // 実行・検証: 既定のつまみをクリックする
-  await userEvent.click(grip(2));
-  expect(grip(2).getAttribute("aria-expanded")).toBe("true");
-  const menu = find<HTMLElement>(
-    panel,
-    `#${grip(2).getAttribute("aria-controls")}`,
-  );
-  expect(menu).toBe(moveMenu());
-  expect(menu.getAttribute("role")).toBe("group");
-  expect(menu.getAttribute("aria-label")).toBe("「既定」の列の移動");
-  expect(
-    [...menu.querySelectorAll("button")].map((button) =>
-      button.textContent?.trim(),
-    ),
-  ).toEqual(["前へ移す", "後ろへ移す"]);
-  expect(document.activeElement).toBe(moveButton("before"));
-  expect(await axeViolations(panel)).toEqual([]);
-  // 実行・検証: 前へ移すを押す
-  await userEvent.click(moveButton("before"));
-  expect(headAndRowTexts(table)[0]).toEqual(["名前", "既定", "型", "説明"]);
-  expect(headAndRowTexts(table)[1]).toEqual([
-    "features.table",
-    "true",
-    "bool",
-    "表の機能",
-  ]);
-  expect(order()).toEqual(["名前", "既定", "型", "説明"]);
-  expect(menu.hasAttribute("hidden")).toBe(false);
-  // 実行・検証: Esc でメニューだけを閉じる
-  await userEvent.keyboard("{Escape}");
-  expect(menu.hasAttribute("hidden")).toBe(true);
-  expect(panel.hasAttribute("hidden")).toBe(false);
-  expect(grip(2).getAttribute("aria-expanded")).toBe("false");
-  expect(document.activeElement).toBe(grip(2));
-  expect(await axeViolations(panel)).toEqual([]);
-  // 実行・検証: 名前のつまみで Enter を押すと、前へ移すが押せない
-  grip(0).focus();
-  await userEvent.keyboard("{Enter}");
-  expect(moveButton("before").disabled).toBe(true);
-  expect(document.activeElement).toBe(moveButton("after"));
-  await userEvent.keyboard("{Escape}");
-  // 実行・検証: 末尾の説明のメニューでは、後ろへ移すが押せない
-  await userEvent.click(grip(3));
-  expect(moveButton("after").disabled).toBe(true);
-  await userEvent.keyboard("{Escape}");
-  // 実行・検証: 既定を末尾まで動かすと、前へ移すへフォーカスが移る
-  await userEvent.click(grip(2));
-  await userEvent.click(moveButton("after"));
-  await userEvent.click(moveButton("after"));
-  expect(order()).toEqual(["名前", "型", "説明", "既定"]);
-  expect(moveButton("after").disabled).toBe(true);
-  expect(document.activeElement).toBe(moveButton("before"));
-  await userEvent.keyboard("{Escape}");
-  // 実行・検証: つまみをドラッグするとメニューを開かずに列を動かす
-  await userEvent.dragAndDrop(grip(2), grip(0), {
-    targetPosition: { x: 4, y: 1 },
+  // 狭い画面ではパネルの高さを抑えて一覧をスクロールさせるため、一覧の全ての項目が見える幅で開く
+  await withViewport(1280, async () => {
+    // 準備
+    const el = createElement();
+    await mountTracked(el, { markdown: REORDER_MARKDOWN });
+    const table = find<HTMLElement>(el, ".mdmark-table");
+    const { panel, grip } = openTableSettings(table);
+    const moveMenu = (): HTMLElement =>
+      find<HTMLElement>(panel, ".mdmark-table-move-menu");
+    const moveButton = (move: "before" | "after"): HTMLButtonElement =>
+      find<HTMLButtonElement>(moveMenu(), `button[data-move="${move}"]`);
+    const order = (): string[] => settingsNames(panel);
+    // 実行・検証: 既定のつまみをクリックする
+    await userEvent.click(grip(2));
+    expect(grip(2).getAttribute("aria-expanded")).toBe("true");
+    const menu = find<HTMLElement>(
+      panel,
+      `#${grip(2).getAttribute("aria-controls")}`,
+    );
+    expect(menu).toBe(moveMenu());
+    expect(menu.getAttribute("role")).toBe("group");
+    expect(menu.getAttribute("aria-label")).toBe("「既定」の列の移動");
+    expect(
+      [...menu.querySelectorAll("button")].map((button) =>
+        button.textContent?.trim(),
+      ),
+    ).toEqual(["前へ移す", "後ろへ移す"]);
+    expect(document.activeElement).toBe(moveButton("before"));
+    expect(await axeViolations(panel)).toEqual([]);
+    // 実行・検証: 前へ移すを押す
+    await userEvent.click(moveButton("before"));
+    expect(headAndRowTexts(table)[0]).toEqual(["名前", "既定", "型", "説明"]);
+    expect(headAndRowTexts(table)[1]).toEqual([
+      "features.table",
+      "true",
+      "bool",
+      "表の機能",
+    ]);
+    expect(order()).toEqual(["名前", "既定", "型", "説明"]);
+    expect(menu.hasAttribute("hidden")).toBe(false);
+    // 実行・検証: Esc でメニューだけを閉じる
+    await userEvent.keyboard("{Escape}");
+    expect(menu.hasAttribute("hidden")).toBe(true);
+    expect(panel.hasAttribute("hidden")).toBe(false);
+    expect(grip(2).getAttribute("aria-expanded")).toBe("false");
+    expect(document.activeElement).toBe(grip(2));
+    expect(await axeViolations(panel)).toEqual([]);
+    // 実行・検証: 名前のつまみで Enter を押すと、前へ移すが押せない
+    grip(0).focus();
+    await userEvent.keyboard("{Enter}");
+    expect(moveButton("before").disabled).toBe(true);
+    expect(document.activeElement).toBe(moveButton("after"));
+    await userEvent.keyboard("{Escape}");
+    // 実行・検証: 末尾の説明のメニューでは、後ろへ移すが押せない
+    await userEvent.click(grip(3));
+    expect(moveButton("after").disabled).toBe(true);
+    await userEvent.keyboard("{Escape}");
+    // 実行・検証: 既定を末尾まで動かすと、前へ移すへフォーカスが移る
+    await userEvent.click(grip(2));
+    await userEvent.click(moveButton("after"));
+    await userEvent.click(moveButton("after"));
+    expect(order()).toEqual(["名前", "型", "説明", "既定"]);
+    expect(moveButton("after").disabled).toBe(true);
+    expect(document.activeElement).toBe(moveButton("before"));
+    await userEvent.keyboard("{Escape}");
+    // 実行・検証: つまみをドラッグするとメニューを開かずに列を動かす
+    await userEvent.dragAndDrop(grip(2), grip(0), {
+      targetPosition: { x: 4, y: 1 },
+    });
+    expect(order()).toEqual(["既定", "名前", "型", "説明"]);
+    expect(moveMenu().hasAttribute("hidden")).toBe(true);
   });
-  expect(order()).toEqual(["既定", "名前", "型", "説明"]);
-  expect(moveMenu().hasAttribute("hidden")).toBe(true);
 });
 
 /** 2 行の見出しで名前をピン止めし、設定の範囲を持つ表の文書 */
@@ -16820,14 +16826,18 @@ test("test_normal_when_column_resized", async () => {
   expect(dragged.slice(1)).toEqual(opened.slice(1));
   expect(heads[0]?.getAttribute("aria-sort")).toBe(sort);
   expect(names()).toEqual(order);
-  // 実行: 説明の列のつまみを、列の最小幅より狭くなるまで左へドラッグする
+  // 実行: 説明の列のつまみを、一番長い説明の幅より狭くなるまで左へドラッグする
   dragResizeHandle(noteHandle, -2000);
-  // 検証: 列の最小幅で止まり、wide= の列も折り返す
+  // 検証: 一番長い説明の幅（列の最小幅）で止まり、wide= の列は折り返さず、セルの中身がはみ出さない
   expect(String(heads[1]?.offsetWidth)).toBe(
     noteHandle.getAttribute("aria-valuemin"),
   );
-  const noteCell = first.querySelector<HTMLElement>("tbody td:nth-child(2)");
-  expect(noteCell && getComputedStyle(noteCell).whiteSpace).not.toBe("nowrap");
+  for (const noteCell of first.querySelectorAll<HTMLElement>(
+    "tbody td:nth-child(2)",
+  )) {
+    expect(noteCell.scrollWidth).toBeLessThanOrEqual(noteCell.clientWidth);
+    expect(getComputedStyle(noteCell).whiteSpace).toBe("nowrap");
+  }
   // 実行: 名前の列と説明の列のつまみをダブルクリックする
   for (const handle of [nameHandle, noteHandle]) {
     handle.dispatchEvent(new MouseEvent("dblclick", { bubbles: true }));
@@ -16926,6 +16936,151 @@ test("test_normal_when_column_wider_than_visible_width", async () => {
     });
     expect(result.violations).toEqual([]);
   });
+});
+
+/** 列ごとの中身の幅が違う 4 列 3 行の表（コードは空白を持たない 40 文字の行内のコード、ID は区切りの無い 40 文字の英数字） */
+const CONTENT_WIDTH_ROWS = [1, 2, 3].map((no) => [
+  `名前${no}`,
+  `\`${"a".repeat(39)}${no}\``,
+  `${"B".repeat(39)}${no}`,
+  `${fullWidth(20)}の説明。${fullWidth(20)}`,
+]);
+
+/** 表のセルのうち、中身がセルの幅からはみ出すセルの文字 */
+function overflowingCells(wrapper: Element): string[] {
+  return [...wrapper.querySelectorAll<HTMLElement>("th, td")]
+    .filter((cell) => !cell.hidden && cell.scrollWidth > cell.clientWidth)
+    .map((cell) => cell.textContent ?? "");
+}
+
+// 折り返さない列を一番長い行の幅以上で描き、折り返す列も一番長い半角の単語の幅より狭くせず、つまみで狭めてもセルの中身を隣の列にはみ出させない（正常系（列の中身が隣の列に重ならない））
+test("test_normal_when_cell_content_stays_in_column", async () => {
+  await withViewport(1280, async () => {
+    // 準備
+    vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(
+      () => {},
+    );
+    const el = createElement();
+    el.style.width = "600px";
+    const columns = ["名前", "コード", "ID", "説明"];
+    const plain = [
+      `| ${columns.join(" | ")} |`,
+      `| ${columns.map(() => "---").join(" | ")} |`,
+      ...CONTENT_WIDTH_ROWS.map((row) => `| ${row.join(" | ")} |`),
+      "",
+    ].join("\n");
+    const wrappers = await mountAutoTables(
+      el,
+      [
+        plain,
+        markedTableMarkdown('{"kind": "data"}', columns, CONTENT_WIDTH_ROWS),
+        markedTableMarkdown(
+          '{"kind": "data", "columns": {"コード": {"width": {"mode": "nowrap"}}, "ID": {"width": {"mode": "nowrap"}}}}',
+          columns,
+          CONTENT_WIDTH_ROWS,
+        ),
+      ].join("\n"),
+    );
+    const [, data, wide] = wrappers as [HTMLElement, HTMLElement, HTMLElement];
+    // 検証: 描いた直後、どの表のセルの中身もはみ出さない
+    for (const wrapper of wrappers) {
+      expect(overflowingCells(wrapper)).toEqual([]);
+    }
+    // 検証: 折り返さない列は一番長い行の幅以上で、折り返さない
+    const wideParts = resizeParts(wide);
+    for (const column of [1, 2]) {
+      const cells = [
+        ...wide.querySelectorAll<HTMLElement>(
+          `tbody td:nth-child(${column + 1})`,
+        ),
+      ];
+      for (const cell of cells) {
+        expect(getComputedStyle(cell).whiteSpace).toBe("nowrap");
+        const style = getComputedStyle(cell);
+        const inset =
+          Number.parseFloat(style.paddingLeft) +
+          Number.parseFloat(style.paddingRight);
+        const range = document.createRange();
+        range.selectNodeContents(cell);
+        expect(
+          itemAt(wideParts.heads, column).offsetWidth,
+        ).toBeGreaterThanOrEqual(
+          Math.floor(range.getBoundingClientRect().width + inset),
+        );
+      }
+    }
+    // 実行・検証: 3 つ目と 2 つ目の表のコード・ID の列を左端までドラッグしても、列の最小幅で止まり、はみ出さない
+    for (const wrapper of [wide, data]) {
+      const { heads, handles } = resizeParts(wrapper);
+      for (const column of [1, 2]) {
+        dragResizeHandle(itemAt(handles, column), -2000);
+        expect(String(itemAt(heads, column).offsetWidth)).toBe(
+          itemAt(handles, column).getAttribute("aria-valuemin"),
+        );
+      }
+      expect(overflowingCells(wrapper)).toEqual([]);
+    }
+    // 検証: 列の幅の合計が描く先の要素の幅を超える表は、表の中で横にスクロールし、ページははみ出さない
+    for (const wrapper of wrappers) {
+      const scroller = find<HTMLElement>(wrapper, ".mdmark-table-scroll");
+      expect(scroller.scrollWidth).toBeGreaterThan(scroller.clientWidth);
+    }
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      document.documentElement.clientWidth,
+    );
+  });
+});
+
+// 画面の幅が 48rem 未満のとき、テーブル設定のパネルの高さを画面の高さの 25% までにし、列の一覧をパネルの中でスクロールさせる（正常系（スマホの幅でテーブル設定を開く））
+test("test_normal_when_settings_opened_in_phone_width", async () => {
+  const original = { width: window.innerWidth, height: window.innerHeight };
+  await page.viewport(390, 844);
+  try {
+    // 準備: 12 列 3 行の並べ替えの表
+    const el = createElement();
+    const columns = Array.from({ length: 12 }, (_, i) => `列${i + 1}`);
+    await mountTracked(el, {
+      markdown: markedTableMarkdown(
+        '{"kind": "data", "features": {"reorder": {}, "columns": {}}}',
+        columns,
+        [1, 2, 3].map((no) => columns.map((_, i) => `値${no}-${i + 1}`)),
+      ),
+    });
+    const table = find<HTMLElement>(el, ".mdmark-table");
+    // 実行: 表のメニューの「テーブル設定」を押す
+    const { panel } = openTableSettings(table);
+    const list = find<HTMLElement>(panel, ".mdmark-table-settings-list");
+    // 検証: 最初のつまみにフォーカスし、パネルの高さは画面の高さの 25% 以下で、一覧がスクロールする
+    await vi.waitFor(() => {
+      expect(document.activeElement).toBe(
+        find(list, ".mdmark-table-settings-grip"),
+      );
+    });
+    expect(panel.getBoundingClientRect().height).toBeLessThanOrEqual(
+      Math.floor(window.innerHeight * 0.25),
+    );
+    expect(list.scrollHeight).toBeGreaterThan(list.clientHeight);
+    expect(getComputedStyle(list).overflowY).toBe("auto");
+    // 実行: Tab で一覧の末尾の目のアイコンまでフォーカスを移す
+    const eyes = [
+      ...list.querySelectorAll<HTMLButtonElement>(".mdmark-table-settings-eye"),
+    ];
+    const last = itemAt(eyes, eyes.length - 1);
+    for (let i = 0; i < 40 && document.activeElement !== last; i += 1) {
+      await userEvent.keyboard("{Tab}");
+    }
+    // 検証: 末尾の目のアイコンがパネルの中に見え、ページははみ出さない
+    expect(document.activeElement).toBe(last);
+    const panelRect = panel.getBoundingClientRect();
+    const lastRect = last.getBoundingClientRect();
+    expect(lastRect.top).toBeGreaterThanOrEqual(panelRect.top);
+    expect(lastRect.bottom).toBeLessThanOrEqual(panelRect.bottom);
+    expect(document.documentElement.scrollWidth).toBeLessThanOrEqual(
+      document.documentElement.clientWidth,
+    );
+  } finally {
+    await page.viewport(original.width, original.height);
+  }
 });
 
 // ポインターが細かい画面でも、列の幅のつまみの押せる範囲を幅・高さとも 24px にする（正常系（細かいポインターの列の幅のつまみ））
@@ -17376,12 +17531,12 @@ test.runIf(navigator.maxTouchPoints > 0)(
 
 // 列の幅を変えても、最終列を畳むかは決め直さない（正常系（狭い幅で列の幅を変える））
 test("test_normal_when_column_resized_in_narrow_width", async () => {
-  // 準備: 最終列を畳む幅に、説明が 1 行に収まる表を描く
+  // 準備: 最終列を畳む幅に、説明が 1 行に収まる表を描く（説明は狭めると折り返す列）
   vi.spyOn(Element.prototype, "setPointerCapture").mockImplementation(() => {});
   const el = createElement();
   el.style.width = "600px";
   const markdown = [
-    '<!-- table: {"kind": "data"} -->',
+    '<!-- table: {"kind": "data", "columns": {"説明": {"width": {"max": 30}}}} -->',
     "",
     "| 名前 | 状態 | 説明 |",
     "| --- | --- | --- |",

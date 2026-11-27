@@ -703,6 +703,44 @@ export const SettingsOpenReorder: Story = {
   },
 };
 
+export const LongCodeCells: Story = {
+  name: "LongCodeCells",
+  parameters: { server: { id: "table" } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter","resize"]',
+    columns: '["名前","コード","ID","説明"]',
+    rows: '[["列の幅","<code>table.long_column_min_width_em_value</code>","MDMARKCOLUMNWIDTHLONGIDENTIFIER20261127A","長文の列の最小の幅。指定が無ければ 45em"],["リサイズ","<code>features.diagram-resize</code>","MDMARKFEATUREDIAGRAMRESIZEID20261127BBB","図の高さを変えるリサイズハンドルのオン・オフ"]]',
+    wide: "[1,2]",
+  },
+};
+
+export const SettingsOpenPhone: Story = {
+  name: "SettingsOpenPhone",
+  parameters: {
+    server: { id: "table" },
+    // 画面の幅が 48rem 未満のときのパネルを見せる
+    viewport: {
+      options: {
+        phone: {
+          name: "390x844",
+          styles: { width: "390px", height: "844px" },
+          type: "mobile",
+        },
+      },
+    },
+  },
+  globals: { viewport: { value: "phone", isRotated: false } },
+  args: {
+    kind: "data",
+    features: '["sort","pin","filter","columns","reorder"]',
+    columns:
+      '["名前","型","既定","必須","説明","例","初出の版","廃止の版","設定の場所","上書き","関連","備考"]',
+    rows: '[["table.pin","string","each","","押した列を留める方法","through","0.9.0","","端末","✓","",""]]',
+    openColumns: true,
+  },
+};
+
 export const SettingsReorderOnly: Story = {
   name: "SettingsReorderOnly",
   parameters: { server: { id: "table" } },

@@ -1,0 +1,29 @@
+use_cases:
+  - kind: single
+    scenario: docs/scenario/SC-472-73.yaml
+    impact: changed
+    detail: 折り返さない列が描いた直後から一番長い中身の幅以上になり、読者が列の幅のつまみで中身より狭くできなくなる。列の幅のつまみが描いた直後から今の幅を支援技術へ伝え、スマホ幅で開いたテーブル設定のパネルが画面の高さの 25% を超えない
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-793-2.yaml
+    impact: following
+    detail: 表をカスタム要素で描いたときも、列の幅・列の幅のつまみ・テーブル設定のパネルが『表を操作する』の変更と同じ振る舞いになる
+    depends_on:
+      - docs/scenario/SC-472-73.yaml
+docs:
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 表の機能の表の「列の幅の変更」の行から「幅を変えた "nowrap" の列は折り返す」を取り消し、折り返さない列は一番長い中身の幅より狭くならないことを記載する。`columns.{列名}.width.mode` の行も合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T06:29:14.667525+00:00'
+  - page: docs/guide/記載する-表に機能を付ける.md
+    new: false
+    change: 列の幅の変更の説明から「幅を変えた "nowrap" の列は折り返す」を取り消し、つまみで狭められる下限を合わせる。テーブル設定のパネルのスマホ幅の出し方を変えた場合はその説明も合わせる
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-27T06:29:14.667525+00:00'
+scope_out:
+  - item: 図の枠のリサイズハンドルの aria-valuenow
+    reason: 表の列の幅のつまみとは別の部品（src/diagram）で、描いた直後から aria-valuenow を持たせる修正は済んでいる（#816 の受付の判断）
+    plan: none

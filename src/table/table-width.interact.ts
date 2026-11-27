@@ -17,6 +17,9 @@ const AUTO_TABLE_WIDTH_VARIABLE = "--mdmark-auto-table-width";
 /** 見出しのセルに入れる、見出しの中身が収まる外側の幅の変数（列の幅のつまみの最小幅） */
 const HEAD_WIDTH_VARIABLE = "--mdmark-column-head-width";
 
+/** 見出しのセルに入れる、列の中身が収まる外側の幅の変数（列の幅のつまみの最小幅） */
+const CONTENT_WIDTH_VARIABLE = "--mdmark-column-content-width";
+
 /** 自動で決めた幅を当てた表の属性 */
 const AUTO_WIDTH_ATTRIBUTE = "data-auto-width";
 
@@ -48,28 +51,83 @@ type ProbeGroup = {
   probes: HTMLElement[];
 };
 
-/** セルを、セルの中で幅を取らない文字を除いて改行（`br`・`li`・`p`）で行に分ける */
-const linesOf = (cell: HTMLElement): string[] => {
+/** 行を分ける要素（この要素の後ろで行を変える） */
+const LINE_BREAK_SELECTOR = "br, li, p";
+
+/** セルの 1 行に入る子のノード（行内のコード・バッジ・リンクなどの要素をそのまま持つ） */
+type CellLine = Node[];
+
+/** セルを、セルの中で幅を取らない文字を除いて改行（`br`・`li`・`p`）で行に分け、行ごとの子のノードを返却する。描いたセルは書き換えない */
+const linesOf = (cell: HTMLElement): CellLine[] => {
   const clone = cell.cloneNode(true) as HTMLElement;
   removeHiddenText(clone);
-  for (const br of clone.querySelectorAll("br")) {
-    br.replaceWith("\n");
-  }
-  for (const block of clone.querySelectorAll("li, p")) {
-    block.append("\n");
-  }
-  return (clone.textContent ?? "")
-    .split("\n")
-    .map((line) => line.trim())
-    .filter(Boolean);
+  const lines: CellLine[] = [];
+  let current: CellLine = [];
+  const close = (): void => {
+    if (current.some((node) => node.textContent?.trim())) {
+      lines.push(current);
+    }
+    current = [];
+  };
+  const walk = (parent: Node): void => {
+    for (const node of [...parent.childNodes]) {
+      if (!(node instanceof Element)) {
+        current.push(node);
+      } else if (node.matches("br")) {
+        close();
+      } else if (
+        node.matches(LINE_BREAK_SELECTOR) ||
+        node.querySelector(LINE_BREAK_SELECTOR)
+      ) {
+        // 行を分ける要素を持つ要素は、中の子のノードを行に分ける
+        walk(node);
+        if (node.matches(LINE_BREAK_SELECTOR)) {
+          close();
+        }
+      } else {
+        current.push(node);
+      }
+    }
+  };
+  walk(clone);
+  close();
+  return lines;
 };
 
-/** セルの中に文字を折り返さずに配置して幅を測る、計測用の要素 */
-const textProbe = (text: string): HTMLElement => {
+/** 行の中の半角の単語。行内のコードの中の単語は、そのコードの要素の複製で返却する */
+const wordsOf = (line: CellLine): Array<string | Element> => {
+  const words: Array<string | Element> = [];
+  let text = "";
+  const walk = (nodes: Node[]): void => {
+    for (const node of nodes) {
+      if (node instanceof Element && node.matches("code")) {
+        text += " ";
+        for (const word of node.textContent?.match(HALF_WIDTH_WORD) ?? []) {
+          const code = node.cloneNode(false) as Element;
+          code.textContent = word;
+          words.push(code);
+        }
+      } else if (node instanceof Element) {
+        walk([...node.childNodes]);
+      } else {
+        text += node.textContent ?? "";
+      }
+    }
+  };
+  walk(line);
+  return [...words, ...(text.match(HALF_WIDTH_WORD) ?? [])];
+};
+
+/** セルの中に文字か要素を折り返さずに配置して幅を測る、計測用の要素 */
+const probeOf = (content: string | Node | Node[]): HTMLElement => {
   const probe = document.createElement("span");
   probe.style.cssText =
     "position:absolute;visibility:hidden;white-space:nowrap";
-  probe.textContent = text;
+  if (Array.isArray(content)) {
+    probe.append(...content.map((node) => node.cloneNode(true)));
+  } else {
+    probe.append(content);
+  }
   return probe;
 };
 
@@ -77,7 +135,7 @@ const textProbe = (text: string): HTMLElement => {
 const headProbes = (cell: HTMLElement): HTMLElement[] => {
   const content = cell.querySelector<HTMLElement>(":scope > .mdmark-th");
   if (!content) {
-    return linesOf(cell).map(textProbe);
+    return linesOf(cell).map(probeOf);
   }
   const probe = content.cloneNode(true) as HTMLElement;
   removeHiddenText(probe);
@@ -168,7 +226,7 @@ export const measureColumns = (
           cell,
           padding: paddingOf(cell) + MEASURE_SLACK_PX,
           lines,
-          words: lines.flatMap((line) => line.match(HALF_WIDTH_WORD) ?? []),
+          words: lines.flatMap(wordsOf),
         },
       ];
     });
@@ -185,8 +243,8 @@ export const measureColumns = (
   const groups = columns.flatMap(({ head, cells }) => [
     { parent: head, probes: headProbes(head) },
     ...cells.flatMap(({ cell, lines, words }) => [
-      { parent: cell, probes: lines.map(textProbe) },
-      { parent: cell, probes: words.map(textProbe) },
+      { parent: cell, probes: lines.map(probeOf) },
+      { parent: cell, probes: words.map(probeOf) },
     ]),
   ]);
   const widths = measureGroups(groups);
@@ -322,6 +380,23 @@ export const attachAutoColumnWidths = (
       };
     });
 
+  /** 列の中身が収まる幅（折り返さない列は最も長い行、折り返す列は最も長い半角の単語）を、つまみの最小幅として `--mdmark-column-content-width` に入れる。つまみで変えた列は前に入れた値を残す */
+  const writeContentWidths = (
+    columns: ColumnMeasure[],
+    bounds: Array<ColumnBounds & { fixed?: boolean }>,
+  ): void => {
+    columns.forEach(({ column, longest, longestWord }, index) => {
+      const bound = bounds[index];
+      if (bound && !bound.fixed) {
+        const width = bound.wraps ? longestWord : longest;
+        headCells[column]?.style.setProperty(
+          CONTENT_WIDTH_VARIABLE,
+          `${Math.ceil(width)}px`,
+        );
+      }
+    });
+  };
+
   /** 表の幅を、表示している列の幅（つまみで変えた列はその幅）の合計にする */
   const writeTotal = (): void => {
     const total = headCells.reduce((sum, head, column) => {
@@ -365,6 +440,7 @@ export const attachAutoColumnWidths = (
     }
     const columns = shownMeasures();
     const bounds = boundsOf(columns);
+    writeContentWidths(columns, bounds);
     const tableStyle = getComputedStyle(table);
     const available =
       visible -
@@ -407,6 +483,7 @@ export const attachAutoColumnWidths = (
         headCells[column]?.classList.contains("is-resized") !== true,
     );
     const bounds = boundsOf(fresh);
+    writeContentWidths(fresh, bounds);
     fresh.forEach(({ column }, index) => {
       assigned.set(column, Math.ceil(bounds[index]?.min ?? 0));
     });
@@ -489,6 +566,7 @@ export const attachAutoColumnWidths = (
       for (const head of headCells) {
         head.style.removeProperty(AUTO_WIDTH_VARIABLE);
         head.style.removeProperty(HEAD_WIDTH_VARIABLE);
+        head.style.removeProperty(CONTENT_WIDTH_VARIABLE);
       }
       table.style.removeProperty(AUTO_TABLE_WIDTH_VARIABLE);
       table.removeAttribute(AUTO_WIDTH_ATTRIBUTE);
