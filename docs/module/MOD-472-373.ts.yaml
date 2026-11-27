@@ -155,8 +155,8 @@ functions:
         mock: なし
       - name: test_place_step_menu_when_below_overlaps
         case: 正常
-        summary: 下と上が入らないときは右に置く
-        condition: 上の条件に avoid `(80, 130, 200, 100)` を足す（anchor の上は 100px で 140px に足りない）
+        summary: 下が避ける矩形と重なり、上と左が画面に入らないときは右に配置する
+        condition: 画面 1280×800、anchor `(100, 100, 24, 24)`、大きさ `120×140`、avoid `(100, 130, 20, 100)`（below の 100〜220 × 124〜264 と重なり、right の 124〜244 × 100〜240 とは重ならない。above は y が -40 から、left は x が -20 からで画面に入らない）
         expected: '`side` が `right`、`x` が 124、`y` が 100'
         mock: なし
       - name: test_place_step_menu_when_center
@@ -164,6 +164,12 @@ functions:
         summary: center は中央を合わせ、下に入らないときは上に置く
         condition: 'anchor `(400, 700, 200, 24)`、大きさ `160×120`、`align: center`、画面 1280×800'
         expected: '`side` が `above`、`x` が 420、`y` が 580'
+        mock: なし
+      - name: test_place_step_menu_when_nothing_fits
+        case: 正常
+        summary: どの候補も当てはまらないときは画面に収まる最初の候補を返却する
+        condition: 画面 1280×800、anchor `(100, 100, 24, 24)`、大きさ `120×140`、avoid `(80, 130, 200, 100)`（below と right は avoid と重なり、above と left は画面に入らない）
+        expected: '`{ x: 100, y: 124, side: "below" }`'
         mock: なし
 tags:
   - name: topic:メニュー
