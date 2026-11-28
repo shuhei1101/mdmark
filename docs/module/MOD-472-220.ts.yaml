@@ -251,9 +251,9 @@ functions:
       - name: test_reveal_selected_tab
         case: 正常
         summary: 右の外にある選んだタブを入れる
-        condition: 幅 320px の並びに 7 つのタブ、`scrollLeft` 0 で 7 つ目を選んだ
+        condition: '`attachTablistScroll` を付けた幅 320px の並びに 7 つのタブ、`scrollLeft` 0 で、右端が並びの見える範囲の外にある 5 つ目を選んだ'
         mock: なし
-        expected: 7 つ目のボタンの右端が並びの右端から端のボタンの幅を除いた位置と 1px 以内で一致し、`scrollY` は変わらない
+        expected: 5 つ目のボタンの右端が並びの右端から `end` のボタンの幅を除いた位置と 1px 以内で一致し、`scrollY` は変わらない
       - name: test_reveal_selected_tab_when_visible
         case: 正常
         summary: 見える範囲にあれば動かさない
@@ -266,6 +266,12 @@ functions:
         condition: document に取り付けていない並びで 7 つ目を選んだ
         mock: なし
         expected: 例外が出ず、`scrollLeft` が 0 のまま
+      - name: test_reveal_selected_tab_when_last
+        case: 正常
+        summary: 最後のタブは並びを右端まで動かして入れる
+        condition: '`attachTablistScroll` を付けた幅 320px の並びに 7 つのタブ、`scrollLeft` 0 で 7 つ目を選んだ後、描画のフレームを 1 回待つ'
+        mock: なし
+        expected: '`scrollLeft` が `scrollWidth - clientWidth` と 1px 以内で一致し、7 つ目のボタンの右端が並びの右端と 1px 以内で一致し、`end` が `hidden`'
   - name: attachTablistScroll
     title: 並びに端のボタンを付ける
     container: src/tabs/tabs.interact.ts
