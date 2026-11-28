@@ -76,6 +76,10 @@ docs:
     new: false
     change: ビルドが `legacy-marks.js` を書き換える記述を、`src/render/legacy-marks.ts` が無いときの扱いに合わせる
     status: todo
+  - page: docs/guide/コアコンセプト-文書を描く仕組み.md
+    new: false
+    change: 「前の書き方の引数は JSON に変換して読み取る。」を、前の書き方の引数を変換せず、記載の警告で JSON のオブジェクトと `mdmark upgrade` を案内する記述に変える
+    status: todo
 scope_out:
   - item: '`migrations/v0.11.0/legacy-marks.js`・`marker-json.mjs` の削除'
     reason: '`v0.11.0` より前の手元のバージョンから `mdmark upgrade` で上げる利用者の移行に要るため残す'
