@@ -765,6 +765,29 @@ function manyTabsHtml(attribute: string): string {
   return `<div class="mdmark-tabs"${attribute}>${panels}</div>`;
 }
 
+/** 並びが `mdmark-tablist-wrap` に包まれ、7 つ目のタブが並びの見える範囲に入っている */
+function expectRevealedInWrap(
+  root: HTMLElement,
+  lists: HTMLElement[],
+  index: number,
+): void {
+  const tablist = lists[index];
+  if (!tablist) {
+    throw new Error(`並びが無い: ${index}`);
+  }
+  expect(tablist.parentElement?.classList.contains("mdmark-tablist-wrap")).toBe(
+    true,
+  );
+  const list = tablist.getBoundingClientRect();
+  const tab = tabOf(
+    root,
+    index,
+    "第 7 章 とても長いタブ名",
+  ).getBoundingClientRect();
+  expect(tab.left).toBeGreaterThanOrEqual(list.left - 1);
+  expect(tab.right).toBeLessThanOrEqual(list.right + 1);
+}
+
 // はみ出す並びで選んだタブを見える範囲へ入れ、data-wrap のタブ群には付けない（正常系）
 test("test_attach_tabs_when_tablist_overflows", async () => {
   // 準備
@@ -783,20 +806,8 @@ test("test_attach_tabs_when_tablist_overflows", async () => {
   // 検証
   const lists = [...root.querySelectorAll<HTMLElement>('[role="tablist"]')];
   expect(lists).toHaveLength(3);
-  for (const index of [0, 1]) {
-    const tablist = lists[index];
-    expect(
-      tablist?.parentElement?.classList.contains("mdmark-tablist-wrap"),
-    ).toBe(true);
-    const list = tablist?.getBoundingClientRect();
-    const tab = tabOf(
-      root,
-      index,
-      "第 7 章 とても長いタブ名",
-    ).getBoundingClientRect();
-    expect(tab.left).toBeGreaterThanOrEqual((list?.left ?? 0) - 1);
-    expect(tab.right).toBeLessThanOrEqual((list?.right ?? 0) + 1);
-  }
+  expectRevealedInWrap(root, lists, 0);
+  expectRevealedInWrap(root, lists, 1);
   const wrapped = root.querySelectorAll(".mdmark-tabs")[2];
   expect(wrapped?.querySelector(".mdmark-tablist-wrap")).toBeNull();
   expect(wrapped?.querySelector(".mdmark-tablist-scroll")).toBeNull();
