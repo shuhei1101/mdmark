@@ -235,6 +235,7 @@ functions:
     description: |-
       見える範囲は、並びの `getBoundingClientRect()` の左右から、並びを包む要素の `mdmark-tablist-scroll` の `offsetWidth`（無ければ 0）を除いた範囲にする。
       ボタンの左端が範囲の左より左ならその差だけ `scrollLeft` を減らし、右端が範囲の右より右ならその差だけ増やす（動きは即座にし、`scrollIntoView` は使用しない）。
+      選んだタブが並びの最初のタブなら `scrollLeft` を 0、最後のタブなら `scrollWidth`（上限で止まる）にし、並びの余白を含めて端まで動かす（その側の端のボタンが `hidden` になり、端のタブに重ならない）。
       範囲に入っているときと、並びの `clientWidth` が 0（配置が無い）のときは何もしない
     args:
       - name: tablist
@@ -282,7 +283,7 @@ functions:
       並びの前後に `button.mdmark-tablist-scroll`（`type="button"`・`data-dir` が `start`・`end`・`aria-hidden="true"`・`tabindex="-1"`。中身は `iconSvg` の `chevron-left`・`chevron-right`）を配置し、並びと一緒に `div.mdmark-tablist-wrap` へ入れる。
       ボタンを押すと、並びをその側へ `clientWidth` の 8 割だけ `scrollBy` で動かす（`prefers-reduced-motion: reduce` のときは `behavior: "auto"`、それ以外は `"smooth"`）。選んだタブとフォーカスは変えない。
       並びの `scroll` と `ResizeObserver` で、`scrollLeft` が 1px 以下なら `start` を、残り（`scrollWidth - clientWidth - scrollLeft`）が 1px 以下なら `end` を `hidden` にする。
-      `ResizeObserver` は、並びの幅が 0 から変わったとき（取り付けた・開いた）に `revealSelectedTab` も呼ぶ
+      `ResizeObserver` は、並びの幅が 0 から変わったとき（取り付けた・開いた）に、ボタンを出し分けてから `revealSelectedTab` も呼び、もう一度出し分ける
     args:
       - name: tablist
         type: HTMLElement
