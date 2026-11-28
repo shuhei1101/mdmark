@@ -75,7 +75,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-28T09:10:20.413029+00:00'
   - process: モジュール構成設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-28T09:29:35.802549+00:00'
   - process: ドキュメント修正
     status: todo
     note: docs/guide/記載する-本文を部品で組む.mark.md・docs/guide/記法.mark.md のタブの説明、docs/guide/用語集.yaml の用語「折り返し」
