@@ -77,21 +77,100 @@ test("test_second", async () => {
   ).resolves.toBe("1px");
 });
 
-// タブが多く名前が長くても、並びが折り返して横スクロールが出ない（Many）
+/** タブのボタンの `offsetTop` の種類の数 */
+function tabRows(page: Page): Promise<number> {
+  return page
+    .locator("[role=tab]")
+    .evaluateAll(
+      (tabs) => new Set(tabs.map((tab) => (tab as HTMLElement).offsetTop)).size,
+    );
+}
+
+/** 端のボタンのうち `hidden` を持たないものの `data-dir` */
+function shownScrollButtons(page: Page): Promise<Array<string | null>> {
+  return page
+    .locator(".mdmark-tablist-scroll:not([hidden])")
+    .evaluateAll((buttons) =>
+      buttons.map((button) => button.getAttribute("data-dir")),
+    );
+}
+
+/** 名前のタブのボタンの左端と右端が、並びの見える範囲に入っているか */
+function tabInView(page: Page, name: string): Promise<boolean> {
+  return page.locator("[role=tablist]").evaluate((list, text) => {
+    const tab = [...list.querySelectorAll("[role=tab]")].find(
+      (candidate) => candidate.textContent === text,
+    );
+    if (!tab) {
+      return false;
+    }
+    const outer = list.getBoundingClientRect();
+    const rect = tab.getBoundingClientRect();
+    return rect.left >= outer.left - 1 && rect.right <= outer.right + 1;
+  }, name);
+}
+
+// タブが多く名前が長くても、並びは折り返さず並びの中で横にスクロールし、右端の › だけが出る（Many）
 test("test_many", async () => {
   // 準備・実行
   const page = await holder.openStory("parts-tabs--many");
   // 検証
   await expect(page.locator("[role=tab]").count()).resolves.toBe(7);
-  const tops = await page
-    .locator("[role=tab]")
-    .evaluateAll((tabs) => tabs.map((tab) => tab.getBoundingClientRect().top));
-  expect(new Set(tops).size).toBeGreaterThan(1);
+  await expect(tabRows(page)).resolves.toBe(1);
   await expect(
     page
       .locator("[role=tablist]")
-      .evaluate((list) => getComputedStyle(list).flexWrap),
-  ).resolves.toBe("wrap");
+      .evaluate((list) => [
+        getComputedStyle(list).flexWrap,
+        list.scrollWidth > list.clientWidth,
+        list.scrollLeft,
+      ]),
+  ).resolves.toEqual(["nowrap", true, 0]);
+  await expect.poll(() => shownScrollButtons(page)).toEqual(["end"]);
+  await expect(tabInView(page, "macOS")).resolves.toBe(true);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 右端のタブを選ぶと、並びを横にスクロールしてそのタブの全体を見える範囲に入れ、左端の ‹ だけが出る（ManyLast）
+test("test_many_last", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-tabs--many-last");
+  // 検証
+  await expect(tabRows(page)).resolves.toBe(1);
+  await expect(
+    page.locator("[role=tab][aria-selected=true]").textContent(),
+  ).resolves.toBe("iOS");
+  await expect.poll(() => tabInView(page, "iOS")).toBe(true);
+  await expect.poll(() => shownScrollButtons(page)).toEqual(["start"]);
+  await expect(pageOverflows(page)).resolves.toBe(false);
+});
+
+// 折り返す指定の多いタブは、並びを折り返して全てのタブを見せ、長いタブ名はボタンの中で折り返し、端のボタンを出さない（ManyWrap）
+test("test_many_wrap", async () => {
+  // 準備・実行
+  const page = await holder.openStory("parts-tabs--many-wrap");
+  // 検証
+  await expect(page.locator(".mdmark-tabs[data-wrap]").count()).resolves.toBe(
+    1,
+  );
+  await expect(tabRows(page)).resolves.toBeGreaterThan(1);
+  await expect(
+    page
+      .locator("[role=tablist]")
+      .evaluate((list) => [
+        getComputedStyle(list).flexWrap,
+        list.scrollWidth <= list.clientWidth,
+      ]),
+  ).resolves.toEqual(["wrap", true]);
+  await expect(page.locator(".mdmark-tablist-wrap").count()).resolves.toBe(0);
+  await expect(page.locator(".mdmark-tablist-scroll").count()).resolves.toBe(0);
+  for (const name of [
+    "macOS",
+    "とても長いタブ名で並びの幅を超えるもの",
+    "iOS",
+  ]) {
+    await expect(tabInView(page, name)).resolves.toBe(true);
+  }
   await expect(pageOverflows(page)).resolves.toBe(false);
 });
 
@@ -180,11 +259,11 @@ test("test_nested", async () => {
   await expect(
     page.getByText("WSL の中身の見本です。").isVisible(),
   ).resolves.toBe(false);
-  // 内側のタブは、外側の中身の上と間を空ける
+  // 内側のタブは、外側の中身の上と間を空ける（外側の並びは端のボタンの包みの中にある）
   const gap = await lists.nth(1).evaluate((list) => {
     const panel = list.closest(".mdmark-tab-panel");
     const outerList = panel?.parentElement?.querySelector(
-      ":scope > [role=tablist]",
+      ":scope > [role=tablist], :scope > .mdmark-tablist-wrap > [role=tablist]",
     );
     return outerList
       ? list.getBoundingClientRect().top -

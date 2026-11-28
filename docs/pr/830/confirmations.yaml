@@ -1,0 +1,7 @@
+confirmations:
+  - topic: タブ名の並びが横幅に入りきらないときの、残りのタブへ動かすボタンの見た目
+    decision: スクロールバーを出さず、残りがある側の端に ‹・› のボタンを出す（推奨案 A）。あわせて、タブのマーカーの指定でそのタブ群だけ折り返すオプションを追加する（既定は横スクロール）
+    decided_by: thumbs_up
+    approver: shuhei1101
+    commit:
+    thread: https://github.com/shuhei1101/mdmark/pull/830#discussion_r4726214787

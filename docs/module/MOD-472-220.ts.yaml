@@ -44,7 +44,12 @@ functions:
 
       読者が押すかキーで選ぶときは、選ぶ前に押したタブのボタンの `getBoundingClientRect().top` を測り、選んで同じ組を統一した後にもう一度測る。
       `findScrollContainer` の要素（画面全体なら `window.scrollBy`）を差の分だけスクロールする（文書が縮んで戻しきれない分はブラウザがスクロール位置の上限で止める）。
-      付けたときの選択と `revealTabTarget` の選択ではスクロールしない
+      付けたときの選択と `revealTabTarget` の選択ではスクロールしない。
+
+      `data-wrap` を持たない `mdmark-tabs` は、並びを配置した後に `attachTablistScroll` で並びを包んで端のボタンを付ける。
+      タブを選ぶたびに（押す・キー・付けたときの選択・`tabSelectors` の統一・`tabPanelSelectors` の選択）、中身を出し分けた後に `revealSelectedTab` で選んだタブのボタンを並びの見える範囲へ入れる。
+      押したタブのボタンの位置を戻すスクロールは、並びを動かした後に測る。
+      `data-wrap` を持つ `mdmark-tabs` には、どちらも付けない
     args:
       - name: root
         type: HTMLElement
@@ -56,7 +61,7 @@ functions:
         description: URL の `#ID` の指すタブを選ぶか（`followHash`。既定 `true`）
     returns:
       type: () => void
-      description: タブの並びを取り除き、`tabSelectors` と `tabPanelSelectors` から除外し、中身を `render` の構造に戻す関数
+      description: タブの並びと `attachTablistScroll` が付けた包み・端のボタンを取り除き、`tabSelectors` と `tabPanelSelectors` から除外し、中身を `render` の構造に戻す関数
     side_effects: タブの DOM を書き換え、イベントを付ける。読者がタブを選ぶとスクロールする場所のスクロール位置を書き換える。`data-group` を持つときは localStorage を読み込みと保存し、`root` の外の同じ `data-group` のタブも切り替える
     callees:
       - '#functions[loadTabChoice]'
@@ -65,6 +70,8 @@ functions:
       - '#functions[revealTabTarget]'
       - 'MOD-583-17#functions[rowIdFromHash]'
       - MOD-472-234#functions[findScrollContainer]
+      - '#functions[attachTablistScroll]'
+      - '#functions[revealSelectedTab]'
     unit_tests:
       - name: test_attach_tabs
         case: 正常
@@ -132,6 +139,12 @@ functions:
         condition: '`data-group="len"` の `長文`・`短文` のタブを 2 つ、間と後ろに高さ 1200px の要素を挟んで画面全体で並べ（アンカリングは止めない）、2 つ目のタブのボタンが画面の上端から 300px の位置までスクロールしてから 2 つ目の `短文` を押し、続けて `長文` を押す。それぞれ描画のフレームを 2 回待ってから測る'
         mock: なし
         expected: どちらの後も、押したボタンの `getBoundingClientRect().top` の差が押す前と 1px 以内
+      - name: test_attach_tabs_when_tablist_overflows
+        case: 正常
+        summary: はみ出す並びで選んだタブを見える範囲へ入れ、data-wrap のタブ群には付けない
+        condition: 幅 320px の `root` に、7 つのタブ名の幅の合計が 320px を超える `data-group="many"` のタブを 2 つと、`data-wrap` を持つ同じタブを 1 つ並べて付け、1 つ目のタブ群の 1 つ目のタブにフォーカスして End を押す
+        mock: localStorage を空にしておく
+        expected: 1 つ目と 2 つ目の並びが `div.mdmark-tablist-wrap` に包まれ、7 つ目のボタンの左端と右端がそれぞれの並びの見える範囲に入る。3 つ目のタブ群は `mdmark-tablist-wrap` と `mdmark-tablist-scroll` を持たず、並びの `scrollLeft` が 0。`scrollY` は押す前と同じ
   - name: loadTabChoice
     title: 残したタブ名を読み込む
     container: src/tabs/tabs.interact.ts
@@ -213,6 +226,98 @@ functions:
         mock: なし
         expected: 例外が出ず、タブの選択が変わらない
     status: planned
+  - name: revealSelectedTab
+    title: 選んだタブを並びの見える範囲へ入れる
+    container: src/tabs/tabs.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 並びの中の `aria-selected="true"` のボタンの左端か右端が見える範囲の外にあれば、並びの `scrollLeft` だけを動かしてボタンの全体を入れる
+    description: |-
+      見える範囲は、並びの `getBoundingClientRect()` の左右から、並びを包む要素の `mdmark-tablist-scroll` の `offsetWidth`（無ければ 0）を除いた範囲にする。
+      ボタンの左端が範囲の左より左ならその差だけ `scrollLeft` を減らし、右端が範囲の右より右ならその差だけ増やす（動きは即座にし、`scrollIntoView` は使用しない）。
+      選んだタブが並びの最初のタブなら `scrollLeft` を 0、最後のタブなら `scrollWidth`（上限で止まる）にし、並びの余白を含めて端まで動かす（その側の端のボタンが `hidden` になり、端のタブに重ならない）。
+      範囲に入っているときと、並びの `clientWidth` が 0（配置が無い）のときは何もしない
+    args:
+      - name: tablist
+        type: HTMLElement
+        required: true
+        description: タブの並び（`role="tablist"`）
+    returns:
+      type: void
+      description: なし
+    side_effects: 並びの `scrollLeft` を書き換える。ページと祖先のスクロール位置は動かさない
+    refs:
+      - IF-472-35#constraints[タブの操作]
+    unit_tests:
+      - name: test_reveal_selected_tab
+        case: 正常
+        summary: 右の外にある選んだタブを入れる
+        condition: '`attachTablistScroll` を付けた幅 320px の並びに 7 つのタブ、`scrollLeft` 0 で、右端が並びの見える範囲の外にある 5 つ目を選んだ'
+        mock: なし
+        expected: 5 つ目のボタンの右端が並びの右端から `end` のボタンの幅を除いた位置と 1px 以内で一致し、`scrollY` は変わらない
+      - name: test_reveal_selected_tab_when_visible
+        case: 正常
+        summary: 見える範囲にあれば動かさない
+        condition: 同じ並びで 2 つ目を選んだ
+        mock: なし
+        expected: '`scrollLeft` が 0 のまま'
+      - name: test_reveal_selected_tab_when_not_laid_out
+        case: 正常
+        summary: 配置の無い並びは動かさない
+        condition: document に取り付けていない並びで 7 つ目を選んだ
+        mock: なし
+        expected: 例外が出ず、`scrollLeft` が 0 のまま
+      - name: test_reveal_selected_tab_when_last
+        case: 正常
+        summary: 最後のタブは並びを右端まで動かして入れる
+        condition: '`attachTablistScroll` を付けた幅 320px の並びに 7 つのタブ、`scrollLeft` 0 で 7 つ目を選んだ後、描画のフレームを 1 回待つ'
+        mock: なし
+        expected: '`scrollLeft` が `scrollWidth - clientWidth` と 1px 以内で一致し、7 つ目のボタンの右端が並びの右端と 1px 以内で一致し、`end` が `hidden`'
+  - name: attachTablistScroll
+    title: 並びに端のボタンを付ける
+    container: src/tabs/tabs.interact.ts
+    kind: 関数
+    scope: internal
+    summary: 並びを `div.mdmark-tablist-wrap` で包み、残りのタブがある側の端にだけ、押すと並びを動かすボタンを出す
+    description: |-
+      並びの前後に `button.mdmark-tablist-scroll`（`type="button"`・`data-dir` が `start`・`end`・`aria-hidden="true"`・`tabindex="-1"`。中身は `iconSvg` の `chevron-left`・`chevron-right`）を配置し、並びと一緒に `div.mdmark-tablist-wrap` へ入れる。
+      ボタンを押すと、並びをその側へ `clientWidth` の 8 割だけ `scrollBy` で動かす（`prefers-reduced-motion: reduce` のときは `behavior: "auto"`、それ以外は `"smooth"`）。選んだタブとフォーカスは変えない。
+      並びの `scroll` と `ResizeObserver` で、`scrollLeft` が 1px 以下なら `start` を、残り（`scrollWidth - clientWidth - scrollLeft`）が 1px 以下なら `end` を `hidden` にする。
+      `ResizeObserver` は、並びの幅が 0 から変わったとき（取り付けた・開いた）に、ボタンを出し分けてから `revealSelectedTab` も呼び、もう一度出し分ける
+    args:
+      - name: tablist
+        type: HTMLElement
+        required: true
+        description: タブの並び（`role="tablist"`）
+    returns:
+      type: () => void
+      description: '`ResizeObserver` を止めてイベントを解除し、ボタンと包みを取り除いて並びを元の場所に戻す関数'
+    side_effects: 並びの要素を包み、ボタンとイベントと `ResizeObserver` を付ける
+    callees:
+      - '#functions[revealSelectedTab]'
+      - MOD-472-180#functions[iconSvg]
+    refs:
+      - IF-472-35#constraints[タブの操作]
+      - CMP-472-22#
+    unit_tests:
+      - name: test_attach_tablist_scroll
+        case: 正常
+        summary: 残りがある側のボタンだけを出し、押すと並びを動かす
+        condition: 幅 320px の並びに 7 つのタブ、付けた後に `data-dir="end"` のボタンを押す
+        mock: '`matchMedia` を `prefers-reduced-motion: reduce` が合うものに差し替える'
+        expected: 付けた直後は `end` だけが `hidden` を持たない。押した後は `scrollLeft` が `clientWidth` の 8 割と 1px 以内で一致し、`start` も `hidden` を持たず、`aria-selected` と `document.activeElement` は押す前と同じ。どちらのボタンも `aria-hidden="true"`・`tabindex="-1"`
+      - name: test_attach_tablist_scroll_when_laid_out_later
+        case: 正常
+        summary: 幅が 0 から変わったときに選んだタブを入れる
+        condition: document に取り付けていない、幅 320px の 7 つのタブの並びで 7 つ目を選んで付け、その後に document へ取り付けて描画のフレームを 2 回待つ
+        mock: なし
+        expected: 7 つ目のボタンの左端と右端が並びの見える範囲に入り、`end` が `hidden`、`start` が `hidden` を持たない
+      - name: test_attach_tablist_scroll_when_detached
+        case: 正常
+        summary: 返った関数で並びを元に戻す
+        condition: 付けた後に返った関数を呼ぶ
+        mock: なし
+        expected: '`mdmark-tablist-wrap` と `mdmark-tablist-scroll` が無く、並びが元の親の同じ位置にある'
 lead: 'タブの切り替えと、URL のアンカーが指すタブの選択を受け持ち、タブの操作を変えるときに参照する。'
 tags:
   - name: topic:タブ

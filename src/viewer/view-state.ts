@@ -28,8 +28,9 @@ export type ViewState = {
 /** `data-group` を持たないタブ群 */
 const PLAIN_TABS = ".mdmark-tabs:not([data-group])";
 
-/** タブ群の直下のタブのボタン */
-const TAB_BUTTONS = ":scope > .mdmark-tablist > .mdmark-tab";
+/** タブ群の直下のタブのボタン（並びが横にスクロールするタブ群は、並びを `mdmark-tablist-wrap` で包む） */
+const TAB_BUTTONS =
+  ":scope > .mdmark-tablist > .mdmark-tab, :scope > .mdmark-tablist-wrap > .mdmark-tablist > .mdmark-tab";
 
 /** 合わせ直しを止める、読む人のスクロールの操作 */
 const USER_SCROLL_EVENTS = [

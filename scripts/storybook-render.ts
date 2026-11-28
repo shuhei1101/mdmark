@@ -256,13 +256,14 @@ const REPO_ROOT = resolve(import.meta.dirname, "..");
 // 描画のインターフェースの経路: 本文の CSS と、部品の HTML の前置き
 const CSS_PATH = "/render/index.css";
 const PART_PATH_PATTERN = /^\/render\/([^/]+)$/;
-// ストーリーが読み込む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、表のメニューのボタンの位置を合わせる処理、ファイルツリーの注釈の列を統一する処理、動画のリサイズハンドル）
+// ストーリーが読み込む、操作を付ける処理の経路と、その元のソース（図の拡大・縮小、表の見出し行と集計の行を留める処理、表のメニューのボタンの位置を合わせる処理、ファイルツリーの注釈の列を統一する処理、動画のリサイズハンドル、タブ名の並びの端のボタン）
 const SCRIPT_SOURCES: Record<string, string> = {
   "/render/diagram.js": "src/diagram/diagram.interact.ts",
   "/render/sticky.js": "src/table/table-sticky.interact.ts",
   "/render/tables.js": "src/table/table.interact.ts",
   "/render/trees.js": "src/tree/tree.interact.ts",
   "/render/media-resize.js": "src/media/media-resize.interact.ts",
+  "/render/tabs.js": "src/tabs/tabs.interact.ts",
 };
 
 /** mermaid の図の見本の SVG のフォルダ（`npm run fixtures:mermaid` が記載する） */
@@ -2611,6 +2612,7 @@ const PART_RENDERERS: Record<string, (args: PartArgs) => string> = {
       ),
       selected: args.selected as number | undefined,
       group: args.group as string | undefined,
+      wrap: args.wrap === true,
       collapse: args.collapse as "none" | "closed" | "open" | undefined,
       title: args.title as string | undefined,
     });
@@ -3156,7 +3158,7 @@ function bundledScript(options: {
   return code;
 }
 
-/** `GET /render/index.css` に `src/index.css` を、`GET /render/diagram.js`・`GET /render/sticky.js`・`GET /render/trees.js`・`GET /render/media-resize.js` に操作の処理をまとめたものを、`GET /render/{部品の id}` に部品の HTML を返却する HTTP サーバーを作る（待ち受けは呼び出し側） */
+/** `GET /render/index.css` に `src/index.css` を、`GET /render/diagram.js`・`GET /render/sticky.js`・`GET /render/trees.js`・`GET /render/media-resize.js`・`GET /render/tabs.js` に操作の処理をまとめたものを、`GET /render/{部品の id}` に部品の HTML を返却する HTTP サーバーを作る（待ち受けは呼び出し側） */
 export function createRenderServer(options: {
   /** 作業ツリーの場所（`src/index.css` を読み込む） */
   root: string;

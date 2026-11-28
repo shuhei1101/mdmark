@@ -17,7 +17,7 @@ function withoutLinks(html: string): string {
   return html.replace(/<\/?a\b[^>]*>/gi, "");
 }
 
-/** タブを描く。`group` を指定すると `data-group` に写す。`selected` を指定するとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、折り畳みに入れる */
+/** タブを描く。`group` を指定すると `data-group` に写し、`wrap` が真なら `data-wrap` を付ける。`selected` を指定するとタブの並びを付け、選んだもの以外の中身を `hidden` にする。`collapse` が `closed`・`open` なら、折り畳みに入れる */
 export function renderTabs(options: {
   /** タブの id の頭 */
   id: string;
@@ -29,6 +29,8 @@ export function renderTabs(options: {
   selected?: number;
   /** タブの組の名前 */
   group?: string;
+  /** タブ名の並びを折り返すか（既定 `false`） */
+  wrap?: boolean;
   /** 折り畳みに入れるかと既定の開閉（既定 `none`） */
   collapse?: "none" | "closed" | "open";
   /** 折り畳みの見出し（既定は `タブ（{タブ名を・で並べたもの}）`） */
@@ -40,6 +42,7 @@ export function renderTabs(options: {
     panels,
     selected,
     group,
+    wrap = false,
     collapse = "none",
     title,
   } = options;
@@ -62,7 +65,8 @@ export function renderTabs(options: {
     .join("");
   const groupAttribute =
     group === undefined ? "" : ` data-group="${escapeHtml(group)}"`;
-  const tabs = `<div class="mdmark-tabs"${groupAttribute}>${tablist}${body}</div>`;
+  const wrapAttribute = wrap ? " data-wrap" : "";
+  const tabs = `<div class="mdmark-tabs"${groupAttribute}${wrapAttribute}>${tablist}${body}</div>`;
   if (collapse === "none") {
     return tabs;
   }

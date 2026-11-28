@@ -5260,3 +5260,65 @@ test("test_normal_when_glossary_alias_row_missing", async () => {
   expect(warnings[0]).toContain("glossary-terms");
   expect(html).toContain("後の段落。");
 });
+
+// wrap が true のタブの範囲だけに data-wrap を付け、真偽値でない wrap に記載の警告を配置して付けずに描く（正常系（タブの並びの折り返しの指定））
+test("test_normal_when_tabs_wrap_specified", async () => {
+  // 準備
+  const render = await loadRender();
+  const markdown = [
+    '<!-- tabs: {"wrap": true} -->',
+    '<!-- tabs: {"wrap": false} -->',
+    "<!-- tabs -->",
+    '<!-- tabs: {"wrap": "yes"} -->',
+  ]
+    .map((open) =>
+      [
+        open,
+        "",
+        "### macOS",
+        "",
+        "macOS の手順",
+        "",
+        "### Windows",
+        "",
+        "Windows の手順",
+        "",
+        "<!-- /tabs -->",
+        "",
+      ].join("\n"),
+    )
+    .join("\n");
+  // 実行
+  const html = render(markdown);
+  // 検証
+  const opens = html.match(/<div class="mdmark-tabs"[^>]*>/g);
+  expect(opens).toEqual([
+    '<div class="mdmark-tabs" data-wrap>',
+    '<div class="mdmark-tabs">',
+    '<div class="mdmark-tabs">',
+    '<div class="mdmark-tabs">',
+  ]);
+  expect(
+    html.match(/<div class="mdmark-syntax-warning" role="note">/g),
+  ).toHaveLength(1);
+  const starts = [...html.matchAll(/<div class="mdmark-tabs"/g)].map(
+    (match) => match.index,
+  );
+  const warning = html.indexOf('<div class="mdmark-syntax-warning"');
+  expect(warning).toBeGreaterThan(starts[2] ?? Infinity);
+  expect(warning).toBeLessThan(starts[3] ?? -1);
+  const warnings = warningBodies(html);
+  expect(warnings[0]).toContain("wrap");
+  expect(warnings[0]).toContain("true");
+  expect(warnings[0]).toContain("false");
+  const groups = html.split('<div class="mdmark-tabs"').slice(1);
+  expect(groups).toHaveLength(4);
+  for (const group of groups) {
+    expect(group.match(/class="mdmark-tab-panel"/g)).toHaveLength(2);
+    expect(
+      [...group.matchAll(/class="mdmark-tab-title"[^>]*>([^<]*)</g)]
+        .slice(0, 2)
+        .map((match) => match[1]),
+    ).toEqual(["macOS", "Windows"]);
+  }
+});

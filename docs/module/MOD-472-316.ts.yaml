@@ -12,14 +12,15 @@ functions:
     summary: '部品設計『タブ』の HTML を返却する'
     description: |-
       `group` を指定すると `mdmark-tabs` に `data-group` を付ける。
+      `wrap` が `true` なら `mdmark-tabs` に値を持たない `data-wrap` を付ける。
       `selected` を指定するとタブの並びを付け、選んだもの以外の中身を `hidden` にする。
       `collapse` が `closed`・`open` なら、`mdmark-tabs` を `renderCollapsible` の折り畳み（見出しは `title` か `タブ（{タブ名を・で並べたもの}）`）に入れる。
       タブ名は行内の HTML（エスケープ済み）としてそのまま配置し、折り畳みの見出しの既定にはタグを除いた文字を使用する
     args:
       - name: options
-        type: '{ id: string; titles: string[]; panels: string[]; selected?: number; group?: string; collapse?: "none" | "closed" | "open"; title?: string }'
+        type: '{ id: string; titles: string[]; panels: string[]; selected?: number; group?: string; wrap?: boolean; collapse?: "none" | "closed" | "open"; title?: string }'
         required: true
-        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を指定できる）、選んだタブ、組の名前、折り畳み（既定 `none`）、折り畳みの見出し
+        description: id の頭、タブ名、タブごとの中身の HTML（`SLOT_MARKER` を指定できる）、選んだタブ、組の名前、並びを折り返すか（既定 `false`）、折り畳み（既定 `none`）、折り畳みの見出し
     returns:
       type: string
       description: '`<div class="mdmark-tabs">` で始まる HTML'
@@ -54,6 +55,12 @@ functions:
         condition: '`titles` が `["<strong>案 A</strong> SVG のまま","案 B"]`、`selected` が 0、`collapse` が `closed`'
         mock: なし
         expected: 1 つ目のタブのボタンとタブ名の `p` が `<strong>案 A</strong>` を持ち、折り畳みの見出しが `タブ（案 A SVG のまま・案 B）`
+      - name: test_render_tabs_when_wrap
+        case: 正常
+        summary: wrap を data-wrap にする
+        condition: '`wrap: true` と `wrap: false` の 2 つ'
+        mock: なし
+        expected: 1 つ目が `<div class="mdmark-tabs" data-wrap>` で始まり、2 つ目は `data-wrap` を持たない
     callees:
       - 'MOD-472-325#functions[renderCollapsible]'
 lead: 'タブの部品が返却する HTML を受け持ち、タブの外観や構造を変えるときに参照する。'

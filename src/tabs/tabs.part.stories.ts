@@ -72,3 +72,24 @@ export const StrongTitle: Story = {
     selected: 0,
   },
 };
+
+export const ManyLast: Story = {
+  name: "ManyLast",
+  parameters: { server: { id: "tabs" } },
+  args: {
+    titles:
+      '["macOS","Windows","Linux","FreeBSD","とても長いタブ名で並びの幅を超えるもの","Android","iOS"]',
+    selected: 6,
+  },
+};
+
+export const ManyWrap: Story = {
+  name: "ManyWrap",
+  parameters: { server: { id: "tabs" } },
+  args: {
+    titles:
+      '["macOS","Windows","Linux","FreeBSD","とても長いタブ名で並びの幅を超えるもの","Android","iOS"]',
+    selected: 0,
+    wrap: true,
+  },
+};

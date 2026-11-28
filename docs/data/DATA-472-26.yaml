@@ -14,5 +14,10 @@ fields:
   type: object
   description: 共通のオブジェクトの折り畳み
   example: '{"open": true}'
+- key: wrap
+  title: タブ名の並びの折り返し
+  type: bool
+  description: タブ名の並びが横幅に入りきらないときに、横にスクロールさせず折り返して並べる。省くと `false`（横にスクロールする）。真偽値でない値は記載の警告にし、省いたときと同じに描く
+  example: 'true'
 refs:
 - ER-477-3#tables[tabs]

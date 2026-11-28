@@ -17,6 +17,7 @@ import { renderTabs } from "./tabs.part.ts";
 /** タブのマーカーの設定から `group` と折り畳みの指定を読み込む */
 export function readTabsOptions(mark: Mark): {
   group?: string;
+  wrap: boolean;
   collapse: CollapseMode;
   title?: string | undefined;
 } {
@@ -25,6 +26,7 @@ export function readTabsOptions(mark: Mark): {
     typeof mark.options.group === "string" ? mark.options.group : undefined;
   return {
     ...(group === undefined ? {} : { group }),
+    wrap: mark.options.wrap === true,
     collapse,
     ...(title === undefined ? {} : { title }),
   };

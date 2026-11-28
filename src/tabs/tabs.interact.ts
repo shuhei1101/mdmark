@@ -1,3 +1,4 @@
+import { iconSvg } from "../shared/icons.part.ts";
 import { rowIdFromHash } from "../shared/row-hash.logic.ts";
 import { findScrollContainer } from "../shared/scroller.interact.ts";
 
@@ -93,6 +94,9 @@ function attachTabGroup(tabs: HTMLElement): () => void {
   });
   tablist.append(...buttons);
   tabs.prepend(tablist);
+  // 折り返す指定のタブ群は並びが横にスクロールしないため、端のボタンも見える範囲へ入れる処理も付けない
+  const scrollable = !tabs.hasAttribute("data-wrap");
+  const detachScroll = scrollable ? attachTablistScroll(tablist) : undefined;
   const titles = buttons.map((button) => button.textContent ?? "");
   const group = tabs.dataset.group;
 
@@ -103,6 +107,9 @@ function attachTabGroup(tabs: HTMLElement): () => void {
       button.tabIndex = index === selected ? 0 : -1;
       panels[index]?.toggleAttribute("hidden", index !== selected);
     });
+    if (scrollable) {
+      revealSelectedTab(tablist);
+    }
     if (focus) {
       buttons[selected]?.focus();
     }
@@ -188,6 +195,7 @@ function attachTabGroup(tabs: HTMLElement): () => void {
   return () => {
     tabSelectors.delete(tabs);
     tabPanelSelectors.delete(tabs);
+    detachScroll?.();
     tablist.remove();
     for (const panel of panels) {
       panel.removeAttribute("role");
@@ -195,6 +203,96 @@ function attachTabGroup(tabs: HTMLElement): () => void {
       panel.removeAttribute("aria-labelledby");
       panel.removeAttribute("hidden");
     }
+  };
+}
+
+/** 端のボタンの幅（ボタンが無いか `hidden` なら 0） */
+function scrollButtonWidth(tablist: HTMLElement, dir: "start" | "end"): number {
+  return (
+    tablist.parentElement?.querySelector<HTMLElement>(
+      `:scope > .mdmark-tablist-scroll[data-dir="${dir}"]`,
+    )?.offsetWidth ?? 0
+  );
+}
+
+/** 並びの選んだタブのボタンが見える範囲（左右から端のボタンの幅を除いた範囲）の外にあれば、並びの横のスクロール位置だけを動かして全体を入れる（最初・最後のタブは並びの端まで動かす）。配置が無い（`clientWidth` が 0）ときは何もしない */
+export function revealSelectedTab(tablist: HTMLElement): void {
+  const selected = tablist.querySelector<HTMLElement>(
+    ':scope > [role="tab"][aria-selected="true"]',
+  );
+  if (!selected || tablist.clientWidth === 0) {
+    return;
+  }
+  const list = tablist.getBoundingClientRect();
+  const tab = selected.getBoundingClientRect();
+  const left = list.left + scrollButtonWidth(tablist, "start");
+  const right = list.right - scrollButtonWidth(tablist, "end");
+  const tabs = tablist.querySelectorAll(':scope > [role="tab"]');
+  if (tab.left < left) {
+    // 最初のタブは並びの端（余白を含む）まで動かし、その側のボタンを消す
+    tablist.scrollLeft =
+      selected === tabs[0] ? 0 : tablist.scrollLeft - (left - tab.left);
+  } else if (tab.right > right) {
+    // 最後のタブは並びの端（余白を含む）まで動かし、その側のボタンを消す
+    tablist.scrollLeft =
+      selected === tabs[tabs.length - 1]
+        ? tablist.scrollWidth
+        : tablist.scrollLeft + (tab.right - right);
+  }
+}
+
+/** 並びを `div.mdmark-tablist-wrap` で包み、残りのタブがある側の端にだけ、押すと並びを見える幅の 8 割だけ動かすボタンを出す。外す関数を返却する */
+export function attachTablistScroll(tablist: HTMLElement): () => void {
+  const wrap = document.createElement("div");
+  wrap.className = "mdmark-tablist-wrap";
+  tablist.before(wrap);
+  const [start, end] = (["start", "end"] as const).map((dir) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "mdmark-tablist-scroll";
+    button.dataset.dir = dir;
+    button.tabIndex = -1;
+    button.setAttribute("aria-hidden", "true");
+    button.innerHTML = iconSvg(
+      dir === "start" ? "chevron-left" : "chevron-right",
+    );
+    // 選んだタブとフォーカスは変えず、並びだけを動かす
+    button.addEventListener("click", () => {
+      const step = tablist.clientWidth * 0.8;
+      tablist.scrollBy({
+        left: dir === "start" ? -step : step,
+        behavior: matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? "auto"
+          : "smooth",
+      });
+    });
+    return button;
+  }) as [HTMLButtonElement, HTMLButtonElement];
+  wrap.append(start, tablist, end);
+  /** 残りのタブがある側のボタンだけを出す */
+  const update = (): void => {
+    start.hidden = tablist.scrollLeft <= 1;
+    end.hidden =
+      tablist.scrollWidth - tablist.clientWidth - tablist.scrollLeft <= 1;
+  };
+  let width = tablist.clientWidth;
+  // 並びの見える幅が 0 から変わったとき（取り付けた・開いた）に、選んだタブを入れる
+  const observer = new ResizeObserver(() => {
+    const before = width;
+    width = tablist.clientWidth;
+    update();
+    if (before === 0 && width > 0) {
+      revealSelectedTab(tablist);
+      update();
+    }
+  });
+  observer.observe(tablist);
+  tablist.addEventListener("scroll", update, { passive: true });
+  update();
+  return () => {
+    observer.disconnect();
+    tablist.removeEventListener("scroll", update);
+    wrap.replaceWith(tablist);
   };
 }
 

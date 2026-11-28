@@ -11802,6 +11802,122 @@ flows:
     test: test_normal_when_rendered_before_attached
     refs:
       - SC-472-73#scenarios[正常シナリオ（document に取り付ける前に描いた表のつまみ）]
+  - name: 正常系（タブ名の並びがはみ出す）
+    summary: タブ名の並びを折り返さず並びの中で横にスクロールさせ、URL の ID・同じ組の切り替え・キーで選んだタブを並びの見える範囲へ入れ、縦のスクロール位置は動かさない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+        notes: '`el` の幅は 320px'
+      - name: 並びがはみ出すタブを持つ Markdown
+        description: '`<!-- tabs: {"group": "many"} -->` 〜 `<!-- /tabs -->` で `### 第 1 章` から `### 第 7 章` までの 7 つの見出しを囲んだ範囲を 2 つ並べた文書'
+        notes: 1 つ目の `第 7 章` の中身は `#### 第 7 章の注意` と段落。7 つのタブ名の幅の合計は `el` の幅を超える
+      - name: URL の ID
+        description: '`mount` の前に `location.hash` を `#第-7-章の注意` にする'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 折り返さない 2 つの tablist を描き、1 つ目の第 7 章を選んで並びの見える範囲へ入れ、見出しへ移る
+        P->>M: 1 つ目の第 7 章にフォーカスして Home を押す
+        M->>P: 1 つ目を第 1 章にして並びを動かし、同じ組の 2 つ目も第 1 章にする
+        P->>M: 1 つ目の第 1 章にフォーカスして End を押す
+        M->>P: 1 つ目と 2 つ目を第 7 章にして、それぞれの並びを動かす
+      ```
+
+      <!-- /map -->
+    expected:
+      - 各 `role="tablist"` の中のタブのボタンの `offsetTop` が全て同じで、並びの `scrollWidth` が `clientWidth` より大きく、`el` の `scrollWidth` は `clientWidth` を超えない
+      - 描いた後、1 つ目の `第 7 章` の `aria-selected` が `true` で、そのボタンの左端と右端が 1 つ目の並びの見える範囲（並びの `getBoundingClientRect` の左右の内側）に入っている
+      - 描いた後、2 つ目のタブ群は URL の ID では切り替わらず `第 1 章` を選び、並びの `scrollLeft` が 0
+      - '`Home` を押した後、1 つ目の `第 1 章` のボタンが 1 つ目の並びの見える範囲に入っている'
+      - '`End` を押した後、1 つ目と 2 つ目の `第 7 章` の `aria-selected` が `true` で、それぞれのボタンがそれぞれの並びの見える範囲に入っている'
+      - '`Home`・`End` を押した前後で、押したタブのボタンの画面の上端からの位置の差が 1px 以内'
+      - 描いた後、1 つ目の並びは `data-dir="start"` の `mdmark-tablist-scroll` だけが `hidden` を持たず、2 つ目の並びは `data-dir="end"` のボタンだけが `hidden` を持たない。どの `mdmark-tablist-scroll` も `aria-hidden="true"`・`tabindex="-1"`、幅・高さが 24px 以上
+      - 2 つ目の並びの `data-dir="end"` のボタンを押すと、並びの `scrollLeft` が増え、`data-dir="start"` のボタンが `hidden` を持たなくなり、選んだタブとフォーカスは変わらない
+    test: test_normal_when_tablist_overflows
+    refs:
+      - SC-472-23#scenarios[正常シナリオ（タブ名の並びが横幅に入りきらない）]
+      - '#constraints[タブの操作]'
+      - '#constraints[URL の ID でタブの中へ移る]'
+  - name: 正常系（配置の無い時点で描いたタブ名の並び）
+    summary: document に取り付ける前の要素と閉じた折りたたみの中で選んだタブを、取り付けた・開いたときに並びの見える範囲へ入れる
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+        notes: '`el` は `document.createElement("div")` で作り、幅を 320px にして document に取り付けずに `mount` を呼ぶ。描いた後に `el` を document に取り付け、その後に閉じた折りたたみを開く'
+      - name: 並びがはみ出すタブを持つ Markdown
+        description: '`<!-- tabs: {"group": "many"} -->` で `### 第 1 章` から `### 第 7 章` までの 7 つの見出しを囲んだ範囲と、同じ 7 つの見出しを `<!-- tabs: {"group": "many", "collapse": {"open": false}} -->` で囲んだ範囲を並べた文書'
+        notes: 7 つのタブ名の幅の合計は `el` の幅を超える
+      - name: 残したタブ名
+        description: '`mount` の前に localStorage の `mdmark-tabs:many` を `第 7 章` にする'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })（el は document の外）
+        M->>P: 残した第 7 章を選んだ 2 つの tablist を描き、並びは動かさない
+        P->>P: el を document に取り付ける
+        M->>P: 1 つ目の並びの見える幅が 0 から変わったので、第 7 章を見える範囲へ入れる
+        P->>P: 閉じた折りたたみを開く
+        M->>P: 2 つ目の並びの見える幅が 0 から変わったので、第 7 章を見える範囲へ入れる
+      ```
+
+      <!-- /map -->
+    expected:
+      - 取り付ける前、例外が出ず、どちらのタブ群も `第 7 章` の `aria-selected` が `true`
+      - 取り付けた後、タブにフォーカス・ポインターを乗せる前に、1 つ目の `第 7 章` のボタンの左端と右端が 1 つ目の並びの見える範囲（並びの `getBoundingClientRect` の左右の内側）に入っている
+      - 折りたたみを開いた後、2 つ目の `第 7 章` のボタンの左端と右端が 2 つ目の並びの見える範囲に入っている
+      - 取り付けた後と開いた後のどちらも、画面全体の `scrollY` が変わらない
+    test: test_normal_when_tablist_rendered_before_laid_out
+    refs:
+      - SC-472-23#scenarios[正常シナリオ（タブ名の並びが横幅に入りきらない）]
+      - SC-472-23#scenarios[正常シナリオ（折りたたみに入れたタブ）]
+      - '#constraints[タブの操作]'
+  - name: 正常系（タブ名の並びを折り返す指定）
+    summary: '`data-wrap` のタブ群だけ並びを折り返して端のボタンを配置せず、指定の無いタブ群は横にスクロールさせる'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+        notes: '`el` の幅は 320px'
+      - name: 折り返す指定のタブを持つ Markdown
+        description: '`<!-- tabs: {"wrap": true} -->` で `### 第 1 章` から `### 第 7 章` までの 7 つの見出しを囲んだ範囲と、同じ 7 つの見出しを `<!-- tabs -->` で囲んだ範囲を並べた文書'
+        notes: 7 つのタブ名の幅の合計は `el` の幅を超える
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 1 つ目の tablist を折り返して描き、2 つ目の tablist を 1 行で描く
+        P->>M: 1 つ目の第 1 章にフォーカスして End を押す
+        M->>P: 1 つ目を第 7 章にし、並びは動かさない
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 つ目の `role="tablist"` の中のタブのボタンの `offsetTop` が 2 つ以上の値を持ち、並びの `scrollWidth` が `clientWidth` を超えない
+      - 1 つ目の `mdmark-tabs` の中に `mdmark-tablist-wrap` と `mdmark-tablist-scroll` が無い
+      - 2 つ目の `role="tablist"` の中のタブのボタンの `offsetTop` が全て同じで、`data-dir="end"` の `mdmark-tablist-scroll` だけが `hidden` を持たない
+      - '`End` を押した後、1 つ目の `第 7 章` の `aria-selected` が `true` で、1 つ目の並びの `scrollLeft` が 0、`el` の `scrollWidth` は `clientWidth` を超えない'
+    test: test_normal_when_tablist_wrap_specified
+    refs:
+      - SC-472-23#scenarios[正常シナリオ（折り返す指定のタブ）]
+      - '#constraints[タブの操作]'
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -12383,6 +12499,13 @@ constraints:
       描いたときの選択と統一して切り替わった選択は残さない。
 
       localStorage を取り出す・読み込みと保存をするときに例外が出たら、`console.warn` に出して残さず・読み込まずに統一する動きと切り替えを続ける。
+
+      タブ名の並びは折り返さず 1 行にし、並びの幅に入りきらないときは並びの中で横にスクロールさせる（ページ全体は横にスクロールさせない。タブのボタンは縮めず、タブ名を省略しない）。並びのスクロールバーは出さず、並びを `div.mdmark-tablist-wrap` で包んで、残りのタブがある側の端にだけ、押すと並びを見える幅の 8 割だけその側へ動かすボタン（`button.mdmark-tablist-scroll`。`data-dir` が `start`・`end`、`aria-hidden="true"`・`tabindex="-1"`）を出す。残りが無い側のボタンは `hidden` にし、並びのスクロールと幅の変化のたびに出し直す。ボタンを押しても、選んだタブとフォーカスは変えない。
+
+      タブを選んだとき（押す・キー・描いたときの選択・同じ `group` で統一して切り替わった選択・URL の `#ID` と右側の目次の項目で、要素を含むタブを選んで移るときの選択）、選んだタブのボタンの左端か右端が並びの見える範囲の外にあれば、並びの横のスクロール位置だけを動かしてボタンの全体を入れる（見える範囲に入っていれば動かさない。見える範囲は、並びの左右から端の `mdmark-tablist-scroll` の幅を除いた範囲で、並びの端まで動かしたときはその側のボタンを `hidden` にするため端のタブもボタンに重ならない）。並びを動かすときに、ページと `el` の祖先のスクロール位置は動かさない（URL の `#ID` の要素へ移るスクロールと、押したタブのボタンの位置を戻すスクロールはそのまま）。選んだときに並びの配置が無い（document に取り付ける前の `el`・`display: none` の中・閉じた折りたたみの中で、並びの見える幅が 0）ときは並びを動かさず、並びの見える幅が 0 から変わったとき（取り付けた・開いた）に、その時点で選んでいるタブのボタンを同じく見える範囲へ入れる。
+
+
+      `data-wrap` を持つ `mdmark-tabs` は、タブ名の並びを並びの幅で折り返して全てのタブを並べ、`div.mdmark-tablist-wrap` と `mdmark-tablist-scroll` を配置せず、タブを選んでも並びのスクロール位置を動かさない。
 
       入れ子の `mdmark-tabs` はそれぞれ別の `tablist` にし、矢印・Home・End はフォーカスのある並びの中だけで移る。
 

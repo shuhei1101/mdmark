@@ -142,3 +142,25 @@ test("test_render_tabs_when_link_title", async () => {
     '<p class="mdmark-tab-title"><a href="https://example.com">設定</a></p>',
   );
 });
+
+// wrap を data-wrap にする（正常系）
+test("test_render_tabs_when_wrap", async () => {
+  // 準備
+  const { renderTabs } = await loadTabs();
+  // 実行
+  const wrapped = renderTabs({
+    id: "t",
+    titles: ["macOS", "Windows"],
+    panels: ["<p>a</p>", "<p>b</p>"],
+    wrap: true,
+  });
+  const plain = renderTabs({
+    id: "t",
+    titles: ["macOS", "Windows"],
+    panels: ["<p>a</p>", "<p>b</p>"],
+    wrap: false,
+  });
+  // 検証
+  expect(wrapped.startsWith('<div class="mdmark-tabs" data-wrap>')).toBe(true);
+  expect(plain).not.toContain("data-wrap");
+});
