@@ -68,7 +68,8 @@
     }
 
     /* 折り返す指定のタブ群（`data-wrap`）: 並びを折り返して全てのタブを並べる。
-       下の線は罫線に戻し、タブの負の余白で線に重ねて、選んだタブの背景で線を覆う */
+       下の線は罫線に戻し、タブの負の余白で線に重ねて、選んだタブの背景で線を覆う。
+       並びの幅より長いタブ名だけ、ボタンを並びの幅までにしてボタンの中で折り返す（ページを横にはみ出させない） */
     .mdmark-tabs[data-wrap] > .mdmark-tablist {
       flex-wrap: wrap;
       overflow: visible;
@@ -76,7 +77,9 @@
       box-shadow: none;
 
       & > [role="tab"] {
+        max-width: 100%;
         margin-block-end: -1px;
+        white-space: normal;
       }
     }
   }
