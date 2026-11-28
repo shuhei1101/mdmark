@@ -66,5 +66,18 @@
         background: linear-gradient(to left, var(--mdmark-color-surface) 60%, transparent);
       }
     }
+
+    /* 折り返す指定のタブ群（`data-wrap`）: 並びを折り返して全てのタブを並べる。
+       下の線は罫線に戻し、タブの負の余白で線に重ねて、選んだタブの背景で線を覆う */
+    .mdmark-tabs[data-wrap] > .mdmark-tablist {
+      flex-wrap: wrap;
+      overflow: visible;
+      border-block-end: 1px solid var(--mdmark-color-border);
+      box-shadow: none;
+
+      & > [role="tab"] {
+        margin-block-end: -1px;
+      }
+    }
   }
 }

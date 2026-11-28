@@ -1,6 +1,7 @@
 // #830 のタブの追加分（実装の tabs.interact.ts のモック）:
 // - 選んだタブのボタンが並びの見える範囲の外にあれば、並びの横のスクロール位置だけを動かして入れる
 // - 残りのタブがある側の端にだけ、押すと並びを動かすボタン（‹・›）を出す
+// - 折り返す指定のタブ群（data-wrap）には付けない
 (() => {
   /** lucide の chevron-left・chevron-right の形のアイコン */
   const icon = (dir) =>
@@ -31,6 +32,8 @@
   window.addEventListener("DOMContentLoaded", () => {
     const behavior = matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
     for (const tablist of document.querySelectorAll('[role="tablist"]')) {
+      // 折り返す指定のタブ群は並びが横にスクロールしないため、端のボタンも見える範囲へ入れる処理も付けない
+      if (tablist.parentElement?.hasAttribute("data-wrap")) continue;
       const wrap = document.createElement("div");
       wrap.className = "mdmark-tablist-wrap";
       tablist.before(wrap);

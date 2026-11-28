@@ -179,6 +179,52 @@
         </article>
       </section>
 
+      <!-- 折り返す指定のタブ群: 並びを折り返して全てのタブを並べ、端のボタンを付けない -->
+      <section aria-labelledby="state-many-wrap">
+        <h2 class="catalog-label" id="state-many-wrap">折り返す指定（<code>{"wrap": true}</code>）の多いタブ（並びを折り返して全てのタブを並べる）</h2>
+        <article class="mdmark">
+<div class="mdmark-tabs" data-wrap>
+  <div class="mdmark-tablist" role="tablist" aria-label="インストール">
+    <button class="mdmark-tab" type="button" role="tab" id="t3w-tab-0" aria-selected="true" aria-controls="t3w-panel-0" tabindex="0">macOS</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3w-tab-1" aria-selected="false" aria-controls="t3w-panel-1" tabindex="-1">Windows（PowerShell）</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3w-tab-2" aria-selected="false" aria-controls="t3w-panel-2" tabindex="-1">Windows（WSL）</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3w-tab-3" aria-selected="false" aria-controls="t3w-panel-3" tabindex="-1">Ubuntu・Debian</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3w-tab-4" aria-selected="false" aria-controls="t3w-panel-4" tabindex="-1">Fedora・RHEL</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3w-tab-5" aria-selected="false" aria-controls="t3w-panel-5" tabindex="-1">Arch Linux</button>
+    <button class="mdmark-tab" type="button" role="tab" id="t3w-tab-6" aria-selected="false" aria-controls="t3w-panel-6" tabindex="-1">Docker</button>
+  </div>
+  <div role="tabpanel" id="t3w-panel-0" aria-labelledby="t3w-tab-0" tabindex="0">
+    <p class="mdmark-tab-title">macOS</p>
+    <p>Homebrew で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3w-panel-1" aria-labelledby="t3w-tab-1" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows（PowerShell）</p>
+    <p>winget で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3w-panel-2" aria-labelledby="t3w-tab-2" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Windows（WSL）</p>
+    <p>apt で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3w-panel-3" aria-labelledby="t3w-tab-3" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Ubuntu・Debian</p>
+    <p>apt で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3w-panel-4" aria-labelledby="t3w-tab-4" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Fedora・RHEL</p>
+    <p>dnf で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3w-panel-5" aria-labelledby="t3w-tab-5" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Arch Linux</p>
+    <p>pacman で入れます。</p>
+  </div>
+  <div role="tabpanel" id="t3w-panel-6" aria-labelledby="t3w-tab-6" tabindex="0" hidden>
+    <p class="mdmark-tab-title">Docker</p>
+    <p>イメージを使用します。</p>
+  </div>
+</div>
+        </article>
+      </section>
+
       <!-- 中身にコードと表 -->
       <section aria-labelledby="state-rich">
         <h2 class="catalog-label" id="state-rich">中身にコードと表</h2>
