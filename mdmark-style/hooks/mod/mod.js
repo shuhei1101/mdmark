@@ -19046,6 +19046,9 @@ var tabs_schema_default = {
       type: "string",
       minLength: 1
     },
+    wrap: {
+      type: "boolean"
+    },
     collapse: {
       $ref: "common.schema.json#/$defs/collapse"
     }

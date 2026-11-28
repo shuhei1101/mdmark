@@ -4,6 +4,7 @@ import { type CollapseMode } from "../shared/collapse.logic.ts";
 /** タブのマーカーの設定から `group` と折り畳みの指定を読み込む */
 export declare function readTabsOptions(mark: Mark): {
     group?: string;
+    wrap: boolean;
     collapse: CollapseMode;
     title?: string | undefined;
 };

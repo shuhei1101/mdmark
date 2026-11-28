@@ -66748,7 +66748,7 @@ function compareVersions(a, b) {
   return 0;
 }
 function cliVersion() {
-  return "v0.15.0+develop.59a52cf";
+  return "v0.15.0+develop.29eb084";
 }
 var DEVELOP_VERSION = "develop";
 var DEVELOP_BUILD_PATTERN = /^(v\d+\.\d+\.\d+)\+develop\.[0-9a-f]{7,}$/;
@@ -74253,6 +74253,7 @@ function renderTabs(options) {
     panels,
     selected,
     group,
+    wrap = false,
     collapse = "none",
     title
   } = options;
@@ -74265,7 +74266,8 @@ function renderTabs(options) {
     return `<div class="mdmark-tab-panel"${attributes}><p class="mdmark-tab-title">${titles[index] ?? ""}</p>${panel}</div>`;
   }).join("");
   const groupAttribute = group === void 0 ? "" : ` data-group="${escapeHtml2(group)}"`;
-  const tabs = `<div class="mdmark-tabs"${groupAttribute}>${tablist}${body}</div>`;
+  const wrapAttribute = wrap ? " data-wrap" : "";
+  const tabs = `<div class="mdmark-tabs"${groupAttribute}${wrapAttribute}>${tablist}${body}</div>`;
   if (collapse === "none") {
     return tabs;
   }
@@ -78477,6 +78479,9 @@ var tabs_schema_default = {
     group: {
       type: "string",
       minLength: 1
+    },
+    wrap: {
+      type: "boolean"
     },
     collapse: {
       $ref: "common.schema.json#/$defs/collapse"
@@ -88157,6 +88162,7 @@ function readTabsOptions(mark) {
   const group = typeof mark.options.group === "string" ? mark.options.group : void 0;
   return {
     ...group === void 0 ? {} : { group },
+    wrap: mark.options.wrap === true,
     collapse,
     ...title === void 0 ? {} : { title }
   };
