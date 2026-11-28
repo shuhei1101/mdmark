@@ -43,7 +43,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-28T10:46:50.168958+00:00'
   - process: データ設計
-    status: todo
+    status: skipped
+    reason: docs/data・docs/config に今の書き方の記述が無く、保存する項目・設定のキーが変わらないため対象外（マーカーの設定の ER 図はモジュール構成設計で扱う）
+    updated_by: planner
+    updated_at: '2026-11-28T11:16:36.463688+00:00'
   - process: インターフェース定義設計
     status: todo
   - process: エージェント・MCP サーバー設計
