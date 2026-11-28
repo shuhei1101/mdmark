@@ -542,14 +542,14 @@ test("test_attach_tabs_when_position_kept_with_anchoring", async () => {
   window.scrollTo(0, 0);
 });
 
-/** 7 つのタブ（それぞれ幅 100px）を持つ、幅 320px の並びの HTML。並びは折り返さず並びの中で横にスクロールする */
+/** 7 つのタブ（それぞれ幅 100px）を持つ、幅 320px・余白 0 の並びの HTML。並びは折り返さず並びの中で横にスクロールする */
 function overflowTablistHtml(selected: number): string {
   const buttons = Array.from(
     { length: 7 },
     (_, index) =>
       `<button class="mdmark-tab" type="button" role="tab" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}" style="flex: none; width: 100px">第 ${index + 1} 章</button>`,
   ).join("");
-  return `<div class="mdmark-tabs"><div class="mdmark-tablist" role="tablist" style="display: flex; flex-wrap: nowrap; overflow-x: auto; width: 320px">${buttons}</div></div>`;
+  return `<div class="mdmark-tabs"><div class="mdmark-tablist" role="tablist" style="display: flex; flex-wrap: nowrap; overflow-x: auto; width: 320px; padding: 0">${buttons}</div></div>`;
 }
 
 /** 描いた要素の中の並び */
