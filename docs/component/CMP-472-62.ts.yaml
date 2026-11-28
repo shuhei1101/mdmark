@@ -152,6 +152,13 @@ states:
         value: '<!-- glossary: {"alias_row": "terms", "term": {"column": "用語"}} -->'
       - name: message
         value: は `alias_row` と `term` を一緒に記載しています。`alias_row` を使用するときは `term` を削除してください。`alias_row` の行の用語で表を描いています。
+  - name: LegacySyntax
+    description: 記法のマーカーの引数が今の書き方（JSON のオブジェクトでない）
+    args:
+      - name: mark
+        value: '<!-- table: data +total total=数量:sum -->'
+      - name: message
+        value: 'の引数は JSON のオブジェクトで記載してください（例: `<!-- table: {"kind": "data"} -->`）。引数を当てずに描いています。`mdmark upgrade` で JSON のオブジェクトへ書き換えられます。'
 lead: 記法のマーカーや拡張の引数に読み込めない指定がある箇所に配置し、作成者へ読み込めない指定と修正方法を通知する枠。HTML 文字列を返却し、ブラウザと Node で同じ出力になる。
 args:
   - name: mark

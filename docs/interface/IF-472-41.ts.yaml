@@ -263,7 +263,7 @@ flows:
     summary: タグがあるバージョンのフォルダへ移行の手順の配布物を書き込まず、出していないバージョンのフォルダにだけ書き込む
     setup:
       - name: 出したバージョンの移行の手順を持つ作業ツリー
-        description: 作業ツリーをコピーした一時フォルダを git のリポジトリにして、`migrations/v0.3.0/` に `marker-json.mjs`・`retired-diagrams.mjs` と、今のソースからビルドした内容と違う `legacy-marks.js`・`retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` を配置して commit し、`v0.3.0` のタグを打った後、`migrations/next/` に `marker-json.mjs`・`retired-diagrams.mjs` を配置したもの
+        description: 作業ツリーをコピーした一時フォルダを git のリポジトリにして、`migrations/v0.3.0/` に `retired-diagrams.mjs` と、今のソースからビルドした内容と違う `retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` を配置して commit し、`v0.3.0` のタグを打った後、`migrations/next/` に `retired-diagrams.mjs` を配置したもの
         notes: '`version.ini` は `v0.3.0`。`--develop` を付けた実行と付けない実行の 2 回'
       - name: Mock
         description: 差し替える依存は無い
@@ -279,22 +279,22 @@ flows:
         D->>B: npm run build -- --develop
         B->>G: v{MAJOR}.{MINOR}.{PATCH} のタグの一覧を読み込む
         B->>B: タグ v0.3.0 がある migrations/v0.3.0/ を出したバージョンとして除外する
-        B->>F: migrations/next/ に legacy-marks.js・retired-diagrams.js・THIRD_PARTY_LICENSES.txt を書き込む
+        B->>F: migrations/next/ に retired-diagrams.js・THIRD_PARTY_LICENSES.txt を書き込む
         B-->>D: 終了コード 0
       ```
 
       <!-- /map -->
     expected:
       - 終了コードが 0
-      - '`migrations/v0.3.0/` の `legacy-marks.js`・`retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` が commit した内容のまま（`git status --porcelain migrations/v0.3.0` の出力が空）'
-      - '`migrations/next/` に `legacy-marks.js`・`retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` がある'
+      - '`migrations/v0.3.0/` の `retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` が commit した内容のまま（`git status --porcelain migrations/v0.3.0` の出力が空）'
+      - '`migrations/next/` に `retired-diagrams.js`・`THIRD_PARTY_LICENSES.txt` がある'
       - '`--develop` を付けない実行でも同じ'
     test: test_normal_when_released_migrations_kept
     refs:
       - SC-472-82#scenarios[正常シナリオ（出したバージョンの移行の手順を書き換えない）]
 lead: '`src/` の TypeScript と CSS を、バージョンを埋めた ES モジュールの `dist/index.js` と `dist/index.css` と、公開関数と拡張の型定義 `dist/index.d.ts` と、Node で動く CLI の `dist/cli.js` と、CLI が書き出す HTML に埋める起動の処理 `dist/viewer.js`・`dist/viewer.css` にビルドする。'
 idempotent: true
-side_effects: '`dist/` と、`migrations/` の中の出していないバージョンのフォルダのうち、`marker-json.mjs` を持つフォルダの `legacy-marks.js` と `retired-diagrams.mjs` を持つフォルダの `retired-diagrams.js`、それぞれのフォルダの `THIRD_PARTY_LICENSES.txt` を書き換える。出したバージョンのフォルダは書き換えない'
+side_effects: '`dist/` と、`migrations/` の中の出していないバージョンのフォルダのうち、`marker-json.mjs` を持つフォルダの `legacy-marks.js`（ソースの `src/render/legacy-marks.ts` があるときだけ） と `retired-diagrams.mjs` を持つフォルダの `retired-diagrams.js`、それぞれのフォルダの `THIRD_PARTY_LICENSES.txt` を書き換える。出したバージョンのフォルダは書き換えない'
 callers:
   - SC-472-82#
 request:

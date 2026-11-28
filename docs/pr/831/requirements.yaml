@@ -1,0 +1,86 @@
+use_cases:
+  - kind: composite
+    scenario: docs/scenario/SC-477-1.yaml
+    impact: changed
+    detail: 今の書き方の文書は書き換える前に表・範囲の指定が描かれず記載の警告が出るため、書き換える前後の描画が同じである流れを、書き換えると描画が戻る流れに変える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-59.yaml
+    impact: changed
+    detail: 今の書き方のマーカーを描く正常シナリオを、指定を適用せずに記載の警告で移行を案内するシナリオに変える
+    depends_on:
+      - docs/scenario/SC-477-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-52.yaml
+    impact: changed
+    detail: 今の書き方のマーカーを持つ文字列を描くと指定のとおりに描かれる前提を、記載の警告が出る前提に変え、点検の扱いを合わせる
+    depends_on:
+      - docs/scenario/SC-477-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-78.yaml
+    impact: changed
+    detail: 今の書き方のマーカーを持つフォルダの点検の結果を、決めた扱いに合わせる
+    depends_on:
+      - docs/scenario/SC-477-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-27.yaml
+    impact: following
+    detail: 今の書き方の文書を書き換える移行は残るが、移行の前の文書の描画の記述を追随させる
+    depends_on:
+      - docs/scenario/SC-477-1.yaml
+  - kind: single
+    scenario: docs/scenario/SC-472-82.yaml
+    impact: following
+    detail: 今の書き方の変換のソースが無くなるため、出したバージョンの移行の手順を書き換えない例を、ソースが残る廃止した図の変換（`retired-diagrams`）へ差し替える
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-46.yaml
+    impact: run_only
+    detail: 今の書き方の外部ライブラリのマーカーを描かずに記載の警告を出す流れは変わらないが、引数の見分けの変更が壊しうる
+    depends_on: []
+  - kind: single
+    scenario: docs/scenario/SC-472-49.yaml
+    impact: run_only
+    detail: 今の書き方の拡張のマーカーを描かずに記載の警告を出す流れは変わらないが、引数の見分けの変更が壊しうる
+    depends_on: []
+docs:
+  - page: docs/guide/記法.mark.md
+    new: false
+    change: 名前の後ろが `{` で始まらない引数をこのマイナーバージョンの間だけ参照する記述を、適用せずに記載の警告で JSON のオブジェクトと `mdmark upgrade` を案内する記述に変え、点検のずれの記述を合わせる
+    status: todo
+  - page: docs/guide/CLI.mark.md
+    new: false
+    change: '`mdmark check` のずれの種類の `legacy_mark` の説明を、決めた扱いに合わせる'
+    status: todo
+  - page: docs/guide/書き出す-点検する.mark.md
+    new: false
+    change: '`legacy_mark` の修正方法の記述を、決めた扱いに合わせる'
+    status: todo
+  - page: docs/guide/導入-バージョンを上げる.md
+    new: false
+    change: 今の書き方のマーカーを点検が通知する記述と、移行の前の文書の描画の記述を合わせる
+    status: todo
+  - page: docs/guide/カスタマイズ-拡張を登録する.md
+    new: false
+    change: 前の書き方の拡張のマーカーの記載の警告の記述を、記法のマーカーと同じ扱いになったことに合わせて見直す
+    status: todo
+  - page: docs/guide/設定.mark.md
+    new: false
+    change: 前の書き方の `libraries` のマーカーの記載の警告の記述を見直す
+    status: todo
+  - page: docs/guide/用語集.yaml
+    new: false
+    change: 用語「今の書き方」の説明の「JSON の記載方法を入れたマイナーバージョンの間だけ参照し」を、描くときに適用せず点検が通知する説明に変える
+    status: todo
+  - page: docs/dev-command/CMD-472-1.yaml
+    new: false
+    change: ビルドが `legacy-marks.js` を書き換える記述を、`src/render/legacy-marks.ts` が無いときの扱いに合わせる
+    status: todo
+  - page: docs/guide/コアコンセプト-文書を描く仕組み.md
+    new: false
+    change: 「前の書き方の引数は JSON に変換して読み取る。」を、前の書き方の引数を変換せず、記載の警告で JSON のオブジェクトと `mdmark upgrade` を案内する記述に変える
+    status: todo
+scope_out:
+  - item: '`migrations/v0.11.0/legacy-marks.js`・`marker-json.mjs` の削除'
+    reason: '`v0.11.0` より前の手元のバージョンから `mdmark upgrade` で上げる利用者の移行に要るため残す'
+    plan: none
