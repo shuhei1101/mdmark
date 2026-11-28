@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, expect, test, vi } from "vitest";
 import {
+  addStyles,
   createRoot,
   createRootFromHtml,
   removeRoots,
@@ -539,4 +540,266 @@ test("test_attach_tabs_when_position_kept_with_anchoring", async () => {
   // 検証
   expect(Math.abs(topOf(long) - beforeLong)).toBeLessThanOrEqual(1);
   window.scrollTo(0, 0);
+});
+
+/** 7 つのタブ（それぞれ幅 100px）を持つ、幅 320px の並びの HTML。並びは折り返さず並びの中で横にスクロールする */
+function overflowTablistHtml(selected: number): string {
+  const buttons = Array.from(
+    { length: 7 },
+    (_, index) =>
+      `<button class="mdmark-tab" type="button" role="tab" aria-selected="${index === selected}" tabindex="${index === selected ? 0 : -1}" style="flex: none; width: 100px">第 ${index + 1} 章</button>`,
+  ).join("");
+  return `<div class="mdmark-tabs"><div class="mdmark-tablist" role="tablist" style="display: flex; flex-wrap: nowrap; overflow-x: auto; width: 320px">${buttons}</div></div>`;
+}
+
+/** 描いた要素の中の並び */
+function tablistOf(root: HTMLElement): HTMLElement {
+  const tablist = root.querySelector<HTMLElement>('[role="tablist"]');
+  if (!tablist) {
+    throw new Error("並びが無い");
+  }
+  return tablist;
+}
+
+/** 並びを包む要素の、向きの端のボタン */
+function scrollButtonOf(
+  tablist: HTMLElement,
+  dir: "start" | "end",
+): HTMLButtonElement {
+  const button = tablist.parentElement?.querySelector<HTMLButtonElement>(
+    `.mdmark-tablist-scroll[data-dir="${dir}"]`,
+  );
+  if (!button) {
+    throw new Error(`端のボタンが無い: ${dir}`);
+  }
+  return button;
+}
+
+/** 並びの位置のタブを選んだ状態にする */
+function markSelected(tablist: HTMLElement, selected: number): void {
+  tablist
+    .querySelectorAll<HTMLElement>('[role="tab"]')
+    .forEach((tab, index) => {
+      tab.setAttribute("aria-selected", String(index === selected));
+    });
+}
+
+/** 位置のタブのボタン */
+function tabAt(tablist: HTMLElement, index: number): HTMLElement {
+  const tab = tablist.querySelectorAll<HTMLElement>('[role="tab"]')[index];
+  if (!tab) {
+    throw new Error(`タブが無い: ${index}`);
+  }
+  return tab;
+}
+
+// 右の外にある選んだタブを入れる（正常系）
+test("test_reveal_selected_tab", async () => {
+  // 準備
+  addStyles();
+  const { attachTablistScroll, revealSelectedTab } = await loadTabs();
+  const root = createRootFromHtml(overflowTablistHtml(0));
+  const tablist = tablistOf(root);
+  detachers.push(attachTablistScroll(tablist));
+  tablist.scrollLeft = 0;
+  markSelected(tablist, 4);
+  const scrollY = window.scrollY;
+  // 実行
+  revealSelectedTab(tablist);
+  // 検証
+  const end = scrollButtonOf(tablist, "end");
+  const right = tablist.getBoundingClientRect().right - end.offsetWidth;
+  expect(
+    Math.abs(tabAt(tablist, 4).getBoundingClientRect().right - right),
+  ).toBeLessThanOrEqual(1);
+  expect(window.scrollY).toBe(scrollY);
+});
+
+// 見える範囲にあれば動かさない（正常系）
+test("test_reveal_selected_tab_when_visible", async () => {
+  // 準備
+  addStyles();
+  const { attachTablistScroll, revealSelectedTab } = await loadTabs();
+  const root = createRootFromHtml(overflowTablistHtml(0));
+  const tablist = tablistOf(root);
+  detachers.push(attachTablistScroll(tablist));
+  tablist.scrollLeft = 0;
+  markSelected(tablist, 1);
+  // 実行
+  revealSelectedTab(tablist);
+  // 検証
+  expect(tablist.scrollLeft).toBe(0);
+});
+
+// 配置の無い並びは動かさない（正常系）
+test("test_reveal_selected_tab_when_not_laid_out", async () => {
+  // 準備
+  const { revealSelectedTab } = await loadTabs();
+  const holder = document.createElement("div");
+  holder.innerHTML = overflowTablistHtml(6);
+  const tablist = tablistOf(holder);
+  // 実行・検証
+  expect(() => revealSelectedTab(tablist)).not.toThrow();
+  expect(tablist.scrollLeft).toBe(0);
+});
+
+// 最後のタブは並びを右端まで動かして入れる（正常系）
+test("test_reveal_selected_tab_when_last", async () => {
+  // 準備
+  addStyles();
+  const { attachTablistScroll, revealSelectedTab } = await loadTabs();
+  const root = createRootFromHtml(overflowTablistHtml(0));
+  const tablist = tablistOf(root);
+  detachers.push(attachTablistScroll(tablist));
+  tablist.scrollLeft = 0;
+  markSelected(tablist, 6);
+  // 実行
+  revealSelectedTab(tablist);
+  await new Promise((resolve) => requestAnimationFrame(resolve));
+  // 検証
+  expect(
+    Math.abs(tablist.scrollLeft - (tablist.scrollWidth - tablist.clientWidth)),
+  ).toBeLessThanOrEqual(1);
+  expect(
+    Math.abs(
+      tabAt(tablist, 6).getBoundingClientRect().right -
+        tablist.getBoundingClientRect().right,
+    ),
+  ).toBeLessThanOrEqual(1);
+  expect(scrollButtonOf(tablist, "end").hidden).toBe(true);
+});
+
+// 残りがある側のボタンだけを出し、押すと並びを動かす（正常系）
+test("test_attach_tablist_scroll", async () => {
+  // 準備
+  addStyles();
+  vi.spyOn(window, "matchMedia").mockImplementation(
+    (query: string) =>
+      ({
+        matches: query.includes("prefers-reduced-motion: reduce"),
+        media: query,
+        onchange: null,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+        addListener: () => undefined,
+        removeListener: () => undefined,
+        dispatchEvent: () => false,
+      }) as MediaQueryList,
+  );
+  const { attachTablistScroll } = await loadTabs();
+  const root = createRootFromHtml(overflowTablistHtml(0));
+  const tablist = tablistOf(root);
+  detachers.push(attachTablistScroll(tablist));
+  await nextFrames();
+  const start = scrollButtonOf(tablist, "start");
+  const end = scrollButtonOf(tablist, "end");
+  // 検証: 付けた直後
+  expect(start.hidden).toBe(true);
+  expect(end.hidden).toBe(false);
+  for (const button of [start, end]) {
+    expect(button.getAttribute("aria-hidden")).toBe("true");
+    expect(button.getAttribute("tabindex")).toBe("-1");
+  }
+  const first = tabAt(tablist, 0);
+  first.focus();
+  // 実行
+  end.click();
+  await nextFrames();
+  // 検証: 押した後
+  expect(
+    Math.abs(tablist.scrollLeft - tablist.clientWidth * 0.8),
+  ).toBeLessThanOrEqual(1);
+  expect(start.hidden).toBe(false);
+  expect(first.getAttribute("aria-selected")).toBe("true");
+  expect(document.activeElement).toBe(first);
+});
+
+// 幅が 0 から変わったときに選んだタブを入れる（正常系）
+test("test_attach_tablist_scroll_when_laid_out_later", async () => {
+  // 準備
+  addStyles();
+  const { attachTablistScroll } = await loadTabs();
+  const holder = document.createElement("div");
+  holder.className = "mdmark";
+  holder.innerHTML = overflowTablistHtml(6);
+  const tablist = tablistOf(holder);
+  const detach = attachTablistScroll(tablist);
+  // 実行
+  document.body.append(holder);
+  await nextFrames();
+  // 検証
+  const list = tablist.getBoundingClientRect();
+  const tab = tabAt(tablist, 6).getBoundingClientRect();
+  expect(tab.left).toBeGreaterThanOrEqual(list.left - 1);
+  expect(tab.right).toBeLessThanOrEqual(list.right + 1);
+  expect(scrollButtonOf(tablist, "end").hidden).toBe(true);
+  expect(scrollButtonOf(tablist, "start").hidden).toBe(false);
+  detach();
+  holder.remove();
+});
+
+// 返った関数で並びを元に戻す（正常系）
+test("test_attach_tablist_scroll_when_detached", async () => {
+  // 準備
+  const { attachTablistScroll } = await loadTabs();
+  const root = createRootFromHtml(overflowTablistHtml(0));
+  const tablist = tablistOf(root);
+  const parent = tablist.parentElement;
+  const detach = attachTablistScroll(tablist);
+  // 実行
+  detach();
+  // 検証
+  expect(root.querySelector(".mdmark-tablist-wrap")).toBeNull();
+  expect(root.querySelector(".mdmark-tablist-scroll")).toBeNull();
+  expect(tablist.parentElement).toBe(parent);
+  expect(parent?.firstElementChild).toBe(tablist);
+});
+
+/** 7 つの長いタブ名のタブ 1 組の HTML（`attribute` を `mdmark-tabs` に付ける） */
+function manyTabsHtml(attribute: string): string {
+  const panels = Array.from(
+    { length: 7 },
+    (_, index) =>
+      `<div class="mdmark-tab-panel"><p class="mdmark-tab-title">第 ${index + 1} 章 とても長いタブ名</p><p>第 ${index + 1} 章の中身</p></div>`,
+  ).join("");
+  return `<div class="mdmark-tabs"${attribute}>${panels}</div>`;
+}
+
+// はみ出す並びで選んだタブを見える範囲へ入れ、data-wrap のタブ群には付けない（正常系）
+test("test_attach_tabs_when_tablist_overflows", async () => {
+  // 準備
+  addStyles();
+  const { attachTabs } = await loadTabs();
+  const root = createRootFromHtml(
+    `<div style="width: 320px">${manyTabsHtml(' data-group="many"')}${manyTabsHtml(' data-group="many"')}${manyTabsHtml(" data-wrap")}</div>`,
+  );
+  detachers.push(attachTabs(root));
+  await nextFrames();
+  const scrollY = window.scrollY;
+  tabOf(root, 0, "第 1 章 とても長いタブ名").focus();
+  // 実行
+  press("End");
+  await nextFrames();
+  // 検証
+  const lists = [...root.querySelectorAll<HTMLElement>('[role="tablist"]')];
+  expect(lists).toHaveLength(3);
+  for (const index of [0, 1]) {
+    const tablist = lists[index];
+    expect(
+      tablist?.parentElement?.classList.contains("mdmark-tablist-wrap"),
+    ).toBe(true);
+    const list = tablist?.getBoundingClientRect();
+    const tab = tabOf(
+      root,
+      index,
+      "第 7 章 とても長いタブ名",
+    ).getBoundingClientRect();
+    expect(tab.left).toBeGreaterThanOrEqual((list?.left ?? 0) - 1);
+    expect(tab.right).toBeLessThanOrEqual((list?.right ?? 0) + 1);
+  }
+  const wrapped = root.querySelectorAll(".mdmark-tabs")[2];
+  expect(wrapped?.querySelector(".mdmark-tablist-wrap")).toBeNull();
+  expect(wrapped?.querySelector(".mdmark-tablist-scroll")).toBeNull();
+  expect(lists[2]?.scrollLeft).toBe(0);
+  expect(window.scrollY).toBe(scrollY);
 });

@@ -161,7 +161,48 @@ test("test_read_tabs_options_when_collapse", async () => {
     }),
   );
   // 検証
-  expect(options).toEqual({ group: "os", collapse: "open", title: "入れ方" });
+  expect(options).toEqual({
+    group: "os",
+    wrap: false,
+    collapse: "open",
+    title: "入れ方",
+  });
+});
+
+// wrap を読み込む（正常系）
+test("test_read_tabs_options_when_wrap", async () => {
+  // 準備
+  const { readTabsOptions } = await loadTabs();
+  // 実行
+  const wrapped = readTabsOptions(jsonMark("tabs", { wrap: true }));
+  const none = readTabsOptions(jsonMark("tabs"));
+  // 検証
+  expect(wrapped.wrap).toBe(true);
+  expect(none.wrap).toBe(false);
+});
+
+// wrap を部品へ指定し、真偽値でない wrap は警告にする（正常系）
+test("test_build_tabs_when_wrap", () => {
+  // 準備
+  const markdown = [
+    tabsMarkdown('<!-- tabs: {"wrap": true} -->'),
+    tabsMarkdown('<!-- tabs: {"wrap": "yes"} -->'),
+  ].join("\n");
+  // 実行
+  const { html } = renderDoc(markdown);
+  // 検証
+  const tabs = findTags(html, 'class="mdmark-tabs"');
+  expect(tabs).toHaveLength(2);
+  expect(tabs[0]).toMatch(/\sdata-wrap\b/);
+  expect(tabs[1]).not.toMatch(/\sdata-wrap\b/);
+  expect(matches(html, /class="mdmark-syntax-warning"/g)).toHaveLength(1);
+  const warningAt = html.indexOf("mdmark-syntax-warning");
+  expect(warningAt).toBeGreaterThan(html.indexOf(tabs[0] ?? ""));
+  expect(warningAt).toBeLessThan(html.lastIndexOf(tabs[1] ?? ""));
+  expect(html.slice(warningAt, html.lastIndexOf(tabs[1] ?? ""))).toContain(
+    "wrap",
+  );
+  expect(matches(html, /mdmark-tab-title/g)).toHaveLength(4);
 });
 
 /** 外側のタブで `### macOS`・`### **Windows**` を囲み、`macOS` の中に `#### zsh`・`#### bash` の内側のタブを配置した Markdown（`innerClose` が偽なら内側の閉じを記載しない） */
