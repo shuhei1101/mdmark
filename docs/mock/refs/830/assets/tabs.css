@@ -3,15 +3,25 @@
 
 @layer mdmark {
   .mdmark {
+    /* 並びを包む要素: 残りのタブへ動かすボタンを、並びの左右の端に重ねる基準 */
+    .mdmark-tablist-wrap {
+      position: relative;
+    }
+
     /* タブ名の並び: 折り返さず 1 行にし、入りきらない分は並びの中で横にスクロールする。
+       スクロールバーは出さず（選んだタブと中身の間に帯を入れない）、残りのタブへは端のボタン・ホイール・スワイプ・キーで動かす。
        横のスクロールで縦もはみ出しを切るため、下の線は罫線でなく内側の影で引き、選んだタブの背景で覆って中身とつなげる */
     .mdmark-tablist {
       flex-wrap: nowrap;
       overflow-x: auto;
       overflow-y: hidden;
-      scrollbar-width: thin;
+      scrollbar-width: none;
       border-block-end: 0;
       box-shadow: inset 0 -1px 0 var(--mdmark-color-border);
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
     }
 
     /* タブ: 縮めず、タブ名を折り返さない。下の線に重ねるための負の余白は使わない */
@@ -19,6 +29,42 @@
       flex: none;
       margin-block-end: 0;
       white-space: nowrap;
+    }
+
+    /* 残りのタブへ動かすボタン: 残りがある側の端にだけ出し、並びの面の色から透明へのぼかしで下のタブ名と分ける。
+       キーの移動はタブの矢印・Home・End が担うため、読み上げとタブの順に入れない */
+    .mdmark-tablist-scroll {
+      position: absolute;
+      inset-block: 0 1px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 2rem;
+      min-width: 24px;
+      padding: 0;
+      border: 0;
+      color: var(--mdmark-color-muted);
+      cursor: pointer;
+
+      &[hidden] {
+        display: none;
+      }
+
+      &:hover {
+        color: var(--mdmark-color-text);
+      }
+
+      &[data-dir="start"] {
+        inset-inline-start: 0;
+        border-start-start-radius: calc(var(--mdmark-radius) - 1px);
+        background: linear-gradient(to right, var(--mdmark-color-surface) 60%, transparent);
+      }
+
+      &[data-dir="end"] {
+        inset-inline-end: 0;
+        border-start-end-radius: calc(var(--mdmark-radius) - 1px);
+        background: linear-gradient(to left, var(--mdmark-color-surface) 60%, transparent);
+      }
     }
   }
 }

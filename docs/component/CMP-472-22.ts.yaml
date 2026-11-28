@@ -20,7 +20,7 @@ states:
       - name: selected
         value: '1'
   - name: Many
-    description: タブが多く、タブ名が長い。タブの並びは折り返さず 1 行のままで、入りきらないタブは並びの中で横にスクロールすると見える
+    description: タブが多く、タブ名が長い。タブの並びは折り返さず 1 行のままで、入りきらないタブは並びの中で横にスクロールすると見える。並びの右端に、残りのタブへ動かすボタン（›）だけが出る
     args:
       - name: titles
         value: '["macOS","Windows","Linux","FreeBSD","とても長いタブ名で並びの幅を超えるもの","Android","iOS"]'
@@ -78,7 +78,7 @@ states:
       - name: selected
         value: '0'
   - name: ManyLast
-    description: タブが多く、右端のタブを選んだ。`mount` が並びを横にスクロールして、選んだタブのボタンの全体を並びの見える範囲に入れた状態
+    description: タブが多く、右端のタブを選んだ。`mount` が並びを横にスクロールして、選んだタブのボタンの全体を並びの見える範囲に入れた状態。並びの左端に、残りのタブへ動かすボタン（‹）だけが出る
     args:
       - name: titles
         value: '["macOS","Windows","Linux","FreeBSD","とても長いタブ名で並びの幅を超えるもの","Android","iOS"]'
@@ -153,12 +153,13 @@ accessibility:
   - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ。入れ子のタブはそれぞれ別の `tablist` で、矢印・Home・End はフォーカスのある並びの中だけで移り、内側を選んでも外側の選択を変えない
   - 選んだタブは線で囲んで中身の背景とつなぎ、形状と背景色でも示し、色だけに頼らない
   - 並びが横にスクロールするときも、矢印・Home・End で選んでフォーカスを移したタブは並びの見える範囲に入る
+  - 残りのタブへ動かすボタンは `aria-hidden="true"`・`tabindex="-1"` にして読み上げとタブの順に入れない（キーの移動はタブの矢印・Home・End が担う）
 refs:
   - IF-472-34#constraints[タブ]
   - IF-472-35#constraints[タブの操作]
 status: planned
 notes:
-  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>` を出し、`group` を指定すると外側の `div` に `data-group="{group}"` を付ける。`selected` を指定すると頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を配置し、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。`collapse` が `closed`・`open` のときは `mdmark-tabs` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの外観は表の `mdmark-table-details` と同じ。`mdmark-tablist` は折り返さず（`flex-wrap: nowrap`）、入りきらない分を並びの中で横にスクロールさせる（`overflow-x: auto`・細いスクロールバー）。タブのボタンは縮めず、タブ名を折り返さない。横のスクロールで並びの下端のはみ出しが切れるため、並びの下の線は内側の影（`box-shadow: inset`）で引き、選んだタブの背景で線を覆って中身とつなげる。モックは `docs/mock/components/tabs/`'
+  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>` を出し、`group` を指定すると外側の `div` に `data-group="{group}"` を付ける。`selected` を指定すると頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を配置し、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。`collapse` が `closed`・`open` のときは `mdmark-tabs` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの外観は表の `mdmark-table-details` と同じ。`mdmark-tablist` は折り返さず（`flex-wrap: nowrap`）、入りきらない分を並びの中で横にスクロールさせる（`overflow-x: auto`。スクロールバーは出さず、選んだタブと中身の間を空けない）。タブのボタンは縮めず、タブ名を折り返さない。横のスクロールで並びの下端のはみ出しが切れるため、並びの下の線は内側の影（`box-shadow: inset`）で引き、選んだタブの背景で線を覆って中身とつなげる。`mount` は並びを `div.mdmark-tablist-wrap` で包み、残りのタブがある側の端にだけ、押すと並びを見える幅の 8 割だけ動かすボタン（`button.mdmark-tablist-scroll`。`data-dir` が `start`・`end`、lucide の `chevron-left`・`chevron-right`、幅 24px 以上）を並びの端に重ね、並びの面の色から透明へのぼかしで下のタブ名と分ける。残りが無い側のボタンは `hidden` にする。モックは `docs/mock/components/tabs/`'
 tags:
   - name: topic:タブ
     main: true
