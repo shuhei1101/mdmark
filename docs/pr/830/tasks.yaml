@@ -78,7 +78,7 @@ tasks:
     status: todo
   - process: ドキュメント修正
     status: todo
-    note: docs/guide/記載する-本文を部品で組む.mark.md・docs/guide/記法.mark.md のタブの説明
+    note: docs/guide/記載する-本文を部品で組む.mark.md・docs/guide/記法.mark.md のタブの説明、docs/guide/用語集.yaml の用語「折り返し」
   - process: 単体テスト作成
     status: todo
   - process: 実装
