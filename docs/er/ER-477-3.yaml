@@ -24,6 +24,13 @@ tables:
         type: object
         description: 共通のオブジェクトの折り畳み
         example: '{"open": true}'
+      - name: wrap
+        title: タブ名の並びの折り返し
+        source: DATA-472-26#fields[wrap]
+        type: boolean
+        default: 'false'
+        description: タブ名の並びを折り返して並べるか
+        example: 'true'
 notes:
   見本: |-
     ```html
