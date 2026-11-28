@@ -182,7 +182,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: 今の書き方のマーカーを持つ文字列
         description: '`<!-- table: data +total total=数量:sum -->` で囲んだ表と、`<!-- details: 補足 open -->` 〜 `<!-- /details -->` の範囲を持つ Markdown の文字列'
-        notes: 同じ文字列を `render` で描くと、表と範囲は今の書き方のとおりに描かれ、記載の警告は出ない
+        notes: 同じ文字列を `render` で描くと、表と範囲は引数を適用せずに描かれ、マーカーの場所に記載の警告が出る
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -195,7 +195,7 @@ scenarios:
         participant R as mdmark の描画の処理
         W->>C: mdmark check（Markdown の文字列）
         C->>R: 文字列を描くときと同じ読み取りで、記載の警告と今の書き方のマーカーを集める
-        R-->>C: 空の警告の一覧と、今の書き方のマーカーの一覧
+        R-->>C: 今の書き方のマーカーの一覧（描くときに記載の警告を出すマーカー）
         C-->>W: 場所・種類・内容の一覧・終了コード 0 以外
       ```
 

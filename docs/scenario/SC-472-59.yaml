@@ -117,7 +117,7 @@ scenarios:
         description: 正常シナリオと同じ
       - name: 今の書き方のマーカーを持つ Markdown
         description: '`<!-- table: data +total total=数量:sum -->` 〜 `<!-- /table -->` で囲んだ表と、`<!-- details: 実行の例 open -->` 〜 `<!-- /details -->` の範囲を持つ文書と、同じ中身を `<!-- table: {"kind": "data", "columns": {"数量": {"total": [{"calc": "sum"}]}}} -->`・`<!-- details: {"title": "実行の例", "open": true} -->` で記載した文書'
-        notes: 今の書き方は、この記載方法を入れたマイナーバージョンの間だけ参照する
+        notes: 今の書き方の文書は、`mdmark upgrade` で JSON の記載へ書き換える前の文書にあたる
       - name: Mock
         description: 正常シナリオと同じ
     flow: |-
@@ -129,7 +129,7 @@ scenarios:
         participant P as 利用側のページ
         participant M as mdmark
         P->>M: 要素と今の書き方の Markdown を指定して描かせる
-        M->>M: JSON のオブジェクトでない引数を今の書き方として参照し、JSON の記載と同じ設定にする
+        M->>M: JSON のオブジェクトでない引数を今の書き方として見分け、引数を適用せずにマーカーの場所へ記載の警告を差し込む
         M-->>P: 要素の中に本文を描く
         P->>M: 別の要素と JSON の記載の Markdown を指定して描かせる
         M-->>P: 要素の中に本文を描く
@@ -138,9 +138,9 @@ scenarios:
 
       <!-- /map -->
     expected:
-      - 2 つの文書の表が、どちらも数量の合計の行を持つ同じ表で描かれている
-      - 2 つの文書の details の範囲が、どちらも見出し `実行の例` の開いた状態で描かれている
-      - 今の書き方の文書にも記載の警告が出ていない（今の書き方は点検（`mdmark check`）が通知する）
+      - JSON の記載の文書の表は数量の合計の行を持ち、今の書き方の文書の表は引数の無い `<!-- table -->` と同じ表で描かれ、合計の行を持たない
+      - JSON の記載の文書の details の範囲は見出し `実行の例` の開いた状態で描かれ、今の書き方の文書の details の範囲は引数の無い `<!-- details -->` と同じ状態で描かれる
+      - 今の書き方の文書の表と details の範囲のマーカーの場所に 1 つずつ記載の警告が出て、引数を JSON のオブジェクトで記載することと `mdmark upgrade` で書き換えられることを挙げる。JSON の記載の文書には記載の警告が出ていない
     test: test_normal_when_legacy_mark_args
   - name: 正常シナリオ（複数行にまたがる JSON のマーカー）
     setup:
