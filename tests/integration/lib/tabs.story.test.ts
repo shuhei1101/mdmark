@@ -259,11 +259,11 @@ test("test_nested", async () => {
   await expect(
     page.getByText("WSL の中身の見本です。").isVisible(),
   ).resolves.toBe(false);
-  // 内側のタブは、外側の中身の上と間を空ける
+  // 内側のタブは、外側の中身の上と間を空ける（外側の並びは端のボタンの包みの中にある）
   const gap = await lists.nth(1).evaluate((list) => {
     const panel = list.closest(".mdmark-tab-panel");
     const outerList = panel?.parentElement?.querySelector(
-      ":scope > [role=tablist]",
+      ":scope > [role=tablist], :scope > .mdmark-tablist-wrap > [role=tablist]",
     );
     return outerList
       ? list.getBoundingClientRect().top -
