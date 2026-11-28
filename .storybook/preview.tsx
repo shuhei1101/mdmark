@@ -165,3 +165,21 @@ new MutationObserver(() => {
     );
   }
 }).observe(document.documentElement, { childList: true, subtree: true });
+
+// タブのストーリー（折り返す指定の無い `.mdmark-tablist` を持つもの）は、描いた直後に並びを包んで端のボタンを付け、選んだタブを並びの見える範囲へ入れる（`mount` が付けるのと同じ）
+const scrolled = new WeakSet<Element>();
+new MutationObserver(async () => {
+  for (const tablist of document.querySelectorAll<HTMLElement>(
+    ".mdmark-tabs:not([data-wrap]) > .mdmark-tablist",
+  )) {
+    if (scrolled.has(tablist)) {
+      continue;
+    }
+    scrolled.add(tablist);
+    const { attachTablistScroll, revealSelectedTab } = await import(
+      /* @vite-ignore */ `${window.location.origin}/render/tabs.js`
+    );
+    attachTablistScroll(tablist);
+    revealSelectedTab(tablist);
+  }
+}).observe(document.documentElement, { childList: true, subtree: true });
