@@ -12,7 +12,7 @@ functions:
     summary: コアルール。`tabs` がオンなら、`tabs` の範囲を見出しで区切って部品『タブ』にする
     description: |-
       `tabs` の範囲を最初に出る見出しの階層で区切り、部品『タブ』（`selected` 無し）の囲みと中身にする。
-      マーカーの設定は `readTabsOptions` で読み込み、`group` と折り畳みの指定（`collapse`・`title`）を部品へ指定する。
+      マーカーの設定は `readTabsOptions` で読み込み、`group` と折り畳みの指定（`collapse`・`title`）と並びの折り返し（`wrap`）を部品へ指定する。
       区切りの見出しのトークンは取り除く。
       見出しが無ければ警告を差し込み、中身をそのまま残す。
 
@@ -88,20 +88,26 @@ functions:
         condition: インターフェース定義『文書をHTML文字列にする』の「正常系（閉じの足りない入れ子のタブ）」の文書
         mock: なし
         expected: 外側の開きの場所に記載の警告が 1 つあり、`mdmark-tabs` が無く、`<h3` の `macOS`・`Windows` と `<h4` の `zsh`・`bash` が残る
+      - name: test_build_tabs_when_wrap
+        case: 正常
+        summary: wrap を部品へ指定し、真偽値でない wrap は警告にする
+        condition: '`<!-- tabs: {"wrap": true} -->` と `<!-- tabs: {"wrap": "yes"} -->` でそれぞれ `### macOS`・`### Windows` を囲んだ範囲'
+        mock: なし
+        expected: 1 つ目の `mdmark-tabs` だけが `data-wrap` を持ち、2 つ目の範囲の前に `wrap` の記載の警告が 1 つある。2 つ目もタブにはなる
   - name: readTabsOptions
     title: タブのマーカーの指定を読み込む
     container: src/tabs/tabs.syntax.ts
     kind: 関数
     scope: internal
-    summary: タブのマーカーの設定（`validateMarkOptions` を経た値）から `group` を読み込み、`collapse` を `readCollapse` で読み込む
+    summary: タブのマーカーの設定（`validateMarkOptions` を経た値）から `group` と `wrap`（`true` のときだけ `true`。真偽値でない値は `validateMarkOptions` が記載の警告にして取り除く）を読み込み、`collapse` を `readCollapse` で読み込む
     args:
       - name: mark
         type: Mark
         required: true
         description: タブの開きのマーカー
     returns:
-      type: '{ group?: string; collapse: "none" | "closed" | "open"; title?: string }'
-      description: 組の名前と折り畳みの指定
+      type: '{ group?: string; wrap: boolean; collapse: "none" | "closed" | "open"; title?: string }'
+      description: 組の名前と並びの折り返しと折り畳みの指定
     unit_tests:
       - name: test_read_tabs_options
         case: 正常
@@ -121,6 +127,12 @@ functions:
         condition: '`<!-- tabs: {"group": "os", "collapse": {"open": true, "title": "入れ方"}} -->`'
         mock: なし
         expected: '`group` が `os`、`collapse` が `open`、`title` が `入れ方`'
+      - name: test_read_tabs_options_when_wrap
+        case: 正常
+        summary: wrap を読み込む
+        condition: '`<!-- tabs: {"wrap": true} -->` と `<!-- tabs -->`'
+        mock: なし
+        expected: 1 つ目は `wrap` が `true`、2 つ目は `false`
     callees:
       - 'MOD-472-270#functions[readCollapse]'
   - name: findTabsClose

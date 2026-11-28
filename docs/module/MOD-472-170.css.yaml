@@ -439,6 +439,9 @@ styles:
       - class_name: .mdmark-diagram[data-diagram="map"] .map-group-resize
         target: map のグループの右下の角（大きさのメニューの開き口）
         value: '`z-index: 1` で後ろに描く線を押す・指す場所の層（`.map-wire-hits`）より上に重ね、大きさを `max(24px, calc(24px / var(--mdmark-zoom, 1)))` 四方にして、上を通る線や図の倍率によらず 24 CSS px 以上で押せるようにする（axe の `target-size`）'
+      - class_name: .mdmark .mdmark-tablist・.mdmark-tablist-wrap・.mdmark-tablist-scroll・.mdmark-tabs[data-wrap]
+        target: タブ名の並びの横スクロールと折り返す指定
+        value: '並びを折り返さず（`flex-wrap: nowrap`）並びの中で横にスクロールさせ、スクロールバーを出さず、下の線を内側の影で描く。タブは縮めず折り返さない。端のボタンは包みの左右の端に重ね、並びの面の色から透明へのぼかしで下のタブ名と分ける。`data-wrap` のタブ群は並びを折り返し、下の線を罫線に戻してタブの負の余白で重ね、ボタンの幅を並びの幅までにして長いタブ名だけボタンの中で折り返す。値はモック `docs/mock/refs/830/assets/tabs.css`'
     refs:
       - SCR-472-4#
       - CMP-472-65#
