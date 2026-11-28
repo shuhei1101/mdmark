@@ -8,15 +8,21 @@ docs:
   - page: docs/guide/記載する-本文を部品で組む.mark.md
     new: false
     change: タブの節に、タブ名の並びが横幅に入りきらないときは折り返さず横にスクロールし、選んだタブを見える位置へ移すことと、残りのタブがある側の端のボタン、タブ群ごとに並びを折り返す指定 `wrap` を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-28T09:38:39.685877+00:00'
   - page: docs/guide/記法.mark.md
     new: false
     change: タブの記法の説明に、タブ名の並びの横スクロールと、選んだタブを見える位置へ移すことと、引数 `wrap`（真偽値。既定は `false`）を記載する
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-28T09:38:39.685877+00:00'
   - page: docs/guide/用語集.yaml
     new: false
     change: '用語「折り返し」（id: `wrap`）の定義に、タブのマーカーの `wrap`（タブ名の並びを折り返す。省くと横にスクロールし、設定の `code.wrap` には従わない）を加える'
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-28T09:38:39.685877+00:00'
 scope_out:
   - item: Claude Code の返答を描く mdmark-style のタブ（タブ名を見出しにして縦に並べる）
     reason: タブ名の並びを持たず、横幅であふれる並びが無い。要望に含まれない

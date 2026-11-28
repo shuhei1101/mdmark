@@ -79,8 +79,10 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-28T09:29:35.802549+00:00'
   - process: ドキュメント修正
-    status: todo
+    status: done
     note: docs/guide/記載する-本文を部品で組む.mark.md・docs/guide/記法.mark.md のタブの説明、docs/guide/用語集.yaml の用語「折り返し」
+    updated_by: planner
+    updated_at: '2026-11-28T09:38:43.814810+00:00'
   - process: 単体テスト作成
     status: todo
   - process: 実装
