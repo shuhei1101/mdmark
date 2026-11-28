@@ -35,9 +35,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-28T07:50:47.664523+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
     updated_by: planner
-    updated_at: '2026-11-28T08:37:44.230731+00:00'
+    updated_at: '2026-11-28T08:39:01.177156+00:00'
   - process: モック作成
     status: skipped
     reason: Issue が見た目の結果（折り返さず 1 行で横にスクロールし、選んだタブを見える位置へ移す）を定めており、作る人が決める余地が無い（判定フローチャート『モック要否』）。部品のモック docs/mock/components/tabs/ の状態は部品設計で直す
