@@ -11802,6 +11802,47 @@ flows:
     test: test_normal_when_rendered_before_attached
     refs:
       - SC-472-73#scenarios[正常シナリオ（document に取り付ける前に描いた表のつまみ）]
+  - name: 正常系（タブ名の並びがはみ出す）
+    summary: タブ名の並びを折り返さず並びの中で横にスクロールさせ、URL の ID・同じ組の切り替え・キーで選んだタブを並びの見える範囲へ入れ、縦のスクロール位置は動かさない
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+        notes: '`el` の幅は 320px'
+      - name: 並びがはみ出すタブを持つ Markdown
+        description: '`<!-- tabs: {"group": "many"} -->` 〜 `<!-- /tabs -->` で `### 第 1 章` から `### 第 7 章` までの 7 つの見出しを囲んだ範囲を 2 つ並べた文書'
+        notes: 1 つ目の `第 7 章` の中身は `#### 第 7 章の注意` と段落。7 つのタブ名の幅の合計は `el` の幅を超える
+      - name: URL の ID
+        description: '`mount` の前に `location.hash` を `#第-7-章の注意` にする'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 折り返さない 2 つの tablist を描き、1 つ目の第 7 章を選んで並びの見える範囲へ入れ、見出しへ移る
+        P->>M: 1 つ目の第 7 章にフォーカスして Home を押す
+        M->>P: 1 つ目を第 1 章にして並びを動かし、同じ組の 2 つ目も第 1 章にする
+        P->>M: 1 つ目の第 1 章にフォーカスして End を押す
+        M->>P: 1 つ目と 2 つ目を第 7 章にして、それぞれの並びを動かす
+      ```
+
+      <!-- /map -->
+    expected:
+      - 各 `role="tablist"` の中のタブのボタンの `offsetTop` が全て同じで、並びの `scrollWidth` が `clientWidth` より大きく、`el` の `scrollWidth` は `clientWidth` を超えない
+      - 描いた後、1 つ目の `第 7 章` の `aria-selected` が `true` で、そのボタンの左端と右端が 1 つ目の並びの見える範囲（並びの `getBoundingClientRect` の左右の内側）に入っている
+      - 描いた後、2 つ目のタブ群は URL の ID では切り替わらず `第 1 章` を選び、並びの `scrollLeft` が 0
+      - '`Home` を押した後、1 つ目の `第 1 章` のボタンが 1 つ目の並びの見える範囲に入っている'
+      - '`End` を押した後、1 つ目と 2 つ目の `第 7 章` の `aria-selected` が `true` で、それぞれのボタンがそれぞれの並びの見える範囲に入っている'
+      - '`Home`・`End` を押した前後で、押したタブのボタンの画面の上端からの位置の差が 1px 以内'
+    test: test_normal_when_tablist_overflows
+    refs:
+      - SC-472-23#scenarios[正常シナリオ（タブ名の並びが横幅に入りきらない）]
+      - '#constraints[タブの操作]'
+      - '#constraints[URL の ID でタブの中へ移る]'
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -12383,6 +12424,10 @@ constraints:
       描いたときの選択と統一して切り替わった選択は残さない。
 
       localStorage を取り出す・読み込みと保存をするときに例外が出たら、`console.warn` に出して残さず・読み込まずに統一する動きと切り替えを続ける。
+
+      タブ名の並びは折り返さず 1 行にし、並びの幅に入りきらないときは並びの中で横にスクロールさせる（ページ全体は横にスクロールさせない。タブのボタンは縮めず、タブ名を省略しない）。
+
+      タブを選んだとき（押す・キー・描いたときの選択・同じ `group` で統一して切り替わった選択・URL の `#ID` へ移るときの選択）、選んだタブのボタンの左端か右端が並びの見える範囲の外にあれば、並びの横のスクロール位置だけを動かしてボタンの全体を入れる（見える範囲に入っていれば動かさない）。並びを動かすときに、ページと `el` の祖先のスクロール位置は動かさない（URL の `#ID` の要素へ移るスクロールと、押したタブのボタンの位置を戻すスクロールはそのまま）。
 
       入れ子の `mdmark-tabs` はそれぞれ別の `tablist` にし、矢印・Home・End はフォーカスのある並びの中だけで移る。
 
