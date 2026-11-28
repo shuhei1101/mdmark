@@ -26377,3 +26377,206 @@ test("test_normal_when_diagram_resized_without_drag", async () => {
   expect(el.querySelector(".mdmark-step-menu")).toBeNull();
   expect(height()).toBe(dragged - 40);
 });
+
+/** 第 1〜7 章の見出しを `open` で囲んだタブの範囲 */
+function chapterTabs(open: string, note = false): string {
+  const panels = [1, 2, 3, 4, 5, 6, 7].map(
+    (no) =>
+      `### 第 ${no} 章\n\n段落\n\n${note && no === 7 ? "#### 第 7 章の注意\n\n段落\n\n" : ""}`,
+  );
+  return `${open}\n\n${panels.join("")}<!-- /tabs -->\n`;
+}
+
+/** `index` 番目のタブ群の並び */
+function tablistAt(el: Element, index: number): HTMLElement {
+  const tablist = el
+    .querySelectorAll(".mdmark-tabs")
+    [index]?.querySelector<HTMLElement>('[role="tablist"]');
+  if (!tablist) {
+    throw new Error(`並びが無い: ${index}`);
+  }
+  return tablist;
+}
+
+/** タブが並びの見える範囲に入っているか */
+function inTablistView(tablist: HTMLElement, tab: HTMLElement): boolean {
+  const list = tablist.getBoundingClientRect();
+  const rect = tab.getBoundingClientRect();
+  return rect.left >= list.left - 1 && rect.right <= list.right + 1;
+}
+
+/** 並びの端のボタン */
+function tablistScrollButton(
+  tablist: HTMLElement,
+  dir: "start" | "end",
+): HTMLButtonElement {
+  return find<HTMLButtonElement>(
+    tablist.parentElement ?? tablist,
+    `.mdmark-tablist-scroll[data-dir="${dir}"]`,
+  );
+}
+
+/** タブの行の数 */
+function tabRowCount(tablist: HTMLElement): number {
+  return new Set(
+    [...tablist.querySelectorAll<HTMLElement>('[role="tab"]')].map(
+      (tab) => tab.offsetTop,
+    ),
+  ).size;
+}
+
+function pressKey(key: string): void {
+  document.activeElement?.dispatchEvent(
+    new KeyboardEvent("keydown", { key, bubbles: true }),
+  );
+}
+
+/** 端のボタンが `shown` の側だけ出ている */
+function expectScrollButtons(
+  el: Element,
+  index: number,
+  shown: "start" | "end",
+): void {
+  const tablist = tablistAt(el, index);
+  for (const dir of ["start", "end"] as const) {
+    const button = tablistScrollButton(tablist, dir);
+    expect(button.hidden).toBe(dir !== shown);
+    expect(button.getAttribute("aria-hidden")).toBe("true");
+    expect(button.getAttribute("tabindex")).toBe("-1");
+  }
+  const button = tablistScrollButton(tablist, shown);
+  expect(button.offsetWidth).toBeGreaterThanOrEqual(24);
+  expect(button.offsetHeight).toBeGreaterThanOrEqual(24);
+}
+
+// タブ名の並びを折り返さず並びの中で横にスクロールさせ、URL の ID・同じ組の切り替え・キーで選んだタブを並びの見える範囲へ入れ、縦のスクロール位置は動かさない（正常系（タブ名の並びがはみ出す））
+test("test_normal_when_tablist_overflows", async () => {
+  // 準備
+  history.replaceState(null, "", "#第-7-章の注意");
+  const el = createElement();
+  el.style.width = "320px";
+  await mountTracked(el, {
+    markdown: [
+      chapterTabs('<!-- tabs: {"group": "many"} -->', true),
+      chapterTabs('<!-- tabs: {"group": "many"} -->'),
+    ].join("\n"),
+  });
+  const first = tablistAt(el, 0);
+  const second = tablistAt(el, 1);
+  // 検証: 描いた後
+  await vi.waitFor(() => {
+    expect(inTablistView(first, tabNamed(el, 0, "第 7 章"))).toBe(true);
+    expectScrollButtons(el, 0, "start");
+    expectScrollButtons(el, 1, "end");
+  });
+  for (const tablist of [first, second]) {
+    expect(tabRowCount(tablist)).toBe(1);
+    expect(tablist.scrollWidth).toBeGreaterThan(tablist.clientWidth);
+  }
+  expect(el.scrollWidth).toBeLessThanOrEqual(el.clientWidth);
+  expect(selectedTab(el, 0)).toBe("第 7 章");
+  expect(selectedTab(el, 1)).toBe("第 1 章");
+  expect(second.scrollLeft).toBe(0);
+  // 実行・検証: 2 つ目の › を押す
+  const focused = document.activeElement;
+  tablistScrollButton(second, "end").click();
+  await vi.waitFor(() => {
+    expect(second.scrollLeft).toBeGreaterThan(0);
+    expect(tablistScrollButton(second, "start").hidden).toBe(false);
+  });
+  expect(selectedTab(el, 1)).toBe("第 1 章");
+  expect(document.activeElement).toBe(focused);
+  // 実行・検証: Home
+  const last = tabNamed(el, 0, "第 7 章");
+  last.focus();
+  const beforeHome = last.getBoundingClientRect().top;
+  pressKey("Home");
+  const firstTab = tabNamed(el, 0, "第 1 章");
+  expect(selectedTab(el, 0)).toBe("第 1 章");
+  expect(selectedTab(el, 1)).toBe("第 1 章");
+  expect(inTablistView(first, firstTab)).toBe(true);
+  expect(
+    Math.abs(firstTab.getBoundingClientRect().top - beforeHome),
+  ).toBeLessThanOrEqual(1);
+  // 実行・検証: End
+  const beforeEnd = firstTab.getBoundingClientRect().top;
+  pressKey("End");
+  for (const index of [0, 1]) {
+    const tab = tabNamed(el, index, "第 7 章");
+    expect(selectedTab(el, index)).toBe("第 7 章");
+    expect(inTablistView(tablistAt(el, index), tab)).toBe(true);
+  }
+  expect(
+    Math.abs(last.getBoundingClientRect().top - beforeEnd),
+  ).toBeLessThanOrEqual(1);
+});
+
+// document に取り付ける前の要素と閉じた折りたたみの中で選んだタブを、取り付けた・開いたときに並びの見える範囲へ入れる（正常系（配置の無い時点で描いたタブ名の並び））
+test("test_normal_when_tablist_rendered_before_laid_out", async () => {
+  // 準備
+  localStorage.setItem("mdmark-tabs:many", "第 7 章");
+  const el = document.createElement("div");
+  el.style.width = "320px";
+  elements.push(el);
+  // 実行: 取り付けずに描く
+  await mountTracked(el, {
+    markdown: [
+      chapterTabs('<!-- tabs: {"group": "many"} -->'),
+      chapterTabs(
+        '<!-- tabs: {"group": "many", "collapse": {"open": false}} -->',
+      ),
+    ].join("\n"),
+  });
+  // 検証: 取り付ける前
+  for (const index of [0, 1]) {
+    expect(selectedTab(el, index)).toBe("第 7 章");
+  }
+  const scrollY = window.scrollY;
+  // 実行・検証: 取り付ける
+  document.body.append(el);
+  await vi.waitFor(() => {
+    expect(inTablistView(tablistAt(el, 0), tabNamed(el, 0, "第 7 章"))).toBe(
+      true,
+    );
+  });
+  expect(window.scrollY).toBe(scrollY);
+  // 実行・検証: 折りたたみを開く
+  find<HTMLDetailsElement>(el, "details.mdmark-collapsible").open = true;
+  await vi.waitFor(() => {
+    expect(inTablistView(tablistAt(el, 1), tabNamed(el, 1, "第 7 章"))).toBe(
+      true,
+    );
+  });
+  expect(window.scrollY).toBe(scrollY);
+});
+
+// data-wrap のタブ群だけ並びを折り返して端のボタンを配置せず、指定の無いタブ群は横にスクロールさせる（正常系（タブ名の並びを折り返す指定））
+test("test_normal_when_tablist_wrap_specified", async () => {
+  // 準備
+  const el = createElement();
+  el.style.width = "320px";
+  await mountTracked(el, {
+    markdown: [
+      chapterTabs('<!-- tabs: {"wrap": true} -->'),
+      chapterTabs("<!-- tabs -->"),
+    ].join("\n"),
+  });
+  const wrapped = tablistAt(el, 0);
+  // 検証: 描いた後
+  await vi.waitFor(() => {
+    expectScrollButtons(el, 1, "end");
+  });
+  expect(tabRowCount(wrapped)).toBeGreaterThanOrEqual(2);
+  expect(wrapped.scrollWidth).toBeLessThanOrEqual(wrapped.clientWidth);
+  const wrappedTabs = el.querySelectorAll(".mdmark-tabs")[0];
+  expect(wrappedTabs?.querySelector(".mdmark-tablist-wrap")).toBeNull();
+  expect(wrappedTabs?.querySelector(".mdmark-tablist-scroll")).toBeNull();
+  expect(tabRowCount(tablistAt(el, 1))).toBe(1);
+  // 実行: End
+  tabNamed(el, 0, "第 1 章").focus();
+  pressKey("End");
+  // 検証
+  expect(selectedTab(el, 0)).toBe("第 7 章");
+  expect(wrapped.scrollLeft).toBe(0);
+  expect(el.scrollWidth).toBeLessThanOrEqual(el.clientWidth);
+});
