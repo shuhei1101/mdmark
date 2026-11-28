@@ -3219,6 +3219,38 @@ flows:
       - '2 回目の 1 つ目の動画の `figure` が `--mdmark-image-width: 80%` を持ち、本文にマーカーの文字が無い'
       - 3 回目の 1 つ目の動画の `figure` が `style` を持たず、設定を指定しないときの今の文字列と同じ
     test: test_normal_when_default_video_width
+  - name: 正常系（タブの並びの折り返しの指定）
+    summary: '`wrap` が `true` のタブの範囲だけに `data-wrap` を付け、真偽値でない `wrap` に記載の警告を配置して付けずに描く'
+    setup:
+      - name: 配布物を読み込んだ Node の処理
+        description: 正常系と同じ
+      - name: 折り返しを指定した Markdown
+        description: '`### macOS`・`### Windows` を、`<!-- tabs: {"wrap": true} -->`・`<!-- tabs: {"wrap": false} -->`・`<!-- tabs -->`・`<!-- tabs: {"wrap": "yes"} -->` でそれぞれ囲んだ 4 つの範囲を並べた文書'
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant C as 利用側の処理
+        participant M as mdmark
+        C->>M: render(markdown)
+        M->>M: wrap が true の範囲だけに data-wrap を付ける
+        M->>M: 真偽値でない wrap の範囲の前に記載の警告を配置する
+        M-->>C: HTML 文字列
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 つ目の範囲だけが `data-wrap` を持つ `<div class="mdmark-tabs">` になり、2〜4 つ目の `mdmark-tabs` は `data-wrap` を持たない
+      - '`<div class="mdmark-syntax-warning" role="note">` が 1 つだけで、4 つ目の範囲の前にあり、本文に `wrap` には `true` か `false` を記載することがある'
+      - 4 つの範囲とも `mdmark-tab-panel` が 2 つずつあり、`mdmark-tab-title` が `macOS`・`Windows`
+    test: test_normal_when_tabs_wrap_specified
+    refs:
+      - SC-472-23#scenarios[正常シナリオ（折り返す指定のタブ）]
+      - SC-472-23#scenarios[異常シナリオ（真偽値でない折り返しの指定）]
+      - '#constraints[タブ]'
 lead: 利用側（書き出し・ビルドの処理やサーバー）が、画面を持たずに Markdown を HTML 文字列にする。`mount` が描く本文と同じ文字列を、ブラウザでも Node でも返却する。
 idempotent: true
 side_effects: なし（外部ライブラリも読み込まない）
@@ -3401,6 +3433,9 @@ constraints:
       全ての中身を隠さずに出す（タブの並びと切り替えは `mount` が付ける）。
 
       `<!-- tabs: {"group": "名前"} -->` の範囲は `<div class="mdmark-tabs" data-group="{名前}">` にし、組は写すだけで選択は持たない。
+
+
+      `<!-- tabs: {"wrap": true} -->` の範囲は `mdmark-tabs` に `data-wrap` を付ける（`false` と省いたときは付けない）。`wrap` が真偽値でないときは、範囲の前に `wrap` には `true` か `false` を記載することを持つ記載の警告を配置し、`data-wrap` を付けずに描く。
 
       範囲の中の `<!-- tabs -->` は入れ子として数え、開きと閉じを内側から対応させる。
 

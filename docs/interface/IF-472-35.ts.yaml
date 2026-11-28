@@ -11884,6 +11884,40 @@ flows:
       - SC-472-23#scenarios[正常シナリオ（タブ名の並びが横幅に入りきらない）]
       - SC-472-23#scenarios[正常シナリオ（折りたたみに入れたタブ）]
       - '#constraints[タブの操作]'
+  - name: 正常系（タブ名の並びを折り返す指定）
+    summary: '`data-wrap` のタブ群だけ並びを折り返して端のボタンを配置せず、指定の無いタブ群は横にスクロールさせる'
+    setup:
+      - name: 配布物を読み込んだページ
+        description: 正常系と同じ
+        notes: '`el` の幅は 320px'
+      - name: 折り返す指定のタブを持つ Markdown
+        description: '`<!-- tabs: {"wrap": true} -->` で `### 第 1 章` から `### 第 7 章` までの 7 つの見出しを囲んだ範囲と、同じ 7 つの見出しを `<!-- tabs -->` で囲んだ範囲を並べた文書'
+        notes: 7 つのタブ名の幅の合計は `el` の幅を超える
+      - name: Mock
+        description: 差し替える依存は無い
+    flow: |-
+      <!-- map -->
+
+      ```mermaid
+      sequenceDiagram
+        participant P as 利用側のページ
+        participant M as mdmark
+        P->>M: mount(el, { markdown })
+        M->>P: 1 つ目の tablist を折り返して描き、2 つ目の tablist を 1 行で描く
+        P->>M: 1 つ目の第 1 章にフォーカスして End を押す
+        M->>P: 1 つ目を第 7 章にし、並びは動かさない
+      ```
+
+      <!-- /map -->
+    expected:
+      - 1 つ目の `role="tablist"` の中のタブのボタンの `offsetTop` が 2 つ以上の値を持ち、並びの `scrollWidth` が `clientWidth` を超えない
+      - 1 つ目の `mdmark-tabs` の中に `mdmark-tablist-wrap` と `mdmark-tablist-scroll` が無い
+      - 2 つ目の `role="tablist"` の中のタブのボタンの `offsetTop` が全て同じで、`data-dir="end"` の `mdmark-tablist-scroll` だけが `hidden` を持たない
+      - '`End` を押した後、1 つ目の `第 7 章` の `aria-selected` が `true` で、1 つ目の並びの `scrollLeft` が 0、`el` の `scrollWidth` は `clientWidth` を超えない'
+    test: test_normal_when_tablist_wrap_specified
+    refs:
+      - SC-472-23#scenarios[正常シナリオ（折り返す指定のタブ）]
+      - '#constraints[タブの操作]'
 lead: 利用側のページが、要素と Markdown と設定を指定し、要素の中に文書を描く。戻り値で本文の差し替えと片付けができる。
 idempotent: false
 side_effects: '条件ごとの副作用は次のとおり。
@@ -12469,6 +12503,9 @@ constraints:
       タブ名の並びは折り返さず 1 行にし、並びの幅に入りきらないときは並びの中で横にスクロールさせる（ページ全体は横にスクロールさせない。タブのボタンは縮めず、タブ名を省略しない）。並びのスクロールバーは出さず、並びを `div.mdmark-tablist-wrap` で包んで、残りのタブがある側の端にだけ、押すと並びを見える幅の 8 割だけその側へ動かすボタン（`button.mdmark-tablist-scroll`。`data-dir` が `start`・`end`、`aria-hidden="true"`・`tabindex="-1"`）を出す。残りが無い側のボタンは `hidden` にし、並びのスクロールと幅の変化のたびに出し直す。ボタンを押しても、選んだタブとフォーカスは変えない。
 
       タブを選んだとき（押す・キー・描いたときの選択・同じ `group` で統一して切り替わった選択・URL の `#ID` と右側の目次の項目で、要素を含むタブを選んで移るときの選択）、選んだタブのボタンの左端か右端が並びの見える範囲の外にあれば、並びの横のスクロール位置だけを動かしてボタンの全体を入れる（見える範囲に入っていれば動かさない。見える範囲は、並びの左右から端の `mdmark-tablist-scroll` の幅を除いた範囲で、並びの端まで動かしたときはその側のボタンを `hidden` にするため端のタブもボタンに重ならない）。並びを動かすときに、ページと `el` の祖先のスクロール位置は動かさない（URL の `#ID` の要素へ移るスクロールと、押したタブのボタンの位置を戻すスクロールはそのまま）。選んだときに並びの配置が無い（document に取り付ける前の `el`・`display: none` の中・閉じた折りたたみの中で、並びの見える幅が 0）ときは並びを動かさず、並びの見える幅が 0 から変わったとき（取り付けた・開いた）に、その時点で選んでいるタブのボタンを同じく見える範囲へ入れる。
+
+
+      `data-wrap` を持つ `mdmark-tabs` は、タブ名の並びを並びの幅で折り返して全てのタブを並べ、`div.mdmark-tablist-wrap` と `mdmark-tablist-scroll` を配置せず、タブを選んでも並びのスクロール位置を動かさない。
 
       入れ子の `mdmark-tabs` はそれぞれ別の `tablist` にし、矢印・Home・End はフォーカスのある並びの中だけで移る。
 
