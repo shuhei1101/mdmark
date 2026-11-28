@@ -31,7 +31,7 @@ use_cases:
   - kind: single
     scenario: docs/scenario/SC-472-82.yaml
     impact: following
-    detail: 今の書き方の変換のソースが無くなり、出していないバージョンのフォルダへ変換を出力しなくなる流れに追随する
+    detail: 今の書き方の変換のソースが無くなるため、出したバージョンの移行の手順を書き換えない例を、ソースが残る廃止した図の変換（`retired-diagrams`）へ差し替える
     depends_on: []
   - kind: single
     scenario: docs/scenario/SC-472-46.yaml

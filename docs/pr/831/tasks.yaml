@@ -34,7 +34,9 @@ tasks:
     updated_by: planner
     updated_at: '2026-11-28T10:46:50.168958+00:00'
   - process: 単一ユースケース設計
-    status: todo
+    status: done
+    updated_by: planner
+    updated_at: '2026-11-28T11:12:24.115207+00:00'
   - process: モック作成
     status: skipped
     reason: 記載の警告の文言だけが変わり、外観が変わらないため対象外
