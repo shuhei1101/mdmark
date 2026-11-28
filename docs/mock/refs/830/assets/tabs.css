@@ -1,0 +1,24 @@
+/* #830 のタブの追加分: タブ名の並びを折り返さず、並びの中で横にスクロールさせる。
+   拡張記法の規則（refs/19/assets/syntax.css）の後に読む */
+
+@layer mdmark {
+  .mdmark {
+    /* タブ名の並び: 折り返さず 1 行にし、入りきらない分は並びの中で横にスクロールする。
+       横のスクロールで縦もはみ出しを切るため、下の線は罫線でなく内側の影で引き、選んだタブの背景で覆って中身とつなげる */
+    .mdmark-tablist {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      overflow-y: hidden;
+      scrollbar-width: thin;
+      border-block-end: 0;
+      box-shadow: inset 0 -1px 0 var(--mdmark-color-border);
+    }
+
+    /* タブ: 縮めず、タブ名を折り返さない。下の線に重ねるための負の余白は使わない */
+    [role="tab"] {
+      flex: none;
+      margin-block-end: 0;
+      white-space: nowrap;
+    }
+  }
+}

@@ -20,7 +20,7 @@ states:
       - name: selected
         value: '1'
   - name: Many
-    description: タブが多く、タブ名が長い。タブの並びが折り返す
+    description: タブが多く、タブ名が長い。タブの並びは折り返さず 1 行のままで、入りきらないタブは並びの中で横にスクロールすると見える
     args:
       - name: titles
         value: '["macOS","Windows","Linux","FreeBSD","とても長いタブ名で並びの幅を超えるもの","Android","iOS"]'
@@ -77,6 +77,13 @@ states:
         value: '["<strong>案 A</strong> SVG のまま","<strong>案 B</strong> Chart.js"]'
       - name: selected
         value: '0'
+  - name: ManyLast
+    description: タブが多く、右端のタブを選んだ。`mount` が並びを横にスクロールして、選んだタブのボタンの全体を並びの見える範囲に入れた状態
+    args:
+      - name: titles
+        value: '["macOS","Windows","Linux","FreeBSD","とても長いタブ名で並びの幅を超えるもの","Android","iOS"]'
+      - name: selected
+        value: '6'
 lead: '`<!-- tabs -->` の範囲を見出しで区切った中身を、見出しの文字をタブ名にしたタブで切り替えて見せる。`render` は全ての中身を順に出し、`mount` がタブの並びを付ける。URL の `#ID` が選ばれていないタブの中の要素を指すときは、`mount` がそのタブを選んでから要素へ移る。'
 args:
   - name: titles
@@ -115,11 +122,11 @@ events:
   - name: タブを選ぶ
     when: タブを押すか、タブにフォーカスがあるときに左右の矢印・Home・End を押す
     value: 選んだタブの `aria-selected`
-    description: '`mount` が選んだタブの中身だけを出し、ほかを `hidden` にする。`data-group` を持つときは、ページの同じ `data-group` で同じタブ名を持つ `mdmark-tabs` もそのタブ名へ切り替え、タブ名を localStorage に残す。選ぶ前と後で押したタブのボタンの画面の位置が同じになるようにスクロール位置を戻し、文書が縮んで戻しきれないときはスクロール位置の上限まで戻す'
+    description: '`mount` が選んだタブの中身だけを出し、ほかを `hidden` にする。`data-group` を持つときは、ページの同じ `data-group` で同じタブ名を持つ `mdmark-tabs` もそのタブ名へ切り替え、タブ名を localStorage に残す。選ぶ前と後で押したタブのボタンの画面の位置が同じになるようにスクロール位置を戻し、文書が縮んで戻しきれないときはスクロール位置の上限まで戻す。選んだタブのボタンが並びの見える範囲の外にあれば、並びの横のスクロール位置だけを動かして入れる（同じ `data-group` で切り替えたタブの並びも同じ）'
   - name: URL の ID でタブを選ぶ
     when: URL の `#ID` が選ばれていないタブの中身（入れ子のタブを含む）の中の要素を指す（描いたときと `hashchange`）
     value: URL の `#ID`
-    description: '`mount` が外側のタブから順にその要素を含むタブを選び、外側の閉じたセクション（要素が見出しなら見出し自身の閉じたセクションも）を開いてから要素へスクロールする。描いたときは localStorage に残したタブ名より URL の ID を優先し、URL の ID で選んだタブは localStorage に残さず、同じ `data-group` のほかのタブも切り替えない'
+    description: '`mount` が外側のタブから順にその要素を含むタブを選び、外側の閉じたセクション（要素が見出しなら見出し自身の閉じたセクションも）を開いてから要素へスクロールする。描いたときは localStorage に残したタブ名より URL の ID を優先し、URL の ID で選んだタブは localStorage に残さず、同じ `data-group` のほかのタブも切り替えない。選んだタブのボタンは並びの見える範囲へ入れる'
 css_properties:
   - name: --mdmark-color-border
     syntax: <color>
@@ -145,12 +152,13 @@ accessibility:
   - WAI-ARIA のタブの作法に従う。並びは `role="tablist"`、タブは `role="tab"` と `aria-selected`・`aria-controls`、中身は `role="tabpanel"` と `aria-labelledby`
   - 選んだタブだけが `tabindex="0"`、ほかは `-1`。左右の矢印・Home・End で移って選ぶ。入れ子のタブはそれぞれ別の `tablist` で、矢印・Home・End はフォーカスのある並びの中だけで移り、内側を選んでも外側の選択を変えない
   - 選んだタブは線で囲んで中身の背景とつなぎ、形状と背景色でも示し、色だけに頼らない
+  - 並びが横にスクロールするときも、矢印・Home・End で選んでフォーカスを移したタブは並びの見える範囲に入る
 refs:
   - IF-472-34#constraints[タブ]
   - IF-472-35#constraints[タブの操作]
 status: planned
 notes:
-  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>` を出し、`group` を指定すると外側の `div` に `data-group="{group}"` を付ける。`selected` を指定すると頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を配置し、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。`collapse` が `closed`・`open` のときは `mdmark-tabs` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの外観は表の `mdmark-table-details` と同じ。モックは `docs/mock/components/tabs/`'
+  HTML: '`render` は `<div class="mdmark-tabs"><div class="mdmark-tab-panel"><p class="mdmark-tab-title">{タブ名}</p>{中身}</div>…</div>` を出し、`group` を指定すると外側の `div` に `data-group="{group}"` を付ける。`selected` を指定すると頭に `<div class="mdmark-tablist" role="tablist"><button class="mdmark-tab" type="button" role="tab">{タブ名}</button>…</div>` を配置し、中身を `role="tabpanel"` にして選んだもの以外に `hidden` を付ける。`collapse` が `closed`・`open` のときは `mdmark-tabs` を `<details class="mdmark-collapsible"><summary>{title}</summary>` に入れる（`open` のときは `details` に `open` を付ける）。見出しの外観は表の `mdmark-table-details` と同じ。`mdmark-tablist` は折り返さず（`flex-wrap: nowrap`）、入りきらない分を並びの中で横にスクロールさせる（`overflow-x: auto`・細いスクロールバー）。タブのボタンは縮めず、タブ名を折り返さない。横のスクロールで並びの下端のはみ出しが切れるため、並びの下の線は内側の影（`box-shadow: inset`）で引き、選んだタブの背景で線を覆って中身とつなげる。モックは `docs/mock/components/tabs/`'
 tags:
   - name: topic:タブ
     main: true

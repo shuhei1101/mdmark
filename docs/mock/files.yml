@@ -290,7 +290,7 @@ files:
     tags: [topic:モック, topic:テーブル]
   - path: components/tabs/index.html
     visibility: internal
-    description: '部品『tabs』のモック: 見出しの文字をタブ名にしたタブと、URL の ID が指す見出しを持つタブを選ぶ処理、閉じたタブ・`title=` のタイトル、入れ子のタブ・太字のタブ名・入れ子の閉じが足りない記載の警告。部品の外観や状態を決めるときに参照する。'
+    description: '部品『tabs』のモック: 見出しの文字をタブ名にしたタブと、並びの中で横にスクロールするタブ名の並び・右端のタブを選んだ状態、URL の ID が指す見出しを持つタブを選ぶ処理、閉じたタブ・`title=` のタイトル、入れ子のタブ・太字のタブ名・入れ子の閉じが足りない記載の警告。部品の外観や状態を決めるときに参照する。'
     tags: [topic:モック, topic:タブ]
   - path: components/term-tooltip/index.html
     visibility: internal
@@ -1449,6 +1449,17 @@ files:
     visibility: internal
     description: '#824（表の列の中身のはみ出しの修正後・スマホ幅のテーブル設定のパネルの案 A・B）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
     tags: [topic:モック]
+  - path: refs/830/assets/tabs.css
+    visibility: internal
+    description: '#830 のモックが共通で読み込む素材: タブ名の並びを折り返さず並びの中で横にスクロールさせ、下の線を内側の影で引く規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, topic:タブ, tool:css]
+  - path: refs/830/assets/tabs.js
+    visibility: internal
+    description: '#830 のモックが共通で読み込む素材: 選んだタブのボタンを並びの見える範囲へ入れる処理（実装の tabs.interact.ts のモック）。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    tags: [topic:モック, topic:タブ]
+  - path: refs/830/index.md
+    visibility: internal
+    description: '#830（タブ名の並びを横幅に入りきらないときに折り返さず横スクロールにし、選んだタブを見える位置へ移す）の PR のモックへのリンク集。この PR で作ったモックを探すときに参照する。'
   - path: refs/824/assets/table-samples.js
     visibility: internal
     description: '#824 のモックが共通で読み込む素材: スマホの幅で開いたテーブル設定のパネルの、12 列分の列の一覧を組む。複数のモックに有効になる外観や動きを変えるときに参照する。'
