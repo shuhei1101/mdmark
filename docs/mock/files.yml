@@ -1451,11 +1451,11 @@ files:
     tags: [topic:モック]
   - path: refs/830/assets/tabs.css
     visibility: internal
-    description: '#830 のモックが共通で読み込む素材: タブ名の並びを折り返さず並びの中で横にスクロールさせ、下の線を内側の影で引く規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    description: '#830 のモックが共通で読み込む素材: タブ名の並びを折り返さず、スクロールバーを出さずに並びの中で横にスクロールさせ、下の線を内側の影で引く規則と、残りのタブがある側の端に出すボタン（‹・›）の規則。複数のモックに有効になる外観や動きを変えるときに参照する。'
     tags: [topic:モック, topic:タブ, tool:css]
   - path: refs/830/assets/tabs.js
     visibility: internal
-    description: '#830 のモックが共通で読み込む素材: 選んだタブのボタンを並びの見える範囲へ入れる処理（実装の tabs.interact.ts のモック）。複数のモックに有効になる外観や動きを変えるときに参照する。'
+    description: '#830 のモックが共通で読み込む素材: 選んだタブのボタンを並びの見える範囲へ入れる処理と、残りのタブがある側の端にボタン（‹・›）を出して押すと並びを動かす処理（実装の tabs.interact.ts のモック）。複数のモックに有効になる外観や動きを変えるときに参照する。'
     tags: [topic:モック, topic:タブ]
   - path: refs/830/index.md
     visibility: internal
