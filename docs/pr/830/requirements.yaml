@@ -7,11 +7,11 @@ use_cases:
 docs:
   - page: docs/guide/記載する-本文を部品で組む.mark.md
     new: false
-    change: タブの節に、タブ名の並びが横幅に入りきらないときは折り返さず横にスクロールし、選んだタブを見える位置へ移すことを記載する
+    change: タブの節に、タブ名の並びが横幅に入りきらないときは折り返さず横にスクロールし、選んだタブを見える位置へ移すことと、残りのタブがある側の端のボタン、タブ群ごとに並びを折り返す指定 `wrap` を記載する
     status: todo
   - page: docs/guide/記法.mark.md
     new: false
-    change: タブの記法の説明に、タブ名の並びの横スクロールと、選んだタブを見える位置へ移すことを記載する
+    change: タブの記法の説明に、タブ名の並びの横スクロールと、選んだタブを見える位置へ移すことと、引数 `wrap`（真偽値。既定は `false`）を記載する
     status: todo
 scope_out:
   - item: Claude Code の返答を描く mdmark-style のタブ（タブ名を見出しにして縦に並べる）
